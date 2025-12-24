@@ -1,0 +1,22 @@
+# .style.yapf
+[style]
+based_on_style = pep8
+column_limit = 120
+
+# Power operator spacing setting (this is the key configuration)
+spaces_around_power_operator = true
+
+# Other settings to make yapf behavior closer to black
+dedent_closing_brackets = true
+coalesce_brackets = true
+split_before_logical_operator = true
+split_before_arithmetic_operator = false
+split_complex_comprehension = true
+allow_split_before_dict_value = false
+split_before_named_assigns = true
+split_before_closing_bracket = false
+blank_line_before_nested_class_or_def = false
+blank_line_before_module_docstring = false
+blank_line_before_class_docstring = false
+split_penalty_after_opening_bracket = 300
+split_penalty_after_unary_operator = 10000
