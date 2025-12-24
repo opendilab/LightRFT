@@ -2,99 +2,12 @@
 LightRFT Project Overview
 ======================================================================================
 
-LightRFT is a framework designed for Reinforcement Learning from Human Feedback (RLHF) that enables efficient fine-tuning of large language models and vision-language models. The project is structured to support distributed training across multiple GPUs and nodes while maintaining a clean, modular architecture.
+LightRFT is a framework designed for RLHF and RLVR that enables efficient fine-tuning of large language models and vision-language models. The project is structured to support distributed training across multiple GPUs and nodes while maintaining a clean, modular architecture.
 
 High-Level Architecture
 ======================================================================================
 
-The framework is organized into five main modules, each serving a distinct purpose in the RLHF pipeline:
-
-.. code-block:: text
-
-    lightrft/
-    ├── datasets/                  # Dataset implementations
-    │   ├── __init__.py
-    │   ├── audio_alpaca.py        # Audio dataset
-    │   ├── grm_dataset.py         # General reward model dataset
-    │   ├── prompts_dataset.py     # Prompts dataset
-    │   ├── prompts_dataset_vl.py  # Vision-language prompts dataset
-    │   ├── sft_dataset.py         # SFT dataset
-    │   ├── sft_dataset_vl.py      # Vision-language SFT dataset
-    │   ├── srm_dataset.py         # Safe reward model dataset
-    │   └── utils.py               # Dataset utilities
-    ├── models/                    # Model definitions and architecture adaptations
-    │   ├── __init__.py
-    │   ├── actor_al.py            # Audio-language actor model
-    │   ├── actor_language.py      # Language actor model
-    │   ├── actor_vl.py            # Vision-language actor model
-    │   ├── grm_vl.py              # General reward model (VL)
-    │   ├── srm_al.py              # Safe reward model (AL)
-    │   ├── srm_vl.py              # Safe reward model (VL)
-    │   ├── loss.py                # Loss functions
-    │   ├── utils.py               # Model utilities
-    │   └── monkey_patch/          # Non-invasive model modifications
-    │       ├── __init__.py
-    │       ├── apply.py           # Entry point for patches
-    │       ├── hf_generate_patch.py  # HuggingFace generation patches
-    │       ├── llama.py           # LLaMA-specific adaptations
-    │       └── qwen.py            # Qwen-specific adaptations
-    ├── strategy/                  # Distributed training strategies
-    │   ├── __init__.py
-    │   ├── config.py              # Strategy configuration
-    │   ├── fake_strategy.py       # Fake strategy for testing
-    │   ├── strategy.py            # Main strategy implementation
-    │   ├── strategy_base.py       # Strategy base class
-    │   ├── deepspeed/             # DeepSpeed integration
-    │   │   ├── __init__.py
-    │   │   ├── deepspeed.py       # DeepSpeed strategy
-    │   │   └── deepspeed_utils.py # DeepSpeed utilities
-    │   ├── fsdp/                  # Fully Sharded Data Parallel
-    │   │   ├── __init__.py
-    │   │   ├── fsdp_optimizer.py  # FSDP optimizer
-    │   │   ├── fsdp_utils.py      # FSDP utilities
-    │   │   └── fsdpv2.py          # FSDP v2 implementation
-    │   ├── sglang_utils/          # SGLang integration
-    │   │   ├── __init__.py
-    │   │   ├── sglang_engine.py   # SGLang engine
-    │   │   └── sgl_model_saver.py # SGLang model saver
-    │   ├── vllm_utils/            # vLLM integration
-    │   │   ├── __init__.py
-    │   │   └── vllm_worker_wrap_no_ray.py  # vLLM worker wrapper
-    │   └── utils/                 # Strategy utilities
-    │       ├── __init__.py
-    │       ├── broadcast_utils.py # Broadcast utilities
-    │       ├── ckpt_utils.py      # Checkpoint utilities
-    │       ├── data_utils.py      # Data utilities
-    │       ├── distributed_util.py  # Distributed utilities
-    │       ├── optimizer_utils.py # Optimizer utilities
-    │       ├── parallel_utils.py  # Parallel utilities
-    │       └── statistic.py       # Statistics utilities
-    ├── trainer/                   # Training implementations
-    │   ├── __init__.py
-    │   ├── experience_maker.py    # Experience generator
-    │   ├── experience_maker_vl.py # VLM experience generator
-    │   ├── fast_exp_maker.py      # Fast experience maker
-    │   ├── grm_trainer_vl.py      # General reward model trainer (VL)
-    │   ├── kl_controller.py       # KL divergence controller
-    │   ├── ppo_trainer.py         # PPO trainer
-    │   ├── ppo_trainer_vl.py      # Vision-language PPO trainer
-    │   ├── replay_buffer.py       # Replay buffer
-    │   ├── replay_buffer_utils.py # Replay buffer utilities
-    │   ├── replay_buffer_vl.py    # Vision-language replay buffer
-    │   ├── spmd_ppo_trainer.py    # SPMD PPO trainer
-    │   ├── srm_trainer_al.py      # Safe reward model trainer (AL)
-    │   ├── srm_trainer_vl.py      # Safe reward model trainer (VL)
-    │   └── utils.py               # Trainer utilities
-    └── utils/                     # Utility functions
-        ├── __init__.py
-        ├── cli_args.py            # CLI argument parsing
-        ├── distributed_sampler.py # Distributed sampler
-        ├── logging_utils.py       # Logging utilities
-        ├── processor.py           # Data processors
-        ├── remote_rm_utils.py     # Remote reward model utilities
-        ├── timer.py               # Timer utilities
-        ├── trajectory_saver.py    # Trajectory saving utilities
-        └── utils.py               # General utilities
+The framework is organized into five main modules, each serving a distinct purpose in the Reinforcement Learning (RL) pipeline.
 
 Core Modules
 ======================================================================================

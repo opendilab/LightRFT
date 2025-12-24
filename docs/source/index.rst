@@ -76,7 +76,7 @@ Quick Links
 * :ref:`installation` - Installation guide
 * :ref:`quick_start` - Quick start tutorial
 * :doc:`quick_start/algorithms` - Supported algorithms
-* :doc:`best_practice/strategy_usage` - Strategy usage guide
+* :doc:`best_practice/strategy` - Strategy usage guide
 * :doc:`quick_start/configuration` - Configuration parameters
 * :doc:`best_practice/faq` - Frequently asked questions
 * :doc:`best_practice/troubleshooting` - Troubleshooting guide
