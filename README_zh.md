@@ -366,6 +366,22 @@ pylint lightrft/
 
 ---
 
+## 📚 引用
+
+如果您在研究和应用中使用了本代码库，请按下列说明引用：
+
+```bibtex
+@misc{lightrft,
+  title={LightRFT},
+  author={Niu, Yazhe and Pu, Yuan and Shi, Dongxing and Lu, Yudong and Xiong, Yingtong and Ge, Ruijun and Sun, Jiaxuan and Wan, Zunian and Zhang, Shaoang and others},
+  publisher={GitHub},
+  howpublished={\url{https://github.com/opendilab/LightRFT}},
+  year={2025},
+}
+```
+
+---
+
 ## 📄 许可证
 
 本项目采用 Apache 2.0 许可证 - 详见 [LICENSE](LICENSE) 文件
@@ -433,7 +449,7 @@ pylint lightrft/
 
 如有问题或建议，请通过以下方式联系：
 
-- **Issues**: [GitHub Issues](https://github.com/yourusername/lightrft/issues)
+- **Issues**: [GitHub Issues](https://github.com/opendilab/LightRFT/issues)
 - **邮件**: opendilab@pjlab.org.cn
 
 ---
