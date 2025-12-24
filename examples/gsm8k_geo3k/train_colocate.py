@@ -46,7 +46,6 @@ from lightrft.utils import add_arguments, ensure_video_input_available
 ensure_video_input_available()
 
 from lightrft.datasets import PromptDatasetVL, SFTDatasetVL
-from lightrft.models.utils import get_vlm_for_sequence_regression
 from lightrft.utils import blending_datasets, get_tokenizer_processor_vl
 from lightrft.models.actor_language import ActorLanguage
 from lightrft.models.actor_vl import ActorVL

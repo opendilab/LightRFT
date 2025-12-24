@@ -12,7 +12,6 @@ from .distributed_sampler import DistributedSampler
 from .processor import get_processor, reward_normalization
 from .utils import (
     blending_datasets,
-    get_strategy,
     get_tokenizer,
     get_tokenizer_processor_vl,
     print_rank_0,
@@ -23,12 +22,7 @@ from .utils import (
 
 from .cli_args import add_arguments
 from .timer import Timer
-# from .distributed_util import (
-#     create_sub_group,
-#     gather_inputs_object_for_inference,
-#     all_gather_all_prompt_token_ids,
-#     init_process_group,
-# )
+
 
 __all__ = [
     # logging and trajectory
@@ -46,7 +40,6 @@ __all__ = [
 
     # utils
     "blending_datasets",
-    "get_strategy",
     "get_tokenizer",
     "get_tokenizer_processor_vl",
     "print_rank_0",
@@ -59,10 +52,4 @@ __all__ = [
 
     # timer
     "Timer",
-
-    # distributed
-    # "create_sub_group",
-    # "gather_inputs_object_for_inference",
-    # "all_gather_all_prompt_token_ids",
-    # "init_process_group",
 ]

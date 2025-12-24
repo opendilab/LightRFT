@@ -3,7 +3,6 @@ import sys
 
 from datasets import interleave_datasets, load_dataset, load_from_disk, Dataset, DatasetDict
 from transformers import AutoTokenizer, AutoProcessor
-from .intern_vl import InternVLProcessor, InternVLImageProcessor
 import torch
 
 
