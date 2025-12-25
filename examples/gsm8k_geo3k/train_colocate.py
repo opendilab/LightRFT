@@ -184,7 +184,7 @@ def train(args):
         )
 
         if args.fsdp:
-            initial_model = strategy.prepare_model(initial_model, is_training=False, shard_size=2)
+            initial_model = strategy.prepare_model(initial_model, is_training=False, shard_size=8)
             strategy.offload_model(initial_model)
 
     if args.enable_ema:
