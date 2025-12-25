@@ -15,11 +15,14 @@ unset HTTPS_PROXY
 
 #############################  Configuration ##########################
 # Model path (cold-start model)
-MODEL_PATH="/mnt/shared-storage-user/puyuan/wanzunian/models/lightrlhf-grm-lr1e5-imagegen_cot_reward-qwen2.5vl3B-gs3000"
+# Please set your model path here
+MODEL_PATH=""
 
 # Dataset configuration
-DATA_PATH="hpdv3:/mnt/shared-storage-user/puyuan/wanzunian/datasets/HPDv3/train_subset_5percent.json"
-DATA_ROOT="/mnt/shared-storage-user/puyuan/wanzunian/datasets/HPDv3"
+# Please set your dataset path here (format: "source:path")
+DATA_PATH=""
+# Please set your dataset root directory here
+DATA_ROOT=""
 
 # Output paths
 OUTPUT_DIR="./results/rejection_sampling_$(date +%Y%m%d_%H%M%S)"
@@ -72,6 +75,22 @@ export MASTER_ADDR=${MASTER_ADDR:-"localhost"}
 export MASTER_PORT=${MASTER_PORT:-29500}
 
 export WORLD_SIZE=$((NNODES * GPUS_PER_NODE))
+
+# Validate required configuration
+if [ -z "${MODEL_PATH}" ]; then
+    echo "Error: MODEL_PATH is not set. Please configure it in the script."
+    exit 1
+fi
+
+if [ -z "${DATA_PATH}" ]; then
+    echo "Error: DATA_PATH is not set. Please configure it in the script."
+    exit 1
+fi
+
+if [ -z "${DATA_ROOT}" ]; then
+    echo "Error: DATA_ROOT is not set. Please configure it in the script."
+    exit 1
+fi
 
 # Create output directory
 mkdir -p ${OUTPUT_DIR}
