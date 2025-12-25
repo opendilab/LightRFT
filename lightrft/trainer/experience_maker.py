@@ -124,6 +124,7 @@ class Experience:
     action_mask: Optional[torch.BoolTensor]
     info: Optional[dict]
     kl: Optional[torch.Tensor] = None
+    action_entropy: Optional[torch.Tensor] = None  # Entropy for high-entropy token filtering
 
     @torch.no_grad()
     def to_device(self, device: torch.device) -> None:
@@ -143,6 +144,8 @@ class Experience:
             self.attention_mask = self.attention_mask.to(device)
         if self.action_mask is not None:
             self.action_mask = self.action_mask.to(device)
+        if self.action_entropy is not None:
+            self.action_entropy = to(self.action_entropy, device)
 
     def pin_memory(self):
         """
@@ -161,6 +164,8 @@ class Experience:
             self.attention_mask = self.attention_mask.pin_memory()
         if self.action_mask is not None:
             self.action_mask = self.action_mask.pin_memory()
+        if self.action_entropy is not None:
+            self.action_entropy = pin_memory(self.action_entropy)
         return self
 
 

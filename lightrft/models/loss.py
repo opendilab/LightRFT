@@ -66,11 +66,20 @@ class PolicyLoss(nn.Module):
     """
     Policy Loss for PPO
     """
-    def __init__(self, clip_eps: float = 0.2, use_dapo: bool = False, use_cpg_loss: bool = False) -> None:
+    def __init__(
+        self, 
+        clip_eps: float = 0.2, 
+        use_dapo: bool = False, 
+        use_cpg_loss: bool = False,
+        high_entropy_token_ratio: float = 0.0,
+        entropy_mask: Optional[torch.Tensor] = None,
+    ) -> None:
         super().__init__()
         self.clip_eps = clip_eps
         self.use_dapo = use_dapo
         self.use_cpg_loss = use_cpg_loss
+        self.high_entropy_token_ratio = high_entropy_token_ratio
+        self.entropy_mask = entropy_mask
 
     def forward(
         self,
@@ -78,14 +87,28 @@ class PolicyLoss(nn.Module):
         old_log_probs: torch.Tensor,
         advantages: torch.Tensor,
         action_mask: Optional[torch.Tensor] = None,
+        entropy_mask: Optional[torch.Tensor] = None,
     ) -> torch.Tensor:
+        # Apply entropy mask if provided (for high-entropy token filtering)
+        # action_mask shape: (batch_size, num_actions) - binary mask indicating valid tokens
+        # entropy_mask shape: (batch_size, num_actions) - binary mask for high-entropy tokens
+        if entropy_mask is not None:
+            # Use provided entropy mask
+            final_mask = action_mask * entropy_mask if action_mask is not None else entropy_mask
+        elif self.entropy_mask is not None:
+            # Use pre-computed entropy mask
+            final_mask = action_mask * self.entropy_mask if action_mask is not None else self.entropy_mask
+        else:
+            # No entropy masking
+            final_mask = action_mask
+
         if self.use_cpg_loss:
             clipped_log_probs = torch.where(
                 advantages > 0, torch.clamp(log_probs, max=torch.log(torch.tensor(1 + self.clip_eps)) + old_log_probs),
                 torch.clamp(log_probs, min=torch.log(torch.tensor(1 - self.clip_eps)) + old_log_probs)
             )
             loss = -clipped_log_probs * advantages
-            loss = (loss * action_mask).sum() / action_mask.sum()
+            loss = masked_mean(loss, final_mask, dim=-1).mean()
             return loss
 
         # PPO loss
@@ -93,7 +116,7 @@ class PolicyLoss(nn.Module):
         surr1 = ratio * advantages
         surr2 = ratio.clamp(1 - self.clip_eps, 1 + self.clip_eps) * advantages
         loss = -torch.min(surr1, surr2)
-        loss = masked_mean(loss, action_mask, dim=-1).mean()
+        loss = masked_mean(loss, final_mask, dim=-1).mean()
 
         return loss
 

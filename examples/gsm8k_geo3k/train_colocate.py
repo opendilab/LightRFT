@@ -114,6 +114,7 @@ def train(args):
             packing_samples=args.packing_samples,
             disable_logprobs_flashattn=args.disable_logprobs_flashattn,
             fused_linear_logprob=args.fused_linear_logprob,
+            high_entropy_token_ratio=args.high_entropy_token_ratio,
         )
 
     if args.actor_init_on_gpu:
@@ -183,7 +184,7 @@ def train(args):
         )
 
         if args.fsdp:
-            initial_model = strategy.prepare_model(initial_model, is_training=False, shard_size=8)
+            initial_model = strategy.prepare_model(initial_model, is_training=False, shard_size=2)
             strategy.offload_model(initial_model)
 
     if args.enable_ema:
@@ -602,6 +603,9 @@ if __name__ == "__main__":
 
     # CPGD
     parser.add_argument("--use_cpg_loss", action="store_true", default=False, help="whether to use the clipped policy gradient loss from CPGD")
+    
+    # High-entropy token filtering (from "Beyond the 80/20 Rule" paper)
+    parser.add_argument("--high_entropy_token_ratio", type=float, default=0.0, help="Ratio of high-entropy tokens to use for gradient updates (0.0 means use all tokens, 0.2 means use top 20% highest entropy tokens). Common value when enabled: 0.2. Based on 'Beyond the 80/20 Rule: High-Entropy Minority Tokens Drive Effective Reinforcement Learning for LLM Reasoning' (https://arxiv.org/abs/2506.01939)")
 
     add_arguments(parser)
 
