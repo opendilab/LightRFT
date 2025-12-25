@@ -119,6 +119,7 @@ class ExperienceVL:
     action_mask: Optional[torch.BoolTensor] = None
     info: Optional[dict] = None
     kl: Optional[torch.Tensor] = None
+    action_entropy: Optional[torch.Tensor] = None  # Entropy for high-entropy token filtering
 
     @torch.no_grad()
     def to_device(self, device: torch.device):
@@ -146,6 +147,8 @@ class ExperienceVL:
         self.attention_mask = to(self.attention_mask, device)
         self.action_mask = to(self.action_mask, device)
         self.kl = to(self.kl, device)
+        if self.action_entropy is not None:
+            self.action_entropy = to(self.action_entropy, device)
         self.info = {key: to(value, device) for key, value in self.info.items()}
         return self
 
@@ -172,6 +175,8 @@ class ExperienceVL:
         self.attention_mask = pin_memory(self.attention_mask)
         self.action_mask = pin_memory(self.action_mask)
         self.kl = pin_memory(self.kl)
+        if self.action_entropy is not None:
+            self.action_entropy = pin_memory(self.action_entropy)
         self.info = {key: pin_memory(value) for key, value in self.info.items()}
         return self
 
