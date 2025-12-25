@@ -61,13 +61,41 @@ class GenerativeRewardModelVL(nn.Module):
             else:
                 dschf = None
 
+            # Check if model is Qwen2.5-VL which doesn't support dtype parameter
+            # We can check by looking at the model path or config
+            from transformers import AutoConfig
+            try:
+                config = AutoConfig.from_pretrained(pretrain_or_model, trust_remote_code=True)
+                is_qwen_vl = "qwen" in config.model_type.lower() and "vl" in config.model_type.lower()
+            except:
+                # If we can't load config, assume it might be Qwen2.5-VL if path contains qwen
+                is_qwen_vl = "qwen" in pretrain_or_model.lower() and ("vl" in pretrain_or_model.lower() or "vision" in pretrain_or_model.lower())
+            
+            # Build base kwargs
+            load_kwargs = {
+                "trust_remote_code": True,
+                "attn_implementation": attn_implementation,
+            }
+            
+            if device_map is not None:
+                load_kwargs["device_map"] = device_map
+            
+            # Qwen2.5-VL doesn't support dtype parameter, so skip it for these models
+            if not is_qwen_vl:
+                if bf16:
+                    load_kwargs["dtype"] = torch.bfloat16
+                else:
+                    load_kwargs["dtype"] = "auto"
+            
+            # Load model
             self.model = AutoModelForVision2Seq.from_pretrained(
                 pretrain_or_model,
-                trust_remote_code=True,
-                attn_implementation=attn_implementation,
-                dtype=torch.bfloat16 if bf16 else "auto",
-                device_map=device_map,
+                **load_kwargs
             )
+            
+            # For Qwen2.5-VL, convert to bfloat16 manually if requested
+            if is_qwen_vl and bf16:
+                self.model = self.model.to(torch.bfloat16)
 
             # LoRA
             if lora_rank > 0:
