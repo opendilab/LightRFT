@@ -106,6 +106,10 @@ class ExperienceVL:
     pixel_values: Optional[torch.Tensor] = None  # image pixel processed by HF processor
     image_grid_thws: Optional[torch.Tensor] = None  # image grid thw
     raw_images: Optional[List[Image.Image]] = None  # raw images before processing
+    
+    pixel_values_videos: Optional[torch.Tensor] = None
+    video_grid_thws: Optional[torch.Tensor] = None
+    
     # InternVL image_info
     pixel_values_intern: Optional[torch.Tensor] = None
     image_flags: Optional[torch.Tensor] = None
@@ -139,6 +143,10 @@ class ExperienceVL:
             self.pixel_values = to(self.pixel_values, device)
         if self.image_grid_thws is not None:
             self.image_grid_thws = to(self.image_grid_thws, device)
+        if self.pixel_values_videos is not None:
+            self.pixel_values_videos = to(self.pixel_values_videos, device)
+        if self.video_grid_thws is not None:
+            self.video_grid_thws = to(self.video_grid_thws, device)
         if self.pixel_values_intern is not None:
             self.pixel_values_intern = to(self.pixel_values_intern, device)
             self.image_flags = to(self.image_flags, device)
@@ -165,6 +173,10 @@ class ExperienceVL:
             self.pixel_values = pin_memory(self.pixel_values)
         if self.image_grid_thws is not None:
             self.image_grid_thws = pin_memory(self.image_grid_thws)
+        if self.pixel_values_videos is not None:
+            self.pixel_values_videos = pin_memory(self.pixel_values_videos)
+        if self.video_grid_thws is not None:
+            self.video_grid_thws = pin_memory(self.video_grid_thws)
         if self.pixel_values_intern is not None:
             self.pixel_values_intern = pin_memory(self.pixel_values_intern)
             self.image_flags = pin_memory(self.image_flags)
@@ -247,6 +259,11 @@ class SamplesVL:
     pixel_values: Optional[torch.Tensor] = None  # image pixel processed by HF processor
     image_grid_thws: Optional[torch.Tensor] = None  # image grid thw
     raw_images: Optional[List[Image.Image]] = None  # raw image data list
+    
+    pixel_values_videos: Optional[torch.Tensor] = None
+    video_grid_thws: Optional[torch.Tensor] = None
+    raw_videos: Optional[List] = None
+    videos_num: Optional[List[int]] = None
 
     # InternVL image_info
     pixel_values_intern: Optional[torch.Tensor] = None

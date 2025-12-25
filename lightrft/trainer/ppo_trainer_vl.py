@@ -404,7 +404,14 @@ class PPOTrainerVL(ABC):
                 disable=not self.strategy.is_rank_0(),
             )
 
-            for rand_prompts, rand_images, rand_references, rand_labels in self.prompts_dataloader:
+            for batch in self.prompts_dataloader:
+                # Compatible with both image-only (4 args) and video (5 args) dataloaders
+                if len(batch) == 5:
+                    rand_prompts, rand_images, rand_videos, rand_references, rand_labels = batch
+                else:
+                    rand_prompts, rand_images, rand_references, rand_labels = batch
+                    rand_videos = None
+
                 # TODO: Remove debug print
                 self.strategy.print(
                     f"rand_prompts:\n {rand_prompts}\n , rand_images:{rand_images}\n , rand_references:{rand_references}\n, rand_labels:{rand_labels}\n "  # noqa
@@ -412,7 +419,12 @@ class PPOTrainerVL(ABC):
 
                 for i, experience in enumerate(
                     self.experience_maker.make_experience_list(
-                        rand_prompts, rand_images, rand_references, rand_labels, **self.generate_kwargs
+                        rand_prompts, 
+                        rand_images, 
+                        all_videos=rand_videos,
+                        all_references=rand_references, 
+                        all_labels=rand_labels, 
+                        **self.generate_kwargs
                     )
                 ):
                     if i == 0:
@@ -665,6 +677,8 @@ class PPOTrainerVL(ABC):
 
             pixel_values = experience.pixel_values
             image_grid_thws = experience.image_grid_thws
+            pixel_values_videos = getattr(experience, "pixel_values_videos", None)
+            video_grid_thws = getattr(experience, "video_grid_thws", None)
             image_flags = experience.image_flags
 
             old_action_log_probs = torch.cat(experience.action_log_probs, dim=0).unsqueeze(0)
@@ -680,6 +694,8 @@ class PPOTrainerVL(ABC):
 
             pixel_values = experience.pixel_values
             image_grid_thws = experience.image_grid_thws
+            pixel_values_videos = getattr(experience, "pixel_values_videos", None)
+            video_grid_thws = getattr(experience, "video_grid_thws", None)
             image_flags = experience.image_flags
 
             old_action_log_probs = experience.action_log_probs
@@ -705,6 +721,8 @@ class PPOTrainerVL(ABC):
             attention_mask=attention_mask,
             pixel_values=pixel_values,
             image_grid_thw=image_grid_thws,
+            pixel_values_videos=pixel_values_videos,
+            video_grid_thw=video_grid_thws,
             return_output=True,
             packed_seq_lens=packed_seq_lens,
             image_flags=image_flags,
@@ -904,6 +922,8 @@ class PPOTrainerVL(ABC):
         # Layer 3: Apply defensive device placement to all multimodal tensors
         pixel_values = ensure_device_and_contiguous(experience.pixel_values, "pixel_values")
         image_grid_thws = ensure_device_and_contiguous(experience.image_grid_thws, "image_grid_thws")
+        pixel_values_videos = ensure_device_and_contiguous(getattr(experience, "pixel_values_videos", None), "pixel_values_videos")
+        video_grid_thws = ensure_device_and_contiguous(getattr(experience, "video_grid_thws", None), "video_grid_thws")
         pixel_values_intern = ensure_device_and_contiguous(experience.pixel_values_intern, "pixel_values_intern")
         image_flags = ensure_device_and_contiguous(experience.image_flags, "image_flags")
 
@@ -935,6 +955,8 @@ class PPOTrainerVL(ABC):
             attention_mask=attention_mask,
             pixel_values=pixel_values,
             image_grid_thw=image_grid_thws,
+            pixel_values_videos=pixel_values_videos,
+            video_grid_thw=video_grid_thws,
             return_output=True,
             packed_seq_lens=packed_seq_lens,
             pixel_values_intern=pixel_values_intern,
@@ -1093,11 +1115,17 @@ class PPOTrainerVL(ABC):
         num_eval_batches = 0
 
         with torch.no_grad():
-            for eval_prompts, eval_images, eval_references, eval_labels in eval_dataloader:
+            for batch in eval_dataloader:
+                if len(batch) == 5:
+                    eval_prompts, eval_images, eval_videos, eval_references, eval_labels = batch
+                else:
+                    eval_prompts, eval_images, eval_references, eval_labels = batch
+                    eval_videos = None
+                
                 # Generate responses using experience maker (but don't train on them)
                 # We reuse the experience maker but only for generation
                 for experience in self.experience_maker.make_experience_list(
-                    eval_prompts, eval_images, eval_references, eval_labels, **self.generate_kwargs
+                    eval_prompts, eval_images, eval_videos, eval_references, eval_labels, **self.generate_kwargs
                 ):
                     # Extract metrics from experience
                     if hasattr(experience, 'info') and experience.info is not None:

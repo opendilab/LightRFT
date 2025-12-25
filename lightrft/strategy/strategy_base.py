@@ -799,30 +799,56 @@ class StrategyBase(ABC):
             raise ValueError(f"Unsupported engine type: {self.inference_engine_type}")
 
     @classmethod
-    def _build_multimodal_inputs(cls, all_prompts, all_images, images_num):
+    def _build_multimodal_inputs(cls, all_prompts, all_images, images_num, all_videos, videos_num):
         """
         In this function, we build multimodal inputs for inference engine.
         """
         inputs = []
         img_start_idx = 0
+        vid_start_idx = 0
         for i, prompt in enumerate(all_prompts):
-            img_num = images_num[i]
-            img_list = all_images[img_start_idx:img_start_idx + img_num]
-            if img_list is None or len(img_list) == 0 or img_list[0] is None:
+            img_num = images_num[i] if images_num is not None else 0
+            vid_num = videos_num[i] if videos_num is not None else 0
+            
+            # If all_images[i] is already a list of images for this prompt, use it directly.
+            # Otherwise, assume it's a flattened list and slice it.
+            if all_images is not None:
+                if i < len(all_images) and isinstance(all_images[i], list) and len(all_images[i]) == img_num:
+                    img_list = all_images[i]
+                else:
+                    img_list = all_images[img_start_idx:img_start_idx + img_num]
+            else:
+                img_list = []
+
+            if all_videos is not None:
+                if i < len(all_videos) and isinstance(all_videos[i], list) and len(all_videos[i]) == vid_num:
+                    vid_list = all_videos[i]
+                else:
+                    vid_list = all_videos[vid_start_idx:vid_start_idx + vid_num]
+            else:
+                vid_list = []
+            
+            multi_modal_data = {}
+            if len(img_list) > 0 and img_list[0] is not None:
+                multi_modal_data["image"] = img_list
+            if len(vid_list) > 0 and vid_list[0] is not None:
+                multi_modal_data["video"] = vid_list
+
+            if not multi_modal_data:
                 # remove the vision start and end tokens for data after apply chat template.
                 # Use regex to handle multiple <|image_pad|> tokens (e.g., for high-res images)
                 prompt = re.sub(r'<\|vision_start\|>(<\|image_pad\|>)+<\|vision_end\|>', '', prompt)
+                prompt = re.sub(r'<\|vision_start\|>(<\|video_pad\|>)+<\|vision_end\|>', '', prompt)
                 inputs.append({
                     "prompt": prompt,
                 })
             else:
                 inputs.append({
                     "prompt": prompt,
-                    "multi_modal_data": {
-                        "image": img_list
-                    },
+                    "multi_modal_data": multi_modal_data,
                 })
             img_start_idx += img_num
+            vid_start_idx += vid_num
         return inputs
 
     def gather_and_generate(
@@ -833,6 +859,8 @@ class StrategyBase(ABC):
         all_images=None,
         sleep_engine=True,
         images_num=None,
+        all_videos=None,
+        videos_num=None,
     ):
         """
         1. Gather prompts within a vllm tp_group and do generation together.
@@ -848,11 +876,15 @@ class StrategyBase(ABC):
             raise NotImplementedError("Inference engine is not initialized.")
         self.wakeup_inference_engine()
 
-        is_multimodal = all_images is not None
+        is_multimodal = all_images is not None or all_videos is not None
 
         if is_multimodal:
             inputs = self._build_multimodal_inputs(
-                all_prompts=all_prompts, all_images=all_images, images_num=images_num
+                all_prompts=all_prompts, 
+                all_images=all_images, 
+                images_num=images_num,
+                all_videos=all_videos,
+                videos_num=videos_num,
             )
         else:
             inputs = all_prompt_token_ids
