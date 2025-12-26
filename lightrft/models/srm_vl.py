@@ -82,7 +82,7 @@ class ScalarRewardModelVL(nn.Module):
                 pretrain_or_model,
                 trust_remote_code=True,
                 attn_implementation=attn_implementation,
-                dtype=torch.bfloat16 if bf16 else "auto",
+                torch_dtype=torch.bfloat16 if bf16 else "auto",
                 device_map=device_map,
             )
 
