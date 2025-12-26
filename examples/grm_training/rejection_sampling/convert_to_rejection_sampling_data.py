@@ -21,11 +21,16 @@ def convert_to_rejection_sampling_format(
     """
     Convert filtered samples to rejection sampling training format.
     
-    Args:
-        filtered_samples_path: Path to filtered samples JSON file
-        output_path: Path to save converted training data
-        data_root: Root directory of the dataset (for image paths)
-        task_instruction_template: Template for task instruction
+    :param filtered_samples_path: Path to filtered samples JSON file
+    :type filtered_samples_path: str
+    :param output_path: Path to save converted training data
+    :type output_path: str
+    :param data_root: Root directory of the dataset (for image paths)
+    :type data_root: str
+    :param task_instruction_template: Template for task instruction
+    :type task_instruction_template: str, optional
+    :return: List of training data items in imagegen-cot-reward format
+    :rtype: List[Dict]
     """
     logger.info(f"Loading filtered samples from {filtered_samples_path}")
     

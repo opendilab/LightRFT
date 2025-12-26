@@ -10,10 +10,12 @@ import os
 import json
 import argparse
 import torch
+import torch.distributed as dist
 from tqdm import tqdm
 from typing import List, Dict
 from loguru import logger
 from torch.utils.data import DataLoader
+from torch.utils.data.distributed import DistributedSampler
 
 from lightrft.models import GenerativeRewardModelVL
 from transformers import AutoProcessor
@@ -55,38 +57,67 @@ def inference_and_filter(
     batch_size: int = 32,
     max_new_tokens: int = 2048,
     use_cot: bool = True,
+    local_rank: int = -1,
+    world_size: int = 1,
 ):
     """
     Perform inference on dataset and filter correctly predicted samples.
     
-    Args:
-        model_path: Path to the trained GRM model
-        data_path: List of dataset paths in format "source:path"
-        output_path: Path to save filtered samples
-        config: Configuration dict for dataset
-        batch_size: Batch size for inference
-        max_new_tokens: Maximum tokens to generate
-        use_cot: Whether to use CoT instruction (for generating reasoning)
+    :param model_path: Path to the trained GRM model
+    :type model_path: str
+    :param data_path: List of dataset paths in format "source:path"
+    :type data_path: List[str]
+    :param output_path: Path to save filtered samples
+    :type output_path: str
+    :param config: Configuration dict for dataset
+    :type config: dict, optional
+    :param batch_size: Batch size for inference
+    :type batch_size: int
+    :param max_new_tokens: Maximum tokens to generate
+    :type max_new_tokens: int
+    :param use_cot: Whether to use CoT instruction (for generating reasoning)
+    :type use_cot: bool
+    :param local_rank: Local rank for distributed inference (-1 for single GPU)
+    :type local_rank: int
+    :param world_size: World size for distributed inference (1 for single GPU)
+    :type world_size: int
+    :return: List of correctly predicted samples with their generated text and reasoning
+    :rtype: List[Dict]
     """
+    # Initialize distributed training if needed
+    use_distributed = local_rank >= 0 and world_size > 1
+    if use_distributed:
+        dist.init_process_group(backend='nccl')
+        torch.cuda.set_device(local_rank)
+        device = torch.device(f'cuda:{local_rank}')
+        logger.info(f"Using distributed inference: rank {local_rank}/{world_size} on device {device}")
+    else:
+        device = None
+    
     logger.info(f"Loading model from: {model_path}")
     
     # Load Model
     # Note: Qwen2.5-VL doesn't support dtype parameter, so we disable flash attention
     # and handle dtype conversion manually in the model class
     if torch.cuda.is_available():
-        num_gpus = torch.cuda.device_count()
-        logger.info(f"Found {num_gpus} GPU(s)")
-        
-        # Use DataParallel if multiple GPUs are available
-        if num_gpus > 1:
-            device = "cuda"
-            use_data_parallel = True
-            logger.info(f"Using DataParallel with {num_gpus} GPUs")
-        else:
-            device = f"cuda:{torch.cuda.current_device()}"
+        if use_distributed:
+            num_gpus = world_size
+            logger.info(f"Using distributed inference with {num_gpus} GPU(s)")
             use_data_parallel = False
+        else:
+            num_gpus = torch.cuda.device_count()
+            logger.info(f"Found {num_gpus} GPU(s)")
+            
+            # Use DataParallel if multiple GPUs are available
+            if num_gpus > 1:
+                device = torch.device("cuda:0")  # Use first GPU as main device
+                use_data_parallel = True
+                logger.info(f"Using DataParallel with {num_gpus} GPUs")
+            else:
+                device = torch.device(f"cuda:{torch.cuda.current_device()}")
+                use_data_parallel = False
     else:
-        device = "cpu"
+        device = torch.device("cpu")
         use_data_parallel = False
     
     model = GenerativeRewardModelVL(
@@ -104,10 +135,19 @@ def inference_and_filter(
     # Move model to device
     model.model = model.model.to(device)
     
-    # Use DataParallel for multi-GPU inference
+    # Use DataParallel for multi-GPU inference (non-distributed)
     if use_data_parallel:
         model.model = torch.nn.DataParallel(model.model)
         logger.info("Model wrapped with DataParallel")
+    elif use_distributed:
+        # For distributed inference, wrap with DDP
+        model.model = torch.nn.parallel.DistributedDataParallel(
+            model.model,
+            device_ids=[local_rank],
+            output_device=local_rank,
+            find_unused_parameters=False
+        )
+        logger.info(f"Model wrapped with DistributedDataParallel on rank {local_rank}")
     
     model.eval()
 
@@ -124,16 +164,38 @@ def inference_and_filter(
         is_training=False,
     )
 
-    # Reduce batch size if it's too large to avoid OOM
-    # For Qwen2.5-VL with images, smaller batch size is recommended
-    effective_batch_size = min(batch_size, 4)  # Limit to 4 for safety
-    if batch_size > effective_batch_size:
-        logger.warning(f"Reducing batch size from {batch_size} to {effective_batch_size} to avoid OOM")
+    # Adjust batch size based on available GPUs
+    # For distributed inference, batch_size is per GPU
+    # For single GPU with DataParallel, batch_size is total across all GPUs
+    if use_distributed:
+        # In distributed mode, batch_size is already per GPU
+        effective_batch_size = batch_size
+        logger.info(f"Using batch size {effective_batch_size} per GPU (distributed mode)")
+    else:
+        # For single GPU or DataParallel, use the provided batch_size
+        # DataParallel will automatically split across GPUs
+        effective_batch_size = batch_size
+        logger.info(f"Using batch size {effective_batch_size} (single GPU or DataParallel mode)")
+    
+    # Use DistributedSampler for distributed inference
+    if use_distributed:
+        sampler = DistributedSampler(
+            dataset,
+            num_replicas=world_size,
+            rank=local_rank,
+            shuffle=False,
+            drop_last=False
+        )
+        shuffle = False
+    else:
+        sampler = None
+        shuffle = False
     
     data_loader = DataLoader(
         dataset,
         batch_size=effective_batch_size,
-        shuffle=False,
+        shuffle=shuffle,
+        sampler=sampler,
         drop_last=False,
         pin_memory=False,  # Disable pin_memory to save memory
         collate_fn=dataset.collate_fn,
@@ -154,10 +216,12 @@ def inference_and_filter(
         try:
             ids, mask, pixel_values, image_grid_thws, pixel_values_videos, video_grid_thws, labels, extras = batch
             
-            # Ensure device is a string for .to() method
+            # Ensure device is correct for .to() method
             # For DataParallel, use "cuda" to let it handle device placement
             if use_data_parallel:
                 device_str = "cuda"
+            elif use_distributed:
+                device_str = device
             else:
                 device_str = str(device) if isinstance(device, torch.device) else device
             
@@ -175,8 +239,13 @@ def inference_and_filter(
             # Generate with unified max_new_tokens
             # Use torch.cuda.amp for mixed precision to save memory
             with torch.cuda.amp.autocast(enabled=True, dtype=torch.bfloat16):
-                # Handle DataParallel wrapper
-                model_to_use = model.model.module if isinstance(model.model, torch.nn.DataParallel) else model.model
+                # Handle DataParallel and DDP wrapper
+                if isinstance(model.model, torch.nn.DataParallel):
+                    model_to_use = model.model.module
+                elif isinstance(model.model, torch.nn.parallel.DistributedDataParallel):
+                    model_to_use = model.model.module
+                else:
+                    model_to_use = model.model
                 gen_ids = model_to_use.generate(
                     input_ids=ids,
                     attention_mask=mask,
@@ -276,27 +345,56 @@ def inference_and_filter(
             torch.cuda.empty_cache()
             raise
 
+    # Gather results from all processes if using distributed inference
+    if use_distributed:
+        # Gather all correct_samples from all processes
+        gather_list = [None] * world_size
+        dist.all_gather_object(gather_list, correct_samples)
+        
+        # Flatten the list (only on rank 0)
+        if local_rank == 0:
+            correct_samples = [item for sublist in gather_list for item in sublist]
+        
+        # Gather statistics using tensors
+        total_samples_tensor = torch.tensor([total_samples], dtype=torch.long, device=device)
+        correct_count_tensor = torch.tensor([correct_count], dtype=torch.long, device=device)
+        dist.all_reduce(total_samples_tensor, op=dist.ReduceOp.SUM)
+        dist.all_reduce(correct_count_tensor, op=dist.ReduceOp.SUM)
+        total_samples = int(total_samples_tensor.item())
+        correct_count = int(correct_count_tensor.item())
+        
+        # Only rank 0 continues to save results
+        if local_rank != 0:
+            if use_distributed:
+                dist.destroy_process_group()
+            return correct_samples
+    
     # Summary
     accuracy = correct_count / total_samples if total_samples > 0 else 0.0
     logger.info(f"Inference completed. Accuracy: {accuracy*100:.2f}% ({correct_count}/{total_samples})")
     logger.info(f"Filtered {len(correct_samples)} correct samples for rejection sampling training")
 
-    # Save filtered samples
-    os.makedirs(os.path.dirname(output_path), exist_ok=True)
-    with open(output_path, 'w', encoding='utf-8') as f:
-        json.dump(correct_samples, f, indent=2, ensure_ascii=False)
+    # Save filtered samples (only on rank 0 for distributed)
+    if not use_distributed or local_rank == 0:
+        os.makedirs(os.path.dirname(output_path), exist_ok=True)
+        with open(output_path, 'w', encoding='utf-8') as f:
+            json.dump(correct_samples, f, indent=2, ensure_ascii=False)
+        
+        logger.info(f"Saved {len(correct_samples)} correct samples to {output_path}")
+        
+        # Save statistics
+        stats_path = output_path.replace('.json', '_stats.txt')
+        with open(stats_path, 'w', encoding='utf-8') as f:
+            f.write(f"Dataset paths: {data_path}\n")
+            f.write(f"Model path: {model_path}\n")
+            f.write(f"Total samples: {total_samples}\n")
+            f.write(f"Correct samples: {correct_count}\n")
+            f.write(f"Accuracy: {accuracy*100:.2f}%\n")
+            f.write(f"Filtered samples for training: {len(correct_samples)}\n")
     
-    logger.info(f"Saved {len(correct_samples)} correct samples to {output_path}")
-    
-    # Save statistics
-    stats_path = output_path.replace('.json', '_stats.txt')
-    with open(stats_path, 'w', encoding='utf-8') as f:
-        f.write(f"Dataset paths: {data_path}\n")
-        f.write(f"Model path: {model_path}\n")
-        f.write(f"Total samples: {total_samples}\n")
-        f.write(f"Correct samples: {correct_count}\n")
-        f.write(f"Accuracy: {accuracy*100:.2f}%\n")
-        f.write(f"Filtered samples for training: {len(correct_samples)}\n")
+    # Clean up distributed process group
+    if use_distributed:
+        dist.destroy_process_group()
     
     return correct_samples
 
@@ -311,7 +409,21 @@ if __name__ == "__main__":
     parser.add_argument("--use_cot", action="store_true", default=True, help="Use CoT instruction for reasoning")
     parser.add_argument("--task_instruction", type=str, default=TASK_INSTRUCTION_COT, help="Task instruction template")
     
+    # Distributed training arguments (set by torchrun)
+    parser.add_argument("--local_rank", type=int, default=-1, help="Local rank for distributed inference")
+    parser.add_argument("--world_size", type=int, default=1, help="World size for distributed inference")
+    
     args = parser.parse_args()
+    
+    # Get distributed settings from environment if available
+    local_rank = args.local_rank
+    world_size = args.world_size
+    
+    # Try to get from environment variables (set by torchrun)
+    if local_rank == -1:
+        local_rank = int(os.environ.get('LOCAL_RANK', -1))
+    if world_size == 1:
+        world_size = int(os.environ.get('WORLD_SIZE', 1))
     
     # Parse data path
     data_paths = [args.data_path] if isinstance(args.data_path, str) else args.data_path.split(",")
@@ -329,5 +441,7 @@ if __name__ == "__main__":
         batch_size=args.batch_size,
         max_new_tokens=args.max_new_tokens,
         use_cot=args.use_cot,
+        local_rank=local_rank,
+        world_size=world_size,
     )
 

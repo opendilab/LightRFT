@@ -110,7 +110,10 @@ echo ""
 echo "Step 1: Running inference and filtering correct samples..."
 echo "=========================================="
 
-python examples/grm_training/rejection_sampling/rejection_sampling_inference.py \
+# Use torchrun for distributed inference to utilize multiple GPUs
+torchrun --nnodes $NNODES --nproc-per-node $GPUS_PER_NODE \
+    --node_rank $NODE_RANK --master-port $MASTER_PORT --master-addr $MASTER_ADDR \
+    examples/grm_training/rejection_sampling/rejection_sampling_inference.py \
     --model_path ${MODEL_PATH} \
     --data_path ${DATA_PATH} \
     --output_path ${FILTERED_SAMPLES_PATH} \
