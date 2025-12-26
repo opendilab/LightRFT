@@ -89,12 +89,13 @@ class ImageGenCoTRewardHandler(BaseDataHandler):
                 "type": "image",
                 "image": image1
             }]
+        },{
+            "role": "assistant", 
+            "content": [{
+                "type": "text", 
+                "text": response
+            }]
         }]
-
-        # During evaluation, we do not include the response part in the messages
-        is_training = config.get("is_training", True)
-        if is_training:
-            messages.append({"role": "assistant", "content": response})
 
         other = {
             "source": item['source'],

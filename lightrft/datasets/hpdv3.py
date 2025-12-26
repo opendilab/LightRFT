@@ -198,11 +198,11 @@ class HPDv3GRMHandler(HPDv3Handler):
                 }]
             }
         ]
-        # During evaluation, we do not include the response part in the messages
-        is_training = config.get("is_training", True)
-        if is_training:
-            response = "<answer>Image 1 is better</answer>" if preference == "A" else "<answer>Image 2 is better</answer>"
-            messages.append({"role": "assistant", "content": response})
+
+        response = "<answer>Image 1 is better</answer>" if preference == "A" else "<answer>Image 2 is better</answer>"
+        messages.append({"role": "assistant", 
+                         "content": [{"type": "text", "text": response}]
+                         })
 
         other = {
             "preference": preference,
