@@ -158,7 +158,13 @@ class ActorVL(nn.Module):
 
     @torch.no_grad()
     def generate(
-        self, input_ids: torch.Tensor, pixel_values: torch.Tensor, image_grid_thw: torch.Tensor, **kwargs
+        self, 
+        input_ids: torch.Tensor, 
+        pixel_values: Optional[torch.Tensor] = None,
+        image_grid_thw: Optional[torch.Tensor] = None,
+        pixel_values_videos: Optional[torch.Tensor] = None,
+        video_grid_thw: Optional[torch.Tensor] = None,
+        **kwargs
     ) -> Union[Tuple[torch.LongTensor, torch.LongTensor], Tuple[torch.LongTensor, torch.LongTensor,
                                                                 torch.BoolTensor], ]:
         """
@@ -171,9 +177,13 @@ class ActorVL(nn.Module):
         :param input_ids: Input token IDs representing the text prompt
         :type input_ids: torch.Tensor
         :param pixel_values: Preprocessed pixel values of input images
-        :type pixel_values: torch.Tensor
+        :type pixel_values: Optional[torch.Tensor]
         :param image_grid_thw: Image grid dimensions (time, height, width)
-        :type image_grid_thw: torch.Tensor
+        :type image_grid_thw: Optional[torch.Tensor]
+        :param pixel_values_videos: Preprocessed pixel values of input videos
+        :type pixel_values_videos: Optional[torch.Tensor]
+        :param video_grid_thw: Video grid dimensions
+        :type video_grid_thw: Optional[torch.Tensor]
         :param kwargs: Additional generation parameters (top_k, top_p, temperature, etc.)
         :type kwargs: dict
 
@@ -195,6 +205,8 @@ class ActorVL(nn.Module):
             "input_ids": input_ids,
             "pixel_values": pixel_values,
             "image_grid_thw": image_grid_thw,
+            "pixel_values_videos": pixel_values_videos,
+            "video_grid_thw": video_grid_thw,
             "top_k": kwargs.get("top_k", None),
             "top_p": kwargs.get("top_p", None),
             "do_sample": kwargs.get("do_sample", True),
@@ -227,8 +239,10 @@ class ActorVL(nn.Module):
         sequences: torch.LongTensor,
         num_actions: Optional[Union[int, list[int]]] = None,
         attention_mask: Optional[torch.Tensor] = None,
-        pixel_values: torch.Tensor = None,
-        image_grid_thw: torch.Tensor = None,
+        pixel_values: Optional[torch.Tensor] = None,
+        image_grid_thw: Optional[torch.Tensor] = None,
+        pixel_values_videos: Optional[torch.Tensor] = None,
+        video_grid_thw: Optional[torch.Tensor] = None,
         return_output=False,
         ring_attn_group: Optional[dist.ProcessGroup] = None,
         packed_seq_lens: Optional[list[int]] = None,
@@ -249,9 +263,13 @@ class ActorVL(nn.Module):
         :param attention_mask: Attention mask for the sequences
         :type attention_mask: Optional[torch.Tensor]
         :param pixel_values: Preprocessed pixel values of input images
-        :type pixel_values: torch.Tensor
+        :type pixel_values: Optional[torch.Tensor]
         :param image_grid_thw: Image grid dimensions (time, height, width)
-        :type image_grid_thw: torch.Tensor
+        :type image_grid_thw: Optional[torch.Tensor]
+        :param pixel_values_videos: Preprocessed pixel values of input videos
+        :type pixel_values_videos: Optional[torch.Tensor]
+        :param video_grid_thw: Video grid dimensions
+        :type video_grid_thw: Optional[torch.Tensor]
         :param return_output: Whether to return the full model output along with log probs
         :type return_output: bool
         :param ring_attn_group: Process group for ring attention (distributed training)
@@ -309,6 +327,8 @@ class ActorVL(nn.Module):
                 position_ids=position_ids,
                 pixel_values=pixel_values,
                 image_grid_thw=image_grid_thw,
+                pixel_values_videos=pixel_values_videos,
+                video_grid_thw=video_grid_thw,
             )
 
         if num_actions is None:  # defult

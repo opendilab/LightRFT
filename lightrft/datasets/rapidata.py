@@ -255,3 +255,150 @@ class RapidataI2VHandler(RapidataT2VHandler):
             "task_type": "t2v",  # Text-to-Video
         }
         return messages0, messages1, other
+
+
+class RapidataT2VPairHandler(RapidataT2VHandler):
+    """
+    Data Handler for Rapidata text-to-video human preferences dataset in pairwise format.
+    """
+    def __init__(self):
+        super().__init__()
+    
+    def parse_item(self, 
+                   item: Dict[str, Any], 
+                   media_content: Dict[str, Any], 
+                   config: Dict[str, Any]
+                   ) -> Tuple[List[Dict], List[Dict], Dict]:
+        
+        video1 = media_content['video1']
+        video2 = media_content['video2']
+
+        if not all([video1, video2]):
+            raise ValueError(f"Missing visual content for 'video1' or 'video2'.")
+
+        # Get generation prompt from data item
+        video_gen_prompt = item["prompt"]
+
+        # Get system prompts from config
+        task_instruction_template = config["task_instruction"]
+        task_instruction = task_instruction_template.format(prompt=video_gen_prompt)
+
+        # Get FPS from config
+        fps = config["video_fps"]
+
+        # Build messages
+        messages = [
+        {
+            "role": "system", 
+            "content": [{"type": "text", "text": task_instruction}]
+        },
+        {
+            "role": "user",
+            "content": [
+                {"type": "text", "text": "The following is the first video."},
+                {"type": "video", "video": video1, "fps": fps, "max_pixels": 720 * 480},
+                
+                {"type": "text", "text": "The following is the second video."},
+                {"type": "video", "video": video2, "fps": fps, "max_pixels": 720 * 480},
+                ]
+            }
+        ]
+        
+        # Get human preference labels based on weighted scores
+        pref_label = self._get_label(
+            item['weighted_results1_Preference'], 
+            item['weighted_results2_Preference']
+        )
+        cohe_label = self._get_label(
+            item['weighted_results1_Coherence'], 
+            item['weighted_results2_Coherence']
+        )
+        align_label = self._get_label(
+            item['weighted_results1_Alignment'], 
+            item['weighted_results2_Alignment']
+        )
+            
+        other = {
+            "preference": pref_label,
+            "coherence": cohe_label,
+            "alignment": align_label,
+            "source": item['source'],
+            "task_type": "t2v", # Text-to-Video
+        }
+        return messages, other
+
+
+class RapidataI2VPairHandler(RapidataI2VHandler):
+    """
+    Data Handler for Rapidata image-to-video human preferences dataset in pairwise format.
+    """
+    def __init__(self):
+        super().__init__()
+    
+    def parse_item(self, 
+                   item: Dict[str, Any], 
+                   media_content: Dict[str, Any], 
+                   config: Dict[str, Any]
+                   ) -> Tuple[List[Dict], List[Dict], Dict]:
+        
+        video1 = media_content['video1']
+        video2 = media_content['video2']
+        init_image = media_content['init_image']
+
+        if not all([video1, video2, init_image]):
+            raise ValueError("Missing visual content for 'video1' or 'video2' or 'init_image'.")
+
+        # Get generation prompt from data item
+        prompt_text = item["prompt"]
+
+        # Get system prompts from config
+        task_instruction_template = config["task_instruction"]
+        task_instruction = task_instruction_template.format(prompt=prompt_text)
+
+        # Get FPS from config
+        fps = config["video_fps"]
+        max_pixels = config.get("max_image_pixels", 720 * 480)
+
+        # Build messages
+        messages = [
+        {
+            "role": "system", 
+            "content": [{"type": "text", "text": task_instruction}]
+        },
+        {
+            "role": "user",
+            "content": [
+                {"type": "text", "text": "Reference Image:"},
+                {"type": "image", "image": init_image, "max_pixels": max_pixels},
+                
+                {"type": "text", "text": "The following is the first video."},
+                {"type": "video", "video": video1, "fps": fps, "max_pixels": max_pixels},
+                
+                {"type": "text", "text": "The following is the second video."},
+                {"type": "video", "video": video2, "fps": fps, "max_pixels": max_pixels},
+                ]
+            }
+        ]
+        
+        # Get human preference labels based on weighted scores
+        pref_label = self._get_label(
+            item['weighted_results1_Preference'], 
+            item['weighted_results2_Preference']
+        )
+        cohe_label = self._get_label(
+            item['weighted_results1_Coherence'], 
+            item['weighted_results2_Coherence']
+        )
+        align_label = self._get_label(
+            item['weighted_results1_Alignment'], 
+            item['weighted_results2_Alignment']
+        )
+            
+        other = {
+            "preference": pref_label,
+            "coherence": cohe_label,
+            "alignment": align_label,
+            "source": item['source'],
+            "task_type": "t2v", # Text-to-Video
+        }
+        return messages, other
