@@ -9,9 +9,16 @@ SPHINXLIVE    = sphinx-autobuild
 SOURCEDIR     = source
 BUILDDIR      = build
 
+# Parallel build option - use all available CPU cores for faster incremental builds
+# Set to 'auto' to use all available cores, or specify a number (e.g., '4')
+# Incremental builds are enabled by default (Sphinx caches doctrees)
+PARALLEL      ?= auto
+
 # Put it first so that "make" without argument is like "make help".
 help:
 	@$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
+docs:
+	@$(SPHINXBUILD) -j $(PARALLEL) -M html "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 live:
 	@$(SPHINXLIVE) "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 

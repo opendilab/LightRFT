@@ -7,29 +7,23 @@ This section provides comprehensive guides, best practices, and resources for us
 
 .. toctree::
    :maxdepth: 2
-   :caption: Training Strategies
+   :caption: Core Modules & Concepts
 
-    strategy_usage
-    reward_model_training_zh
-    reward_model_training_en
+   model
+   reward_model
+   strategy
 
 .. toctree::
    :maxdepth: 2
-   :caption: Reference & Resources
+   :caption: Design Philosophy
 
-   faq
-   troubleshooting
-   model_testing
-   contributing
-
-Additional Resources
---------------------
-
-Design Philosophy
-~~~~~~~~~~~~~~~~~
+   strategy_design_philosophy
 
 .. toctree::
    :maxdepth: 1
+   :caption: Other Resources
 
-   strategy_design_philosophy
-   models
+   model_testing
+   faq
+   troubleshooting
+   contributing

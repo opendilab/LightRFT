@@ -26,11 +26,9 @@ for modname in modnames:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = 'LightRFT'
-# copyright = '2025, OpenDILab'
-# author = 'OpenDILab'
-copyright = ''
-author = ''
-release = 'v0.0.1'
+copyright = '2025, OpenDILab'
+author = 'OpenDILab'
+release = 'v0.1.1'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
@@ -68,6 +66,22 @@ myst_enable_extensions = [
 templates_path = ['_templates']
 exclude_patterns = []
 
+# -- Incremental build configuration -----------------------------------------
+# Sphinx supports incremental builds by default through doctree caching.
+# The following settings optimize incremental compilation:
+
+# Keep doctrees for incremental builds (default: True)
+# This enables Sphinx to only rebuild changed files
+keep_warnings = False  # Don't keep warnings in output for cleaner builds
+
+# Nitpicky mode - set to False for faster incremental builds
+# Set to True if you want strict checking of all references
+nitpicky = False
+nitpick_ignore = []
+
+# Parallel build support (set via -j option in Makefile)
+# Sphinx will automatically use parallel builds if available
+
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
@@ -78,38 +92,16 @@ html_theme = 'pytorch_sphinx_theme'
 html_theme_path = [pytorch_sphinx_theme.get_html_theme_path()]
 html_static_path = ['_static']
 html_css_files = ['css/readthedocs.css']
+rtd_lang = 'en'
 
 html_theme_options = {
-    # The target url that the logo directs to. Unset to do nothing
-    'logo_url': 'https://mmocr.readthedocs.io/en/latest/',
-    # "menu" is a list of dictionaries where you can specify the content and the
-    # behavior of each item in the menu. Each item can either be a link or a
-    # dropdown menu containing a list of links.
+    'logo': 'logo.png',
+    'logo_url':
+    'https://di-engine-docs.readthedocs.io/{}/latest/'.format(rtd_lang),
     'menu': [
-        # A link
         {
             'name': 'GitHub',
-            'url': 'https://github.com/open-mmlab/'
-        },
-        # A dropdown menu
-        {
-            'name': 'Projects',
-            'children': [
-                # A vanilla dropdown item
-                {
-                    'name': 'MMCV',
-                    'url': 'https://github.com/open-mmlab/mmcv',
-                },
-                # A dropdown item with a description
-                {
-                    'name': 'MMDetection',
-                    'url': 'https://github.com/open-mmlab/mmdetection',
-                    'description': 'Object detection toolbox and benchmark'
-                },
-            ],
-            # Optional, determining whether this dropdown menu will always be
-            # highlighted.
-            'active': True,
+            'url': 'https://github.com/opendilab/LightRFT'
         },
     ],
     # For shared menu: If your project is a part of OpenMMLab's project and
@@ -119,6 +111,34 @@ html_theme_options = {
     # strings will fall back to 'en'.
     'menu_lang':
         'en',
+}
+
+# -- Sidebar configuration -----------------------------------------
+# Control which sidebar components are shown on each page
+# Format: {document_pattern: [sidebar_templates]}
+# 
+# Common sidebar templates:
+#   - 'globaltoc.html': Global table of contents (navigation tree)
+#   - 'localtoc.html': Local table of contents (current page headings)
+#   - 'relations.html': Previous/Next page navigation
+#   - 'sourcelink.html': Link to source code
+#   - 'searchbox.html': Search box
+#
+# Use '**' to match all documents, or specific patterns like 'index', 'api/*', etc.
+#
+# For pytorch_sphinx_theme, the default sidebar includes navigation.
+# You can customize it per page type if needed.
+html_sidebars = {
+    # Default sidebar for all pages
+    '**': [
+        'globaltoc.html',  # Main navigation tree (controlled by toctree maxdepth)
+        'localtoc.html',   # Current page's table of contents
+        'relations.html',  # Previous/Next navigation
+        'sourcelink.html', # Source code link
+        'searchbox.html',  # Search box
+    ],
+    # Customize sidebar for specific pages if needed
+    # 'index': ['globaltoc.html', 'searchbox.html'],  # Example: simpler sidebar for index
 }
 
 # Ignore >>> when copying code

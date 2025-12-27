@@ -2,7 +2,7 @@
 
 LightRFT supports a rich ecosystem of reinforcement learning algorithms for fine-tuning large language models. This comprehensive guide provides algorithm details and implementation references.
 
-## Purpose of This Guide
+### Purpose of This Guide
 
 With the rapid development in the RFT field and emerging algorithmic innovations, this guide helps you:
 
@@ -11,7 +11,7 @@ With the rapid development in the RFT field and emerging algorithmic innovations
 3. **Plan integration** of multiple algorithms by identifying synergies or conflicts
 4. **Maintain clarity** through documented relationships between algorithms and components
 
-## Algorithm Overview with Implementation
+### Algorithm Overview with Implementation
 
 | Algorithm | Type | Module | Description | Implementation | Paper |
 |-----------|------|--------|-------------|----------------|-------|
@@ -28,19 +28,19 @@ With the rapid development in the RFT field and emerging algorithmic innovations
 | **Reward Norm/Clip** | Reward Processing | Reward Processing | Applies reward normalization and clipping to stabilize advantage computation | `FastExperienceMaker._get_return_advs()` | [GitHub](https://github.com/alibaba/ROLL) |
 | **select_high_entropy_tokens** | Policy Optimization | Policy Loss | Modifies PolicyLoss to implement high entropy token selection during training |  `PolicyLoss.forward()` | [arXiv:2506.01939](https://arxiv.org/abs/2506.01939) |
 
-## Algorithm Architecture
+### Algorithm Architecture
 
-### Core Training Components
+#### Core Training Components
 
 LightRFT's algorithm implementations are organized around three main modules:
 
-#### 1. Policy Loss Computation (`lightrft/trainer/ppo_loss.py`)
+##### 1. Policy Loss Computation (`lightrft/trainer/ppo_loss.py`)
 - **Purpose**: Implements PPO policy loss with multiple surrogate objectives
 - **Key Method**: `forward(log_probs, old_log_probs, advantages, action_mask)`
 - **Affected by**: GSPO, GMPO, Dr.GRPO, DAPO, Token-Level Policy, select_high_entropy_tokens
 - **Modification Type**: Loss function design and token selection strategies
 
-#### 2. Experience Generation (`lightrft/trainer/fast_exp_maker.py`)
+##### 2. Experience Generation (`lightrft/trainer/fast_exp_maker.py`)
 - **Purpose**: Generates experiences using vLLM and other inference backends
 - **Key Methods**:
   - `generate_samples()`: Sample generation with various strategies
@@ -48,13 +48,13 @@ LightRFT's algorithm implementations are organized around three main modules:
 - **Affected by**: FIRE Sampling
 - **Modification Type**: Sampling strategies and inference optimization
 
-#### 3. Advantage & Reward Processing (`lightrft/trainer/fast_exp_maker.py`)
+##### 3. Advantage & Reward Processing (`lightrft/trainer/fast_exp_maker.py`)
 - **Purpose**: Processes rewards and computes advantages for policy updates
 - **Key Method**: `_get_return_advs()`: Advantage estimation with various baselines
 - **Affected by**: GRPO, REINFORCE++, CPGD, PF-PPO, Reward Norm/Clip
 - **Modification Type**: Advantage estimation methods and reward shaping
 
-### Modification Types
+#### Modification Types
 
 **Algorithmic Changes**:
 - **Loss Design**: Core objective function modifications
@@ -68,9 +68,9 @@ LightRFT's algorithm implementations are organized around three main modules:
 - **Parameter Tuning**: Hyperparameter adjustments
 - **Pipeline Integration**: New components or workflow changes
 
-## Policy Optimization Algorithms
+### Policy Optimization Algorithms
 
-### GRPO (Group Reinforcement Policy Optimization)
+#### GRPO (Group Reinforcement Policy Optimization)
 
 **Overview**: GRPO uses group-based normalization for advantage estimation, providing stable training without requiring a separate value network.
 
@@ -98,7 +98,7 @@ python train.py \
 
 ---
 
-### GSPO (Generalized Surrogate Policy Optimization)
+#### GSPO (Generalized Surrogate Policy Optimization)
 
 **Overview**: GSPO generalizes the PPO objective with flexible surrogate functions, allowing for better control over policy updates.
 
@@ -124,7 +124,7 @@ python train.py \
 
 ---
 
-### GMPO (Generalized Mirror Policy Optimization)
+#### GMPO (Generalized Mirror Policy Optimization)
 
 **Overview**: GMPO leverages mirror descent principles for policy optimization, providing theoretical guarantees and improved convergence.
 
@@ -149,7 +149,7 @@ python train.py \
 
 ---
 
-### Dr.GRPO (Debiased Reward GRPO)
+#### Dr.GRPO (Debiased Reward GRPO)
 
 **Overview**: Dr.GRPO addresses length bias in reward models by explicitly modeling and mitigating the reward-length correlation.
 
@@ -176,7 +176,7 @@ python train.py \
 
 ---
 
-### DAPO (Decoupled Clip and Dynamic sAmpling Policy Optimization)
+#### DAPO (Decoupled Clip and Dynamic sAmpling Policy Optimization)
 
 **Overview**: DAPO uses separate upper and lower clipping bounds for advantage-weighted policy updates combined with dynamic sampling strategies, improving training stability.
 
@@ -204,7 +204,7 @@ python train.py \
 
 ---
 
-### Token-Level Policy
+#### Token-Level Policy
 
 **Overview**: Optimizes policy at token granularity to improve stability and credit assignment.
 
@@ -218,9 +218,9 @@ python train.py \
 
 **Usage**: Typically combined with other policy optimization methods through implementation modifications.
 
-## Advantage Estimation Methods
+### Advantage Estimation Methods
 
-### REINFORCE++
+#### REINFORCE++
 
 **Overview**: An improved baseline estimation method that uses control variates to reduce variance in policy gradient estimates.
 
@@ -246,7 +246,7 @@ python train.py \
 
 ---
 
-### CPGD (Constrained Policy Gradient Descent)
+#### CPGD (Constrained Policy Gradient Descent)
 
 **Overview**: CPGD constrains policy updates using KL-divergence to prevent catastrophic forgetting and maintain stable training.
 
@@ -271,9 +271,9 @@ python train.py \
 - Preserving original capabilities
 - Multi-stage training
 
-## Reward Processing
+### Reward Processing
 
-### PF-PPO (Policy Filtered PPO)
+#### PF-PPO (Policy Filtered PPO)
 
 **Overview**: PF-PPO filters unreliable rewards based on statistical measures, improving robustness to reward model errors.
 
@@ -300,7 +300,7 @@ python train.py \
 
 ---
 
-### Reward Normalization and Clipping
+#### Reward Normalization and Clipping
 
 **Overview**: Standard reward preprocessing techniques to stabilize training.
 
@@ -326,9 +326,9 @@ python train.py \
 - Reward scale varies across prompts
 - Training stability
 
-## Sampling Strategies
+### Sampling Strategies
 
-### FIRE Sampling
+#### FIRE Sampling
 
 **Overview**: FIRE (Filtered and Improved Reward Estimation) combines filtering and ranking strategies for better sample selection.
 
@@ -355,7 +355,7 @@ python train.py \
 
 
 
-## Implementation Notes
+### Implementation Notes
 
 - All policy loss algorithms modify the **PolicyLoss** module's `forward()` method
 - Advantage estimation algorithms modify **FastExperienceMaker**'s `_get_return_advs()` method
@@ -363,7 +363,7 @@ python train.py \
 - Reward processing algorithms primarily work within `_get_return_advs()` method
 - Most modifications are in core training loop components rather than peripheral utilities
 
-## References
+### References
 
 For detailed algorithm descriptions and experimental results, refer to the linked papers. Implementation details can be found in the source code:
 - Policy Loss: `lightrft/models/loss.py`
