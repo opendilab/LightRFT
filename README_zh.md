@@ -78,8 +78,8 @@
 | 算法 | 类型 | 主要改进 | 论文链接 |
 |------|------|----------|---------|
 | **GRPO** | Policy Optimization | 组归一化优势估计 |  [arXiv:2402.03300](https://arxiv.org/pdf/2402.03300)  |
-| **GSPO** | Policy Optimization | 广义替代目标 | [arXiv:2507.18071](https://arxiv.org/abs/2507.18071) |
-| **GMPO (WIP)** | Policy Optimization | 广义镜像策略优化 | [arXiv:2507.20673](https://arxiv.org/abs/2507.20673) |
+| **GSPO** | Policy Optimization | 组序列策略优化 | [arXiv:2507.18071](https://arxiv.org/abs/2507.18071) |
+| **GMPO (WIP)** | Policy Optimization | 几何平均策略优化 | [arXiv:2507.20673](https://arxiv.org/abs/2507.20673) |
 | **Dr.GRPO** | Policy Optimization | 缓解长度偏差 | [arXiv:2503.20783](https://arxiv.org/abs/2503.20783) |
 | **REINFORCE++** | Advantage Estimation | 改进基线估计 | [arXiv:2501.03262](https://arxiv.org/abs/2501.03262) |
 | **DAPO** | Policy Optimization | 解耦剪裁和动态采样策略优化 | [arXiv:2503.14476](https://arxiv.org/abs/2503.14476) |
@@ -428,8 +428,8 @@ pylint lightrft/
 
 - [ ] **更多算法支持**
   - Entropy-based token selection
-  - GMPO (Generalized Mirror Policy Optimization)
-  - GSPO (Generalized Surrogate Policy Optimization)
+  - GMPO (Geometric-Mean Policy Optimization)
+  - GSPO (Group Sequence Policy Optimization)
 
 - [ ] **Advantage 计算重构**
   - 优化 advantage estimation 模块架构
