@@ -6,6 +6,10 @@ leveraging PyTorch's distributed capabilities. It supports tensor parallelism fo
 model execution and provides methods for generating text, updating model weights, and
 managing memory resources.
 
+The module is designed to work with different versions of SGLang:
+- Supports both old and new Engine import paths
+- Compatible with various SGLang API changes across versions
+
 The module is designed to work with the SGLang runtime (srt) system and supports features
 such as batch processing, custom sampling parameters, and LoRA fine-tuning.
 """
@@ -17,17 +21,26 @@ import torch
 import torch.distributed as dist
 from sglang.srt.model_executor.model_runner import LocalSerializedTensor
 
+# Try multiple import paths for Engine to ensure compatibility across versions
 try:
-    from sglang.srt.server import Engine
-except ModuleNotFoundError:
-    from sglang import Engine
+    # Newer versions (v0.5.0+): Engine is in sglang.srt.entrypoints.engine
+    from sglang.srt.entrypoints.engine import Engine
+except (ModuleNotFoundError, ImportError):
+    try:
+        # Some versions: Engine might be in sglang.srt.server
+        from sglang.srt.server import Engine
+    except (ModuleNotFoundError, ImportError):
+        # Fallback: try sglang directly
+        from sglang import Engine
 
 from sglang.srt.utils import MultiprocessingSerializer, broadcast_pyobj
 from torch.distributed.tensor import DTensor
 from lightrft.strategy.utils.distributed_util import gather_inputs_object_for_inference
 
-# this line is necessary, it is used to avoid the memory occupation problem
-# this import will implicitly apply the release_memory_occupation and resume_memory_occupation into sglang
+# This line is necessary, it is used to avoid the memory occupation problem
+# This import will implicitly apply the release_memory_occupation and resume_memory_occupation into sglang
+# For new versions of sglang (v0.5.6.post2+), the methods are already built-in, so no patching occurs
+# For old versions, the methods will be monkey-patched into the Scheduler class
 from .sgl_model_saver import release_memory_occupation, resume_memory_occupation  # noqa
 
 
@@ -188,13 +201,24 @@ class RLGenerationEngine:
 
         if self._tp_size > 1:
             # Most naive implementation, can extract tensor and send via gloo if too slow
-            [output] = broadcast_pyobj(
-                data=[output],
-                rank=self._tp_rank,
-                dist_group=self.tp_group_cpu,
-                src=self._leader_rank,
-                # force_cpu_device=False,   # this requires sgl>=0.4.6
-            )
+            # Try to use force_cpu_device parameter if available (sglang>=0.4.6)
+            # Otherwise, fall back to calling without it for older versions
+            try:
+                [output] = broadcast_pyobj(
+                    data=[output],
+                    rank=self._tp_rank,
+                    dist_group=self.tp_group_cpu,
+                    src=self._leader_rank,
+                    force_cpu_device=True,
+                )
+            except TypeError:
+                # Older versions don't support force_cpu_device parameter
+                [output] = broadcast_pyobj(
+                    data=[output],
+                    rank=self._tp_rank,
+                    dist_group=self.tp_group_cpu,
+                    src=self._leader_rank,
+                )
             if gather_inputs:
                 num_per_rank = len(output) // self._tp_size
                 output = output[self._tp_rank * num_per_rank:(self._tp_rank + 1) * num_per_rank]
