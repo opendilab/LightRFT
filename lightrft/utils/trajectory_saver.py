@@ -381,61 +381,23 @@ class TrajectorySaver:
             # Calculate policy entropy from action_log_probs
             policy_entropy = 0.0
             try:
-                log_probs_tensor = None
-                
-                # Directly extract from exp object to get the raw tensor
                 if hasattr(exp, 'action_log_probs') and exp.action_log_probs is not None:
                     exp_action_log_probs = exp.action_log_probs.cpu()
+                    log_probs_tensor = None
                     
-                    # Handle different shapes
-                    if len(exp_action_log_probs.shape) == 0:
-                        # Scalar - cannot calculate entropy
-                        log_probs_tensor = None
-                    elif len(exp_action_log_probs.shape) == 1:
-                        # 1D tensor: (seq_len,) for single sample or (batch_size,) aggregated
-                        if batch_size == 1:
+                    # Handle different shapes - simplified based on actual usage patterns
+                    if len(exp_action_log_probs.shape) == 1:
+                        # 1D tensor: (seq_len,) for single sample
+                        if batch_size == 1 or exp_action_log_probs.shape[0] == action_mask.size(1):
                             log_probs_tensor = exp_action_log_probs
-                        elif exp_action_log_probs.shape[0] == action_mask.size(1):
-                            log_probs_tensor = exp_action_log_probs
-                        elif exp_action_log_probs.shape[0] == batch_size:
-                            log_probs_tensor = None  # Aggregated values - cannot calculate entropy
-                        else:
-                            # Try flattened batch format
-                            expected_len = action_mask.size(1) if action_mask.size(1) > 0 else sequences.size(1)
-                            if exp_action_log_probs.shape[0] == expected_len * batch_size:
-                                start_idx = i * expected_len
-                                end_idx = start_idx + expected_len
-                                log_probs_tensor = exp_action_log_probs[start_idx:end_idx]
-                            elif exp_action_log_probs.shape[0] > 1:
-                                log_probs_tensor = exp_action_log_probs
-                            else:
-                                log_probs_tensor = None
                     elif len(exp_action_log_probs.shape) == 2:
-                        # 2D tensor: (batch_size, seq_len) or (seq_len, vocab_size)
-                        if exp_action_log_probs.shape[0] == batch_size:
-                            log_probs_tensor = exp_action_log_probs[i] if i < exp_action_log_probs.shape[0] else None
-                        elif exp_action_log_probs.shape[1] > 100:
-                            # Full distribution (seq_len, vocab_size)
-                            if batch_size == 1:
-                                log_probs_tensor = exp_action_log_probs
-                            elif action_mask.size(1) > 0:
-                                input_len = sequences.size(1) - action_mask.size(1)
-                                offset = input_len - 1
-                                if offset < exp_action_log_probs.shape[0]:
-                                    end_idx = min(offset + action_mask.size(1), exp_action_log_probs.shape[0])
-                                    log_probs_tensor = exp_action_log_probs[offset:end_idx]
-                                else:
-                                    log_probs_tensor = None
-                            else:
-                                log_probs_tensor = None
-                        else:
-                            log_probs_tensor = None
-                    else:
-                        log_probs_tensor = None
-                
-                # Calculate entropy if we have a valid tensor
-                if log_probs_tensor is not None and log_probs_tensor.numel() > 1:
-                    policy_entropy = _calculate_entropy_from_log_probs(log_probs_tensor)
+                        # 2D tensor: (batch_size, seq_len)
+                        if exp_action_log_probs.shape[0] == batch_size and i < exp_action_log_probs.shape[0]:
+                            log_probs_tensor = exp_action_log_probs[i]
+                    
+                    # Calculate entropy if we have a valid tensor
+                    if log_probs_tensor is not None and log_probs_tensor.numel() > 1:
+                        policy_entropy = _calculate_entropy_from_log_probs(log_probs_tensor)
             except Exception:
                 # Silently fail - entropy calculation is optional
                 pass
