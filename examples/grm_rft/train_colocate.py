@@ -228,7 +228,8 @@ def train(args):
         processor,
         tokenizer, 
         strategy, 
-        args.prompt_max_len, 
+        args.prompt_max_len,
+        is_train=True,
         config={
             "task_instruction": args.system_prompt,
             "video_fps": args.fps,

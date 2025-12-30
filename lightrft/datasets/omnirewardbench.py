@@ -380,3 +380,154 @@ class OmniRewardBenchT2IGRMHandler(OmniRewardBenchT2IHandler):
             "model2": item['model2'],
         }
         return messages, other
+
+
+class OmniRewardBenchT2IPairHandler(OmniRewardBenchT2IHandler):
+    """
+    Data Handler for OmniRewardBench text-to-image human preferences benchmark.
+    Process for generative reward model on pair-wise ranking task.
+
+    Paper: https://huggingface.co/papers/2510.23451
+    Dataset Repo: https://huggingface.co/datasets/HongbangYuan/OmniRewardBench
+    """
+    def parse_item(self, item: Dict[str, Any], media_content: Dict[str, Any],
+                   config: Dict[str, Any]) -> Tuple[List[Dict], List[Dict], Dict]:
+
+        image1 = media_content['image1']
+        image2 = media_content['image2']
+
+        if not all([image1, image2]):
+            raise ValueError(f"Missing visual content for 'image1' or 'image2'.")
+
+        # Get generation prompt from data item
+        gen_prompt = item["prompt"]
+
+        # Get system prompts from config
+        task_instruction_template = config["task_instruction"]
+        task_instruction = task_instruction_template.format(prompt=gen_prompt)
+        criteria = item["criteria"]
+
+        # Build messages
+        messages = [
+            {
+                "role": "system",
+                "content": task_instruction
+            },
+            {
+                "role": "system",
+                "content": f"Please give your evaluation considering the following criteria: {criteria}."
+            },
+            {
+                "role": "user",
+                "content": [{
+                    "type": "text",
+                    "text": "**Image 1:**"
+                }, {
+                    "type": "image",
+                    "image": image1,
+                    "max_pixels": 1280 * 720
+                }]
+            },
+            {
+                "role": "user",
+                "content": [{
+                    "type": "text",
+                    "text": "**Image 2:**"
+                }, {
+                    "type": "image",
+                    "image": image2,
+                    "max_pixels": 1280 * 720
+                }]
+            },
+        ]
+
+        # Get human preference labels based on weighted scores
+        pref_label = self._get_label(item["criteria_preference"])
+
+        other = {
+            "preference": pref_label,
+            "criteria": item["criteria"],
+            "criteria_preference": item["criteria_preference"],
+            "id": item["id"],
+            "prompt": gen_prompt,
+            "source": item['source'],
+            "image1_path": item['response1_path'],
+            "image2_path": item['response2_path'],
+            "model1": item['model1'],
+            "model2": item['model2'],
+        }
+        return messages, other
+
+
+class OmniRewardBenchT2VPairHandler(OmniRewardBenchT2VHandler):
+    """
+    Data Handler for OmniRewardBench text-to-video human preferences benchmark.
+    Process for generative reward model on pair-wise ranking task.
+
+    Paper: https://huggingface.co/papers/2510.23451
+    Dataset Repo: https://huggingface.co/datasets/HongbangYuan/OmniRewardBench
+    """
+    def parse_item(self, item: Dict[str, Any], media_content: Dict[str, Any],
+                   config: Dict[str, Any]) -> Tuple[List[Dict], List[Dict], Dict]:
+
+        video1 = media_content['video1']
+        video2 = media_content['video2']
+
+        if not all([video1, video2]):
+            raise ValueError(f"Missing visual content for 'video1' or 'video2'.")
+
+        # Get generation prompt from data item
+        gen_prompt = item["prompt"]
+
+        # Get system prompts from config
+        task_instruction_template = config["task_instruction"]
+        task_instruction = task_instruction_template.format(prompt=gen_prompt)
+
+        # Get FPS and max_pixels from config
+        fps = config["video_fps"]
+        max_pixels = config.get("video_max_pixels", 720 * 480)
+
+        # Build messages
+        messages = [{
+            "role": "system",
+            "content": copy.deepcopy(task_instruction)
+        }, {
+            "role": "user",
+            "content": [{
+                "type": "text",
+                "text": "**Video 1:**"
+            }, {
+                "type": "video",
+                "video": video1,
+                "fps": fps,
+                "max_pixels": max_pixels
+            }]
+        },{
+            "role": "user",
+            "content": [{
+                "type": "text",
+                "text": "**Video 2:**"
+            }, {
+                "type": "video",
+                "video": video2,
+                "fps": fps,
+                "max_pixels": max_pixels
+            }]
+        }]
+
+        # Get human preference labels based on weighted scores
+        pref_label = self._get_label(item["criteria_preference"])
+
+        other = {
+            "preference": pref_label,
+            "criteria": item["criteria"],
+            "criteria_preference": item["criteria_preference"],
+            "id": item["id"],
+            "prompt": gen_prompt,
+            "source": item['source'],
+            "video1_path": item['response1'],
+            "video2_path": item['response2'],
+            "model1": item['model1'],
+            "model2": item['model2'],
+        }
+        return messages, other

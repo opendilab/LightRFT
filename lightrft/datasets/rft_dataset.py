@@ -12,7 +12,10 @@ from lightrft.datasets import (
     RapidataI2VPairHandler, 
     RapidataT2VPairHandler, 
     VideoGenRewardBenchPairHandler,
-    HPDv3PairHandler
+    HPDv3PairHandler,
+    ImageGenCoTRewardHandler,
+    OmniRewardBenchT2IPairHandler,
+    OmniRewardBenchT2VPairHandler,
 )
 
 
@@ -41,6 +44,9 @@ class RFTDatasetVL(Dataset):
     :param max_length: Maximum sequence length for tokenization/truncation.
         Defaults to 4096.
     :type max_length: int
+    :param is_train: Whether the dataset is used for training or evaluation.
+        Defaults to True.
+    :type is_train: bool
     :param config: Additional configuration options.
     :type config: Dict[str, Any]
     """
@@ -51,7 +57,8 @@ class RFTDatasetVL(Dataset):
             tokenizer: AutoTokenizer, 
             strategy = None,
             max_length: int = 4096, 
-            config: Dict[str, Any] = None
+            is_train: bool = True,
+            config: Dict[str, Any] = None,
         ):
         
         super().__init__()
@@ -59,6 +66,7 @@ class RFTDatasetVL(Dataset):
         self.tokenizer = tokenizer
         self.strategy = strategy
         self.max_length = max_length
+        self.is_train = is_train
         self.config = config if config else {}
 
         self.media_content_loader = load_multimodal_content
@@ -73,6 +81,10 @@ class RFTDatasetVL(Dataset):
             "rapidata-i2v": RapidataI2VPairHandler(),
             "rapidata-t2v": RapidataT2VPairHandler(),
             "videogen-rewardbench": VideoGenRewardBenchPairHandler(),
+            "hpdv3": HPDv3PairHandler(),
+            "imagegen-cot-reward-5k": ImageGenCoTRewardHandler(),
+            "omnirewardbench-t2i": OmniRewardBenchT2IPairHandler(),
+            "omnirewardbench-t2v": OmniRewardBenchT2VPairHandler(),
             "hpdv3": HPDv3PairHandler(),
         }
 
@@ -130,6 +142,11 @@ class RFTDatasetVL(Dataset):
         return input_text, image_inputs, video_inputs, reference, label
 
     def _prepare_inputs(self, messages):
+        if not self.is_train:
+            # For evaluation, we only need the input text without generation prompt
+            # Remove messages with role "assistant"
+            messages = [msg for msg in messages if msg["role"] != "assistant"]
+
         input_text = self.processor.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
         
         image_inputs, video_inputs = self.process_vision_info(messages, return_video_kwargs=False)
