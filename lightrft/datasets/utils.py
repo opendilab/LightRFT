@@ -173,6 +173,9 @@ def load_multimodal_content(media_info: Dict) -> Dict:
 
 
 class BaseDataHandler(ABC):
+    """
+    Base class for data handlers.
+    """
     @abstractmethod
     def load_data(self, path: str) -> List[Dict[str, Any]]:
         """
