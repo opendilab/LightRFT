@@ -64,13 +64,49 @@ class GPTLMLoss(nn.Module):
 
 class PolicyLoss(nn.Module):
     """
-    Policy Loss for PPO
+    Enhanced Policy Loss for PPO with multiple aggregation modes.
+    Supports Dr.GRPO's "seq-mean-token-sum-norm" mode and GSPO (Group Sequence Policy Optimization).
+    
+    This class implements the Proximal Policy Optimization (PPO) policy loss with support
+    for multiple aggregation strategies. It includes the specialized "seq-mean-token-sum-norm"
+    mode used in Dr.GRPO, which normalizes the total loss by the maximum number of tokens.
+    The class also supports GSPO mode, which uses sequence-level importance ratios and
+    optimization for improved stability, particularly effective for training large language
+    models and Mixture-of-Experts (MoE) models.
+    
+    References:
+        [1] Dr.GRPO: https://arxiv.org/pdf/2503.20783
+        [2] GSPO: https://arxiv.org/pdf/2507.18071
+        [3] GSPO Reference Implementation: https://github.com/vivekvar-dl/GSPO-DeepSeek-R1-Distill-Qwen-1.5B
     """
-    def __init__(self, clip_eps: float = 0.2, use_dapo: bool = False, use_cpg_loss: bool = False) -> None:
+    
+    VALID_MODES = ["token-mean", "seq-mean-token-sum", "seq-mean-token-mean", "seq-mean-token-sum-norm"]
+
+    def __init__(
+        self, 
+        clip_eps: float = 0.2, 
+        use_dapo: bool = False, 
+        use_cpg_loss: bool = False, 
+        use_gmpo: bool = False,
+        max_tokens: int = 4096,
+        loss_agg_mode: str = "seq-mean-token-mean",
+        use_gspo: bool = False,
+        normalize_advantages: bool = True,
+        use_sequence_rewards: bool = True
+    ) -> None:
         super().__init__()
         self.clip_eps = clip_eps
         self.use_dapo = use_dapo
         self.use_cpg_loss = use_cpg_loss
+        self.use_gmpo = use_gmpo
+        self.max_tokens = max_tokens
+        self.loss_agg_mode = loss_agg_mode
+        self.use_gspo = use_gspo
+        self.normalize_advantages = normalize_advantages
+        self.use_sequence_rewards = use_sequence_rewards
+        
+        if loss_agg_mode not in self.VALID_MODES:
+            raise ValueError(f"Invalid loss_agg_mode: {loss_agg_mode}. Valid: {self.VALID_MODES}")
 
     def forward(
         self,
@@ -78,6 +114,7 @@ class PolicyLoss(nn.Module):
         old_log_probs: torch.Tensor,
         advantages: torch.Tensor,
         action_mask: Optional[torch.Tensor] = None,
+        sequence_rewards: Optional[torch.Tensor] = None,
     ) -> torch.Tensor:
         if self.use_cpg_loss:
             clipped_log_probs = torch.where(
@@ -87,15 +124,159 @@ class PolicyLoss(nn.Module):
             loss = -clipped_log_probs * advantages
             loss = (loss * action_mask).sum() / action_mask.sum()
             return loss
+        
+        # GSPO mode: sequence-level optimization
+        if self.use_gspo:
+            # Compute sequence-level log probabilities
+            if action_mask is not None:
+                seq_log_probs = torch.sum(log_probs * action_mask, dim=-1)  # [batch_size]
+                seq_old_log_probs = torch.sum(old_log_probs * action_mask, dim=-1)  # [batch_size]
+            else:
+                seq_log_probs = torch.sum(log_probs, dim=-1)  # [batch_size]
+                seq_old_log_probs = torch.sum(old_log_probs, dim=-1)  # [batch_size]
+            
+            # Compute sequence-level importance ratio
+            seq_ratio = (seq_log_probs - seq_old_log_probs).exp()  # [batch_size]
+            
+            # Handle advantages
+            if advantages.dim() == 2:  # Token-level advantages
+                if action_mask is not None:
+                    seq_advantages = torch.sum(advantages * action_mask, dim=-1) / torch.sum(action_mask, dim=-1).clamp(min=1e-6)
+                else:
+                    seq_advantages = torch.mean(advantages, dim=-1)
+            else:  # Already sequence-level advantages
+                seq_advantages = advantages
+            
+            # Use sequence rewards if provided and enabled
+            if self.use_sequence_rewards and sequence_rewards is not None:
+                seq_advantages = sequence_rewards
+            
+            # Normalize advantages if enabled
+            if self.normalize_advantages:
+                seq_mean = seq_advantages.mean()
+                seq_std = seq_advantages.std()
+                # Add numerical stability check
+                if seq_std > 1e-8:
+                    seq_advantages = (seq_advantages - seq_mean) / seq_std
+                else:
+                    seq_advantages = seq_advantages - seq_mean
+            
+            # Apply sequence-level clipping (GSPO's key innovation)
+            surr1 = seq_ratio * seq_advantages
+            surr2 = seq_ratio.clamp(1 - self.clip_eps, 1 + self.clip_eps) * seq_advantages
+            
+            # Compute sequence-level losses
+            seq_losses = -torch.min(surr1, surr2)  # [batch_size]
+            
+            # Aggregate based on loss_agg_mode
+            if self.loss_agg_mode == "token-mean":
+                return torch.mean(seq_losses)
+            elif self.loss_agg_mode == "seq-mean-token-sum":
+                return torch.mean(seq_losses)
+            elif self.loss_agg_mode == "seq-mean-token-mean":
+                return torch.mean(seq_losses)
+            elif self.loss_agg_mode == "seq-mean-token-sum-norm":  # Dr.GRPO
+                total_loss = torch.sum(seq_losses)
+                return total_loss / torch.tensor(float(self.max_tokens), device=total_loss.device)
+        
+        # GMPO (Generalized Mirror Policy Optimization) implementation
+        if self.use_gmpo:
+            # GMPO uses sign-aware clipping based on advantage sign
+            cliprange = self.clip_eps  # Use clip_eps as cliprange
+            low_cliprange = -cliprange
+            high_cliprange = cliprange
+            
+            # Compute logprobs difference
+            logprobs_diff = log_probs - old_log_probs
+            
+            # Determine sign of advantage for each token
+            # advantages can be token-level [batch_size, seq_len] or sequence-level [batch_size]
+            if advantages.dim() == 1:
+                # Sequence-level advantages: expand to token level
+                advantage_expanded = advantages.unsqueeze(-1)
+                sgn_advantage = torch.where(advantage_expanded >= 0, 
+                                            -torch.ones_like(advantage_expanded),
+                                            torch.ones_like(advantage_expanded))
+            else:
+                # Token-level advantages
+                sgn_advantage = torch.where(advantages >= 0,
+                                            -torch.ones_like(advantages),
+                                            torch.ones_like(advantages))
+            
+            # Apply sign to logprobs_diff
+            sgn_logprobs_diff = sgn_advantage * logprobs_diff
+            
+            # Clamp the signed logprobs_diff
+            sgn_logprobs_diff_clamp = torch.clamp(sgn_logprobs_diff, low_cliprange, high_cliprange)
+            
+            # Take max (this implements the clipping)
+            sgn_logprobs_diff_max = torch.max(sgn_logprobs_diff, sgn_logprobs_diff_clamp)
+            
+            # Restore original sign
+            logprobs_diff_max = sgn_advantage * sgn_logprobs_diff_max
+            
+            # Compute sequence-level ratio: exp(mean of logprobs_diff_max over masked tokens)
+            if action_mask is not None:
+                # Sum of logprobs_diff_max over masked tokens, divided by count
+                masked_logprobs_diff_max = logprobs_diff_max * action_mask
+                seq_logprobs_diff_max = torch.sum(masked_logprobs_diff_max, dim=-1) / torch.sum(action_mask, dim=-1).clamp(min=1e-6)
+            else:
+                seq_logprobs_diff_max = torch.mean(logprobs_diff_max, dim=-1)
+            
+            # Compute ratio per sequence
+            ratio = torch.exp(seq_logprobs_diff_max)  # [batch_size]
+            
+            # Get sequence-level advantages
+            if advantages.dim() == 2:
+                # Token-level advantages: average over masked tokens
+                if action_mask is not None:
+                    seq_advantages = torch.sum(advantages * action_mask, dim=-1) / torch.sum(action_mask, dim=-1).clamp(min=1e-6)
+                else:
+                    seq_advantages = torch.mean(advantages, dim=-1)
+            else:
+                # Already sequence-level
+                seq_advantages = advantages
+            
+            # Compute sequence-level losses: -advantage * ratio
+            seq_losses = -seq_advantages * ratio
+            
+            # Return mean of sequence-level losses
+            return torch.mean(seq_losses)
 
-        # PPO loss
+        # Standard PPO/GRPO modes: token-level importance ratios
         ratio = (log_probs - old_log_probs).exp()
         surr1 = ratio * advantages
         surr2 = ratio.clamp(1 - self.clip_eps, 1 + self.clip_eps) * advantages
         loss = -torch.min(surr1, surr2)
-        loss = masked_mean(loss, action_mask, dim=-1).mean()
-
-        return loss
+        
+        # Convert token-level loss to sequence-level for unified aggregation
+        if action_mask is not None:
+            seq_losses = torch.sum(loss * action_mask, dim=-1)
+        else:
+            seq_losses = torch.sum(loss, dim=-1)
+        
+        # Unified aggregation based on loss_agg_mode
+        if self.loss_agg_mode == "token-mean":
+            if action_mask is not None:
+                return (loss * action_mask).sum() / action_mask.sum().clamp(min=1e-6)
+            else:
+                return loss.mean()
+        elif self.loss_agg_mode == "seq-mean-token-sum":
+            return torch.mean(seq_losses)
+        elif self.loss_agg_mode == "seq-mean-token-mean":
+            if action_mask is not None:
+                token_sums = torch.sum(loss * action_mask, dim=-1)
+                token_counts = torch.sum(action_mask, dim=-1)
+                seq_losses = token_sums / token_counts.clamp(min=1e-6)
+            else:
+                seq_losses = loss.mean(dim=-1)
+            return torch.mean(seq_losses)
+        elif self.loss_agg_mode == "seq-mean-token-sum-norm":  # Dr.GRPO
+            total_loss = torch.sum(seq_losses)
+            return total_loss / torch.tensor(float(self.max_tokens), device=total_loss.device)
+        
+        # Default fallback (should not reach here if loss_agg_mode is valid)
+        return masked_mean(loss, action_mask, dim=-1).mean()
 
 
 class ValueLoss(nn.Module):

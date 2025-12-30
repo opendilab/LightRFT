@@ -1372,7 +1372,7 @@ class FastExperienceMaker(NaiveExperienceMaker):
             rewards += penalty
 
         # ========== Dynamic Sampling Warning ==========
-        if config.dynamic_sampling and config.advantage_estimator in ["rloo", "reinforce_baseline"]:
+        if config.dynamic_sampling and config.advantage_estimator in ["rloo", "reinforce_baseline", "gspo"]:
             warnings.warn(f"dynamic_sampling not implemented for {config.advantage_estimator}, ignoring", UserWarning)
 
         # ========== Advantage Estimator-Specific Shaping ==========
@@ -1391,7 +1391,7 @@ class FastExperienceMaker(NaiveExperienceMaker):
             rewards = rewards.flatten().to("cpu").chunk(len(experiences))
             return experiences, rewards
 
-        elif config.advantage_estimator in ["group_norm", "grpo"]:
+        elif config.advantage_estimator in ["group_norm", "grpo", "gspo"]:
             # Group normalization with optional dynamic filtering
             if config.dynamic_sampling:
                 step_size = config.n_samples_per_prompt // config.micro_train_batch_size
@@ -1502,7 +1502,7 @@ class FastExperienceMaker(NaiveExperienceMaker):
                     )
                 )
 
-            elif self.advantage_estimator in ["reinforce", "rloo", "reinforce_baseline", "group_norm"]:
+            elif self.advantage_estimator in ["reinforce", "rloo", "reinforce_baseline", "group_norm", "gspo"]:
                 # Compute cumulative returns
                 experience.returns = self.get_cumulative_returns(
                     final_reward, experience.action_mask, generate_kwargs["gamma"]

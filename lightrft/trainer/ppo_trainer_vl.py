@@ -173,7 +173,30 @@ class PPOTrainerVL(ABC):
         self.critic_scheduler = critic_scheduler
 
         # TODO: Investigate use_cpg_loss flag
-        self.actor_loss_fn = PolicyLoss(eps_clip, use_cpg_loss=self.args.use_cpg_loss)
+        # Check if advantage_estimator is gmpo to enable GMPO loss
+        advantage_estimator = getattr(self.args, 'advantage_estimator', None)
+        use_gmpo = advantage_estimator == 'gmpo'
+        if use_gmpo:
+            self.strategy.print(f"[PPOTrainerVL] GMPO enabled: advantage_estimator='{advantage_estimator}'")
+        # Check if GSPO is enabled
+        use_gspo = getattr(self.args, 'use_gspo', False)
+        if use_gspo:
+            self.strategy.print(f"[PPOTrainerVL] GSPO enabled: advantage_estimator='{advantage_estimator}'")
+        loss_agg_mode = getattr(self.args, 'loss_agg_mode', 'seq-mean-token-mean')
+        normalize_advantages = getattr(self.args, 'normalize_advantages', True) if use_gspo else False
+        use_sequence_rewards = getattr(self.args, 'use_sequence_rewards', True) if use_gspo else False
+        max_tokens = getattr(self.args, 'max_tokens', 4096) if loss_agg_mode == 'seq-mean-token-sum-norm' else 4096
+        
+        self.actor_loss_fn = PolicyLoss(
+            clip_eps=eps_clip,
+            use_cpg_loss=self.args.use_cpg_loss,
+            use_gmpo=use_gmpo,
+            loss_agg_mode=loss_agg_mode,
+            use_gspo=use_gspo,
+            normalize_advantages=normalize_advantages,
+            use_sequence_rewards=use_sequence_rewards,
+            max_tokens=max_tokens
+        )
 
         self.critic_loss_fn = ValueLoss(value_clip)
         self.ptx_loss_fn = GPTLMLoss()

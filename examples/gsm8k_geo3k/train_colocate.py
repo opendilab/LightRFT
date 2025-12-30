@@ -183,7 +183,7 @@ def train(args):
         )
 
         if args.fsdp:
-            initial_model = strategy.prepare_model(initial_model, is_training=False, shard_size=8)
+            initial_model = strategy.prepare_model(initial_model, is_training=False, shard_size=2)
             strategy.offload_model(initial_model)
 
     if args.enable_ema:
@@ -524,9 +524,9 @@ if __name__ == "__main__":
     parser.add_argument(
         "--advantage_estimator",
         type=str,
-        choices=["gae", "reinforce", "rloo", "reinforce_baseline", "group_norm", "cpgd", "reinforce++"],
+        choices=["gae", "reinforce", "rloo", "reinforce_baseline", "group_norm", "cpgd", "reinforce++", "gmpo", "gspo"],
         default="gae",
-        help="Choose advantage estimation method: gae, reinforce, rloo, reinforce_baseline, group_norm, reinforce++",
+        help="Choose advantage estimation method: gae, reinforce, rloo, reinforce_baseline, group_norm, cpgd, reinforce++, gmpo, gspo",
     )
 
     parser.add_argument("--use_kl_loss", action="store_true", default=False, help="whether to use KL loss from GRPO")
@@ -613,7 +613,11 @@ if __name__ == "__main__":
     elif args.critic_pretrain is None:
         args.critic_pretrain = args.pretrain
 
-    if args.advantage_estimator in ["rloo", "reinforce_baseline", "group_norm"]:
+    # Auto-enable GSPO when advantage_estimator is gspo
+    if args.advantage_estimator == "gspo":
+        args.use_gspo = True
+
+    if args.advantage_estimator in ["rloo", "reinforce_baseline", "group_norm", "gspo"]:
         assert args.n_samples_per_prompt > 1, f"{args.advantage_estimator} requires n_samples_per_prompt > 1"
 
     if args.use_kl_loss:
@@ -623,7 +627,7 @@ if __name__ == "__main__":
         if args.kl_estimator not in ["k1"]:
             print(f"Recommend setting {args.kl_estimator} to 'k1' when not using KL as a loss.")
 
-    if args.advantage_estimator in ["gae", "cpgd"] and args.use_kl_loss:
+    if args.advantage_estimator in ["gae", "cpgd", "gmpo"] and args.use_kl_loss:
         warnings.warn(
             "Using use_kl_loss=True with non-normalized advantage estimator "
             "may result in double KL penalty. Consider disabling --use_kl_loss "

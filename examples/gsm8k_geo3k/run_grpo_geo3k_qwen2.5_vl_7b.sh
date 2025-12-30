@@ -18,21 +18,21 @@
 # --- Model and Dataset Paths ---
 # Path to the base model. Can be a Hugging Face model name (e.g., "Qwen/Qwen2.5-VL-7B-Instruct")
 # or a local directory containing the model files.
-PATH_TO_YOUR_BASE_MODEL="/path/to/your/base/model"
+PATH_TO_YOUR_BASE_MODEL="/mnt/shared-storage-user/puyuan/model/Qwen2.5-VL-7B-Instruct"
 
 # Path to the preprocessed geo3k dataset.
 # See "Usage Instructions" at the end of the script for preprocessing steps.
-PATH_TO_YOUR_GEO3K_DATASET="/path/to/your/preprocessed/geo3k_dataset"
+PATH_TO_YOUR_GEO3K_DATASET="/mnt/shared-storage-user/puyuan/data/geo3k"
 
 # --- Experiment and Logging ---
 # A descriptive name for your experiment. Used for organizing logs and checkpoints.
-EXPERIMENT_NAME="lightrft-geo3k-grpo-training"
+EXPERIMENT_NAME="main-gspo-lightrft-geo3k-grpo-training"
 
 # Your Weights & Biases API key.
 # Set to an empty string "" if you are not using W&B.
 # It is strongly recommended to set this as an environment variable instead of hardcoding.
-export WANDB_API_KEY="YOUR_WANDB_API_KEY"
-export WANDB_PROJECT="LightRFT-Geo3K-Experiments"
+export WANDB_API_KEY="5e7332a98e2c4c7d2252cff2d58bd1d3948899e3"
+export WANDB_PROJECT="LightRFT-Geo3K-GRPO"
 
 
 ################################################################################
@@ -72,9 +72,9 @@ MAX_EVAL_SAMPLES=700          # Max samples for evaluation to keep it fast.
 # --- Single-Node Distributed Setup ---
 # Update these if you are running in a multi-node environment.
 export MLP_WORKER_NUM=1                 # Number of nodes.
-export MLP_WORKER_GPU=8                 # Number of GPUs per node.
+export MLP_WORKER_GPU=2                 # Number of GPUs per node.
 export MLP_ROLE_INDEX=0                 # Rank of the current node.
-export MLP_WORKER_0_HOST="localhost"    # IP address of the master node (node 0).
+export MLP_WORKER_0_HOST=100.99.41.2    # IP address of the master node (node 0).
 export MLP_WORKER_0_PORT=20091          # Port for the master node.
 
 # --- PyTorch Distributed Environment Variables ---
@@ -122,7 +122,7 @@ torchrun \
     --node_rank $NODE_RANK \
     --master-port $MASTER_PORT \
     --master-addr $MASTER_ADDR \
-    examples/safework_t1/train_colocate.py \
+    examples/gsm8k_geo3k/train_colocate.py \
     --pretrain "${PATH_TO_YOUR_BASE_MODEL}" \
     --save_trajectories \
     --print_replay_buffer_stats \
@@ -137,7 +137,7 @@ torchrun \
     --train_batch_size ${TBS} \
     --micro_rollout_batch_size 8 \
     --rollout_batch_size ${RBS} \
-    --advantage_estimator "group_norm" \
+    --advantage_estimator "gspo" \
     --max_epochs 1 \
     --num_episodes ${EPISODE} \
     --lr_warmup_ratio ${WARMUP} \
