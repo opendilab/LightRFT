@@ -12,8 +12,7 @@
 #############################  kwargs  ##########################
 
 # --- GRPO Settings ---
-GROUP_METHOD=normal
-N_SAMPLES=4
+N_SAMPLES=8
 EPISODE=2
 WARMUP=0.03
  
@@ -99,8 +98,9 @@ export MASTER_PORT=$MLP_WORKER_0_PORT
 
 # --- Generate dynamic names and paths ---
 EXPERIMENT_NAME="lightrft-grm-rft-grpo"
+RUN_NAME="${EXPERIMENT_NAME}-dataset-base_model"
 current_time=$(date +"%m%d%H%M")
-SAVE_MODEL_NAME=${EXPERIMENT_NAME}-${TBS}-rbs_${RBS}-sample_$N_SAMPLES-kl_${KL}-warmup_${WARMUP}-ep_${EPISODE}-lr_${LR}-rapidata-t2v-${current_time}
+SAVE_MODEL_NAME=${RUN_NAME}-${TBS}-rbs_${RBS}-sample_$N_SAMPLES-kl_${KL}-warmup_${WARMUP}-ep_${EPISODE}-lr_${LR}-${current_time}
 LOG_BASE=log
 
 # --- Create directories for logs and checkpoints ---
@@ -116,7 +116,7 @@ export NCCL_DEBUG=WARN
 # --- Logging ---
 export WANDB_API_KEY="your_wandb_key"
 WANDB_PROJECT=${EXPERIMENT_NAME}
-WANDB_RUN_NAME="${EXPERIMENT_NAME}-${current_time}"
+WANDB_RUN_NAME="${RUN_NAME}-${current_time}"
 
 # --- Set execution verbosity ---
 set -x

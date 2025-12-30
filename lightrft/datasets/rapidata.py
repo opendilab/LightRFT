@@ -52,16 +52,23 @@ class RapidataT2VHandler(BaseDataHandler):
         if 'file_name1' not in item or 'file_name2' not in item:
             raise ValueError(f"Item missing 'file_name1' or 'file_name2'.")
 
-        full_path1 = os.path.join(data_root, "videos", item['file_name1'])
-        full_path2 = os.path.join(data_root, "videos", item['file_name2'])
+        # Try both "videos" and "Videos"
+        video_dir = "videos"
+        if not os.path.exists(os.path.join(data_root, video_dir)):
+            if os.path.exists(os.path.join(data_root, "Videos")):
+                video_dir = "Videos"
+
+        full_path1 = os.path.join(data_root, video_dir, item['file_name1'])
+        full_path2 = os.path.join(data_root, video_dir, item['file_name2'])
 
         return {'video1': {'video_local_path': full_path1}, 'video2': {'video_local_path': full_path2}}
 
     def _get_label(self, val1: float, val2: float) -> str:
         """
         Helper to determine preference label based on two scores.
-        A > B, B > A, C == C
         """
+        if val1 is None or val2 is None:
+            return "C"
         if val1 > val2:
             return "A"
         elif val1 < val2:
@@ -119,17 +126,21 @@ class RapidataT2VHandler(BaseDataHandler):
             }]
         }]
 
-        # Get human preference labels based on weighted scores
-        pref_label = self._get_label(item["weighted_results1_Preference"], item["weighted_results2_Preference"])
-        cohe_label = self._get_label(item["weighted_results1_Coherence"], item["weighted_results2_Coherence"])
-        align_label = self._get_label(item['weighted_results1_Alignment'], item['weighted_results2_Alignment'])
+        # Get human preference labels and total scores based on weighted metrics
+        metrics = ['Preference', 'Coherence', 'Alignment']
+        labels = {
+            f"{m.lower()}_label": self._get_label(item.get(f'weighted_results1_{m}'), item.get(f'weighted_results2_{m}'))
+            for m in metrics
+        }
+
+        score1 = sum(item.get(f'weighted_results1_{m}') or 0.0 for m in metrics)
+        score2 = sum(item.get(f'weighted_results2_{m}') or 0.0 for m in metrics)
 
         other = {
-            "preference": pref_label,
-            "coherence": cohe_label,
-            "alignment": align_label,
+            "preference": self._get_label(score1, score2),
+            **labels,
             "source": item['source'],
-            "task_type": "t2v",
+            "task_type": "t2v",  # Text-to-Video
         }
         return messages0, messages1, other
 
@@ -242,17 +253,21 @@ class RapidataI2VHandler(RapidataT2VHandler):
             }]
         }]
 
-        # Get human preference labels based on weighted scores
-        pref_label = self._get_label(item['weighted_results1_Preference'], item['weighted_results2_Preference'])
-        cohe_label = self._get_label(item['weighted_results1_Coherence'], item['weighted_results2_Coherence'])
-        align_label = self._get_label(item['weighted_results1_Alignment'], item['weighted_results2_Alignment'])
+        # Get human preference labels and total scores based on weighted metrics
+        metrics = ['Preference', 'Coherence', 'Alignment']
+        labels = {
+            f"{m.lower()}_label": self._get_label(item.get(f'weighted_results1_{m}'), item.get(f'weighted_results2_{m}'))
+            for m in metrics
+        }
+
+        score1 = sum(item.get(f'weighted_results1_{m}') or 0.0 for m in metrics)
+        score2 = sum(item.get(f'weighted_results2_{m}') or 0.0 for m in metrics)
 
         other = {
-            "preference": pref_label,
-            "coherence": cohe_label,
-            "alignment": align_label,
+            "preference": self._get_label(score1, score2),
+            **labels,
             "source": item['source'],
-            "task_type": "t2v",  # Text-to-Video
+            "task_type": "i2v",  # Image-to-Video
         }
         return messages0, messages1, other
 
@@ -304,26 +319,21 @@ class RapidataT2VPairHandler(RapidataT2VHandler):
             }
         ]
         
-        # Get human preference labels based on weighted scores
-        pref_label = self._get_label(
-            item['weighted_results1_Preference'], 
-            item['weighted_results2_Preference']
-        )
-        cohe_label = self._get_label(
-            item['weighted_results1_Coherence'], 
-            item['weighted_results2_Coherence']
-        )
-        align_label = self._get_label(
-            item['weighted_results1_Alignment'], 
-            item['weighted_results2_Alignment']
-        )
-            
+        # Get human preference labels and total scores based on weighted metrics
+        metrics = ['Preference', 'Coherence', 'Alignment']
+        labels = {
+            f"{m.lower()}_label": self._get_label(item.get(f'weighted_results1_{m}'), item.get(f'weighted_results2_{m}'))
+            for m in metrics
+        }
+
+        score1 = sum(item.get(f'weighted_results1_{m}') or 0.0 for m in metrics)
+        score2 = sum(item.get(f'weighted_results2_{m}') or 0.0 for m in metrics)
+
         other = {
-            "preference": pref_label,
-            "coherence": cohe_label,
-            "alignment": align_label,
+            "preference": self._get_label(score1, score2),
+            **labels,
             "source": item['source'],
-            "task_type": "t2v", # Text-to-Video
+            "task_type": "t2v",  # Text-to-Video
         }
         return messages, other
 
@@ -380,25 +390,20 @@ class RapidataI2VPairHandler(RapidataI2VHandler):
             }
         ]
         
-        # Get human preference labels based on weighted scores
-        pref_label = self._get_label(
-            item['weighted_results1_Preference'], 
-            item['weighted_results2_Preference']
-        )
-        cohe_label = self._get_label(
-            item['weighted_results1_Coherence'], 
-            item['weighted_results2_Coherence']
-        )
-        align_label = self._get_label(
-            item['weighted_results1_Alignment'], 
-            item['weighted_results2_Alignment']
-        )
-            
+        # Get human preference labels and total scores based on weighted metrics
+        metrics = ['Preference', 'Coherence', 'Alignment']
+        labels = {
+            f"{m.lower()}_label": self._get_label(item.get(f'weighted_results1_{m}'), item.get(f'weighted_results2_{m}'))
+            for m in metrics
+        }
+
+        score1 = sum(item.get(f'weighted_results1_{m}') or 0.0 for m in metrics)
+        score2 = sum(item.get(f'weighted_results2_{m}') or 0.0 for m in metrics)
+
         other = {
-            "preference": pref_label,
-            "coherence": cohe_label,
-            "alignment": align_label,
+            "preference": self._get_label(score1, score2),
+            **labels,
             "source": item['source'],
-            "task_type": "t2v", # Text-to-Video
+            "task_type": "i2v",  # Image-to-Video
         }
         return messages, other

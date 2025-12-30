@@ -90,7 +90,7 @@ def format_reward_fn(sol: str) -> float:
 
     Check if the solution follows the required format:
     - Contains <think>...</think> tags for reasoning
-    - Contains either \\boxed{} or <answer>...</answer> for final answer
+    - Contains <answer>...</answer> for final answer
     - The think tags must appear BEFORE the answer
 
     :param sol: Solution string from model

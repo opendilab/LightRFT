@@ -231,8 +231,8 @@ def train(args):
         args.prompt_max_len, 
         config={
             "task_instruction": args.system_prompt,
-            "video_fps": 2.0,
-            "max_pixels": 480 * 360,
+            "video_fps": args.fps,
+            "max_pixels": args.max_pixels,
         },
     )
     strategy.print(f"Loaded {len(prompts_dataset)} samples for prompts.")
@@ -549,6 +549,8 @@ if __name__ == "__main__":
         help="sampling probs for datasets",
     )
     parser.add_argument("--prompt_split", type=str, default="train")
+    parser.add_argument("--fps", type=float, default=2.0, help="Frames per second for sampling video data.")
+    parser.add_argument("--max_pixels", type=int, default=480*360, help="Maximum pixels for each image frame.")
 
     # Evaluation dataset
     parser.add_argument("--eval_data", type=str, default=None, help="HF evaluation dataset name or path (default: use prompt_data)")
@@ -572,7 +574,6 @@ if __name__ == "__main__":
     )
 
     parser.add_argument("--system_prompt", type=str, default=None, help="HF System Prompt")
-
 
     # wandb parameters
     parser.add_argument("--use_wandb", type=str, default=None)
