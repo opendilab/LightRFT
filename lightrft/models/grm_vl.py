@@ -1,4 +1,4 @@
-from typing import Optional, Union
+from typing import Optional, Union, Tuple
 
 import torch
 import torch.nn as nn
@@ -65,7 +65,7 @@ class GenerativeRewardModelVL(nn.Module):
                 pretrain_or_model,
                 trust_remote_code=True,
                 attn_implementation=attn_implementation,
-                dtype=torch.bfloat16 if bf16 else "auto",
+                torch_dtype=torch.bfloat16 if bf16 else "auto",
                 device_map=device_map,
             )
 
@@ -166,6 +166,69 @@ class GenerativeRewardModelVL(nn.Module):
             return output
         else:
             return output.logits
+
+    @torch.no_grad()
+    def generate(
+        self,
+        input_ids: torch.Tensor,
+        attention_mask: Optional[torch.Tensor] = None,
+        pixel_values: torch.Tensor = None,
+        image_grid_thw: torch.Tensor = None,
+        pixel_values_videos: torch.Tensor = None,
+        video_grid_thw: torch.Tensor = None,
+        **kwargs
+    ) -> Union[ModelOutput, torch.LongTensor]:
+        """
+        Generate text sequences based on input text and visual information.
+
+        :param input_ids: Input token IDs representing the text prompt
+        :type input_ids: torch.Tensor
+        :param attention_mask: Attention mask for the sequences
+        :type attention_mask: Optional[torch.Tensor]
+        :param pixel_values: Preprocessed pixel values of input images
+        :type pixel_values: torch.Tensor
+        :param image_grid_thw: Image grid dimensions (time, height, width)
+        :type image_grid_thw: torch.Tensor
+        :param pixel_values_videos: Preprocessed pixel values of input videos
+        :type pixel_values_videos: torch.Tensor
+        :param video_grid_thw: Video grid dimensions (time, height, width)
+        :type video_grid_thw: torch.Tensor
+        :param kwargs: Additional generation parameters
+        :type kwargs: dict
+
+        :return: Generated sequences
+        :rtype: Union[ModelOutput, torch.LongTensor]
+        """
+        generate_args = {
+            "input_ids": input_ids,
+            "attention_mask": attention_mask,
+            "pixel_values": pixel_values,
+            "image_grid_thw": image_grid_thw,
+            "pixel_values_videos": pixel_values_videos,
+            "video_grid_thw": video_grid_thw,
+            "top_k": kwargs.get("top_k", None),
+            "top_p": kwargs.get("top_p", None),
+            "do_sample": kwargs.get("do_sample", True),
+            "early_stopping": kwargs.get("num_beams", 1) > 1,
+            "temperature": kwargs.get("temperature", 1),
+            "use_cache": True,
+            "num_beams": kwargs.get("num_beams", 1),
+            "eos_token_id": kwargs.get("eos_token_id"),
+            "pad_token_id": kwargs.get("pad_token_id"),
+            "min_new_tokens": kwargs.get("min_new_tokens", 1),
+        }
+
+        if kwargs.get("max_new_tokens", None):
+            generate_args["max_new_tokens"] = kwargs.get("max_new_tokens")
+        if kwargs.get("max_length", None):
+            generate_args["max_length"] = kwargs.get("max_length")
+
+        for k, v in kwargs.items():
+            if k not in generate_args:
+                generate_args[k] = v
+
+        unwarp_model = self.model
+        return unwarp_model.generate(**generate_args)
 
     def gradient_checkpointing_enable(self, gradient_checkpointing_kwargs={"use_reentrant": False}):
         """

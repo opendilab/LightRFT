@@ -8,10 +8,12 @@ logging via Weights & Biases or TensorBoard.
 """
 
 import os
+import json
 from tqdm import tqdm
 
 import torch
 import torch.nn as nn
+import torch.distributed as dist
 from torch.optim import Optimizer
 from typing import Dict, Any
 
@@ -244,7 +246,6 @@ class GRMTrainerVL:
                 self.model, args.ckpt_path, tag, args.max_ckpt_num, args.max_ckpt_mem, client_states
             )
 
-    # TODO: eval for vl grm
     def evaluate(self, args, eval_dataloader, steps: int = 0) -> None:
         """
         Evaluate the model on the provided dataloader.
@@ -266,20 +267,21 @@ class GRMTrainerVL:
         )
         self.model.eval()
 
-        # Create CSV file and write header (only on rank 0)
+        # Create JSON file path (only on rank 0)
         if self.strategy.is_rank_0():
-            output_file = "eval_result.json"
-            output_file = os.path.join(self.strategy.args.save_path, output_file)
+            output_file = f"eval_result_{steps}.json"
+            output_file = os.path.join(self.strategy.args.save_path, "eval", output_file)
+            os.makedirs(os.path.dirname(output_file), exist_ok=True)
+        
+        all_eval_records = []
 
         with torch.no_grad():
-            total_loss = []
             for data in eval_dataloader:
                 ids, mask, pixel_values, image_grid_thws, pixel_values_videos, video_grid_thws, labels, extras = data
 
                 device = torch.cuda.current_device()
                 ids = ids.squeeze(1).to(device)
                 mask = mask.squeeze(1).to(device)
-                labels = labels.squeeze(1).to(device)
 
                 if pixel_values is not None:
                     pixel_values = pixel_values.to(device)
@@ -289,34 +291,76 @@ class GRMTrainerVL:
                     pixel_values_videos = pixel_values_videos.to(device)
                     video_grid_thws = video_grid_thws.to(device)
 
-                outputs = self.model(
-                    ids,
+                # Generation
+                # Use synced_gpus=True for Zero-3 compatibility
+                unwrapped_model = self.model.module if hasattr(self.model, "module") else self.model
+                generated_ids = unwrapped_model.generate(
+                    input_ids=ids,
                     attention_mask=mask,
                     pixel_values=pixel_values,
                     image_grid_thw=image_grid_thws,
                     pixel_values_videos=pixel_values_videos,
                     video_grid_thw=video_grid_thws,
+                    max_new_tokens=args.generate_max_len,
+                    synced_gpus=True,
+                    do_sample=False,
+                    num_beams=1,
+                    use_cache=True,
+                    eos_token_id=self.tokenizer.eos_token_id,
+                    pad_token_id=self.tokenizer.pad_token_id,
                 )
-                gpt_loss = self.loss_fn(outputs.logits, labels)
-                total_loss.append(gpt_loss)
+                
+                generated_text = self.tokenizer.batch_decode(generated_ids, skip_special_tokens=True)
 
-                # TODO: calculate accuracy on evaluation set, also get sequence outputs
+                responses_text = []
+                for gen_text in generated_text:
+                    # Extract only the assistant's response part
+                    # Qwen/Llama-3 templates use <|im_start|>assistant\n or assistant\n
+                    if "<|im_start|>assistant" in gen_text:
+                        response = gen_text.split("<|im_start|>assistant")[-1]
+                    elif "assistant\n" in gen_text:
+                        response = gen_text.split("assistant\n")[-1]
+                    else:
+                        response = gen_text
+                    responses_text.append(response)
+                
+                # Gather generated text
+                gathered_text = [None] * dist.get_world_size()
+                dist.all_gather_object(gathered_text, generated_text)
+                all_text = []
+                for t in gathered_text:
+                    all_text.extend(t)
+                
+                # Gather responses text
+                gathered_responses = [None] * dist.get_world_size()
+                dist.all_gather_object(gathered_responses, responses_text)
+                all_responses = []
+                for r in gathered_responses:
+                    all_responses.extend(r)
+                
+                # Gather extras
+                gathered_extras = [None] * dist.get_world_size()
+                dist.all_gather_object(gathered_extras, extras)
+                all_extras = []
+                for e in gathered_extras:
+                    all_extras.extend(e)
+
+                if self.strategy.is_rank_0():
+                    for gen_text, resp_text, extra in zip(all_text, all_responses, all_extras):
+                        record = {
+                            "info": extra,
+                            "generated_text": gen_text,
+                            "response_text": resp_text
+                        }
+                        all_eval_records.append(record)
 
                 step_bar.update()
 
-            logs_dict = {
-                "eval_loss": sum(total_loss).item() / len(total_loss),
-            }
-            for k in logs_dict.keys():
-                logs_dict[k] = self.strategy.all_reduce(logs_dict[k])
+        if self.strategy.is_rank_0():
+            # Write JSON file
+            with open(output_file, 'w') as f:
+                json.dump(all_eval_records, f, indent=4, ensure_ascii=False)
 
-            # wandb
-            if self._wandb is not None and self.strategy.is_rank_0():
-                logs = {"train/%s" % k: v for k, v in {**logs_dict, "global_step": steps}.items()}
-                self._wandb.log(logs)
-            # TensorBoard
-            elif self._tensorboard is not None and self.strategy.is_rank_0():
-                for k, v in logs_dict.items():
-                    self._tensorboard.add_scalar(f"train/{k}", v, steps)
+            self.strategy.print(f"Evaluation generations written to {output_file}")
 
-        self.model.train()  # reset model state
+        self.model.train()

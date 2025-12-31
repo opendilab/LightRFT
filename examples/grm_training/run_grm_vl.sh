@@ -66,11 +66,14 @@ torchrun --nnodes $NNODES --nproc-per-node $GPUS_PER_NODE --node_rank $NODE_RANK
     --max_epochs 5 \
     --lr_warmup_ratio ${WARMUP} \
     --prompt_max_len $MAX_LENGTH \
+    --generate_max_len 512 \
     --fps $FPS \
     --zero_stage 3 \
     --bf16 \
     --actor_learning_rate $LR \
     --train_data $DATA_PATH \
+    --eval_data ${EVAL_DATA_PATH} \
+    --eval_steps 500 \
     --gradient_checkpointing \
     --save_steps 500 \
     --max_ckpt_num 10 \
@@ -80,9 +83,7 @@ torchrun --nnodes $NNODES --nproc-per-node $GPUS_PER_NODE --node_rank $NODE_RANK
     --task_instruction "$TASK_INSTRUCTION" \
     2>&1 | tee log/lightrft_grm_${NODE_RANK}.log
 
-#    --eval_data ${EVAL_DATA_PATH} \
-#    --eval_steps 500 \
-#    --task_instruction "$TASK_INSTRUCTION" \
+
 #    --lora_rank 16 \
 #    --lora_alpha 32 \
 #    --lora_dropout 0.1 \

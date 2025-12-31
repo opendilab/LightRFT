@@ -191,7 +191,10 @@ class GRMDataset(Dataset):
         return tokenized, labels
 
     def _tokenize_msg_for_eval(self, messages):
-        messages = messages[:-1]  # exclude the last generation part
+        # For evaluation, we only need the input text without generation prompt
+        # Remove messages with role "assistant"
+        messages = [msg for msg in messages if msg["role"] != "assistant"]
+        
         prompt_only_text = self.processor.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
         image_inputs, video_inputs, video_kwargs = self.process_vision_info(messages, return_video_kwargs=True)
 

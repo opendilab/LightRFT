@@ -365,6 +365,7 @@ class SRMTrainerAL:
         """
         Evaluate the model on the provided dataloader and write a JSONL of
         scores to the save path indicated by ``strategy.args.save_path``.
+        Also calculates and logs accuracy metrics.
 
         :param args: present for API compatibility with callers.
         :type args: Any
@@ -387,14 +388,25 @@ class SRMTrainerAL:
 
         # Create JSONL file and write header (only on rank 0)
         if self.strategy.is_rank_0():
+            self.strategy.print(f"Start Evaluation at global step {steps}...")
             output_file = f"eval_scores_{steps}.jsonl"
-            output_file = os.path.join(self.strategy.args.save_path, output_file)
+            output_file = os.path.join(self.strategy.args.save_path, "evals", output_file)
+            os.makedirs(os.path.dirname(output_file), exist_ok=True)
             with open(output_file, 'w') as f:
                 f.write("")  # Just create/clear the file
 
-        with torch.no_grad():
-            results = []
+        head_types = self.model.head_types
+        # Metrics accumulators
+        eval_metrics = {
+            "count": 0
+        }
+        for head in head_types:
+            eval_metrics[f"{head}_correct"] = 0.0
+            eval_metrics[f"{head}_count"] = 0
+            eval_metrics[f"{head}_chosen_reward"] = 0.0
+            eval_metrics[f"{head}_reject_reward"] = 0.0
 
+        with torch.no_grad():
             for data in eval_dataloader:
                 (
                     input0_ids, input0_mask, input1_ids, input1_mask, input0_input_features,
@@ -424,6 +436,46 @@ class SRMTrainerAL:
                     input1_input_features,
                     input1_feature_attention_mask,
                 )
+
+                # --- Metric Calculation Start ---
+                labels = {}
+                for head_type in head_types:
+                    labels[head_type] = [e[head_type] if head_type in e else 'C' for e in extras]
+
+                chosens = {}
+                rejects = {}
+                for head_type in head_types:
+                    chosens[head_type] = []
+                    rejects[head_type] = []
+
+                for i in range(len(extras)):
+                    for head_type in head_types:
+                        label = labels[head_type][i]
+                        if label == 'A':
+                            chosens[head_type].append(scores0[head_type][i])
+                            rejects[head_type].append(scores1[head_type][i])
+                        elif label == 'B':
+                            chosens[head_type].append(scores1[head_type][i])
+                            rejects[head_type].append(scores0[head_type][i])
+                        # We don't need equals for accuracy/reward calculation
+
+                for head_type in head_types:
+                    if len(chosens[head_type]) > 0:
+                        chosens[head_type] = torch.stack(chosens[head_type])
+                        rejects[head_type] = torch.stack(rejects[head_type])
+
+                # Update local metrics
+                batch_size = len(extras)
+                eval_metrics["count"] += batch_size
+
+                for head_type in head_types:
+                    if len(chosens[head_type]) > 0:
+                        count = len(chosens[head_type])
+                        eval_metrics[f"{head_type}_correct"] += (chosens[head_type] > rejects[head_type]).float().sum().item()
+                        eval_metrics[f"{head_type}_count"] += count
+                        eval_metrics[f"{head_type}_chosen_reward"] += chosens[head_type].sum().item()
+                        eval_metrics[f"{head_type}_reject_reward"] += rejects[head_type].sum().item()
+                # --- Metric Calculation End ---
 
                 # Gather scores from all GPUs for each head_type
                 gathered_scores0 = {}
@@ -471,10 +523,46 @@ class SRMTrainerAL:
 
                 step_bar.update()
 
-            # Final message about file completion
-            if self.strategy.is_rank_0():
-                self.strategy.print(f"Evaluation scores written to {output_file}")
-        self.model.train()  # reset model state
+        # --- Aggregate and Log Metrics ---
+        # Create a tensor to reduce all metrics at once
+        metric_keys = ["count"]
+        for head in head_types:
+            metric_keys.extend([
+                f"{head}_correct", f"{head}_count",
+                f"{head}_chosen_reward", f"{head}_reject_reward"
+            ])
+
+        metrics_tensor = torch.tensor([eval_metrics[k] for k in metric_keys], device=device)
+        dist.all_reduce(metrics_tensor, op=dist.ReduceOp.SUM)
+
+        reduced_metrics = {k: v.item() for k, v in zip(metric_keys, metrics_tensor)}
+
+        logs_dict = {}
+
+        for head in head_types:
+            count = reduced_metrics[f"{head}_count"]
+            if count > 0:
+                logs_dict[f"eval/{head}_acc"] = reduced_metrics[f"{head}_correct"] / count
+
+                chosen_reward = reduced_metrics[f"{head}_chosen_reward"] / count
+                reject_reward = reduced_metrics[f"{head}_reject_reward"] / count
+
+                logs_dict[f"eval/{head}_chosen_reward_mean"] = round(chosen_reward, 4)
+                logs_dict[f"eval/{head}_reject_reward_mean"] = round(reject_reward, 4)
+
+        if self.strategy.is_rank_0():
+            self.strategy.print(f"Evaluation scores written to {output_file}")
+            self.strategy.print(f"Eval metrics: {logs_dict}")
+
+            if self._wandb is not None:
+                logs_dict["eval/global_step"] = steps
+                self._wandb.log(logs_dict)
+            elif self._tensorboard is not None:
+                for k, v in logs_dict.items():
+                    if k != "eval/global_step":
+                        self._tensorboard.add_scalar(k, v, steps)
+
+        self.model.train()
 
     def concatenated_forward(
         self,

@@ -70,6 +70,8 @@ torchrun --nnodes $NNODES --nproc-per-node $GPUS_PER_NODE --node_rank $NODE_RANK
     --bf16 \
     --actor_learning_rate $LR \
     --train_data $DATA_PATH \
+    --eval_data ${EVAL_DATA_PATH} \
+    --eval_steps 500 \
     --gradient_checkpointing \
     --save_steps 100 \
     --max_ckpt_num 5 \
@@ -85,8 +87,6 @@ torchrun --nnodes $NNODES --nproc-per-node $GPUS_PER_NODE --node_rank $NODE_RANK
     2>&1 | tee log/lightrft_srm_al_${NODE_RANK}.log
 
 
-#    --eval_data ${EVAL_DATA_PATH} \
-#    --eval_steps 500 \
 #    --adam_offload \
 #    --probing_layer 17 \  # Default is -1, the last layer
 
