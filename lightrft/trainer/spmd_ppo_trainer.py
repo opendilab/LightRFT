@@ -450,18 +450,17 @@ class SPMDPPOTrainerBase:
         """
         if self.trajectory_saver is not None and self.replay_buffer.items:
             # Check if trajectory analysis is enabled
-            compute_stats = getattr(self.args, 'trajectory_analysis', False)
             
             output_path, stats = self.trajectory_saver.save_trajectories(
                 experiences=self.replay_buffer.items,
                 step=global_step,
                 num_samples=self.num_trajectories_to_save,
                 prefix="trajectories",
-                compute_stats=compute_stats
+                compute_stats=self.args.trajectory_analysis
             )
             
             # Log statistics to wandb if available
-            if stats and compute_stats and hasattr(self, 'strategy') and self.strategy.is_rank_0():
+            if stats and self.args.trajectory_analysis and hasattr(self, 'strategy') and self.strategy.is_rank_0():
                 # Try to get wandb from strategy or parent class
                 if hasattr(self.strategy, 'args') and self.strategy.args.use_wandb:
                     try:
