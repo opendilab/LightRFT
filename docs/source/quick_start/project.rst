@@ -7,7 +7,50 @@ LightRFT is a framework designed for RLHF and RLVR that enables efficient fine-t
 High-Level Architecture
 ======================================================================================
 
-The framework is organized into five main modules, each serving a distinct purpose in the Reinforcement Learning (RL) pipeline.
+.. image:: ./lightrft_system.png
+   :alt: LightRFT System
+   :width: 100%
+   :align: center
+
+The LightRFT framework follows a layered architecture designed to apply reasoning large models into different domains. 
+The system is structured in four main layers, progressing from foundational hardware infrastructure to advanced reasoning applications:
+
+**Heterogeneous Hardware Layer**: The foundation supports diverse GPU architectures including NVIDIA GPUs (A100/A800/H100), Huawei GPUs, and other hardware platforms, enabling flexible deployment across different computing environments.
+
+**Distributed Execution Layer**: This layer provides distributed execution capabilities through multiple training engines (DeepSpeed ZeRO, PyTorch FSDP) and high-performance inference engines (vLLM, SGLang), ensuring efficient resource utilization and scalability.
+
+**RLVR Framework Layer**: At the core of the system, this layer integrates various model components—Actor Models, Critic Models, Reference Models, Verifiable Rules, and Reward Models—with advanced optimization algorithms including GRPO, DAPO, TTRL, CPGD, and PF-PPO. The models and algorithms interact through a colocate mechanism that enables seamless optimization and co-location of different components within the same computing resources.
+
+**Reasoning Large Models Application Layer**: The topmost layer focuses on delivering reasoning capabilities across multiple domains, including formal math reasoning (AIME/GSM8K), code generation (LiveCodeBench/SWE), efficient reasoning with search, and multi-modal reasoning (image/video/audio/music).
+
+The architecture operates within a distributed execution framework and an RLVR framework, orchestrating all components to deliver scalable, efficient, and trustworthy reasoning applications for large language models, vision-language models, audio-language models, and diffusion models.
+
+
+
+
+Training Flowchart
+======================================================================================
+
+.. image:: ./lightrft_pipeline.png
+   :alt: LightRFT Pipeline
+   :width: 100%
+   :align: center
+
+
+Unlike traditional reinforcement learning tasks—such as gaming or robotics—which rely heavily on CPU-intensive environments, 
+large language models generate data online primarily through neural network inference, producing vast token sequences. 
+This makes decoupled system architectures with separate roles (e.g., producers and consumers) across different computing resources less suitable.
+In this “model-as-environment” setting, a **colocate** architecture integrates all stages of the training pipeline within the same computing resources. 
+Every machine assumes the same role through data parallelism, with different phases switching via underlying engine transitions. 
+This design enables clean scalability and ensures high utilization of computational resources.
+In LightRFT, we extend this concept across all models used in training, establishing our **Universal Colocate Mechanism**.
+
+- **Multi-Mode Colocate**: Multi-response generation (rollout), reward judge (assistant computation), and optimization (training) operate within a unified hardware system—like chefs, riders, and inspectors seamlessly collaborating in a single dispatch hub. This eliminates handover delays and boosts end-to-end efficiency.
+
+- **Plug-and-Play Modules**: Add new mechanisms—such as rewards, constraints, or teachers—without rebuilding the system. It’s like swapping LEGO wheels or steering modules on the fly, allowing swift adaptation to evolving requirements.
+
+- **Efficient Mode Switching**: Transition instantly between training, rollout, and verification scoring modes—akin to Formula 1 pit stops without shutting down the engine. Combined with flexible data routing and model-sharing, this minimizes redundant resource allocation and switching overhead. The system maintains peak efficiency while reducing total training time.
+
 
 Core Modules
 ======================================================================================
@@ -101,6 +144,7 @@ The LightRFT framework operates through a coordinated workflow:
 6. **Inference Optimization**: During generation, specialized inference engines (vLLM/SGLang) may be employed for efficiency.
 
 7. **Checkpointing and Evaluation**: The system regularly saves model states and evaluates performance.
+
 
 Extension Points
 ======================================================================================
