@@ -1090,6 +1090,12 @@ class FastExperienceMaker(NaiveExperienceMaker):
 
         # ========== Configure Sampling Parameters ==========
         if config.engine_type == "vllm":
+            # Get max_model_len from vLLM engine to ensure truncate_prompt_tokens doesn't exceed it
+            # This is required for vllm>=0.13.0 which validates truncate_prompt_tokens <= max_model_len
+            max_model_len = self.strategy.inference_engine.llm_engine.model_config.max_model_len
+            # Use the minimum of 8192 and max_model_len to avoid validation errors
+            truncate_tokens = min(8192, max_model_len)
+
             sampling_params = SamplingParams(
                 temperature=generate_kwargs.get("temperature", 1.0),
                 top_p=generate_kwargs.get("top_p", 1.0),
@@ -1099,7 +1105,7 @@ class FastExperienceMaker(NaiveExperienceMaker):
                 skip_special_tokens=generate_kwargs.get("skip_special_tokens", False),
                 include_stop_str_in_output=True,
                 ignore_eos=os.environ.get("IGNORE_EOS", "0") == "1",
-                truncate_prompt_tokens=8192,
+                truncate_prompt_tokens=truncate_tokens,
             )
         elif config.engine_type == "sglang":
             sampling_params = dict(
