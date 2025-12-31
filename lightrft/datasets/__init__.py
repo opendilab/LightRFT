@@ -26,42 +26,14 @@ from .prompts_dataset_vl import PromptDatasetVL
 from .sft_dataset import SFTDataset
 from .sft_dataset_vl import SFTDatasetVL
 
-# Import other dataset classes (may have optional dependencies)
-try:
-    from .grm_dataset import GRMDataset
-except ImportError:
-    GRMDataset = None
-
-try:
-    from .srm_dataset import RankDatasetVL, RankDatasetAL
-except ImportError:
-    RankDatasetVL = None
-    RankDatasetAL = None
-
-try:
-    from .omnirewardbench import *
-except ImportError:
-    pass
-
-try:
-    from .imagegen_cot_reward import *
-except ImportError:
-    pass
-
-try:
-    from .rapidata import *
-except ImportError:
-    pass
-
-try:
-    from .image_reward_db import *
-except ImportError:
-    pass
-
-try:
-    from .hpdv3 import *
-except ImportError:
-    pass
+# Import other dataset classes
+from .grm_dataset import GRMDataset
+from .srm_dataset import RankDatasetVL, RankDatasetAL
+from .omnirewardbench import *
+from .imagegen_cot_reward import *
+from .rapidata import *
+from .image_reward_db import *
+from .hpdv3 import *
 
 from .utils import (
     extract_answer,
