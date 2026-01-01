@@ -593,17 +593,21 @@ def _make_experience_batch_vl(items: List, packing_samples: bool = False) -> Exp
     ]
     kwargs["pixel_values"] = torch.cat(pixel_values_list, dim=0) if pixel_values_list else None
 
-    image_grid_thws_list = [item.image_grid_thws for item in items]
-    kwargs["image_grid_thws"] = torch.cat(image_grid_thws_list, dim=0
-                                            ) if image_grid_thws_list and image_grid_thws_list[0] is not None else None
+    image_grid_thws_list = [
+        item.image_grid_thws.unsqueeze(0) if item.image_grid_thws.dim() == 1 else item.image_grid_thws
+        for item in items if item.image_grid_thws is not None
+    ]
+    kwargs["image_grid_thws"] = torch.cat(image_grid_thws_list, dim=0) if image_grid_thws_list else None
 
     # Video data processing
     pixel_values_videos_list = [item.pixel_values_videos for item in items if item.pixel_values_videos is not None and item.pixel_values_videos.numel() > 0]
     kwargs["pixel_values_videos"] = torch.cat(pixel_values_videos_list, dim=0) if pixel_values_videos_list else None
 
-    video_grid_thws_list = [item.video_grid_thws for item in items]
-    kwargs["video_grid_thws"] = torch.cat(video_grid_thws_list, dim=0
-                                            ) if video_grid_thws_list and video_grid_thws_list[0] is not None else None
+    video_grid_thws_list = [
+        item.video_grid_thws.unsqueeze(0) if item.video_grid_thws.dim() == 1 else item.video_grid_thws
+        for item in items if item.video_grid_thws is not None
+    ]
+    kwargs["video_grid_thws"] = torch.cat(video_grid_thws_list, dim=0) if video_grid_thws_list else None
 
     raw_images_list = [item.raw_images for item in items]
     kwargs["raw_images"] = raw_images_list if raw_images_list and raw_images_list[0] is not None else None

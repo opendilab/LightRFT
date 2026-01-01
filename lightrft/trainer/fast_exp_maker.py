@@ -234,45 +234,57 @@ class MultimodalDataProcessor:
         """
         Extract the number of images for each sample.
 
-        IMPORTANT: Text-only samples (None) return 1 as placeholder, not 0.
-        This maintains compatibility with the grid_thw slicing logic where
-        text-only samples have [0,0,0] grids.
+        NOTE: We return 0 when a sample has no image (None). Using 1 as a
+        placeholder caused mismatches between expected image placeholders and
+        actual prompt replacements when mixing video-only and image samples.
 
         :param all_images: List of images (can be None, single images, or lists of images)
         :type all_images: Optional[List[Union[None, PIL.Image.Image, List[PIL.Image.Image]]]]
-        :return: List of image counts per sample, or None if no images
+        :return: List of image counts per sample, or None if no images are provided
         :rtype: Optional[List[int]]
         """
         if all_images is None:
             return None
 
         if isinstance(all_images[0], list):
-            # Multi-image case: use 1 for None (text-only) as placeholder
-            return [len(img) if img is not None else 1 for img in all_images]
-        else:
-            # Single image case
-            return [1 for _ in all_images]
+            # Multi-image case
+            return [len(img) if img is not None else 0 for img in all_images]
+
+        counts = []
+        for img in all_images:
+            if img is None:
+                counts.append(0)
+            elif isinstance(img, list):
+                counts.append(len(img))
+            else:
+                counts.append(1)
+        return counts
 
     def get_videos_num(self, all_videos: Optional[List]) -> Optional[List[int]]:
         """
-        Extract the number of videos for each sample.
-
-        IMPORTANT: No-video samples (None) return 1 as placeholder, not 0.
-        This maintains compatibility with the grid_thw slicing logic where
-        no-video samples have [0,0,0] grids.
+        Extract the number of videos for each sample. Returns 0 for samples
+        without videos to keep grid slicing aligned across mixed modalities.
 
         :param all_videos: List of videos (can be None, single videos, or lists of videos)
         :type all_videos: Optional[List[Union[None, torch.Tensor, List[torch.Tensor]]]]
-        :return: List of video counts per sample, or None if no videos
+        :return: List of video counts per sample, or None if no videos are provided
         :rtype: Optional[List[int]]
         """
         if all_videos is None:
             return None
 
         if isinstance(all_videos[0], list):
-            return [len(vid) if vid is not None else 1 for vid in all_videos]
-        else:
-            return [1 for _ in all_videos]
+            return [len(vid) if vid is not None else 0 for vid in all_videos]
+
+        counts = []
+        for vid in all_videos:
+            if vid is None:
+                counts.append(0)
+            elif isinstance(vid, list):
+                counts.append(len(vid))
+            else:
+                counts.append(1)
+        return counts
 
     def process_multimodal_batch(
         self,
@@ -313,6 +325,12 @@ class MultimodalDataProcessor:
         N = n_samples_per_prompt
         L = len(all_prompts)
 
+        # Ensure all_images and all_videos are iterable even if None
+        if all_images is None:
+            all_images = [None] * L
+        if all_videos is None:
+            all_videos = [None] * L
+
         # ===== Stage 1: Separation =====
         all_prompts_text, all_prompts_multimodal = [], []
         all_images_valid = []
@@ -345,14 +363,9 @@ class MultimodalDataProcessor:
                 add_special_tokens=False,
             )
             all_prompt_token_ids_text = inputs_text["input_ids"]
-            all_images_grid_thw_text = torch.cat(
-                [torch.tensor([[0, 0, 0]]) for _ in range(len(all_prompt_token_ids_text))],
-                dim=0,
-            )
-            all_videos_grid_thw_text = torch.cat(
-                [torch.tensor([[0, 0, 0]]) for _ in range(len(all_prompt_token_ids_text))],
-                dim=0,
-            )
+            # Text-only samples do not contribute any vision grids
+            all_images_grid_thw_text = torch.empty((0, 3), dtype=torch.long)
+            all_videos_grid_thw_text = torch.empty((0, 3), dtype=torch.long)
         else:
             all_prompt_token_ids_text = []
             all_images_grid_thw_text = torch.empty((0, 3), dtype=torch.long)
@@ -402,11 +415,6 @@ class MultimodalDataProcessor:
                 all_images_grid_thw_multimodal = inputs_multimodal.get("image_grid_thw", None)
                 all_videos_grid_thw_multimodal = inputs_multimodal.get("video_grid_thw", None)
                 all_image_flags_multimodal = [None] * len(all_prompt_token_ids_multimodal)
-        else:
-            all_prompt_token_ids_image_text = []
-            all_images_pixel_values_image_txt = torch.empty(0, 1176)
-            all_images_grid_thw_image_text = torch.empty((0, 3), dtype=torch.long)
-            all_image_flags_image_text = []
 
         # ===== Stage 4: Merge back in original order =====
         total_samples = L * N
@@ -425,9 +433,9 @@ class MultimodalDataProcessor:
                 gid = orig_idx * N + n
                 all_prompts_out[gid] = all_prompts_text[text_ptr]
                 all_prompt_token_ids_out[gid] = all_prompt_token_ids_text[text_ptr]
-                # Ensure (1, 3) shape for cat
-                all_images_grid_thw_list[gid] = all_images_grid_thw_text[text_ptr].unsqueeze(0)
-                all_videos_grid_thw_list[gid] = all_videos_grid_thw_text[text_ptr].unsqueeze(0)
+                # Ensure (0, 3) shape for cat
+                all_images_grid_thw_list[gid] = torch.empty((0, 3), dtype=torch.long)
+                all_videos_grid_thw_list[gid] = torch.empty((0, 3), dtype=torch.long)
                 all_image_flags_out[gid] = all_image_flags_text[text_ptr]
                 text_ptr += 1
 
@@ -451,7 +459,7 @@ class MultimodalDataProcessor:
                     all_images_grid_thw_list[gid] = all_images_grid_thw_multimodal[image_grid_ptr:image_grid_ptr + num_images]
                     image_grid_ptr += num_images
                 else:
-                    all_images_grid_thw_list[gid] = torch.tensor([[0, 0, 0]], dtype=torch.long)
+                    all_images_grid_thw_list[gid] = torch.empty((0, 3), dtype=torch.long)
                 
                 # Handle video_grid_thw: extract rows based on all_videos_num
                 num_videos = all_videos_num[gid]
@@ -459,7 +467,7 @@ class MultimodalDataProcessor:
                     all_videos_grid_thw_list[gid] = all_videos_grid_thw_multimodal[video_grid_ptr:video_grid_ptr + num_videos]
                     video_grid_ptr += num_videos
                 else:
-                    all_videos_grid_thw_list[gid] = torch.tensor([[0, 0, 0]], dtype=torch.long)
+                    all_videos_grid_thw_list[gid] = torch.empty((0, 3), dtype=torch.long)
                 
                 all_image_flags_out[gid] = all_image_flags_multimodal[multi_ptr]
                 multi_ptr += 1
@@ -1205,6 +1213,15 @@ class FastExperienceMaker(NaiveExperienceMaker):
         config = self.strategy.config
         is_multimodal = all_images is not None or all_videos is not None
         n_samples = config.n_samples_per_prompt
+
+        # Initialize multimodal-specific variables to None
+        all_images_num = None
+        all_videos_num = None
+        all_images_pixel_values = None
+        all_videos_pixel_values = None
+        all_images_grid_thw = None
+        all_videos_grid_thw = None
+        all_image_flags = None
 
         if is_multimodal:
             is_internvl = "internvl" in self.actor.pretrain_or_model.lower()

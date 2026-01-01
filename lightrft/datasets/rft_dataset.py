@@ -136,7 +136,7 @@ class RFTDatasetVL(Dataset):
         # Prepare inputs from message sequences
         input_text, image_inputs, video_inputs = self._prepare_inputs(messages)
 
-        # configure label
+        # Configure label, by default "general"
         label = "general"
 
         return input_text, image_inputs, video_inputs, reference, label
