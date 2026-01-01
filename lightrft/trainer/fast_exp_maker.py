@@ -53,6 +53,7 @@ from lightrft.trainer.experience_maker_vl import (
 from lightrft.utils.remote_rm_utils import remote_rm_fn
 from lightrft.utils import Timer, get_current_device
 from .utils import RunningMoments, compute_clip_fraction, get_cpgd_advantages_returns, fire_sampling
+from .filter_weight import FilterWeightManagerBuilder
 
 # ============================================================================
 # Data Structures
@@ -951,6 +952,19 @@ class FastExperienceMaker(NaiveExperienceMaker):
             packing_samples=self.packing_samples,
         )
 
+        # Initialize filter-weight manager
+        self.filter_weight_manager = self._init_filter_weight_manager()
+
+    def _init_filter_weight_manager(self):
+        """
+        Initialize filter-weight manager from strategy args.
+
+        :return: FilterWeightManager instance
+        :rtype: FilterWeightManager
+        """
+        args = self.strategy.args
+        return FilterWeightManagerBuilder.from_args(args, packing_samples=self.packing_samples)
+
     # ========================================================================
     # Public API Methods
     # ========================================================================
@@ -1020,11 +1034,31 @@ class FastExperienceMaker(NaiveExperienceMaker):
 
         # ========== Stage 3: Model Inference ==========
         Timer.start('  make_experience')
-        experiences = self._make_experience_list_by_model(all_samples)
+        experiences, outputs = self._make_experience_list_by_model(all_samples)
         Timer.stop('  make_experience')
 
         # ========== Stage 4: Shard-Parallel Postprocessing ==========
         experiences = self.strategy.sp_data_processor.postprocess(experiences)
+
+        # ========== Stage 4.5: Apply Filter-Weight Framework ==========
+        if self.filter_weight_manager is not None and (
+            self.filter_weight_manager.filters or self.filter_weight_manager.weights
+        ):
+            # Compute metrics from outputs
+            current_step = getattr(self.strategy, "global_step", None)
+            metrics = self.filter_weight_manager.compute_metrics(outputs, current_step=current_step)
+            
+            # Apply filters and weights
+            experiences, sample_weights = self.filter_weight_manager.apply_to_experiences(
+                experiences, metrics
+            )
+            
+            # Store sample weights in experience info for later use
+            sample_idx = 0
+            for exp in experiences:
+                batch_size = len(exp.sequences)
+                exp.info["sample_weights"] = sample_weights[sample_idx:sample_idx + batch_size]
+                sample_idx += batch_size
 
         # ========== Stage 5: Reward Processing ==========
         experiences, rewards = self._process_experiences(  # GRPO's -mean / std operation is performed in this method
@@ -1360,7 +1394,16 @@ class FastExperienceMaker(NaiveExperienceMaker):
         rewards = torch.cat([exp.info["reward"] for exp in experiences])
 
         # ========== Overlong Sequence Penalty ==========
-        if config.overlong_buffer:
+        # Use new filter_weight framework if enabled, otherwise use legacy logic
+        from .filter_weight import ResponseLengthFilter
+        use_filter_weight = (
+            self.filter_weight_manager is not None
+            and self.filter_weight_manager.filters
+            and any(isinstance(f, ResponseLengthFilter) for f in self.filter_weight_manager.filters)
+        )
+        
+        if config.overlong_buffer and not use_filter_weight:
+            # Legacy overlong buffer penalty (only if not using filter_weight framework)
             expected_len = max_new_tokens - config.overlong_buffer_len
             actual_lens = torch.cat([exp.action_mask.sum(dim=1) for exp in experiences])
             exceed_len = actual_lens - expected_len
@@ -1393,7 +1436,16 @@ class FastExperienceMaker(NaiveExperienceMaker):
 
         elif config.advantage_estimator in ["group_norm", "grpo"]:
             # Group normalization with optional dynamic filtering
-            if config.dynamic_sampling:
+            # Use new filter_weight framework if enabled, otherwise use legacy logic
+            from .filter_weight import RewardValueFilter
+            use_dynamic_filter = (
+                self.filter_weight_manager is not None
+                and self.filter_weight_manager.filters
+                and any(isinstance(f, RewardValueFilter) for f in self.filter_weight_manager.filters)
+            )
+            
+            if config.dynamic_sampling and not use_dynamic_filter:
+                # Legacy dynamic sampling (only if not using filter_weight framework)
                 step_size = config.n_samples_per_prompt // config.micro_train_batch_size
                 for i in range(0, len(experiences), step_size):
                     chunk = experiences[i:i + step_size]
@@ -1545,7 +1597,7 @@ class FastExperienceMaker(NaiveExperienceMaker):
     def _make_experience_list_by_model(
         self,
         all_samples: List[Union[Samples, SamplesVL]],
-    ) -> List[Union[Experience, ExperienceVL]]:
+    ) -> Tuple[List[Union[Experience, ExperienceVL]], List[_SamplesOutput]]:
         """
         Batch forward pass through all models to create experiences.
 
@@ -1607,7 +1659,8 @@ class FastExperienceMaker(NaiveExperienceMaker):
         self.reward_engine.compute_rewards(outputs, vlm_mode, device)
 
         # ========== Stage 5: Assemble Experiences ==========
-        return [self._pack_experience(output, vlm_mode) for output in outputs]
+        experiences = [self._pack_experience(output, vlm_mode) for output in outputs]
+        return experiences, outputs
 
     def _preprocess_sample(
         self,

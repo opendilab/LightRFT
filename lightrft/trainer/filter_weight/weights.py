@@ -523,3 +523,5 @@ class UniformWeighting(LossWeighting):
         device = experiences[0].sequences.device if experiences else 'cuda'
         return torch.ones(total_samples, device=device)
 
+
+
