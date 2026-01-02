@@ -110,7 +110,7 @@ class GRMDataset(Dataset):
             except Exception as e:
                 logger.error(f"Failed to load data {path} (source: {source}): {e}")
 
-        logger.info(f"Loaded {len(self.data)} items in total, sources: {[s for s in dataset_paths]}")
+        logger.info(f"Loaded {len(self.data)} items in total, sources: {list(dataset_paths)}")
         random.shuffle(self.data)
 
     def __len__(self):
@@ -259,7 +259,7 @@ class GRMDataset(Dataset):
             torch.cat(input_video_pixels, dim=0) if input_video_pixels else None,
             torch.cat(input_video_grid, dim=0) if input_video_grid else None,
             # Labels
-            labels_list if len(labels_list) else None,
+            labels_list if labels_list else None,
             # Extras
             extras_list
         )

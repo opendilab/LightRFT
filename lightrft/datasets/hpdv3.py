@@ -2,7 +2,7 @@ import os
 import copy
 import json
 import random
-from typing import List, Dict, Any, Tuple, Union
+from typing import List, Dict, Any, Tuple
 from loguru import logger
 
 from .utils import BaseDataHandler
@@ -11,7 +11,7 @@ from .utils import BaseDataHandler
 class HPDv3Handler(BaseDataHandler):
     """
     Data Handler for HPDv3 dataset. Image-to-Text human preferences dataset.
-    
+
     Paper: https://huggingface.co/MizzenAI/HPSv3
     Dataset Repo: https://huggingface.co/datasets/MizzenAI/HPDv3
     """
@@ -72,7 +72,7 @@ class HPDv3Handler(BaseDataHandler):
         rejected_image = media_content['rejected_image']
 
         if not all([preferred_image, rejected_image]):
-            raise ValueError(f"Missing visual content for 'preferred_image' or 'rejected_image'.")
+            raise ValueError("Missing visual content for 'preferred_image' or 'rejected_image'.")
 
         # Get generation prompt from data item
         prompt_text = item["prompt"]
@@ -102,8 +102,7 @@ class HPDv3Handler(BaseDataHandler):
                     "type": "image",
                     "image": image0,
                     "max_pixels": 720 * 480
-                }  # to save memory
-                            ]
+                }]
             }
         ]
 
@@ -141,14 +140,14 @@ class HPDv3GRMHandler(HPDv3Handler):
     Paper: https://huggingface.co/MizzenAI/HPSv3
     Dataset Repo: https://huggingface.co/datasets/MizzenAI/HPDv3
     """
-    def parse_item(self, item: Dict[str, Any], visual_content: Dict[str, Any],
+    def parse_item(self, item: Dict[str, Any], media_content: Dict[str, Any],
                    config: Dict[str, Any]) -> Tuple[List[Dict], List[Dict], Dict]:
         # Get loaded visual content
-        preferred_image = visual_content['preferred_image']
-        rejected_image = visual_content['rejected_image']
+        preferred_image = media_content['preferred_image']
+        rejected_image = media_content['rejected_image']
 
         if not all([preferred_image, rejected_image]):
-            raise ValueError(f"Missing visual content for 'preferred_image' or 'rejected_image'.")
+            raise ValueError("Missing visual content for 'preferred_image' or 'rejected_image'.")
 
         # Get generation prompt from data item
         prompt_text = item["prompt"]
