@@ -21,8 +21,8 @@ class RankDatasetVL(Dataset):
     """
     Preference ranking dataset used for vision-language scalar reward model (RM) training.
 
-    RMRankDatasetVL dataset supports multiple data sources through pluggable 
-    Data Handlers and covers both understanding tasks (image-to-text, video-to-text) 
+    RMRankDatasetVL dataset supports multiple data sources through pluggable
+    Data Handlers and covers both understanding tasks (image-to-text, video-to-text)
     and generation tasks (text-to-image, text-to-video).
 
     Each example contains two inputs to be compared. Labels use "A", "B",
@@ -252,7 +252,7 @@ class RankDatasetAL(Dataset):
     """
     Preference ranking dataset used for audio-language scalar reward model (RM) training.
 
-    RMRankDatasetAL dataset supports multiple audio-language data sources through pluggable 
+    RMRankDatasetAL dataset supports multiple audio-language data sources through pluggable
     Data Handlers and support training reward model for text-to-audio task.
 
     :param dataset_paths: List of dataset file paths or directories. The

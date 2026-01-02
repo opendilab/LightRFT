@@ -88,10 +88,10 @@ class ImageGenCoTRewardHandler(BaseDataHandler):
                 "type": "image",
                 "image": image1
             }]
-        },{
-            "role": "assistant", 
+        }, {
+            "role": "assistant",
             "content": [{
-                "type": "text", 
+                "type": "text",
                 "text": response
             }]
         }]

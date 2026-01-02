@@ -91,20 +91,17 @@ class HPDv3Handler(BaseDataHandler):
             image0, image1 = rejected_image, preferred_image
 
         # Build messages
-        messages0 = [
-            {
-                "role": "system",
-                "content": copy.deepcopy(task_instruction)
-            },
-            {
-                "role": "user",
-                "content": [{
-                    "type": "image",
-                    "image": image0,
-                    "max_pixels": 720 * 480
-                }]
-            }
-        ]
+        messages0 = [{
+            "role": "system",
+            "content": copy.deepcopy(task_instruction)
+        }, {
+            "role": "user",
+            "content": [{
+                "type": "image",
+                "image": image0,
+                "max_pixels": 720 * 480
+            }]
+        }]
 
         messages1 = [{
             "role": "system",
@@ -199,9 +196,7 @@ class HPDv3GRMHandler(HPDv3Handler):
         ]
 
         response = "<answer>Image 1 is better</answer>" if preference == "A" else "<answer>Image 2 is better</answer>"
-        messages.append({"role": "assistant", 
-                         "content": [{"type": "text", "text": response}]
-                         })
+        messages.append({"role": "assistant", "content": [{"type": "text", "text": response}]})
 
         other = {
             "preference": preference,

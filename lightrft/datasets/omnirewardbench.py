@@ -68,7 +68,7 @@ class OmniRewardBenchT2IHandler(BaseDataHandler):
         # Get system prompts from config
         task_instruction_template = config["task_instruction"]
         task_instruction = task_instruction_template.format(prompt=gen_prompt)
-        criteria = item["criteria"]
+        # criteria = item["criteria"]
 
         # Build messages
         messages0 = [
@@ -76,7 +76,7 @@ class OmniRewardBenchT2IHandler(BaseDataHandler):
                 "role": "system",
                 "content": copy.deepcopy(task_instruction)
             },
-            # {"role": "system", "content": f"Please give your evaluation considering the following criteria: {criteria}."},
+            # {"role": "system", "content": f"Please give your evaluation considering the following criteria: {criteria}."},  # noqa: E501
             {
                 "role": "user",
                 "content": [{
@@ -92,7 +92,7 @@ class OmniRewardBenchT2IHandler(BaseDataHandler):
                 "role": "system",
                 "content": copy.deepcopy(task_instruction)
             },
-            # {"role": "system", "content": f"Please give your evaluation considering the following criteria: {criteria}."},
+            # {"role": "system", "content": f"Please give your evaluation considering the following criteria: {criteria}."},  # noqa: E501
             {
                 "role": "user",
                 "content": [{

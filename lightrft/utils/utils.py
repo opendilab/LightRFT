@@ -21,24 +21,7 @@ def get_tokenizer(pretrain, model, padding_side="left", strategy=None, use_fast=
 
 def get_tokenizer_processor_vl(pretrain, model, padding_side="left", strategy=None, use_fast=True):
     tokenizer = AutoTokenizer.from_pretrained(pretrain, trust_remote_code=True, use_fast=use_fast)
-    if "internvl" in pretrain.lower():
-        model_config = model.config
-        image_processor = InternVLImageProcessor(
-            is_train=True,
-            image_size=model_config.vision_config.image_size,
-            dynamic_image_size=model_config.dynamic_image_size,
-            min_dynamic_patch=model_config.min_dynamic_patch,
-            max_dynamic_patch=model_config.max_dynamic_patch,
-            use_thumbnail=model_config.use_thumbnail,
-        )
-        processor = InternVLProcessor(
-            model.num_image_token,
-            image_processor=image_processor,
-            tokenizer=tokenizer,
-            chat_template=tokenizer.chat_template
-        )
-    else:
-        processor = AutoProcessor.from_pretrained(pretrain, trust_remote_code=True, use_fast=use_fast)
+    processor = AutoProcessor.from_pretrained(pretrain, trust_remote_code=True, use_fast=use_fast)
 
     tokenizer.padding_side = padding_side
     # NOTE: When enable vLLM, do not resize_token_embeddings, or the vocab size will mismatch with vLLM.

@@ -178,20 +178,17 @@ class ImageRewardDBHandler(BaseDataHandler):
             image0, image1 = rejected_image, preferred_image
 
         # Build messages
-        messages0 = [
-            {
-                "role": "system",
-                "content": copy.deepcopy(task_instruction)
-            },
-            {
-                "role": "user",
-                "content": [{
-                    "type": "image",
-                    "image": image0,
-                    "max_pixels": 1280 * 720
-                }]
-            }
-        ]
+        messages0 = [{
+            "role": "system",
+            "content": copy.deepcopy(task_instruction)
+        }, {
+            "role": "user",
+            "content": [{
+                "type": "image",
+                "image": image0,
+                "max_pixels": 1280 * 720
+            }]
+        }]
 
         messages1 = [{
             "role": "system",

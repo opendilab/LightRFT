@@ -59,7 +59,7 @@ class GenerativeRewardModelVL(nn.Module):
             if ds_config is not None and ds_config["zero_optimization"]["stage"] == 3:
                 dschf = HfDeepSpeedConfig(ds_config)
             else:
-                dschf = None
+                dschf = None  # noqa: F841
 
             self.model = AutoModelForVision2Seq.from_pretrained(
                 pretrain_or_model,
