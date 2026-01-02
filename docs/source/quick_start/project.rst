@@ -19,7 +19,7 @@ The system is structured in four main layers, progressing from foundational hard
 
 **Distributed Execution Layer**: This layer provides distributed execution capabilities through multiple training engines (DeepSpeed ZeRO, PyTorch FSDP) and high-performance inference engines (vLLM, SGLang), ensuring efficient resource utilization and scalability.
 
-**RLVR Framework Layer**: At the core of the system, this layer integrates various model components—Actor Models, Critic Models, Reference Models, Verifiable Rules, and Reward Models—with advanced optimization algorithms including GRPO, DAPO, TTRL, CPGD, and PF-PPO. The models and algorithms interact through a colocate mechanism that enables seamless optimization and co-location of different components within the same computing resources.
+**RLVR Framework Layer**: At the core of the system, this layer integrates various model components—Actor Models, Critic Models, Reference Models, Verifiable Rules, and Reward Models—with advanced optimization algorithms including GRPO, DAPO, TTRL, CPGD. The models and algorithms interact through a colocate mechanism that enables seamless optimization and co-location of different components within the same computing resources.
 
 **Reasoning Large Models Application Layer**: The topmost layer focuses on delivering reasoning capabilities across multiple domains, including formal math reasoning (AIME/GSM8K), code generation (LiveCodeBench/SWE), efficient reasoning with search, and multi-modal reasoning (image/video/audio/music).
 
@@ -49,7 +49,7 @@ In LightRFT, we extend this concept across all models used in training, establis
 
 - **Plug-and-Play Modules**: Add new mechanisms—such as rewards, constraints, or teachers—without rebuilding the system. It’s like swapping LEGO wheels or steering modules on the fly, allowing swift adaptation to evolving requirements.
 
-- **Efficient Mode Switching**: Transition instantly between training, rollout, and verification scoring modes—akin to Formula 1 pit stops without shutting down the engine. Combined with flexible data routing and model-sharing, this minimizes redundant resource allocation and switching overhead. The system maintains peak efficiency while reducing total training time.
+- **Efficient Mode Switching**: Switch seamlessly between training, rollout, and verification scoring modes with negligible overhead, analogous to a hot pit stop in Formula 1. Combined with flexible data routing and model-sharing, this minimizes redundant resource allocation and switching overhead. The system maintains peak efficiency while reducing total training time.
 
 
 Core Modules

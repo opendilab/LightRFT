@@ -16,12 +16,11 @@ With the rapid development in the RFT field and emerging algorithmic innovations
 | Algorithm | Type | Module | Description | Implementation | Paper |
 |-----------|------|--------|-------------|----------------|-------|
 | **GRPO** | Policy Optimization | Advantage Estimation | Uses group-based normalization for advantage estimation without requiring a separate value network | `FastExperienceMaker._get_return_advs()` | [arXiv:2402.03300](https://arxiv.org/pdf/2402.03300) |
-| **GSPO** | Policy Optimization | Policy Loss | Modifies the policy loss computation with generalized surrogate objectives | `PolicyLoss.forward()` | [arXiv:2507.18071](https://arxiv.org/abs/2507.18071) |
+| **GSPO** | Policy Optimization | Policy Loss | Group sequence policy optimization | `PolicyLoss.forward()` | [arXiv:2507.18071](https://arxiv.org/abs/2507.18071) |
 | **REINFORCE++** | Advantage Estimation | Advantage Estimation | Modifies return and advantage calculation with improved baseline estimation | `FastExperienceMaker._get_return_advs()` | [arXiv:2501.03262](https://arxiv.org/abs/2501.03262) |
 | **CPGD** | Advantage Estimation | Advantage Estimation | Adds KL-based drift constraint and clipped log-ratio for stable return/advantage computation | `FastExperienceMaker._get_return_advs()` | [arXiv:2505.12504](https://arxiv.org/abs/2505.12504) |
-| **PF-PPO** | Reward Processing | Reward Processing | Filters unreliable rewards to improve signal-to-noise ratio during return/advantage computation | `FastExperienceMaker._get_return_advs()` | [arXiv:2409.06957](https://arxiv.org/abs/2409.06957) |
 | **FIRE Sampling** | Sampling Strategy | Experience Generation | Modifies sample generation process with filtering and ranking strategies | `FastExperienceMaker.generate_samples()` | [arXiv:2410.21236](https://arxiv.org/abs/2410.21236) |
-| **GMPO** | Policy Optimization | Policy Loss | Modifies policy loss with generalized mirror policy optimization | `PolicyLoss.forward()` | [arXiv:2507.20673](https://arxiv.org/abs/2507.20673) |
+| **GMPO** | Policy Optimization | Policy Loss | Geometric-Mean Policy Optimization | `PolicyLoss.forward()` | [arXiv:2507.20673](https://arxiv.org/abs/2507.20673) |
 | **Dr.GRPO** | Policy Optimization | Policy Loss | Introduces an unbiased policy optimization to mitigate length bias and improve token efficiency | `PolicyLoss.forward()` | [arXiv:2503.20783](https://arxiv.org/abs/2503.20783) |
 | **DAPO** | Policy Optimization | Policy Loss | Introduces decoupled clipping and dynamic sampling scheme to stabilize large-scale RL optimization | `PolicyLoss.forward()` | [arXiv:2503.14476](https://arxiv.org/abs/2503.14476) |
 | **Token-Level Policy** | Policy Optimization | Policy Loss | Optimizes policy at token granularity to improve stability and credit assignment | `PolicyLoss.forward()` | [arXiv:2503.14476](https://arxiv.org/abs/2503.14476) |
@@ -51,7 +50,7 @@ LightRFT's algorithm implementations are organized around three main modules:
 ##### 3. Advantage & Reward Processing (`lightrft/trainer/fast_exp_maker.py`)
 - **Purpose**: Processes rewards and computes advantages for policy updates
 - **Key Method**: `_get_return_advs()`: Advantage estimation with various baselines
-- **Affected by**: GRPO, REINFORCE++, CPGD, PF-PPO, Reward Norm/Clip
+- **Affected by**: GRPO, REINFORCE++, CPGD, Reward Norm/Clip
 - **Modification Type**: Advantage estimation methods and reward shaping
 
 #### Modification Types
@@ -70,7 +69,7 @@ LightRFT's algorithm implementations are organized around three main modules:
 
 ### Policy Optimization Algorithms
 
-#### GRPO (Group Reinforcement Policy Optimization)
+#### GRPO (Group Relative Policy Optimization)
 
 **Overview**: GRPO uses group-based normalization for advantage estimation, providing stable training without requiring a separate value network.
 
@@ -98,7 +97,7 @@ python train.py \
 
 ---
 
-#### GSPO (Generalized Surrogate Policy Optimization)
+#### GSPO (Group Sequence Policy Optimization)
 
 **Overview**: GSPO generalizes the PPO objective with flexible surrogate functions, allowing for better control over policy updates.
 
@@ -124,7 +123,7 @@ python train.py \
 
 ---
 
-#### GMPO (Generalized Mirror Policy Optimization)
+#### GMPO (Geometric-Mean Policy Optimization)
 
 **Overview**: GMPO leverages mirror descent principles for policy optimization, providing theoretical guarantees and improved convergence.
 
@@ -149,7 +148,7 @@ python train.py \
 
 ---
 
-#### Dr.GRPO (Debiased Reward GRPO)
+#### Dr.GRPO (Group Relative Policy Optimization Done Right)
 
 **Overview**: Dr.GRPO addresses length bias in reward models by explicitly modeling and mitigating the reward-length correlation.
 
@@ -176,7 +175,7 @@ python train.py \
 
 ---
 
-#### DAPO (Decoupled Clip and Dynamic sAmpling Policy Optimization)
+#### DAPO (Dynamic sAmpling Policy Optimization)
 
 **Overview**: DAPO uses separate upper and lower clipping bounds for advantage-weighted policy updates combined with dynamic sampling strategies, improving training stability.
 
@@ -246,7 +245,7 @@ python train.py \
 
 ---
 
-#### CPGD (Constrained Policy Gradient Descent)
+#### CPGD (Clipped Policy Gradient Optimization with Policy Drift)
 
 **Overview**: CPGD constrains policy updates using KL-divergence to prevent catastrophic forgetting and maintain stable training.
 
@@ -272,33 +271,6 @@ python train.py \
 - Multi-stage training
 
 ### Reward Processing
-
-#### PF-PPO (Policy Filtered PPO)
-
-**Overview**: PF-PPO filters unreliable rewards based on statistical measures, improving robustness to reward model errors.
-
-**Implementation**: `FastExperienceMaker._get_return_advs()` - Reward Processing module
-**Modification Type**: Reward Shaping (filtering)
-
-**Key Features**:
-- Automatic reward filtering
-- Handles reward model uncertainty
-- Improved training stability
-
-**Usage**:
-```bash
-python train.py \
-    --use_pf_ppo \
-    --filter_threshold 0.3 \
-    --filter_percentile 0.1
-```
-
-**Best For**:
-- Noisy reward models
-- Multi-reward scenarios
-- Safety-critical applications
-
----
 
 #### Reward Normalization and Clipping
 

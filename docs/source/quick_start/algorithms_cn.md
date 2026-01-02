@@ -16,12 +16,11 @@ LightRFT 支持丰富的强化学习算法生态系统，用于大语言模型�
 | 算法 | 类型 | 模块 | 描述 | 实现位置 | 论文 |
 |------|------|------|------|---------|------|
 | **GRPO** | 策略优化 | 优势估计 | 使用基于组的归一化进行优势估计，无需独立的价值网络 | `FastExperienceMaker._get_return_advs()` | [arXiv:2402.03300](https://arxiv.org/pdf/2402.03300) |
-| **GSPO** | 策略优化 | 策略损失 | 通过广义代理目标修改策略损失计算 | `PolicyLoss.forward()` | [arXiv:2507.18071](https://arxiv.org/abs/2507.18071) |
+| **GSPO** | 策略优化 | 策略损失 | 序列视角的策略优化方案 | `PolicyLoss.forward()` | [arXiv:2507.18071](https://arxiv.org/abs/2507.18071) |
 | **REINFORCE++** | 优势估计 | 优势估计 | 通过改进的基线估计修改回报和优势计算 | `FastExperienceMaker._get_return_advs()` | [arXiv:2501.03262](https://arxiv.org/abs/2501.03262) |
 | **CPGD** | 优势估计 | 优势估计 | 添加基于 KL 的漂移约束和裁剪对数比率以实现稳定的回报/优势计算 | `FastExperienceMaker._get_return_advs()` | [arXiv:2505.12504](https://arxiv.org/abs/2505.12504) |
-| **PF-PPO** | 奖励处理 | 奖励处理 | 过滤不可靠的奖励以提高回报/优势计算中的信噪比 | `FastExperienceMaker._get_return_advs()` | [arXiv:2409.06957](https://arxiv.org/abs/2409.06957) |
 | **FIRE Sampling** | 采样策略 | 经验生成 | 通过过滤和排序策略修改样本生成过程 | `FastExperienceMaker.generate_samples()` | [arXiv:2410.21236](https://arxiv.org/abs/2410.21236) |
-| **GMPO** | 策略优化 | 策略损失 | 通过广义镜像策略优化修改策略损失 | `PolicyLoss.forward()` | [arXiv:2507.20673](https://arxiv.org/abs/2507.20673) |
+| **GMPO** | 策略优化 | 策略损失 | 通过几何平均策略优化修改策略损失 | `PolicyLoss.forward()` | [arXiv:2507.20673](https://arxiv.org/abs/2507.20673) |
 | **Dr.GRPO** | 策略优化 | 策略损失 | 引入无偏策略优化以缓解长度偏差并提高 token 效率 | `PolicyLoss.forward()` | [arXiv:2503.20783](https://arxiv.org/abs/2503.20783) |
 | **DAPO** | 策略优化 | 策略损失 | 引入解耦裁剪和动态采样方案以稳定大规模 RL 优化 | `PolicyLoss.forward()` | [arXiv:2503.14476](https://arxiv.org/abs/2503.14476) |
 | **Token-Level Policy** | 策略优化 | 策略损失 | 在 token 粒度上优化策略以改善稳定性和信用分配 | `PolicyLoss.forward()` | [arXiv:2503.14476](https://arxiv.org/abs/2503.14476) |
@@ -51,7 +50,7 @@ LightRFT 的算法实现围绕三个主要模块组织：
 ##### 3. 优势与奖励处理 (`lightrft/trainer/fast_exp_maker.py`)
 - **用途**：处理奖励并计算策略更新的优势
 - **核心方法**：`_get_return_advs()`：使用各种基线的优势估计
-- **受影响算法**：GRPO、REINFORCE++、CPGD、PF-PPO、Reward Norm/Clip
+- **受影响算法**：GRPO、REINFORCE++、CPGD、Reward Norm/Clip
 - **修改类型**：优势估计方法和奖励塑形
 
 #### 修改类型
@@ -70,7 +69,7 @@ LightRFT 的算法实现围绕三个主要模块组织：
 
 ### 策略优化算法
 
-#### GRPO
+#### GRPO (Group Relative Policy Optimization)
 
 **概述**：GRPO 使用基于组的归一化进行优势估计，无需单独的价值网络即可提供稳定的训练。
 
@@ -98,7 +97,7 @@ python train.py \
 
 ---
 
-#### GSPO (广义代理策略优化)
+#### GSPO (Group Sequence Policy Optimization)
 
 **概述**：GSPO 通过灵活的代理函数推广 PPO 目标，允许更好地控制策略更新。
 
@@ -124,7 +123,7 @@ python train.py \
 
 ---
 
-#### GMPO (广义镜像策略优化)
+#### GMPO (Geometric-Mean Policy Optimization)
 
 **概述**：GMPO 利用镜像下降原理进行策略优化，提供理论保证和改进收敛性。
 
@@ -149,7 +148,7 @@ python train.py \
 
 ---
 
-#### Dr.GRPO (去偏奖励 GRPO)
+#### Dr.GRPO (Group Relative Policy Optimization Done Right)
 
 **概述**：Dr.GRPO 通过显式建模和缓解奖励-长度相关性来解决奖励模型中的长度偏差。
 
@@ -176,7 +175,7 @@ python train.py \
 
 ---
 
-#### DAPO (解耦剪裁和动态采样策略优化)
+#### DAPO (Dynamic sAmpling Policy Optimization)
 
 **概述**：DAPO (Decoupled Clip and Dynamic sAmpling Policy Optimization) 对优势加权的策略更新使用单独的上下裁剪边界，并结合动态采样策略，提高训练稳定性。
 
@@ -246,7 +245,7 @@ python train.py \
 
 ---
 
-#### CPGD (约束策略梯度下降)
+#### CPGD (Clipped Policy Gradient Optimization with Policy Drift)
 
 **概述**：CPGD 使用 KL 散度约束策略更新，防止灾难性遗忘并保持稳定训练。
 
@@ -272,33 +271,6 @@ python train.py \
 - 多阶段训练
 
 ### 奖励处理
-
-#### PF-PPO (策略过滤 PPO)
-
-**概述**：PF-PPO 基于统计度量过滤不可靠的奖励，提高对奖励模型错误的鲁棒性。
-
-**实现位置**：`FastExperienceMaker._get_return_advs()` - 奖励处理模块
-**修改类型**：奖励塑形（过滤）
-
-**核心特性**：
-- 自动奖励过滤
-- 处理奖励模型不确定性
-- 改善训练稳定性
-
-**使用方法**：
-```bash
-python train.py \
-    --use_pf_ppo \
-    --filter_threshold 0.3 \
-    --filter_percentile 0.1
-```
-
-**最适合**：
-- 噪声奖励模型
-- 多奖励场景
-- 安全关键应用
-
----
 
 #### 奖励归一化和裁剪
 
