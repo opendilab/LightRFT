@@ -358,10 +358,10 @@ We welcome community contributions! Please follow these steps:
 pip install -r requirements-dev.txt
 
 # Code formatting (YAPF)
-yapf -i -r lightrft/
+make format
 
-# Code linting (Pylint)
-pylint lightrft/
+# Code linting (Flake8)
+make fcheck
 ```
 
 ---

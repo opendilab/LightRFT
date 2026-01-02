@@ -358,10 +358,10 @@ make docs-live
 pip install -r requirements-dev.txt
 
 # 代码格式化（YAPF）
-yapf -i -r lightrft/
+make format
 
-# 代码检查（Pylint）
-pylint lightrft/
+# 代码检查（Flake8）
+make fcheck
 ```
 
 ---
