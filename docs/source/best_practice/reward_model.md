@@ -849,13 +849,14 @@ We conducted preliminary experiments for the T2A task using the HPS Scale config
 
 | Model Variant | Training Data | HPDv3 Test (Acc) | OmniReward-Bench-T2I (Acc) |
 | :--- | :--- | :--- | :--- |
-| **GRM (w/o reasoning)** (step 8000) | HPDv3 Subset (\~56K) | 40.99% | 32.61% |
-| **GRM (w/ reasoning)** (step 3000) | ImageGen-CoT-Reward-5K | 53.90% | 54.42% |
+| **GRM (w/o reasoning)** (step 8000) | HPDv3 Train Subset (~56K) | **71.88%** | **59.33%** |
+| **GRM (w/ reasoning)** (step 3000) | ImageGen-CoT-Reward-5K | 63.02% | 58.35% |
 
 **Conclusions and Analysis**:
 
-1.  **Interpretable Rewards**: Compared to `GRM (w/o reasoning)` which directly outputs preference results, `GRM (w/ reasoning)` can perform more accurate preference judgments by outputting an explicit reasoning process. On `HPDv3 Test`, `GRM (w/ reasoning)` achieved an accuracy of 53.90%, significantly outperforming `GRM (w/o reasoning)` (40.99%) which lacks the reasoning process.
-2.  **Generalization Challenge**: Although `GRM (w/ reasoning)` performs better than `GRM (w/o reasoning)` across various test sets, the overall accuracy remains around 50% (close to random guessing). This indicates that to further improve the performance of `GRM (w/ reasoning)`, improvements in data diversity and model capability are still needed. Further exploration can be done by introducing more diverse training data and larger base models to improve its generalization ability.
+1.  **Impact of Data Scale**: The results show that `GRM (w/o reasoning)` achieved higher accuracy on both test sets (HPDv3 Test: 71.88% vs 63.02%). However, this is largely attributed to the difference in training data: `GRM (w/o reasoning)` used approximately 56K HPDv3 training data, while `GRM (w/ reasoning)` used only 5K ImageGen-CoT data. Especially on the in-domain HPDv3 Test, the data advantage makes `GRM (w/o reasoning)` perform significantly better.
+2.  **Potential of Reasoning Capability**: Despite using only 1/10th of the training data, `GRM (w/ reasoning)` still demonstrated competitive performance (HPDv3 Test 63.02%). This indicates that introducing the Chain-of-Thought (CoT) reasoning process can help the model learn preference judgment more effectively with small samples.
+3.  **Future Directions**: Currently, the performance of `GRM (w/ reasoning)` is limited by the scarcity of high-quality CoT data. Future work can focus on constructing larger-scale and more diverse CoT preference datasets, or utilizing semi-supervised methods (such as RFT) to further unleash the potential of reasoning-based reward models.
 
 -----
 
