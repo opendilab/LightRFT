@@ -3,7 +3,7 @@ Vision-Language Actor Model Module for Reinforcement Learning.
 
 This module provides the ActorVL class, which implements an actor model specifically designed
 for vision-language tasks in reinforcement learning scenarios. The actor is responsible for
-generating actions (text sequences) based on both visual inputs (images) and textual prompts.
+generating actions (text sequences) based on visual inputs (images and videos) and textual prompts.
 
 The module supports various optimization techniques including:
 - LoRA (Low-Rank Adaptation) for parameter-efficient fine-tuning
@@ -35,9 +35,9 @@ class ActorVL(nn.Module):
     Vision-Language Actor model for reinforcement learning applications.
 
     This class serves as a foundation for implementing vision-language actor models in RL,
-    which are responsible for generating text sequences (actions) based on both visual and
-    textual inputs. The model supports various optimization techniques including LoRA
-    adaptation, quantization, and distributed training.
+    which are responsible for generating text sequences (actions) based on visual
+    (images and videos) and textual inputs. The model supports various optimization
+    techniques including LoRA adaptation, quantization, and distributed training.
 
     The actor model can be initialized either from a pretrained model path or from an
     existing model instance, providing flexibility in model deployment scenarios.

@@ -1,4 +1,5 @@
 import random
+import copy
 
 from torch.utils.data import Dataset
 from torch.nn.utils.rnn import pad_sequence
@@ -85,7 +86,6 @@ class RFTDatasetVL(Dataset):
             "imagegen-cot-reward-5k": ImageGenCoTRewardHandler(),
             "omnirewardbench-t2i": OmniRewardBenchT2IPairHandler(),
             "omnirewardbench-t2v": OmniRewardBenchT2VPairHandler(),
-            "hpdv3": HPDv3PairHandler(),
         }
 
         # Load data from all specified dataset paths
@@ -130,8 +130,21 @@ class RFTDatasetVL(Dataset):
         if loaded_content is None:
             raise RuntimeError(f"Failed to load media content: {media_info}")
 
+        # Select prompt based on task type or source if task_instruction is a dict
+        config = copy.deepcopy(self.config)
+        task_instruction = config.get("task_instruction")
+        if isinstance(task_instruction, dict):
+            if hasattr(handler, "task_type"):
+                prompt = task_instruction.get(handler.task_type)
+                if prompt is None:
+                   raise ValueError(f"Task instruction for {handler.task_type} not found.")
+            else:
+                raise ValueError(f"Handler for source {source} does not specify a task_type.")
+
+            config["task_instruction"] = prompt
+
         # Pass the loaded content dict to parse_item
-        messages, reference = handler.parse_item(item, loaded_content, self.config)
+        messages, reference = handler.parse_item(item, loaded_content, config)
 
         # Prepare inputs from message sequences
         input_text, image_inputs, video_inputs = self._prepare_inputs(messages)

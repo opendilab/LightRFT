@@ -15,6 +15,8 @@ class HPDv3Handler(BaseDataHandler):
     Paper: https://huggingface.co/MizzenAI/HPSv3
     Dataset Repo: https://huggingface.co/datasets/MizzenAI/HPDv3
     """
+    task_type = "text-to-image"
+
     def load_data(self, path: str) -> List[Dict[str, Any]]:
         try:
             with open(path, 'rb') as f:
@@ -125,6 +127,7 @@ class HPDv3Handler(BaseDataHandler):
         other = {
             "preference": preference,
             "source": item["source"],
+            "task_type": self.task_type,
             "prompt": prompt_text,
             "confidence": item.get("confidence"),
             "choice_dist": item.get("choice_dist"),
@@ -213,6 +216,7 @@ class HPDv3GRMHandler(HPDv3Handler):
         other = {
             "preference": preference,
             "source": item["source"],
+            "task_type": self.task_type,
             "prompt": prompt_text,
             "confidence": item.get("confidence"),
             "choice_dist": item.get("choice_dist"),
@@ -281,6 +285,7 @@ class HPDv3PairHandler(HPDv3Handler):
         other = {
             "preference": preference,
             "source": item["source"],
+            "task_type": self.task_type,
             "prompt": prompt_text,
             "confidence": item.get("confidence"),
             "choice_dist": item.get("choice_dist"),

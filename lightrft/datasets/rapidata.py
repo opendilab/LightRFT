@@ -23,6 +23,8 @@ class RapidataT2VHandler(BaseDataHandler):
 
     Dataset Repo: https://huggingface.co/Rapidata/datasets
     """
+    task_type = "text-to-video"
+
     def load_data(self, path: str) -> List[Dict[str, Any]]:
         """
         Loads data from parquet file.
@@ -143,7 +145,7 @@ class RapidataT2VHandler(BaseDataHandler):
             "preference": self._get_label(score1, score2),
             **labels,
             "source": item['source'],
-            "task_type": "t2v",  # Text-to-Video
+            "task_type": self.task_type,
         }
         return messages0, messages1, other
 
@@ -156,6 +158,8 @@ class RapidataI2VHandler(RapidataT2VHandler):
     
     Dataset Repo: https://huggingface.co/Rapidata/datasets
     """
+    task_type = "image-to-video"
+
     def __init__(self):
         super().__init__()
 
@@ -273,7 +277,7 @@ class RapidataI2VHandler(RapidataT2VHandler):
             "preference": self._get_label(score1, score2),
             **labels,
             "source": item['source'],
-            "task_type": "i2v",  # Image-to-Video
+            "task_type": self.task_type,
         }
         return messages0, messages1, other
 
@@ -342,7 +346,7 @@ class RapidataT2VPairHandler(RapidataT2VHandler):
             "preference": self._get_label(score1, score2),
             **labels,
             "source": item['source'],
-            "task_type": "t2v",  # Text-to-Video
+            "task_type": self.task_type,
         }
         return messages, other
 
@@ -351,6 +355,8 @@ class RapidataI2VPairHandler(RapidataI2VHandler):
     """
     Data Handler for Rapidata image-to-video human preferences dataset in pairwise format.
     """
+    task_type = "image-to-video"
+
     def __init__(self):
         super().__init__()
     
@@ -413,6 +419,6 @@ class RapidataI2VPairHandler(RapidataI2VHandler):
             "preference": self._get_label(score1, score2),
             **labels,
             "source": item['source'],
-            "task_type": "i2v",  # Image-to-Video
+            "task_type": self.task_type,
         }
         return messages, other

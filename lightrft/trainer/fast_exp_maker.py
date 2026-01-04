@@ -2100,7 +2100,7 @@ class FastExperienceMaker(NaiveExperienceMaker):
             output_ids = list(output.output_token_ids) + [pad_token_id] * (max_output_len - output_len)
             all_output_ids.append(output.output_token_ids)
 
-            # Process images for this sample
+            # Process images/videos for this sample
             if is_multimodal:
                 if images_num is not None:
                     image_num = images_num[j]

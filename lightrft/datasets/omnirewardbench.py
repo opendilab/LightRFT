@@ -14,6 +14,8 @@ class OmniRewardBenchT2IHandler(BaseDataHandler):
     Paper: https://huggingface.co/papers/2510.23451
     Dataset Repo: https://huggingface.co/datasets/HongbangYuan/OmniRewardBench
     """
+    task_type = "text-to-image"
+
     def load_data(self, path: str) -> List[Dict[str, Any]]:
         """
         Loads data from parquet file.
@@ -111,6 +113,7 @@ class OmniRewardBenchT2IHandler(BaseDataHandler):
 
         other = {
             "preference": pref_label,
+            "task_type": self.task_type,
             "criteria": item["criteria"],
             "criteria_preference": item["criteria_preference"],
             "id": item["id"],
@@ -132,6 +135,8 @@ class OmniRewardBenchT2VHandler(OmniRewardBenchT2IHandler):
     Paper: https://huggingface.co/papers/2510.23451
     Dataset Repo: https://huggingface.co/datasets/HongbangYuan/OmniRewardBench
     """
+    task_type = "text-to-video"
+
     def get_media_info(self, item: Dict[str, Any]) -> Dict[str, Dict[str, str]]:
         """
         Extract path info for the two videos.
@@ -205,6 +210,7 @@ class OmniRewardBenchT2VHandler(OmniRewardBenchT2IHandler):
 
         other = {
             "preference": pref_label,
+            "task_type": self.task_type,
             "criteria": item["criteria"],
             "criteria_preference": item["criteria_preference"],
             "id": item["id"],
@@ -226,6 +232,8 @@ class OmniRewardBenchT2AHandler(OmniRewardBenchT2IHandler):
     Paper: https://huggingface.co/papers/2510.23451
     Dataset Repo: https://huggingface.co/datasets/HongbangYuan/OmniRewardBench
     """
+    task_type = "text-to-audio"
+
     def get_media_info(self, item: Dict[str, Any]) -> Dict[str, Dict[str, str]]:
         """
         Extract path info for the two audios.
@@ -289,6 +297,7 @@ class OmniRewardBenchT2AHandler(OmniRewardBenchT2IHandler):
 
         other = {
             "preference": pref_label,
+            "task_type": self.task_type,
             "criteria": item["criteria"],
             "criteria_preference": item["criteria_preference"],
             "id": item["id"],
@@ -369,6 +378,7 @@ class OmniRewardBenchT2IGRMHandler(OmniRewardBenchT2IHandler):
 
         other = {
             "preference": pref_label,
+            "task_type": self.task_type,
             "criteria": item["criteria"],
             "criteria_preference": item["criteria_preference"],
             "id": item["id"],
@@ -446,6 +456,7 @@ class OmniRewardBenchT2IPairHandler(OmniRewardBenchT2IHandler):
 
         other = {
             "preference": pref_label,
+            "task_type": self.task_type,
             "criteria": item["criteria"],
             "criteria_preference": item["criteria_preference"],
             "id": item["id"],
@@ -520,6 +531,7 @@ class OmniRewardBenchT2VPairHandler(OmniRewardBenchT2VHandler):
 
         other = {
             "preference": pref_label,
+            "task_type": self.task_type,
             "criteria": item["criteria"],
             "criteria_preference": item["criteria_preference"],
             "id": item["id"],

@@ -14,6 +14,8 @@ class VideoGenRewardBenchPairHandler(BaseDataHandler):
     Paper: https://arxiv.org/abs/2501.13918
     Dataset Repo: https://huggingface.co/KlingTeam
     """
+    task_type = "text-to-video"
+
     def load_data(self, path: str) -> List[Dict[str, Any]]:
         try:
             df = pd.read_csv(path)
@@ -125,6 +127,7 @@ class VideoGenRewardBenchPairHandler(BaseDataHandler):
 
         other = {
             "preference": preference,
+            "task_type": self.task_type,
             "prompt": prompt_text,
             "A_model": item.get("A_model"),
             "B_model": item.get("B_model"),

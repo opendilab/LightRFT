@@ -19,6 +19,8 @@ class ImageRewardDBHandler(BaseDataHandler):
     Paper: https://arxiv.org/abs/2304.05977
     Dataset Repo: https://huggingface.co/datasets/zai-org/ImageRewardDB
     """
+    task_type = "text-to-image"
+
     def load_data(self, path: str) -> List[Dict[str, Any]]:
         """Load ImageRewardDB shards and build preference pairs.
 
@@ -212,6 +214,7 @@ class ImageRewardDBHandler(BaseDataHandler):
 
         other = {
             "preference": preference,  # used for reward head labeling
+            "task_type": self.task_type,
             "source": item["source"],
             "prompt_id": item["prompt_id"],
             "prompt": prompt_text,

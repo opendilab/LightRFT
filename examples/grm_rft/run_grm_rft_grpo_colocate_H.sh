@@ -45,33 +45,13 @@ DATA_PATH=$(printf '%s,' "${data_files[@]}" | sed 's/,$//')
 
 # -- Pre-processing Settings ---
 video_fps=2.0
-max_pixels=151200 # 360*420
+# max_pixels=151200 # 360*420
+max_pixels=282240 # 360*28*28
 
-# -- System Prompt / Task Instruction ---
-TASK_INSTRUCTION="""
-Given a caption and two videos generated based on this caption, please analyze in detail the two provided videos. 
-Evaluate them on various dimensions such as semantic consistency (how closely the video content aligns with the caption), temporal coherence (smoothness and logical flow of motion across frames), authenticity (realism and attention to detail), and any other factors you deem relevant. 
-For each evaluation dimension, provide a score between 1-10 for both videos (e.g., Video 1: 8/10, Video 2: 6/10) and provide a concise rationale for the score. 
-Calculate the total score for each video by summing all dimension scores. 
-Use a chain-of-thought process to detail your reasoning steps, and enclose all your detailed reasoning within <think> and </think> tags. Then, in the <answer> tag, output exactly one of the following strings:
-'Video 1 is better' or 'Video 2 is better' based on the total scores. No additional text is allowed in the <answer> section.
-Example output format:
-<think>
-1. Semantic consistency: Video 1 (9/10) - ...; Video 2 (7/10) - ...
-2. Temporal coherence: Video 1 (8/10) - ...; Video 2 (6/10) - ...
-3. Authenticity: Video 1 (7/10) - ...; Video 2 (5/10) - ...
-...
-[Additional dimensions if any]: Video 2 (8/10) - ...; Video 1 (6/10) - ...
-Total score:
-Video 1: 9+8+7+6=30
-Video 2: 7+6+5+8=26
-</think>
-<answer>Video 1 is better</answer>
-
-Note: In the example above, scores and the final answer are placeholders meant only to demonstrate the format. Your actual evaluation should be based on the quality of two given videos.
-Your task is provided as follows:
-Text Caption: **{prompt}**
-"""
+# -- System Prompt ---
+# Path to the YAML file containing system prompts for different tasks.
+# Or you can directly specify the system prompt string here if uniform for all tasks.
+TASK_INSTRUCTION="examples/grm_rft/task_prompts.yaml"
 
 # --- Base Model Path ---
 # Path to the base model. Can be a Hugging Face model name (e.g., "Qwen/Qwen2.5-VL-7B-Instruct")

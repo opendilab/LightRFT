@@ -206,7 +206,6 @@ def mix_rewards(
         sol = solution_strs[i]
         ref = refs[i] if refs is not None else None
 
-
         # Extract only the assistant's response part
         # Qwen/Llama-3 templates use <|im_start|>assistant\n or assistant\n
         if "<|im_start|>assistant" in sol:

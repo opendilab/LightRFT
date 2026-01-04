@@ -221,6 +221,18 @@ def train(args):
 
     # Prepare prompts dataset
     strategy.print(f"Loading prompts dataset from: {args.prompt_data}")
+
+    # Parse system_prompt if it's a YAML file or a string
+    system_prompt = args.system_prompt
+    if system_prompt:
+        if system_prompt.endswith(".yaml") or system_prompt.endswith(".yml"):
+            try:
+                import yaml
+                with open(system_prompt, "r") as f:
+                    system_prompt = yaml.safe_load(f)
+            except Exception as e:
+                strategy.print(f"Error loading system prompt from YAML: {e}")
+
     prompts_dataset = RFTDatasetVL(
         args.prompt_data, 
         processor,
@@ -229,7 +241,7 @@ def train(args):
         args.prompt_max_len,
         is_train=True,
         config={
-            "task_instruction": args.system_prompt,
+            "task_instruction": system_prompt,
             "video_fps": args.fps,
             "max_pixels": args.max_pixels,
         },
