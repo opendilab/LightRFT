@@ -176,6 +176,12 @@ class GenerativeRewardModelVL(nn.Module):
         image_grid_thw: torch.Tensor = None,
         pixel_values_videos: torch.Tensor = None,
         video_grid_thw: torch.Tensor = None,
+        max_new_tokens: Optional[int] = None,
+        do_sample: bool = True,
+        temperature: float = 1.0,
+        top_k: Optional[int] = None,
+        top_p: Optional[float] = None,
+        num_beams: int = 1,
         **kwargs
     ) -> Union[ModelOutput, torch.LongTensor]:
         """
@@ -193,42 +199,40 @@ class GenerativeRewardModelVL(nn.Module):
         :type pixel_values_videos: torch.Tensor
         :param video_grid_thw: Video grid dimensions (time, height, width)
         :type video_grid_thw: torch.Tensor
+        :param max_new_tokens: Maximum number of new tokens to generate
+        :type max_new_tokens: Optional[int]
+        :param do_sample: Whether to use sampling for generation
+        :type do_sample: bool
+        :param temperature: The value used to module the next token probabilities
+        :type temperature: float
+        :param top_k: The number of highest probability vocabulary tokens to keep for top-k-filtering
+        :type top_k: Optional[int]
+        :param top_p: If set to float < 1, only the smallest set of most probable tokens with probabilities that add up to top_p or higher are kept for generation
+        :type top_p: Optional[float]
+        :param num_beams: Number of beams for beam search
+        :type num_beams: int
         :param kwargs: Additional generation parameters
         :type kwargs: dict
 
         :return: Generated sequences
         :rtype: Union[ModelOutput, torch.LongTensor]
         """
-        generate_args = {
-            "input_ids": input_ids,
-            "attention_mask": attention_mask,
-            "pixel_values": pixel_values,
-            "image_grid_thw": image_grid_thw,
-            "pixel_values_videos": pixel_values_videos,
-            "video_grid_thw": video_grid_thw,
-            "top_k": kwargs.get("top_k", None),
-            "top_p": kwargs.get("top_p", None),
-            "do_sample": kwargs.get("do_sample", True),
-            "early_stopping": kwargs.get("num_beams", 1) > 1,
-            "temperature": kwargs.get("temperature", 1),
-            "use_cache": True,
-            "num_beams": kwargs.get("num_beams", 1),
-            "eos_token_id": kwargs.get("eos_token_id"),
-            "pad_token_id": kwargs.get("pad_token_id"),
-            "min_new_tokens": kwargs.get("min_new_tokens", 1),
-        }
-
-        if kwargs.get("max_new_tokens", None):
-            generate_args["max_new_tokens"] = kwargs.get("max_new_tokens")
-        if kwargs.get("max_length", None):
-            generate_args["max_length"] = kwargs.get("max_length")
-
-        for k, v in kwargs.items():
-            if k not in generate_args:
-                generate_args[k] = v
-
-        unwarp_model = self.model
-        return unwarp_model.generate(**generate_args)
+        return self.model.generate(
+            input_ids=input_ids,
+            attention_mask=attention_mask,
+            pixel_values=pixel_values,
+            image_grid_thw=image_grid_thw,
+            pixel_values_videos=pixel_values_videos,
+            video_grid_thw=video_grid_thw,
+            max_new_tokens=max_new_tokens,
+            do_sample=do_sample,
+            temperature=temperature,
+            top_k=top_k,
+            top_p=top_p,
+            num_beams=num_beams,
+            use_cache=True,
+            **kwargs
+        )
 
     def gradient_checkpointing_enable(self, gradient_checkpointing_kwargs={"use_reentrant": False}):
         """

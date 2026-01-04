@@ -18,6 +18,8 @@ from .utils import (
     get_current_device,
     get_torch_profiler,
     ensure_video_input_available,
+    all_gather_and_flatten,
+    all_reduce_dict
 )
 
 from .cli_args import add_arguments
@@ -46,6 +48,8 @@ __all__ = [
     "get_current_device",
     "get_torch_profiler",
     "ensure_video_input_available",
+    "all_gather_and_flatten",
+    "all_reduce_dict",
 
     # cli_args
     "add_arguments",

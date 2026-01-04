@@ -19,7 +19,7 @@ from torch.optim import Optimizer
 import torch.distributed as dist
 
 from lightrft.models import LogExpLoss, LogSigmoidLoss, HPSLoss, pad_to_length
-from lightrft.utils import DistributedSampler
+from lightrft.utils import DistributedSampler, all_gather_and_flatten, all_reduce_dict
 
 
 class SRMTrainerVL:
@@ -373,7 +373,8 @@ class SRMTrainerVL:
         """
         Evaluate the model on the provided dataloader and write a JSONL of
         scores to the save path indicated by ``strategy.args.save_path``.
-        Also calculates and logs accuracy metrics.
+        Also calculates and logs accuracy metrics to Weights & Biases or
+        TensorBoard.
 
         :param args: present for API compatibility with callers.
         :type args: Any
@@ -501,13 +502,8 @@ class SRMTrainerVL:
                         gathered_scores0[head_type] = torch.cat(tensor_list0, dim=0)
                         gathered_scores1[head_type] = torch.cat(tensor_list1, dim=0)
 
-                # Gather extras into
-                gathered_extras = [None] * dist.get_world_size()
-                dist.all_gather_object(gathered_extras, extras)
-                # Flatten the list of lists
-                all_extras = []
-                for gpu_extras in gathered_extras:
-                    all_extras.extend(gpu_extras)
+                # Gather extras
+                all_extras = all_gather_and_flatten(extras)
 
                 # write scores to JSONL file immediately (only on rank 0)
                 if self.strategy.is_rank_0():
@@ -533,18 +529,7 @@ class SRMTrainerVL:
                 step_bar.update()
 
         # --- Aggregate and Log Metrics ---
-        # Create a tensor to reduce all metrics at once
-        metric_keys = ["count"]
-        for head in head_types:
-            metric_keys.extend([
-                f"{head}_correct", f"{head}_count",
-                f"{head}_chosen_reward", f"{head}_reject_reward"
-            ])
-
-        metrics_tensor = torch.tensor([eval_metrics[k] for k in metric_keys], device=device)
-        dist.all_reduce(metrics_tensor, op=dist.ReduceOp.SUM)
-
-        reduced_metrics = {k: v.item() for k, v in zip(metric_keys, metrics_tensor)}
+        reduced_metrics = all_reduce_dict(eval_metrics, op="sum")
 
         logs_dict = {}
 
