@@ -19,6 +19,7 @@ import logging
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import torch.distributions as dist
 from peft import LoraConfig, TaskType, get_peft_model
 
 
@@ -70,6 +71,99 @@ def find_all_linear_modules(model: "nn.Module", freeze_vision_tower: bool) -> Li
         if "Linear" in module.__class__.__name__ and "Embedding" not in module.__class__.__name__:
             module_names.add(name.split(".")[-1])
     return list(module_names)
+
+
+def entropy_from_logits(logits: torch.Tensor) -> torch.Tensor:
+    """
+    Compute entropy from logits using Categorical distribution for efficient calculation.
+    
+    This function calculates the entropy of the probability distribution over the vocabulary
+    for each token position. Higher entropy indicates more uncertainty in token prediction,
+    which corresponds to "forking tokens" that determine reasoning directions.
+    
+    :param logits: Logits tensor of shape (batch_size, sequence_length, vocab_size)
+                  or (batch_size, vocab_size)
+    :type logits: torch.Tensor
+    
+    :return: Entropy values for each token position, of shape (batch_size, sequence_length)
+            or (batch_size,)
+    :rtype: torch.Tensor
+    
+    Example::
+        >>> logits = torch.randn(2, 10, 50000)  # batch_size=2, seq_len=10, vocab_size=50000
+        >>> entropy = entropy_from_logits(logits)
+        >>> entropy.shape
+        torch.Size([2, 10])
+    """
+    # Use Categorical distribution for efficient entropy calculation
+    categorical = dist.Categorical(logits=logits)
+    return categorical.entropy()
+
+
+def create_high_entropy_mask(
+    entropy: torch.Tensor,
+    action_mask: Optional[torch.Tensor],
+    high_entropy_ratio: float = 0.2,
+) -> torch.Tensor:
+    """
+    Create a binary mask for high-entropy tokens based on the specified ratio.
+    
+    This function identifies the top-k highest entropy tokens (forking tokens) within each sequence
+    and creates a binary mask. Only tokens with high entropy will be used for gradient updates,
+    following the approach in "Beyond the 80/20 Rule: High-Entropy Minority Tokens Drive Effective 
+    Reinforcement Learning for LLM Reasoning" (https://arxiv.org/abs/2506.01939).
+    
+    The paper shows that utilizing only 20% of high-entropy tokens can maintain performance comparable
+    to full-gradient updates, with common value of 0.2 (top 20% highest entropy tokens).
+    
+    :param entropy: Entropy values for each token, shape (batch_size, sequence_length)
+    :type entropy: torch.Tensor
+    :param action_mask: Binary mask indicating valid tokens (1 for valid, 0 for padding)
+    :type action_mask: Optional[torch.Tensor]
+    :param high_entropy_ratio: Ratio of high-entropy tokens to keep (e.g., 0.2 means top 20%). 
+                               Common value: 0.2. Based on https://arxiv.org/abs/2506.01939, defaults to 0.2
+    :type high_entropy_ratio: float
+    
+    :return: Binary mask for high-entropy tokens, shape (batch_size, sequence_length)
+    :rtype: torch.Tensor
+    
+    Example::
+        >>> entropy = torch.tensor([[1.0, 5.0, 2.0, 6.0, 3.0], [2.0, 4.0, 1.0, 5.0, 0.0]])
+        >>> action_mask = torch.tensor([[1, 1, 1, 1, 1], [1, 1, 1, 1, 0]])
+        >>> mask = create_high_entropy_mask(entropy, action_mask, high_entropy_ratio=0.4)
+        >>> mask
+        tensor([[0, 1, 0, 1, 0], [0, 1, 0, 1, 0]])  # Top 40% (2 out of 5 valid tokens)
+    """
+    if high_entropy_ratio <= 0.0 or high_entropy_ratio >= 1.0:
+        # Return all-ones mask if ratio is invalid
+        if action_mask is not None:
+            return action_mask.clone()
+        return torch.ones_like(entropy, dtype=torch.float32)
+    
+    batch_size, seq_len = entropy.shape
+    high_entropy_mask = torch.zeros_like(entropy, dtype=torch.float32)
+    
+    for i in range(batch_size):
+        # Get valid entropy values for this sequence
+        if action_mask is not None:
+            valid_entropy = entropy[i] * action_mask[i]
+            valid_indices = action_mask[i].bool()
+        else:
+            valid_entropy = entropy[i]
+            valid_indices = torch.ones(seq_len, dtype=torch.bool, device=entropy.device)
+        
+        if not valid_indices.any():
+            continue
+        
+        # Calculate number of high-entropy tokens to keep
+        num_valid = valid_indices.sum().item()
+        num_high_entropy = max(1, int(num_valid * high_entropy_ratio))
+        
+        # Get top-k highest entropy tokens
+        _, top_indices = torch.topk(valid_entropy, k=num_high_entropy, dim=0)
+        high_entropy_mask[i, top_indices] = 1.0
+    
+    return high_entropy_mask
 
 
 def log_probs_from_logits(

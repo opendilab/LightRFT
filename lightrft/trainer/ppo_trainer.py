@@ -384,7 +384,7 @@ class PPOTrainer(ABC):
         torch.cuda.empty_cache()
         return status_mean
 
-    def training_step(self, experience: Experience, global_steps) -> Dict[str, float]:
+    def training_step(self, experience: Experience, global_steps, entropy_mask: Optional[torch.Tensor] = None) -> Dict[str, float]:
         """
         Single training step combining actor and critic updates.
 
@@ -392,17 +392,19 @@ class PPOTrainer(ABC):
         :type experience: Experience
         :param global_steps: Current global step count.
         :type global_steps: int
+        :param entropy_mask: Optional mask for high-entropy tokens.
+        :type entropy_mask: Optional[torch.Tensor]
         :return: Dictionary of training statistics.
         :rtype: Dict[str, float]
         """
         status = {}
         if global_steps > self.freezing_actor_steps:
-            status = self.training_step_actor(experience)
+            status = self.training_step_actor(experience, entropy_mask=entropy_mask)
         if self.critic is not None:
             status.update(self.training_step_critic(experience))
         return status
 
-    def training_step_actor(self, experience: Experience) -> Dict[str, float]:
+    def training_step_actor(self, experience: Experience, entropy_mask: Optional[torch.Tensor] = None) -> Dict[str, float]:
         """
         Actor training step.
 
@@ -449,6 +451,7 @@ class PPOTrainer(ABC):
             old_action_log_probs,
             advantages,
             action_mask=experience.action_mask,
+            entropy_mask=entropy_mask,
         )
 
         if self.args.use_kl_loss:
