@@ -19,7 +19,7 @@ from torch.optim import Optimizer
 import torch.distributed as dist
 
 from lightrft.models import LogExpLoss, LogSigmoidLoss, HPSLoss, pad_to_length
-from lightrft.utils import DistributedSampler
+from lightrft.utils import DistributedSampler, all_gather_and_flatten, all_reduce_dict
 
 
 class SRMTrainerVL:
@@ -80,12 +80,12 @@ class SRMTrainerVL:
             self.loss = "sigmoid"
             self.loss_fn = LogSigmoidLoss()
             self.strategy.print("LogSigmoid Loss")
-        elif loss == 'logexp':
-            self.loss = 'logexp'
+        elif loss == "logexp":
+            self.loss = "logexp"
             self.loss_fn = LogExpLoss()
             self.strategy.print("LogExp Loss")
-        elif loss == 'hps':
-            self.loss = 'hps'
+        elif loss == "hps":
+            self.loss = "hps"
             self.loss_fn = HPSLoss()
             self.strategy.print("HPS Loss")
         else:
@@ -182,9 +182,19 @@ class SRMTrainerVL:
 
             for data in self.train_dataloader:
                 (
-                    input0_ids, input0_mask, input1_ids, input1_mask, input0_img_pixels, input0_img_grid_thws,
-                    input1_img_pixels, input1_img_grid_thws, input0_video_pixels, input0_video_grid_thws,
-                    input1_video_pixels, input1_video_grid_thws, extras
+                    input0_ids,
+                    input0_mask,
+                    input1_ids,
+                    input1_mask,
+                    input0_img_pixels,
+                    input0_img_grid_thws,
+                    input1_img_pixels,
+                    input1_img_grid_thws,
+                    input0_video_pixels,
+                    input0_video_grid_thws,
+                    input1_video_pixels,
+                    input1_video_grid_thws,
+                    extras,
                 ) = data
 
                 device = torch.cuda.current_device()
@@ -207,14 +217,24 @@ class SRMTrainerVL:
                     input1_video_grid_thws = input1_video_grid_thws.to(device)
 
                 scores0, scores1 = self.concatenated_forward(
-                    self.model, input0_ids, input0_mask, input1_ids, input1_mask, input0_img_pixels,
-                    input0_img_grid_thws, input1_img_pixels, input1_img_grid_thws, input0_video_pixels,
-                    input0_video_grid_thws, input1_video_pixels, input1_video_grid_thws
+                    self.model,
+                    input0_ids,
+                    input0_mask,
+                    input1_ids,
+                    input1_mask,
+                    input0_img_pixels,
+                    input0_img_grid_thws,
+                    input1_img_pixels,
+                    input1_img_grid_thws,
+                    input0_video_pixels,
+                    input0_video_grid_thws,
+                    input1_video_pixels,
+                    input1_video_grid_thws,
                 )
 
                 labels = {}
                 for head_type in head_types:
-                    labels[head_type] = [e[head_type] if head_type in e else 'C' for e in extras]
+                    labels[head_type] = [e[head_type] if head_type in e else "C" for e in extras]
 
                 chosens = {}
                 rejects = {}
@@ -228,10 +248,10 @@ class SRMTrainerVL:
                     for head_type in head_types:
                         label = labels[head_type][i]
 
-                        if label == 'A':
+                        if label == "A":
                             chosens[head_type].append(scores0[head_type][i])
                             rejects[head_type].append(scores1[head_type][i])
-                        elif label == 'B':
+                        elif label == "B":
                             chosens[head_type].append(scores1[head_type][i])
                             rejects[head_type].append(scores0[head_type][i])
                         else:
@@ -281,12 +301,14 @@ class SRMTrainerVL:
                         logs_dict[f"{head_type}_acc"] = acc[head_type]
                         logs_dict[f"{head_type}_acc_mean"] = acc_mean[head_type]
                         logs_dict[f"{head_type}_loss_mean"] = loss_mean[head_type]
-                        logs_dict[f"{head_type}_chosen_reward"] = round(
-                            chosens[head_type].mean().item() * 0.07, 4
-                        ) if scale_for_train else chosens[head_type].mean().item()
-                        logs_dict[f"{head_type}_reject_reward"] = round(
-                            rejects[head_type].mean().item() * 0.07, 4
-                        ) if scale_for_train else rejects[head_type].mean().item()
+                        logs_dict[f"{head_type}_chosen_reward"] = (
+                            round(chosens[head_type].mean().item() *
+                                  0.07, 4) if scale_for_train else chosens[head_type].mean().item()
+                        )
+                        logs_dict[f"{head_type}_reject_reward"] = (
+                            round(rejects[head_type].mean().item() *
+                                  0.07, 4) if scale_for_train else rejects[head_type].mean().item()
+                        )
                     else:
                         logs_dict[f"{head_type}_loss"] = 0.0
                         logs_dict[f"{head_type}_acc"] = 0.0
@@ -297,8 +319,8 @@ class SRMTrainerVL:
 
                 # step bar
                 for k in logs_dict.keys():
-                    if k.startswith('preference'):
-                        logs_dict[k] = self.strategy.all_reduce(logs_dict[k], op='max')
+                    if k.startswith("preference"):
+                        logs_dict[k] = self.strategy.all_reduce(logs_dict[k], op="max")
                     else:
                         logs_dict[k] = self.strategy.all_reduce(logs_dict[k])
                 step_bar.set_postfix(logs_dict)
@@ -373,6 +395,8 @@ class SRMTrainerVL:
         """
         Evaluate the model on the provided dataloader and write a JSONL of
         scores to the save path indicated by ``strategy.args.save_path``.
+        Also calculates and logs accuracy metrics to Weights & Biases or
+        TensorBoard.
 
         :param args: present for API compatibility with callers.
         :type args: Any
@@ -395,26 +419,114 @@ class SRMTrainerVL:
 
         # Create JSONL file and write header (only on rank 0)
         if self.strategy.is_rank_0():
-            output_file = f"eval_scores_{steps}.jsonl"
-            output_file = os.path.join(self.strategy.args.save_path, output_file)
-            with open(output_file, 'w') as f:
+            self.strategy.print(f"Start Evaluation at global step {steps}...")
+            output_file = f"eval_results_{steps}.jsonl"
+            output_file = os.path.join(self.strategy.args.save_path, "evals", output_file)
+            os.makedirs(os.path.dirname(output_file), exist_ok=True)
+            with open(output_file, "w") as f:
                 f.write("")  # Just create/clear the file
 
-        with torch.no_grad():
-            results = []
+        head_types = self.model.head_types
+        # Metrics accumulators
+        eval_metrics = {"count": 0}
+        for head in head_types:
+            eval_metrics[f"{head}_correct"] = 0.0
+            eval_metrics[f"{head}_count"] = 0
+            eval_metrics[f"{head}_chosen_reward"] = 0.0
+            eval_metrics[f"{head}_reject_reward"] = 0.0
 
+        with torch.no_grad():
             for data in eval_dataloader:
                 (
-                    input0_ids, input0_mask, input1_ids, input1_mask, input0_img_pixels, input0_img_grid_thws,
-                    input1_img_pixels, input1_img_grid_thws, input0_video_pixels, input0_video_grid_thws,
-                    input1_video_pixels, input1_video_grid_thws, extras
+                    input0_ids,
+                    input0_mask,
+                    input1_ids,
+                    input1_mask,
+                    input0_img_pixels,
+                    input0_img_grid_thws,
+                    input1_img_pixels,
+                    input1_img_grid_thws,
+                    input0_video_pixels,
+                    input0_video_grid_thws,
+                    input1_video_pixels,
+                    input1_video_grid_thws,
+                    extras,
                 ) = data
 
+                device = torch.cuda.current_device()
+                input0_ids = input0_ids.squeeze(1).to(device)
+                input0_mask = input0_mask.squeeze(1).to(device)
+                input1_ids = input1_ids.squeeze(1).to(device)
+                input1_mask = input1_mask.squeeze(1).to(device)
+
+                if input0_img_pixels is not None:
+                    input0_img_pixels = input0_img_pixels.to(device)
+                    input0_img_grid_thws = input0_img_grid_thws.to(device)
+                    input1_img_pixels = input1_img_pixels.to(device)
+                    input1_img_grid_thws = input1_img_grid_thws.to(device)
+
+                if input0_video_pixels is not None:
+                    input0_video_pixels = input0_video_pixels.to(device)
+                    input0_video_grid_thws = input0_video_grid_thws.to(device)
+                    input1_video_pixels = input1_video_pixels.to(device)
+                    input1_video_grid_thws = input1_video_grid_thws.to(device)
+
                 scores0, scores1 = self.concatenated_forward(
-                    self.model, input0_ids, input0_mask, input1_ids, input1_mask, input0_img_pixels,
-                    input0_img_grid_thws, input1_img_pixels, input1_img_grid_thws, input0_video_pixels,
-                    input0_video_grid_thws, input1_video_pixels, input1_video_grid_thws
+                    self.model,
+                    input0_ids,
+                    input0_mask,
+                    input1_ids,
+                    input1_mask,
+                    input0_img_pixels,
+                    input0_img_grid_thws,
+                    input1_img_pixels,
+                    input1_img_grid_thws,
+                    input0_video_pixels,
+                    input0_video_grid_thws,
+                    input1_video_pixels,
+                    input1_video_grid_thws,
                 )
+
+                # --- Metric Calculation Start ---
+                labels = {}
+                for head_type in head_types:
+                    labels[head_type] = [e[head_type] if head_type in e else "C" for e in extras]
+
+                chosens = {}
+                rejects = {}
+                for head_type in head_types:
+                    chosens[head_type] = []
+                    rejects[head_type] = []
+
+                for i in range(len(extras)):
+                    for head_type in head_types:
+                        label = labels[head_type][i]
+                        if label == "A":
+                            chosens[head_type].append(scores0[head_type][i])
+                            rejects[head_type].append(scores1[head_type][i])
+                        elif label == "B":
+                            chosens[head_type].append(scores1[head_type][i])
+                            rejects[head_type].append(scores0[head_type][i])
+                        # We don't need equals for accuracy/reward calculation
+
+                for head_type in head_types:
+                    if len(chosens[head_type]) > 0:
+                        chosens[head_type] = torch.stack(chosens[head_type])
+                        rejects[head_type] = torch.stack(rejects[head_type])
+
+                # Update local metrics
+                batch_size = len(extras)
+                eval_metrics["count"] += batch_size
+
+                for head_type in head_types:
+                    if len(chosens[head_type]) > 0:
+                        count = len(chosens[head_type])
+                        eval_metrics[f"{head_type}_correct"] += ((chosens[head_type] >
+                                                                  rejects[head_type]).float().sum().item())
+                        eval_metrics[f"{head_type}_count"] += count
+                        eval_metrics[f"{head_type}_chosen_reward"] += chosens[head_type].sum().item()
+                        eval_metrics[f"{head_type}_reject_reward"] += rejects[head_type].sum().item()
+                # --- Metric Calculation End ---
 
                 # Gather scores from all GPUs for each head_type
                 gathered_scores0 = {}
@@ -431,17 +543,12 @@ class SRMTrainerVL:
                         gathered_scores0[head_type] = torch.cat(tensor_list0, dim=0)
                         gathered_scores1[head_type] = torch.cat(tensor_list1, dim=0)
 
-                # Gather extras into
-                gathered_extras = [None] * dist.get_world_size()
-                dist.all_gather_object(gathered_extras, extras)
-                # Flatten the list of lists
-                all_extras = []
-                for gpu_extras in gathered_extras:
-                    all_extras.extend(gpu_extras)
+                # Gather extras
+                all_extras = all_gather_and_flatten(extras)
 
                 # write scores to JSONL file immediately (only on rank 0)
                 if self.strategy.is_rank_0():
-                    with open(output_file, 'a') as f:
+                    with open(output_file, "a") as f:
                         for i, extras in enumerate(all_extras):
                             # build per-sample scores dict from gathered_scores
                             input0_scores = {
@@ -462,9 +569,35 @@ class SRMTrainerVL:
 
                 step_bar.update()
 
-            # Final message about file completion
-            if self.strategy.is_rank_0():
-                self.strategy.print(f"Evaluation scores written to {output_file}")
+        # --- Aggregate and Log Metrics ---
+        reduced_metrics = all_reduce_dict(eval_metrics, op="sum")
+
+        logs_dict = {}
+
+        for head in head_types:
+            count = reduced_metrics[f"{head}_count"]
+            if count > 0:
+                logs_dict[f"eval/{head}_acc"] = reduced_metrics[f"{head}_correct"] / count
+
+                chosen_reward = reduced_metrics[f"{head}_chosen_reward"] / count
+                reject_reward = reduced_metrics[f"{head}_reject_reward"] / count
+
+                logs_dict[f"eval/{head}_chosen_reward_mean"] = round(chosen_reward, 4)
+                logs_dict[f"eval/{head}_reject_reward_mean"] = round(reject_reward, 4)
+
+        if self.strategy.is_rank_0():
+            self.strategy.print(f"Evaluation scores written to {output_file}")
+            self.strategy.print(f"Eval metrics: {logs_dict}")
+
+            # Log to wandb/tensorboard
+            if self._wandb is not None:
+                logs_dict["eval/global_step"] = steps
+                self._wandb.log(logs_dict)
+            elif self._tensorboard is not None:
+                for k, v in logs_dict.items():
+                    if k != "eval/global_step":
+                        self._tensorboard.add_scalar(k, v, steps)
+
         self.model.train()  # reset model state
 
     def concatenated_forward(
@@ -540,7 +673,7 @@ class SRMTrainerVL:
             pixel_values=pixel_values,
             image_grid_thw=image_grid_thws,
             pixel_values_videos=pixel_values_videos,
-            video_grid_thw=video_grid_thws
+            video_grid_thw=video_grid_thws,
         )
         scores0 = {head_type: score[:input0_ids.shape[0]] for head_type, score in scores.items()}
         scores1 = {head_type: score[input0_ids.shape[0]:] for head_type, score in scores.items()}

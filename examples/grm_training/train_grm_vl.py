@@ -153,6 +153,7 @@ if __name__ == "__main__":
     # Training
     parser.add_argument("--max_epochs", type=int, default=1)
     parser.add_argument("--prompt_max_len", type=int, default=1024, help="Max tokens for each prompt")
+    parser.add_argument("--generate_max_len", type=int, default=1024, help="Max tokens for generation in evaluation")
     parser.add_argument("--l2", type=float, default=0.0, help="weight decay loss")
     parser.add_argument("--micro_train_batch_size", type=int, default=4, help="batch size per GPU")
     parser.add_argument("--train_batch_size", type=int, default=128, help="Global training batch size")
@@ -210,6 +211,9 @@ if __name__ == "__main__":
 
     if args.train_data:
         args.train_data = args.train_data.split(",")
+
+    if args.eval_data:
+        args.eval_data = args.eval_data.split(",")
 
     if args.input_template and "{}" not in args.input_template:
         print("[Warning] {} not in args.input_template, set to None")

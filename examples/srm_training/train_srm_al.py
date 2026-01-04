@@ -213,6 +213,9 @@ if __name__ == "__main__":
     if args.train_data:
         args.train_data = args.train_data.split(",")
 
+    if args.eval_data:
+        args.eval_data = args.eval_data.split(",")
+
     if args.input_template and "{}" not in args.input_template:
         print("[Warning] {} not in args.input_template, set to None")
         args.input_template = None
