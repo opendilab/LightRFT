@@ -79,12 +79,12 @@ class SRMTrainerAL:
             self.loss = "sigmoid"
             self.loss_fn = LogSigmoidLoss()
             self.strategy.print("LogSigmoid Loss")
-        elif loss == 'logexp':
-            self.loss = 'logexp'
+        elif loss == "logexp":
+            self.loss = "logexp"
             self.loss_fn = LogExpLoss()
             self.strategy.print("LogExp Loss")
-        elif loss == 'hps':
-            self.loss = 'hps'
+        elif loss == "hps":
+            self.loss = "hps"
             self.loss_fn = HPSLoss()
             self.strategy.print("HPS Loss")
         else:
@@ -181,8 +181,15 @@ class SRMTrainerAL:
 
             for data in self.train_dataloader:
                 (
-                    input0_ids, input0_mask, input1_ids, input1_mask, input0_input_features,
-                    input0_feature_attention_mask, input1_input_features, input1_feature_attention_mask, extras
+                    input0_ids,
+                    input0_mask,
+                    input1_ids,
+                    input1_mask,
+                    input0_input_features,
+                    input0_feature_attention_mask,
+                    input1_input_features,
+                    input1_feature_attention_mask,
+                    extras,
                 ) = data
 
                 device = torch.cuda.current_device()
@@ -211,7 +218,7 @@ class SRMTrainerAL:
 
                 labels = {}
                 for head_type in head_types:
-                    labels[head_type] = [e[head_type] if head_type in e else 'C' for e in extras]
+                    labels[head_type] = [e[head_type] if head_type in e else "C" for e in extras]
 
                 chosens = {}
                 rejects = {}
@@ -225,10 +232,10 @@ class SRMTrainerAL:
                     for head_type in head_types:
                         label = labels[head_type][i]
 
-                        if label == 'A':
+                        if label == "A":
                             chosens[head_type].append(scores0[head_type][i])
                             rejects[head_type].append(scores1[head_type][i])
-                        elif label == 'B':
+                        elif label == "B":
                             chosens[head_type].append(scores1[head_type][i])
                             rejects[head_type].append(scores0[head_type][i])
                         else:
@@ -278,12 +285,14 @@ class SRMTrainerAL:
                         logs_dict[f"{head_type}_acc"] = acc[head_type]
                         logs_dict[f"{head_type}_acc_mean"] = acc_mean[head_type]
                         logs_dict[f"{head_type}_loss_mean"] = loss_mean[head_type]
-                        logs_dict[f"{head_type}_chosen_reward"] = round(
-                            chosens[head_type].mean().item() * 0.07, 4
-                        ) if scale_for_train else chosens[head_type].mean().item()
-                        logs_dict[f"{head_type}_reject_reward"] = round(
-                            rejects[head_type].mean().item() * 0.07, 4
-                        ) if scale_for_train else rejects[head_type].mean().item()
+                        logs_dict[f"{head_type}_chosen_reward"] = (
+                            round(chosens[head_type].mean().item() *
+                                  0.07, 4) if scale_for_train else chosens[head_type].mean().item()
+                        )
+                        logs_dict[f"{head_type}_reject_reward"] = (
+                            round(rejects[head_type].mean().item() *
+                                  0.07, 4) if scale_for_train else rejects[head_type].mean().item()
+                        )
                     else:
                         logs_dict[f"{head_type}_loss"] = 0.0
                         logs_dict[f"{head_type}_acc"] = 0.0
@@ -294,8 +303,8 @@ class SRMTrainerAL:
 
                 # step bar
                 for k in logs_dict.keys():
-                    if k.startswith('preference'):
-                        logs_dict[k] = self.strategy.all_reduce(logs_dict[k], op='max')
+                    if k.startswith("preference"):
+                        logs_dict[k] = self.strategy.all_reduce(logs_dict[k], op="max")
                     else:
                         logs_dict[k] = self.strategy.all_reduce(logs_dict[k])
                 step_bar.set_postfix(logs_dict)
@@ -393,7 +402,7 @@ class SRMTrainerAL:
             output_file = f"eval_scores_{steps}.jsonl"
             output_file = os.path.join(self.strategy.args.save_path, "evals", output_file)
             os.makedirs(os.path.dirname(output_file), exist_ok=True)
-            with open(output_file, 'w') as f:
+            with open(output_file, "w") as f:
                 f.write("")  # Just create/clear the file
 
         head_types = self.model.head_types
@@ -408,8 +417,15 @@ class SRMTrainerAL:
         with torch.no_grad():
             for data in eval_dataloader:
                 (
-                    input0_ids, input0_mask, input1_ids, input1_mask, input0_input_features,
-                    input0_feature_attention_mask, input1_input_features, input1_feature_attention_mask, extras
+                    input0_ids,
+                    input0_mask,
+                    input1_ids,
+                    input1_mask,
+                    input0_input_features,
+                    input0_feature_attention_mask,
+                    input1_input_features,
+                    input1_feature_attention_mask,
+                    extras,
                 ) = data
 
                 device = torch.cuda.current_device()
@@ -439,7 +455,7 @@ class SRMTrainerAL:
                 # --- Metric Calculation Start ---
                 labels = {}
                 for head_type in head_types:
-                    labels[head_type] = [e[head_type] if head_type in e else 'C' for e in extras]
+                    labels[head_type] = [e[head_type] if head_type in e else "C" for e in extras]
 
                 chosens = {}
                 rejects = {}
@@ -450,10 +466,10 @@ class SRMTrainerAL:
                 for i in range(len(extras)):
                     for head_type in head_types:
                         label = labels[head_type][i]
-                        if label == 'A':
+                        if label == "A":
                             chosens[head_type].append(scores0[head_type][i])
                             rejects[head_type].append(scores1[head_type][i])
-                        elif label == 'B':
+                        elif label == "B":
                             chosens[head_type].append(scores1[head_type][i])
                             rejects[head_type].append(scores0[head_type][i])
                         # We don't need equals for accuracy/reward calculation
@@ -470,8 +486,8 @@ class SRMTrainerAL:
                 for head_type in head_types:
                     if len(chosens[head_type]) > 0:
                         count = len(chosens[head_type])
-                        eval_metrics[f"{head_type}_correct"] += (chosens[head_type]
-                                                                 > rejects[head_type]).float().sum().item()
+                        eval_metrics[f"{head_type}_correct"] += ((chosens[head_type]
+                                                                  > rejects[head_type]).float().sum().item())
                         eval_metrics[f"{head_type}_count"] += count
                         eval_metrics[f"{head_type}_chosen_reward"] += chosens[head_type].sum().item()
                         eval_metrics[f"{head_type}_reject_reward"] += rejects[head_type].sum().item()
@@ -497,7 +513,7 @@ class SRMTrainerAL:
 
                 # write scores to JSONL file immediately (only on rank 0)
                 if self.strategy.is_rank_0():
-                    with open(output_file, 'a') as f:
+                    with open(output_file, "a") as f:
                         for i, extras in enumerate(all_extras):
                             # build per-sample scores dict from gathered_scores
                             input0_scores = {
@@ -598,7 +614,7 @@ class SRMTrainerAL:
             input_ids,
             attention_mask=att_masks,
             input_features=input_features,
-            feature_attention_mask=feature_attention_mask
+            feature_attention_mask=feature_attention_mask,
         )
         scores0 = {head_type: score[:input0_ids.shape[0]] for head_type, score in scores.items()}
         scores1 = {head_type: score[input0_ids.shape[0]:] for head_type, score in scores.items()}
