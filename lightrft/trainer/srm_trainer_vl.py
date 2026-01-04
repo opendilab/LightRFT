@@ -406,9 +406,7 @@ class SRMTrainerVL:
 
         head_types = self.model.head_types
         # Metrics accumulators
-        eval_metrics = {
-            "count": 0
-        }
+        eval_metrics = {"count": 0}
         for head in head_types:
             eval_metrics[f"{head}_correct"] = 0.0
             eval_metrics[f"{head}_count"] = 0
@@ -480,7 +478,8 @@ class SRMTrainerVL:
                 for head_type in head_types:
                     if len(chosens[head_type]) > 0:
                         count = len(chosens[head_type])
-                        eval_metrics[f"{head_type}_correct"] += (chosens[head_type] > rejects[head_type]).float().sum().item()
+                        eval_metrics[f"{head_type}_correct"] += (chosens[head_type]
+                                                                 > rejects[head_type]).float().sum().item()
                         eval_metrics[f"{head_type}_count"] += count
                         eval_metrics[f"{head_type}_chosen_reward"] += chosens[head_type].sum().item()
                         eval_metrics[f"{head_type}_reject_reward"] += rejects[head_type].sum().item()

@@ -408,9 +408,9 @@ def all_gather_and_flatten(data: Any, group: Optional[dist.ProcessGroup] = None)
     return flattened_data
 
 
-def all_reduce_dict(
-    metrics_dict: Dict[str, float], op: str = "sum", group: Optional[dist.ProcessGroup] = None
-) -> Dict[str, float]:
+def all_reduce_dict(metrics_dict: Dict[str, float],
+                    op: str = "sum",
+                    group: Optional[dist.ProcessGroup] = None) -> Dict[str, float]:
     """
     Perform all-reduce operation on a dictionary of metrics.
     This function converts the dictionary values to a single tensor for efficient reduction.

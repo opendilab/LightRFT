@@ -279,7 +279,7 @@ class GRMTrainerVL:
             output_file = f"eval_result_{steps}.json"
             output_file = os.path.join(self.strategy.args.save_path, "eval", output_file)
             os.makedirs(os.path.dirname(output_file), exist_ok=True)
-        
+
         all_eval_records = []
 
         with torch.no_grad():
@@ -308,11 +308,11 @@ class GRMTrainerVL:
                     pixel_values_videos=pixel_values_videos,
                     video_grid_thw=video_grid_thws,
                     max_new_tokens=args.generate_max_len,
-                    synced_gpus=True,   # Use synced_gpus=True for Zero-3 compatibility
+                    synced_gpus=True,  # Use synced_gpus=True for Zero-3 compatibility
                     eos_token_id=self.tokenizer.eos_token_id,
                     pad_token_id=self.tokenizer.pad_token_id,
                 )
-                
+
                 generated_text = self.tokenizer.batch_decode(generated_ids, skip_special_tokens=True)
 
                 responses_text = []
@@ -330,19 +330,17 @@ class GRMTrainerVL:
 
                     # Extract predicted answer from the response
                     predicted_answers.append(extract_answer(response))
-                
+
                 # Construct records locally and gather them across all ranks
-                local_records = [
-                    {
-                        "info": extra,
-                        "generated_text": gen_text,
-                        "response_text": resp_text,
-                        "predicted_answer": pred_ans,
-                        "gt_answer": extract_answer(extra["response"])
-                    }
-                    for gen_text, resp_text, pred_ans, extra in zip(generated_text, responses_text, predicted_answers, extras)
-                ]
-                
+                local_records = [{
+                    "info": extra,
+                    "generated_text": gen_text,
+                    "response_text": resp_text,
+                    "predicted_answer": pred_ans,
+                    "gt_answer": extract_answer(extra["response"])
+                } for gen_text, resp_text, pred_ans, extra in
+                                 zip(generated_text, responses_text, predicted_answers, extras)]
+
                 gathered_records = all_gather_and_flatten(local_records)
                 if self.strategy.is_rank_0():
                     all_eval_records.extend(gathered_records)
@@ -370,7 +368,9 @@ class GRMTrainerVL:
             if self._wandb is not None:
                 columns = ["info", "generated_text", "response_text", "predicted_answer", "gt_answer"]
                 # Log a subset of samples
-                data = [[str(r["info"]), r["generated_text"], r["response_text"], r["predicted_answer"], r["gt_answer"]] for r in all_eval_records[:10]]
+                data = [[
+                    str(r["info"]), r["generated_text"], r["response_text"], r["predicted_answer"], r["gt_answer"]
+                ] for r in all_eval_records[:10]]
                 self._wandb.log({
                     "eval/samples": self._wandb.Table(columns=columns, data=data),
                     "eval/accuracy": accuracy,
