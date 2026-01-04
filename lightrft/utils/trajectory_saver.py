@@ -8,12 +8,153 @@ for debugging and analysis purposes.
 import base64
 import json
 import os
+import re
+from itertools import islice, zip_longest
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
+import numpy as np
 import torch
 from PIL import Image
 import io
+
+
+def _calculate_repeatness(s: str) -> float:
+    """
+    Calculate the repeatness score of a string using suffix array and LCP.
+    
+    Higher values indicate more repetition in the text.
+    
+    :param s: Input string to analyze
+    :type s: str
+    :return: Repeatness score between 0 and 1
+    :rtype: float
+    """
+    def ranks(l):
+        index = {v: i for i, v in enumerate(sorted(set(l)))}
+        return [index[v] for v in l]
+
+    def suffix_array(s):
+        line = ranks(s)
+        n, k, ans, sa = len(s), 1, line, [0] * len(s)
+        while k < n - 1:
+            line = ranks(list(zip_longest(line, islice(line, k, None), fillvalue=-1)))
+            ans, k = line, k << 1
+        for i, k in enumerate(ans):
+            sa[k] = i
+        return ans, sa
+
+    def lcp(arr, suffix_arr, inv_suff):
+        n, ans, k = len(arr), [0] * len(arr), 0
+
+        for i in range(n):
+            if inv_suff[i] == n - 1:
+                k = 0
+                continue
+
+            j = suffix_arr[inv_suff[i] + 1]
+            while i + k < n and j + k < n and arr[i + k] == arr[j + k]:
+                k += 1
+
+            ans[inv_suff[i]] = k
+            if k > 0:
+                k -= 1
+
+        return ans
+
+    arr = [ord(i) for i in s]
+    n = len(arr)
+    if n <= 1:
+        return 0.0
+    c, sa = suffix_array(arr)
+    cnt = sum(lcp(arr, sa, c))
+
+    return cnt * 2 / (n * (n + 1))
+
+
+def _check_reflection_pattern(text: str) -> Dict[str, int]:
+    """
+    Check for reflection patterns in the text (e.g., "Let me think", "Let me reconsider").
+    
+    :param text: Input text to analyze
+    :type text: str
+    :return: Dictionary with pattern counts
+    :rtype: Dict[str, int]
+    """
+    patterns = {
+        "let_me_think": len(re.findall(r'\blet\s+me\s+think\b', text, re.IGNORECASE)),
+        "let_me_reconsider": len(re.findall(r'\blet\s+me\s+reconsider\b', text, re.IGNORECASE)),
+        "actually": len(re.findall(r'\bactually\b', text, re.IGNORECASE)),
+        "wait": len(re.findall(r'\bwait\b', text, re.IGNORECASE)),
+        "correction": len(re.findall(r'\bcorrection\b', text, re.IGNORECASE)),
+        "mistake": len(re.findall(r'\bmistake\b', text, re.IGNORECASE)),
+        "wrong": len(re.findall(r'\bwrong\b', text, re.IGNORECASE)),
+        "rethink": len(re.findall(r'\brethink\b', text, re.IGNORECASE)),
+    }
+    return patterns
+
+
+def _calculate_reflection_pattern_score(text: str) -> int:
+    """
+    Calculate total reflection pattern count in text.
+    
+    :param text: Input text to analyze
+    :type text: str
+    :return: Total count of reflection patterns
+    :rtype: int
+    """
+    reflection_pattern_dict = _check_reflection_pattern(text)
+    return sum(reflection_pattern_dict.values())
+
+
+def _calculate_entropy_from_log_probs(log_probs: torch.Tensor) -> float:
+    """
+    Calculate policy entropy from action log probabilities.
+    
+    Note: In RL, action_log_probs can be:
+    1. Full distribution: shape (seq_len, vocab_size) - can calculate proper entropy
+    2. Sequence of selected token log_probs: shape (seq_len,) - use variance/std as uncertainty measure
+    3. Aggregated value: scalar - cannot calculate entropy, return 0.0
+    
+    For full distributions: Entropy = -sum(p * log(p)) where p = exp(log_prob)
+    For sequences: Use standard deviation as uncertainty measure
+    
+    :param log_probs: Action log probabilities tensor
+    :type log_probs: torch.Tensor
+    :return: Entropy value or uncertainty measure
+    :rtype: float
+    """
+    if log_probs is None or log_probs.numel() == 0:
+        return 0.0
+    
+    # Handle scalar (aggregated value) - cannot calculate entropy
+    if log_probs.numel() == 1:
+        return 0.0
+    
+    # Check if we have a full distribution (2D with large second dimension = vocab_size)
+    if len(log_probs.shape) == 2 and log_probs.shape[1] > 100:
+        # Likely shape: (seq_len, vocab_size) - full distribution
+        # Calculate entropy for each position: -sum(exp(log_prob) * log_prob)
+        probs = torch.exp(log_probs)
+        # Clamp to avoid numerical issues
+        probs = torch.clamp(probs, min=1e-10)
+        log_probs_clamped = torch.clamp(log_probs, min=-1e10)
+        entropy_per_position = -torch.sum(probs * log_probs_clamped, dim=1)
+        # Return average entropy across sequence
+        return entropy_per_position.mean().item()
+    elif len(log_probs.shape) == 1 and log_probs.shape[0] > 1:
+        # Sequence of selected token log_probs: shape (seq_len,)
+        # Cannot calculate true entropy without full distribution, but we can use
+        # standard deviation as an uncertainty measure
+        # Higher std = more uncertainty = higher "entropy-like" measure
+        std_dev = torch.std(log_probs).item()
+        # Normalize by a factor to make it more interpretable
+        # Using absolute value since log_probs are negative
+        uncertainty = abs(std_dev)
+        return uncertainty
+    else:
+        # Unknown shape or single value
+        return 0.0
 
 
 class TrajectorySaver:
@@ -60,9 +201,10 @@ class TrajectorySaver:
         step: int,
         num_samples: int = 10,
         prefix: str = "trajectories",
-    ) -> Optional[str]:
+        compute_stats: bool = False,
+    ) -> Tuple[Optional[str], Optional[Dict[str, float]]]:
         """
-        Save a subset of experiences to a JSON file.
+        Save a subset of experiences to a JSON file and optionally compute statistics.
 
         Each Experience object is a micro-batch. This function unpacks them
         into individual sample trajectories before saving.
@@ -75,14 +217,16 @@ class TrajectorySaver:
         :type num_samples: int
         :param prefix: Prefix for the output filename. Default to "trajectories"
         :type prefix: str
-        :return: Path to the saved JSON file (None if not rank 0 or no experiences)
-        :rtype: Optional[str]
+        :param compute_stats: Whether to compute and return statistics. Default to False
+        :type compute_stats: bool
+        :return: Tuple of (path to saved JSON file, statistics dict) or (None, None) if not rank 0 or no experiences
+        :rtype: Tuple[Optional[str], Optional[Dict[str, float]]]
         """
         if not torch.distributed.is_initialized() or torch.distributed.get_rank() != 0:
-            return None
+            return None, None
 
         if not experiences:
-            return None
+            return None, None
 
         all_trajectories = []
         # Iterate through experience objects (micro-batches) until we have enough samples.
@@ -103,7 +247,13 @@ class TrajectorySaver:
             json.dump(sampled_trajectories, f, indent=2, ensure_ascii=False)
 
         print(f"[TrajectorySaver] Saved {len(sampled_trajectories)} trajectories to {output_path}")
-        return str(output_path)
+        
+        # Compute statistics if requested
+        stats = None
+        if compute_stats:
+            stats = self._compute_statistics(sampled_trajectories)
+        
+        return str(output_path), stats
 
     def _unpack_experience_to_dicts(self, exp: Any, step: int, exp_idx: int) -> List[Dict[str, Any]]:
         """
@@ -185,6 +335,7 @@ class TrajectorySaver:
                         )
                         generated_text = ""
                         pure_generated_text = ""
+                        pure_gen_tokens = torch.tensor([], dtype=sequences.dtype)
                     else:
                         # Calculate offset to adjust indices from action_mask space to sequences space
                         # action_mask length = seq_length - input_len
@@ -205,25 +356,72 @@ class TrajectorySaver:
                             pure_gen_tokens = sequences[i][adjusted_indices[1:]]
                             pure_generated_text = self.tokenizer.decode(pure_gen_tokens, skip_special_tokens=True)
                         else:
+                            pure_gen_tokens = torch.tensor([], dtype=sequences.dtype)
                             pure_generated_text = ""
                 else:
                     generated_text = ""
                     pure_generated_text = ""
+                    pure_gen_tokens = torch.tensor([], dtype=sequences.dtype)
             except (IndexError, RuntimeError) as e:
                 print(
                     f"[TrajectorySaver] Error extracting generated text for sample {i} at step {step}, exp_idx {exp_idx}: {e}"  # noqa: E501
                 )
                 generated_text = ""
                 pure_generated_text = ""
+                pure_gen_tokens = torch.tensor([], dtype=sequences.dtype)
+
+            # Calculate analysis metrics for this sample
+            # Calculate repeatness score
+            repeat_score = _calculate_repeatness(pure_generated_text) if pure_generated_text else 0.0
+            
+            # Calculate reflection pattern score
+            reflection_pattern_score = _calculate_reflection_pattern_score(pure_generated_text) if pure_generated_text else 0
+            reflection_pattern_dict = _check_reflection_pattern(pure_generated_text) if pure_generated_text else {}
+            
+            # Calculate policy entropy from action_log_probs
+            policy_entropy = 0.0
+            try:
+                if hasattr(exp, 'action_log_probs') and exp.action_log_probs is not None:
+                    exp_action_log_probs = exp.action_log_probs.cpu()
+                    log_probs_tensor = None
+                    
+                    # Handle different shapes - simplified based on actual usage patterns
+                    if len(exp_action_log_probs.shape) == 1:
+                        # 1D tensor: (seq_len,) for single sample
+                        if batch_size == 1 or exp_action_log_probs.shape[0] == action_mask.size(1):
+                            log_probs_tensor = exp_action_log_probs
+                    elif len(exp_action_log_probs.shape) == 2:
+                        # 2D tensor: (batch_size, seq_len)
+                        if exp_action_log_probs.shape[0] == batch_size and i < exp_action_log_probs.shape[0]:
+                            log_probs_tensor = exp_action_log_probs[i]
+                    
+                    # Calculate entropy if we have a valid tensor
+                    if log_probs_tensor is not None and log_probs_tensor.numel() > 1:
+                        policy_entropy = _calculate_entropy_from_log_probs(log_probs_tensor)
+            except Exception:
+                # Silently fail - entropy calculation is optional
+                pass
+            
+            # Calculate response token count
+            try:
+                response_token_count = len(pure_gen_tokens) if pure_gen_tokens.numel() > 0 else 0
+            except (AttributeError, NameError):
+                response_token_count = 0
 
             # Build the dictionary for this single sample
             traj_dict = {
                 "global_step": step,
-                "experience_index": exp_idx,  # which micro-batch it came from
-                "sample_in_exp": i,  # which sample within the micro-batch
+                "experience_index": exp_idx, # which micro-batch it came from
+                "sample_in_exp": i, # which sample within the micro-batch
                 "full_sequence": decoded_sequences[i],
                 "generated_text": generated_text,  # Includes last prompt token (for RL state-action)
                 "pure_generated_text": pure_generated_text,  # Only model's output
+                # Analysis metrics
+                "repeat_score": repeat_score,
+                "reflection_pattern_score": reflection_pattern_score,
+                "reflection_pattern_details": reflection_pattern_dict,
+                "policy_entropy": policy_entropy,
+                "response_token_count": response_token_count,
             }
 
             # Add optional fields for this sample
@@ -359,6 +557,54 @@ class TrajectorySaver:
                 f"[TrajectorySaver] Warning: {attr_name} has mismatched batch size {tensor.shape[0]}, expected {expected_batch_size}. Using defaults."  # noqa: E501
             )
             return [None] * expected_batch_size
+
+    def _compute_statistics(self, trajectories: List[Dict[str, Any]]) -> Dict[str, float]:
+        """
+        Compute statistics from saved trajectories for logging to wandb.
+        
+        :param trajectories: List of trajectory dictionaries
+        :type trajectories: List[Dict[str, Any]]
+        :return: Dictionary of statistics
+        :rtype: Dict[str, float]
+        """
+        if not trajectories:
+            return {}
+        
+        stats = {}
+        
+        # Collect all metric values
+        repeat_scores = []
+        reflection_pattern_scores = []
+        policy_entropies = []
+        response_token_counts = []
+        
+        for traj in trajectories:
+            if "repeat_score" in traj:
+                repeat_scores.append(traj["repeat_score"])
+            if "reflection_pattern_score" in traj:
+                reflection_pattern_scores.append(traj["reflection_pattern_score"])
+            if "policy_entropy" in traj:
+                policy_entropies.append(traj["policy_entropy"])
+            if "response_token_count" in traj:
+                response_token_counts.append(traj["response_token_count"])
+        
+        # Compute statistics (only mean values)
+        if repeat_scores:
+            stats["trajectory/repeat_score_mean"] = float(np.mean(repeat_scores))
+        
+        if reflection_pattern_scores:
+            stats["trajectory/reflection_pattern_score_mean"] = float(np.mean(reflection_pattern_scores))
+        
+        if policy_entropies:
+            # Filter out zero values for meaningful statistics
+            non_zero_entropies = [e for e in policy_entropies if e > 0]
+            if non_zero_entropies:
+                stats["trajectory/policy_entropy_mean"] = float(np.mean(non_zero_entropies))
+        
+        if response_token_counts:
+            stats["trajectory/response_token_count_mean"] = float(np.mean(response_token_counts))
+        
+        return stats
 
     def _save_images(self, imgs: List[Image.Image], step: int, exp_idx: int, sample_idx: int) -> List[Optional[str]]:
         """

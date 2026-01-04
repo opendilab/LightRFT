@@ -442,18 +442,36 @@ class SPMDPPOTrainerBase:
         Save experience trajectories if trajectory saving is enabled.
 
         This method is called during checkpoint saving to store sample trajectories
-        for debugging and analysis purposes.
+        for debugging and analysis purposes. If trajectory analysis is enabled,
+        it also logs statistics to wandb.
 
         :param global_step: Current global training step
         :type global_step: int
         """
         if self.trajectory_saver is not None and self.replay_buffer.items:
-            self.trajectory_saver.save_trajectories(
+            # Check if trajectory analysis is enabled
+            
+            output_path, stats = self.trajectory_saver.save_trajectories(
                 experiences=self.replay_buffer.items,
                 step=global_step,
                 num_samples=self.num_trajectories_to_save,
-                prefix="trajectories"
+                prefix="trajectories",
+                compute_stats=self.args.trajectory_analysis
             )
+            
+            # Log statistics to wandb if available
+            if stats and self.args.trajectory_analysis and hasattr(self, 'strategy') and self.strategy.is_rank_0():
+                # Try to get wandb from strategy or parent class
+                if hasattr(self.strategy, 'args') and self.strategy.args.use_wandb:
+                    try:
+                        import wandb
+                        if wandb.run is not None:
+                            # Prefix with train/ for consistency
+                            wandb_stats = {f"train/{k}": v for k, v in stats.items()}
+                            wandb_stats["train/global_step"] = global_step
+                            wandb.log(wandb_stats, step=global_step)
+                    except (ImportError, AttributeError):
+                        pass
 
 
 class SPMDPPOTrainer(SPMDPPOTrainerBase, PPOTrainer):
