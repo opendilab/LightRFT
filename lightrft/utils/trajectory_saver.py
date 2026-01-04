@@ -132,13 +132,13 @@ class TrajectorySaver:
         elif len(sequences.shape) == 1:
             # 1D tensor - reshape to (1, seq_len)
             print(
-                f"[TrajectorySaver] Warning: sequences is 1D tensor with shape {sequences.shape} at step {step}, exp_idx {exp_idx}. Reshaping to 2D."
+                f"[TrajectorySaver] Warning: sequences is 1D tensor with shape {sequences.shape} at step {step}, exp_idx {exp_idx}. Reshaping to 2D."  # noqa: E501
             )
             sequences = sequences.unsqueeze(0)
         elif len(sequences.shape) != 2:
             # Unexpected shape
             print(
-                f"[TrajectorySaver] Error: sequences has unexpected shape {sequences.shape} at step {step}, exp_idx {exp_idx}. Expected 2D tensor (B, S). Skipping."
+                f"[TrajectorySaver] Error: sequences has unexpected shape {sequences.shape} at step {step}, exp_idx {exp_idx}. Expected 2D tensor (B, S). Skipping."  # noqa: E501
             )
             return []
 
@@ -151,7 +151,7 @@ class TrajectorySaver:
                 action_mask = action_mask.unsqueeze(0)
             elif len(action_mask.shape) != 2:
                 print(
-                    f"[TrajectorySaver] Warning: action_mask has unexpected shape {action_mask.shape}. Creating default mask."
+                    f"[TrajectorySaver] Warning: action_mask has unexpected shape {action_mask.shape}. Creating default mask."  # noqa: E501
                 )
                 action_mask = torch.zeros_like(sequences, dtype=torch.bool)
         else:
@@ -181,7 +181,7 @@ class TrajectorySaver:
                     # Verify sequences[i] is indexable
                     if len(sequences[i].shape) == 0:
                         print(
-                            f"[TrajectorySaver] Warning: sequences[{i}] is scalar at step {step}, exp_idx {exp_idx}. Skipping generation."
+                            f"[TrajectorySaver] Warning: sequences[{i}] is scalar at step {step}, exp_idx {exp_idx}. Skipping generation."  # noqa: E501
                         )
                         generated_text = ""
                         pure_generated_text = ""
@@ -211,7 +211,7 @@ class TrajectorySaver:
                     pure_generated_text = ""
             except (IndexError, RuntimeError) as e:
                 print(
-                    f"[TrajectorySaver] Error extracting generated text for sample {i} at step {step}, exp_idx {exp_idx}: {e}"
+                    f"[TrajectorySaver] Error extracting generated text for sample {i} at step {step}, exp_idx {exp_idx}: {e}"  # noqa: E501
                 )
                 generated_text = ""
                 pure_generated_text = ""
@@ -274,7 +274,7 @@ class TrajectorySaver:
                         sample_images = list(sample_images)
                     except (TypeError, ValueError):
                         print(
-                            f"[TrajectorySaver] Warning: Unexpected image type {type(sample_images)} at step {step}, exp_idx {exp_idx}, sample {i}. Skipping images."
+                            f"[TrajectorySaver] Warning: Unexpected image type {type(sample_images)} at step {step}, exp_idx {exp_idx}, sample {i}. Skipping images."  # noqa: E501
                         )
                         sample_images = None
 
@@ -342,7 +342,7 @@ class TrajectorySaver:
                 return tensor
             else:
                 print(
-                    f"[TrajectorySaver] Warning: {attr_name} has mismatched batch size {tensor.shape[0]}, expected {expected_batch_size}. Padding/truncating."
+                    f"[TrajectorySaver] Warning: {attr_name} has mismatched batch size {tensor.shape[0]}, expected {expected_batch_size}. Padding/truncating."  # noqa: E501
                 )
                 # Pad or truncate
                 if tensor.shape[0] < expected_batch_size:
@@ -356,7 +356,7 @@ class TrajectorySaver:
             return tensor
         else:
             print(
-                f"[TrajectorySaver] Warning: {attr_name} has mismatched batch size {tensor.shape[0]}, expected {expected_batch_size}. Using defaults."
+                f"[TrajectorySaver] Warning: {attr_name} has mismatched batch size {tensor.shape[0]}, expected {expected_batch_size}. Using defaults."  # noqa: E501
             )
             return [None] * expected_batch_size
 

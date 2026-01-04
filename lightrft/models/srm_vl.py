@@ -76,13 +76,13 @@ class ScalarRewardModelVL(nn.Module):
             if ds_config is not None and ds_config["zero_optimization"]["stage"] == 3:
                 dschf = HfDeepSpeedConfig(ds_config)
             else:
-                dschf = None
+                dschf = None  # noqa: F841
 
             self.model = AutoModel.from_pretrained(
                 pretrain_or_model,
                 trust_remote_code=True,
                 attn_implementation=attn_implementation,
-                dtype=torch.bfloat16 if bf16 else "auto",
+                torch_dtype=torch.bfloat16 if bf16 else "auto",
                 device_map=device_map,
             )
 
@@ -102,7 +102,7 @@ class ScalarRewardModelVL(nn.Module):
             try:
                 num_hidden_layers = self.model.config.num_hidden_layers
                 hidden_size = self.model.config.hidden_size
-            except:
+            except AttributeError:
                 # Special handling for Qwen3-VL
                 num_hidden_layers = self.model.config.text_config.num_hidden_layers
                 hidden_size = self.model.config.text_config.hidden_size

@@ -81,7 +81,7 @@ class ScalarRewardModelAL(nn.Module):
             if ds_config is not None and ds_config["zero_optimization"]["stage"] == 3:
                 dschf = HfDeepSpeedConfig(ds_config)
             else:
-                dschf = None
+                dschf = None  # noqa: F841
 
             # Load backbone model
             self.model = Qwen2AudioForConditionalGeneration.from_pretrained(

@@ -407,16 +407,6 @@ This comprehensive guide covers all configuration parameters available in LightR
 - **Default**: `0.0`
 - **Description**: Clip rewards (0 = no clipping)
 
-### `--use_pf_ppo`
-- **Action**: `store_true`
-- **Default**: `False`
-- **Description**: Enable Policy Filtered PPO
-
-### `--filter_threshold`
-- **Type**: `float`
-- **Default**: `0.3`
-- **Description**: PF-PPO filtering threshold
-
 ## Multimodal (VLM) Parameters
 
 ### `--mixed_mm_data`

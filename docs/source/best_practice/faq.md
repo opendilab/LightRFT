@@ -79,7 +79,7 @@ Example for 8 GPUs:
 **A**: By task:
 - **Math/Coding**: GRPO, Dr.GRPO
 - **Instruction Following**: CPGD, GSPO
-- **Open-ended**: PF-PPO with FIRE Sampling
+- **Open-ended**: FIRE Sampling
 - **Low Memory**: GRPO (no critic)
 - **Research**: GMPO, REINFORCE++
 
@@ -182,13 +182,6 @@ GRPO is simpler and more memory-efficient.
 - Noisy rewards
 - Large distribution shifts
 - Unstable training
-
-### Q: How does PF-PPO work?
-
-**A**: PF-PPO filters unreliable rewards based on statistical measures, improving robustness to reward model errors. Enable with:
-```bash
---use_pf_ppo --filter_threshold 0.3
-```
 
 ## Debugging Questions
 

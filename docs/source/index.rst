@@ -3,7 +3,14 @@
 Welcome to LightRFT's Documentation!
 =====================================
 
-**LightRFT** (Light Reinforcement Fine-Tuning) is an advanced reinforcement learning fine-tuning framework designed for Large Language Models (LLMs) and Vision-Language Models (VLMs). This framework provides efficient and scalable RLHF (Reinforcement Learning from Human Feedback) training capabilities, supporting multiple state-of-the-art algorithms and distributed training strategies.
+.. image:: ./logo.png
+   :alt: LightRFT Logo
+   :width: 600px
+   :align: center
+
+**LightRFT** (Light Reinforcement Fine-Tuning) is a light and efficient reinforcement learning fine-tuning framework designed for Large Language Models (LLMs), Vision-Language Models (VLMs) and other modalities and tasks.
+This framework provides efficient and scalable RLHF (Reinforcement Learning from Human Feedback), RLVR (Reinforcement Learning with Verifiable Rewards), and Reward Model training and evaluation capabilities,
+supporting multiple state-of-the-art algorithms and distributed training (FSDP, DeepSpeed, etc.) strategies.
 
 Key Features
 ------------
@@ -16,7 +23,7 @@ Key Features
 🧠 **Rich Algorithm Ecosystem**
    * Policy Optimization: GRPO, GSPO, GMPO, Dr.GRPO
    * Advantage Estimation: REINFORCE++, CPGD
-   * Reward Processing: PF-PPO, Reward Norm/Clip
+   * Reward Processing: Reward Norm/Clip
    * Sampling Strategy: FIRE Sampling, Token-Level Policy
    * Stability Enhancement: Clip Higher, select_high_entropy_tokens
 
@@ -54,7 +61,7 @@ Documentation Contents
    best_practice/index
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: API Documentation
 
    api_doc/utils/index
@@ -69,7 +76,7 @@ Quick Links
 * :ref:`installation` - Installation guide
 * :ref:`quick_start` - Quick start tutorial
 * :doc:`quick_start/algorithms` - Supported algorithms
-* :doc:`best_practice/strategy_usage` - Strategy usage guide
+* :doc:`best_practice/strategy` - Strategy usage guide
 * :doc:`quick_start/configuration` - Configuration parameters
 * :doc:`best_practice/faq` - Frequently asked questions
 * :doc:`best_practice/troubleshooting` - Troubleshooting guide

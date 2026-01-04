@@ -106,7 +106,7 @@ class ActorVL(nn.Module):
             if ds_config is not None and ds_config["zero_optimization"]["stage"] == 3:
                 dschf = HfDeepSpeedConfig(ds_config)
             else:
-                dschf = None
+                dschf = None  # noqa: F841
 
             # When using FSDP with meta_init, we should not pass device_map to avoid
             # "Cannot copy out of meta tensor" error. FSDP will handle device placement.

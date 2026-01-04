@@ -103,9 +103,9 @@ class ActorAL(nn.Module):
             # Note: dschf is defined in function scope to avoid global effects
             # https://huggingface.co/docs/transformers/deepspeed#non-trainer-deepspeed-integration
             if ds_config is not None and ds_config["zero_optimization"]["stage"] == 3:
-                dschf = HfDeepSpeedConfig(ds_config)
+                dschf = HfDeepSpeedConfig(ds_config)  # noqa: F841
             else:
-                dschf = None
+                dschf = None  # noqa: F841
 
             # Load Qwen2Audio model
             self.model = Qwen2AudioForConditionalGeneration.from_pretrained(

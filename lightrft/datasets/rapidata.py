@@ -1,6 +1,6 @@
 import os
 import copy
-from typing import List, Dict, Any, Tuple, Union
+from typing import List, Dict, Any, Tuple
 from loguru import logger
 
 from .utils import BaseDataHandler
@@ -13,10 +13,10 @@ class RapidataT2VHandler(BaseDataHandler):
         - Rapidata/text-2-video-human-preferences-pika2.2
         - Rapidata/text-2-image-human-preferences-veo3:
         - Rapidata/text-2-video-human-preferences-wan2.1:
-    
+
     This dataset contains pairs of videos (video1, video2) generated from a prompt.
     It includes weighted scores for Preference, Coherence, and Alignment.
-    
+
     - 'A' means video1 (messages0) is preferred.
     - 'B' means video2 (messages1) is preferred.
     - 'C' means they are equal or tied.
@@ -47,10 +47,10 @@ class RapidataT2VHandler(BaseDataHandler):
         """
         data_root = item["data_root"]
         if not data_root:
-            raise ValueError(f"Missing 'data_root' in item. Cannot resolve video paths.")
+            raise ValueError("Missing 'data_root' in item. Cannot resolve video paths.")
 
         if 'file_name1' not in item or 'file_name2' not in item:
-            raise ValueError(f"Item missing 'file_name1' or 'file_name2'.")
+            raise ValueError("Item missing 'file_name1' or 'file_name2'.")
 
         full_path1 = os.path.join(data_root, "videos", item['file_name1'])
         full_path2 = os.path.join(data_root, "videos", item['file_name2'])
@@ -76,7 +76,7 @@ class RapidataT2VHandler(BaseDataHandler):
         video2 = media_content['video2']
 
         if not all([video1, video2]):
-            raise ValueError(f"Missing visual content for 'video1' or 'video2'.")
+            raise ValueError("Missing visual content for 'video1' or 'video2'.")
 
         # Get generation prompt from data item
         video_gen_prompt = item["prompt"]
@@ -100,9 +100,9 @@ class RapidataT2VHandler(BaseDataHandler):
                     "type": "video",
                     "video": video1,
                     "fps": fps,
+                    # 480p limit to reduce memory
                     "max_pixels": 720 * 480
-                }  # 480p limit to reduce memory
-                            ]
+                }]
             }
         ]
 
@@ -139,7 +139,7 @@ class RapidataI2VHandler(RapidataT2VHandler):
     Data Handler for Rapidata image-to-video human preferences dataset.
     Support datasets:
         - Rapidata/image-2-video-human-preferences-seedance-1-pro
-    
+
     Dataset Repo: https://huggingface.co/Rapidata/datasets
     """
     def __init__(self):
@@ -151,11 +151,11 @@ class RapidataI2VHandler(RapidataT2VHandler):
         """
         data_root = item["data_root"]
         if not data_root:
-            raise ValueError(f"Missing 'data_root' in item. Cannot resolve video paths.")
+            raise ValueError("Missing 'data_root' in item. Cannot resolve video paths.")
 
         # Get video paths
         if 'file_name1' not in item or 'file_name2' not in item:
-            raise ValueError(f"Item missing 'file_name1' or 'file_name2'.")
+            raise ValueError("Item missing 'file_name1' or 'file_name2'.")
 
         def process_path(fname, root_path):
             if fname.startswith("https"):

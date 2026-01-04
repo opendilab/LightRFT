@@ -409,7 +409,6 @@ class SRMTrainerVL:
                     input1_img_pixels, input1_img_grid_thws, input0_video_pixels, input0_video_grid_thws,
                     input1_video_pixels, input1_video_grid_thws, extras
                 ) = data
-                device = torch.cuda.current_device()
 
                 scores0, scores1 = self.concatenated_forward(
                     self.model, input0_ids, input0_mask, input1_ids, input1_mask, input0_img_pixels,

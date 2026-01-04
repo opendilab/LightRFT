@@ -1,6 +1,6 @@
 import os
 import copy
-from typing import List, Dict, Any, Tuple, Union
+from typing import List, Dict, Any, Tuple
 from loguru import logger
 
 from .utils import BaseDataHandler
@@ -38,7 +38,7 @@ class OmniRewardBenchT2IHandler(BaseDataHandler):
         """
         data_root = item['data_root']
         if not data_root:
-            raise ValueError(f"Missing 'data_root' in item. Cannot resolve video paths.")
+            raise ValueError("Missing 'data_root' in item. Cannot resolve video paths.")
 
         full_path1 = os.path.join(data_root, "media_data", item['response1_path'])
         full_path2 = os.path.join(data_root, "media_data", item['response2_path'])
@@ -60,7 +60,7 @@ class OmniRewardBenchT2IHandler(BaseDataHandler):
         image2 = media_content['image2']
 
         if not all([image1, image2]):
-            raise ValueError(f"Missing visual content for 'image1' or 'image2'.")
+            raise ValueError("Missing visual content for 'image1' or 'image2'.")
 
         # Get generation prompt from data item
         gen_prompt = item["prompt"]
@@ -68,7 +68,7 @@ class OmniRewardBenchT2IHandler(BaseDataHandler):
         # Get system prompts from config
         task_instruction_template = config["task_instruction"]
         task_instruction = task_instruction_template.format(prompt=gen_prompt)
-        criteria = item["criteria"]
+        # criteria = item["criteria"]
 
         # Build messages
         messages0 = [
@@ -76,7 +76,7 @@ class OmniRewardBenchT2IHandler(BaseDataHandler):
                 "role": "system",
                 "content": copy.deepcopy(task_instruction)
             },
-            # {"role": "system", "content": f"Please give your evaluation considering the following criteria: {criteria}."},
+            # {"role": "system", "content": f"Please give your evaluation considering the following criteria: {criteria}."},  # noqa: E501
             {
                 "role": "user",
                 "content": [{
@@ -92,7 +92,7 @@ class OmniRewardBenchT2IHandler(BaseDataHandler):
                 "role": "system",
                 "content": copy.deepcopy(task_instruction)
             },
-            # {"role": "system", "content": f"Please give your evaluation considering the following criteria: {criteria}."},
+            # {"role": "system", "content": f"Please give your evaluation considering the following criteria: {criteria}."},  # noqa: E501
             {
                 "role": "user",
                 "content": [{
@@ -135,7 +135,7 @@ class OmniRewardBenchT2VHandler(OmniRewardBenchT2IHandler):
         """
         data_root = item['data_root']
         if not data_root:
-            raise ValueError(f"Missing 'data_root' in item. Cannot resolve video paths.")
+            raise ValueError("Missing 'data_root' in item. Cannot resolve video paths.")
 
         full_path1 = os.path.join(data_root, "media_data", item['response1'])
         full_path2 = os.path.join(data_root, "media_data", item['response2'])
@@ -149,7 +149,7 @@ class OmniRewardBenchT2VHandler(OmniRewardBenchT2IHandler):
         video2 = media_content['video2']
 
         if not all([video1, video2]):
-            raise ValueError(f"Missing visual content for 'video1' or 'video2'.")
+            raise ValueError("Missing visual content for 'video1' or 'video2'.")
 
         # Get generation prompt from data item
         gen_prompt = item["prompt"]
@@ -226,21 +226,21 @@ class OmniRewardBenchT2AHandler(OmniRewardBenchT2IHandler):
         """
         data_root = item['data_root']
         if not data_root:
-            raise ValueError(f"Missing 'data_root' in item. Cannot resolve audio paths.")
+            raise ValueError("Missing 'data_root' in item. Cannot resolve audio paths.")
 
         full_path1 = os.path.join(data_root, "media_data", item['response1_path'])
         full_path2 = os.path.join(data_root, "media_data", item['response2_path'])
 
         return {'audio1': {'audio_local_path': full_path1}, 'audio2': {'audio_local_path': full_path2}}
 
-    def parse_item(self, item: Dict[str, Any], audio_content: Dict[str, Any],
+    def parse_item(self, item: Dict[str, Any], media_content: Dict[str, Any],
                    config: Dict[str, Any]) -> Tuple[List[Dict], List[Dict], Dict]:
 
-        audio1 = audio_content['audio1']
-        audio2 = audio_content['audio2']
+        audio1 = media_content['audio1']
+        audio2 = media_content['audio2']
 
         if not all([audio1, audio2]):
-            raise ValueError(f"Missing visual content for 'audio1' or 'audio2'.")
+            raise ValueError("Missing visual content for 'audio1' or 'audio2'.")
 
         # Get generation prompt from data item
         gen_prompt = item["prompt"]
@@ -311,7 +311,7 @@ class OmniRewardBenchT2IGRMHandler(OmniRewardBenchT2IHandler):
         image2 = media_content['image2']
 
         if not all([image1, image2]):
-            raise ValueError(f"Missing visual content for 'image1' or 'image2'.")
+            raise ValueError("Missing visual content for 'image1' or 'image2'.")
 
         # Get generation prompt from data item
         gen_prompt = item["prompt"]

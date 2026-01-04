@@ -1,0 +1,102 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "LightRFT"
+version = "0.1.0"
+description = "Light, Efficient, Omni-modal & Reward-model Driven Reinforcement Fine-Tuning Framework"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "Apache-2.0"}
+authors = [
+    {name = "LightRFT Team", email = "opendilab@pjlab.org.cn"}
+]
+keywords = [
+    "reinforcement learning",
+    "RLVR",
+    "RLHF",
+    "large language models",
+    "vision-language models",
+    "reward models",
+    "omni-modal",
+    "multi-modal",
+    "PPO",
+    "GRPO",
+    "deep learning",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+
+dependencies = [
+    "torch>=2.5.1",
+    "transformers==4.51.3",
+    "vllm==0.7.3",
+    "sglang==0.4.5",
+    "deepspeed>=0.15.0",
+    "accelerate",
+    "datasets",
+    "wandb",
+    "peft",
+    "easydict",
+    "decord",
+    "orjson",
+    "bitsandbytes",
+    "einops",
+    "loralib",
+    "tensorboard",
+    "tqdm",
+    "nltk",
+    "mathruler",
+    "loguru",
+    "librosa",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "black",
+    "pylint",
+    "yapf==0.29.0",
+]
+docs = [
+    "sphinx",
+    "sphinx-rtd-theme",
+    "sphinx-autobuild",
+]
+eval = [
+    "latex2sympy2",
+    "timeout_decorator",
+    "word2number",
+]
+flash-attn = [
+    "flash-attn",
+]
+
+[project.urls]
+Homepage = "https://github.com/opendilab/LightRFT"
+Documentation = "https://github.com/opendilab/LightRFT/tree/main/docs"
+Repository = "https://github.com/opendilab/LightRFT"
+"Bug Reports" = "https://github.com/opendilab/LightRFT/issues"
+
+[tool.setuptools]
+packages = ["lightrft"]
+
+[tool.setuptools.package-data]
+lightrft = ["py.typed"]
+
+[tool.black]
+line-length = 120
+target-version = ['py310', 'py311']
+
+[tool.pylint.messages_control]
+max-line-length = 120
