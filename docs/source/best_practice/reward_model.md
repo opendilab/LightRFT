@@ -849,7 +849,7 @@ We conducted preliminary experiments for the T2A task using the HPS Scale config
 
 | Model Variant | Training Data | HPDv3 Test (Acc) | OmniReward-Bench-T2I (Acc) |
 | :--- | :--- | :--- | :--- |
-| **GRM (w/o reasoning)** (step 8000) | HPDv3 Subset (~56K) | **71.88%** | **59.33%** |
+| **GRM (w/o reasoning)** (step 8000) | HPDv3 Train Subset (~56K) | **71.88%** | **59.33%** |
 | **GRM (w/ reasoning)** (step 3000) | ImageGen-CoT-Reward-5K | 63.02% | 58.35% |
 
 **Conclusions and Analysis**:
