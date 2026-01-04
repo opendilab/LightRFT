@@ -13,6 +13,8 @@ class ImageGenCoTRewardHandler(BaseDataHandler):
     Paper: https://arxiv.org/pdf/2505.03318
     Dataset Repo: https://huggingface.co/datasets/CodeGoat24/ImageGen-CoT-Reward-5K
     """
+    task_type = "text-to-image"
+
     def load_data(self, path: str) -> List[Dict[str, Any]]:
         """
         Loads data from json file.
@@ -66,6 +68,9 @@ class ImageGenCoTRewardHandler(BaseDataHandler):
         system_prompt = conversations[0]['value']
         response = conversations[-1]['value']
 
+        # Get max_pixels from config
+        max_pixels = config["max_pixels"]
+
         # Build messages
         messages = [{
             "role": "system",
@@ -77,7 +82,8 @@ class ImageGenCoTRewardHandler(BaseDataHandler):
                 "text": "**Image 1:**"
             }, {
                 "type": "image",
-                "image": image0
+                "image": image0,
+                "max_pixels": max_pixels
             }]
         }, {
             "role": "user",
@@ -86,7 +92,8 @@ class ImageGenCoTRewardHandler(BaseDataHandler):
                 "text": "**Image 2:**"
             }, {
                 "type": "image",
-                "image": image1
+                "image": image1,
+                "max_pixels": max_pixels
             }]
         }, {
             "role": "assistant",
@@ -98,6 +105,7 @@ class ImageGenCoTRewardHandler(BaseDataHandler):
 
         other = {
             "source": item['source'],
+            "task_type": self.task_type,
             "data_item": item,
             "system_prompt": system_prompt,
             "response": response,
