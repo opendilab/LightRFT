@@ -1,15 +1,15 @@
-name: doc
+name: Doc
 
 on:
   push:
     branches: [main, '*doc*']
 
 jobs:
-  doc:
+  github-pages-doc:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.10]
+        python-version: ['3.10']
 
     steps:
       - uses: actions/checkout@v4
