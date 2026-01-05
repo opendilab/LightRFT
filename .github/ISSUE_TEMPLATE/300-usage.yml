@@ -1,0 +1,98 @@
+name: 💻 Usage
+description: Ask questions about how to use LightRFT
+title: "[Usage]: "
+labels: ["usage"]
+
+body:
+- type: markdown
+  attributes:
+    value: >
+      #### Before submitting an issue, please make sure the issue hasn't been already addressed by searching through [the existing and past issues](https://github.com/opendilab/LightRFT/issues?q=is%3Aissue+sort%3Acreated-desc+) and [discussions](https://github.com/opendilab/LightRFT/discussions).
+
+- type: textarea
+  attributes:
+    label: Your current environment
+    description: |
+      Please provide your environment information:
+    value: |
+      - LightRFT Version:
+      - Python Version:
+      - PyTorch Version:
+      - CUDA Version:
+      - GPU Model:
+      - Operating System:
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: How would you like to use LightRFT
+    description: |
+      A detailed description of what you want to do with LightRFT.
+
+      Please be as specific as possible:
+      - What model are you trying to train?
+      - What algorithm (GRPO, GSPO, etc.) are you trying to use?
+      - What is your expected outcome?
+      - What have you tried so far?
+    placeholder: |
+      I want to train [specific model] using [specific algorithm] on [specific task].
+
+      I tried:
+      - Step 1: ...
+      - Step 2: ...
+
+      But I'm not sure how to:
+      - Configure [specific parameter]
+      - Integrate with [specific component]
+      - ...
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: Current Configuration/Code
+    description: |
+      If relevant, please share your training script, configuration, or command.
+    render: bash
+    placeholder: |
+      bash examples/gsm8k_geo3k/run_grpo_gsm8k_qwen2.5_0.5b.sh
+
+      # Or your training configuration:
+      --model_name_or_path Qwen/Qwen2.5-0.5B-Instruct \
+      --advantage_estimator group_norm \
+      --n_samples_per_prompt 8 \
+      ...
+
+- type: textarea
+  attributes:
+    label: Reference Documentation
+    description: |
+      Have you checked the documentation? If yes, which parts did you read?
+      Please list any documentation you've already reviewed.
+    placeholder: |
+      - [ ] README.md
+      - [ ] Installation Guide
+      - [ ] Algorithm Documentation
+      - [ ] Configuration Reference
+      - [ ] Examples in examples/ directory
+      - [ ] FAQ
+
+- type: textarea
+  attributes:
+    label: Additional Context
+    description: |
+      Any other information that might help us understand your question.
+
+- type: markdown
+  attributes:
+    value: >
+      Thanks for your question 🎉! For general discussions, consider posting in [Discussions](https://github.com/opendilab/LightRFT/discussions).
+
+- type: checkboxes
+  id: confirmation
+  attributes:
+    label: Before submitting a new issue...
+    options:
+      - label: Make sure you already searched for relevant issues in the [repository](https://github.com/opendilab/LightRFT/issues?q=is%3Aissue+label%3Ausage) and checked the documentation.
+        required: true
