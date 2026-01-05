@@ -15,6 +15,8 @@ class HPDv3Handler(BaseDataHandler):
     Paper: https://huggingface.co/MizzenAI/HPSv3
     Dataset Repo: https://huggingface.co/datasets/MizzenAI/HPDv3
     """
+    task_type = "text-to-image"
+
     def load_data(self, path: str) -> List[Dict[str, Any]]:
         try:
             with open(path, 'rb') as f:
@@ -83,6 +85,9 @@ class HPDv3Handler(BaseDataHandler):
         task_instruction_template = config["task_instruction"]
         task_instruction = task_instruction_template.format(prompt=prompt_text)
 
+        # Get max_pixels from config
+        max_pixels = config["max_pixels"]
+
         # Random pick from "A" or "B" to avoid positional bias
         preference = random.choice(["A", "B"])
         if preference == "A":  # "A" means image0 is preferred
@@ -91,17 +96,21 @@ class HPDv3Handler(BaseDataHandler):
             image0, image1 = rejected_image, preferred_image
 
         # Build messages
-        messages0 = [{
-            "role": "system",
-            "content": copy.deepcopy(task_instruction)
-        }, {
-            "role": "user",
-            "content": [{
-                "type": "image",
-                "image": image0,
-                "max_pixels": 720 * 480
-            }]
-        }]
+        messages0 = [
+            {
+                "role": "system",
+                "content": copy.deepcopy(task_instruction)
+            },
+            {
+                "role": "user",
+                "content": [{
+                    "type": "image",
+                    "image": image0,
+                    "max_pixels": max_pixels
+                }  # to save memory
+                            ]
+            }
+        ]
 
         messages1 = [{
             "role": "system",
@@ -111,13 +120,14 @@ class HPDv3Handler(BaseDataHandler):
             "content": [{
                 "type": "image",
                 "image": image1,
-                "max_pixels": 720 * 480
+                "max_pixels": max_pixels
             }]
         }]
 
         other = {
             "preference": preference,
             "source": item["source"],
+            "task_type": self.task_type,
             "prompt": prompt_text,
             "confidence": item.get("confidence"),
             "choice_dist": item.get("choice_dist"),
@@ -155,6 +165,9 @@ class HPDv3GRMHandler(HPDv3Handler):
         task_instruction_template = config["task_instruction"]
         task_instruction = task_instruction_template.format(prompt=prompt_text)
 
+        # Get max_pixels from config
+        max_pixels = config["max_pixels"]
+
         # Random pick from "A" or "B" to avoid positional bias
         preference = random.choice(["A", "B"])
         if preference == "A":  # "A" means image0 is preferred
@@ -178,7 +191,7 @@ class HPDv3GRMHandler(HPDv3Handler):
                     {
                         "type": "image",
                         "image": image0,
-                        "max_pixels": 720 * 480
+                        "max_pixels": max_pixels
                     }  # to save memory
                 ]
             },
@@ -190,7 +203,7 @@ class HPDv3GRMHandler(HPDv3Handler):
                 }, {
                     "type": "image",
                     "image": image1,
-                    "max_pixels": 720 * 480
+                    "max_pixels": max_pixels
                 }]
             }
         ]
@@ -202,6 +215,76 @@ class HPDv3GRMHandler(HPDv3Handler):
             "preference": preference,
             "response": response,
             "source": item["source"],
+            "task_type": self.task_type,
+            "prompt": prompt_text,
+            "confidence": item.get("confidence"),
+            "choice_dist": item.get("choice_dist"),
+            "model_chosen": item["model1"],
+            "model_rejected": item["model2"],
+            "preferred_path": item["path1"],
+            "rejected_path": item["path2"],
+        }
+        return messages, other
+
+
+class HPDv3PairHandler(HPDv3Handler):
+    """
+    Data Handler for HPDv3 dataset in pairwise format.
+    Inherits from HPDv3Handler but overrides parse_item to suit pairwise training.
+
+    Paper: https://huggingface.co/MizzenAI/HPSv3
+    Dataset Repo: https://huggingface.co/datasets/MizzenAI/HPDv3
+    """
+    def parse_item(self, 
+                   item: Dict[str, Any], 
+                   visual_content: Dict[str, Any], 
+                   config: Dict[str, Any]
+                   ) -> Tuple[List[Dict], List[Dict], Dict]:
+        # Get loaded visual content
+        preferred_image = visual_content['preferred_image']
+        rejected_image = visual_content['rejected_image']
+
+        if not all([preferred_image, rejected_image]):
+            raise ValueError(f"Missing visual content for 'preferred_image' or 'rejected_image'.")
+
+        # Get generation prompt from data item
+        prompt_text = item["prompt"]
+        if not prompt_text:
+            raise ValueError(f"Missing generation prompt in item: {item}")
+
+        # Get system prompts from config
+        task_instruction_template = config["task_instruction"]
+        task_instruction = task_instruction_template.format(prompt=prompt_text)
+
+        # Get max_pixels from config
+        max_pixels = config["max_pixels"]
+
+        # Random pick from "A" or "B" to avoid positional bias
+        preference = random.choice(["A", "B"])
+        if preference == "A":   # "A" means image0 is preferred
+            image0, image1 = preferred_image, rejected_image
+        else:
+            image0, image1 = rejected_image, preferred_image
+        
+        # Build messages
+        messages = [
+            {"role": "system", "content": task_instruction},
+
+            {"role": "user", "content": [
+                {"type": "text", "text": "The following is the first image."},
+                {"type": "image", "image": image0, "max_pixels": max_pixels} # to save memory
+            ]},
+            
+            {"role": "user", "content": [
+                {"type": "text", "text": "The following is the second image."},
+                {"type": "image", "image": image1, "max_pixels": max_pixels}
+            ]}
+        ]
+
+        other = {
+            "preference": preference,
+            "source": item["source"],
+            "task_type": self.task_type,
             "prompt": prompt_text,
             "confidence": item.get("confidence"),
             "choice_dist": item.get("choice_dist"),

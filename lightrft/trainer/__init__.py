@@ -5,6 +5,7 @@ from .replay_buffer import NaiveReplayBuffer
 from .replay_buffer_vl import NaiveReplayBufferVL
 from .ppo_trainer import PPOTrainer
 from .ppo_trainer_vl import PPOTrainerVL
+from .spmd_ppo_trainer import SPMDPPOTrainer, SPMDPPOTrainerVL
 
 __all__ = [
     "Experience",
@@ -17,4 +18,6 @@ __all__ = [
     "NaiveReplayBufferVL",
     "PPOTrainer",
     "PPOTrainerVL",
+    "SPMDPPOTrainer",
+    "SPMDPPOTrainerVL",
 ]
