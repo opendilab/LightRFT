@@ -1,0 +1,918 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js" lang="en">
+<!--<![endif]-->
+
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Strategy 使用指南 &mdash; LightRFT v0.1.1 documentation</title>
+  
+
+  <link rel="shortcut icon" href="../_static/images/favicon.ico" />
+  
+  
+
+  
+
+  
+  
+  
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/readthedocs.css" type="text/css" />
+  <link rel="index" title="Index" href="../genindex.html" />
+  <link rel="search" title="Search" href="../search.html" />
+  <!-- Google Analytics -->
+  <script type="text/javascript">
+    var collapsedSections = [];
+  </script>
+  
+  <!-- End Google Analytics -->
+  
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+  <script>
+    MathJax = {
+        chtml: {
+            scale: 1,
+            minScale: 1,
+        },
+        svg: {
+            scale: 1,
+            minScale: 1,
+        }
+    }
+</script>
+
+  <!-- Preload the theme fonts -->
+
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-book.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/IBMPlexMono/IBMPlexMono-Medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-medium-italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/IBMPlexMono/IBMPlexMono-SemiBold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+
+<!-- Preload the katex fonts -->
+
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Math-Italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size1-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size4-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size2-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size3-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Caligraphic-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.2/css/all.css"
+    integrity="sha384-vSIIfh2YWi9wW0r9iZe7RJPrKwp6bG+s9QZMoITbCckVJqGCCRhc+ccxNcdpHuYu" crossorigin="anonymous">
+</head>
+
+<div class="container-fluid header-holder tutorials-header" id="header-holder">
+  <div class="container">
+    <div class="header-container">
+      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+        aria-label="OpenMMLab"></a>
+
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://github.com/opendilab/LightRFT" target="_blank">GitHub</a>
+          </li>
+          <li >
+            <div id="resourcesDropdownButton" data-toggle="resources-dropdown" class="resources-dropdown">
+              <a
+                class="resource-option with-down-arrow">
+                OpenDILab
+              </a>
+              <div class="resources-dropdown-menu">
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-engine" target="_blank">
+                  <span class="dropdown-title">DI-engine </span>
+                  <p>OpenDILab Decision AI Engine</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/LightZero" target="_blank">
+                  <span class="dropdown-title">LightZero </span>
+                  <p>OpenDILab Decision Monte Carlo Tree Search Framework</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/GenerativeRL" target="_blank">
+                  <span class="dropdown-title">GenerativeRL </span>
+                  <p>OpenDILab Generative AI Framework</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-star" target="_blank">
+                  <span class="dropdown-title">DI-star </span>
+                  <p>OpenDILab Decision AI in StarCraftII</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-drive" target="_blank">
+                  <span class="dropdown-title">DI-drive </span>
+                  <p>OpenDILab Auto-driving platform</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/GoBigger" target="_blank">
+                  <span class="dropdown-title">GoBigger </span>
+                  <p>OpenDILab Multi-Agent Environment</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-smartcross" target="_blank">
+                  <span class="dropdown-title">DI-smartcross </span>
+                  <p>Decision Intelligence Platform for Traffic Crossing Signal Control</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-treetensor" target="_blank">
+                  <span class="dropdown-title">DI-treetensor </span>
+                  <p>Tree Nested PyTorch Tensor Lib</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-sheep" target="_blank">
+                  <span class="dropdown-title">DI-sheep </span>
+                  <p>Deep Reinforcement Learning + 3 Tiles Game</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-model-based-RL" target="_blank">
+                  <span class="dropdown-title">awesome-model-based-RL </span>
+                  <p>A curated list of awesome model based RL resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-decision-transformer" target="_blank">
+                  <span class="dropdown-title">awesome-decision-transformer </span>
+                  <p>A curated list of Decision Transformer resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-exploration-rl" target="_blank">
+                  <span class="dropdown-title">awesome-exploration-rl </span>
+                  <p>A curated list of awesome exploration RL resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-multi-modal-reinforcement-learning" target="_blank">
+                  <span class="dropdown-title">awesome-multi-modal-reinforcement-learning </span>
+                  <p>A curated list of Multi-Modal Reinforcement Learning resources (continually updated)</p>
+                </a>
+              </div>
+          </li>
+        </ul>
+      </div>
+
+      <a class="main-menu-open-button" href="#" data-behavior="open-mobile-menu"></a>
+    </div>
+  </div>
+</div>
+
+<body class="pytorch-body">
+
+   
+
+  
+
+  <div class="table-of-contents-link-wrapper">
+    <span>Table of Contents</span>
+    <a href="#" class="toggle-table-of-contents" data-behavior="toggle-table-of-contents"></a>
+  </div>
+
+  <nav data-toggle="wy-nav-shift" class="pytorch-left-menu" id="pytorch-left-menu">
+    <div class="pytorch-side-scroll">
+      <div class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        <div class="pytorch-left-menu-search">
+          
+
+          
+          
+          
+          
+
+          
+
+
+
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search Docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        
+        
+        
+        
+        
+        <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../installation/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quick_start/index.html">Quick Start</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide &amp; Best Practices</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="index.html">Best Practices</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/utils/index.html">lightrft.utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/datasets/index.html">lightrft.datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/models/index.html">lightrft.models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/strategy/index.html">lightrft.strategy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/trainer/index.html">lightrft.trainer</a></li>
+</ul>
+
+        
+        
+      </div>
+    </div>
+  </nav>
+
+  <div class="pytorch-container">
+    <div class="pytorch-page-level-bar" id="pytorch-page-level-bar">
+      <div class="pytorch-breadcrumbs-wrapper">
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="pytorch-breadcrumbs">
+    
+      <li>
+        <a href="../index.html">
+            Docs
+        </a> &gt;
+      </li>
+
+        
+      <li>Strategy 使用指南</li>
+    
+    
+      <li class="pytorch-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/best_practice/strategy_zh.md.txt" rel="nofollow"><img src="../_static/images/view-page-source-icon.svg"></a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+</div>
+      </div>
+
+      <div class="pytorch-shortcuts-wrapper" id="pytorch-shortcuts-wrapper">
+        Shortcuts
+      </div>
+    </div>
+
+    <section data-toggle="wy-nav-shift" id="pytorch-content-wrap" class="pytorch-content-wrap">
+      <div class="pytorch-content-left">
+        
+          <div class="rst-content">
+            
+            <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
+              <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
+                
+  <section id="strategy">
+<h1>Strategy 使用指南<a class="headerlink" href="#strategy" title="Permalink to this heading">¶</a></h1>
+<section id="id1">
+<h2>概述<a class="headerlink" href="#id1" title="Permalink to this heading">¶</a></h2>
+<p>LightRFT 的 strategy 模块是分布式训练能力的核心，为高效的强化学习微调提供了额外优化。Strategy 提供统一的接口来管理：</p>
+<ul class="simple">
+<li><p><strong>分布式训练后端</strong>：DeepSpeed ZeRO 和 FSDP（完全分片数据并行）</p></li>
+<li><p><strong>推理引擎集成</strong>：vLLM 和 SGLang 用于高吞吐量生成</p></li>
+<li><p><strong>内存优化</strong>：优化器卸载、梯度累积和引擎睡眠模式</p></li>
+<li><p><strong>序列并行</strong>：跨多个 GPU 高效处理长序列</p></li>
+</ul>
+</section>
+<section id="api">
+<h2>核心 API 扩展<a class="headerlink" href="#api" title="Permalink to this heading">¶</a></h2>
+<p>LightRFT 为 strategy 接口添加了以下关键方法：</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>方法</p></th>
+<th class="head"><p>功能</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">setup_inference_engine()</span></code></p></td>
+<td><p>初始化 vLLM 或 SGLang 推理引擎</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">update_engine_weights()</span></code></p></td>
+<td><p>将 actor 模型权重同步到推理引擎</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">gather_and_generate()</span></code></p></td>
+<td><p>分布式生成，自动收集 prompts</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">maybe_load_optimizer()</span></code></p></td>
+<td><p>从 CPU 加载优化器状态（仅 FSDP）</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">maybe_offload_optimizer()</span></code></p></td>
+<td><p>将优化器状态卸载到 CPU（仅 FSDP）</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">wakeup_inference_engine()</span></code></p></td>
+<td><p>从睡眠模式唤醒推理引擎</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">maybe_sleep_inference_engine()</span></code></p></td>
+<td><p>将推理引擎置于睡眠状态以节省内存</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="id2">
+<h2>创建 Strategy<a class="headerlink" href="#id2" title="Permalink to this heading">¶</a></h2>
+<section id="id3">
+<h3>基础设置<a class="headerlink" href="#id3" title="Permalink to this heading">¶</a></h3>
+<p>使用工厂函数 <code class="docutils literal notranslate"><span class="pre">get_strategy()</span></code> 创建 strategy 实例：</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">lightrft.strategy</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_strategy</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">lightrft.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">add_arguments</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">train</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
+    <span class="c1"># 创建 strategy（根据 args 自动选择 DeepSpeed 或 FSDP）</span>
+    <span class="n">strategy</span> <span class="o">=</span> <span class="n">get_strategy</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+
+    <span class="c1"># 设置用于生成的推理引擎</span>
+    <span class="n">strategy</span><span class="o">.</span><span class="n">setup_inference_engine</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">engine_type</span><span class="o">=</span><span class="s1">&#39;vllm&#39;</span><span class="p">)</span>
+
+    <span class="c1"># 如需要可以访问引擎</span>
+    <span class="n">vllm_engine</span> <span class="o">=</span> <span class="n">strategy</span><span class="o">.</span><span class="n">inference_engine</span>
+
+    <span class="c1"># 创建训练器</span>
+    <span class="n">trainer</span> <span class="o">=</span> <span class="n">SPMDPPOTrainer</span><span class="p">(</span>
+        <span class="n">strategy</span><span class="o">=</span><span class="n">strategy</span><span class="p">,</span>
+        <span class="n">actor</span><span class="o">=</span><span class="n">actor</span><span class="p">,</span>
+        <span class="n">critic</span><span class="o">=</span><span class="n">critic</span><span class="p">,</span>
+        <span class="n">reward_model</span><span class="o">=</span><span class="n">reward_model</span><span class="p">,</span>
+        <span class="n">initial_model</span><span class="o">=</span><span class="n">initial_model</span><span class="p">,</span>
+        <span class="n">ema_model</span><span class="o">=</span><span class="n">ema_model</span><span class="p">,</span>
+        <span class="n">actor_optim</span><span class="o">=</span><span class="n">actor_optim</span><span class="p">,</span>
+        <span class="n">critic_optim</span><span class="o">=</span><span class="n">critic_optim</span><span class="p">,</span>
+        <span class="n">actor_scheduler</span><span class="o">=</span><span class="n">actor_scheduler</span><span class="p">,</span>
+        <span class="n">critic_scheduler</span><span class="o">=</span><span class="n">critic_scheduler</span><span class="p">,</span>
+        <span class="o">...</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="id4">
+<h3>Strategy 选择<a class="headerlink" href="#id4" title="Permalink to this heading">¶</a></h3>
+<p>Strategy 类型由配置参数自动决定：</p>
+<ul class="simple">
+<li><p><strong>FSDP</strong>：设置 <code class="docutils literal notranslate"><span class="pre">--fsdp</span></code> 标志</p></li>
+<li><p><strong>DeepSpeed</strong>：不设置 <code class="docutils literal notranslate"><span class="pre">--fsdp</span></code> 时的默认选项（可通过 <code class="docutils literal notranslate"><span class="pre">--zero_stage</span></code> 配置）</p></li>
+</ul>
+</section>
+</section>
+<section id="trainer-strategy">
+<h2>在 Trainer 中使用 Strategy<a class="headerlink" href="#trainer-strategy" title="Permalink to this heading">¶</a></h2>
+<section id="id5">
+<h3>标准训练操作<a class="headerlink" href="#id5" title="Permalink to this heading">¶</a></h3>
+<p>Strategy 提供标准的分布式训练操作：</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># 反向传播</span>
+<span class="n">strategy</span><span class="o">.</span><span class="n">backward</span><span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">)</span>
+
+<span class="c1"># 优化器步进（带梯度裁剪）</span>
+<span class="n">strategy</span><span class="o">.</span><span class="n">optimizer_step</span><span class="p">(</span><span class="n">optimizer</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">scheduler</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;actor&quot;</span><span class="p">)</span>
+
+<span class="c1"># 分布式通信</span>
+<span class="n">averaged_value</span> <span class="o">=</span> <span class="n">strategy</span><span class="o">.</span><span class="n">all_reduce</span><span class="p">(</span><span class="n">local_value</span><span class="p">,</span> <span class="n">op</span><span class="o">=</span><span class="s2">&quot;mean&quot;</span><span class="p">)</span>
+<span class="n">gathered_values</span> <span class="o">=</span> <span class="n">strategy</span><span class="o">.</span><span class="n">all_gather</span><span class="p">(</span><span class="n">local_value</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="id6">
+<h3>内存优化训练<a class="headerlink" href="#id6" title="Permalink to this heading">¶</a></h3>
+<p>对于基于 FSDP 的训练，使用优化器卸载来减少 GPU 内存占用：</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">ppo_train</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">global_steps</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">synchronize</span><span class="p">()</span>
+    <span class="n">train_begin</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+
+    <span class="c1"># 从 CPU 加载优化器状态到 GPU（仅 FSDP）</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">maybe_load_optimizer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">actor_optim</span><span class="p">)</span>
+
+    <span class="c1"># 执行训练</span>
+    <span class="n">train_ret</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">ppo_train</span><span class="p">(</span><span class="n">global_steps</span><span class="p">)</span>
+
+    <span class="c1"># 从 GPU 卸载优化器状态到 CPU（仅 FSDP）</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">maybe_offload_optimizer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">actor_optim</span><span class="p">)</span>
+
+    <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">synchronize</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;PPO Train TIMECOST </span><span class="si">{</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">train_begin</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="c1"># 将 actor 权重同步到推理引擎</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">update_engine_weights</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">actor</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">train_ret</span>
+</pre></div>
+</div>
+</section>
+<section id="id7">
+<h3>引擎权重同步<a class="headerlink" href="#id7" title="Permalink to this heading">¶</a></h3>
+<p>训练更新后，将模型权重同步到推理引擎：</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># 用最新的 actor 权重更新推理引擎</span>
+<span class="n">strategy</span><span class="o">.</span><span class="n">update_engine_weights</span><span class="p">(</span><span class="n">actor</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>这确保推理引擎使用最新的模型参数进行生成。</p>
+</section>
+</section>
+<section id="experience-maker-strategy">
+<h2>在 Experience Maker 中使用 Strategy<a class="headerlink" href="#experience-maker-strategy" title="Permalink to this heading">¶</a></h2>
+<section id="llm">
+<h3>文本生成（LLM）<a class="headerlink" href="#llm" title="Permalink to this heading">¶</a></h3>
+<p>使用 <code class="docutils literal notranslate"><span class="pre">gather_and_generate()</span></code> 进行分布式文本生成：</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># 对 prompts 进行分词（为提高效率不使用 padding）</span>
+<span class="n">all_prompt_token_ids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tokenize_fn</span><span class="p">(</span>
+    <span class="n">all_prompts</span><span class="p">,</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">prompt_max_len</span><span class="p">,</span>
+    <span class="n">padding</span><span class="o">=</span><span class="kc">False</span>
+<span class="p">)[</span><span class="s2">&quot;input_ids&quot;</span><span class="p">]</span>
+
+<span class="c1"># 自动分布式生成响应</span>
+<span class="n">all_outputs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">gather_and_generate</span><span class="p">(</span>
+    <span class="n">sampling_params</span><span class="o">=</span><span class="n">sampling_params</span><span class="p">,</span>
+    <span class="n">all_prompt_token_ids</span><span class="o">=</span><span class="n">all_prompt_token_ids</span><span class="p">,</span>
+    <span class="n">sleep_engine</span><span class="o">=</span><span class="kc">True</span>  <span class="c1"># 生成后自动使引擎进入睡眠状态</span>
+<span class="p">)</span>
+
+<span class="k">if</span> <span class="n">dist</span><span class="o">.</span><span class="n">get_rank</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vllm_mp_group</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;生成了 </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">all_outputs</span><span class="p">)</span><span class="si">}</span><span class="s2"> 个输出&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="vlm">
+<h3>多模态生成（VLM）<a class="headerlink" href="#vlm" title="Permalink to this heading">¶</a></h3>
+<p>对于带有图像的视觉-语言模型：</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># 使用多模态输入生成</span>
+<span class="n">all_outputs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">gather_and_generate</span><span class="p">(</span>
+    <span class="n">sampling_params</span><span class="o">=</span><span class="n">sampling_params</span><span class="p">,</span>
+    <span class="n">all_prompts</span><span class="o">=</span><span class="n">all_prompts</span><span class="p">,</span>        <span class="c1"># 文本 prompts</span>
+    <span class="n">all_images</span><span class="o">=</span><span class="n">all_images</span><span class="p">,</span>          <span class="c1"># 图像数据</span>
+    <span class="n">images_num</span><span class="o">=</span><span class="n">images_num</span><span class="p">,</span>          <span class="c1"># 每个 prompt 的图像数量</span>
+    <span class="n">sleep_engine</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="gather-and-generate">
+<h3><code class="docutils literal notranslate"><span class="pre">gather_and_generate()</span></code> 工作原理<a class="headerlink" href="#gather-and-generate" title="Permalink to this heading">¶</a></h3>
+<p>该方法执行以下操作：</p>
+<ol class="arabic simple">
+<li><p><strong>收集（Gather）</strong>：将张量并行组内所有 rank 的 prompts 收集到 rank 0</p>
+<ul class="simple">
+<li><p>示例：当 <code class="docutils literal notranslate"><span class="pre">world_size=8</span></code> 且 <code class="docutils literal notranslate"><span class="pre">engine_tp_size=4</span></code> 时，ranks [0,1,2,3] 收集到 rank 0，ranks [4,5,6,7] 收集到 rank 4</p></li>
+</ul>
+</li>
+<li><p><strong>生成（Generate）</strong>：使用 vLLM/SGLang 引擎对收集的 prompts 执行推理</p></li>
+<li><p><strong>分发（Distribute）</strong>：将生成的输出按相同顺序分散回原始 ranks</p></li>
+<li><p><strong>睡眠管理（Sleep Management）</strong>：根据 <code class="docutils literal notranslate"><span class="pre">sleep_engine</span></code> 参数自动处理引擎的睡眠/唤醒周期</p></li>
+</ol>
+<p><strong>注意</strong>：使用此接口时，用户无需手动管理引擎睡眠状态。</p>
+</section>
+</section>
+<section id="id8">
+<h2>必需参数<a class="headerlink" href="#id8" title="Permalink to this heading">¶</a></h2>
+<p>将 LightRFT 特定的参数添加到你的参数解析器：</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">lightrft.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">add_arguments</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">argparse</span>
+
+<span class="c1"># 创建解析器</span>
+<span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">()</span>
+
+<span class="c1"># 添加 LightRFT 参数</span>
+<span class="n">add_arguments</span><span class="p">(</span><span class="n">parser</span><span class="p">)</span>
+
+<span class="c1"># 解析参数</span>
+<span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+</pre></div>
+</div>
+<section id="id9">
+<h3>关键参数<a class="headerlink" href="#id9" title="Permalink to this heading">¶</a></h3>
+<p><strong>推理引擎配置：</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>--engine_tp_size<span class="w"> </span><span class="m">4</span><span class="w">              </span><span class="c1"># 推理引擎的张量并行大小</span>
+--engine_mem_util<span class="w"> </span><span class="m">0</span>.85<span class="w">          </span><span class="c1"># KV 缓存的 GPU 内存利用率（0.0-1.0）</span>
+--engine_type<span class="w"> </span>vllm<span class="w">              </span><span class="c1"># 引擎类型：&#39;vllm&#39; 或 &#39;sglang&#39;</span>
+--enable_engine_sleep<span class="w">           </span><span class="c1"># 启用引擎睡眠模式（默认：True）</span>
+--disable_engine_sleep<span class="w">          </span><span class="c1"># 禁用引擎睡眠模式</span>
+</pre></div>
+</div>
+<p><strong>分布式训练：</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>--fsdp<span class="w">                          </span><span class="c1"># 使用 FSDP 而非 DeepSpeed</span>
+--zero_stage<span class="w"> </span><span class="m">2</span><span class="w">                  </span><span class="c1"># DeepSpeed ZeRO 阶段（1、2 或 3）</span>
+--fsdp_cpu_offload<span class="w">              </span><span class="c1"># 将 FSDP 优化器状态卸载到 CPU</span>
+--adam_offload<span class="w">                  </span><span class="c1"># 卸载 Adam 优化器状态</span>
+--sp_size<span class="w"> </span><span class="m">2</span><span class="w">                     </span><span class="c1"># 序列并行大小</span>
+</pre></div>
+</div>
+<p><strong>训练优化：</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>--packing_samples<span class="w">               </span><span class="c1"># 将多个样本打包到序列中</span>
+--use_mp_opt<span class="w">                    </span><span class="c1"># 使用混合精度优化器（FSDP）</span>
+--fused_linear_logprob<span class="w">          </span><span class="c1"># 融合线性层和 logprob 计算</span>
+--chunk_size<span class="w"> </span><span class="m">4096</span><span class="w">               </span><span class="c1"># 融合操作的块大小</span>
+</pre></div>
+</div>
+<p><strong>监控：</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>--log_dir<span class="w"> </span>./logs<span class="w">                </span><span class="c1"># 日志和可视化的目录</span>
+--plot_every<span class="w"> </span><span class="m">10</span><span class="w">                 </span><span class="c1"># 每 N 步绘制生成长度分布</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="id10">
+<h2>Strategy 实现细节<a class="headerlink" href="#id10" title="Permalink to this heading">¶</a></h2>
+<section id="id11">
+<h3>可用的 Strategy<a class="headerlink" href="#id11" title="Permalink to this heading">¶</a></h3>
+<p>LightRFT 提供两种主要的 strategy 实现：</p>
+<ol class="arabic simple">
+<li><p><strong>DeepspeedStrategy</strong>（默认）</p>
+<ul class="simple">
+<li><p>使用 DeepSpeed ZeRO 进行内存高效训练</p></li>
+<li><p>可配置 ZeRO 阶段（1、2 或 3）</p></li>
+<li><p>支持梯度累积和混合精度</p></li>
+<li><p>最适合：通用 RLHF 训练、成熟的工作流程</p></li>
+</ul>
+</li>
+<li><p><strong>FSDPV2Strategy</strong>（设置 <code class="docutils literal notranslate"><span class="pre">--fsdp</span></code> 时）</p>
+<ul class="simple">
+<li><p>使用 PyTorch 的完全分片数据并行</p></li>
+<li><p>支持优化器状态的 CPU 卸载</p></li>
+<li><p>原生 PyTorch 实现，集成更好</p></li>
+<li><p>最适合：最大内存效率、PyTorch 原生工作流程</p></li>
+</ul>
+</li>
+</ol>
+</section>
+<section id="id12">
+<h3>Strategy 选择逻辑<a class="headerlink" href="#id12" title="Permalink to this heading">¶</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># 在 get_strategy() 函数中</span>
+<span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">fsdp</span><span class="p">:</span>
+    <span class="n">strategy</span> <span class="o">=</span> <span class="n">FSDPV2Strategy</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="n">strategy</span> <span class="o">=</span> <span class="n">DeepspeedStrategy</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="id13">
+<h2>引擎睡眠/唤醒机制<a class="headerlink" href="#id13" title="Permalink to this heading">¶</a></h2>
+<p>Strategy 通过引擎睡眠模式提供自动内存管理：</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># 引擎生命周期管理</span>
+<span class="n">strategy</span><span class="o">.</span><span class="n">setup_inference_engine</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">engine_type</span><span class="o">=</span><span class="s1">&#39;vllm&#39;</span><span class="p">)</span>  <span class="c1"># 创建并唤醒引擎</span>
+<span class="n">strategy</span><span class="o">.</span><span class="n">maybe_sleep_inference_engine</span><span class="p">()</span>                     <span class="c1"># 睡眠以节省内存</span>
+<span class="n">strategy</span><span class="o">.</span><span class="n">wakeup_inference_engine</span><span class="p">()</span>                          <span class="c1"># 唤醒以进行生成</span>
+</pre></div>
+</div>
+<p><strong>自动管理</strong>：当使用 <code class="docutils literal notranslate"><span class="pre">gather_and_generate()</span></code> 并设置 <code class="docutils literal notranslate"><span class="pre">sleep_engine=True</span></code> 时，睡眠/唤醒周期会自动处理。</p>
+</section>
+<section id="id14">
+<h2>配置示例<a class="headerlink" href="#id14" title="Permalink to this heading">¶</a></h2>
+<section id="gpu-deepspeed">
+<h3>高吞吐量设置（8 GPU，DeepSpeed）<a class="headerlink" href="#gpu-deepspeed" title="Permalink to this heading">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># 使用 DeepSpeed ZeRO-2 和大张量并行</span>
+python<span class="w"> </span>train.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--zero_stage<span class="w"> </span><span class="m">2</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--engine_tp_size<span class="w"> </span><span class="m">4</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--engine_mem_util<span class="w"> </span><span class="m">0</span>.9<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--enable_engine_sleep<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--micro_train_batch_size<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--train_batch_size<span class="w"> </span><span class="m">128</span>
+</pre></div>
+</div>
+</section>
+<section id="gpu-fsdp-cpu">
+<h3>内存高效设置（8 GPU，FSDP + CPU 卸载）<a class="headerlink" href="#gpu-fsdp-cpu" title="Permalink to this heading">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># 使用 FSDP + CPU 卸载以实现最大内存效率</span>
+python<span class="w"> </span>train.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--fsdp<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--fsdp_cpu_offload<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--use_mp_opt<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--engine_tp_size<span class="w"> </span><span class="m">2</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--engine_mem_util<span class="w"> </span><span class="m">0</span>.85<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--enable_engine_sleep<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--micro_train_batch_size<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--train_batch_size<span class="w"> </span><span class="m">64</span>
+</pre></div>
+</div>
+</section>
+<section id="id15">
+<h3>视觉-语言模型设置<a class="headerlink" href="#id15" title="Permalink to this heading">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># 使用多模态数据训练 VLM</span>
+python<span class="w"> </span>train_vl.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--fsdp<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--engine_tp_size<span class="w"> </span><span class="m">4</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--mixed_mm_data<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--packing_samples<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--enable_engine_sleep<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--plot_every<span class="w"> </span><span class="m">20</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="id16">
+<h2>最佳实践<a class="headerlink" href="#id16" title="Permalink to this heading">¶</a></h2>
+<section id="id17">
+<h3>1. 张量并行配置<a class="headerlink" href="#id17" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>根据模型大小和 GPU 数量设置 <code class="docutils literal notranslate"><span class="pre">engine_tp_size</span></code></p></li>
+<li><p>7B 模型：<code class="docutils literal notranslate"><span class="pre">engine_tp_size=1</span></code> 或 <code class="docutils literal notranslate"><span class="pre">2</span></code></p></li>
+<li><p>13B-70B 模型：<code class="docutils literal notranslate"><span class="pre">engine_tp_size=4</span></code> 或 <code class="docutils literal notranslate"><span class="pre">8</span></code></p></li>
+<li><p>确保 <code class="docutils literal notranslate"><span class="pre">world_size</span> <span class="pre">%</span> <span class="pre">engine_tp_size</span> <span class="pre">==</span> <span class="pre">0</span></code></p></li>
+</ul>
+</section>
+<section id="id18">
+<h3>2. 内存管理<a class="headerlink" href="#id18" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>对于内存受限的设置启用引擎睡眠模式：<code class="docutils literal notranslate"><span class="pre">--enable_engine_sleep</span></code></p></li>
+<li><p>根据可用内存调整 <code class="docutils literal notranslate"><span class="pre">engine_mem_util</span></code>（0.5-0.9）</p></li>
+<li><p>使用 FSDP + CPU 卸载以最大化节省内存：<code class="docutils literal notranslate"><span class="pre">--fsdp</span> <span class="pre">--fsdp_cpu_offload</span></code></p></li>
+</ul>
+</section>
+<section id="id19">
+<h3>3. 性能优化<a class="headerlink" href="#id19" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>对于不同长度的序列使用 <code class="docutils literal notranslate"><span class="pre">--packing_samples</span></code></p></li>
+<li><p>对于大词汇表模型启用 <code class="docutils literal notranslate"><span class="pre">--fused_linear_logprob</span></code></p></li>
+<li><p>设置适当的 <code class="docutils literal notranslate"><span class="pre">micro_train_batch_size</span></code> 以充分利用 GPU</p></li>
+</ul>
+</section>
+<section id="id20">
+<h3>4. 调试和监控<a class="headerlink" href="#id20" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>使用 <code class="docutils literal notranslate"><span class="pre">--plot_every</span></code> 和 <code class="docutils literal notranslate"><span class="pre">--log_dir</span></code> 跟踪生成长度分布</p></li>
+<li><p>使用 <code class="docutils literal notranslate"><span class="pre">strategy.report_memory(prefix=&quot;checkpoint_name&quot;)</span></code> 监控内存</p></li>
+<li><p>使用 <code class="docutils literal notranslate"><span class="pre">strategy.inference_engine_status</span></code> 检查引擎状态</p></li>
+</ul>
+</section>
+</section>
+<section id="id21">
+<h2>高级功能<a class="headerlink" href="#id21" title="Permalink to this heading">¶</a></h2>
+<section id="id22">
+<h3>序列并行<a class="headerlink" href="#id22" title="Permalink to this heading">¶</a></h3>
+<p>为超长序列启用序列并行：</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># 在参数中</span>
+--sp_size<span class="w"> </span><span class="m">4</span><span class="w">  </span><span class="c1"># 将序列分割到 4 个 GPU</span>
+</pre></div>
+</div>
+<p>Strategy 会自动创建序列并行组并处理通信。</p>
+</section>
+<section id="id23">
+<h3>自定义奖励模型<a class="headerlink" href="#id23" title="Permalink to this heading">¶</a></h3>
+<p>支持多个奖励模型或远程奖励 API：</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># 多个奖励模型</span>
+<span class="n">reward_models</span> <span class="o">=</span> <span class="p">[</span><span class="n">reward_model_1</span><span class="p">,</span> <span class="n">reward_model_2</span><span class="p">,</span> <span class="n">reward_model_3</span><span class="p">]</span>
+<span class="n">strategy</span> <span class="o">=</span> <span class="n">get_strategy</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+
+<span class="c1"># 模型自动分片到各个 GPU</span>
+<span class="n">prepared_rms</span> <span class="o">=</span> <span class="p">[</span><span class="n">strategy</span><span class="o">.</span><span class="n">prepare_model</span><span class="p">(</span><span class="n">rm</span><span class="p">,</span> <span class="n">shard_size</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span> <span class="k">for</span> <span class="n">rm</span> <span class="ow">in</span> <span class="n">reward_models</span><span class="p">]</span>
+</pre></div>
+</div>
+</section>
+<section id="id24">
+<h3>混合精度训练<a class="headerlink" href="#id24" title="Permalink to this heading">¶</a></h3>
+<p>控制混合精度行为：</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># 启用 BF16 训练</span>
+--bf16
+
+<span class="c1"># 使用混合精度优化器（FSDP）</span>
+--use_mp_opt
+</pre></div>
+</div>
+</section>
+</section>
+<section id="id25">
+<h2>故障排除<a class="headerlink" href="#id25" title="Permalink to this heading">¶</a></h2>
+<section id="id26">
+<h3>常见问题<a class="headerlink" href="#id26" title="Permalink to this heading">¶</a></h3>
+<p><strong>问题</strong>：生成时内存不足</p>
+<ul class="simple">
+<li><p><strong>解决方案</strong>：降低 <code class="docutils literal notranslate"><span class="pre">engine_mem_util</span></code> 或增加 <code class="docutils literal notranslate"><span class="pre">engine_tp_size</span></code></p></li>
+</ul>
+<p><strong>问题</strong>：引擎未使用新权重更新</p>
+<ul class="simple">
+<li><p><strong>解决方案</strong>：确保训练后调用 <code class="docutils literal notranslate"><span class="pre">update_engine_weights()</span></code></p></li>
+</ul>
+<p><strong>问题</strong>：生成速度慢</p>
+<ul class="simple">
+<li><p><strong>解决方案</strong>：增加 <code class="docutils literal notranslate"><span class="pre">micro_rollout_batch_size</span></code> 或减少 <code class="docutils literal notranslate"><span class="pre">engine_tp_size</span></code></p></li>
+</ul>
+<p><strong>问题</strong>：FSDP 优化器卸载错误</p>
+<ul class="simple">
+<li><p><strong>解决方案</strong>：验证是否使用 FSDP strategy（<code class="docutils literal notranslate"><span class="pre">--fsdp</span></code>）并成对调用 offload/load</p></li>
+</ul>
+</section>
+</section>
+<section id="id27">
+<h2>API 参考<a class="headerlink" href="#id27" title="Permalink to this heading">¶</a></h2>
+<p>详细的 API 文档请参阅：</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">lightrft.strategy.strategy_base.StrategyBase</span></code> - 基础 strategy 类</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">lightrft.strategy.get_strategy()</span></code> - Strategy 工厂函数</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">lightrft.utils.add_arguments()</span></code> - 参数配置</p></li>
+</ul>
+</section>
+</section>
+
+
+              </article>
+              
+            </div>
+            <footer>
+  
+
+  <hr>
+
+  <div role="contentinfo">
+    <p>
+      &copy; Copyright 2025, OpenDILab.
+
+    </p>
+  </div>
+  
+  <div>
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a
+      href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the
+      Docs</a>.
+  </div>
+   
+
+</footer>
+          </div>
+        </div>
+
+        <div class="pytorch-content-right" id="pytorch-content-right">
+          <div class="pytorch-right-menu" id="pytorch-right-menu">
+            <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
+              <ul>
+<li><a class="reference internal" href="#">Strategy 使用指南</a><ul>
+<li><a class="reference internal" href="#id1">概述</a></li>
+<li><a class="reference internal" href="#api">核心 API 扩展</a></li>
+<li><a class="reference internal" href="#id2">创建 Strategy</a><ul>
+<li><a class="reference internal" href="#id3">基础设置</a></li>
+<li><a class="reference internal" href="#id4">Strategy 选择</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#trainer-strategy">在 Trainer 中使用 Strategy</a><ul>
+<li><a class="reference internal" href="#id5">标准训练操作</a></li>
+<li><a class="reference internal" href="#id6">内存优化训练</a></li>
+<li><a class="reference internal" href="#id7">引擎权重同步</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#experience-maker-strategy">在 Experience Maker 中使用 Strategy</a><ul>
+<li><a class="reference internal" href="#llm">文本生成（LLM）</a></li>
+<li><a class="reference internal" href="#vlm">多模态生成（VLM）</a></li>
+<li><a class="reference internal" href="#gather-and-generate"><code class="docutils literal notranslate"><span class="pre">gather_and_generate()</span></code> 工作原理</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id8">必需参数</a><ul>
+<li><a class="reference internal" href="#id9">关键参数</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id10">Strategy 实现细节</a><ul>
+<li><a class="reference internal" href="#id11">可用的 Strategy</a></li>
+<li><a class="reference internal" href="#id12">Strategy 选择逻辑</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id13">引擎睡眠/唤醒机制</a></li>
+<li><a class="reference internal" href="#id14">配置示例</a><ul>
+<li><a class="reference internal" href="#gpu-deepspeed">高吞吐量设置（8 GPU，DeepSpeed）</a></li>
+<li><a class="reference internal" href="#gpu-fsdp-cpu">内存高效设置（8 GPU，FSDP + CPU 卸载）</a></li>
+<li><a class="reference internal" href="#id15">视觉-语言模型设置</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id16">最佳实践</a><ul>
+<li><a class="reference internal" href="#id17">1. 张量并行配置</a></li>
+<li><a class="reference internal" href="#id18">2. 内存管理</a></li>
+<li><a class="reference internal" href="#id19">3. 性能优化</a></li>
+<li><a class="reference internal" href="#id20">4. 调试和监控</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id21">高级功能</a><ul>
+<li><a class="reference internal" href="#id22">序列并行</a></li>
+<li><a class="reference internal" href="#id23">自定义奖励模型</a></li>
+<li><a class="reference internal" href="#id24">混合精度训练</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id25">故障排除</a><ul>
+<li><a class="reference internal" href="#id26">常见问题</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id27">API 参考</a></li>
+</ul>
+</li>
+</ul>
+
+            </div>
+          </div>
+        </div>
+    </section>
+  </div>
+
+  
+
+
+  
+
+  
+  <script type="text/javascript" id="documentation_options" data-url_root="../"
+    src="../_static/documentation_options.js"></script>
+  <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+  <script src="../_static/doctools.js"></script>
+  <script src="../_static/sphinx_highlight.js"></script>
+  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+  
+
+  
+
+  <script type="text/javascript" src="../_static/js/vendor/popper.min.js"></script>
+  <script type="text/javascript" src="../_static/js/vendor/bootstrap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+    jQuery(function () {
+      SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+  <!-- Begin Footer -->
+
+  <div class="container-fluid docs-tutorials-resources" id="docs-tutorials-resources">
+  </div>
+
+  <!-- End Footer -->
+
+  <!-- Begin Mobile Menu -->
+
+  <div class="mobile-main-menu">
+    <div class="container-fluid">
+      <div class="container">
+        <div class="mobile-main-menu-header-container">
+          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
+        </div>
+      </div>
+    </div>
+
+    <div class="mobile-main-menu-links-container">
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://github.com/opendilab/LightRFT" target="_blank">GitHub</a>
+          </li>
+      </div>
+    </div>
+  </div>
+
+  <!-- End Mobile Menu -->
+
+  <script type="text/javascript" src="../_static/js/vendor/anchor.min.js"></script>
+
+  <script type="text/javascript">
+    $(document).ready(function () {
+      mobileMenu.bind();
+      mobileTOC.bind();
+      pytorchAnchors.bind();
+      sideMenus.bind();
+      scrollToAnchor.bind();
+      highlightNavigation.bind();
+      mainMenuDropdown.bind();
+      filterTags.bind();
+
+      // Add class to links that have code blocks, since we cannot create links in code blocks
+      $("article.pytorch-article a span.pre").each(function (e) {
+        $(this).closest("a").addClass("has-code");
+      });
+    })
+  </script>
+</body>
+
+</html>

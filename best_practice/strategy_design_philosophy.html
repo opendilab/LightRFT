@@ -1,0 +1,741 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js" lang="en">
+<!--<![endif]-->
+
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>LightRFT Strategy Design Philosophy &mdash; LightRFT v0.1.1 documentation</title>
+  
+
+  <link rel="shortcut icon" href="../_static/images/favicon.ico" />
+  
+  
+
+  
+
+  
+  
+  
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/readthedocs.css" type="text/css" />
+  <link rel="index" title="Index" href="../genindex.html" />
+  <link rel="search" title="Search" href="../search.html" />
+  <link rel="next" title="Model Testing Guide" href="model_testing.html" />
+  <link rel="prev" title="Strategy Usage Guide" href="strategy.html" />
+  <!-- Google Analytics -->
+  <script type="text/javascript">
+    var collapsedSections = [];
+  </script>
+  
+  <!-- End Google Analytics -->
+  
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+  <script>
+    MathJax = {
+        chtml: {
+            scale: 1,
+            minScale: 1,
+        },
+        svg: {
+            scale: 1,
+            minScale: 1,
+        }
+    }
+</script>
+
+  <!-- Preload the theme fonts -->
+
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-book.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/IBMPlexMono/IBMPlexMono-Medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-medium-italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/IBMPlexMono/IBMPlexMono-SemiBold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+
+<!-- Preload the katex fonts -->
+
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Math-Italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size1-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size4-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size2-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size3-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Caligraphic-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.2/css/all.css"
+    integrity="sha384-vSIIfh2YWi9wW0r9iZe7RJPrKwp6bG+s9QZMoITbCckVJqGCCRhc+ccxNcdpHuYu" crossorigin="anonymous">
+</head>
+
+<div class="container-fluid header-holder tutorials-header" id="header-holder">
+  <div class="container">
+    <div class="header-container">
+      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+        aria-label="OpenMMLab"></a>
+
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://github.com/opendilab/LightRFT" target="_blank">GitHub</a>
+          </li>
+          <li >
+            <div id="resourcesDropdownButton" data-toggle="resources-dropdown" class="resources-dropdown">
+              <a
+                class="resource-option with-down-arrow">
+                OpenDILab
+              </a>
+              <div class="resources-dropdown-menu">
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-engine" target="_blank">
+                  <span class="dropdown-title">DI-engine </span>
+                  <p>OpenDILab Decision AI Engine</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/LightZero" target="_blank">
+                  <span class="dropdown-title">LightZero </span>
+                  <p>OpenDILab Decision Monte Carlo Tree Search Framework</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/GenerativeRL" target="_blank">
+                  <span class="dropdown-title">GenerativeRL </span>
+                  <p>OpenDILab Generative AI Framework</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-star" target="_blank">
+                  <span class="dropdown-title">DI-star </span>
+                  <p>OpenDILab Decision AI in StarCraftII</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-drive" target="_blank">
+                  <span class="dropdown-title">DI-drive </span>
+                  <p>OpenDILab Auto-driving platform</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/GoBigger" target="_blank">
+                  <span class="dropdown-title">GoBigger </span>
+                  <p>OpenDILab Multi-Agent Environment</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-smartcross" target="_blank">
+                  <span class="dropdown-title">DI-smartcross </span>
+                  <p>Decision Intelligence Platform for Traffic Crossing Signal Control</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-treetensor" target="_blank">
+                  <span class="dropdown-title">DI-treetensor </span>
+                  <p>Tree Nested PyTorch Tensor Lib</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-sheep" target="_blank">
+                  <span class="dropdown-title">DI-sheep </span>
+                  <p>Deep Reinforcement Learning + 3 Tiles Game</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-model-based-RL" target="_blank">
+                  <span class="dropdown-title">awesome-model-based-RL </span>
+                  <p>A curated list of awesome model based RL resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-decision-transformer" target="_blank">
+                  <span class="dropdown-title">awesome-decision-transformer </span>
+                  <p>A curated list of Decision Transformer resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-exploration-rl" target="_blank">
+                  <span class="dropdown-title">awesome-exploration-rl </span>
+                  <p>A curated list of awesome exploration RL resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-multi-modal-reinforcement-learning" target="_blank">
+                  <span class="dropdown-title">awesome-multi-modal-reinforcement-learning </span>
+                  <p>A curated list of Multi-Modal Reinforcement Learning resources (continually updated)</p>
+                </a>
+              </div>
+          </li>
+        </ul>
+      </div>
+
+      <a class="main-menu-open-button" href="#" data-behavior="open-mobile-menu"></a>
+    </div>
+  </div>
+</div>
+
+<body class="pytorch-body">
+
+   
+
+  
+
+  <div class="table-of-contents-link-wrapper">
+    <span>Table of Contents</span>
+    <a href="#" class="toggle-table-of-contents" data-behavior="toggle-table-of-contents"></a>
+  </div>
+
+  <nav data-toggle="wy-nav-shift" class="pytorch-left-menu" id="pytorch-left-menu">
+    <div class="pytorch-side-scroll">
+      <div class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        <div class="pytorch-left-menu-search">
+          
+
+          
+          
+          
+          
+
+          
+
+
+
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search Docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        
+        
+        
+        
+        
+        <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../installation/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quick_start/index.html">Quick Start</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide &amp; Best Practices</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Best Practices</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/utils/index.html">lightrft.utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/datasets/index.html">lightrft.datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/models/index.html">lightrft.models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/strategy/index.html">lightrft.strategy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/trainer/index.html">lightrft.trainer</a></li>
+</ul>
+
+        
+        
+      </div>
+    </div>
+  </nav>
+
+  <div class="pytorch-container">
+    <div class="pytorch-page-level-bar" id="pytorch-page-level-bar">
+      <div class="pytorch-breadcrumbs-wrapper">
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="pytorch-breadcrumbs">
+    
+      <li>
+        <a href="../index.html">
+            Docs
+        </a> &gt;
+      </li>
+
+        
+          <li><a href="index.html">Best Practices</a> &gt;</li>
+        
+      <li>LightRFT Strategy Design Philosophy</li>
+    
+    
+      <li class="pytorch-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/best_practice/strategy_design_philosophy.md.txt" rel="nofollow"><img src="../_static/images/view-page-source-icon.svg"></a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+</div>
+      </div>
+
+      <div class="pytorch-shortcuts-wrapper" id="pytorch-shortcuts-wrapper">
+        Shortcuts
+      </div>
+    </div>
+
+    <section data-toggle="wy-nav-shift" id="pytorch-content-wrap" class="pytorch-content-wrap">
+      <div class="pytorch-content-left">
+        
+          <div class="rst-content">
+            
+            <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
+              <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
+                
+  <section id="lightrft-strategy-design-philosophy">
+<h1>LightRFT Strategy Design Philosophy<a class="headerlink" href="#lightrft-strategy-design-philosophy" title="Permalink to this heading">¶</a></h1>
+<section id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this heading">¶</a></h2>
+<p>The LightRFT strategy module provides a unified interface for distributed training strategies, enabling seamless switching between different distributed training backends while maintaining a consistent API. This document outlines the design principles, architecture, and usage patterns of the strategy module.</p>
+</section>
+<section id="core-design-principles">
+<h2>Core Design Principles<a class="headerlink" href="#core-design-principles" title="Permalink to this heading">¶</a></h2>
+<section id="abstraction-and-unification">
+<h3>1. Abstraction and Unification<a class="headerlink" href="#abstraction-and-unification" title="Permalink to this heading">¶</a></h3>
+<p><strong>Principle</strong>: Provide a unified interface that abstracts away the complexities of different distributed training frameworks.</p>
+<p><strong>Implementation</strong>:</p>
+<ul class="simple">
+<li><p>All strategies inherit from <a class="reference internal" href="#lightrft/strategy/strategy_base.py:63"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">StrategyBase</span></code></span></a></p></li>
+<li><p>Common methods like <a class="reference internal" href="#lightrft/strategy/strategy_base.py:257"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">backward()</span></code></span></a>, <a class="reference internal" href="#lightrft/strategy/strategy_base.py:272"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">optimizer_step()</span></code></span></a>, and <a class="reference internal" href="#lightrft/strategy/strategy_base.py:340"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">save_ckpt()</span></code></span></a> have consistent signatures</p></li>
+<li><p>Strategy-specific implementations are encapsulated within concrete strategy classes</p></li>
+</ul>
+</section>
+<section id="configuration-driven-design">
+<h3>2. Configuration-Driven Design<a class="headerlink" href="#configuration-driven-design" title="Permalink to this heading">¶</a></h3>
+<p><strong>Principle</strong>: Use typed configuration objects instead of dynamic attribute access for better type safety and code clarity.</p>
+<p><strong>Implementation</strong>:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#lightrft/strategy/config.py:16"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">StrategyConfig</span></code></span></a> dataclass provides typed access to all configuration parameters</p></li>
+<li><p>Eliminates the need for <code class="docutils literal notranslate"><span class="pre">getattr(args,</span> <span class="pre">&quot;parameter&quot;,</span> <span class="pre">default)</span></code> pattern</p></li>
+<li><p>Enables IDE autocompletion and static type checking</p></li>
+</ul>
+</section>
+<section id="backward-compatibility">
+<h3>3. Backward Compatibility<a class="headerlink" href="#backward-compatibility" title="Permalink to this heading">¶</a></h3>
+<p><strong>Principle</strong>: Maintain compatibility with existing code while introducing improvements.</p>
+<p><strong>Implementation</strong>:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#lightrft/strategy/config.py:67"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">StrategyConfig.from_args()</span></code></span></a> method extracts parameters from legacy argument objects</p></li>
+<li><p>Original <code class="docutils literal notranslate"><span class="pre">args</span></code> object is preserved for compatibility</p></li>
+<li><p><a class="reference internal" href="#lightrft/strategy/config.py:130"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">get_extra_arg()</span></code></span></a> method provides access to non-standard parameters</p></li>
+</ul>
+</section>
+<section id="testability">
+<h3>4. Testability<a class="headerlink" href="#testability" title="Permalink to this heading">¶</a></h3>
+<p><strong>Principle</strong>: Enable comprehensive testing without requiring distributed environments.</p>
+<p><strong>Implementation</strong>:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#lightrft/strategy/fake_strategy.py:14"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">FakeStrategy</span></code></span></a> provides a drop-in replacement for testing</p></li>
+<li><p>All strategy methods have mock implementations for single-process testing</p></li>
+<li><p>Unit tests verify both functionality and API consistency</p></li>
+</ul>
+</section>
+</section>
+<section id="architecture">
+<h2>Architecture<a class="headerlink" href="#architecture" title="Permalink to this heading">¶</a></h2>
+<section id="strategy-hierarchy">
+<h3>Strategy Hierarchy<a class="headerlink" href="#strategy-hierarchy" title="Permalink to this heading">¶</a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>StrategyBase (ABC)
+├── DeepspeedStrategy
+├── FSDPV2Strategy  
+└── FakeStrategy (for testing)
+</pre></div>
+</div>
+</section>
+<section id="key-components">
+<h3>Key Components<a class="headerlink" href="#key-components" title="Permalink to this heading">¶</a></h3>
+<section id="strategy-factory">
+<h4>1. Strategy Factory<a class="headerlink" href="#strategy-factory" title="Permalink to this heading">¶</a></h4>
+<p>The <a class="reference internal" href="#lightrft/strategy/strategy.py:20"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">get_strategy()</span></code></span></a> function serves as the entry point, automatically selecting the appropriate strategy based on configuration:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">lightrft.strategy</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_strategy</span>
+
+<span class="c1"># Automatically selects DeepSpeed or FSDP based on args.fsdp</span>
+<span class="n">strategy</span> <span class="o">=</span> <span class="n">get_strategy</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="configuration-management">
+<h4>2. Configuration Management<a class="headerlink" href="#configuration-management" title="Permalink to this heading">¶</a></h4>
+<p>The <a class="reference internal" href="#lightrft/strategy/config.py:16"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">StrategyConfig</span></code></span></a> class centralizes all configuration parameters:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">lightrft.strategy.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">StrategyConfig</span>
+
+<span class="n">config</span> <span class="o">=</span> <span class="n">StrategyConfig</span><span class="o">.</span><span class="n">from_args</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+<span class="c1"># Access parameters with type safety</span>
+<span class="n">learning_rate</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">actor_learning_rate</span>
+<span class="n">use_bf16</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">bf16</span>
+</pre></div>
+</div>
+</section>
+<section id="common-interface">
+<h4>3. Common Interface<a class="headerlink" href="#common-interface" title="Permalink to this heading">¶</a></h4>
+<p>All strategies implement the same core interface:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">StrategyBase</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">setup_distributed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span> <span class="o">...</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_optimizer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optimizer</span><span class="p">:</span> <span class="o">...</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">prepare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">models</span><span class="p">,</span> <span class="n">is_rlhf</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span> <span class="o">...</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">backward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">loss</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span> <span class="o">...</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">optimizer_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">scheduler</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span> <span class="o">...</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">save_ckpt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">save_dir</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span> <span class="o">...</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">load_ckpt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">load_dir</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span> <span class="o">...</span>
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+<section id="usage-patterns">
+<h2>Usage Patterns<a class="headerlink" href="#usage-patterns" title="Permalink to this heading">¶</a></h2>
+<section id="basic-usage">
+<h3>1. Basic Usage<a class="headerlink" href="#basic-usage" title="Permalink to this heading">¶</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">lightrft.strategy</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_strategy</span>
+
+<span class="c1"># Initialize strategy</span>
+<span class="n">strategy</span> <span class="o">=</span> <span class="n">get_strategy</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+
+<span class="c1"># Prepare models and optimizers</span>
+<span class="n">actor</span><span class="p">,</span> <span class="n">critic</span><span class="p">,</span> <span class="n">reward_models</span><span class="p">,</span> <span class="n">initial_model</span> <span class="o">=</span> <span class="n">strategy</span><span class="o">.</span><span class="n">prepare_models_and_optimizers</span><span class="p">(</span>
+    <span class="n">actor</span><span class="p">,</span> <span class="n">critic</span><span class="p">,</span> <span class="n">reward_models</span><span class="p">,</span> <span class="n">initial_model</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">max_steps</span>
+<span class="p">)</span>
+
+<span class="c1"># Training loop</span>
+<span class="k">for</span> <span class="n">batch</span> <span class="ow">in</span> <span class="n">dataloader</span><span class="p">:</span>
+    <span class="n">loss</span> <span class="o">=</span> <span class="n">compute_loss</span><span class="p">(</span><span class="n">batch</span><span class="p">)</span>
+    <span class="n">strategy</span><span class="o">.</span><span class="n">backward</span><span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="n">actor</span><span class="p">,</span> <span class="n">actor_optimizer</span><span class="p">)</span>
+    <span class="n">strategy</span><span class="o">.</span><span class="n">optimizer_step</span><span class="p">(</span><span class="n">actor_optimizer</span><span class="p">,</span> <span class="n">actor</span><span class="p">,</span> <span class="n">actor_scheduler</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="configuration-driven-usage">
+<h3>2. Configuration-Driven Usage<a class="headerlink" href="#configuration-driven-usage" title="Permalink to this heading">¶</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">lightrft.strategy.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">StrategyConfig</span>
+
+<span class="c1"># Create configuration</span>
+<span class="n">config</span> <span class="o">=</span> <span class="n">StrategyConfig</span><span class="p">(</span>
+    <span class="n">seed</span><span class="o">=</span><span class="mi">42</span><span class="p">,</span>
+    <span class="n">max_norm</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+    <span class="n">micro_train_batch_size</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+    <span class="n">train_batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span>
+    <span class="n">bf16</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">zero_stage</span><span class="o">=</span><span class="mi">2</span>
+<span class="p">)</span>
+
+<span class="c1"># Use configuration to create strategy</span>
+<span class="n">strategy</span> <span class="o">=</span> <span class="n">get_strategy</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="testing-with-fakestrategy">
+<h3>3. Testing with FakeStrategy<a class="headerlink" href="#testing-with-fakestrategy" title="Permalink to this heading">¶</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">lightrft.strategy</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_fake_strategy</span>
+
+<span class="c1"># Use fake strategy for testing</span>
+<span class="n">strategy</span> <span class="o">=</span> <span class="n">get_fake_strategy</span><span class="p">()</span>
+
+<span class="c1"># All operations work without distributed environment</span>
+<span class="n">strategy</span><span class="o">.</span><span class="n">setup_distributed</span><span class="p">()</span>
+<span class="n">strategy</span><span class="o">.</span><span class="n">backward</span><span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">)</span>
+<span class="n">strategy</span><span class="o">.</span><span class="n">save_ckpt</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="s2">&quot;checkpoints&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="design-benefits">
+<h2>Design Benefits<a class="headerlink" href="#design-benefits" title="Permalink to this heading">¶</a></h2>
+<section id="improved-type-safety">
+<h3>1. Improved Type Safety<a class="headerlink" href="#improved-type-safety" title="Permalink to this heading">¶</a></h3>
+<p><strong>Before</strong> (using getattr):</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">seed</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="s2">&quot;seed&quot;</span><span class="p">,</span> <span class="mi">42</span><span class="p">)</span>  <span class="c1"># Type: Any</span>
+<span class="n">max_norm</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="s2">&quot;max_norm&quot;</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>  <span class="c1"># Type: Any</span>
+</pre></div>
+</div>
+<p><strong>After</strong> (using StrategyConfig):</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">config</span> <span class="o">=</span> <span class="n">StrategyConfig</span><span class="o">.</span><span class="n">from_args</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+<span class="n">seed</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">seed</span>  <span class="c1"># Type: int</span>
+<span class="n">max_norm</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">max_norm</span>  <span class="c1"># Type: float</span>
+</pre></div>
+</div>
+</section>
+<section id="better-code-organization">
+<h3>2. Better Code Organization<a class="headerlink" href="#better-code-organization" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>Configuration parameters are explicitly defined in <a class="reference internal" href="#lightrft/strategy/config.py:16"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">StrategyConfig</span></code></span></a></p></li>
+<li><p>Strategy-specific logic is encapsulated in concrete strategy classes</p></li>
+<li><p>Common functionality is implemented in <a class="reference internal" href="#lightrft/strategy/strategy_base.py:63"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">StrategyBase</span></code></span></a></p></li>
+</ul>
+</section>
+<section id="enhanced-testability">
+<h3>3. Enhanced Testability<a class="headerlink" href="#enhanced-testability" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><a class="reference internal" href="#lightrft/strategy/fake_strategy.py:14"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">FakeStrategy</span></code></span></a> enables testing without distributed setup</p></li>
+<li><p>Unit tests can verify all strategy functionality</p></li>
+<li><p>Mock implementations ensure consistent behavior</p></li>
+</ul>
+</section>
+<section id="future-extensibility">
+<h3>4. Future Extensibility<a class="headerlink" href="#future-extensibility" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>New strategies can be added by implementing the <a class="reference internal" href="#lightrft/strategy/strategy_base.py:63"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">StrategyBase</span></code></span></a> interface</p></li>
+<li><p>Configuration can be extended without breaking existing code</p></li>
+<li><p>The factory pattern makes it easy to add new strategy types</p></li>
+</ul>
+</section>
+</section>
+<section id="best-practices">
+<h2>Best Practices<a class="headerlink" href="#best-practices" title="Permalink to this heading">¶</a></h2>
+<section id="id1">
+<h3>1. Configuration Management<a class="headerlink" href="#id1" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>Use <a class="reference internal" href="#lightrft/strategy/config.py:16"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">StrategyConfig</span></code></span></a> for all parameter access</p></li>
+<li><p>Avoid direct <code class="docutils literal notranslate"><span class="pre">getattr</span></code> calls on argument objects</p></li>
+<li><p>Use <a class="reference internal" href="#lightrft/strategy/config.py:130"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">get_extra_arg()</span></code></span></a> for non-standard parameters</p></li>
+</ul>
+</section>
+<section id="strategy-selection">
+<h3>2. Strategy Selection<a class="headerlink" href="#strategy-selection" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>Use <a class="reference internal" href="#lightrft/strategy/strategy.py:20"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">get_strategy()</span></code></span></a> factory function for strategy creation</p></li>
+<li><p>Let the factory determine the appropriate strategy based on configuration</p></li>
+<li><p>Use <a class="reference internal" href="#lightrft/strategy/fake_strategy.py:14"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">FakeStrategy</span></code></span></a> for testing and development</p></li>
+</ul>
+</section>
+<section id="error-handling">
+<h3>3. Error Handling<a class="headerlink" href="#error-handling" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>Strategies should provide clear error messages for unsupported operations</p></li>
+<li><p>Use the strategy’s <a class="reference internal" href="#lightrft/strategy/strategy_base.py:450"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">print()</span></code></span></a> method for logging</p></li>
+<li><p>Implement proper cleanup in context managers</p></li>
+</ul>
+</section>
+<section id="testing">
+<h3>4. Testing<a class="headerlink" href="#testing" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>Use <a class="reference internal" href="#lightrft/strategy/fake_strategy.py:14"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">FakeStrategy</span></code></span></a> for unit tests</p></li>
+<li><p>Test both strategy-specific and common functionality</p></li>
+<li><p>Verify that all strategies implement the required interface</p></li>
+</ul>
+</section>
+</section>
+<section id="conclusion">
+<h2>Conclusion<a class="headerlink" href="#conclusion" title="Permalink to this heading">¶</a></h2>
+<p>The LightRFT strategy module represents a paradigm shift in distributed training abstraction design, establishing a new standard for flexibility, type safety, and developer experience in RLHF training systems. By embracing a holistic design philosophy centered on abstraction unification and configuration-driven development, the module achieves unprecedented levels of interoperability across diverse distributed training frameworks.</p>
+<section id="foundational-design-innovations">
+<h3>Foundational Design Innovations<a class="headerlink" href="#foundational-design-innovations" title="Permalink to this heading">¶</a></h3>
+<p><strong>Unified Abstraction Architecture</strong>: The module introduces a sophisticated abstraction layer that seamlessly unifies DeepSpeed, FSDP, and other distributed training backends under a single, consistent API. This architectural breakthrough eliminates the traditional fragmentation between different distributed training approaches, enabling developers to switch between strategies with zero code changes.</p>
+<p><strong>Type-Safe Configuration Ecosystem</strong>: By replacing dynamic attribute access patterns with strongly-typed configuration objects through <a class="reference internal" href="#lightrft/strategy/config.py:16"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">StrategyConfig</span></code></span></a>, the module establishes a new paradigm for configuration management that eliminates runtime errors, enables IDE autocompletion, and provides compile-time safety guarantees.</p>
+<p><strong>Intelligent Strategy Selection</strong>: The factory-based approach in <a class="reference internal" href="#lightrft/strategy/strategy.py:21"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">get_strategy()</span></code></span></a> implements automatic strategy selection based on configuration parameters, abstracting away the complexity of backend selection while maintaining full control through explicit configuration.</p>
+</section>
+<section id="advanced-capabilities">
+<h3>Advanced Capabilities<a class="headerlink" href="#advanced-capabilities" title="Permalink to this heading">¶</a></h3>
+<p><strong>Multi-Modal Inference Engine Integration</strong>: The strategy module pioneers unified support for both text-only and multi-modal generation through sophisticated engine management, supporting vLLM and SGLang backends with consistent interfaces for diverse AI workloads.</p>
+<p><strong>Comprehensive Testing Infrastructure</strong>: Through <a class="reference internal" href="#lightrft/strategy/fake_strategy.py:24"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">FakeStrategy</span></code></span></a>, the module enables full-featured testing of distributed training workflows without requiring complex distributed environments, dramatically improving development velocity and test coverage.</p>
+<p><strong>Memory-Efficient Training Orchestration</strong>: Advanced features like inference engine sleep/wake cycles, gradient accumulation optimizations, and memory-aware checkpointing demonstrate the module’s commitment to resource efficiency at scale.</p>
+</section>
+<section id="industry-impact">
+<h3>Industry Impact<a class="headerlink" href="#industry-impact" title="Permalink to this heading">¶</a></h3>
+<p>This design philosophy has established new best practices for distributed training abstraction, demonstrating that type safety, developer experience, and performance optimization are not mutually exclusive goals. The module’s extensible architecture ensures long-term viability, providing a solid foundation for integrating future distributed training technologies while maintaining backward compatibility with existing codebases.</p>
+<p>The LightRFT strategy module stands as a reference implementation for next-generation distributed training systems, proving that thoughtful abstraction design can simultaneously achieve simplicity for beginners and powerful customization for experts across the entire spectrum of RLHF training requirements.</p>
+</section>
+</section>
+</section>
+
+
+              </article>
+              
+            </div>
+            <footer>
+  
+  <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+    
+    <a href="model_testing.html" class="btn btn-neutral float-right" title="Model Testing Guide" accesskey="n"
+      rel="next">Next <img src="../_static/images/chevron-right-blue.svg"
+        class="next-page"></a>
+    
+    
+    <a href="strategy.html" class="btn btn-neutral" title="Strategy Usage Guide" accesskey="p"
+      rel="prev"><img src="../_static/images/chevron-right-blue.svg" class="previous-page"> Previous</a>
+    
+  </div>
+  
+
+  <hr>
+
+  <div role="contentinfo">
+    <p>
+      &copy; Copyright 2025, OpenDILab.
+
+    </p>
+  </div>
+  
+  <div>
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a
+      href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the
+      Docs</a>.
+  </div>
+   
+
+</footer>
+          </div>
+        </div>
+
+        <div class="pytorch-content-right" id="pytorch-content-right">
+          <div class="pytorch-right-menu" id="pytorch-right-menu">
+            <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
+              <ul>
+<li><a class="reference internal" href="#">LightRFT Strategy Design Philosophy</a><ul>
+<li><a class="reference internal" href="#overview">Overview</a></li>
+<li><a class="reference internal" href="#core-design-principles">Core Design Principles</a><ul>
+<li><a class="reference internal" href="#abstraction-and-unification">1. Abstraction and Unification</a></li>
+<li><a class="reference internal" href="#configuration-driven-design">2. Configuration-Driven Design</a></li>
+<li><a class="reference internal" href="#backward-compatibility">3. Backward Compatibility</a></li>
+<li><a class="reference internal" href="#testability">4. Testability</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#architecture">Architecture</a><ul>
+<li><a class="reference internal" href="#strategy-hierarchy">Strategy Hierarchy</a></li>
+<li><a class="reference internal" href="#key-components">Key Components</a><ul>
+<li><a class="reference internal" href="#strategy-factory">1. Strategy Factory</a></li>
+<li><a class="reference internal" href="#configuration-management">2. Configuration Management</a></li>
+<li><a class="reference internal" href="#common-interface">3. Common Interface</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#usage-patterns">Usage Patterns</a><ul>
+<li><a class="reference internal" href="#basic-usage">1. Basic Usage</a></li>
+<li><a class="reference internal" href="#configuration-driven-usage">2. Configuration-Driven Usage</a></li>
+<li><a class="reference internal" href="#testing-with-fakestrategy">3. Testing with FakeStrategy</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#design-benefits">Design Benefits</a><ul>
+<li><a class="reference internal" href="#improved-type-safety">1. Improved Type Safety</a></li>
+<li><a class="reference internal" href="#better-code-organization">2. Better Code Organization</a></li>
+<li><a class="reference internal" href="#enhanced-testability">3. Enhanced Testability</a></li>
+<li><a class="reference internal" href="#future-extensibility">4. Future Extensibility</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#best-practices">Best Practices</a><ul>
+<li><a class="reference internal" href="#id1">1. Configuration Management</a></li>
+<li><a class="reference internal" href="#strategy-selection">2. Strategy Selection</a></li>
+<li><a class="reference internal" href="#error-handling">3. Error Handling</a></li>
+<li><a class="reference internal" href="#testing">4. Testing</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#conclusion">Conclusion</a><ul>
+<li><a class="reference internal" href="#foundational-design-innovations">Foundational Design Innovations</a></li>
+<li><a class="reference internal" href="#advanced-capabilities">Advanced Capabilities</a></li>
+<li><a class="reference internal" href="#industry-impact">Industry Impact</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            </div>
+          </div>
+        </div>
+    </section>
+  </div>
+
+  
+
+
+  
+
+  
+  <script type="text/javascript" id="documentation_options" data-url_root="../"
+    src="../_static/documentation_options.js"></script>
+  <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+  <script src="../_static/doctools.js"></script>
+  <script src="../_static/sphinx_highlight.js"></script>
+  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+  
+
+  
+
+  <script type="text/javascript" src="../_static/js/vendor/popper.min.js"></script>
+  <script type="text/javascript" src="../_static/js/vendor/bootstrap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+    jQuery(function () {
+      SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+  <!-- Begin Footer -->
+
+  <div class="container-fluid docs-tutorials-resources" id="docs-tutorials-resources">
+  </div>
+
+  <!-- End Footer -->
+
+  <!-- Begin Mobile Menu -->
+
+  <div class="mobile-main-menu">
+    <div class="container-fluid">
+      <div class="container">
+        <div class="mobile-main-menu-header-container">
+          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
+        </div>
+      </div>
+    </div>
+
+    <div class="mobile-main-menu-links-container">
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://github.com/opendilab/LightRFT" target="_blank">GitHub</a>
+          </li>
+      </div>
+    </div>
+  </div>
+
+  <!-- End Mobile Menu -->
+
+  <script type="text/javascript" src="../_static/js/vendor/anchor.min.js"></script>
+
+  <script type="text/javascript">
+    $(document).ready(function () {
+      mobileMenu.bind();
+      mobileTOC.bind();
+      pytorchAnchors.bind();
+      sideMenus.bind();
+      scrollToAnchor.bind();
+      highlightNavigation.bind();
+      mainMenuDropdown.bind();
+      filterTags.bind();
+
+      // Add class to links that have code blocks, since we cannot create links in code blocks
+      $("article.pytorch-article a span.pre").each(function (e) {
+        $(this).closest("a").addClass("has-code");
+      });
+    })
+  </script>
+</body>
+
+</html>

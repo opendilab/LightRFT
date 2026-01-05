@@ -1,0 +1,754 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js" lang="en">
+<!--<![endif]-->
+
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>LightRFT Models Design Document &mdash; LightRFT v0.1.1 documentation</title>
+  
+
+  <link rel="shortcut icon" href="../_static/images/favicon.ico" />
+  
+  
+
+  
+
+  
+  
+  
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/readthedocs.css" type="text/css" />
+  <link rel="index" title="Index" href="../genindex.html" />
+  <link rel="search" title="Search" href="../search.html" />
+  <link rel="next" title="LightRFT Reward Model Training Best Practices Guide" href="reward_model.html" />
+  <link rel="prev" title="Best Practices" href="index.html" />
+  <!-- Google Analytics -->
+  <script type="text/javascript">
+    var collapsedSections = [];
+  </script>
+  
+  <!-- End Google Analytics -->
+  
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+  <script>
+    MathJax = {
+        chtml: {
+            scale: 1,
+            minScale: 1,
+        },
+        svg: {
+            scale: 1,
+            minScale: 1,
+        }
+    }
+</script>
+
+  <!-- Preload the theme fonts -->
+
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-book.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/IBMPlexMono/IBMPlexMono-Medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-medium-italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/IBMPlexMono/IBMPlexMono-SemiBold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+
+<!-- Preload the katex fonts -->
+
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Math-Italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size1-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size4-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size2-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size3-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Caligraphic-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.2/css/all.css"
+    integrity="sha384-vSIIfh2YWi9wW0r9iZe7RJPrKwp6bG+s9QZMoITbCckVJqGCCRhc+ccxNcdpHuYu" crossorigin="anonymous">
+</head>
+
+<div class="container-fluid header-holder tutorials-header" id="header-holder">
+  <div class="container">
+    <div class="header-container">
+      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+        aria-label="OpenMMLab"></a>
+
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://github.com/opendilab/LightRFT" target="_blank">GitHub</a>
+          </li>
+          <li >
+            <div id="resourcesDropdownButton" data-toggle="resources-dropdown" class="resources-dropdown">
+              <a
+                class="resource-option with-down-arrow">
+                OpenDILab
+              </a>
+              <div class="resources-dropdown-menu">
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-engine" target="_blank">
+                  <span class="dropdown-title">DI-engine </span>
+                  <p>OpenDILab Decision AI Engine</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/LightZero" target="_blank">
+                  <span class="dropdown-title">LightZero </span>
+                  <p>OpenDILab Decision Monte Carlo Tree Search Framework</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/GenerativeRL" target="_blank">
+                  <span class="dropdown-title">GenerativeRL </span>
+                  <p>OpenDILab Generative AI Framework</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-star" target="_blank">
+                  <span class="dropdown-title">DI-star </span>
+                  <p>OpenDILab Decision AI in StarCraftII</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-drive" target="_blank">
+                  <span class="dropdown-title">DI-drive </span>
+                  <p>OpenDILab Auto-driving platform</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/GoBigger" target="_blank">
+                  <span class="dropdown-title">GoBigger </span>
+                  <p>OpenDILab Multi-Agent Environment</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-smartcross" target="_blank">
+                  <span class="dropdown-title">DI-smartcross </span>
+                  <p>Decision Intelligence Platform for Traffic Crossing Signal Control</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-treetensor" target="_blank">
+                  <span class="dropdown-title">DI-treetensor </span>
+                  <p>Tree Nested PyTorch Tensor Lib</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-sheep" target="_blank">
+                  <span class="dropdown-title">DI-sheep </span>
+                  <p>Deep Reinforcement Learning + 3 Tiles Game</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-model-based-RL" target="_blank">
+                  <span class="dropdown-title">awesome-model-based-RL </span>
+                  <p>A curated list of awesome model based RL resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-decision-transformer" target="_blank">
+                  <span class="dropdown-title">awesome-decision-transformer </span>
+                  <p>A curated list of Decision Transformer resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-exploration-rl" target="_blank">
+                  <span class="dropdown-title">awesome-exploration-rl </span>
+                  <p>A curated list of awesome exploration RL resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-multi-modal-reinforcement-learning" target="_blank">
+                  <span class="dropdown-title">awesome-multi-modal-reinforcement-learning </span>
+                  <p>A curated list of Multi-Modal Reinforcement Learning resources (continually updated)</p>
+                </a>
+              </div>
+          </li>
+        </ul>
+      </div>
+
+      <a class="main-menu-open-button" href="#" data-behavior="open-mobile-menu"></a>
+    </div>
+  </div>
+</div>
+
+<body class="pytorch-body">
+
+   
+
+  
+
+  <div class="table-of-contents-link-wrapper">
+    <span>Table of Contents</span>
+    <a href="#" class="toggle-table-of-contents" data-behavior="toggle-table-of-contents"></a>
+  </div>
+
+  <nav data-toggle="wy-nav-shift" class="pytorch-left-menu" id="pytorch-left-menu">
+    <div class="pytorch-side-scroll">
+      <div class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        <div class="pytorch-left-menu-search">
+          
+
+          
+          
+          
+          
+
+          
+
+
+
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search Docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        
+        
+        
+        
+        
+        <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../installation/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quick_start/index.html">Quick Start</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide &amp; Best Practices</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Best Practices</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/utils/index.html">lightrft.utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/datasets/index.html">lightrft.datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/models/index.html">lightrft.models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/strategy/index.html">lightrft.strategy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/trainer/index.html">lightrft.trainer</a></li>
+</ul>
+
+        
+        
+      </div>
+    </div>
+  </nav>
+
+  <div class="pytorch-container">
+    <div class="pytorch-page-level-bar" id="pytorch-page-level-bar">
+      <div class="pytorch-breadcrumbs-wrapper">
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="pytorch-breadcrumbs">
+    
+      <li>
+        <a href="../index.html">
+            Docs
+        </a> &gt;
+      </li>
+
+        
+          <li><a href="index.html">Best Practices</a> &gt;</li>
+        
+      <li>LightRFT Models Design Document</li>
+    
+    
+      <li class="pytorch-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/best_practice/model.md.txt" rel="nofollow"><img src="../_static/images/view-page-source-icon.svg"></a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+</div>
+      </div>
+
+      <div class="pytorch-shortcuts-wrapper" id="pytorch-shortcuts-wrapper">
+        Shortcuts
+      </div>
+    </div>
+
+    <section data-toggle="wy-nav-shift" id="pytorch-content-wrap" class="pytorch-content-wrap">
+      <div class="pytorch-content-left">
+        
+          <div class="rst-content">
+            
+            <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
+              <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
+                
+  <section id="lightrft-models-design-document">
+<h1>LightRFT Models Design Document<a class="headerlink" href="#lightrft-models-design-document" title="Permalink to this heading">¶</a></h1>
+<section id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this heading">¶</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">lightrft/models</span></code> module provides a comprehensive framework for implementing actor models in reinforcement learning scenarios, specifically designed for language model fine-tuning and human feedback integration. This document outlines the design philosophy, architecture, and implementation details of the models package.</p>
+</section>
+<section id="design-philosophy">
+<h2>Design Philosophy<a class="headerlink" href="#design-philosophy" title="Permalink to this heading">¶</a></h2>
+<section id="modular-architecture">
+<h3>1. Modular Architecture<a class="headerlink" href="#modular-architecture" title="Permalink to this heading">¶</a></h3>
+<p>The models package follows a modular design approach that separates concerns and promotes code reusability:</p>
+<ul class="simple">
+<li><p><strong>Actor Base Classes</strong>: Provide foundational functionality for different types of actors</p></li>
+<li><p><strong>Utility Functions</strong>: Common operations and helper functions shared across models</p></li>
+<li><p><strong>Model Patches</strong>: Specialized adaptations for specific model architectures</p></li>
+</ul>
+</section>
+<section id="flexibility-and-extensibility">
+<h3>2. Flexibility and Extensibility<a class="headerlink" href="#flexibility-and-extensibility" title="Permalink to this heading">¶</a></h3>
+<p>The design prioritizes flexibility to support various model types and use cases:</p>
+<ul class="simple">
+<li><p>Support for both text-only and vision-language models</p></li>
+<li><p>Configurable optimization strategies (LoRA, quantization, Flash Attention)</p></li>
+<li><p>Adaptable to different model architectures and sizes</p></li>
+</ul>
+</section>
+<section id="performance-optimization">
+<h3>3. Performance Optimization<a class="headerlink" href="#performance-optimization" title="Permalink to this heading">¶</a></h3>
+<p>Built-in optimizations for efficient training and inference:</p>
+<ul class="simple">
+<li><p>Memory-efficient implementations with gradient checkpointing</p></li>
+<li><p>Support for distributed training with DeepSpeed and FSDP</p></li>
+<li><p>Sample packing for improved batch processing efficiency</p></li>
+</ul>
+</section>
+</section>
+<section id="architecture-components">
+<h2>Architecture Components<a class="headerlink" href="#architecture-components" title="Permalink to this heading">¶</a></h2>
+<section id="core-classes">
+<h3>Core Classes<a class="headerlink" href="#core-classes" title="Permalink to this heading">¶</a></h3>
+<section id="actortext">
+<h4>1. ActorText<a class="headerlink" href="#actortext" title="Permalink to this heading">¶</a></h4>
+<p><strong>Purpose</strong>: General-purpose actor for text-only language models</p>
+<p><strong>Key Features</strong>:</p>
+<ul class="simple">
+<li><p>Supports various causal language model architectures</p></li>
+<li><p>Configurable LoRA adaptation with auto-detection of target modules</p></li>
+<li><p>Flash Attention 2.0 integration for improved performance</p></li>
+</ul>
+<p><strong>Design Decisions</strong>:</p>
+<ul class="simple">
+<li><p>Generic implementation that works with any HuggingFace causal LM</p></li>
+<li><p>Automatic detection of linear modules for LoRA injection</p></li>
+<li><p>Flexible generation parameters with post-processing for RL training</p></li>
+</ul>
+</section>
+<section id="actorvl-vision-language">
+<h4>2. ActorVL (Vision-Language)<a class="headerlink" href="#actorvl-vision-language" title="Permalink to this heading">¶</a></h4>
+<p><strong>Purpose</strong>: Specialized actor for vision-language models</p>
+<p><strong>Key Features</strong>:</p>
+<ul class="simple">
+<li><p>Multi-modal input processing (text + vision)</p></li>
+<li><p>Support for various VL architectures (LLaVA, Qwen2-VL, InternVL, etc.)</p></li>
+<li><p>Image grid processing for different aspect ratios</p></li>
+<li><p>Specialized handling for different model types</p></li>
+</ul>
+<p><strong>Design Decisions</strong>:</p>
+<ul class="simple">
+<li><p>Separate class to handle the complexity of multi-modal inputs</p></li>
+<li><p>Model-specific adaptations for different VL architectures</p></li>
+<li><p>Flexible pixel value and grid dimension handling</p></li>
+</ul>
+</section>
+</section>
+<section id="utility-functions">
+<h3>Utility Functions<a class="headerlink" href="#utility-functions" title="Permalink to this heading">¶</a></h3>
+<section id="lora-configuration-apply-lora-configuration">
+<h4>1. LoRA Configuration (<code class="docutils literal notranslate"><span class="pre">apply_lora_configuration</span></code>)<a class="headerlink" href="#lora-configuration-apply-lora-configuration" title="Permalink to this heading">¶</a></h4>
+<p><strong>Purpose</strong>: Centralized LoRA setup and configuration</p>
+<p><strong>Design Rationale</strong>:</p>
+<ul class="simple">
+<li><p>Eliminates code duplication across different actor types</p></li>
+<li><p>Provides consistent LoRA configuration across the framework</p></li>
+</ul>
+</section>
+<section id="log-probability-computation-log-probs-from-logits">
+<h4>2. Log Probability Computation (<code class="docutils literal notranslate"><span class="pre">log_probs_from_logits</span></code>)<a class="headerlink" href="#log-probability-computation-log-probs-from-logits" title="Permalink to this heading">¶</a></h4>
+<p><strong>Purpose</strong>: Efficient computation of log probabilities from model logits</p>
+<p><strong>Design Features</strong>:</p>
+<ul class="simple">
+<li><p>Memory-optimized implementation with row-by-row processing</p></li>
+<li><p>Support for different data types (float32, float16, bfloat16)</p></li>
+<li><p>Flash Attention integration for improved performance</p></li>
+<li><p>Automatic fallback for unsupported configurations</p></li>
+</ul>
+</section>
+<section id="position-id-management-reset-position-ids">
+<h4>3. Position ID Management (<code class="docutils literal notranslate"><span class="pre">reset_position_ids</span></code>)<a class="headerlink" href="#position-id-management-reset-position-ids" title="Permalink to this heading">¶</a></h4>
+<p><strong>Purpose</strong>: Handle position IDs for packed sequences</p>
+<p><strong>Design Rationale</strong>:</p>
+<ul class="simple">
+<li><p>Essential for sample packing optimization</p></li>
+<li><p>Maintains correct positional encoding across concatenated sequences</p></li>
+<li><p>Supports variable-length sequences in packed format</p></li>
+</ul>
+<p><strong>Design Features</strong>:</p>
+<ul class="simple">
+<li><p>Model-architecture-aware detection</p></li>
+<li><p>Configurable exclusion of specific modules (vision towers, etc.)</p></li>
+<li><p>Support for various model types and architectures</p></li>
+</ul>
+</section>
+</section>
+<section id="model-patches">
+<h3>Model Patches<a class="headerlink" href="#model-patches" title="Permalink to this heading">¶</a></h3>
+<section id="purpose">
+<h4>Purpose<a class="headerlink" href="#purpose" title="Permalink to this heading">¶</a></h4>
+<p>The <code class="docutils literal notranslate"><span class="pre">monkey_patch</span></code> directory contains model-specific adaptations and optimizations:</p>
+<ul class="simple">
+<li><p><strong>Architecture-specific optimizations</strong>: Tailored improvements for specific model architectures</p></li>
+<li><p><strong>Generation method patches</strong>: Enhanced generation capabilities</p></li>
+<li><p><strong>Performance optimizations</strong>: Model-specific performance improvements</p></li>
+</ul>
+</section>
+</section>
+</section>
+<section id="implementation-details">
+<h2>Implementation Details<a class="headerlink" href="#implementation-details" title="Permalink to this heading">¶</a></h2>
+<section id="model-initialization-strategy">
+<h3>1. Model Initialization Strategy<a class="headerlink" href="#model-initialization-strategy" title="Permalink to this heading">¶</a></h3>
+<p>The models support two initialization patterns:</p>
+<section id="pattern-a-from-pretrained-path">
+<h4>Pattern A: From Pretrained Path<a class="headerlink" href="#pattern-a-from-pretrained-path" title="Permalink to this heading">¶</a></h4>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">actor</span> <span class="o">=</span> <span class="n">ActorText</span><span class="p">(</span>
+    <span class="n">pretrain_or_model</span><span class="o">=</span><span class="s2">&quot;model_path&quot;</span><span class="p">,</span>
+    <span class="n">lora_rank</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span>
+    <span class="n">use_flash_attention_2</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="pattern-b-from-existing-model">
+<h4>Pattern B: From Existing Model<a class="headerlink" href="#pattern-b-from-existing-model" title="Permalink to this heading">¶</a></h4>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">actor</span> <span class="o">=</span> <span class="n">ActorText</span><span class="p">(</span>
+    <span class="n">pretrain_or_model</span><span class="o">=</span><span class="n">existing_model</span><span class="p">,</span>
+    <span class="n">packing_samples</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Design Rationale</strong>:</p>
+<ul class="simple">
+<li><p>Supports both training from scratch and fine-tuning existing models</p></li>
+<li><p>Enables flexible model deployment scenarios</p></li>
+<li><p>Maintains backward compatibility with existing workflows</p></li>
+</ul>
+</section>
+</section>
+<section id="generation-and-forward-pass-design">
+<h3>2. Generation and Forward Pass Design<a class="headerlink" href="#generation-and-forward-pass-design" title="Permalink to this heading">¶</a></h3>
+<section id="generation-method">
+<h4>Generation Method<a class="headerlink" href="#generation-method" title="Permalink to this heading">¶</a></h4>
+<ul class="simple">
+<li><p><strong>Input Processing</strong>: Handles various input formats and parameters</p></li>
+<li><p><strong>Model Generation</strong>: Delegates to underlying model with configured parameters</p></li>
+<li><p><strong>Post-processing</strong>: Creates attention masks and action masks for RL training</p></li>
+</ul>
+</section>
+<section id="forward-method">
+<h4>Forward Method<a class="headerlink" href="#forward-method" title="Permalink to this heading">¶</a></h4>
+<ul class="simple">
+<li><p><strong>Position ID Handling</strong>: Manages positional encoding for different sequence formats</p></li>
+<li><p><strong>Log Probability Computation</strong>: Efficiently computes action probabilities</p></li>
+<li><p><strong>Packed Sequence Support</strong>: Handles multiple sequences in a single batch</p></li>
+</ul>
+</section>
+</section>
+<section id="memory-and-performance-optimizations">
+<h3>3. Memory and Performance Optimizations<a class="headerlink" href="#memory-and-performance-optimizations" title="Permalink to this heading">¶</a></h3>
+<section id="gradient-checkpointing">
+<h4>Gradient Checkpointing<a class="headerlink" href="#gradient-checkpointing" title="Permalink to this heading">¶</a></h4>
+<ul class="simple">
+<li><p>Optional memory-saving technique</p></li>
+<li><p>Configurable via <code class="docutils literal notranslate"><span class="pre">gradient_checkpointing_enable/disable</span></code></p></li>
+<li><p>Balances memory usage with computational overhead</p></li>
+</ul>
+</section>
+<section id="sample-packing">
+<h4>Sample Packing<a class="headerlink" href="#sample-packing" title="Permalink to this heading">¶</a></h4>
+<ul class="simple">
+<li><p>Concatenates multiple sequences for efficient batch processing</p></li>
+<li><p>Maintains correct attention patterns through position ID management</p></li>
+<li><p>Significantly improves training throughput for variable-length sequences</p></li>
+</ul>
+</section>
+</section>
+</section>
+<section id="configuration-and-customization">
+<h2>Configuration and Customization<a class="headerlink" href="#configuration-and-customization" title="Permalink to this heading">¶</a></h2>
+<section id="lora-configuration">
+<h3>1. LoRA Configuration<a class="headerlink" href="#lora-configuration" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>Rank and Alpha</strong>: Configurable LoRA dimensions and scaling</p></li>
+<li><p><strong>Target Modules</strong>: Automatic detection with manual override capability</p></li>
+<li><p><strong>Dropout</strong>: Configurable regularization strength</p></li>
+</ul>
+</section>
+<section id="attention-mechanisms">
+<h3>2. Attention Mechanisms<a class="headerlink" href="#attention-mechanisms" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>Flash Attention 2.0</strong>: Optional high-performance attention implementation</p></li>
+<li><p><strong>Fallback Support</strong>: Automatic fallback to standard attention when needed</p></li>
+<li><p><strong>Architecture Compatibility</strong>: Works across different model architectures</p></li>
+</ul>
+</section>
+<section id="device-and-distributed-training">
+<h3>3. Device and Distributed Training<a class="headerlink" href="#device-and-distributed-training" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>Device Mapping</strong>: Flexible device placement for multi-GPU setups</p></li>
+<li><p><strong>DeepSpeed Integration</strong>: Native support for DeepSpeed ZeRO optimization</p></li>
+<li><p><strong>FSDP Compatibility</strong>: Support for Fully Sharded Data Parallel training</p></li>
+</ul>
+</section>
+</section>
+<section id="error-handling-and-robustness">
+<h2>Error Handling and Robustness<a class="headerlink" href="#error-handling-and-robustness" title="Permalink to this heading">¶</a></h2>
+<section id="graceful-degradation">
+<h3>1. Graceful Degradation<a class="headerlink" href="#graceful-degradation" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>Automatic fallback for unsupported features</p></li>
+<li><p>Clear error messages for configuration issues</p></li>
+<li><p>Compatibility checks for model requirements</p></li>
+</ul>
+</section>
+<section id="validation-and-assertions">
+<h3>2. Validation and Assertions<a class="headerlink" href="#validation-and-assertions" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>Input validation for critical parameters</p></li>
+<li><p>Assertion checks for incompatible configurations</p></li>
+<li><p>Runtime validation of model compatibility</p></li>
+</ul>
+</section>
+</section>
+<section id="conclusion">
+<h2>Conclusion<a class="headerlink" href="#conclusion" title="Permalink to this heading">¶</a></h2>
+<p>The LightRFT models package provides a robust, flexible, and efficient foundation for reinforcement learning with language models. The modular design ensures maintainability and extensibility while the comprehensive optimization support enables efficient training and deployment across various hardware configurations and model architectures.</p>
+<p>The design prioritizes:</p>
+<ul class="simple">
+<li><p><strong>Simplicity</strong>: Easy to use and understand</p></li>
+<li><p><strong>Flexibility</strong>: Adaptable to various use cases</p></li>
+<li><p><strong>Performance</strong>: Optimized for efficiency</p></li>
+<li><p><strong>Reliability</strong>: Robust error handling and validation</p></li>
+<li><p><strong>Extensibility</strong>: Easy to add new features and model types</p></li>
+</ul>
+<p>This architecture serves as a solid foundation for current needs while providing a clear path for future enhancements and adaptations.</p>
+</section>
+</section>
+
+
+              </article>
+              
+            </div>
+            <footer>
+  
+  <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+    
+    <a href="reward_model.html" class="btn btn-neutral float-right" title="LightRFT Reward Model Training Best Practices Guide" accesskey="n"
+      rel="next">Next <img src="../_static/images/chevron-right-blue.svg"
+        class="next-page"></a>
+    
+    
+    <a href="index.html" class="btn btn-neutral" title="Best Practices" accesskey="p"
+      rel="prev"><img src="../_static/images/chevron-right-blue.svg" class="previous-page"> Previous</a>
+    
+  </div>
+  
+
+  <hr>
+
+  <div role="contentinfo">
+    <p>
+      &copy; Copyright 2025, OpenDILab.
+
+    </p>
+  </div>
+  
+  <div>
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a
+      href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the
+      Docs</a>.
+  </div>
+   
+
+</footer>
+          </div>
+        </div>
+
+        <div class="pytorch-content-right" id="pytorch-content-right">
+          <div class="pytorch-right-menu" id="pytorch-right-menu">
+            <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
+              <ul>
+<li><a class="reference internal" href="#">LightRFT Models Design Document</a><ul>
+<li><a class="reference internal" href="#overview">Overview</a></li>
+<li><a class="reference internal" href="#design-philosophy">Design Philosophy</a><ul>
+<li><a class="reference internal" href="#modular-architecture">1. Modular Architecture</a></li>
+<li><a class="reference internal" href="#flexibility-and-extensibility">2. Flexibility and Extensibility</a></li>
+<li><a class="reference internal" href="#performance-optimization">3. Performance Optimization</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#architecture-components">Architecture Components</a><ul>
+<li><a class="reference internal" href="#core-classes">Core Classes</a><ul>
+<li><a class="reference internal" href="#actortext">1. ActorText</a></li>
+<li><a class="reference internal" href="#actorvl-vision-language">2. ActorVL (Vision-Language)</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#utility-functions">Utility Functions</a><ul>
+<li><a class="reference internal" href="#lora-configuration-apply-lora-configuration">1. LoRA Configuration (<code class="docutils literal notranslate"><span class="pre">apply_lora_configuration</span></code>)</a></li>
+<li><a class="reference internal" href="#log-probability-computation-log-probs-from-logits">2. Log Probability Computation (<code class="docutils literal notranslate"><span class="pre">log_probs_from_logits</span></code>)</a></li>
+<li><a class="reference internal" href="#position-id-management-reset-position-ids">3. Position ID Management (<code class="docutils literal notranslate"><span class="pre">reset_position_ids</span></code>)</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#model-patches">Model Patches</a><ul>
+<li><a class="reference internal" href="#purpose">Purpose</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#implementation-details">Implementation Details</a><ul>
+<li><a class="reference internal" href="#model-initialization-strategy">1. Model Initialization Strategy</a><ul>
+<li><a class="reference internal" href="#pattern-a-from-pretrained-path">Pattern A: From Pretrained Path</a></li>
+<li><a class="reference internal" href="#pattern-b-from-existing-model">Pattern B: From Existing Model</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#generation-and-forward-pass-design">2. Generation and Forward Pass Design</a><ul>
+<li><a class="reference internal" href="#generation-method">Generation Method</a></li>
+<li><a class="reference internal" href="#forward-method">Forward Method</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#memory-and-performance-optimizations">3. Memory and Performance Optimizations</a><ul>
+<li><a class="reference internal" href="#gradient-checkpointing">Gradient Checkpointing</a></li>
+<li><a class="reference internal" href="#sample-packing">Sample Packing</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#configuration-and-customization">Configuration and Customization</a><ul>
+<li><a class="reference internal" href="#lora-configuration">1. LoRA Configuration</a></li>
+<li><a class="reference internal" href="#attention-mechanisms">2. Attention Mechanisms</a></li>
+<li><a class="reference internal" href="#device-and-distributed-training">3. Device and Distributed Training</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#error-handling-and-robustness">Error Handling and Robustness</a><ul>
+<li><a class="reference internal" href="#graceful-degradation">1. Graceful Degradation</a></li>
+<li><a class="reference internal" href="#validation-and-assertions">2. Validation and Assertions</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#conclusion">Conclusion</a></li>
+</ul>
+</li>
+</ul>
+
+            </div>
+          </div>
+        </div>
+    </section>
+  </div>
+
+  
+
+
+  
+
+  
+  <script type="text/javascript" id="documentation_options" data-url_root="../"
+    src="../_static/documentation_options.js"></script>
+  <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+  <script src="../_static/doctools.js"></script>
+  <script src="../_static/sphinx_highlight.js"></script>
+  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+  
+
+  
+
+  <script type="text/javascript" src="../_static/js/vendor/popper.min.js"></script>
+  <script type="text/javascript" src="../_static/js/vendor/bootstrap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+    jQuery(function () {
+      SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+  <!-- Begin Footer -->
+
+  <div class="container-fluid docs-tutorials-resources" id="docs-tutorials-resources">
+  </div>
+
+  <!-- End Footer -->
+
+  <!-- Begin Mobile Menu -->
+
+  <div class="mobile-main-menu">
+    <div class="container-fluid">
+      <div class="container">
+        <div class="mobile-main-menu-header-container">
+          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
+        </div>
+      </div>
+    </div>
+
+    <div class="mobile-main-menu-links-container">
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://github.com/opendilab/LightRFT" target="_blank">GitHub</a>
+          </li>
+      </div>
+    </div>
+  </div>
+
+  <!-- End Mobile Menu -->
+
+  <script type="text/javascript" src="../_static/js/vendor/anchor.min.js"></script>
+
+  <script type="text/javascript">
+    $(document).ready(function () {
+      mobileMenu.bind();
+      mobileTOC.bind();
+      pytorchAnchors.bind();
+      sideMenus.bind();
+      scrollToAnchor.bind();
+      highlightNavigation.bind();
+      mainMenuDropdown.bind();
+      filterTags.bind();
+
+      // Add class to links that have code blocks, since we cannot create links in code blocks
+      $("article.pytorch-article a span.pre").each(function (e) {
+        $(this).closest("a").addClass("has-code");
+      });
+    })
+  </script>
+</body>
+
+</html>

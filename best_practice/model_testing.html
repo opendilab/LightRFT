@@ -1,0 +1,768 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js" lang="en">
+<!--<![endif]-->
+
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Model Testing Guide &mdash; LightRFT v0.1.1 documentation</title>
+  
+
+  <link rel="shortcut icon" href="../_static/images/favicon.ico" />
+  
+  
+
+  
+
+  
+  
+  
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/readthedocs.css" type="text/css" />
+  <link rel="index" title="Index" href="../genindex.html" />
+  <link rel="search" title="Search" href="../search.html" />
+  <link rel="next" title="Frequently Asked Questions (FAQ)" href="faq.html" />
+  <link rel="prev" title="LightRFT Strategy Design Philosophy" href="strategy_design_philosophy.html" />
+  <!-- Google Analytics -->
+  <script type="text/javascript">
+    var collapsedSections = [];
+  </script>
+  
+  <!-- End Google Analytics -->
+  
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+  <script>
+    MathJax = {
+        chtml: {
+            scale: 1,
+            minScale: 1,
+        },
+        svg: {
+            scale: 1,
+            minScale: 1,
+        }
+    }
+</script>
+
+  <!-- Preload the theme fonts -->
+
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-book.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/IBMPlexMono/IBMPlexMono-Medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-medium-italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/IBMPlexMono/IBMPlexMono-SemiBold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+
+<!-- Preload the katex fonts -->
+
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Math-Italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size1-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size4-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size2-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size3-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Caligraphic-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.2/css/all.css"
+    integrity="sha384-vSIIfh2YWi9wW0r9iZe7RJPrKwp6bG+s9QZMoITbCckVJqGCCRhc+ccxNcdpHuYu" crossorigin="anonymous">
+</head>
+
+<div class="container-fluid header-holder tutorials-header" id="header-holder">
+  <div class="container">
+    <div class="header-container">
+      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+        aria-label="OpenMMLab"></a>
+
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://github.com/opendilab/LightRFT" target="_blank">GitHub</a>
+          </li>
+          <li >
+            <div id="resourcesDropdownButton" data-toggle="resources-dropdown" class="resources-dropdown">
+              <a
+                class="resource-option with-down-arrow">
+                OpenDILab
+              </a>
+              <div class="resources-dropdown-menu">
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-engine" target="_blank">
+                  <span class="dropdown-title">DI-engine </span>
+                  <p>OpenDILab Decision AI Engine</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/LightZero" target="_blank">
+                  <span class="dropdown-title">LightZero </span>
+                  <p>OpenDILab Decision Monte Carlo Tree Search Framework</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/GenerativeRL" target="_blank">
+                  <span class="dropdown-title">GenerativeRL </span>
+                  <p>OpenDILab Generative AI Framework</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-star" target="_blank">
+                  <span class="dropdown-title">DI-star </span>
+                  <p>OpenDILab Decision AI in StarCraftII</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-drive" target="_blank">
+                  <span class="dropdown-title">DI-drive </span>
+                  <p>OpenDILab Auto-driving platform</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/GoBigger" target="_blank">
+                  <span class="dropdown-title">GoBigger </span>
+                  <p>OpenDILab Multi-Agent Environment</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-smartcross" target="_blank">
+                  <span class="dropdown-title">DI-smartcross </span>
+                  <p>Decision Intelligence Platform for Traffic Crossing Signal Control</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-treetensor" target="_blank">
+                  <span class="dropdown-title">DI-treetensor </span>
+                  <p>Tree Nested PyTorch Tensor Lib</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-sheep" target="_blank">
+                  <span class="dropdown-title">DI-sheep </span>
+                  <p>Deep Reinforcement Learning + 3 Tiles Game</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-model-based-RL" target="_blank">
+                  <span class="dropdown-title">awesome-model-based-RL </span>
+                  <p>A curated list of awesome model based RL resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-decision-transformer" target="_blank">
+                  <span class="dropdown-title">awesome-decision-transformer </span>
+                  <p>A curated list of Decision Transformer resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-exploration-rl" target="_blank">
+                  <span class="dropdown-title">awesome-exploration-rl </span>
+                  <p>A curated list of awesome exploration RL resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-multi-modal-reinforcement-learning" target="_blank">
+                  <span class="dropdown-title">awesome-multi-modal-reinforcement-learning </span>
+                  <p>A curated list of Multi-Modal Reinforcement Learning resources (continually updated)</p>
+                </a>
+              </div>
+          </li>
+        </ul>
+      </div>
+
+      <a class="main-menu-open-button" href="#" data-behavior="open-mobile-menu"></a>
+    </div>
+  </div>
+</div>
+
+<body class="pytorch-body">
+
+   
+
+  
+
+  <div class="table-of-contents-link-wrapper">
+    <span>Table of Contents</span>
+    <a href="#" class="toggle-table-of-contents" data-behavior="toggle-table-of-contents"></a>
+  </div>
+
+  <nav data-toggle="wy-nav-shift" class="pytorch-left-menu" id="pytorch-left-menu">
+    <div class="pytorch-side-scroll">
+      <div class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        <div class="pytorch-left-menu-search">
+          
+
+          
+          
+          
+          
+
+          
+
+
+
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search Docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        
+        
+        
+        
+        
+        <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../installation/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quick_start/index.html">Quick Start</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide &amp; Best Practices</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Best Practices</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/utils/index.html">lightrft.utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/datasets/index.html">lightrft.datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/models/index.html">lightrft.models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/strategy/index.html">lightrft.strategy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/trainer/index.html">lightrft.trainer</a></li>
+</ul>
+
+        
+        
+      </div>
+    </div>
+  </nav>
+
+  <div class="pytorch-container">
+    <div class="pytorch-page-level-bar" id="pytorch-page-level-bar">
+      <div class="pytorch-breadcrumbs-wrapper">
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="pytorch-breadcrumbs">
+    
+      <li>
+        <a href="../index.html">
+            Docs
+        </a> &gt;
+      </li>
+
+        
+          <li><a href="index.html">Best Practices</a> &gt;</li>
+        
+      <li>Model Testing Guide</li>
+    
+    
+      <li class="pytorch-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/best_practice/model_testing.md.txt" rel="nofollow"><img src="../_static/images/view-page-source-icon.svg"></a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+</div>
+      </div>
+
+      <div class="pytorch-shortcuts-wrapper" id="pytorch-shortcuts-wrapper">
+        Shortcuts
+      </div>
+    </div>
+
+    <section data-toggle="wy-nav-shift" id="pytorch-content-wrap" class="pytorch-content-wrap">
+      <div class="pytorch-content-left">
+        
+          <div class="rst-content">
+            
+            <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
+              <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
+                
+  <section id="model-testing-guide">
+<h1>Model Testing Guide<a class="headerlink" href="#model-testing-guide" title="Permalink to this heading">¶</a></h1>
+<p>Guide for testing and evaluating trained models, particularly Vision-Language Models (VLMs).</p>
+<section id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this heading">¶</a></h2>
+<p>LightRFT provides tools for interactive model testing with support for:</p>
+<ul class="simple">
+<li><p><strong>Interactive Chat</strong>: Real-time conversation testing</p></li>
+<li><p><strong>Multimodal Support</strong>: Text and image inputs</p></li>
+<li><p><strong>Batch Testing</strong>: Automated testing with JSON files</p></li>
+<li><p><strong>Performance Optimization</strong>: Flash Attention 2 and bfloat16</p></li>
+<li><p><strong>Command-line Interface</strong>: Convenient testing commands</p></li>
+</ul>
+</section>
+<section id="quick-start">
+<h2>Quick Start<a class="headerlink" href="#quick-start" title="Permalink to this heading">¶</a></h2>
+<section id="basic-text-conversation">
+<h3>Basic Text Conversation<a class="headerlink" href="#basic-text-conversation" title="Permalink to this heading">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>test_chat.py<span class="w"> </span>--model_path<span class="w"> </span>&lt;checkpoint-path&gt;
+</pre></div>
+</div>
+</section>
+<section id="image-based-testing">
+<h3>Image-based Testing<a class="headerlink" href="#image-based-testing" title="Permalink to this heading">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Start interactive mode</span>
+python<span class="w"> </span>test_chat.py<span class="w"> </span>--model_path<span class="w"> </span>&lt;checkpoint-path&gt;
+</pre></div>
+</div>
+<p>In interactive mode:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>[You] /image &lt;image-path&gt;
+✓ Image loaded: &lt;image-path&gt;
+[You] What do you see in this image?
+[Assistant] ...
+</pre></div>
+</div>
+</section>
+<section id="batch-testing">
+<h3>Batch Testing<a class="headerlink" href="#batch-testing" title="Permalink to this heading">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>test_chat.py<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--model_path<span class="w"> </span>&lt;checkpoint-path&gt;<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--batch<span class="w"> </span>&lt;test-file.json&gt;<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--output<span class="w"> </span>&lt;results.json&gt;
+</pre></div>
+</div>
+</section>
+<section id="custom-generation-parameters">
+<h3>Custom Generation Parameters<a class="headerlink" href="#custom-generation-parameters" title="Permalink to this heading">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>test_chat.py<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--model_path<span class="w"> </span>&lt;checkpoint-path&gt;<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--max_tokens<span class="w"> </span><span class="m">4096</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--temperature<span class="w"> </span><span class="m">0</span>.5<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--top_p<span class="w"> </span><span class="m">0</span>.9
+</pre></div>
+</div>
+</section>
+</section>
+<section id="interactive-commands">
+<h2>Interactive Commands<a class="headerlink" href="#interactive-commands" title="Permalink to this heading">¶</a></h2>
+<p>Available commands in interactive mode:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Command</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">/image</span> <span class="pre">&lt;path&gt;</span></code></p></td>
+<td><p>Load image for next query</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">/clear</span></code></p></td>
+<td><p>Clear conversation history</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">/reset</span></code></p></td>
+<td><p>Reset loaded images</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">/help</span></code></p></td>
+<td><p>Show help information</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">/quit</span></code> or <code class="docutils literal notranslate"><span class="pre">/exit</span></code></p></td>
+<td><p>Exit program</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="batch-test-file-format">
+<h2>Batch Test File Format<a class="headerlink" href="#batch-test-file-format" title="Permalink to this heading">¶</a></h2>
+<section id="text-only-tests">
+<h3>Text-only Tests<a class="headerlink" href="#text-only-tests" title="Permalink to this heading">¶</a></h3>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">[</span>
+<span class="w">  </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;query&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;What is 2 + 2?&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;expected&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;4&quot;</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;query&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Explain the Pythagorean theorem.&quot;</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+</section>
+<section id="image-based-tests">
+<h3>Image-based Tests<a class="headerlink" href="#image-based-tests" title="Permalink to this heading">¶</a></h3>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">[</span>
+<span class="w">  </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;query&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Describe what you see in this image.&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;images&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;&lt;image-path-1&gt;&quot;</span><span class="p">],</span>
+<span class="w">    </span><span class="nt">&quot;expected&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Description of the image&quot;</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;query&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Compare these two images.&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;images&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;&lt;image-path-1&gt;&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;&lt;image-path-2&gt;&quot;</span><span class="p">]</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="configuration-parameters">
+<h2>Configuration Parameters<a class="headerlink" href="#configuration-parameters" title="Permalink to this heading">¶</a></h2>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Default</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--model_path</span></code></p></td>
+<td><p>-</p></td>
+<td><p>Model checkpoint path (required)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--device</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">cuda</span></code></p></td>
+<td><p>Inference device (cuda/cpu)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--max_tokens</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">8192</span></code></p></td>
+<td><p>Maximum generation tokens</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--temperature</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">0.7</span></code></p></td>
+<td><p>Sampling temperature (0 for greedy)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--top_p</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">0.95</span></code></p></td>
+<td><p>Top-p sampling parameter</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--system_prompt</span></code></p></td>
+<td><p>(default)</p></td>
+<td><p>Custom system prompt</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--batch</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p></td>
+<td><p>Batch test JSON file path</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--output</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p></td>
+<td><p>Batch test results output file</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="usage-examples">
+<h2>Usage Examples<a class="headerlink" href="#usage-examples" title="Permalink to this heading">¶</a></h2>
+<section id="example-1-math-problem-solving">
+<h3>Example 1: Math Problem Solving<a class="headerlink" href="#example-1-math-problem-solving" title="Permalink to this heading">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>test_chat.py<span class="w"> </span>--model_path<span class="w"> </span>&lt;checkpoint-path&gt;
+</pre></div>
+</div>
+<p>Example interaction:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>[You] If a triangle has sides 3, 4, and 5, what is its area?
+
+[Assistant] &lt;think&gt;
+This is a right triangle since 3² + 4² = 9 + 16 = 25 = 5².
+For a right triangle, the area is (1/2) × base × height.
+Using the two perpendicular sides: Area = (1/2) × 3 × 4 = 6
+&lt;/think&gt;
+
+The area of the triangle is 6 square units.
+</pre></div>
+</div>
+</section>
+<section id="example-2-geometry-recognition">
+<h3>Example 2: Geometry Recognition<a class="headerlink" href="#example-2-geometry-recognition" title="Permalink to this heading">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>test_chat.py<span class="w"> </span>--model_path<span class="w"> </span>&lt;checkpoint-path&gt;
+</pre></div>
+</div>
+<p>Example interaction:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>[You] /image &lt;geometry-image-path&gt;
+✓ Image loaded: &lt;geometry-image-path&gt;
+
+[You] Solve the geometry problem shown in this image.
+
+[Assistant] &lt;think&gt;
+Looking at the diagram, I can see a triangle ABC with...
+[detailed reasoning process]
+&lt;/think&gt;
+
+The answer is [solution].
+</pre></div>
+</div>
+</section>
+<section id="example-3-batch-performance-testing">
+<h3>Example 3: Batch Performance Testing<a class="headerlink" href="#example-3-batch-performance-testing" title="Permalink to this heading">¶</a></h3>
+<p>Create test file <code class="docutils literal notranslate"><span class="pre">test_questions.json</span></code>:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">[</span>
+<span class="w">  </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;query&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Find the area of triangle with base 6 and height 8.&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;expected&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;24&quot;</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;query&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;What is the perimeter of a square with side length 5?&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;expected&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;20&quot;</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+<p>Run batch test:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>test_chat.py<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--model_path<span class="w"> </span>&lt;checkpoint-path&gt;<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--batch<span class="w"> </span>test_questions.json<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--output<span class="w"> </span>test_results.json<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--temperature<span class="w"> </span><span class="m">0</span>.0
+</pre></div>
+</div>
+</section>
+</section>
+<section id="performance-optimizations">
+<h2>Performance Optimizations<a class="headerlink" href="#performance-optimizations" title="Permalink to this heading">¶</a></h2>
+<p>The testing script includes:</p>
+<ol class="arabic simple">
+<li><p><strong>Flash Attention 2</strong>: Accelerated attention computation</p></li>
+<li><p><strong>BFloat16</strong>: Reduced memory usage and faster inference</p></li>
+<li><p><strong>Batch Processing</strong>: Improved throughput for batch tests</p></li>
+<li><p><strong>Memory Management</strong>: Automatic GPU memory cleanup</p></li>
+</ol>
+</section>
+<section id="troubleshooting">
+<h2>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permalink to this heading">¶</a></h2>
+<section id="out-of-memory-oom">
+<h3>Out of Memory (OOM)<a class="headerlink" href="#out-of-memory-oom" title="Permalink to this heading">¶</a></h3>
+<p>If encountering memory issues:</p>
+<p><strong>1. Reduce max_tokens:</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>test_chat.py<span class="w"> </span>--model_path<span class="w"> </span>&lt;checkpoint-path&gt;<span class="w"> </span>--max_tokens<span class="w"> </span><span class="m">4096</span>
+</pre></div>
+</div>
+<p><strong>2. Use CPU inference (slower):</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>test_chat.py<span class="w"> </span>--model_path<span class="w"> </span>&lt;checkpoint-path&gt;<span class="w"> </span>--device<span class="w"> </span>cpu
+</pre></div>
+</div>
+</section>
+<section id="image-loading-failure">
+<h3>Image Loading Failure<a class="headerlink" href="#image-loading-failure" title="Permalink to this heading">¶</a></h3>
+<p>Ensure image path is correct and format is supported (JPG, PNG, etc.):</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ls<span class="w"> </span>-lh<span class="w"> </span>&lt;image-path&gt;
+</pre></div>
+</div>
+</section>
+<section id="generation-quality-issues">
+<h3>Generation Quality Issues<a class="headerlink" href="#generation-quality-issues" title="Permalink to this heading">¶</a></h3>
+<p>Adjust sampling parameters:</p>
+<ul class="simple">
+<li><p><strong>More deterministic</strong>: <code class="docutils literal notranslate"><span class="pre">--temperature</span> <span class="pre">0.0</span></code> (greedy decoding)</p></li>
+<li><p><strong>More diverse</strong>: <code class="docutils literal notranslate"><span class="pre">--temperature</span> <span class="pre">1.0</span> <span class="pre">--top_p</span> <span class="pre">0.9</span></code></p></li>
+<li><p><strong>Balanced</strong>: <code class="docutils literal notranslate"><span class="pre">--temperature</span> <span class="pre">0.7</span> <span class="pre">--top_p</span> <span class="pre">0.95</span></code> (default)</p></li>
+</ul>
+</section>
+</section>
+<section id="dependencies">
+<h2>Dependencies<a class="headerlink" href="#dependencies" title="Permalink to this heading">¶</a></h2>
+<p>Required packages:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>torch<span class="w"> </span>transformers<span class="w"> </span>pillow<span class="w"> </span>flash-attn
+</pre></div>
+</div>
+</section>
+<section id="best-practices">
+<h2>Best Practices<a class="headerlink" href="#best-practices" title="Permalink to this heading">¶</a></h2>
+<ol class="arabic simple">
+<li><p><strong>Model Loading</strong>: First run requires model loading time</p></li>
+<li><p><strong>Image Reset</strong>: Images auto-reset after each conversation</p></li>
+<li><p><strong>History Management</strong>: Use <code class="docutils literal notranslate"><span class="pre">/clear</span></code> to reset conversation history</p></li>
+<li><p><strong>Batch Independence</strong>: Each batch test runs independently</p></li>
+</ol>
+</section>
+<section id="additional-resources">
+<h2>Additional Resources<a class="headerlink" href="#additional-resources" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="../quick_start/index.html"><span class="std std-doc">Quick Start Guide</span></a></p></li>
+<li><p><a class="reference internal" href="../quick_start/configuration.html"><span class="std std-doc">Configuration Reference</span></a></p></li>
+<li><p><a class="reference internal" href="faq.html"><span class="std std-doc">FAQ</span></a></p></li>
+<li><p><a class="reference internal" href="troubleshooting.html"><span class="std std-doc">Troubleshooting Guide</span></a></p></li>
+</ul>
+</section>
+</section>
+
+
+              </article>
+              
+            </div>
+            <footer>
+  
+  <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+    
+    <a href="faq.html" class="btn btn-neutral float-right" title="Frequently Asked Questions (FAQ)" accesskey="n"
+      rel="next">Next <img src="../_static/images/chevron-right-blue.svg"
+        class="next-page"></a>
+    
+    
+    <a href="strategy_design_philosophy.html" class="btn btn-neutral" title="LightRFT Strategy Design Philosophy" accesskey="p"
+      rel="prev"><img src="../_static/images/chevron-right-blue.svg" class="previous-page"> Previous</a>
+    
+  </div>
+  
+
+  <hr>
+
+  <div role="contentinfo">
+    <p>
+      &copy; Copyright 2025, OpenDILab.
+
+    </p>
+  </div>
+  
+  <div>
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a
+      href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the
+      Docs</a>.
+  </div>
+   
+
+</footer>
+          </div>
+        </div>
+
+        <div class="pytorch-content-right" id="pytorch-content-right">
+          <div class="pytorch-right-menu" id="pytorch-right-menu">
+            <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
+              <ul>
+<li><a class="reference internal" href="#">Model Testing Guide</a><ul>
+<li><a class="reference internal" href="#overview">Overview</a></li>
+<li><a class="reference internal" href="#quick-start">Quick Start</a><ul>
+<li><a class="reference internal" href="#basic-text-conversation">Basic Text Conversation</a></li>
+<li><a class="reference internal" href="#image-based-testing">Image-based Testing</a></li>
+<li><a class="reference internal" href="#batch-testing">Batch Testing</a></li>
+<li><a class="reference internal" href="#custom-generation-parameters">Custom Generation Parameters</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#interactive-commands">Interactive Commands</a></li>
+<li><a class="reference internal" href="#batch-test-file-format">Batch Test File Format</a><ul>
+<li><a class="reference internal" href="#text-only-tests">Text-only Tests</a></li>
+<li><a class="reference internal" href="#image-based-tests">Image-based Tests</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#configuration-parameters">Configuration Parameters</a></li>
+<li><a class="reference internal" href="#usage-examples">Usage Examples</a><ul>
+<li><a class="reference internal" href="#example-1-math-problem-solving">Example 1: Math Problem Solving</a></li>
+<li><a class="reference internal" href="#example-2-geometry-recognition">Example 2: Geometry Recognition</a></li>
+<li><a class="reference internal" href="#example-3-batch-performance-testing">Example 3: Batch Performance Testing</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#performance-optimizations">Performance Optimizations</a></li>
+<li><a class="reference internal" href="#troubleshooting">Troubleshooting</a><ul>
+<li><a class="reference internal" href="#out-of-memory-oom">Out of Memory (OOM)</a></li>
+<li><a class="reference internal" href="#image-loading-failure">Image Loading Failure</a></li>
+<li><a class="reference internal" href="#generation-quality-issues">Generation Quality Issues</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#dependencies">Dependencies</a></li>
+<li><a class="reference internal" href="#best-practices">Best Practices</a></li>
+<li><a class="reference internal" href="#additional-resources">Additional Resources</a></li>
+</ul>
+</li>
+</ul>
+
+            </div>
+          </div>
+        </div>
+    </section>
+  </div>
+
+  
+
+
+  
+
+  
+  <script type="text/javascript" id="documentation_options" data-url_root="../"
+    src="../_static/documentation_options.js"></script>
+  <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+  <script src="../_static/doctools.js"></script>
+  <script src="../_static/sphinx_highlight.js"></script>
+  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+  
+
+  
+
+  <script type="text/javascript" src="../_static/js/vendor/popper.min.js"></script>
+  <script type="text/javascript" src="../_static/js/vendor/bootstrap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+    jQuery(function () {
+      SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+  <!-- Begin Footer -->
+
+  <div class="container-fluid docs-tutorials-resources" id="docs-tutorials-resources">
+  </div>
+
+  <!-- End Footer -->
+
+  <!-- Begin Mobile Menu -->
+
+  <div class="mobile-main-menu">
+    <div class="container-fluid">
+      <div class="container">
+        <div class="mobile-main-menu-header-container">
+          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
+        </div>
+      </div>
+    </div>
+
+    <div class="mobile-main-menu-links-container">
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://github.com/opendilab/LightRFT" target="_blank">GitHub</a>
+          </li>
+      </div>
+    </div>
+  </div>
+
+  <!-- End Mobile Menu -->
+
+  <script type="text/javascript" src="../_static/js/vendor/anchor.min.js"></script>
+
+  <script type="text/javascript">
+    $(document).ready(function () {
+      mobileMenu.bind();
+      mobileTOC.bind();
+      pytorchAnchors.bind();
+      sideMenus.bind();
+      scrollToAnchor.bind();
+      highlightNavigation.bind();
+      mainMenuDropdown.bind();
+      filterTags.bind();
+
+      // Add class to links that have code blocks, since we cannot create links in code blocks
+      $("article.pytorch-article a span.pre").each(function (e) {
+        $(this).closest("a").addClass("has-code");
+      });
+    })
+  </script>
+</body>
+
+</html>

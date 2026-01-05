@@ -1,0 +1,1194 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js" lang="en">
+<!--<![endif]-->
+
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Troubleshooting Guide &mdash; LightRFT v0.1.1 documentation</title>
+  
+
+  <link rel="shortcut icon" href="../_static/images/favicon.ico" />
+  
+  
+
+  
+
+  
+  
+  
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/readthedocs.css" type="text/css" />
+  <link rel="index" title="Index" href="../genindex.html" />
+  <link rel="search" title="Search" href="../search.html" />
+  <link rel="next" title="Contributing to LightRFT" href="contributing.html" />
+  <link rel="prev" title="Frequently Asked Questions (FAQ)" href="faq.html" />
+  <!-- Google Analytics -->
+  <script type="text/javascript">
+    var collapsedSections = [];
+  </script>
+  
+  <!-- End Google Analytics -->
+  
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+  <script>
+    MathJax = {
+        chtml: {
+            scale: 1,
+            minScale: 1,
+        },
+        svg: {
+            scale: 1,
+            minScale: 1,
+        }
+    }
+</script>
+
+  <!-- Preload the theme fonts -->
+
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-book.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/IBMPlexMono/IBMPlexMono-Medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-medium-italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/IBMPlexMono/IBMPlexMono-SemiBold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+
+<!-- Preload the katex fonts -->
+
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Math-Italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size1-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size4-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size2-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size3-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Caligraphic-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.2/css/all.css"
+    integrity="sha384-vSIIfh2YWi9wW0r9iZe7RJPrKwp6bG+s9QZMoITbCckVJqGCCRhc+ccxNcdpHuYu" crossorigin="anonymous">
+</head>
+
+<div class="container-fluid header-holder tutorials-header" id="header-holder">
+  <div class="container">
+    <div class="header-container">
+      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+        aria-label="OpenMMLab"></a>
+
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://github.com/opendilab/LightRFT" target="_blank">GitHub</a>
+          </li>
+          <li >
+            <div id="resourcesDropdownButton" data-toggle="resources-dropdown" class="resources-dropdown">
+              <a
+                class="resource-option with-down-arrow">
+                OpenDILab
+              </a>
+              <div class="resources-dropdown-menu">
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-engine" target="_blank">
+                  <span class="dropdown-title">DI-engine </span>
+                  <p>OpenDILab Decision AI Engine</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/LightZero" target="_blank">
+                  <span class="dropdown-title">LightZero </span>
+                  <p>OpenDILab Decision Monte Carlo Tree Search Framework</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/GenerativeRL" target="_blank">
+                  <span class="dropdown-title">GenerativeRL </span>
+                  <p>OpenDILab Generative AI Framework</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-star" target="_blank">
+                  <span class="dropdown-title">DI-star </span>
+                  <p>OpenDILab Decision AI in StarCraftII</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-drive" target="_blank">
+                  <span class="dropdown-title">DI-drive </span>
+                  <p>OpenDILab Auto-driving platform</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/GoBigger" target="_blank">
+                  <span class="dropdown-title">GoBigger </span>
+                  <p>OpenDILab Multi-Agent Environment</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-smartcross" target="_blank">
+                  <span class="dropdown-title">DI-smartcross </span>
+                  <p>Decision Intelligence Platform for Traffic Crossing Signal Control</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-treetensor" target="_blank">
+                  <span class="dropdown-title">DI-treetensor </span>
+                  <p>Tree Nested PyTorch Tensor Lib</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-sheep" target="_blank">
+                  <span class="dropdown-title">DI-sheep </span>
+                  <p>Deep Reinforcement Learning + 3 Tiles Game</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-model-based-RL" target="_blank">
+                  <span class="dropdown-title">awesome-model-based-RL </span>
+                  <p>A curated list of awesome model based RL resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-decision-transformer" target="_blank">
+                  <span class="dropdown-title">awesome-decision-transformer </span>
+                  <p>A curated list of Decision Transformer resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-exploration-rl" target="_blank">
+                  <span class="dropdown-title">awesome-exploration-rl </span>
+                  <p>A curated list of awesome exploration RL resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-multi-modal-reinforcement-learning" target="_blank">
+                  <span class="dropdown-title">awesome-multi-modal-reinforcement-learning </span>
+                  <p>A curated list of Multi-Modal Reinforcement Learning resources (continually updated)</p>
+                </a>
+              </div>
+          </li>
+        </ul>
+      </div>
+
+      <a class="main-menu-open-button" href="#" data-behavior="open-mobile-menu"></a>
+    </div>
+  </div>
+</div>
+
+<body class="pytorch-body">
+
+   
+
+  
+
+  <div class="table-of-contents-link-wrapper">
+    <span>Table of Contents</span>
+    <a href="#" class="toggle-table-of-contents" data-behavior="toggle-table-of-contents"></a>
+  </div>
+
+  <nav data-toggle="wy-nav-shift" class="pytorch-left-menu" id="pytorch-left-menu">
+    <div class="pytorch-side-scroll">
+      <div class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        <div class="pytorch-left-menu-search">
+          
+
+          
+          
+          
+          
+
+          
+
+
+
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search Docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        
+        
+        
+        
+        
+        <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../installation/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quick_start/index.html">Quick Start</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide &amp; Best Practices</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Best Practices</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/utils/index.html">lightrft.utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/datasets/index.html">lightrft.datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/models/index.html">lightrft.models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/strategy/index.html">lightrft.strategy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/trainer/index.html">lightrft.trainer</a></li>
+</ul>
+
+        
+        
+      </div>
+    </div>
+  </nav>
+
+  <div class="pytorch-container">
+    <div class="pytorch-page-level-bar" id="pytorch-page-level-bar">
+      <div class="pytorch-breadcrumbs-wrapper">
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="pytorch-breadcrumbs">
+    
+      <li>
+        <a href="../index.html">
+            Docs
+        </a> &gt;
+      </li>
+
+        
+          <li><a href="index.html">Best Practices</a> &gt;</li>
+        
+      <li>Troubleshooting Guide</li>
+    
+    
+      <li class="pytorch-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/best_practice/troubleshooting.md.txt" rel="nofollow"><img src="../_static/images/view-page-source-icon.svg"></a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+</div>
+      </div>
+
+      <div class="pytorch-shortcuts-wrapper" id="pytorch-shortcuts-wrapper">
+        Shortcuts
+      </div>
+    </div>
+
+    <section data-toggle="wy-nav-shift" id="pytorch-content-wrap" class="pytorch-content-wrap">
+      <div class="pytorch-content-left">
+        
+          <div class="rst-content">
+            
+            <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
+              <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
+                
+  <section id="troubleshooting-guide">
+<h1>Troubleshooting Guide<a class="headerlink" href="#troubleshooting-guide" title="Permalink to this heading">¶</a></h1>
+<p>This guide helps you diagnose and resolve common issues when using LightRFT.</p>
+<section id="quick-diagnosis">
+<h2>Quick Diagnosis<a class="headerlink" href="#quick-diagnosis" title="Permalink to this heading">¶</a></h2>
+<p>Use this flowchart to quickly identify your issue:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Issue Type?
+├─ Installation/Setup → See [Installation Issues](#installation-issues)
+├─ Out of Memory → See [Memory Issues](#memory-issues)
+├─ Training Issues → See [Training Problems](#training-problems)
+├─ Performance → See [Performance Issues](#performance-issues)
+└─ Distributed Training → See [Distributed Issues](#distributed-training-issues)
+</pre></div>
+</div>
+</section>
+<section id="installation-issues">
+<h2>Installation Issues<a class="headerlink" href="#installation-issues" title="Permalink to this heading">¶</a></h2>
+<section id="problem-package-import-errors">
+<h3>Problem: Package import errors<a class="headerlink" href="#problem-package-import-errors" title="Permalink to this heading">¶</a></h3>
+<p><strong>Symptoms</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="ne">ModuleNotFoundError</span><span class="p">:</span> <span class="n">No</span> <span class="n">module</span> <span class="n">named</span> <span class="s1">&#39;lightrft&#39;</span>
+</pre></div>
+</div>
+<p><strong>Solution</strong>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Ensure you&#39;re in the correct directory</span>
+<span class="nb">cd</span><span class="w"> </span>/path/to/LightRFT
+pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements.txt
+pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.
+</pre></div>
+</div>
+</section>
+<section id="problem-cuda-version-mismatch">
+<h3>Problem: CUDA version mismatch<a class="headerlink" href="#problem-cuda-version-mismatch" title="Permalink to this heading">¶</a></h3>
+<p><strong>Symptoms</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="ne">RuntimeError</span><span class="p">:</span> <span class="n">CUDA</span> <span class="n">error</span><span class="p">:</span> <span class="n">no</span> <span class="n">kernel</span> <span class="n">image</span> <span class="ow">is</span> <span class="n">available</span> <span class="k">for</span> <span class="n">execution</span>
+</pre></div>
+</div>
+<p><strong>Solution</strong>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Check CUDA version</span>
+nvcc<span class="w"> </span>--version
+python<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;import torch; print(torch.version.cuda)&quot;</span>
+
+<span class="c1"># Reinstall PyTorch with correct CUDA version</span>
+pip<span class="w"> </span>install<span class="w"> </span><span class="nv">torch</span><span class="o">==</span><span class="m">2</span>.5.1+cu118<span class="w"> </span>--index-url<span class="w"> </span>https://download.pytorch.org/whl/cu118
+</pre></div>
+</div>
+</section>
+<section id="problem-vllm-installation-fails">
+<h3>Problem: vLLM installation fails<a class="headerlink" href="#problem-vllm-installation-fails" title="Permalink to this heading">¶</a></h3>
+<p><strong>Symptoms</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ERROR</span><span class="p">:</span> <span class="n">Failed</span> <span class="n">building</span> <span class="n">wheel</span> <span class="k">for</span> <span class="n">vllm</span>
+</pre></div>
+</div>
+<p><strong>Solution</strong>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Install build dependencies</span>
+pip<span class="w"> </span>install<span class="w"> </span>ninja<span class="w"> </span>packaging<span class="w"> </span>wheel
+
+<span class="c1"># Install vLLM from source</span>
+pip<span class="w"> </span>install<span class="w"> </span>vllm<span class="w"> </span>--no-build-isolation
+
+<span class="c1"># Or use pre-built wheel</span>
+pip<span class="w"> </span>install<span class="w"> </span><span class="nv">vllm</span><span class="o">==</span><span class="m">0</span>.5.3.post1
+</pre></div>
+</div>
+</section>
+</section>
+<section id="memory-issues">
+<h2>Memory Issues<a class="headerlink" href="#memory-issues" title="Permalink to this heading">¶</a></h2>
+<section id="problem-out-of-memory-oom-errors">
+<h3>Problem: Out of Memory (OOM) Errors<a class="headerlink" href="#problem-out-of-memory-oom-errors" title="Permalink to this heading">¶</a></h3>
+<p><strong>Symptoms</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="ne">RuntimeError</span><span class="p">:</span> <span class="n">CUDA</span> <span class="n">out</span> <span class="n">of</span> <span class="n">memory</span>
+<span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">OutOfMemoryError</span>
+</pre></div>
+</div>
+<p><strong>Solution Strategy</strong> (try in order):</p>
+<p><strong>1. Reduce Batch Sizes</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Before</span>
+--micro_train_batch_size<span class="w"> </span><span class="m">2</span>
+--micro_rollout_batch_size<span class="w"> </span><span class="m">4</span>
+
+<span class="c1"># After</span>
+--micro_train_batch_size<span class="w"> </span><span class="m">1</span>
+--micro_rollout_batch_size<span class="w"> </span><span class="m">2</span>
+</pre></div>
+</div>
+<p><strong>2. Enable Gradient Checkpointing</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>--gradient_checkpointing
+</pre></div>
+</div>
+<p>Trades ~20% speed for ~50% memory savings.</p>
+<p><strong>3. Lower Engine Memory</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Before</span>
+--engine_mem_util<span class="w"> </span><span class="m">0</span>.9
+
+<span class="c1"># After</span>
+--engine_mem_util<span class="w"> </span><span class="m">0</span>.5<span class="w">  </span><span class="c1"># Or 0.4 for very low memory</span>
+</pre></div>
+</div>
+<p><strong>4. Use FSDP with CPU Offload</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>--fsdp<span class="w"> </span><span class="se">\</span>
+--fsdp_cpu_offload<span class="w"> </span><span class="se">\</span>
+--use_mp_opt
+</pre></div>
+</div>
+<p><strong>5. Enable Adam Offload</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>--adam_offload
+</pre></div>
+</div>
+<p><strong>6. Use ZeRO-3</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>--zero_stage<span class="w"> </span><span class="m">3</span>
+</pre></div>
+</div>
+<p><strong>7. Reduce Model/Sequence Length</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>--max_len<span class="w"> </span><span class="m">2048</span><span class="w">  </span><span class="c1"># Instead of 4096</span>
+--prompt_max_len<span class="w"> </span><span class="m">1024</span>
+</pre></div>
+</div>
+<p><strong>Complete Low-Memory Configuration</strong>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>train.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--micro_train_batch_size<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--micro_rollout_batch_size<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--gradient_checkpointing<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--engine_mem_util<span class="w"> </span><span class="m">0</span>.4<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--fsdp<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--fsdp_cpu_offload<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--adam_offload<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--max_len<span class="w"> </span><span class="m">2048</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--use_mp_opt
+</pre></div>
+</div>
+</section>
+<section id="problem-vllm-engine-oom">
+<h3>Problem: vLLM Engine OOM<a class="headerlink" href="#problem-vllm-engine-oom" title="Permalink to this heading">¶</a></h3>
+<p><strong>Symptoms</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Failed</span> <span class="n">to</span> <span class="n">allocate</span> <span class="n">memory</span> <span class="k">for</span> <span class="n">KV</span> <span class="n">cache</span>
+</pre></div>
+</div>
+<p><strong>Solution</strong>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Reduce KV cache memory</span>
+--engine_mem_util<span class="w"> </span><span class="m">0</span>.3
+
+<span class="c1"># Increase tensor parallelism</span>
+--engine_tp_size<span class="w"> </span><span class="m">2</span><span class="w">  </span><span class="c1"># or 4</span>
+
+<span class="c1"># Enable engine sleep</span>
+--enable_engine_sleep
+
+<span class="c1"># Use smaller max length</span>
+--max_len<span class="w"> </span><span class="m">2048</span>
+</pre></div>
+</div>
+</section>
+<section id="problem-memory-leak-during-training">
+<h3>Problem: Memory Leak During Training<a class="headerlink" href="#problem-memory-leak-during-training" title="Permalink to this heading">¶</a></h3>
+<p><strong>Symptoms</strong>:</p>
+<ul class="simple">
+<li><p>Memory gradually increases</p></li>
+<li><p>Eventually OOMs after several episodes</p></li>
+</ul>
+<p><strong>Solution</strong>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Enable NCCL optimization</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">TORCH_NCCL_AVOID_RECORD_STREAMS</span><span class="o">=</span><span class="m">1</span>
+
+<span class="c1"># Clear cache periodically</span>
+<span class="c1"># Add to training code:</span>
+torch.cuda.empty_cache<span class="o">()</span>
+
+<span class="c1"># Use engine sleep</span>
+--enable_engine_sleep
+</pre></div>
+</div>
+</section>
+</section>
+<section id="training-problems">
+<h2>Training Problems<a class="headerlink" href="#training-problems" title="Permalink to this heading">¶</a></h2>
+<section id="problem-num-rollouts-per-episodes-0">
+<h3>Problem: <code class="docutils literal notranslate"><span class="pre">num_rollouts_per_episodes</span> <span class="pre">=</span> <span class="pre">0</span></code><a class="headerlink" href="#problem-num-rollouts-per-episodes-0" title="Permalink to this heading">¶</a></h3>
+<p><strong>Symptoms</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="ne">AssertionError</span><span class="p">:</span> <span class="n">num_rollouts_per_episodes</span> <span class="n">should</span> <span class="n">be</span> <span class="o">&gt;</span> <span class="mi">0</span>
+</pre></div>
+</div>
+<p><strong>Root Cause</strong>:
+<code class="docutils literal notranslate"><span class="pre">train_batch_size</span></code> &lt; <code class="docutils literal notranslate"><span class="pre">rollout_batch_size</span> <span class="pre">×</span> <span class="pre">n_samples_per_prompt</span></code></p>
+<p><strong>Solution</strong>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Ensure TBS &gt;= RBS × n_samples</span>
+<span class="c1"># Example: RBS=64, n_samples=8</span>
+--train_batch_size<span class="w"> </span><span class="m">512</span><span class="w">  </span><span class="c1"># Must be &gt;= 64×8=512</span>
+--rollout_batch_size<span class="w"> </span><span class="m">64</span>
+--n_samples_per_prompt<span class="w"> </span><span class="m">8</span>
+</pre></div>
+</div>
+</section>
+<section id="problem-training-not-converging">
+<h3>Problem: Training Not Converging<a class="headerlink" href="#problem-training-not-converging" title="Permalink to this heading">¶</a></h3>
+<p><strong>Symptoms</strong>:</p>
+<ul class="simple">
+<li><p>Reward not increasing</p></li>
+<li><p>Loss oscillating</p></li>
+<li><p>Model not improving</p></li>
+</ul>
+<p><strong>Diagnosis &amp; Solutions</strong>:</p>
+<p><strong>1. Check Learning Rate</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># If too high (loss spikes):</span>
+--actor_learning_rate<span class="w"> </span>1e-7<span class="w">  </span><span class="c1"># Lower</span>
+
+<span class="c1"># If too low (no progress):</span>
+--actor_learning_rate<span class="w"> </span>1e-6<span class="w">  </span><span class="c1"># Higher</span>
+</pre></div>
+</div>
+<p><strong>2. Enable Reward Normalization</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>--reward_running_norm<span class="w"> </span><span class="se">\</span>
+--reward_running_norm_minus_mean<span class="w"> </span><span class="se">\</span>
+--advantages_norm
+</pre></div>
+</div>
+<p><strong>3. Check KL Penalty</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># If KL too large (policy not updating):</span>
+--init_kl_coef<span class="w"> </span><span class="m">0</span>.0001<span class="w">  </span><span class="c1"># Lower</span>
+
+<span class="c1"># If KL too small (instability):</span>
+--init_kl_coef<span class="w"> </span><span class="m">0</span>.01<span class="w">  </span><span class="c1"># Higher</span>
+</pre></div>
+</div>
+<p><strong>4. Try Different Algorithm</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Switch from GRPO to CPGD</span>
+--advantage_estimator<span class="w"> </span>cpgd<span class="w"> </span><span class="se">\</span>
+--kl_target<span class="w"> </span><span class="m">0</span>.01
+</pre></div>
+</div>
+<p><strong>5. Check Reward Model Quality</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Test reward model separately</span>
+<span class="n">python</span> <span class="n">test_reward_model</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">model</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">rm</span>
+</pre></div>
+</div>
+</section>
+<section id="problem-nan-loss-or-gradients">
+<h3>Problem: NaN Loss or Gradients<a class="headerlink" href="#problem-nan-loss-or-gradients" title="Permalink to this heading">¶</a></h3>
+<p><strong>Symptoms</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Loss</span><span class="p">:</span> <span class="n">nan</span>
+<span class="n">Gradient</span><span class="p">:</span> <span class="n">nan</span>
+</pre></div>
+</div>
+<p><strong>Solution</strong>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># 1. Enable gradient clipping</span>
+--max_norm<span class="w"> </span><span class="m">1</span>.0
+
+<span class="c1"># 2. Lower learning rate</span>
+--actor_learning_rate<span class="w"> </span>1e-7
+
+<span class="c1"># 3. Use BF16 instead of FP16</span>
+--bf16
+
+<span class="c1"># 4. Enable reward clipping</span>
+--reward_clip<span class="w"> </span><span class="m">10</span>.0
+
+<span class="c1"># 5. Check for division by zero</span>
+--advantages_norm<span class="w">  </span><span class="c1"># Normalizes before use</span>
+</pre></div>
+</div>
+</section>
+<section id="problem-training-extremely-slow">
+<h3>Problem: Training Extremely Slow<a class="headerlink" href="#problem-training-extremely-slow" title="Permalink to this heading">¶</a></h3>
+<p><strong>Symptoms</strong>:</p>
+<ul class="simple">
+<li><p>&lt; 100 samples/min on 8×A100</p></li>
+<li><p>Each episode takes hours</p></li>
+</ul>
+<p><strong>Solutions</strong>:</p>
+<p><strong>1. Profile Bottleneck</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Add profiling</span>
+<span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">profiler</span><span class="o">.</span><span class="n">profile</span><span class="p">()</span> <span class="k">as</span> <span class="n">prof</span><span class="p">:</span>
+    <span class="n">trainer</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">prof</span><span class="o">.</span><span class="n">key_averages</span><span class="p">())</span>
+</pre></div>
+</div>
+<p><strong>2. Check Data Loading</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Increase workers</span>
+--num_workers<span class="w"> </span><span class="m">8</span>
+
+<span class="c1"># Use faster dataloader</span>
+--dataloader_pin_memory
+</pre></div>
+</div>
+<p><strong>3. Optimize Generation</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Use FP8 inference</span>
+--engine_type<span class="w"> </span>vllm<span class="w">  </span><span class="c1"># vLLM supports FP8</span>
+
+<span class="c1"># Increase TP for generation</span>
+--engine_tp_size<span class="w"> </span><span class="m">2</span>
+
+<span class="c1"># Reduce max length if possible</span>
+--max_len<span class="w"> </span><span class="m">2048</span>
+</pre></div>
+</div>
+<p><strong>4. Reduce Logging</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Don&#39;t log every step</span>
+--log_interval<span class="w"> </span><span class="m">100</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="distributed-training-issues">
+<h2>Distributed Training Issues<a class="headerlink" href="#distributed-training-issues" title="Permalink to this heading">¶</a></h2>
+<section id="problem-nccl-timeout">
+<h3>Problem: NCCL Timeout<a class="headerlink" href="#problem-nccl-timeout" title="Permalink to this heading">¶</a></h3>
+<p><strong>Symptoms</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="ne">RuntimeError</span><span class="p">:</span> <span class="n">NCCL</span> <span class="n">timeout</span>
+<span class="p">[</span><span class="n">E</span> <span class="n">ProcessGroupNCCL</span><span class="o">.</span><span class="n">cpp</span><span class="p">]</span> <span class="n">Caught</span> <span class="n">collective</span> <span class="n">operation</span> <span class="n">timeout</span>
+</pre></div>
+</div>
+<p><strong>Solution</strong>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Increase timeout</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">NCCL_TIMEOUT</span><span class="o">=</span><span class="m">1800</span>
+
+<span class="c1"># Debug NCCL</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">NCCL_DEBUG</span><span class="o">=</span>INFO
+
+<span class="c1"># Try different network interface</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">NCCL_SOCKET_IFNAME</span><span class="o">=</span>eth0
+
+<span class="c1"># Disable InfiniBand if issues</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">NCCL_IB_DISABLE</span><span class="o">=</span><span class="m">1</span>
+
+<span class="c1"># Use GLOO for debugging</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">NCCL_BACKEND</span><span class="o">=</span>gloo
+</pre></div>
+</div>
+</section>
+<section id="problem-distributed-initialization-hanging">
+<h3>Problem: Distributed Initialization Hanging<a class="headerlink" href="#problem-distributed-initialization-hanging" title="Permalink to this heading">¶</a></h3>
+<p><strong>Symptoms</strong>:</p>
+<ul class="simple">
+<li><p>Script hangs at “Initializing process group”</p></li>
+<li><p>No error message</p></li>
+</ul>
+<p><strong>Solution</strong>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># 1. Check network connectivity</span>
+ping<span class="w"> </span><span class="nv">$MASTER_ADDR</span>
+
+<span class="c1"># 2. Check port availability</span>
+nc<span class="w"> </span>-zv<span class="w"> </span><span class="nv">$MASTER_ADDR</span><span class="w"> </span><span class="nv">$MASTER_PORT</span>
+
+<span class="c1"># 3. Set correct environment variables</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">MASTER_ADDR</span><span class="o">=</span><span class="m">192</span>.168.1.1
+<span class="nb">export</span><span class="w"> </span><span class="nv">MASTER_PORT</span><span class="o">=</span><span class="m">29500</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">WORLD_SIZE</span><span class="o">=</span><span class="m">8</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">RANK</span><span class="o">=</span><span class="m">0</span><span class="w">  </span><span class="c1"># 0 to 7 for each GPU</span>
+
+<span class="c1"># 4. Use explicit init_method</span>
+torchrun<span class="w"> </span>--nproc_per_node<span class="o">=</span><span class="m">8</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--master_addr<span class="o">=</span><span class="nv">$MASTER_ADDR</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--master_port<span class="o">=</span><span class="nv">$MASTER_PORT</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>train.py
+
+<span class="c1"># 5. Enable debug logging</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">TORCH_DISTRIBUTED_DEBUG</span><span class="o">=</span>DETAIL
+</pre></div>
+</div>
+</section>
+<section id="problem-uneven-gpu-utilization">
+<h3>Problem: Uneven GPU Utilization<a class="headerlink" href="#problem-uneven-gpu-utilization" title="Permalink to this heading">¶</a></h3>
+<p><strong>Symptoms</strong>:</p>
+<ul class="simple">
+<li><p>Some GPUs at 100%, others idle</p></li>
+<li><p>Slow training despite multiple GPUs</p></li>
+</ul>
+<p><strong>Solution</strong>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># 1. Check batch size divisibility</span>
+<span class="c1"># Ensure batch_size % world_size == 0</span>
+
+<span class="c1"># 2. Use tensor parallelism</span>
+--engine_tp_size<span class="w"> </span><span class="m">2</span><span class="w">  </span><span class="c1"># Splits model across GPUs</span>
+
+<span class="c1"># 3. Check for pipeline bubbles</span>
+<span class="c1"># Ensure train_batch_size is large enough</span>
+
+<span class="c1"># 4. Monitor GPU utilization</span>
+nvidia-smi<span class="w"> </span>dmon<span class="w"> </span>-i<span class="w"> </span><span class="m">0</span>,1,2,3,4,5,6,7<span class="w"> </span>-s<span class="w"> </span>u
+
+<span class="c1"># 5. Use sequence parallelism for long sequences</span>
+--sp_size<span class="w"> </span><span class="m">2</span>
+</pre></div>
+</div>
+</section>
+<section id="problem-multi-node-training-fails">
+<h3>Problem: Multi-Node Training Fails<a class="headerlink" href="#problem-multi-node-training-fails" title="Permalink to this heading">¶</a></h3>
+<p><strong>Symptoms</strong>:</p>
+<ul class="simple">
+<li><p>Works on single node</p></li>
+<li><p>Fails on multiple nodes</p></li>
+</ul>
+<p><strong>Solution</strong>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># 1. Use SLURM</span>
+srun<span class="w"> </span>-N2<span class="w"> </span>--gres<span class="o">=</span>gpu:8<span class="w"> </span>--ntasks-per-node<span class="o">=</span><span class="m">8</span><span class="w"> </span>bash<span class="w"> </span>train.sh
+
+<span class="c1"># 2. Or explicit torchrun</span>
+<span class="c1"># On each node:</span>
+torchrun<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--nproc_per_node<span class="o">=</span><span class="m">8</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--nnodes<span class="o">=</span><span class="m">2</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--node_rank<span class="o">=</span><span class="nv">$SLURM_NODEID</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--master_addr<span class="o">=</span><span class="nv">$MASTER_ADDR</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--master_port<span class="o">=</span><span class="m">29500</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>train.py
+
+<span class="c1"># 3. Check firewall rules</span>
+<span class="c1"># Ensure ports are open between nodes</span>
+
+<span class="c1"># 4. Use shared filesystem</span>
+<span class="c1"># Ensure all nodes can access model/data paths</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="performance-issues">
+<h2>Performance Issues<a class="headerlink" href="#performance-issues" title="Permalink to this heading">¶</a></h2>
+<section id="problem-low-gpu-utilization">
+<h3>Problem: Low GPU Utilization<a class="headerlink" href="#problem-low-gpu-utilization" title="Permalink to this heading">¶</a></h3>
+<p><strong>Symptoms</strong>:</p>
+<ul class="simple">
+<li><p>GPU utilization &lt; 80%</p></li>
+<li><p>Training slower than expected</p></li>
+</ul>
+<p><strong>Solutions</strong>:</p>
+<p><strong>1. Increase Batch Size</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>--micro_train_batch_size<span class="w"> </span><span class="m">2</span><span class="w">  </span><span class="c1"># Double it</span>
+--micro_rollout_batch_size<span class="w"> </span><span class="m">4</span>
+</pre></div>
+</div>
+<p><strong>2. Reduce CPU Bottleneck</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>--num_workers<span class="w"> </span><span class="m">8</span>
+--prefetch_factor<span class="w"> </span><span class="m">2</span>
+</pre></div>
+</div>
+<p><strong>3. Enable Flash Attention</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>--flash_attn
+</pre></div>
+</div>
+<p><strong>4. Use Fused Kernels</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>--fused_linear_logprob
+</pre></div>
+</div>
+</section>
+<section id="problem-generation-too-slow">
+<h3>Problem: Generation Too Slow<a class="headerlink" href="#problem-generation-too-slow" title="Permalink to this heading">¶</a></h3>
+<p><strong>Symptoms</strong>:</p>
+<ul class="simple">
+<li><p>Rollout phase takes majority of time</p></li>
+<li><p>&lt; 100 tokens/sec generation</p></li>
+</ul>
+<p><strong>Solutions</strong>:</p>
+<p><strong>1. Use vLLM</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>--engine_type<span class="w"> </span>vllm<span class="w">  </span><span class="c1"># Instead of HF</span>
+--engine_tp_size<span class="w"> </span><span class="m">2</span>
+</pre></div>
+</div>
+<p><strong>2. Optimize KV Cache</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>--engine_mem_util<span class="w"> </span><span class="m">0</span>.9<span class="w">  </span><span class="c1"># If memory allows</span>
+</pre></div>
+</div>
+<p><strong>3. Use FP8 (if supported)</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># vLLM automatically uses FP8 on H100</span>
+--engine_type<span class="w"> </span>vllm
+</pre></div>
+</div>
+<p><strong>4. Reduce Samples</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>--n_samples_per_prompt<span class="w"> </span><span class="m">4</span><span class="w">  </span><span class="c1"># Instead of 8</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="inference-engine-issues">
+<h2>Inference Engine Issues<a class="headerlink" href="#inference-engine-issues" title="Permalink to this heading">¶</a></h2>
+<section id="problem-vllm-engine-fails-to-initialize">
+<h3>Problem: vLLM Engine Fails to Initialize<a class="headerlink" href="#problem-vllm-engine-fails-to-initialize" title="Permalink to this heading">¶</a></h3>
+<p><strong>Symptoms</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Failed</span> <span class="n">to</span> <span class="n">initialize</span> <span class="n">vLLM</span> <span class="n">engine</span>
+<span class="ne">RuntimeError</span><span class="p">:</span> <span class="n">Cannot</span> <span class="n">allocate</span> <span class="n">memory</span>
+</pre></div>
+</div>
+<p><strong>Solution</strong>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># 1. Check GPU memory</span>
+nvidia-smi
+
+<span class="c1"># 2. Reduce memory allocation</span>
+--engine_mem_util<span class="w"> </span><span class="m">0</span>.5
+
+<span class="c1"># 3. Use smaller TP size</span>
+--engine_tp_size<span class="w"> </span><span class="m">1</span>
+
+<span class="c1"># 4. Check model compatibility</span>
+<span class="c1"># Some models need specific vLLM versions</span>
+
+<span class="c1"># 5. Update vLLM</span>
+pip<span class="w"> </span>install<span class="w"> </span>-U<span class="w"> </span>vllm
+</pre></div>
+</div>
+</section>
+<section id="problem-engine-not-updating-weights">
+<h3>Problem: Engine Not Updating Weights<a class="headerlink" href="#problem-engine-not-updating-weights" title="Permalink to this heading">¶</a></h3>
+<p><strong>Symptoms</strong>:</p>
+<ul class="simple">
+<li><p>Policy model updates but generations don’t change</p></li>
+<li><p>Rewards stay constant</p></li>
+</ul>
+<p><strong>Solution</strong>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Ensure update_engine_weights is called</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">update_engine_weights</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">actor</span><span class="p">)</span>
+
+<span class="c1"># Check in training loop:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">ppo_train</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="o">...</span>
+    <span class="c1"># After training</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">update_engine_weights</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">actor</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="problem-engine-sleep-wake-issues">
+<h3>Problem: Engine Sleep/Wake Issues<a class="headerlink" href="#problem-engine-sleep-wake-issues" title="Permalink to this heading">¶</a></h3>
+<p><strong>Symptoms</strong>:</p>
+<ul class="simple">
+<li><p>Training hangs after generation</p></li>
+<li><p>“Engine already sleeping” errors</p></li>
+</ul>
+<p><strong>Solution</strong>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># 1. Disable engine sleep for debugging</span>
+--disable_engine_sleep
+
+<span class="c1"># 2. Or use automatic management</span>
+<span class="c1"># gather_and_generate handles sleep/wake automatically</span>
+<span class="nv">all_outputs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>self.strategy.gather_and_generate<span class="o">(</span>
+<span class="w">    </span>...,
+<span class="w">    </span><span class="nv">sleep_engine</span><span class="o">=</span>True<span class="w">  </span><span class="c1"># Automatic management</span>
+<span class="o">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="checkpoint-issues">
+<h2>Checkpoint Issues<a class="headerlink" href="#checkpoint-issues" title="Permalink to this heading">¶</a></h2>
+<section id="problem-cannot-load-checkpoint">
+<h3>Problem: Cannot Load Checkpoint<a class="headerlink" href="#problem-cannot-load-checkpoint" title="Permalink to this heading">¶</a></h3>
+<p><strong>Symptoms</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="ne">FileNotFoundError</span><span class="p">:</span> <span class="n">Checkpoint</span> <span class="ow">not</span> <span class="n">found</span>
+<span class="ne">RuntimeError</span><span class="p">:</span> <span class="n">Error</span> <span class="n">loading</span> <span class="n">state</span> <span class="nb">dict</span>
+</pre></div>
+</div>
+<p><strong>Solution</strong>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># 1. Check checkpoint path</span>
+ls<span class="w"> </span>-la<span class="w"> </span>/path/to/checkpoint
+
+<span class="c1"># 2. Load with relaxed matching</span>
+--load_checkpoint<span class="w"> </span><span class="se">\</span>
+--ckpt_path<span class="w"> </span>/path/to/checkpoint
+
+<span class="c1"># 3. Skip optimizer states if incompatible</span>
+<span class="c1"># Edit code to load model only:</span>
+model.load_state_dict<span class="o">(</span>torch.load<span class="o">(</span>ckpt_path<span class="o">))</span>
+</pre></div>
+</div>
+</section>
+<section id="problem-checkpoint-saving-fails">
+<h3>Problem: Checkpoint Saving Fails<a class="headerlink" href="#problem-checkpoint-saving-fails" title="Permalink to this heading">¶</a></h3>
+<p><strong>Symptoms</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="ne">OSError</span><span class="p">:</span> <span class="n">Disk</span> <span class="n">quota</span> <span class="n">exceeded</span>
+<span class="ne">RuntimeError</span><span class="p">:</span> <span class="n">Cannot</span> <span class="n">save</span> <span class="n">checkpoint</span>
+</pre></div>
+</div>
+<p><strong>Solution</strong>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># 1. Check disk space</span>
+df<span class="w"> </span>-h
+
+<span class="c1"># 2. Limit checkpoint number</span>
+--max_ckpt_num<span class="w"> </span><span class="m">3</span>
+
+<span class="c1"># 3. Set max checkpoint size</span>
+--max_ckpt_mem<span class="w"> </span><span class="m">1000</span><span class="w">  </span><span class="c1"># GB</span>
+
+<span class="c1"># 4. Use different save path</span>
+--save_path<span class="w"> </span>/path/with/space
+</pre></div>
+</div>
+</section>
+</section>
+<section id="debugging-tips">
+<h2>Debugging Tips<a class="headerlink" href="#debugging-tips" title="Permalink to this heading">¶</a></h2>
+<section id="enable-debug-logging">
+<h3>Enable Debug Logging<a class="headerlink" href="#enable-debug-logging" title="Permalink to this heading">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># PyTorch distributed</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">TORCH_DISTRIBUTED_DEBUG</span><span class="o">=</span>DETAIL
+
+<span class="c1"># NCCL</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">NCCL_DEBUG</span><span class="o">=</span>INFO
+
+<span class="c1"># CUDA</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">CUDA_LAUNCH_BLOCKING</span><span class="o">=</span><span class="m">1</span>
+</pre></div>
+</div>
+</section>
+<section id="memory-profiling">
+<h3>Memory Profiling<a class="headerlink" href="#memory-profiling" title="Permalink to this heading">¶</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+
+<span class="c1"># Track memory allocation</span>
+<span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">memory</span><span class="o">.</span><span class="n">_record_memory_history</span><span class="p">()</span>
+
+<span class="c1"># Training loop</span>
+<span class="o">...</span>
+
+<span class="c1"># Dump memory snapshot</span>
+<span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">memory</span><span class="o">.</span><span class="n">_dump_snapshot</span><span class="p">(</span><span class="s2">&quot;memory.pickle&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="performance-profiling">
+<h3>Performance Profiling<a class="headerlink" href="#performance-profiling" title="Permalink to this heading">¶</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">profiler</span><span class="o">.</span><span class="n">profile</span><span class="p">(</span>
+    <span class="n">activities</span><span class="o">=</span><span class="p">[</span>
+        <span class="n">torch</span><span class="o">.</span><span class="n">profiler</span><span class="o">.</span><span class="n">ProfilerActivity</span><span class="o">.</span><span class="n">CPU</span><span class="p">,</span>
+        <span class="n">torch</span><span class="o">.</span><span class="n">profiler</span><span class="o">.</span><span class="n">ProfilerActivity</span><span class="o">.</span><span class="n">CUDA</span><span class="p">,</span>
+    <span class="p">],</span>
+    <span class="n">record_shapes</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">with_stack</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span> <span class="k">as</span> <span class="n">prof</span><span class="p">:</span>
+    <span class="n">trainer</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
+
+<span class="c1"># View results</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">prof</span><span class="o">.</span><span class="n">key_averages</span><span class="p">()</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">sort_by</span><span class="o">=</span><span class="s2">&quot;cuda_time_total&quot;</span><span class="p">))</span>
+</pre></div>
+</div>
+</section>
+<section id="debugging-checklist">
+<h3>Debugging Checklist<a class="headerlink" href="#debugging-checklist" title="Permalink to this heading">¶</a></h3>
+<p>When reporting bugs, include:</p>
+<ul class="contains-task-list simple">
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Hardware: GPU model, count, memory</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Software: CUDA, PyTorch, vLLM versions</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Full command with all arguments</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Full error traceback</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Environment variables set</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> Minimal reproduction script</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> What you’ve tried already</p></li>
+</ul>
+</section>
+</section>
+<section id="getting-help">
+<h2>Getting Help<a class="headerlink" href="#getting-help" title="Permalink to this heading">¶</a></h2>
+<p>If you can’t resolve the issue:</p>
+<ol class="arabic simple">
+<li><p><strong>Check FAQ</strong>: <a class="reference internal" href="faq.html"><span class="std std-doc">FAQ</span></a></p></li>
+<li><p><strong>Search Issues</strong>: <a class="reference external" href="https://github.com/opendilab/LightRFT/issues">GitHub Issues</a></p></li>
+<li><p><strong>Ask Community</strong>: GitHub Discussions</p></li>
+<li><p><strong>Report Bug</strong>: Open new issue with debugging info</p></li>
+</ol>
+</section>
+<section id="common-error-messages-reference">
+<h2>Common Error Messages Reference<a class="headerlink" href="#common-error-messages-reference" title="Permalink to this heading">¶</a></h2>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Error Message</p></th>
+<th class="head"><p>Section</p></th>
+<th class="head"><p>Quick Fix</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">CUDA</span> <span class="pre">out</span> <span class="pre">of</span> <span class="pre">memory</span></code></p></td>
+<td><p><a class="reference internal" href="#memory-issues"><span class="std std-ref">Memory Issues</span></a></p></td>
+<td><p>Reduce batch size, enable checkpointing</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">num_rollouts_per_episodes</span> <span class="pre">=</span> <span class="pre">0</span></code></p></td>
+<td><p><a class="reference internal" href="#training-problems"><span class="std std-ref">Training Problems</span></a></p></td>
+<td><p>Increase <code class="docutils literal notranslate"><span class="pre">train_batch_size</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">NCCL</span> <span class="pre">timeout</span></code></p></td>
+<td><p><a class="reference internal" href="#distributed-training-issues"><span class="std std-ref">Distributed Issues</span></a></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">export</span> <span class="pre">NCCL_TIMEOUT=1800</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">Failed</span> <span class="pre">to</span> <span class="pre">initialize</span> <span class="pre">vLLM</span></code></p></td>
+<td><p><a class="reference internal" href="#inference-engine-issues"><span class="std std-ref">Inference Engine Issues</span></a></p></td>
+<td><p>Reduce <code class="docutils literal notranslate"><span class="pre">engine_mem_util</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">NaN</span> <span class="pre">loss</span></code></p></td>
+<td><p><a class="reference internal" href="#training-problems"><span class="std std-ref">Training Problems</span></a></p></td>
+<td><p>Lower learning rate, clip gradients</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="see-also">
+<h2>See Also<a class="headerlink" href="#see-also" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="faq.html"><span class="std std-doc">FAQ</span></a> - Frequently asked questions</p></li>
+<li><p><a class="reference internal" href="#../user_guide/configuration.md"><span class="xref myst">Configuration</span></a> - All parameters</p></li>
+<li><p><a class="reference internal" href="#../best_practice/strategy_usage.md"><span class="xref myst">Best Practices</span></a> - Optimization tips</p></li>
+</ul>
+</section>
+</section>
+
+
+              </article>
+              
+            </div>
+            <footer>
+  
+  <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+    
+    <a href="contributing.html" class="btn btn-neutral float-right" title="Contributing to LightRFT" accesskey="n"
+      rel="next">Next <img src="../_static/images/chevron-right-blue.svg"
+        class="next-page"></a>
+    
+    
+    <a href="faq.html" class="btn btn-neutral" title="Frequently Asked Questions (FAQ)" accesskey="p"
+      rel="prev"><img src="../_static/images/chevron-right-blue.svg" class="previous-page"> Previous</a>
+    
+  </div>
+  
+
+  <hr>
+
+  <div role="contentinfo">
+    <p>
+      &copy; Copyright 2025, OpenDILab.
+
+    </p>
+  </div>
+  
+  <div>
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a
+      href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the
+      Docs</a>.
+  </div>
+   
+
+</footer>
+          </div>
+        </div>
+
+        <div class="pytorch-content-right" id="pytorch-content-right">
+          <div class="pytorch-right-menu" id="pytorch-right-menu">
+            <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
+              <ul>
+<li><a class="reference internal" href="#">Troubleshooting Guide</a><ul>
+<li><a class="reference internal" href="#quick-diagnosis">Quick Diagnosis</a></li>
+<li><a class="reference internal" href="#installation-issues">Installation Issues</a><ul>
+<li><a class="reference internal" href="#problem-package-import-errors">Problem: Package import errors</a></li>
+<li><a class="reference internal" href="#problem-cuda-version-mismatch">Problem: CUDA version mismatch</a></li>
+<li><a class="reference internal" href="#problem-vllm-installation-fails">Problem: vLLM installation fails</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#memory-issues">Memory Issues</a><ul>
+<li><a class="reference internal" href="#problem-out-of-memory-oom-errors">Problem: Out of Memory (OOM) Errors</a></li>
+<li><a class="reference internal" href="#problem-vllm-engine-oom">Problem: vLLM Engine OOM</a></li>
+<li><a class="reference internal" href="#problem-memory-leak-during-training">Problem: Memory Leak During Training</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#training-problems">Training Problems</a><ul>
+<li><a class="reference internal" href="#problem-num-rollouts-per-episodes-0">Problem: <code class="docutils literal notranslate"><span class="pre">num_rollouts_per_episodes</span> <span class="pre">=</span> <span class="pre">0</span></code></a></li>
+<li><a class="reference internal" href="#problem-training-not-converging">Problem: Training Not Converging</a></li>
+<li><a class="reference internal" href="#problem-nan-loss-or-gradients">Problem: NaN Loss or Gradients</a></li>
+<li><a class="reference internal" href="#problem-training-extremely-slow">Problem: Training Extremely Slow</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#distributed-training-issues">Distributed Training Issues</a><ul>
+<li><a class="reference internal" href="#problem-nccl-timeout">Problem: NCCL Timeout</a></li>
+<li><a class="reference internal" href="#problem-distributed-initialization-hanging">Problem: Distributed Initialization Hanging</a></li>
+<li><a class="reference internal" href="#problem-uneven-gpu-utilization">Problem: Uneven GPU Utilization</a></li>
+<li><a class="reference internal" href="#problem-multi-node-training-fails">Problem: Multi-Node Training Fails</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#performance-issues">Performance Issues</a><ul>
+<li><a class="reference internal" href="#problem-low-gpu-utilization">Problem: Low GPU Utilization</a></li>
+<li><a class="reference internal" href="#problem-generation-too-slow">Problem: Generation Too Slow</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#inference-engine-issues">Inference Engine Issues</a><ul>
+<li><a class="reference internal" href="#problem-vllm-engine-fails-to-initialize">Problem: vLLM Engine Fails to Initialize</a></li>
+<li><a class="reference internal" href="#problem-engine-not-updating-weights">Problem: Engine Not Updating Weights</a></li>
+<li><a class="reference internal" href="#problem-engine-sleep-wake-issues">Problem: Engine Sleep/Wake Issues</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#checkpoint-issues">Checkpoint Issues</a><ul>
+<li><a class="reference internal" href="#problem-cannot-load-checkpoint">Problem: Cannot Load Checkpoint</a></li>
+<li><a class="reference internal" href="#problem-checkpoint-saving-fails">Problem: Checkpoint Saving Fails</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#debugging-tips">Debugging Tips</a><ul>
+<li><a class="reference internal" href="#enable-debug-logging">Enable Debug Logging</a></li>
+<li><a class="reference internal" href="#memory-profiling">Memory Profiling</a></li>
+<li><a class="reference internal" href="#performance-profiling">Performance Profiling</a></li>
+<li><a class="reference internal" href="#debugging-checklist">Debugging Checklist</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#getting-help">Getting Help</a></li>
+<li><a class="reference internal" href="#common-error-messages-reference">Common Error Messages Reference</a></li>
+<li><a class="reference internal" href="#see-also">See Also</a></li>
+</ul>
+</li>
+</ul>
+
+            </div>
+          </div>
+        </div>
+    </section>
+  </div>
+
+  
+
+
+  
+
+  
+  <script type="text/javascript" id="documentation_options" data-url_root="../"
+    src="../_static/documentation_options.js"></script>
+  <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+  <script src="../_static/doctools.js"></script>
+  <script src="../_static/sphinx_highlight.js"></script>
+  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+  
+
+  
+
+  <script type="text/javascript" src="../_static/js/vendor/popper.min.js"></script>
+  <script type="text/javascript" src="../_static/js/vendor/bootstrap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+    jQuery(function () {
+      SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+  <!-- Begin Footer -->
+
+  <div class="container-fluid docs-tutorials-resources" id="docs-tutorials-resources">
+  </div>
+
+  <!-- End Footer -->
+
+  <!-- Begin Mobile Menu -->
+
+  <div class="mobile-main-menu">
+    <div class="container-fluid">
+      <div class="container">
+        <div class="mobile-main-menu-header-container">
+          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
+        </div>
+      </div>
+    </div>
+
+    <div class="mobile-main-menu-links-container">
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://github.com/opendilab/LightRFT" target="_blank">GitHub</a>
+          </li>
+      </div>
+    </div>
+  </div>
+
+  <!-- End Mobile Menu -->
+
+  <script type="text/javascript" src="../_static/js/vendor/anchor.min.js"></script>
+
+  <script type="text/javascript">
+    $(document).ready(function () {
+      mobileMenu.bind();
+      mobileTOC.bind();
+      pytorchAnchors.bind();
+      sideMenus.bind();
+      scrollToAnchor.bind();
+      highlightNavigation.bind();
+      mainMenuDropdown.bind();
+      filterTags.bind();
+
+      // Add class to links that have code blocks, since we cannot create links in code blocks
+      $("article.pytorch-article a span.pre").each(function (e) {
+        $(this).closest("a").addClass("has-code");
+      });
+    })
+  </script>
+</body>
+
+</html>

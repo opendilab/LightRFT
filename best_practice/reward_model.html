@@ -1,0 +1,1796 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js" lang="en">
+<!--<![endif]-->
+
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>LightRFT Reward Model Training Best Practices Guide &mdash; LightRFT v0.1.1 documentation</title>
+  
+
+  <link rel="shortcut icon" href="../_static/images/favicon.ico" />
+  
+  
+
+  
+
+  
+  
+  
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/readthedocs.css" type="text/css" />
+  <link rel="index" title="Index" href="../genindex.html" />
+  <link rel="search" title="Search" href="../search.html" />
+  <link rel="next" title="Strategy Usage Guide" href="strategy.html" />
+  <link rel="prev" title="LightRFT Models Design Document" href="model.html" />
+  <!-- Google Analytics -->
+  <script type="text/javascript">
+    var collapsedSections = [];
+  </script>
+  
+  <!-- End Google Analytics -->
+  
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+  <script>
+    MathJax = {
+        chtml: {
+            scale: 1,
+            minScale: 1,
+        },
+        svg: {
+            scale: 1,
+            minScale: 1,
+        }
+    }
+</script>
+
+  <!-- Preload the theme fonts -->
+
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-book.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/IBMPlexMono/IBMPlexMono-Medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-medium-italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/IBMPlexMono/IBMPlexMono-SemiBold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+
+<!-- Preload the katex fonts -->
+
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Math-Italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size1-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size4-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size2-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size3-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Caligraphic-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.2/css/all.css"
+    integrity="sha384-vSIIfh2YWi9wW0r9iZe7RJPrKwp6bG+s9QZMoITbCckVJqGCCRhc+ccxNcdpHuYu" crossorigin="anonymous">
+</head>
+
+<div class="container-fluid header-holder tutorials-header" id="header-holder">
+  <div class="container">
+    <div class="header-container">
+      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+        aria-label="OpenMMLab"></a>
+
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://github.com/opendilab/LightRFT" target="_blank">GitHub</a>
+          </li>
+          <li >
+            <div id="resourcesDropdownButton" data-toggle="resources-dropdown" class="resources-dropdown">
+              <a
+                class="resource-option with-down-arrow">
+                OpenDILab
+              </a>
+              <div class="resources-dropdown-menu">
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-engine" target="_blank">
+                  <span class="dropdown-title">DI-engine </span>
+                  <p>OpenDILab Decision AI Engine</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/LightZero" target="_blank">
+                  <span class="dropdown-title">LightZero </span>
+                  <p>OpenDILab Decision Monte Carlo Tree Search Framework</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/GenerativeRL" target="_blank">
+                  <span class="dropdown-title">GenerativeRL </span>
+                  <p>OpenDILab Generative AI Framework</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-star" target="_blank">
+                  <span class="dropdown-title">DI-star </span>
+                  <p>OpenDILab Decision AI in StarCraftII</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-drive" target="_blank">
+                  <span class="dropdown-title">DI-drive </span>
+                  <p>OpenDILab Auto-driving platform</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/GoBigger" target="_blank">
+                  <span class="dropdown-title">GoBigger </span>
+                  <p>OpenDILab Multi-Agent Environment</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-smartcross" target="_blank">
+                  <span class="dropdown-title">DI-smartcross </span>
+                  <p>Decision Intelligence Platform for Traffic Crossing Signal Control</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-treetensor" target="_blank">
+                  <span class="dropdown-title">DI-treetensor </span>
+                  <p>Tree Nested PyTorch Tensor Lib</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-sheep" target="_blank">
+                  <span class="dropdown-title">DI-sheep </span>
+                  <p>Deep Reinforcement Learning + 3 Tiles Game</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-model-based-RL" target="_blank">
+                  <span class="dropdown-title">awesome-model-based-RL </span>
+                  <p>A curated list of awesome model based RL resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-decision-transformer" target="_blank">
+                  <span class="dropdown-title">awesome-decision-transformer </span>
+                  <p>A curated list of Decision Transformer resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-exploration-rl" target="_blank">
+                  <span class="dropdown-title">awesome-exploration-rl </span>
+                  <p>A curated list of awesome exploration RL resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-multi-modal-reinforcement-learning" target="_blank">
+                  <span class="dropdown-title">awesome-multi-modal-reinforcement-learning </span>
+                  <p>A curated list of Multi-Modal Reinforcement Learning resources (continually updated)</p>
+                </a>
+              </div>
+          </li>
+        </ul>
+      </div>
+
+      <a class="main-menu-open-button" href="#" data-behavior="open-mobile-menu"></a>
+    </div>
+  </div>
+</div>
+
+<body class="pytorch-body">
+
+   
+
+  
+
+  <div class="table-of-contents-link-wrapper">
+    <span>Table of Contents</span>
+    <a href="#" class="toggle-table-of-contents" data-behavior="toggle-table-of-contents"></a>
+  </div>
+
+  <nav data-toggle="wy-nav-shift" class="pytorch-left-menu" id="pytorch-left-menu">
+    <div class="pytorch-side-scroll">
+      <div class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        <div class="pytorch-left-menu-search">
+          
+
+          
+          
+          
+          
+
+          
+
+
+
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search Docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        
+        
+        
+        
+        
+        <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../installation/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quick_start/index.html">Quick Start</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide &amp; Best Practices</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Best Practices</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/utils/index.html">lightrft.utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/datasets/index.html">lightrft.datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/models/index.html">lightrft.models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/strategy/index.html">lightrft.strategy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/trainer/index.html">lightrft.trainer</a></li>
+</ul>
+
+        
+        
+      </div>
+    </div>
+  </nav>
+
+  <div class="pytorch-container">
+    <div class="pytorch-page-level-bar" id="pytorch-page-level-bar">
+      <div class="pytorch-breadcrumbs-wrapper">
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="pytorch-breadcrumbs">
+    
+      <li>
+        <a href="../index.html">
+            Docs
+        </a> &gt;
+      </li>
+
+        
+          <li><a href="index.html">Best Practices</a> &gt;</li>
+        
+      <li>LightRFT Reward Model Training Best Practices Guide</li>
+    
+    
+      <li class="pytorch-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/best_practice/reward_model.md.txt" rel="nofollow"><img src="../_static/images/view-page-source-icon.svg"></a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+</div>
+      </div>
+
+      <div class="pytorch-shortcuts-wrapper" id="pytorch-shortcuts-wrapper">
+        Shortcuts
+      </div>
+    </div>
+
+    <section data-toggle="wy-nav-shift" id="pytorch-content-wrap" class="pytorch-content-wrap">
+      <div class="pytorch-content-left">
+        
+          <div class="rst-content">
+            
+            <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
+              <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
+                
+  <section id="lightrft-reward-model-training-best-practices-guide">
+<h1>LightRFT Reward Model Training Best Practices Guide<a class="headerlink" href="#lightrft-reward-model-training-best-practices-guide" title="Permalink to this heading">¶</a></h1>
+<section id="table-of-contents">
+<h2>Table of Contents<a class="headerlink" href="#table-of-contents" title="Permalink to this heading">¶</a></h2>
+<ol class="arabic simple">
+<li><p>Overview</p></li>
+<li><p>Reward Model Types</p></li>
+<li><p>Environment Preparation</p></li>
+<li><p>Model Training</p></li>
+<li><p>Model Evaluation</p></li>
+<li><p>FAQ</p></li>
+<li><p>Benchmarks &amp; Performance</p></li>
+<li><p>Advanced Topics</p></li>
+<li><p>References</p></li>
+</ol>
+</section>
+<hr class="docutils" />
+<section id="overview">
+<h2>1. Overview<a class="headerlink" href="#overview" title="Permalink to this heading">¶</a></h2>
+<section id="what-is-a-reward-model">
+<h3>1.1 What is a Reward Model<a class="headerlink" href="#what-is-a-reward-model" title="Permalink to this heading">¶</a></h3>
+<p>In the workflow of Reinforcement Learning from Human Feedback (RLHF), the Reward Model plays the critical role of a proxy for human preferences.</p>
+<p><strong>Why is a Reward Model needed?</strong>
+In many complex task scenarios, we face the challenge that <strong>reward functions are difficult to define explicitly with simple rules</strong>. For example:</p>
+<ul class="simple">
+<li><p><strong>Generation Tasks</strong>: How to use a formula to measure the literary talent of a text or the aesthetic beauty of an image?</p></li>
+<li><p><strong>Interaction &amp; Control</strong>: How to define the comfort of driving or the naturalness of a robot’s movements?</p></li>
+</ul>
+<p>Although humans can subjectively judge these results, obtaining real-time human feedback during large-scale training is both expensive and time-consuming. Therefore, we need to train a Reward Model to <strong>simulate human judgment standards</strong>.</p>
+<p><strong>The Role of the Reward Model</strong>
+The Reward Model receives an input (such as a Prompt or environmental state) and its corresponding output (Response or action), and outputs an evaluation signal. This signal quantifies the extent to which the result meets human expectations (such as helpfulness, safety, truthfulness, etc.), thereby providing scalable, consistent feedback guidance for the optimization of the Policy Model.</p>
+<p>Based on different output forms, Reward Models are mainly divided into two categories:</p>
+<ol class="arabic simple">
+<li><p><strong>Scalar Reward Model (SRM)</strong>: This is the most classic form of reward model. It maps the input and response to a single scalar score. The advantage of SRM is high computational efficiency, and the numerical signal output can be directly used as the Reward in reinforcement learning algorithms (such as PPO) or for Rejection Sampling. However, a single scalar is often difficult to interpret regarding the basis of the model’s scoring, and it is difficult to capture complex multi-dimensional preferences.</p></li>
+<li><p><strong>Generative Reward Model (GRM)</strong>: This is an emerging paradigm of reward models. GRM leverages the generation capabilities of large language models to output evaluations in natural language. It can not only give a final judgment (e.g., “Answer A is better”) but also generate a detailed Chain-of-Thought (CoT) to explain the reasoning behind the evaluation. GRM possesses stronger interpretability and, by simulating the human reasoning process, often demonstrates higher accuracy in complex evaluation tasks.</p></li>
+</ol>
+<p>The reward signal given by the Reward Model (whether a scalar or a result parsed from text) will be used to guide the optimization of the Policy Model. By maximizing the reward given by the RM, the Policy Model can learn to generate content that aligns better with human preferences and values. Therefore, the quality of the Reward Model directly determines the final alignment effect and serves as a key bridge for aligning large model generation behaviors with human preferences.</p>
+</section>
+<section id="rm-support-in-lightrft">
+<h3>1.2 RM Support in LightRFT<a class="headerlink" href="#rm-support-in-lightrft" title="Permalink to this heading">¶</a></h3>
+<p>LightRFT provides a complete multi-modal reward model training framework, supporting:</p>
+<p><strong>Model Types:</strong></p>
+<ul class="simple">
+<li><p><strong>Scalar Reward Model (SRM)</strong>: Scalar reward model, outputs a scalar score (between 0-1).</p></li>
+<li><p><strong>Generative Reward Model (GRM)</strong>: Generative reward model, generates text-based evaluations with reasoning processes (CoT) and final conclusions (e.g., <code class="docutils literal notranslate"><span class="pre">&lt;think&gt;…&lt;/think&gt;&lt;answer&gt;…&lt;/answer&gt;</span></code>), offering better interpretability.</p></li>
+</ul>
+<p><strong>Supported Modalities:</strong></p>
+<ul class="simple">
+<li><p><strong>Vision-Language (VL)</strong>: Image-Text, Video-Text</p></li>
+<li><p><strong>Audio-Language (AL)</strong>: Audio-Text</p></li>
+<li><p><strong>Language-Only</strong>: Pure text, i.e., existing LLM models</p></li>
+</ul>
+<p><strong>Training Backend:</strong></p>
+<ul class="simple">
+<li><p>DeepSpeed ZeRO (Stage 1/2/3)</p></li>
+</ul>
+</section>
+</section>
+<hr class="docutils" />
+<section id="reward-model-types">
+<h2>2. Reward Model Types<a class="headerlink" href="#reward-model-types" title="Permalink to this heading">¶</a></h2>
+<section id="scalar-reward-model-srm">
+<h3>2.1 Scalar Reward Model (SRM)<a class="headerlink" href="#scalar-reward-model-srm" title="Permalink to this heading">¶</a></h3>
+<section id="features">
+<h4>Features<a class="headerlink" href="#features" title="Permalink to this heading">¶</a></h4>
+<ul class="simple">
+<li><p>Outputs a single scalar score (mapped to 0-1 via Sigmoid).</p></li>
+<li><p>Training uses pairwise preference data.</p></li>
+<li><p>Supports multiple reward heads (e.g., preference, alignment, helpfulness).</p></li>
+</ul>
+</section>
+<section id="applicable-scenarios">
+<h4>Applicable Scenarios<a class="headerlink" href="#applicable-scenarios" title="Permalink to this heading">¶</a></h4>
+<ul class="simple">
+<li><p>Scenarios requiring fast inference.</p></li>
+<li><p>As a reward signal for RL algorithms like PPO/GRPO.</p></li>
+<li><p>Multi-dimensional preference modeling.</p></li>
+</ul>
+</section>
+<section id="loss-functions">
+<h4>Loss Functions<a class="headerlink" href="#loss-functions" title="Permalink to this heading">¶</a></h4>
+<ul class="simple">
+<li><p><strong>Bradley-Terry Loss</strong> (Log-Sigmoid): <code class="docutils literal notranslate"><span class="pre">-log(σ(r_chosen</span> <span class="pre">-</span> <span class="pre">r_reject</span> <span class="pre">-</span> <span class="pre">margin))</span></code></p></li>
+<li><p><strong>LogExp Loss</strong>: <code class="docutils literal notranslate"><span class="pre">log(1</span> <span class="pre">+</span> <span class="pre">exp(r_reject</span> <span class="pre">-</span> <span class="pre">r_chosen))</span></code></p></li>
+<li><p><strong>HPS Scale Loss</strong>: Cross-entropy with learnable temperature (performed better in our experiments).</p></li>
+</ul>
+</section>
+<section id="architecture">
+<h4>Architecture<a class="headerlink" href="#architecture" title="Permalink to this heading">¶</a></h4>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Backbone (e.g. Vision-Language Model)
+    ↓
+Hidden States (from probing_layer)
+    ↓
+Pooling (Attention or Last Token)
+    ↓
+Reward Head (MLP + Sigmoid)
+    ↓
+Scalar Score (0-1)
+</pre></div>
+</div>
+</section>
+</section>
+<section id="generative-reward-model-grm">
+<h3>2.2 Generative Reward Model (GRM)<a class="headerlink" href="#generative-reward-model-grm" title="Permalink to this heading">¶</a></h3>
+<section id="id1">
+<h4>Features<a class="headerlink" href="#id1" title="Permalink to this heading">¶</a></h4>
+<ul class="simple">
+<li><p>Generates evaluations and reasons in text form.</p></li>
+<li><p>Training uses standard language model loss (Next-Token Prediction).</p></li>
+<li><p>Strong interpretability.</p></li>
+</ul>
+</section>
+<section id="id2">
+<h4>Applicable Scenarios<a class="headerlink" href="#id2" title="Permalink to this heading">¶</a></h4>
+<ul class="simple">
+<li><p>Scenarios requiring evaluation reasoning.</p></li>
+<li><p>Fine-grained evaluation of complex tasks.</p></li>
+<li><p>Research and analysis of model behavior.</p></li>
+</ul>
+</section>
+<section id="training-methods">
+<h4>Training Methods<a class="headerlink" href="#training-methods" title="Permalink to this heading">¶</a></h4>
+<ul class="simple">
+<li><p><strong>GPT-LM Loss</strong>: Standard next-token prediction loss.</p></li>
+<li><p><strong>Reinforcement Fine-Tuning (RFT)</strong>: Training using reinforcement learning to improve the reasoning capability of the GRM. This module is currently under development in LightRFT, stay tuned.</p></li>
+</ul>
+</section>
+<section id="id3">
+<h4>Architecture<a class="headerlink" href="#id3" title="Permalink to this heading">¶</a></h4>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Multi-modal Encoder (e.g. Vision2Seq Model)
+    ↓
+LLM Decoder
+    ↓
+Generated Text (Reward Description)
+</pre></div>
+</div>
+</section>
+</section>
+<section id="selection-advice">
+<h3>2.3 Selection Advice<a class="headerlink" href="#selection-advice" title="Permalink to this heading">¶</a></h3>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head text-left"><p>Scenario</p></th>
+<th class="head text-left"><p>Recommended Type</p></th>
+<th class="head text-left"><p>Reason</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td class="text-left"><p>PPO/DPO Training</p></td>
+<td class="text-left"><p>SRM</p></td>
+<td class="text-left"><p>Fast inference speed, scalar signal is easy to use</p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p>Complex Task Evaluation</p></td>
+<td class="text-left"><p>GRM</p></td>
+<td class="text-left"><p>Can generate detailed evaluation reasons</p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p>Multi-dimensional Preference</p></td>
+<td class="text-left"><p>SRM/GRM (Multi-head)</p></td>
+<td class="text-left"><p>Can train multiple dimensions simultaneously</p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p>High Interpretability Required</p></td>
+<td class="text-left"><p>GRM</p></td>
+<td class="text-left"><p>Provides textual explanation</p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p>Real-time Application</p></td>
+<td class="text-left"><p>SRM</p></td>
+<td class="text-left"><p>Low inference overhead</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<hr class="docutils" />
+<section id="environment-preparation">
+<h2>3. Environment Preparation<a class="headerlink" href="#environment-preparation" title="Permalink to this heading">¶</a></h2>
+<section id="installation">
+<h3>3.1 Installation<a class="headerlink" href="#installation" title="Permalink to this heading">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>LightRFT
+
+<span class="c1"># Install basic dependencies</span>
+pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements.txt
+
+<span class="c1"># For Vision-Language Models</span>
+pip<span class="w"> </span>install<span class="w"> </span>qwen-vl-utils<span class="w">  </span><span class="c1"># Qwen-VL Series</span>
+pip<span class="w"> </span>install<span class="w"> </span>keye-vl-utils<span class="w">  </span><span class="c1"># KeyeVL Series</span>
+
+<span class="c1"># For Audio-Language Models</span>
+pip<span class="w"> </span>install<span class="w"> </span>librosa
+</pre></div>
+</div>
+</section>
+<section id="gpu-requirements">
+<h3>3.2 GPU Requirements<a class="headerlink" href="#gpu-requirements" title="Permalink to this heading">¶</a></h3>
+<p><strong>Minimum Configuration:</strong></p>
+<ul class="simple">
+<li><p>SRM (3B Model, Full Fine-tuning): 1x H200/A100 (80GB)</p></li>
+<li><p>SRM (7B Model): 1x H200 with ZeRO-3</p></li>
+<li><p>GRM (3B Model): 1x H200 with ZeRO-3</p></li>
+<li><p>GRM (7B Model): 2x H200 with ZeRO-3</p></li>
+</ul>
+<p><strong>Recommended Configuration:</strong></p>
+<ul class="simple">
+<li><p>8x A100 (80GB) for 7B-72B models</p></li>
+<li><p>Use ZeRO-3 + LoRA for larger models</p></li>
+</ul>
+</section>
+</section>
+<hr class="docutils" />
+<section id="model-training">
+<h2>4. Model Training<a class="headerlink" href="#model-training" title="Permalink to this heading">¶</a></h2>
+<p>LightRFT provides out-of-the-box training scripts supporting both SRM and GRM training.
+We have prepared ready-to-run scripts with default configurations for common scenarios; customized parameters are also supported to fit your experiments.</p>
+<section id="one-click-run-srm-grm">
+<h3>4.0 One-Click Run (SRM / GRM)<a class="headerlink" href="#one-click-run-srm-grm" title="Permalink to this heading">¶</a></h3>
+<p>Quick Start: Modify the data path and save directory in the script as needed, then run directly.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># First enter the LightRFT root directory</span>
+<span class="nb">cd</span><span class="w"> </span>LightRFT
+
+<span class="c1"># Train SRM for Vision-Language Models</span>
+bash<span class="w"> </span>examples/srm_training/run_srm_vl.sh
+
+<span class="c1"># Train SRM for Audio-Language Models</span>
+bash<span class="w"> </span>examples/srm_training/run_srm_al.sh
+
+<span class="c1"># Train GRM for Vision-Language Models</span>
+bash<span class="w"> </span>examples/grm_training/run_grm_vl.sh
+</pre></div>
+</div>
+<p>Notes:</p>
+<ul class="simple">
+<li><p>The scripts have built-in recommended configurations.</p></li>
+<li><p>Supports single-node multi-GPU execution, launched by <code class="docutils literal notranslate"><span class="pre">torchrun</span></code> by default; for distributed multi-node execution, please set environment variables like <code class="docutils literal notranslate"><span class="pre">NNODES</span></code>, <code class="docutils literal notranslate"><span class="pre">MASTER_ADDR/PORT</span></code> at the top of the script according to the comments.</p></li>
+</ul>
+<p>Below are the detailed commands and key parameter explanations based on our experimental settings.</p>
+</section>
+<section id="training-scalar-reward-model-srm">
+<h3>4.1 Training Scalar Reward Model (SRM)<a class="headerlink" href="#training-scalar-reward-model-srm" title="Permalink to this heading">¶</a></h3>
+<section id="basic-training-script-based-on-t2i-experiment">
+<h4>4.1.1 Basic Training Script (Based on T2I Experiment)<a class="headerlink" href="#basic-training-script-based-on-t2i-experiment" title="Permalink to this heading">¶</a></h4>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/bin/bash</span>
+
+<span class="c1"># Set environment variables</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">GPUS_PER_NODE</span><span class="o">=</span><span class="m">2</span><span class="w">              </span><span class="c1"># Number of GPUs per node</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">NNODES</span><span class="o">=</span><span class="m">1</span><span class="w">                     </span><span class="c1"># Number of nodes</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">NODE_RANK</span><span class="o">=</span><span class="m">0</span><span class="w">                  </span><span class="c1"># Rank of the current node</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">MASTER_ADDR</span><span class="o">=</span><span class="m">127</span>.0.0.1<span class="w">        </span><span class="c1"># Master node address</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">MASTER_PORT</span><span class="o">=</span><span class="m">29500</span><span class="w">            </span><span class="c1"># Master node port</span>
+
+<span class="c1"># Training parameters</span>
+<span class="nv">PRETRAIN</span><span class="o">=</span><span class="s2">&quot;Qwen/Qwen2.5-VL-3B&quot;</span>
+<span class="c1"># Use HPDv3 Train Set and Test Set</span>
+<span class="nv">TRAIN_DATA</span><span class="o">=</span><span class="s2">&quot;/path/to/hpdv3/train.json&quot;</span>
+<span class="nv">EVAL_DATA</span><span class="o">=</span><span class="s2">&quot;/path/to/hpdv3/test.json&quot;</span>
+<span class="nv">SAVE_PATH</span><span class="o">=</span><span class="s2">&quot;./checkpoints/srm_qwen2.5vl_3b_hpdv3&quot;</span>
+
+<span class="c1"># Set Task Instruction</span>
+<span class="nv">TASK_INSTRUCTION</span><span class="o">=</span><span class="s2">&quot;Your will act as an expert image evaluator for text-to-image generation.</span>
+<span class="s2">Given a text prompt and a generated image, your task is to assess the overall quality of the image in relation to the prompt.</span>
+<span class="s2">Your evaluation should focus on the following key aspects:</span>
+<span class="s2">• Preference: Which image would a human viewer find more satisfying or visually appealing overall.</span>
+<span class="s2">• Alignment: How well the image content matches the given text prompt in semantics, objects, and attributes.</span>
+<span class="s2">Your task is provided in the following, please give your judgement based on above criteria.</span>
+<span class="s2">The prompt used for generation is as follows: {prompt}.</span>
+<span class="s2">&quot;</span>
+
+<span class="c1"># Start training</span>
+<span class="nb">set</span><span class="w"> </span>-x
+
+torchrun<span class="w"> </span>--nnodes<span class="w"> </span><span class="nv">$NNODES</span><span class="w"> </span>--nproc-per-node<span class="w"> </span><span class="nv">$GPUS_PER_NODE</span><span class="w"> </span>--node_rank<span class="w"> </span><span class="nv">$NODE_RANK</span><span class="w"> </span>--master-port<span class="w"> </span><span class="nv">$MASTER_PORT</span><span class="w"> </span>--master-addr<span class="w"> </span><span class="nv">$MASTER_ADDR</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>examples/demo_srm_training/train_srm_vl.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--pretrain<span class="w"> </span><span class="nv">$PRETRAIN</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--train_data<span class="w"> </span><span class="nv">$TRAIN_DATA</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--save_path<span class="w"> </span><span class="nv">$SAVE_PATH</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--ckpt_path<span class="w"> </span><span class="nv">$SAVE_PATH</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--train_batch_size<span class="w"> </span><span class="m">32</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--micro_train_batch_size<span class="w"> </span><span class="m">2</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--max_epochs<span class="w"> </span><span class="m">5</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--actor_learning_rate<span class="w"> </span>1e-5<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--lr_warmup_ratio<span class="w"> </span><span class="m">0</span>.05<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--prompt_max_len<span class="w"> </span><span class="m">2048</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--pooling_method<span class="w"> </span>attn<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--probing_layer<span class="w"> </span>-1<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--heads_types<span class="w"> </span>preference<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--scale_for_train<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--margin<span class="w"> </span><span class="m">0</span>.1<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--task_instruction<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$TASK_INSTRUCTION</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--loss_type<span class="w"> </span>hps<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--zero_stage<span class="w"> </span><span class="m">2</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--bf16<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--flash_attn<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--gradient_checkpointing<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--logging_steps<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--save_steps<span class="w"> </span><span class="m">100</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--use_wandb<span class="w"> </span><span class="s2">&quot;your_wandb_key&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--wandb_project<span class="w"> </span><span class="s2">&quot;reward_model_training&quot;</span>
+</pre></div>
+</div>
+</section>
+<section id="key-parameter-explanation">
+<h4>4.1.2 Key Parameter Explanation<a class="headerlink" href="#key-parameter-explanation" title="Permalink to this heading">¶</a></h4>
+<p><strong>Model Parameters:</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">--pretrain</span></code>: Path to the pre-trained model. <code class="docutils literal notranslate"><span class="pre">Qwen/Qwen2.5-VL-3B</span></code> is used in the experiment.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--pooling_method</span></code>:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">attn</span></code>: Use attention pooling (<strong>Used in experiment, Recommended</strong>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">last</span></code>: Use the last token.</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--probing_layer</span></code>: From which layer to extract features as input for the reward head.</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">-1</span></code>: The last layer (<strong>Used in experiment, Default</strong>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">17</span></code>: The 17th layer (can be tried as a variant).</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--heads_types</span></code>: Reward head types, defaults to only <code class="docutils literal notranslate"><span class="pre">preference</span></code>.
+Can be set to multiple dimensions, e.g., <code class="docutils literal notranslate"><span class="pre">preference</span> <span class="pre">alignment</span> <span class="pre">coherence</span></code>.
+Ensure the data contains corresponding labels.</p></li>
+</ul>
+<p><strong>Training Parameters:</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">--train_batch_size</span></code>: Global batch size. T2I experiment set to <code class="docutils literal notranslate"><span class="pre">32</span></code>, T2V experiment set to <code class="docutils literal notranslate"><span class="pre">8</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--micro_train_batch_size</span></code>: Batch size per GPU.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--actor_learning_rate</span></code>: Learning rate. <strong><code class="docutils literal notranslate"><span class="pre">1e-5</span></code> is used for full fine-tuning in experiments</strong>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--video_fps</span></code>: Sampling frame rate for video data, set to <code class="docutils literal notranslate"><span class="pre">2.0</span></code> in T2V experiments.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--scale_for_train</span></code>: Enable learnable scaling factor during training.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--margin</span></code>: Margin value used in BT Loss, invalid for HPS and LogExp.</p></li>
+</ul>
+<p><strong>Prompt Related:</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">--task_instruction</span></code>: Task instruction to guide the reward model in understanding evaluation criteria. Set to the example content above for T2I in experiments.</p></li>
+</ul>
+<p><strong>Training Logging:</strong>
+LightRFT supports multiple training logging methods:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">--use_wandb</span></code>: Enable Weights &amp; Biases for training logging.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--use_tensorboard</span></code>: Enable TensorBoard for training logging and save to the specified path.
+Enable by adding <code class="docutils literal notranslate"><span class="pre">--use_tensorboard</span> <span class="pre">&quot;path/to/logs&quot;</span></code>.</p></li>
+</ul>
+<p><strong>Loss Function:</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">--loss_type</span></code>:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">hps</span></code>: Use HPS Scale Loss (<strong>Used in experiment, Default</strong>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">sigmoid</span></code>: Use BT (Bradley-Terry) Loss.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">logexp</span></code>: Use LogExp Loss.</p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="lora-training">
+<h4>4.1.3 LoRA Training<a class="headerlink" href="#lora-training" title="Permalink to this heading">¶</a></h4>
+<p>For large models (&gt; 7B) or VRAM-constrained situations, using LoRA is recommended:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>examples/demo_srm_training/train_srm.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--pretrain<span class="w"> </span><span class="s2">&quot;Qwen/Qwen2.5-VL-72B-Instruct&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>...<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--lora_rank<span class="w"> </span><span class="m">64</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--lora_alpha<span class="w"> </span><span class="m">128</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--lora_dropout<span class="w"> </span><span class="m">0</span>.1<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--target_modules<span class="w"> </span>all-linear<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--zero_stage<span class="w"> </span><span class="m">2</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="training-generative-reward-model-grm">
+<h3>4.2 Training Generative Reward Model (GRM)<a class="headerlink" href="#training-generative-reward-model-grm" title="Permalink to this heading">¶</a></h3>
+<section id="id4">
+<h4>4.2.1 Basic Training Script (Based on T2I Experiment)<a class="headerlink" href="#id4" title="Permalink to this heading">¶</a></h4>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/bin/bash</span>
+
+<span class="nv">PRETRAIN</span><span class="o">=</span><span class="s2">&quot;Qwen/Qwen2.5-VL-3B&quot;</span>
+<span class="nv">TRAIN_DATA</span><span class="o">=</span><span class="s2">&quot;/path/to/ImageGen-CoT-Reward-5K.json&quot;</span>
+<span class="nv">SAVE_PATH</span><span class="o">=</span><span class="s2">&quot;./checkpoints/grm_qwen2.5vl_3b&quot;</span>
+
+torchrun<span class="w"> </span>--nnodes<span class="w"> </span><span class="nv">$NNODES</span><span class="w"> </span>--nproc-per-node<span class="w"> </span><span class="nv">$GPUS_PER_NODE</span><span class="w"> </span>--node_rank<span class="w"> </span><span class="nv">$NODE_RANK</span><span class="w"> </span>--master-port<span class="w"> </span><span class="nv">$MASTER_PORT</span><span class="w"> </span>--master-addr<span class="w"> </span><span class="nv">$MASTER_ADDR</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>examples/demo_grm_training/train_grm_vl.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--pretrain<span class="w"> </span><span class="nv">$PRETRAIN</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--train_data<span class="w"> </span><span class="nv">$TRAIN_DATA</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--save_path<span class="w"> </span><span class="nv">$SAVE_PATH</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--ckpt_path<span class="w"> </span><span class="nv">$SAVE_PATH</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--train_batch_size<span class="w"> </span><span class="m">4</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--micro_train_batch_size<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--max_epochs<span class="w"> </span><span class="m">2</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--actor_learning_rate<span class="w"> </span>1e-5<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--prompt_max_len<span class="w"> </span><span class="m">4096</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--zero_stage<span class="w"> </span><span class="m">2</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--bf16<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--flash_attn<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--gradient_checkpointing<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--logging_steps<span class="w"> </span><span class="m">10</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--save_steps<span class="w"> </span><span class="m">500</span>
+</pre></div>
+</div>
+<p><strong>Notes:</strong></p>
+<ul class="simple">
+<li><p>GRM usually requires a longer sequence length (<code class="docutils literal notranslate"><span class="pre">--prompt_max_len</span> <span class="pre">4096</span></code>) to accommodate CoT text.</p></li>
+<li><p>Due to the long sequence, the batch size needs to be reduced accordingly; <code class="docutils literal notranslate"><span class="pre">4</span></code> is used in experiments.</p></li>
+<li><p>The learning rate is consistent with the SRM experiment (<code class="docutils literal notranslate"><span class="pre">1e-5</span></code>).</p></li>
+</ul>
+</section>
+</section>
+</section>
+<hr class="docutils" />
+<section id="model-evaluation">
+<h2>5. Model Evaluation<a class="headerlink" href="#model-evaluation" title="Permalink to this heading">¶</a></h2>
+<section id="model-conversion">
+<h3>5.1 Model Conversion<a class="headerlink" href="#model-conversion" title="Permalink to this heading">¶</a></h3>
+<p>Our training scripts use DeepSpeed ZeRO as the training engine by default. DeepSpeed formatted checkpoints are saved during training, so they need to be converted to the standard HuggingFace format for inference and evaluation.</p>
+<p>For SRM models, we recommend using the following script for conversion:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>examples/ckpt_scripts/ds2hf.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--hf_base<span class="w"> </span>/path/to/base/model<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--model_type<span class="w"> </span>srm_vl<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--checkpoint_dir<span class="w"> </span>/path/to/deepspeed/checkpoint/dir<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--output_dir<span class="w"> </span>/path/to/output/huggingface/output/dir<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--scale_for_train<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--pooling_method<span class="w"> </span>attn<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--heads_types<span class="w"> </span>preference
+</pre></div>
+</div>
+<p>For GRM models, the following script can be used for conversion:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>examples/ckpt_scripts/ds2hf.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--hf_base<span class="w"> </span>/path/to/base/model<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--model_type<span class="w"> </span>grm<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--checkpoint_dir<span class="w"> </span>/path/to/deepspeed/checkpoint/dir<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--output_dir<span class="w"> </span>/path/to/output/huggingface/output/dir
+</pre></div>
+</div>
+</section>
+<section id="evaluation-data-preparation">
+<h3>5.2 Evaluation Data Preparation<a class="headerlink" href="#evaluation-data-preparation" title="Permalink to this heading">¶</a></h3>
+<p>The evaluation data format is the same as the training data but should be an independent test set.</p>
+<p><strong>Evaluation sets used in experiments:</strong></p>
+<ul class="simple">
+<li><p><strong>Text-to-Image (T2I) Tasks</strong></p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">OmniReward-Bench-T2I</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">HPDv3</span> <span class="pre">Test</span> <span class="pre">Set</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ImageRewardDB</span> <span class="pre">Test</span> <span class="pre">Set</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">GenAI-Bench</span></code></p></li>
+</ul>
+</li>
+<li><p><strong>Text-to-Video (T2V) Tasks</strong></p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">OmniReward-Bench-T2V</span></code></p></li>
+</ul>
+</li>
+<li><p><strong>Text-to-Audio (T2A) Tasks</strong></p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">OmniReward-Bench-T2A</span></code></p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="evaluation-script-example">
+<h3>5.3 Evaluation Script Example<a class="headerlink" href="#evaluation-script-example" title="Permalink to this heading">¶</a></h3>
+<p>We provide evaluation scripts <code class="docutils literal notranslate"><span class="pre">test_srm_vl.py</span></code> and <code class="docutils literal notranslate"><span class="pre">test_grm_vl.py</span></code> in the <code class="docutils literal notranslate"><span class="pre">examples/demo_srm_training</span></code> and <code class="docutils literal notranslate"><span class="pre">examples/demo_grm_training</span></code> directories respectively, for benchmarking SRM and GRM. The evaluation scripts implement corresponding Evaluator classes for different benchmarks. Implementing custom Evaluators to adapt to new evaluation needs is supported.</p>
+<p>Additionally, specifying evaluation data in the training script is also supported to implement periodic evaluation during the training process:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>--eval_data<span class="w"> </span><span class="s2">&quot;/path/to/your/eval.json&quot;</span><span class="w"> </span><span class="se">\</span>
+--eval_steps<span class="w"> </span><span class="m">100</span><span class="w">  </span><span class="c1"># Evaluate every 100 steps</span>
+</pre></div>
+</div>
+<p>When enabled, evaluation will be performed at the specified steps during training, and the results will be recorded in a jsonl file under the save_path.</p>
+</section>
+<section id="evaluation-metrics">
+<h3>5.4 Evaluation Metrics<a class="headerlink" href="#evaluation-metrics" title="Permalink to this heading">¶</a></h3>
+<section id="srm-evaluation">
+<h4>5.4.1 SRM Evaluation<a class="headerlink" href="#srm-evaluation" title="Permalink to this heading">¶</a></h4>
+<ul class="simple">
+<li><p><strong>Accuracy</strong>: The proportion where score of chosen sample &gt; score of reject sample. This is the core metric in our experiments.</p></li>
+<li><p><strong>Mean Reward Gap</strong>: <code class="docutils literal notranslate"><span class="pre">mean(score_chosen</span> <span class="pre">-</span> <span class="pre">score_reject)</span></code>.</p></li>
+<li><p><strong>Score Distribution</strong>: Analyze the distribution of scores given by the model for chosen/rejected samples.</p></li>
+</ul>
+</section>
+<section id="grm-evaluation">
+<h4>5.4.2 GRM Evaluation<a class="headerlink" href="#grm-evaluation" title="Permalink to this heading">¶</a></h4>
+<ul class="simple">
+<li><p><strong>Ranking Accuracy</strong>: Calculate consistency with real preferences by parsing the <code class="docutils literal notranslate"><span class="pre">&lt;answer&gt;</span></code> tag in the generated text.</p></li>
+</ul>
+</section>
+</section>
+<section id="benchmarks">
+<h3>5.5 Benchmarks<a class="headerlink" href="#benchmarks" title="Permalink to this heading">¶</a></h3>
+<p>We conducted a series of benchmarks based on the <code class="docutils literal notranslate"><span class="pre">Qwen2.5-VL-3B</span></code> model. For detailed settings and results, please refer to <strong>Section 7: Benchmarks &amp; Performance</strong>.</p>
+</section>
+</section>
+<hr class="docutils" />
+<section id="faq">
+<h2>6. FAQ<a class="headerlink" href="#faq" title="Permalink to this heading">¶</a></h2>
+<section id="training-issues">
+<h3>6.1 Training Issues<a class="headerlink" href="#training-issues" title="Permalink to this heading">¶</a></h3>
+<section id="q1-oom-out-of-memory">
+<h4>Q1: OOM (Out of Memory)<a class="headerlink" href="#q1-oom-out-of-memory" title="Permalink to this heading">¶</a></h4>
+<p><strong>Solutions:</strong></p>
+<ol class="arabic simple">
+<li><p><strong>Reduce batch size:</strong> <code class="docutils literal notranslate"><span class="pre">--micro_train_batch_size</span> <span class="pre">1</span></code>.</p></li>
+<li><p><strong>Enable gradient checkpointing:</strong> <code class="docutils literal notranslate"><span class="pre">--gradient_checkpointing</span></code>.</p></li>
+<li><p><strong>Use higher ZeRO stage:</strong> <code class="docutils literal notranslate"><span class="pre">--zero_stage</span> <span class="pre">3</span> <span class="pre">--adam_offload</span></code>.</p></li>
+<li><p><strong>Use LoRA:</strong> <code class="docutils literal notranslate"><span class="pre">--lora_rank</span> <span class="pre">32</span></code>.</p></li>
+<li><p><strong>Reduce sequence length:</strong> <code class="docutils literal notranslate"><span class="pre">--prompt_max_len</span> <span class="pre">1024</span></code>.</p></li>
+<li><p><strong>Use BF16/FP16:</strong> <code class="docutils literal notranslate"><span class="pre">--bf16</span></code>.</p></li>
+</ol>
+</section>
+<section id="q2-unstable-training-loss-not-decreasing">
+<h4>Q2: Unstable Training/Loss Not Decreasing<a class="headerlink" href="#q2-unstable-training-loss-not-decreasing" title="Permalink to this heading">¶</a></h4>
+<p><strong>Possible Causes and Solutions:</strong></p>
+<ol class="arabic simple">
+<li><p><strong>Inappropriate Learning Rate:</strong> For full fine-tuning, <code class="docutils literal notranslate"><span class="pre">1e-5</span></code> is a good starting point. If the model is larger or data is scarce, try <code class="docutils literal notranslate"><span class="pre">5e-6</span></code> or <code class="docutils literal notranslate"><span class="pre">1e-6</span></code>.</p></li>
+<li><p><strong>Data Issues:</strong> Check if data cleaning steps are adequate and labels are accurate.</p></li>
+<li><p><strong>Gradient Explosion:</strong> Try adding gradient clipping.</p></li>
+<li><p><strong>Insufficient Warmup:</strong> Ensure <code class="docutils literal notranslate"><span class="pre">--lr_warmup_ratio</span></code> is set reasonably (e.g., <code class="docutils literal notranslate"><span class="pre">0.05</span></code>).</p></li>
+</ol>
+</section>
+</section>
+<section id="inference-issues">
+<h3>6.2 Inference Issues<a class="headerlink" href="#inference-issues" title="Permalink to this heading">¶</a></h3>
+<section id="q3-how-to-use-the-trained-model-for-inference">
+<h4>Q3: How to use the trained model for inference<a class="headerlink" href="#q3-how-to-use-the-trained-model-for-inference" title="Permalink to this heading">¶</a></h4>
+<p>We provide inference script examples for SRM and GRM in <code class="docutils literal notranslate"><span class="pre">examples/demo_srm_training/srm_vl_inference.py</span></code> and <code class="docutils literal notranslate"><span class="pre">examples/demo_grm_training/grm_vl_inference.py</span></code>.
+Please refer to the usage instructions in the scripts, modify the model path and input data as needed to perform inference.</p>
+</section>
+</section>
+<section id="dataset-issues">
+<h3>6.3 Dataset Issues<a class="headerlink" href="#dataset-issues" title="Permalink to this heading">¶</a></h3>
+<section id="q4-how-to-use-your-own-dataset-for-training">
+<h4>Q4: How to use your own dataset for training<a class="headerlink" href="#q4-how-to-use-your-own-dataset-for-training" title="Permalink to this heading">¶</a></h4>
+<p>LightRFT uses the Data Handler pattern, supporting various datasets by implementing corresponding Data Handler classes for different datasets, thereby achieving flexible data loading and preprocessing.</p>
+<section id="implement-a-custom-data-handler">
+<h5>Implement a Custom Data Handler<a class="headerlink" href="#implement-a-custom-data-handler" title="Permalink to this heading">¶</a></h5>
+<ol class="arabic simple">
+<li><p><strong>Inherit BaseDataHandler</strong>:
+Create a new Python class inheriting from <code class="docutils literal notranslate"><span class="pre">lightrft.datasets.BaseDataHandler</span></code>.</p></li>
+<li><p><strong>Implement Necessary Methods</strong>:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">load_data</span></code>: Load all data items from data configuration files (like json, parquet, etc.) or folders. Return a list of raw data items.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">get_media_info</span></code>: Extract path information of all media information (images, videos, and audio, etc.) from raw data items.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">parse_item</span></code>: Parse raw data items and loaded visual content into standard formats suitable for model input, and return a dictionary containing other necessary information such as labels.</p></li>
+</ul>
+</li>
+<li><p><strong>Register Data Handler</strong>:
+Register your Data Handler class in the <code class="docutils literal notranslate"><span class="pre">self.handlers</span></code> dictionary in <code class="docutils literal notranslate"><span class="pre">srm_dataset</span></code> or <code class="docutils literal notranslate"><span class="pre">grm_dataset</span></code> of the <code class="docutils literal notranslate"><span class="pre">lightrft.datasets</span></code> module.</p></li>
+</ol>
+</section>
+<section id="data-format">
+<h5>Data Format<a class="headerlink" href="#data-format" title="Permalink to this heading">¶</a></h5>
+<section id="srm-data-format">
+<h6>SRM Data Format<a class="headerlink" href="#srm-data-format" title="Permalink to this heading">¶</a></h6>
+<p><strong>A typical format example</strong> (JSON Lines):</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;prompt&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;A beautiful sunset over the ocean&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;image_0&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/path/to/image0.jpg&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;image_1&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/path/to/image1.jpg&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;preference&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;A&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;alignment&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;B&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>Label Explanation:</strong>
+We use the following labels for preference training.</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;A&quot;</span></code>: image_0/response_0 is better</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;B&quot;</span></code>: image_1/response_1 is better</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;C&quot;</span></code>: Both are comparable</p></li>
+</ul>
+</section>
+<section id="grm-data-format">
+<h6>GRM Data Format<a class="headerlink" href="#grm-data-format" title="Permalink to this heading">¶</a></h6>
+<p>GRM training data needs to include text evaluations generated by the model, typically containing Chain-of-Thought and final conclusions, to facilitate supervised fine-tuning training based on Next-Token Prediction.</p>
+<p><strong>A data format example</strong> (JSON Lines):</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;prompt&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Describe this image&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;image_0&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/path/to/image0.jpg&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;image_1&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/path/to/image1.jpg&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;response&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&lt;think&gt;Reasoning here&lt;/think&gt;&lt;answer&gt;Image 1 is better&lt;/answer&gt;&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Typically, <code class="docutils literal notranslate"><span class="pre">response</span></code> contains <code class="docutils literal notranslate"><span class="pre">&lt;think&gt;</span></code> and <code class="docutils literal notranslate"><span class="pre">&lt;answer&gt;</span></code> tags for training the model to generate structured evaluations and final judgments, and to facilitate text parsing.
+You can also design different tagging systems according to your needs.</p>
+</section>
+</section>
+<section id="dataset-organization">
+<h5>Dataset Organization<a class="headerlink" href="#dataset-organization" title="Permalink to this heading">¶</a></h5>
+<p><strong>Recommended Directory Structure:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>/data/reward_model/
+├── datasets/
+│   ├── HPDv3/
+│   │   ├── train.json
+│   │   ├── test.json
+│   │   └── images/
+│   │       ├── img_001.jpg
+│   │       ├── img_002.jpg
+│   │       └── ... 
+│   │   
+│   ├── ImageGen-CoT-Reward-5K/
+│   │   ├── train.json
+│   │   └── images/
+│   │       ├── img_001.jpg
+│   │       ├── img_002.jpg
+│   │       └── ...
+│   │
+│   ├── rapidata-text-2-video-human-preferences-pika2.2/
+│   │   ├── train.parquet
+│   │   └── videos/
+│   │       ├── vid_001.mp4
+│   │       ├── vid_002.mp4
+│   │       └── ...
+│   │
+└── ...
+</pre></div>
+</div>
+</section>
+<section id="data-preprocessing">
+<h5>Data Preprocessing<a class="headerlink" href="#data-preprocessing" title="Permalink to this heading">¶</a></h5>
+<section id="visual-data-preprocessing">
+<h6>Visual Data Preprocessing<a class="headerlink" href="#visual-data-preprocessing" title="Permalink to this heading">¶</a></h6>
+<ul class="simple">
+<li><p>Images should be stored in JPEG/PNG/webp format.</p></li>
+<li><p>Recommended resolution: 224x224 to 1024x1024.</p></li>
+<li><p>Video frame rate: Set to 2.0 FPS in experiments (specified via –fps in config).</p></li>
+</ul>
+</section>
+<section id="data-cleaning">
+<h6>Data Cleaning<a class="headerlink" href="#data-cleaning" title="Permalink to this heading">¶</a></h6>
+<p><strong>Must Check:</strong></p>
+<ol class="arabic simple">
+<li><p>✅ Do all file paths exist?</p></li>
+<li><p>✅ Are labels valid (A/B/C)?</p></li>
+<li><p>✅ Are images readable?</p></li>
+<li><p>✅ Does text contain special characters?</p></li>
+</ol>
+<p><strong>Example Script:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">PIL</span><span class="w"> </span><span class="kn">import</span> <span class="n">Image</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">validate_dataset</span><span class="p">(</span><span class="n">json_path</span><span class="p">):</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">json_path</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">line_no</span><span class="p">,</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">item</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+            <span class="c1"># Check according to your data format...</span>
+            <span class="c1"># ...</span>
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+</section>
+</section>
+<hr class="docutils" />
+<section id="benchmarks-performance">
+<h2>7. Benchmarks &amp; Performance<a class="headerlink" href="#benchmarks-performance" title="Permalink to this heading">¶</a></h2>
+<p>This section provides preliminary experimental results for SRM and GRM models based on the LightRFT framework, which can serve as a performance reference for training.</p>
+<section id="scalar-reward-model-srm-experiments">
+<h3>7.1 Scalar Reward Model (SRM) Experiments<a class="headerlink" href="#scalar-reward-model-srm-experiments" title="Permalink to this heading">¶</a></h3>
+<section id="text-to-image-t2i-task-performance">
+<h4>7.1.2 Text-to-Image (T2I) Task Performance<a class="headerlink" href="#text-to-image-t2i-task-performance" title="Permalink to this heading">¶</a></h4>
+<p><strong>Experimental Settings</strong></p>
+<ul>
+<li><p><strong>Base Model</strong>: <code class="docutils literal notranslate"><span class="pre">Qwen2.5-VL-3B</span></code></p></li>
+<li><p><strong>Training Method</strong>: Full fine-tuning</p></li>
+<li><p><strong>Batch Size</strong>: Global Batch Size <code class="docutils literal notranslate"><span class="pre">32</span></code>, Micro Batch Size per card <code class="docutils literal notranslate"><span class="pre">4</span></code></p></li>
+<li><p><strong>Max Training Epochs</strong>: All experiments trained for <code class="docutils literal notranslate"><span class="pre">5</span></code> Epochs. We evaluate the checkpoint at 2000 global steps.</p></li>
+<li><p><strong>Learning Rate</strong>: <code class="docutils literal notranslate"><span class="pre">1e-5</span></code></p></li>
+<li><p><strong>Reward Head</strong>: Single Preference Head, outputs overall preference score</p></li>
+<li><p><strong>Hardware</strong>: Dual NVIDIA H200 (140GBx2)</p></li>
+<li><p><strong>Task Instruction</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Your will act as an expert image evaluator for text-to-image generation.
+Given a text prompt and a generated image, your task is to assess the overall quality of the image in relation to the prompt.
+Your evaluation should focus on the following key aspects:
+• Preference: Which image would a human viewer find more satisfying or visually appealing overall.
+• Alignment: How well the image content matches the given text prompt in semantics, objects, and attributes.
+Your task is provided in the following, please give your judgement based on above criteria.
+The prompt used for generation is as follows: {prompt}.
+</pre></div>
+</div>
+</li>
+</ul>
+<p><strong>Training Data</strong>:</p>
+<ul class="simple">
+<li><p><strong>HPDv3 Subset</strong>: Approximately ~57K pairs randomly sampled from HPDv3-Train. Original HPDv3 contains about 1.17M pairs; due to resource constraints, we used a subset for training.</p></li>
+</ul>
+<p><strong>Evaluation Data</strong>:</p>
+<ul class="simple">
+<li><p><strong>OmniReward-Bench-T2I</strong>: Text-to-Image evaluation subset in OmniReward-Bench.</p></li>
+<li><p><strong>HPDv3 Test Set</strong>: The test set part of the HPDv3 dataset.</p></li>
+<li><p><strong>ImageRewardDB Test Set</strong>: The test set part of the ImageRewardDB dataset.</p></li>
+</ul>
+<p><strong>Test Results</strong>:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head text-left"><p>Model Variant</p></th>
+<th class="head text-left"><p>Loss Function</p></th>
+<th class="head text-left"><p>Scale for Train</p></th>
+<th class="head text-left"><p>Pooling Method</p></th>
+<th class="head text-left"><p>Probing Layer</p></th>
+<th class="head text-left"><p>OmniReward-Bench-T2I (Acc)</p></th>
+<th class="head text-left"><p>HPDv3 Test (Acc)</p></th>
+<th class="head text-left"><p>ImageRewardDB (Acc)</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td class="text-left"><p><strong>HPS</strong></p></td>
+<td class="text-left"><p>HPS</p></td>
+<td class="text-left"><p>No</p></td>
+<td class="text-left"><p>attn</p></td>
+<td class="text-left"><p>-1</p></td>
+<td class="text-left"><p>31.83%</p></td>
+<td class="text-left"><p>53.84%</p></td>
+<td class="text-left"><p>41.93%</p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p><strong>BT</strong></p></td>
+<td class="text-left"><p>BT</p></td>
+<td class="text-left"><p>No</p></td>
+<td class="text-left"><p>attn</p></td>
+<td class="text-left"><p>-1</p></td>
+<td class="text-left"><p>30.06%</p></td>
+<td class="text-left"><p>60.54%</p></td>
+<td class="text-left"><p>42.51%</p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p><strong>BT Scale</strong></p></td>
+<td class="text-left"><p>BT</p></td>
+<td class="text-left"><p>Yes</p></td>
+<td class="text-left"><p>attn</p></td>
+<td class="text-left"><p>-1</p></td>
+<td class="text-left"><p>53.83%</p></td>
+<td class="text-left"><p>69.74%</p></td>
+<td class="text-left"><p>58.98%</p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p><strong>HPS Scale</strong></p></td>
+<td class="text-left"><p>HPS</p></td>
+<td class="text-left"><p>Yes</p></td>
+<td class="text-left"><p>attn</p></td>
+<td class="text-left"><p>-1</p></td>
+<td class="text-left"><p>55.21%</p></td>
+<td class="text-left"><p><strong>72.35%</strong></p></td>
+<td class="text-left"><p><strong>61.37%</strong></p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p><strong>HPS + BT Scale</strong></p></td>
+<td class="text-left"><p>HPS + BT</p></td>
+<td class="text-left"><p>Yes</p></td>
+<td class="text-left"><p>attn</p></td>
+<td class="text-left"><p>-1</p></td>
+<td class="text-left"><p><strong>56.19%</strong></p></td>
+<td class="text-left"><p>68.86%</p></td>
+<td class="text-left"><p>59.48%</p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p><strong>HPS Scale Probing 17</strong></p></td>
+<td class="text-left"><p>HPS + BT</p></td>
+<td class="text-left"><p>Yes</p></td>
+<td class="text-left"><p>attn</p></td>
+<td class="text-left"><p>17</p></td>
+<td class="text-left"><p>55.21%</p></td>
+<td class="text-left"><p>71.4%</p></td>
+<td class="text-left"><p>57.37%</p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p><strong>HPS Scale Last</strong></p></td>
+<td class="text-left"><p>HPS + BT</p></td>
+<td class="text-left"><p>Yes</p></td>
+<td class="text-left"><p>last</p></td>
+<td class="text-left"><p>-1</p></td>
+<td class="text-left"><p>48.92%</p></td>
+<td class="text-left"><p>70.10%</p></td>
+<td class="text-left"><p>59.12%</p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p>—</p></td>
+<td class="text-left"><p>—</p></td>
+<td class="text-left"><p>—</p></td>
+<td class="text-left"><p>—</p></td>
+<td class="text-left"><p>—</p></td>
+<td class="text-left"><p>—</p></td>
+<td class="text-left"><p>—</p></td>
+<td class="text-left"><p>—</p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p><em>Baseline: HPSv3 (Qwen2VL-7B)</em></p></td>
+<td class="text-left"><p>-</p></td>
+<td class="text-left"><p>-</p></td>
+<td class="text-left"><p>-</p></td>
+<td class="text-left"><p>-</p></td>
+<td class="text-left"><p><em>76.9%</em></p></td>
+<td class="text-left"><p><em>66.8%</em></p></td>
+<td class="text-left"><p>-</p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p><em>Baseline: ImageReward (BLIP)</em></p></td>
+<td class="text-left"><p>-</p></td>
+<td class="text-left"><p>-</p></td>
+<td class="text-left"><p>-</p></td>
+<td class="text-left"><p>-</p></td>
+<td class="text-left"><p><em>58.6%</em></p></td>
+<td class="text-left"><p><em>65.1%</em></p></td>
+<td class="text-left"><p>-</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Training Logs</strong>:</p>
+<ul class="simple">
+<li><p><strong>Comparison of training with different loss functions</strong>:</p>
+<ul>
+<li><p>HPS Loss (Red line) vs. BT (Grey line) vs. HPS Scale (Light blue line) vs. BT Scale (Dark blue line)
+<img alt="Training Loss Curves" src="../_images/srm_t2i_train_loss.png" />
+<img alt="Accuracy Curves" src="../_images/srm_t2i_prefer_acc_mean.png" /></p></li>
+<li><p><strong>Observations</strong>:</p>
+<ul>
+<li><p>For both HPS and BT loss functions, enabling the learnable scaling factor (Scale for Train) significantly improved training stability and final performance.</p></li>
+<li><p>With Scale for Train enabled, the loss function curves of HPS and BT are basically consistent, but in terms of evaluation accuracy, HPS plus Scale significantly outperforms BT.</p></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><strong>Pooling Method Comparison</strong>:</p>
+<ul>
+<li><p>We compared different Pooling methods on the HPS Scale configuration.</p></li>
+<li><p>Attention Pooling (Light blue line) vs. Last Token Pooling (Pink line)</p></li>
+<li><p><strong>Observations</strong>: From the training loss curves, the convergence speed of the two pooling methods is similar, but in terms of evaluation accuracy, Attention Pooling is significantly better than Last Token Pooling.</p></li>
+</ul>
+</li>
+<li><p><strong>Probing Layer Comparison</strong>:</p>
+<ul>
+<li><p>We compared different Probing Layers on the HPS Scale configuration.
+Using Last Layer (Light blue line) vs. Middle Layer 17 (Orange line)</p></li>
+<li><p><strong>Observations</strong>: The training loss curves of both Probing Layers are quite close. However, in terms of evaluation accuracy, using the features of the last layer is better than the middle layer.</p></li>
+</ul>
+</li>
+</ul>
+<p><strong>Score Distribution</strong>:</p>
+<ul class="simple">
+<li><p>We visualized the score distribution of different models on OmniReward-Bench-T2I and HPDv3 Test datasets. It is quite obvious that without enabling Scale for Train, the model tends to give extreme scores (close to 0 or 1), while after enabling Scale for Train, the distribution of sample scores is more uniform.</p></li>
+<li><p><strong>Score Distribution on HPDv3 Test Dataset</strong>:</p>
+<ul>
+<li><p><img alt="HPS" src="../_images/hps_hpdv3_score_distribution.png" /></p></li>
+<li><p><img alt="HPS Scale" src="../_images/hpsscale_hpdv3_score_distribution.png" /></p></li>
+<li><p><img alt="BT" src="../_images/bt_hpdv3_score_distribution.png" /></p></li>
+<li><p><img alt="BT Scale" src="../_images/btscale_hpdv3_score_distribution.png" /></p></li>
+</ul>
+</li>
+<li><p><strong>Score Distribution on OmniReward-Bench-T2I Dataset</strong>:</p>
+<ul>
+<li><p><img alt="HPS" src="../_images/hps_omni_t2i_score_distribution.png" /></p></li>
+<li><p><img alt="HPS Scale" src="../_images/hpsscale_omni_t2i_score_distribution.png" /></p></li>
+<li><p><img alt="BT" src="../_images/bt_omni_t2i_score_distribution.png" /></p></li>
+<li><p><img alt="BT Scale" src="../_images/btscale_omni_t2i_score_distribution.png" /></p></li>
+</ul>
+</li>
+</ul>
+<p><strong>Conclusions and Analysis</strong>:</p>
+<ol class="arabic simple">
+<li><p><strong>Loss Function Selection</strong>: On T2I tasks, <strong>BT Loss</strong> is significantly better than HPS Loss. Using BT Loss with learnable temperature scaling (BT Scale) further improved performance. The hybrid loss combining HPS and BT (HPS + BT Scale) achieved the best results on OmniReward-Bench-T2I (56.39%).</p></li>
+<li><p><strong>Learnable Scaling Factor</strong>: Enabling <code class="docutils literal notranslate"><span class="pre">Scale</span> <span class="pre">for</span> <span class="pre">Train</span></code> (learnable scaling factor) significantly improved model performance, indicating that dynamically adjusting the distribution of reward scores is crucial for training more effective reward models. Specifically, HPS Loss improved significantly after enabling scaling, reaching 72.35% and 61.37% accuracy on HPDv3 Test and ImageRewardDB respectively.</p></li>
+<li><p><strong>Pooling Method</strong>: Attention Pooling significantly outperforms Last Token Pooling, indicating that weighted aggregation of tokens across the entire sequence helps improve the discriminative ability of the reward model.</p></li>
+<li><p><strong>Probing Layer Selection</strong>: Using features from the last layer (-1) and the middle layer (17) as input to the reward head showed similar results, but the last layer was slightly better.</p></li>
+<li><p><strong>Performance Comparison</strong>: Our 3B model, under the HPS Scale configuration and trained only on a small subset of data extracted from HPDv3, achieved 72.35% and 61.37% accuracy on HPDv3 Test and ImageRewardDB respectively, approaching previous SOTA results based on 7B models (76.9% and 66.8% respectively). This demonstrates the significant advantage of the LightRFT framework in training efficient and high-performance reward models.</p></li>
+</ol>
+</section>
+</section>
+<section id="text-to-audio-t2a-task-performance">
+<h3>7.1.3 Text-to-Audio (T2A) Task Performance<a class="headerlink" href="#text-to-audio-t2a-task-performance" title="Permalink to this heading">¶</a></h3>
+<p>We conducted preliminary experiments for the T2A task using the HPS Scale configuration which performed best in the T2I task.</p>
+<p><strong>Experimental Settings</strong></p>
+<ul>
+<li><p><strong>Training Method</strong>: Full fine-tuning</p></li>
+<li><p><strong>Batch Size</strong>: Global Batch Size <code class="docutils literal notranslate"><span class="pre">32</span></code>, Micro Batch Size per card <code class="docutils literal notranslate"><span class="pre">4</span></code></p></li>
+<li><p><strong>Max Training Epochs</strong>: All experiments trained for <code class="docutils literal notranslate"><span class="pre">5</span></code> Epochs. Checkpoint at 500 global steps taken for evaluation.</p></li>
+<li><p><strong>Learning Rate</strong>: <code class="docutils literal notranslate"><span class="pre">1e-5</span></code></p></li>
+<li><p><strong>Reward Head</strong>: Single Preference Head, outputs overall preference score</p></li>
+<li><p><strong>Hardware</strong>: Dual NVIDIA H200 (140GBx2)</p></li>
+<li><p><strong>Task Instruction</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>You will act as an expert audio evaluator for text-to-audio generation.
+Given a text prompt and a generated audio clip, your task is to assess the overall quality of the audio in relation to the prompt.
+Your evaluation should focus on the following key aspects:
+• Preference: Which audio would a human listener find more satisfying or acoustically pleasing overall (considering audio fidelity, clarity, and musicality/naturalness).
+• Alignment: How well the audio content matches the given text prompt in semantics, sound events, mood, and acoustic attributes (e.g., genre, tempo, instruments).
+Your task is provided in the following, please give your judgement based on above criteria.
+The prompt used for generation is as follows: {prompt}.
+</pre></div>
+</div>
+</li>
+</ul>
+<p><strong>Training Data</strong>:</p>
+<ul class="simple">
+<li><p><strong>Audio-Alpca</strong>: Contains 15K text-to-audio generation preference data.</p></li>
+</ul>
+<p><strong>Evaluation Data</strong>:</p>
+<ul class="simple">
+<li><p><strong>OmniReward-Bench-T2A</strong>: Text-to-Audio evaluation subset in OmniReward-Bench.</p></li>
+</ul>
+<p><strong>Test Results</strong>:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head text-left"><p>Variant</p></th>
+<th class="head text-left"><p>Base Model</p></th>
+<th class="head text-left"><p>Training Data</p></th>
+<th class="head text-left"><p>Loss Function</p></th>
+<th class="head text-left"><p>OmniReward-Bench-T2A (Acc)</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td class="text-left"><p><strong>Qwen2.5-Omni-HPS</strong></p></td>
+<td class="text-left"><p>Qwen2.5-Omni-3B</p></td>
+<td class="text-left"><p>Audio-Alpca</p></td>
+<td class="text-left"><p>HPS</p></td>
+<td class="text-left"><p>69.10%</p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p><strong>Qwen2-Audio-HPS</strong></p></td>
+<td class="text-left"><p>Qwen2-Audio-7B</p></td>
+<td class="text-left"><p>Audio-Alpca</p></td>
+<td class="text-left"><p>HPS</p></td>
+<td class="text-left"><p><em>70.07%</em></p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p><strong>MiniCPM_o-HPS</strong></p></td>
+<td class="text-left"><p>MiniCPM-o 2.6</p></td>
+<td class="text-left"><p>Audio-Alpca</p></td>
+<td class="text-left"><p>HPS</p></td>
+<td class="text-left"><p><strong>70.32%</strong></p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p>—</p></td>
+<td class="text-left"><p>—</p></td>
+<td class="text-left"><p>—</p></td>
+<td class="text-left"><p>—</p></td>
+<td class="text-left"><p>—</p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p><em>Baseline: Qwen2.5-Omni-7B</em></p></td>
+<td class="text-left"><p>-</p></td>
+<td class="text-left"><p>-</p></td>
+<td class="text-left"><p>-</p></td>
+<td class="text-left"><p>50.76%</p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p><em>Baseline: Gemini-2.0-Flash</em></p></td>
+<td class="text-left"><p>-</p></td>
+<td class="text-left"><p>-</p></td>
+<td class="text-left"><p>-</p></td>
+<td class="text-left"><p>60.86%</p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p><em>Baseline: Gemini-2.5-Flash</em></p></td>
+<td class="text-left"><p>-</p></td>
+<td class="text-left"><p>-</p></td>
+<td class="text-left"><p>-</p></td>
+<td class="text-left"><p>60.10%</p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p><em>Baseline: Gemini-2.5-Pro</em></p></td>
+<td class="text-left"><p>-</p></td>
+<td class="text-left"><p>-</p></td>
+<td class="text-left"><p>-</p></td>
+<td class="text-left"><p><em>65.41%</em></p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p><em>Baseline: Omini-RewardModel-BT</em></p></td>
+<td class="text-left"><p>-</p></td>
+<td class="text-left"><p>-</p></td>
+<td class="text-left"><p>BT</p></td>
+<td class="text-left"><p>66.41%</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Training Logs</strong>:</p>
+<ul class="simple">
+<li><p>Qwen2.5-Omni-HPS (Grey line) vs Qwen2-Audio-HPS (Orange line) vs MiniCPM_o-HPS (Green line)</p></li>
+<li><p><em>Training Loss Curve</em> <img alt="Training Loss Curve" src="../_images/srm_t2a_train_loss.png" /></p></li>
+<li><p><em>Accuracy Curve</em> <img alt="Accuracy Curve" src="../_images/srm_t2a_train_acc.png" /></p></li>
+</ul>
+<p><strong>Score Distribution</strong>:</p>
+<ul class="simple">
+<li><p>We visualized the score distribution of the model on the OmniReward-Bench-T2A dataset.</p>
+<ul>
+<li><p><em>Qwen2.5-Omni-HPS</em> <img alt="Score Distribution" src="../_images/qwen2.5-omni-hps_t2a_score_distribution.png" /></p></li>
+<li><p><em>Qwen2-Audio-HPS</em> <img alt="Score Distribution" src="../_images/qwen2-audio-hps_t2a_score_distribution.png" /></p></li>
+<li><p><em>MiniCPM_o-HPS</em> <img alt="Score Distribution" src="../_images/minicpm_o-hps_t2a_score_distribution.png" /></p></li>
+</ul>
+</li>
+</ul>
+<p><strong>Conclusions and Analysis</strong>:</p>
+<ul class="simple">
+<li><p><strong>Performance</strong>: Preliminary experimental results indicate that the LightRFT framework can be effectively applied to Text-to-Audio (T2A) tasks. Reward models trained with <code class="docutils literal notranslate"><span class="pre">HPS</span> <span class="pre">Loss</span></code> across various base models achieved stable and significant performance improvements. Notably, <code class="docutils literal notranslate"><span class="pre">MiniCPM_o-HPS</span></code> reached a peak accuracy of <strong>70.32%</strong> on the <code class="docutils literal notranslate"><span class="pre">OmniReward-Bench-T2A</span></code> benchmark, demonstrating the best overall performance.</p></li>
+<li><p><strong>Surpassing Baselines</strong>: Compared to existing strong baselines, models trained under the LightRFT framework significantly outperform commercial general-purpose models like <code class="docutils literal notranslate"><span class="pre">Gemini-2.5-Pro</span></code> (65.41%) and specialized reward models like <code class="docutils literal notranslate"><span class="pre">Omini-RewardModel-BT</span></code> (66.41%). This result validates the effectiveness of LightRFT in audio reward modeling scenarios.</p></li>
+<li><p><strong>Framework Versatility</strong>: The consistent performance gains across different model architectures (<strong>Qwen2.5-Omni, Qwen2-Audio, MiniCPM-o</strong>) further demonstrate that the LightRFT framework possesses excellent versatility and can stably support audio-language preference modeling tasks.</p></li>
+</ul>
+<section id="text-to-video-t2v-task-performance">
+<h4>7.1.4 Text-to-Video (T2V) Task Performance<a class="headerlink" href="#text-to-video-t2v-task-performance" title="Permalink to this heading">¶</a></h4>
+<p><strong>Experimental Settings</strong></p>
+<ul>
+<li><p><strong>Base Model</strong>: <code class="docutils literal notranslate"><span class="pre">Qwen2.5-VL-3B</span></code></p></li>
+<li><p><strong>Training Method</strong>: Full fine-tuning</p></li>
+<li><p><strong>Batch Size</strong>: Global Batch Size <code class="docutils literal notranslate"><span class="pre">32</span></code>, Micro Batch Size per card <code class="docutils literal notranslate"><span class="pre">4</span></code></p></li>
+<li><p><strong>Learning Rate</strong>: <code class="docutils literal notranslate"><span class="pre">1e-5</span></code></p></li>
+<li><p><strong>Reward Head</strong>: Single Preference Head, outputs overall preference score</p></li>
+<li><p><strong>Pooling Method</strong>: Attention Pooling</p></li>
+<li><p><strong>Probing Layer</strong>: Last layer</p></li>
+<li><p><strong>Scale for Train</strong>: Enabled</p></li>
+<li><p><strong>Video Frame Rate</strong>: <code class="docutils literal notranslate"><span class="pre">2.0</span></code> FPS</p></li>
+<li><p><strong>Hardware</strong>: Dual NVIDIA H200 (140GB)</p></li>
+<li><p><strong>Task Instruction</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Your will act as an expert video evaluator for text-to-video generation.
+Given a text prompt, and a generated video, your task is to assess the generated video on the following key aspects:
+• Preference: How visually appealing participants found each video, independent of the prompt.
+• Alignment: How well an video matches its prompt.
+• Coherence: Whether the generated video is logically consistent and free from artifacts or visual glitches.
+Your task is provided in the following. Please give your judgement based on above criteria.
+The prompt used for generation is as follows: {prompt}.
+</pre></div>
+</div>
+</li>
+</ul>
+<p><strong>Training Data</strong>:</p>
+<ul class="simple">
+<li><p>Rapidata-text-2-video-human-preferences-veo3</p></li>
+<li><p>Rapidata-text-2-video-human-preferences-pika2.2</p></li>
+<li><p>Rapidata-text-2-video-human-preferences-wan2.1</p></li>
+</ul>
+<p><strong>Training Logs</strong>:</p>
+<ul class="simple">
+<li><p><em>Training Loss Curve</em>
+<img alt="Training Loss Curve" src="../_images/t2v-rapidata-loss.png" /></p></li>
+<li><p><em>Accuracy Curve</em>
+<img alt="Accuracy Curve" src="../_images/t2v-rapidata-acc.png" /></p></li>
+</ul>
+<p><strong>Test Results</strong>:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head text-left"><p>Model Variant</p></th>
+<th class="head text-left"><p>Loss Function</p></th>
+<th class="head text-left"><p>OmniReward-Bench-T2V (Acc)</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td class="text-left"><p><strong>BT Loss</strong> (step 100)</p></td>
+<td class="text-left"><p>BT</p></td>
+<td class="text-left"><p>59.74%</p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p><strong>HPS Loss</strong> (step 100)</p></td>
+<td class="text-left"><p>HPS</p></td>
+<td class="text-left"><p><em>62.19%</em></p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p>—</p></td>
+<td class="text-left"><p>—</p></td>
+<td class="text-left"><p>—</p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p><em>Baseline: Omni-RewardModel-BT</em></p></td>
+<td class="text-left"><p>BT</p></td>
+<td class="text-left"><p><strong>64.08%</strong></p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Conclusions and Analysis</strong>:</p>
+<ul class="simple">
+<li><p>Preliminary experiments demonstrate that the LightRFT framework can be seamlessly extended to scalar reward model training for T2V tasks, achieving an accuracy of approximately 62% on <code class="docutils literal notranslate"><span class="pre">OmniReward-Bench-T2V</span></code>, which is close to the existing SOTA baseline <code class="docutils literal notranslate"><span class="pre">Omni-RewardModel-BT</span></code> (64.08%).</p></li>
+</ul>
+</section>
+</section>
+<section id="generative-reward-model-grm-experiments">
+<h3>7.2 Generative Reward Model (GRM) Experiments<a class="headerlink" href="#generative-reward-model-grm-experiments" title="Permalink to this heading">¶</a></h3>
+<section id="experimental-settings">
+<h4>7.2.1 Experimental Settings<a class="headerlink" href="#experimental-settings" title="Permalink to this heading">¶</a></h4>
+<ul>
+<li><p><strong>Base Model</strong>: <code class="docutils literal notranslate"><span class="pre">Qwen2.5-VL-3B</span></code></p></li>
+<li><p><strong>Training Method</strong>: Full fine-tuning</p></li>
+<li><p><strong>Learning Rate</strong>: <code class="docutils literal notranslate"><span class="pre">1e-5</span></code></p></li>
+<li><p><strong>Loss Function</strong>: Next-Token Prediction Loss</p></li>
+<li><p><strong>Training Data</strong>:</p></li>
+<li><p>ImageGen-CoT-Reward-5K: Contains detailed CoT evaluation processes, used for training Reasoning GRM.</p></li>
+<li><p>HPDv3 Train Subset: No CoT annotations, uses a form that directly outputs comparison results, used for training GRM without Reasoning process. (The HPDv3 here uses the same subset as Scalar RM).</p></li>
+<li><p><strong>Batch Size</strong>: Global Batch Size <code class="docutils literal notranslate"><span class="pre">8</span></code>, Micro Batch Size per card <code class="docutils literal notranslate"><span class="pre">4</span></code></p></li>
+<li><p><strong>Hardware</strong>: Dual NVIDIA H200 (140GB)</p></li>
+<li><p><strong>Task Instruction</strong>:</p>
+<ul class="simple">
+<li><p>For ImageGen-CoT-Reward-5K, we use its own CoT evaluation instructions;</p></li>
+<li><p>For HPDv3, we use the following task instruction to guide the model to generate the final preference judgment:</p></li>
+</ul>
+<!-- end list -->
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>You will act as an expert image evaluator for text-to-image generation.
+Given a text prompt and two generated images, your task is to assess the overall quality of the images and determine which one is better.
+Your evaluation should focus on the following key aspects:
+• Preference: Which image would a human viewer find more satisfying or visually appealing overall.
+• Alignment: How well the image content matches the given text prompt in semantics, objects, and attributes.
+Your response must strictly follow the format with no extra text:
+&lt;answer&gt;Image 1 is better&lt;/answer&gt;
+or
+&lt;answer&gt;Image 2 is better&lt;/answer&gt;
+The task is provided below. Please give your judgment based on the above criteria.
+The prompt used for generation is as follows: {prompt}.
+</pre></div>
+</div>
+</li>
+</ul>
+</section>
+<section id="id5">
+<h4>7.2.2 Text-to-Image (T2I) Task Performance<a class="headerlink" href="#id5" title="Permalink to this heading">¶</a></h4>
+<p><strong>Training Logs</strong>:</p>
+<ul class="simple">
+<li><p><em>ImageGen-CoT-Reward-5K Training Loss Curve</em>
+<img alt="ImageGen-CoT-Reward-5K Training Loss Curve" src="../_images/grm_imagegen_cot_reward_5k_train_loss.png" /></p></li>
+<li><p><em>HPDv3 Train Subset Training Loss Curve</em>
+<img alt="HPDv3 Training Loss Curve" src="../_images/grm_hpdv3_train_subset_train_loss.png" /></p></li>
+</ul>
+<p><strong>Test Results</strong>:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head text-left"><p>Model Variant</p></th>
+<th class="head text-left"><p>Training Data</p></th>
+<th class="head text-left"><p>HPDv3 Test (Acc)</p></th>
+<th class="head text-left"><p>OmniReward-Bench-T2I (Acc)</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td class="text-left"><p><strong>GRM (w/o reasoning)</strong> (step 8000)</p></td>
+<td class="text-left"><p>HPDv3 Train Subset (~56K)</p></td>
+<td class="text-left"><p><strong>71.88%</strong></p></td>
+<td class="text-left"><p><strong>59.33%</strong></p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p><strong>GRM (w/ reasoning)</strong> (step 3000)</p></td>
+<td class="text-left"><p>ImageGen-CoT-Reward-5K</p></td>
+<td class="text-left"><p>63.02%</p></td>
+<td class="text-left"><p>58.35%</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Conclusions and Analysis</strong>:</p>
+<ol class="arabic simple">
+<li><p><strong>Impact of Data Scale</strong>: The results show that <code class="docutils literal notranslate"><span class="pre">GRM</span> <span class="pre">(w/o</span> <span class="pre">reasoning)</span></code> achieved higher accuracy on both test sets (HPDv3 Test: 71.88% vs 63.02%). However, this is largely attributed to the difference in training data: <code class="docutils literal notranslate"><span class="pre">GRM</span> <span class="pre">(w/o</span> <span class="pre">reasoning)</span></code> used approximately 56K HPDv3 training data, while <code class="docutils literal notranslate"><span class="pre">GRM</span> <span class="pre">(w/</span> <span class="pre">reasoning)</span></code> used only 5K ImageGen-CoT data. Especially on the in-domain HPDv3 Test, the data advantage makes <code class="docutils literal notranslate"><span class="pre">GRM</span> <span class="pre">(w/o</span> <span class="pre">reasoning)</span></code> perform significantly better.</p></li>
+<li><p><strong>Potential of Reasoning Capability</strong>: Despite using only 1/10th of the training data, <code class="docutils literal notranslate"><span class="pre">GRM</span> <span class="pre">(w/</span> <span class="pre">reasoning)</span></code> still demonstrated competitive performance (HPDv3 Test 63.02%). This indicates that introducing the Chain-of-Thought (CoT) reasoning process can help the model learn preference judgment more effectively with small samples.</p></li>
+<li><p><strong>Future Directions</strong>: Currently, the performance of <code class="docutils literal notranslate"><span class="pre">GRM</span> <span class="pre">(w/</span> <span class="pre">reasoning)</span></code> is limited by the scarcity of high-quality CoT data. Future work can focus on constructing larger-scale and more diverse CoT preference datasets, or utilizing semi-supervised methods (such as RFT) to further unleash the potential of reasoning-based reward models.</p></li>
+</ol>
+</section>
+</section>
+</section>
+<hr class="docutils" />
+<section id="advanced-topics">
+<h2>8. Advanced Topics<a class="headerlink" href="#advanced-topics" title="Permalink to this heading">¶</a></h2>
+<section id="multi-task-learning">
+<h3>8.1 Multi-task Learning<a class="headerlink" href="#multi-task-learning" title="Permalink to this heading">¶</a></h3>
+<p>Multiple reward heads can be trained simultaneously to capture preferences in different dimensions:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>--heads_types<span class="w"> </span>preference<span class="w"> </span>coherence<span class="w"> </span>alignment
+</pre></div>
+</div>
+<p>In T2V tasks, we tried to train reward heads for <code class="docutils literal notranslate"><span class="pre">preference</span></code>, <code class="docutils literal notranslate"><span class="pre">coherence</span></code>, and <code class="docutils literal notranslate"><span class="pre">alignment</span></code> dimensions simultaneously on the Rapidata-text-2-video-human-preferences-veo3 dataset. In this setting, multi-task learning training encountered issues with multi-head crowding and gradient disappearance, leading to some heads failing to effectively learn the corresponding preference signals.</p>
+<p><strong>Analysis of Causes:</strong></p>
+<ol class="arabic simple">
+<li><p><strong>Task Difficulty Imbalance</strong>: The difficulty of preference judgment varies across dimensions (e.g., <code class="docutils literal notranslate"><span class="pre">alignment</span></code> may be easier to judge than <code class="docutils literal notranslate"><span class="pre">coherence</span></code>), causing the Loss of simple tasks to drop quickly and dominate the direction of the gradient, while difficult tasks are not fully trained.</p></li>
+<li><p><strong>Gradient Conflict</strong>: Updates to shared parameters (Backbone) from different tasks may conflict in direction, causing gradients of some tasks to be canceled out or suppressed.</p></li>
+<li><p><strong>Label Distribution Difference</strong>: Label distributions may vary across dimensions, causing the model to tend to fit the dominant label distribution.</p></li>
+</ol>
+<p><strong>Future Research Directions:</strong>
+To solve the above problems, future research can attempt the following directions:</p>
+<ul class="simple">
+<li><p><strong>Dynamic Weight Adjustment</strong>: Introduce algorithms like GradNorm to dynamically adjust Loss weights based on the learning progress of each task to balance training rates between tasks.</p></li>
+<li><p><strong>Gradient Correction Algorithms</strong>: Use methods like PCGrad (Projecting Conflicting Gradients) to project conflicting gradients onto the normal plane, reducing interference between tasks.</p></li>
+</ul>
+</section>
+<section id="reward-hacking">
+<h3>8.2 Reward Hacking<a class="headerlink" href="#reward-hacking" title="Permalink to this heading">¶</a></h3>
+<p>A key reason for the emergence of Reward Hacking is that the <strong>Reward Model is merely a fit and proxy for human preferences, not the preferences themselves</strong>. Due to the limitations of training data and model generalization errors, RMs often have Out-of-Distribution (OOD) blind spots. When the Policy Model is optimized strongly against the RM in the RL stage, it is easy to explore these blind spots and obtain extremely high reward scores through “loophole exploitation,” while the actual generation quality drops significantly.</p>
+<ul class="simple">
+<li><p><strong>Mitigation Strategies</strong>:</p>
+<ul>
+<li><p><strong>Use Generative RM</strong>: GRM itself has certain reasoning capabilities. By using larger base models and richer training data, the generalization ability of the RM can be improved to a certain extent, reducing the risk of reward hacking.</p></li>
+<li><p><strong>Multi-dimensional Constraints</strong>: We can train an RM that outputs fine-grained multi-dimensional scores (like the multi-head RM used in Section 9.1), so that multiple dimensions can be constrained during the RL stage, reducing the risk of over-optimizing a single dimension.</p></li>
+<li><p><strong>Ensemble Evaluation</strong>: By integrating scores from multiple RMs, the impact of blind spots in a single model can be reduced, improving the robustness of the overall evaluation.</p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="reinforcement-fine-tuning-rft-for-reward-models">
+<h3>8.3 Reinforcement Fine-Tuning (RFT) for Reward Models<a class="headerlink" href="#reinforcement-fine-tuning-rft-for-reward-models" title="Permalink to this heading">¶</a></h3>
+<p>Some recent works (UnifiedReward-Think, VisualQuality-R1, and ImageDoctor, etc.) have adopted Reinforcement Fine-Tuning (RFT) methods to improve the performance of reward models. By conducting supervised fine-tuning on a small amount of CoT (Chain-of-Thought) data, the reward model is endowed with a certain reasoning mode, and then the discriminative ability of the model is further improved through Rejection Sampling and RL.</p>
+<ul class="simple">
+<li><p><strong>Advantages</strong>: RFT can improve the reasoning ability and generalization ability of the reward model, thereby better capturing human preferences.</p></li>
+<li><p><strong>Challenges</strong>: The RFT process is complex, involving multi-stage training with high training costs; appropriate reward signals and sampling strategies need to be designed.</p></li>
+</ul>
+</section>
+<section id="process-reward-model">
+<h3>8.4 Process Reward Model<a class="headerlink" href="#process-reward-model" title="Permalink to this heading">¶</a></h3>
+<p>Traditional RMs usually only score the final result. For tasks requiring multi-turn or long-sequence decision-making, such as Agentic-RL, Agents need to perform multi-step reasoning and tool calls to achieve the final goal. ORM only judges the final result, making the reward signal sparse. Process Reward Model (PRM) attempts to score the intermediate results of each step, thereby providing richer reward signals.</p>
+<ul class="simple">
+<li><p><strong>Advantages</strong>: Provides denser reward signals rather than relying solely on feedback from the final result.</p></li>
+<li><p><strong>Challenges</strong>: High annotation cost, requiring step-level data; defining “steps” in multi-modal tasks can be more difficult.</p></li>
+</ul>
+</section>
+</section>
+<hr class="docutils" />
+<section id="references">
+<h2>9. References<a class="headerlink" href="#references" title="Permalink to this heading">¶</a></h2>
+<section id="papers">
+<h3>9.1 Papers<a class="headerlink" href="#papers" title="Permalink to this heading">¶</a></h3>
+<ol class="arabic simple">
+<li><p><strong>InstructGPT (2022)</strong>: Training language models to follow instructions with human feedback</p></li>
+<li><p><strong>DPO (2023)</strong>: Direct Preference Optimization</p></li>
+<li><p><strong>ImageReward (2023)</strong>: ImageReward: Learning and Evaluating Human Preferences for Text-to-Image Generation</p></li>
+<li><p><strong>GenAI-Bench (2024)</strong>: GenAI Arena: An Open Evaluation Platform for Generative Models</p></li>
+<li><p><strong>HPsv3 (2025)</strong>: HPSv3: Towards Wide-Spectrum Human Preference Score</p></li>
+<li><p><strong>Omni-Reward (2025)</strong>: Omni-Reward: Towards Generalist Omni-Modal Reward Modeling with Free-Form Preferences</p></li>
+<li><p><strong>UnifiedReward-Think (2025)</strong>: Unified Multimodal Chain-of-Thought Reward Model through Reinforcement Fine-Tuning</p></li>
+<li><p><strong>VisualQuality-R1 (2025)</strong>: VisualQuality-R1: Reasoning-Induced Image Quality Assessment via Reinforcement Learning to Rank</p></li>
+<li><p><strong>ImageDoctor (2025)</strong>: ImageDoctor: Diagnosing Text-to-Image Generation via Grounded Image Reasoning</p></li>
+</ol>
+</section>
+<section id="code-examples">
+<h3>9.2 Code Examples<a class="headerlink" href="#code-examples" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">examples/demo_srm_training/</span></code>: SRM training examples</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">examples/demo_grm_training/</span></code>: GRM training examples</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">lightrft/models/</span></code>: Model implementation</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">lightrft/datasets/</span></code>: Dataset implementation</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">lightrft/trainer/</span></code>: Trainer implementation</p></li>
+</ul>
+</section>
+<section id="datasets">
+<h3>9.3 Datasets<a class="headerlink" href="#datasets" title="Permalink to this heading">¶</a></h3>
+<ol class="arabic simple">
+<li><p><strong>HPDv3</strong>: <a class="reference external" href="https://huggingface.co/datasets/MizzenAI/HPDv3">https://huggingface.co/datasets/MizzenAI/HPDv3</a></p></li>
+<li><p><strong>OmniRewardBench</strong>: <a class="reference external" href="https://huggingface.co/datasets/HongbangYuan/OmniRewardBench">https://huggingface.co/datasets/HongbangYuan/OmniRewardBench</a></p></li>
+<li><p><strong>ImageGen-CoT-Reward-5K</strong>: <a class="reference external" href="https://huggingface.co/datasets/CodeGoat24/ImageGen-CoT-Reward-5K">https://huggingface.co/datasets/CodeGoat24/ImageGen-CoT-Reward-5K</a></p></li>
+<li><p><strong>Rapidata</strong>: <a class="reference external" href="https://huggingface.co/Rapidata/datasets">https://huggingface.co/Rapidata/datasets</a></p></li>
+<li><p><strong>ImageRewardDB</strong>: <a class="reference external" href="https://huggingface.co/datasets/zai-org/ImageRewardDB">https://huggingface.co/datasets/zai-org/ImageRewardDB</a></p></li>
+</ol>
+</section>
+<section id="community-resources">
+<h3>9.4 Community Resources<a class="headerlink" href="#community-resources" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>LightRFT GitHub Issues</p></li>
+</ul>
+<hr class="docutils" />
+<p><strong>Document Version</strong>: v1.1 (with experimental results)
+<strong>Last Update</strong>: 2025-12-23
+<strong>Maintainer</strong>: LightRFT Team
+<strong>Contact</strong>: <a class="reference external" href="mailto:opendilab&#37;&#52;&#48;pjlab&#46;org&#46;cn">opendilab<span>&#64;</span>pjlab<span>&#46;</span>org<span>&#46;</span>cn</a></p>
+</section>
+</section>
+<hr class="docutils" />
+<section id="contribution-guidelines">
+<h2>Contribution Guidelines<a class="headerlink" href="#contribution-guidelines" title="Permalink to this heading">¶</a></h2>
+<p>Contributions, improvements, bug reports, and new features are welcome!</p>
+<ol class="arabic simple">
+<li><p>Fork this project</p></li>
+<li><p>Create a feature branch</p></li>
+<li><p>Submit a Pull Request</p></li>
+<li><p>Update documentation</p></li>
+</ol>
+<p>Happy Training! 🚀</p>
+</section>
+</section>
+
+
+              </article>
+              
+            </div>
+            <footer>
+  
+  <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+    
+    <a href="strategy.html" class="btn btn-neutral float-right" title="Strategy Usage Guide" accesskey="n"
+      rel="next">Next <img src="../_static/images/chevron-right-blue.svg"
+        class="next-page"></a>
+    
+    
+    <a href="model.html" class="btn btn-neutral" title="LightRFT Models Design Document" accesskey="p"
+      rel="prev"><img src="../_static/images/chevron-right-blue.svg" class="previous-page"> Previous</a>
+    
+  </div>
+  
+
+  <hr>
+
+  <div role="contentinfo">
+    <p>
+      &copy; Copyright 2025, OpenDILab.
+
+    </p>
+  </div>
+  
+  <div>
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a
+      href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the
+      Docs</a>.
+  </div>
+   
+
+</footer>
+          </div>
+        </div>
+
+        <div class="pytorch-content-right" id="pytorch-content-right">
+          <div class="pytorch-right-menu" id="pytorch-right-menu">
+            <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
+              <ul>
+<li><a class="reference internal" href="#">LightRFT Reward Model Training Best Practices Guide</a><ul>
+<li><a class="reference internal" href="#table-of-contents">Table of Contents</a></li>
+<li><a class="reference internal" href="#overview">1. Overview</a><ul>
+<li><a class="reference internal" href="#what-is-a-reward-model">1.1 What is a Reward Model</a></li>
+<li><a class="reference internal" href="#rm-support-in-lightrft">1.2 RM Support in LightRFT</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#reward-model-types">2. Reward Model Types</a><ul>
+<li><a class="reference internal" href="#scalar-reward-model-srm">2.1 Scalar Reward Model (SRM)</a><ul>
+<li><a class="reference internal" href="#features">Features</a></li>
+<li><a class="reference internal" href="#applicable-scenarios">Applicable Scenarios</a></li>
+<li><a class="reference internal" href="#loss-functions">Loss Functions</a></li>
+<li><a class="reference internal" href="#architecture">Architecture</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#generative-reward-model-grm">2.2 Generative Reward Model (GRM)</a><ul>
+<li><a class="reference internal" href="#id1">Features</a></li>
+<li><a class="reference internal" href="#id2">Applicable Scenarios</a></li>
+<li><a class="reference internal" href="#training-methods">Training Methods</a></li>
+<li><a class="reference internal" href="#id3">Architecture</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#selection-advice">2.3 Selection Advice</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#environment-preparation">3. Environment Preparation</a><ul>
+<li><a class="reference internal" href="#installation">3.1 Installation</a></li>
+<li><a class="reference internal" href="#gpu-requirements">3.2 GPU Requirements</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#model-training">4. Model Training</a><ul>
+<li><a class="reference internal" href="#one-click-run-srm-grm">4.0 One-Click Run (SRM / GRM)</a></li>
+<li><a class="reference internal" href="#training-scalar-reward-model-srm">4.1 Training Scalar Reward Model (SRM)</a><ul>
+<li><a class="reference internal" href="#basic-training-script-based-on-t2i-experiment">4.1.1 Basic Training Script (Based on T2I Experiment)</a></li>
+<li><a class="reference internal" href="#key-parameter-explanation">4.1.2 Key Parameter Explanation</a></li>
+<li><a class="reference internal" href="#lora-training">4.1.3 LoRA Training</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#training-generative-reward-model-grm">4.2 Training Generative Reward Model (GRM)</a><ul>
+<li><a class="reference internal" href="#id4">4.2.1 Basic Training Script (Based on T2I Experiment)</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#model-evaluation">5. Model Evaluation</a><ul>
+<li><a class="reference internal" href="#model-conversion">5.1 Model Conversion</a></li>
+<li><a class="reference internal" href="#evaluation-data-preparation">5.2 Evaluation Data Preparation</a></li>
+<li><a class="reference internal" href="#evaluation-script-example">5.3 Evaluation Script Example</a></li>
+<li><a class="reference internal" href="#evaluation-metrics">5.4 Evaluation Metrics</a><ul>
+<li><a class="reference internal" href="#srm-evaluation">5.4.1 SRM Evaluation</a></li>
+<li><a class="reference internal" href="#grm-evaluation">5.4.2 GRM Evaluation</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#benchmarks">5.5 Benchmarks</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#faq">6. FAQ</a><ul>
+<li><a class="reference internal" href="#training-issues">6.1 Training Issues</a><ul>
+<li><a class="reference internal" href="#q1-oom-out-of-memory">Q1: OOM (Out of Memory)</a></li>
+<li><a class="reference internal" href="#q2-unstable-training-loss-not-decreasing">Q2: Unstable Training/Loss Not Decreasing</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#inference-issues">6.2 Inference Issues</a><ul>
+<li><a class="reference internal" href="#q3-how-to-use-the-trained-model-for-inference">Q3: How to use the trained model for inference</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#dataset-issues">6.3 Dataset Issues</a><ul>
+<li><a class="reference internal" href="#q4-how-to-use-your-own-dataset-for-training">Q4: How to use your own dataset for training</a><ul>
+<li><a class="reference internal" href="#implement-a-custom-data-handler">Implement a Custom Data Handler</a></li>
+<li><a class="reference internal" href="#data-format">Data Format</a><ul>
+<li><a class="reference internal" href="#srm-data-format">SRM Data Format</a></li>
+<li><a class="reference internal" href="#grm-data-format">GRM Data Format</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#dataset-organization">Dataset Organization</a></li>
+<li><a class="reference internal" href="#data-preprocessing">Data Preprocessing</a><ul>
+<li><a class="reference internal" href="#visual-data-preprocessing">Visual Data Preprocessing</a></li>
+<li><a class="reference internal" href="#data-cleaning">Data Cleaning</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#benchmarks-performance">7. Benchmarks &amp; Performance</a><ul>
+<li><a class="reference internal" href="#scalar-reward-model-srm-experiments">7.1 Scalar Reward Model (SRM) Experiments</a><ul>
+<li><a class="reference internal" href="#text-to-image-t2i-task-performance">7.1.2 Text-to-Image (T2I) Task Performance</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#text-to-audio-t2a-task-performance">7.1.3 Text-to-Audio (T2A) Task Performance</a><ul>
+<li><a class="reference internal" href="#text-to-video-t2v-task-performance">7.1.4 Text-to-Video (T2V) Task Performance</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#generative-reward-model-grm-experiments">7.2 Generative Reward Model (GRM) Experiments</a><ul>
+<li><a class="reference internal" href="#experimental-settings">7.2.1 Experimental Settings</a></li>
+<li><a class="reference internal" href="#id5">7.2.2 Text-to-Image (T2I) Task Performance</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#advanced-topics">8. Advanced Topics</a><ul>
+<li><a class="reference internal" href="#multi-task-learning">8.1 Multi-task Learning</a></li>
+<li><a class="reference internal" href="#reward-hacking">8.2 Reward Hacking</a></li>
+<li><a class="reference internal" href="#reinforcement-fine-tuning-rft-for-reward-models">8.3 Reinforcement Fine-Tuning (RFT) for Reward Models</a></li>
+<li><a class="reference internal" href="#process-reward-model">8.4 Process Reward Model</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#references">9. References</a><ul>
+<li><a class="reference internal" href="#papers">9.1 Papers</a></li>
+<li><a class="reference internal" href="#code-examples">9.2 Code Examples</a></li>
+<li><a class="reference internal" href="#datasets">9.3 Datasets</a></li>
+<li><a class="reference internal" href="#community-resources">9.4 Community Resources</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#contribution-guidelines">Contribution Guidelines</a></li>
+</ul>
+</li>
+</ul>
+
+            </div>
+          </div>
+        </div>
+    </section>
+  </div>
+
+  
+
+
+  
+
+  
+  <script type="text/javascript" id="documentation_options" data-url_root="../"
+    src="../_static/documentation_options.js"></script>
+  <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+  <script src="../_static/doctools.js"></script>
+  <script src="../_static/sphinx_highlight.js"></script>
+  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+  
+
+  
+
+  <script type="text/javascript" src="../_static/js/vendor/popper.min.js"></script>
+  <script type="text/javascript" src="../_static/js/vendor/bootstrap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+    jQuery(function () {
+      SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+  <!-- Begin Footer -->
+
+  <div class="container-fluid docs-tutorials-resources" id="docs-tutorials-resources">
+  </div>
+
+  <!-- End Footer -->
+
+  <!-- Begin Mobile Menu -->
+
+  <div class="mobile-main-menu">
+    <div class="container-fluid">
+      <div class="container">
+        <div class="mobile-main-menu-header-container">
+          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
+        </div>
+      </div>
+    </div>
+
+    <div class="mobile-main-menu-links-container">
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://github.com/opendilab/LightRFT" target="_blank">GitHub</a>
+          </li>
+      </div>
+    </div>
+  </div>
+
+  <!-- End Mobile Menu -->
+
+  <script type="text/javascript" src="../_static/js/vendor/anchor.min.js"></script>
+
+  <script type="text/javascript">
+    $(document).ready(function () {
+      mobileMenu.bind();
+      mobileTOC.bind();
+      pytorchAnchors.bind();
+      sideMenus.bind();
+      scrollToAnchor.bind();
+      highlightNavigation.bind();
+      mainMenuDropdown.bind();
+      filterTags.bind();
+
+      // Add class to links that have code blocks, since we cannot create links in code blocks
+      $("article.pytorch-article a span.pre").each(function (e) {
+        $(this).closest("a").addClass("has-code");
+      });
+    })
+  </script>
+</body>
+
+</html>

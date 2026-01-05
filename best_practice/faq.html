@@ -1,0 +1,896 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js" lang="en">
+<!--<![endif]-->
+
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Frequently Asked Questions (FAQ) &mdash; LightRFT v0.1.1 documentation</title>
+  
+
+  <link rel="shortcut icon" href="../_static/images/favicon.ico" />
+  
+  
+
+  
+
+  
+  
+  
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/readthedocs.css" type="text/css" />
+  <link rel="index" title="Index" href="../genindex.html" />
+  <link rel="search" title="Search" href="../search.html" />
+  <link rel="next" title="Troubleshooting Guide" href="troubleshooting.html" />
+  <link rel="prev" title="Model Testing Guide" href="model_testing.html" />
+  <!-- Google Analytics -->
+  <script type="text/javascript">
+    var collapsedSections = [];
+  </script>
+  
+  <!-- End Google Analytics -->
+  
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+  <script>
+    MathJax = {
+        chtml: {
+            scale: 1,
+            minScale: 1,
+        },
+        svg: {
+            scale: 1,
+            minScale: 1,
+        }
+    }
+</script>
+
+  <!-- Preload the theme fonts -->
+
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-book.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/IBMPlexMono/IBMPlexMono-Medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-medium-italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/IBMPlexMono/IBMPlexMono-SemiBold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+
+<!-- Preload the katex fonts -->
+
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Math-Italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size1-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size4-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size2-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size3-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Caligraphic-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.2/css/all.css"
+    integrity="sha384-vSIIfh2YWi9wW0r9iZe7RJPrKwp6bG+s9QZMoITbCckVJqGCCRhc+ccxNcdpHuYu" crossorigin="anonymous">
+</head>
+
+<div class="container-fluid header-holder tutorials-header" id="header-holder">
+  <div class="container">
+    <div class="header-container">
+      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+        aria-label="OpenMMLab"></a>
+
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://github.com/opendilab/LightRFT" target="_blank">GitHub</a>
+          </li>
+          <li >
+            <div id="resourcesDropdownButton" data-toggle="resources-dropdown" class="resources-dropdown">
+              <a
+                class="resource-option with-down-arrow">
+                OpenDILab
+              </a>
+              <div class="resources-dropdown-menu">
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-engine" target="_blank">
+                  <span class="dropdown-title">DI-engine </span>
+                  <p>OpenDILab Decision AI Engine</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/LightZero" target="_blank">
+                  <span class="dropdown-title">LightZero </span>
+                  <p>OpenDILab Decision Monte Carlo Tree Search Framework</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/GenerativeRL" target="_blank">
+                  <span class="dropdown-title">GenerativeRL </span>
+                  <p>OpenDILab Generative AI Framework</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-star" target="_blank">
+                  <span class="dropdown-title">DI-star </span>
+                  <p>OpenDILab Decision AI in StarCraftII</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-drive" target="_blank">
+                  <span class="dropdown-title">DI-drive </span>
+                  <p>OpenDILab Auto-driving platform</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/GoBigger" target="_blank">
+                  <span class="dropdown-title">GoBigger </span>
+                  <p>OpenDILab Multi-Agent Environment</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-smartcross" target="_blank">
+                  <span class="dropdown-title">DI-smartcross </span>
+                  <p>Decision Intelligence Platform for Traffic Crossing Signal Control</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-treetensor" target="_blank">
+                  <span class="dropdown-title">DI-treetensor </span>
+                  <p>Tree Nested PyTorch Tensor Lib</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-sheep" target="_blank">
+                  <span class="dropdown-title">DI-sheep </span>
+                  <p>Deep Reinforcement Learning + 3 Tiles Game</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-model-based-RL" target="_blank">
+                  <span class="dropdown-title">awesome-model-based-RL </span>
+                  <p>A curated list of awesome model based RL resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-decision-transformer" target="_blank">
+                  <span class="dropdown-title">awesome-decision-transformer </span>
+                  <p>A curated list of Decision Transformer resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-exploration-rl" target="_blank">
+                  <span class="dropdown-title">awesome-exploration-rl </span>
+                  <p>A curated list of awesome exploration RL resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-multi-modal-reinforcement-learning" target="_blank">
+                  <span class="dropdown-title">awesome-multi-modal-reinforcement-learning </span>
+                  <p>A curated list of Multi-Modal Reinforcement Learning resources (continually updated)</p>
+                </a>
+              </div>
+          </li>
+        </ul>
+      </div>
+
+      <a class="main-menu-open-button" href="#" data-behavior="open-mobile-menu"></a>
+    </div>
+  </div>
+</div>
+
+<body class="pytorch-body">
+
+   
+
+  
+
+  <div class="table-of-contents-link-wrapper">
+    <span>Table of Contents</span>
+    <a href="#" class="toggle-table-of-contents" data-behavior="toggle-table-of-contents"></a>
+  </div>
+
+  <nav data-toggle="wy-nav-shift" class="pytorch-left-menu" id="pytorch-left-menu">
+    <div class="pytorch-side-scroll">
+      <div class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        <div class="pytorch-left-menu-search">
+          
+
+          
+          
+          
+          
+
+          
+
+
+
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search Docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        
+        
+        
+        
+        
+        <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../installation/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quick_start/index.html">Quick Start</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide &amp; Best Practices</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Best Practices</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/utils/index.html">lightrft.utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/datasets/index.html">lightrft.datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/models/index.html">lightrft.models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/strategy/index.html">lightrft.strategy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/trainer/index.html">lightrft.trainer</a></li>
+</ul>
+
+        
+        
+      </div>
+    </div>
+  </nav>
+
+  <div class="pytorch-container">
+    <div class="pytorch-page-level-bar" id="pytorch-page-level-bar">
+      <div class="pytorch-breadcrumbs-wrapper">
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="pytorch-breadcrumbs">
+    
+      <li>
+        <a href="../index.html">
+            Docs
+        </a> &gt;
+      </li>
+
+        
+          <li><a href="index.html">Best Practices</a> &gt;</li>
+        
+      <li>Frequently Asked Questions (FAQ)</li>
+    
+    
+      <li class="pytorch-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/best_practice/faq.md.txt" rel="nofollow"><img src="../_static/images/view-page-source-icon.svg"></a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+</div>
+      </div>
+
+      <div class="pytorch-shortcuts-wrapper" id="pytorch-shortcuts-wrapper">
+        Shortcuts
+      </div>
+    </div>
+
+    <section data-toggle="wy-nav-shift" id="pytorch-content-wrap" class="pytorch-content-wrap">
+      <div class="pytorch-content-left">
+        
+          <div class="rst-content">
+            
+            <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
+              <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
+                
+  <section id="frequently-asked-questions-faq">
+<h1>Frequently Asked Questions (FAQ)<a class="headerlink" href="#frequently-asked-questions-faq" title="Permalink to this heading">¶</a></h1>
+<p>Common questions and answers about LightRFT.</p>
+<section id="general-questions">
+<h2>General Questions<a class="headerlink" href="#general-questions" title="Permalink to this heading">¶</a></h2>
+<section id="q-what-is-lightrft">
+<h3>Q: What is LightRFT?<a class="headerlink" href="#q-what-is-lightrft" title="Permalink to this heading">¶</a></h3>
+<p><strong>A</strong>: LightRFT (Light Reinforcement Fine-Tuning) is an advanced reinforcement learning framework for fine-tuning Large Language Models (LLMs) and Vision-Language Models (VLMs). It provides efficient and scalable RLHF training with support for multiple algorithms and distributed training strategies.</p>
+</section>
+<section id="q-what-are-the-main-differences-between-lightrft-and-openrlhf">
+<h3>Q: What are the main differences between LightRFT and OpenRLHF?<a class="headerlink" href="#q-what-are-the-main-differences-between-lightrft-and-openrlhf" title="Permalink to this heading">¶</a></h3>
+<p><strong>A</strong>: LightRFT extends OpenRLHF with:</p>
+<ul class="simple">
+<li><p>Enhanced multimodal (VLM) support</p></li>
+<li><p>More RL algorithms (GRPO, GSPO, GMPO, REINFORCE++, CPGD, etc.)</p></li>
+<li><p>Better memory optimization (engine sleep, optimizer offload)</p></li>
+<li><p>Improved inference engines (vLLM, SGLang with FP8)</p></li>
+<li><p>Reward model co-location for efficiency</p></li>
+<li><p>More flexible distributed training strategies</p></li>
+</ul>
+</section>
+<section id="q-which-models-are-supported">
+<h3>Q: Which models are supported?<a class="headerlink" href="#q-which-models-are-supported" title="Permalink to this heading">¶</a></h3>
+<p><strong>A</strong>: LightRFT supports:</p>
+<ul class="simple">
+<li><p><strong>LLMs</strong>: Qwen, Qwen2.5, LLaMA, Mistral, and most HuggingFace models</p></li>
+<li><p><strong>VLMs</strong>: Qwen-VL, Qwen2-VL, LLaVA</p></li>
+<li><p><strong>Custom</strong>: Easy to add new models via monkey patching</p></li>
+</ul>
+</section>
+<section id="q-what-hardware-is-required">
+<h3>Q: What hardware is required?<a class="headerlink" href="#q-what-hardware-is-required" title="Permalink to this heading">¶</a></h3>
+<p><strong>A</strong>: Minimum requirements:</p>
+<ul class="simple">
+<li><p><strong>GPU</strong>: NVIDIA GPUs with CUDA 11.8+</p></li>
+<li><p><strong>Memory</strong>: 40GB+ VRAM per GPU recommended (24GB possible with optimizations)</p></li>
+<li><p><strong>PyTorch</strong>: 2.5.1+</p></li>
+<li><p><strong>Python</strong>: 3.8+</p></li>
+</ul>
+<p>For production: 8× A100/H100 80GB recommended</p>
+</section>
+</section>
+<section id="installation-questions">
+<h2>Installation Questions<a class="headerlink" href="#installation-questions" title="Permalink to this heading">¶</a></h2>
+<section id="q-how-do-i-install-lightrft">
+<h3>Q: How do I install LightRFT?<a class="headerlink" href="#q-how-do-i-install-lightrft" title="Permalink to this heading">¶</a></h3>
+<p><strong>A</strong>: Simple installation:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/opendilab/LightRFT.git
+<span class="nb">cd</span><span class="w"> </span>LightRFT
+pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements.txt<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.
+</pre></div>
+</div>
+</section>
+<section id="q-do-i-need-to-install-vllm-separately">
+<h3>Q: Do I need to install vLLM separately?<a class="headerlink" href="#q-do-i-need-to-install-vllm-separately" title="Permalink to this heading">¶</a></h3>
+<p><strong>A</strong>: No, vLLM is included in the requirements. However, for the latest features, you can install from source.</p>
+</section>
+</section>
+<section id="training-questions">
+<h2>Training Questions<a class="headerlink" href="#training-questions" title="Permalink to this heading">¶</a></h2>
+<section id="q-what-s-the-difference-between-fsdp-and-deepspeed">
+<h3>Q: What’s the difference between FSDP and DeepSpeed?<a class="headerlink" href="#q-what-s-the-difference-between-fsdp-and-deepspeed" title="Permalink to this heading">¶</a></h3>
+<p><strong>A</strong>:</p>
+<ul class="simple">
+<li><p><strong>FSDP</strong>: PyTorch-native, better integration, supports CPU offload</p></li>
+<li><p><strong>DeepSpeed</strong>: More mature, ZeRO-3 optimization, generally faster</p></li>
+</ul>
+<p>Use FSDP for maximum memory efficiency, DeepSpeed for speed.</p>
+</section>
+<section id="q-how-do-i-choose-batch-sizes">
+<h3>Q: How do I choose batch sizes?<a class="headerlink" href="#q-how-do-i-choose-batch-sizes" title="Permalink to this heading">¶</a></h3>
+<p><strong>A</strong>: Follow this constraint:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>train_batch_size &gt;= rollout_batch_size × n_samples_per_prompt
+</pre></div>
+</div>
+<p>Example for 8 GPUs:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">train_batch_size=256</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">rollout_batch_size=64</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">n_samples_per_prompt=8</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">micro_train_batch_size=1</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">micro_rollout_batch_size=2</span></code></p></li>
+</ul>
+</section>
+<section id="q-which-algorithm-should-i-use">
+<h3>Q: Which algorithm should I use?<a class="headerlink" href="#q-which-algorithm-should-i-use" title="Permalink to this heading">¶</a></h3>
+<p><strong>A</strong>: By task:</p>
+<ul class="simple">
+<li><p><strong>Math/Coding</strong>: GRPO, Dr.GRPO</p></li>
+<li><p><strong>Instruction Following</strong>: CPGD, GSPO</p></li>
+<li><p><strong>Open-ended</strong>: FIRE Sampling</p></li>
+<li><p><strong>Low Memory</strong>: GRPO (no critic)</p></li>
+<li><p><strong>Research</strong>: GMPO, REINFORCE++</p></li>
+</ul>
+</section>
+<section id="q-how-many-samples-per-prompt-should-i-use">
+<h3>Q: How many samples per prompt should I use?<a class="headerlink" href="#q-how-many-samples-per-prompt-should-i-use" title="Permalink to this heading">¶</a></h3>
+<p><strong>A</strong>: Typical values:</p>
+<ul class="simple">
+<li><p><strong>4-8</strong>: Standard, good balance</p></li>
+<li><p><strong>16+</strong>: Better quality, slower training</p></li>
+<li><p><strong>32+</strong>: Best-of-N scenarios</p></li>
+</ul>
+<p>More samples = better advantage estimation but slower.</p>
+</section>
+<section id="q-can-i-use-multiple-reward-models">
+<h3>Q: Can I use multiple reward models?<a class="headerlink" href="#q-can-i-use-multiple-reward-models" title="Permalink to this heading">¶</a></h3>
+<p><strong>A</strong>: Yes! LightRFT supports:</p>
+<ul class="simple">
+<li><p>Multiple reward models in parallel</p></li>
+<li><p>Reward model co-location (same GPU as training)</p></li>
+<li><p>Remote reward model servers</p></li>
+<li><p>Weighted reward combination</p></li>
+</ul>
+</section>
+<section id="q-how-do-i-enable-multimodal-vlm-training">
+<h3>Q: How do I enable multimodal (VLM) training?<a class="headerlink" href="#q-how-do-i-enable-multimodal-vlm-training" title="Permalink to this heading">¶</a></h3>
+<p><strong>A</strong>: Use the VLM training script:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>train_vl.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--pretrain<span class="w"> </span>/path/to/Qwen2-VL<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--mixed_mm_data<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--packing_samples
+</pre></div>
+</div>
+</section>
+</section>
+<section id="performance-questions">
+<h2>Performance Questions<a class="headerlink" href="#performance-questions" title="Permalink to this heading">¶</a></h2>
+<section id="q-how-do-i-reduce-memory-usage">
+<h3>Q: How do I reduce memory usage?<a class="headerlink" href="#q-how-do-i-reduce-memory-usage" title="Permalink to this heading">¶</a></h3>
+<p><strong>A</strong>: Use these techniques:</p>
+<ol class="arabic simple">
+<li><p>Enable gradient checkpointing: <code class="docutils literal notranslate"><span class="pre">--gradient_checkpointing</span></code></p></li>
+<li><p>Use FSDP with CPU offload: <code class="docutils literal notranslate"><span class="pre">--fsdp</span> <span class="pre">--fsdp_cpu_offload</span></code></p></li>
+<li><p>Lower engine memory: <code class="docutils literal notranslate"><span class="pre">--engine_mem_util</span> <span class="pre">0.4</span></code></p></li>
+<li><p>Use ZeRO-3: <code class="docutils literal notranslate"><span class="pre">--zero_stage</span> <span class="pre">3</span></code></p></li>
+<li><p>Reduce batch sizes</p></li>
+<li><p>Enable engine sleep: <code class="docutils literal notranslate"><span class="pre">--enable_engine_sleep</span></code></p></li>
+</ol>
+</section>
+<section id="q-how-do-i-speed-up-training">
+<h3>Q: How do I speed up training?<a class="headerlink" href="#q-how-do-i-speed-up-training" title="Permalink to this heading">¶</a></h3>
+<p><strong>A</strong>:</p>
+<ol class="arabic simple">
+<li><p>Increase batch sizes (if memory allows)</p></li>
+<li><p>Use FP8 inference (vLLM)</p></li>
+<li><p>Enable Flash Attention: <code class="docutils literal notranslate"><span class="pre">--flash_attn</span></code></p></li>
+<li><p>Reduce <code class="docutils literal notranslate"><span class="pre">n_samples_per_prompt</span></code> if possible</p></li>
+<li><p>Use tensor parallelism for inference: <code class="docutils literal notranslate"><span class="pre">--engine_tp_size</span> <span class="pre">2</span></code></p></li>
+<li><p>Optimize NCCL: <code class="docutils literal notranslate"><span class="pre">export</span> <span class="pre">TORCH_NCCL_AVOID_RECORD_STREAMS=1</span></code></p></li>
+</ol>
+</section>
+<section id="q-what-s-the-typical-training-speed">
+<h3>Q: What’s the typical training speed?<a class="headerlink" href="#q-what-s-the-typical-training-speed" title="Permalink to this heading">¶</a></h3>
+<p><strong>A</strong>: On 8× A100 80GB:</p>
+<ul class="simple">
+<li><p><strong>7B model</strong>: ~1000 samples/min</p></li>
+<li><p><strong>13B model</strong>: ~500 samples/min</p></li>
+<li><p><strong>34B model</strong>: ~200 samples/min</p></li>
+<li><p><strong>70B model</strong>: ~50 samples/min</p></li>
+</ul>
+<p>With FSDP and optimizations.</p>
+</section>
+<section id="q-how-do-i-use-multiple-nodes">
+<h3>Q: How do I use multiple nodes?<a class="headerlink" href="#q-how-do-i-use-multiple-nodes" title="Permalink to this heading">¶</a></h3>
+<p><strong>A</strong>: Use SLURM or Ray:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># SLURM example</span>
+srun<span class="w"> </span>-N2<span class="w"> </span>--gres<span class="o">=</span>gpu:8<span class="w"> </span>--ntasks-per-node<span class="o">=</span><span class="m">8</span><span class="w"> </span>bash<span class="w"> </span>train.sh
+
+<span class="c1"># Or use torchrun</span>
+torchrun<span class="w"> </span>--nproc_per_node<span class="o">=</span><span class="m">8</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--nnodes<span class="o">=</span><span class="m">2</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--node_rank<span class="o">=</span><span class="nv">$NODE_RANK</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--master_addr<span class="o">=</span><span class="nv">$MASTER_ADDR</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--master_port<span class="o">=</span><span class="nv">$MASTER_PORT</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>train.py
+</pre></div>
+</div>
+</section>
+</section>
+<section id="algorithm-questions">
+<h2>Algorithm Questions<a class="headerlink" href="#algorithm-questions" title="Permalink to this heading">¶</a></h2>
+<section id="q-what-s-the-difference-between-grpo-and-ppo">
+<h3>Q: What’s the difference between GRPO and PPO?<a class="headerlink" href="#q-what-s-the-difference-between-grpo-and-ppo" title="Permalink to this heading">¶</a></h3>
+<p><strong>A</strong>:</p>
+<ul class="simple">
+<li><p><strong>GRPO</strong>: Group-normalized advantages, no critic network</p></li>
+<li><p><strong>PPO</strong>: Uses separate value network (critic)</p></li>
+</ul>
+<p>GRPO is simpler and more memory-efficient.</p>
+</section>
+<section id="q-when-should-i-use-cpgd">
+<h3>Q: When should I use CPGD?<a class="headerlink" href="#q-when-should-i-use-cpgd" title="Permalink to this heading">¶</a></h3>
+<p><strong>A</strong>: Use CPGD when:</p>
+<ul class="simple">
+<li><p>Fine-tuning pre-trained models</p></li>
+<li><p>Want to preserve base capabilities</p></li>
+<li><p>Need controlled policy updates</p></li>
+<li><p>Preventing catastrophic forgetting</p></li>
+</ul>
+</section>
+<section id="q-what-is-clip-higher">
+<h3>Q: What is Clip Higher?<a class="headerlink" href="#q-what-is-clip-higher" title="Permalink to this heading">¶</a></h3>
+<p><strong>A</strong>: An improved clipping scheme with separate upper/lower bounds for positive/negative advantages. Better for:</p>
+<ul class="simple">
+<li><p>Noisy rewards</p></li>
+<li><p>Large distribution shifts</p></li>
+<li><p>Unstable training</p></li>
+</ul>
+</section>
+</section>
+<section id="debugging-questions">
+<h2>Debugging Questions<a class="headerlink" href="#debugging-questions" title="Permalink to this heading">¶</a></h2>
+<section id="q-training-crashes-with-oom-error">
+<h3>Q: Training crashes with OOM error<a class="headerlink" href="#q-training-crashes-with-oom-error" title="Permalink to this heading">¶</a></h3>
+<p><strong>A</strong>: See the <a class="reference internal" href="troubleshooting.html#out-of-memory-oom-errors"><span class="std std-ref">Troubleshooting Guide</span></a></p>
+</section>
+<section id="q-num-rollouts-per-episodes-0-error">
+<h3>Q: <code class="docutils literal notranslate"><span class="pre">num_rollouts_per_episodes</span> <span class="pre">=</span> <span class="pre">0</span></code> error<a class="headerlink" href="#q-num-rollouts-per-episodes-0-error" title="Permalink to this heading">¶</a></h3>
+<p><strong>A</strong>: Your <code class="docutils literal notranslate"><span class="pre">train_batch_size</span></code> is too small. Ensure:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>train_batch_size &gt;= rollout_batch_size × n_samples_per_prompt
+</pre></div>
+</div>
+</section>
+<section id="q-model-not-improving-reward-not-increasing">
+<h3>Q: Model not improving / Reward not increasing<a class="headerlink" href="#q-model-not-improving-reward-not-increasing" title="Permalink to this heading">¶</a></h3>
+<p><strong>A</strong>: Check:</p>
+<ol class="arabic simple">
+<li><p>Learning rate too high/low</p></li>
+<li><p>KL penalty too large</p></li>
+<li><p>Reward model quality</p></li>
+<li><p>Enable reward normalization: <code class="docutils literal notranslate"><span class="pre">--reward_running_norm</span></code></p></li>
+<li><p>Try different advantage estimator</p></li>
+</ol>
+</section>
+<section id="q-nccl-timeout-or-hanging">
+<h3>Q: NCCL timeout or hanging<a class="headerlink" href="#q-nccl-timeout-or-hanging" title="Permalink to this heading">¶</a></h3>
+<p><strong>A</strong>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">NCCL_DEBUG</span><span class="o">=</span>INFO
+<span class="nb">export</span><span class="w"> </span><span class="nv">TORCH_DISTRIBUTED_DEBUG</span><span class="o">=</span>DETAIL
+<span class="c1"># Increase timeout</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">NCCL_SOCKET_IFNAME</span><span class="o">=</span>eth0
+<span class="nb">export</span><span class="w"> </span><span class="nv">NCCL_IB_DISABLE</span><span class="o">=</span><span class="m">1</span>
+</pre></div>
+</div>
+</section>
+<section id="q-vllm-engine-initialization-fails">
+<h3>Q: vLLM engine initialization fails<a class="headerlink" href="#q-vllm-engine-initialization-fails" title="Permalink to this heading">¶</a></h3>
+<p><strong>A</strong>:</p>
+<ol class="arabic simple">
+<li><p>Check GPU memory: <code class="docutils literal notranslate"><span class="pre">--engine_mem_util</span> <span class="pre">0.5</span></code></p></li>
+<li><p>Reduce TP size: <code class="docutils literal notranslate"><span class="pre">--engine_tp_size</span> <span class="pre">1</span></code></p></li>
+<li><p>Check CUDA compatibility</p></li>
+<li><p>Update vLLM: <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-U</span> <span class="pre">vllm</span></code></p></li>
+</ol>
+</section>
+</section>
+<section id="evaluation-questions">
+<h2>Evaluation Questions<a class="headerlink" href="#evaluation-questions" title="Permalink to this heading">¶</a></h2>
+<section id="q-how-do-i-evaluate-on-benchmarks">
+<h3>Q: How do I evaluate on benchmarks?<a class="headerlink" href="#q-how-do-i-evaluate-on-benchmarks" title="Permalink to this heading">¶</a></h3>
+<p><strong>A</strong>: For math benchmarks, use the evaluation scripts in the examples directory:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Refer to the examples/gsm8k_geo3k directory for evaluation scripts</span>
+<span class="c1"># See the example training scripts for evaluation configurations</span>
+</pre></div>
+</div>
+</section>
+<section id="q-can-i-save-generation-trajectories">
+<h3>Q: Can I save generation trajectories?<a class="headerlink" href="#q-can-i-save-generation-trajectories" title="Permalink to this heading">¶</a></h3>
+<p><strong>A</strong>: Yes, use the trajectory saver:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">lightrft.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">TrajectorySaver</span>
+
+<span class="n">saver</span> <span class="o">=</span> <span class="n">TrajectorySaver</span><span class="p">(</span><span class="n">output_dir</span><span class="o">=</span><span class="s2">&quot;./trajectories&quot;</span><span class="p">)</span>
+<span class="c1"># Automatically saves prompts, responses, rewards</span>
+</pre></div>
+</div>
+</section>
+<section id="q-how-do-i-integrate-with-w-b">
+<h3>Q: How do I integrate with W&amp;B?<a class="headerlink" href="#q-how-do-i-integrate-with-w-b" title="Permalink to this heading">¶</a></h3>
+<p><strong>A</strong>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>train.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--use_wandb<span class="w"> </span>your-project<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--wandb_org<span class="w"> </span>your-org<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--wandb_run_name<span class="w"> </span>experiment-1
+</pre></div>
+</div>
+</section>
+</section>
+<section id="advanced-questions">
+<h2>Advanced Questions<a class="headerlink" href="#advanced-questions" title="Permalink to this heading">¶</a></h2>
+<section id="q-can-i-implement-custom-algorithms">
+<h3>Q: Can I implement custom algorithms?<a class="headerlink" href="#q-can-i-implement-custom-algorithms" title="Permalink to this heading">¶</a></h3>
+<p><strong>A</strong>: Yes! Extend the trainer class:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">lightrft.trainer</span><span class="w"> </span><span class="kn">import</span> <span class="n">SPMDPPOTrainer</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">CustomTrainer</span><span class="p">(</span><span class="n">SPMDPPOTrainer</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">compute_advantages</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">...</span><span class="p">):</span>
+        <span class="c1"># Your custom advantage computation</span>
+        <span class="k">pass</span>
+</pre></div>
+</div>
+</section>
+<section id="q-how-do-i-add-a-new-model-architecture">
+<h3>Q: How do I add a new model architecture?<a class="headerlink" href="#q-how-do-i-add-a-new-model-architecture" title="Permalink to this heading">¶</a></h3>
+<p><strong>A</strong>: Create a monkey patch in <code class="docutils literal notranslate"><span class="pre">lightrft/models/monkey_patch/</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># your_model.py</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">patch_your_model</span><span class="p">(</span><span class="n">model</span><span class="p">):</span>
+    <span class="c1"># Add custom forward methods</span>
+    <span class="k">pass</span>
+
+<span class="c1"># In apply.py</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.your_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">patch_your_model</span>
+</pre></div>
+</div>
+</section>
+<section id="q-can-i-use-custom-reward-functions">
+<h3>Q: Can I use custom reward functions?<a class="headerlink" href="#q-can-i-use-custom-reward-functions" title="Permalink to this heading">¶</a></h3>
+<p><strong>A</strong>: Yes, pass a callable:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">custom_reward_fn</span><span class="p">(</span><span class="n">responses</span><span class="p">,</span> <span class="n">labels</span><span class="p">):</span>
+    <span class="c1"># Your reward computation</span>
+    <span class="k">return</span> <span class="n">rewards</span>
+
+<span class="n">trainer</span> <span class="o">=</span> <span class="n">SPMDPPOTrainer</span><span class="p">(</span>
+    <span class="o">...</span><span class="p">,</span>
+    <span class="n">reward_fn</span><span class="o">=</span><span class="n">custom_reward_fn</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="q-how-do-i-checkpoint-during-training">
+<h3>Q: How do I checkpoint during training?<a class="headerlink" href="#q-how-do-i-checkpoint-during-training" title="Permalink to this heading">¶</a></h3>
+<p><strong>A</strong>: Checkpoints are automatic:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>--save_path<span class="w"> </span>./checkpoints<span class="w"> </span><span class="se">\</span>
+--save_interval<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="se">\</span>
+--max_ckpt_num<span class="w"> </span><span class="m">3</span>
+</pre></div>
+</div>
+<p>Resume with:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>--load_checkpoint<span class="w"> </span><span class="se">\</span>
+--ckpt_path<span class="w"> </span>./checkpoints/episode_5
+</pre></div>
+</div>
+</section>
+</section>
+<section id="contributing-questions">
+<h2>Contributing Questions<a class="headerlink" href="#contributing-questions" title="Permalink to this heading">¶</a></h2>
+<section id="q-how-can-i-contribute-to-lightrft">
+<h3>Q: How can I contribute to LightRFT?<a class="headerlink" href="#q-how-can-i-contribute-to-lightrft" title="Permalink to this heading">¶</a></h3>
+<p><strong>A</strong>:</p>
+<ol class="arabic simple">
+<li><p>Fork the repository</p></li>
+<li><p>Create a feature branch</p></li>
+<li><p>Implement your changes</p></li>
+<li><p>Add tests</p></li>
+<li><p>Submit a pull request</p></li>
+</ol>
+<p>See <a class="reference internal" href="contributing.html"><span class="std std-doc">Contributing Guide</span></a> for details.</p>
+</section>
+<section id="q-how-do-i-report-bugs">
+<h3>Q: How do I report bugs?<a class="headerlink" href="#q-how-do-i-report-bugs" title="Permalink to this heading">¶</a></h3>
+<p><strong>A</strong>: Open an issue on <a class="reference external" href="https://github.com/opendilab/LightRFT/issues">GitHub Issues</a> with:</p>
+<ul class="simple">
+<li><p>Environment details (GPU, CUDA, PyTorch versions)</p></li>
+<li><p>Full error traceback</p></li>
+<li><p>Minimal reproduction script</p></li>
+<li><p>Expected vs actual behavior</p></li>
+</ul>
+</section>
+<section id="q-where-can-i-get-help">
+<h3>Q: Where can I get help?<a class="headerlink" href="#q-where-can-i-get-help" title="Permalink to this heading">¶</a></h3>
+<p><strong>A</strong>:</p>
+<ul class="simple">
+<li><p>GitHub Issues for bugs</p></li>
+<li><p>Discussions for questions</p></li>
+<li><p>Documentation for guides</p></li>
+<li><p>Examples directory for code samples</p></li>
+</ul>
+</section>
+</section>
+<section id="additional-resources">
+<h2>Additional Resources<a class="headerlink" href="#additional-resources" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="../installation/index.html"><span class="std std-doc">Installation Guide</span></a></p></li>
+<li><p><a class="reference internal" href="../quick_start/index.html"><span class="std std-doc">Quick Start</span></a></p></li>
+<li><p><a class="reference internal" href="#algorithms.md"><span class="xref myst">Algorithm Guide</span></a></p></li>
+<li><p><a class="reference internal" href="#configuration.md"><span class="xref myst">Configuration Reference</span></a></p></li>
+<li><p><a class="reference internal" href="troubleshooting.html"><span class="std std-doc">Troubleshooting Guide</span></a></p></li>
+<li><p><a class="reference internal" href="index.html"><span class="std std-doc">Best Practices</span></a></p></li>
+</ul>
+</section>
+</section>
+
+
+              </article>
+              
+            </div>
+            <footer>
+  
+  <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+    
+    <a href="troubleshooting.html" class="btn btn-neutral float-right" title="Troubleshooting Guide" accesskey="n"
+      rel="next">Next <img src="../_static/images/chevron-right-blue.svg"
+        class="next-page"></a>
+    
+    
+    <a href="model_testing.html" class="btn btn-neutral" title="Model Testing Guide" accesskey="p"
+      rel="prev"><img src="../_static/images/chevron-right-blue.svg" class="previous-page"> Previous</a>
+    
+  </div>
+  
+
+  <hr>
+
+  <div role="contentinfo">
+    <p>
+      &copy; Copyright 2025, OpenDILab.
+
+    </p>
+  </div>
+  
+  <div>
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a
+      href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the
+      Docs</a>.
+  </div>
+   
+
+</footer>
+          </div>
+        </div>
+
+        <div class="pytorch-content-right" id="pytorch-content-right">
+          <div class="pytorch-right-menu" id="pytorch-right-menu">
+            <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
+              <ul>
+<li><a class="reference internal" href="#">Frequently Asked Questions (FAQ)</a><ul>
+<li><a class="reference internal" href="#general-questions">General Questions</a><ul>
+<li><a class="reference internal" href="#q-what-is-lightrft">Q: What is LightRFT?</a></li>
+<li><a class="reference internal" href="#q-what-are-the-main-differences-between-lightrft-and-openrlhf">Q: What are the main differences between LightRFT and OpenRLHF?</a></li>
+<li><a class="reference internal" href="#q-which-models-are-supported">Q: Which models are supported?</a></li>
+<li><a class="reference internal" href="#q-what-hardware-is-required">Q: What hardware is required?</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#installation-questions">Installation Questions</a><ul>
+<li><a class="reference internal" href="#q-how-do-i-install-lightrft">Q: How do I install LightRFT?</a></li>
+<li><a class="reference internal" href="#q-do-i-need-to-install-vllm-separately">Q: Do I need to install vLLM separately?</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#training-questions">Training Questions</a><ul>
+<li><a class="reference internal" href="#q-what-s-the-difference-between-fsdp-and-deepspeed">Q: What’s the difference between FSDP and DeepSpeed?</a></li>
+<li><a class="reference internal" href="#q-how-do-i-choose-batch-sizes">Q: How do I choose batch sizes?</a></li>
+<li><a class="reference internal" href="#q-which-algorithm-should-i-use">Q: Which algorithm should I use?</a></li>
+<li><a class="reference internal" href="#q-how-many-samples-per-prompt-should-i-use">Q: How many samples per prompt should I use?</a></li>
+<li><a class="reference internal" href="#q-can-i-use-multiple-reward-models">Q: Can I use multiple reward models?</a></li>
+<li><a class="reference internal" href="#q-how-do-i-enable-multimodal-vlm-training">Q: How do I enable multimodal (VLM) training?</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#performance-questions">Performance Questions</a><ul>
+<li><a class="reference internal" href="#q-how-do-i-reduce-memory-usage">Q: How do I reduce memory usage?</a></li>
+<li><a class="reference internal" href="#q-how-do-i-speed-up-training">Q: How do I speed up training?</a></li>
+<li><a class="reference internal" href="#q-what-s-the-typical-training-speed">Q: What’s the typical training speed?</a></li>
+<li><a class="reference internal" href="#q-how-do-i-use-multiple-nodes">Q: How do I use multiple nodes?</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#algorithm-questions">Algorithm Questions</a><ul>
+<li><a class="reference internal" href="#q-what-s-the-difference-between-grpo-and-ppo">Q: What’s the difference between GRPO and PPO?</a></li>
+<li><a class="reference internal" href="#q-when-should-i-use-cpgd">Q: When should I use CPGD?</a></li>
+<li><a class="reference internal" href="#q-what-is-clip-higher">Q: What is Clip Higher?</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#debugging-questions">Debugging Questions</a><ul>
+<li><a class="reference internal" href="#q-training-crashes-with-oom-error">Q: Training crashes with OOM error</a></li>
+<li><a class="reference internal" href="#q-num-rollouts-per-episodes-0-error">Q: <code class="docutils literal notranslate"><span class="pre">num_rollouts_per_episodes</span> <span class="pre">=</span> <span class="pre">0</span></code> error</a></li>
+<li><a class="reference internal" href="#q-model-not-improving-reward-not-increasing">Q: Model not improving / Reward not increasing</a></li>
+<li><a class="reference internal" href="#q-nccl-timeout-or-hanging">Q: NCCL timeout or hanging</a></li>
+<li><a class="reference internal" href="#q-vllm-engine-initialization-fails">Q: vLLM engine initialization fails</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#evaluation-questions">Evaluation Questions</a><ul>
+<li><a class="reference internal" href="#q-how-do-i-evaluate-on-benchmarks">Q: How do I evaluate on benchmarks?</a></li>
+<li><a class="reference internal" href="#q-can-i-save-generation-trajectories">Q: Can I save generation trajectories?</a></li>
+<li><a class="reference internal" href="#q-how-do-i-integrate-with-w-b">Q: How do I integrate with W&amp;B?</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#advanced-questions">Advanced Questions</a><ul>
+<li><a class="reference internal" href="#q-can-i-implement-custom-algorithms">Q: Can I implement custom algorithms?</a></li>
+<li><a class="reference internal" href="#q-how-do-i-add-a-new-model-architecture">Q: How do I add a new model architecture?</a></li>
+<li><a class="reference internal" href="#q-can-i-use-custom-reward-functions">Q: Can I use custom reward functions?</a></li>
+<li><a class="reference internal" href="#q-how-do-i-checkpoint-during-training">Q: How do I checkpoint during training?</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#contributing-questions">Contributing Questions</a><ul>
+<li><a class="reference internal" href="#q-how-can-i-contribute-to-lightrft">Q: How can I contribute to LightRFT?</a></li>
+<li><a class="reference internal" href="#q-how-do-i-report-bugs">Q: How do I report bugs?</a></li>
+<li><a class="reference internal" href="#q-where-can-i-get-help">Q: Where can I get help?</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#additional-resources">Additional Resources</a></li>
+</ul>
+</li>
+</ul>
+
+            </div>
+          </div>
+        </div>
+    </section>
+  </div>
+
+  
+
+
+  
+
+  
+  <script type="text/javascript" id="documentation_options" data-url_root="../"
+    src="../_static/documentation_options.js"></script>
+  <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+  <script src="../_static/doctools.js"></script>
+  <script src="../_static/sphinx_highlight.js"></script>
+  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+  
+
+  
+
+  <script type="text/javascript" src="../_static/js/vendor/popper.min.js"></script>
+  <script type="text/javascript" src="../_static/js/vendor/bootstrap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+    jQuery(function () {
+      SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+  <!-- Begin Footer -->
+
+  <div class="container-fluid docs-tutorials-resources" id="docs-tutorials-resources">
+  </div>
+
+  <!-- End Footer -->
+
+  <!-- Begin Mobile Menu -->
+
+  <div class="mobile-main-menu">
+    <div class="container-fluid">
+      <div class="container">
+        <div class="mobile-main-menu-header-container">
+          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
+        </div>
+      </div>
+    </div>
+
+    <div class="mobile-main-menu-links-container">
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://github.com/opendilab/LightRFT" target="_blank">GitHub</a>
+          </li>
+      </div>
+    </div>
+  </div>
+
+  <!-- End Mobile Menu -->
+
+  <script type="text/javascript" src="../_static/js/vendor/anchor.min.js"></script>
+
+  <script type="text/javascript">
+    $(document).ready(function () {
+      mobileMenu.bind();
+      mobileTOC.bind();
+      pytorchAnchors.bind();
+      sideMenus.bind();
+      scrollToAnchor.bind();
+      highlightNavigation.bind();
+      mainMenuDropdown.bind();
+      filterTags.bind();
+
+      // Add class to links that have code blocks, since we cannot create links in code blocks
+      $("article.pytorch-article a span.pre").each(function (e) {
+        $(this).closest("a").addClass("has-code");
+      });
+    })
+  </script>
+</body>
+
+</html>

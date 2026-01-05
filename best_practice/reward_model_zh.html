@@ -1,0 +1,1781 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js" lang="en">
+<!--<![endif]-->
+
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>LightRFT Reward Model 训练最佳实践指南 &mdash; LightRFT v0.1.1 documentation</title>
+  
+
+  <link rel="shortcut icon" href="../_static/images/favicon.ico" />
+  
+  
+
+  
+
+  
+  
+  
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/readthedocs.css" type="text/css" />
+  <link rel="index" title="Index" href="../genindex.html" />
+  <link rel="search" title="Search" href="../search.html" />
+  <!-- Google Analytics -->
+  <script type="text/javascript">
+    var collapsedSections = [];
+  </script>
+  
+  <!-- End Google Analytics -->
+  
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+  <script>
+    MathJax = {
+        chtml: {
+            scale: 1,
+            minScale: 1,
+        },
+        svg: {
+            scale: 1,
+            minScale: 1,
+        }
+    }
+</script>
+
+  <!-- Preload the theme fonts -->
+
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-book.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/IBMPlexMono/IBMPlexMono-Medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-medium-italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/IBMPlexMono/IBMPlexMono-SemiBold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+
+<!-- Preload the katex fonts -->
+
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Math-Italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size1-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size4-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size2-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size3-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Caligraphic-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.2/css/all.css"
+    integrity="sha384-vSIIfh2YWi9wW0r9iZe7RJPrKwp6bG+s9QZMoITbCckVJqGCCRhc+ccxNcdpHuYu" crossorigin="anonymous">
+</head>
+
+<div class="container-fluid header-holder tutorials-header" id="header-holder">
+  <div class="container">
+    <div class="header-container">
+      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+        aria-label="OpenMMLab"></a>
+
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://github.com/opendilab/LightRFT" target="_blank">GitHub</a>
+          </li>
+          <li >
+            <div id="resourcesDropdownButton" data-toggle="resources-dropdown" class="resources-dropdown">
+              <a
+                class="resource-option with-down-arrow">
+                OpenDILab
+              </a>
+              <div class="resources-dropdown-menu">
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-engine" target="_blank">
+                  <span class="dropdown-title">DI-engine </span>
+                  <p>OpenDILab Decision AI Engine</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/LightZero" target="_blank">
+                  <span class="dropdown-title">LightZero </span>
+                  <p>OpenDILab Decision Monte Carlo Tree Search Framework</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/GenerativeRL" target="_blank">
+                  <span class="dropdown-title">GenerativeRL </span>
+                  <p>OpenDILab Generative AI Framework</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-star" target="_blank">
+                  <span class="dropdown-title">DI-star </span>
+                  <p>OpenDILab Decision AI in StarCraftII</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-drive" target="_blank">
+                  <span class="dropdown-title">DI-drive </span>
+                  <p>OpenDILab Auto-driving platform</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/GoBigger" target="_blank">
+                  <span class="dropdown-title">GoBigger </span>
+                  <p>OpenDILab Multi-Agent Environment</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-smartcross" target="_blank">
+                  <span class="dropdown-title">DI-smartcross </span>
+                  <p>Decision Intelligence Platform for Traffic Crossing Signal Control</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-treetensor" target="_blank">
+                  <span class="dropdown-title">DI-treetensor </span>
+                  <p>Tree Nested PyTorch Tensor Lib</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-sheep" target="_blank">
+                  <span class="dropdown-title">DI-sheep </span>
+                  <p>Deep Reinforcement Learning + 3 Tiles Game</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-model-based-RL" target="_blank">
+                  <span class="dropdown-title">awesome-model-based-RL </span>
+                  <p>A curated list of awesome model based RL resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-decision-transformer" target="_blank">
+                  <span class="dropdown-title">awesome-decision-transformer </span>
+                  <p>A curated list of Decision Transformer resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-exploration-rl" target="_blank">
+                  <span class="dropdown-title">awesome-exploration-rl </span>
+                  <p>A curated list of awesome exploration RL resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-multi-modal-reinforcement-learning" target="_blank">
+                  <span class="dropdown-title">awesome-multi-modal-reinforcement-learning </span>
+                  <p>A curated list of Multi-Modal Reinforcement Learning resources (continually updated)</p>
+                </a>
+              </div>
+          </li>
+        </ul>
+      </div>
+
+      <a class="main-menu-open-button" href="#" data-behavior="open-mobile-menu"></a>
+    </div>
+  </div>
+</div>
+
+<body class="pytorch-body">
+
+   
+
+  
+
+  <div class="table-of-contents-link-wrapper">
+    <span>Table of Contents</span>
+    <a href="#" class="toggle-table-of-contents" data-behavior="toggle-table-of-contents"></a>
+  </div>
+
+  <nav data-toggle="wy-nav-shift" class="pytorch-left-menu" id="pytorch-left-menu">
+    <div class="pytorch-side-scroll">
+      <div class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        <div class="pytorch-left-menu-search">
+          
+
+          
+          
+          
+          
+
+          
+
+
+
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search Docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        
+        
+        
+        
+        
+        <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../installation/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quick_start/index.html">Quick Start</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide &amp; Best Practices</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="index.html">Best Practices</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/utils/index.html">lightrft.utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/datasets/index.html">lightrft.datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/models/index.html">lightrft.models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/strategy/index.html">lightrft.strategy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/trainer/index.html">lightrft.trainer</a></li>
+</ul>
+
+        
+        
+      </div>
+    </div>
+  </nav>
+
+  <div class="pytorch-container">
+    <div class="pytorch-page-level-bar" id="pytorch-page-level-bar">
+      <div class="pytorch-breadcrumbs-wrapper">
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="pytorch-breadcrumbs">
+    
+      <li>
+        <a href="../index.html">
+            Docs
+        </a> &gt;
+      </li>
+
+        
+      <li>LightRFT Reward Model 训练最佳实践指南</li>
+    
+    
+      <li class="pytorch-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/best_practice/reward_model_zh.md.txt" rel="nofollow"><img src="../_static/images/view-page-source-icon.svg"></a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+</div>
+      </div>
+
+      <div class="pytorch-shortcuts-wrapper" id="pytorch-shortcuts-wrapper">
+        Shortcuts
+      </div>
+    </div>
+
+    <section data-toggle="wy-nav-shift" id="pytorch-content-wrap" class="pytorch-content-wrap">
+      <div class="pytorch-content-left">
+        
+          <div class="rst-content">
+            
+            <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
+              <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
+                
+  <section id="lightrft-reward-model">
+<h1>LightRFT Reward Model 训练最佳实践指南<a class="headerlink" href="#lightrft-reward-model" title="Permalink to this heading">¶</a></h1>
+<section id="id1">
+<h2>目录<a class="headerlink" href="#id1" title="Permalink to this heading">¶</a></h2>
+<ol class="arabic simple">
+<li><p>概述</p></li>
+<li><p>Reward Model 类型</p></li>
+<li><p>环境准备</p></li>
+<li><p>模型训练</p></li>
+<li><p>模型评估</p></li>
+<li><p>常见问题</p></li>
+<li><p>基准测试与性能参考</p></li>
+<li><p>进阶话题</p></li>
+<li><p>参考资源</p></li>
+</ol>
+</section>
+<hr class="docutils" />
+<section id="id2">
+<h2>1. 概述<a class="headerlink" href="#id2" title="Permalink to this heading">¶</a></h2>
+<section id="reward-model">
+<h3>1.1 什么是 Reward Model<a class="headerlink" href="#reward-model" title="Permalink to this heading">¶</a></h3>
+<p>在基于人类反馈的强化学习 (Reinforcement Learning from Human Feedback, RLHF) 的流程中，Reward Model 扮演着人类偏好代理的关键角色。</p>
+<p><strong>为什么需要 Reward Model？</strong>
+在许多复杂的任务场景中，我们面临着<strong>奖励函数难以显式用简单的规则定义</strong>的挑战。例如：</p>
+<ul class="simple">
+<li><p><strong>生成任务</strong>：如何用公式衡量一段文本的文采、一张图像的美感？</p></li>
+<li><p><strong>交互与控制</strong>：如何定义驾驶的舒适程度、或者机器人动作的自然度？</p></li>
+</ul>
+<p>虽然人类可以对这些结果进行主观评判，但在大规模训练中实时获取人工反馈既昂贵又耗时。因此，我们需要训练一个 Reward Model 来<strong>模拟人类的判断标准</strong>。</p>
+<p><strong>Reward Model 的作用</strong>
+Reward Model 接收一个输入（如 Prompt 或环境状态）及其对应的输出（Response 或动作），并输出一个评价信号。这个信号量化了结果在多大程度上符合人类的期望（如有用性、安全性、真实性等），从而为策略模型（Policy Model）的优化提供可扩展的、一致的反馈指导。</p>
+<p>根据输出形式的不同，Reward Model 主要分为两类：</p>
+<ol class="arabic simple">
+<li><p><strong>Scalar Reward Model (SRM)</strong>: 这是最经典的奖励模型形式。它将输入和响应映射为一个单一的标量分数（Scalar Score）。SRM 的优势在于计算效率高，且输出的数值信号可以直接作为强化学习算法（如 PPO）中的 Reward，或者用于 Rejection Sampling。然而，单一的标量往往难以解释模型打分的依据，也难以捕捉复杂的多维度偏好。</p></li>
+<li><p><strong>Generative Reward Model (GRM)</strong>: 这是一种新兴的奖励模型范式。GRM 利用大语言模型的生成能力，以自然语言的形式输出评价。它不仅能给出最终的判断（如“回答 A 更好”），还能生成详细的思维链（Chain-of-Thought, CoT）来解释评价理由。GRM 具有更强的可解释性，并且通过模拟人类的推理过程，往往能在复杂的评估任务中展现出更高的准确性。</p></li>
+</ol>
+<p>Reward Model 给出的奖励信号（无论是标量还是基于文本解析出的结果）将用于指导 Policy Model（策略模型）的优化。通过最大化 RM 给出的奖励，Policy Model 能够学习生成更符合人类偏好和价值观的内容。因此，Reward Model 的质量直接决定了最终模型的对齐效果，是对齐大模型生成行为与人类偏好的关键桥梁。</p>
+</section>
+<section id="lightrft-rm">
+<h3>1.2 LightRFT 中的 RM 支持<a class="headerlink" href="#lightrft-rm" title="Permalink to this heading">¶</a></h3>
+<p>LightRFT 提供了完整的多模态奖励模型训练框架，支持：</p>
+<p><strong>模型类型：</strong></p>
+<ul class="simple">
+<li><p><strong>Scalar Reward Model (SRM)</strong>: 标量奖励模型，输出标量分数（0-1 之间）</p></li>
+<li><p><strong>Generative Reward Model (GRM)</strong>: 生成式的奖励模型，生成带推理过程（CoT）与最终结论的文本式评估（如 <think>…</think><answer>…</answer>），具有更好的可解释性。</p></li>
+</ul>
+<p><strong>支持的模态：</strong></p>
+<ul class="simple">
+<li><p><strong>Vision-Language (VL)</strong>: 图像-文本、视频-文本</p></li>
+<li><p><strong>Audio-Language (AL)</strong>: 音频-文本</p></li>
+<li><p><strong>Language-Only</strong>: 纯文本，即现有的 LLM 模型</p></li>
+</ul>
+<p><strong>训练后端：</strong></p>
+<ul class="simple">
+<li><p>DeepSpeed ZeRO (Stage 1/2/3)</p></li>
+</ul>
+</section>
+</section>
+<hr class="docutils" />
+<section id="id3">
+<h2>2. Reward Model 类型<a class="headerlink" href="#id3" title="Permalink to this heading">¶</a></h2>
+<section id="scalar-reward-model-srm">
+<h3>2.1 Scalar Reward Model (SRM)<a class="headerlink" href="#scalar-reward-model-srm" title="Permalink to this heading">¶</a></h3>
+<section id="id4">
+<h4>特点<a class="headerlink" href="#id4" title="Permalink to this heading">¶</a></h4>
+<ul class="simple">
+<li><p>输出单一标量分数（通过 Sigmoid 映射到 0-1）</p></li>
+<li><p>训练使用成对偏好数据（Pairwise Preference）</p></li>
+<li><p>支持多个 reward head（如 preference, alignment, helpfulness）</p></li>
+</ul>
+</section>
+<section id="id5">
+<h4>适用场景<a class="headerlink" href="#id5" title="Permalink to this heading">¶</a></h4>
+<ul class="simple">
+<li><p>需要快速推理的场景</p></li>
+<li><p>作为 PPO/GRPO 等 RL 算法的奖励信号</p></li>
+<li><p>多维度偏好建模</p></li>
+</ul>
+</section>
+<section id="id6">
+<h4>损失函数<a class="headerlink" href="#id6" title="Permalink to this heading">¶</a></h4>
+<ul class="simple">
+<li><p><strong>Bradley-Terry Loss</strong> (Log-Sigmoid): <code class="docutils literal notranslate"><span class="pre">-log(σ(r_chosen</span> <span class="pre">-</span> <span class="pre">r_reject</span> <span class="pre">-</span> <span class="pre">margin))</span></code></p></li>
+<li><p><strong>LogExp Loss</strong>: <code class="docutils literal notranslate"><span class="pre">log(1</span> <span class="pre">+</span> <span class="pre">exp(r_reject</span> <span class="pre">-</span> <span class="pre">r_chosen))</span></code></p></li>
+<li><p><strong>HPS Scale Loss</strong>: Cross-entropy with learnable temperature (在我们的实验中表现更优)</p></li>
+</ul>
+</section>
+<section id="id7">
+<h4>架构<a class="headerlink" href="#id7" title="Permalink to this heading">¶</a></h4>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Backbone (e.g. Vision-Language Model)
+    ↓
+Hidden States (from probing_layer)
+    ↓
+Pooling (Attention or Last Token)
+    ↓
+Reward Head (MLP + Sigmoid)
+    ↓
+Scalar Score (0-1)
+</pre></div>
+</div>
+</section>
+</section>
+<section id="generative-reward-model-grm">
+<h3>2.2 Generative Reward Model (GRM)<a class="headerlink" href="#generative-reward-model-grm" title="Permalink to this heading">¶</a></h3>
+<section id="id8">
+<h4>特点<a class="headerlink" href="#id8" title="Permalink to this heading">¶</a></h4>
+<ul class="simple">
+<li><p>生成文本形式的评价和理由</p></li>
+<li><p>训练使用标准语言模型损失 (Next-Token Prediction)</p></li>
+<li><p>可解释性强</p></li>
+</ul>
+</section>
+<section id="id9">
+<h4>适用场景<a class="headerlink" href="#id9" title="Permalink to this heading">¶</a></h4>
+<ul class="simple">
+<li><p>需要提供评价理由的场景</p></li>
+<li><p>复杂任务的细粒度评估</p></li>
+<li><p>研究和分析模型行为</p></li>
+</ul>
+</section>
+<section id="id10">
+<h4>训练方式<a class="headerlink" href="#id10" title="Permalink to this heading">¶</a></h4>
+<ul class="simple">
+<li><p><strong>GPT-LM Loss</strong>: 标准的 next-token prediction loss</p></li>
+<li><p><strong>强化微调（Reinforcement Fine-Tuning, RFT）</strong>： 使用强化学习的方式训练，以提高 GRM 的推理能力。在 LightRFT 中该模块还在开发中，敬请期待。</p></li>
+</ul>
+</section>
+<section id="id11">
+<h4>架构<a class="headerlink" href="#id11" title="Permalink to this heading">¶</a></h4>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Multi-modal Encoder (e.g. Vision2Seq Model)
+    ↓
+LLM Decoder
+    ↓
+Generated Text (Reward Description)
+</pre></div>
+</div>
+</section>
+</section>
+<section id="id12">
+<h3>2.3 选择建议<a class="headerlink" href="#id12" title="Permalink to this heading">¶</a></h3>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>场景</p></th>
+<th class="head"><p>推荐类型</p></th>
+<th class="head"><p>原因</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>PPO/DPO 训练</p></td>
+<td><p>SRM</p></td>
+<td><p>推理速度快，标量信号易于使用</p></td>
+</tr>
+<tr class="row-odd"><td><p>复杂任务评估</p></td>
+<td><p>GRM</p></td>
+<td><p>可以生成详细的评价理由</p></td>
+</tr>
+<tr class="row-even"><td><p>多维度偏好</p></td>
+<td><p>SRM/GRM (多 head)</p></td>
+<td><p>可以同时训练多个维度</p></td>
+</tr>
+<tr class="row-odd"><td><p>可解释性要求高</p></td>
+<td><p>GRM</p></td>
+<td><p>提供文本解释</p></td>
+</tr>
+<tr class="row-even"><td><p>实时应用</p></td>
+<td><p>SRM</p></td>
+<td><p>推理开销小</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<hr class="docutils" />
+<section id="id13">
+<h2>3. 环境准备<a class="headerlink" href="#id13" title="Permalink to this heading">¶</a></h2>
+<section id="id14">
+<h3>3.1 依赖安装<a class="headerlink" href="#id14" title="Permalink to this heading">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>LightRFT
+
+<span class="c1"># 安装基础依赖</span>
+pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements.txt
+
+<span class="c1"># 对于视觉语言模型</span>
+pip<span class="w"> </span>install<span class="w"> </span>qwen-vl-utils<span class="w">  </span><span class="c1"># Qwen-VL 系列</span>
+pip<span class="w"> </span>install<span class="w"> </span>keye-vl-utils<span class="w">  </span><span class="c1"># KeyeVL 系列</span>
+
+<span class="c1"># 对于音频语言模型</span>
+pip<span class="w"> </span>install<span class="w"> </span>librosa
+</pre></div>
+</div>
+</section>
+<section id="gpu">
+<h3>3.2 GPU 要求<a class="headerlink" href="#gpu" title="Permalink to this heading">¶</a></h3>
+<p><strong>最低配置：</strong></p>
+<ul class="simple">
+<li><p>SRM (3B 模型, 全量微调): 1x H200/A100 (80GB)</p></li>
+<li><p>SRM (7B 模型): 1x H200 with ZeRO-3</p></li>
+<li><p>GRM (3B 模型): 1x H200 with ZeRO-3</p></li>
+<li><p>GRM (7B 模型): 2x H200 with ZeRO-3</p></li>
+</ul>
+<p><strong>推荐配置：</strong></p>
+<ul class="simple">
+<li><p>8x A100 (80GB) for 7B-72B models</p></li>
+<li><p>使用 ZeRO-3 + LoRA for larger models</p></li>
+</ul>
+</section>
+</section>
+<hr class="docutils" />
+<section id="id15">
+<h2>4. 模型训练<a class="headerlink" href="#id15" title="Permalink to this heading">¶</a></h2>
+<p>LightRFT 提供了开箱即用的训练脚本，支持 SRM 和 GRM 的训练。
+我们已经为常见场景准备好可直接运行的脚本与默认配置，开箱即用；同时也支持按需修改参数以适配你的实验。</p>
+<section id="srm-grm">
+<h3>4.0 一键运行（SRM / GRM）<a class="headerlink" href="#srm-grm" title="Permalink to this heading">¶</a></h3>
+<p>快速开始：按需修改脚本中的数据路径与保存目录后直接运行。</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># 首先进入 LightRFT 根目录</span>
+<span class="nb">cd</span><span class="w"> </span>LightRFT
+
+<span class="c1"># 训练 Vision-Language 模型的 SRM</span>
+bash<span class="w"> </span>examples/srm_training/run_srm_vl.sh
+
+<span class="c1"># 训练 Audio-Language 模型的 SRM</span>
+bash<span class="w"> </span>examples/srm_training/run_srm_al.sh
+
+<span class="c1"># 训练 Vision-Language 模型的 GRM</span>
+bash<span class="w"> </span>examples/srm_training/run_grm_vl.sh
+</pre></div>
+</div>
+<p>说明：</p>
+<ul class="simple">
+<li><p>脚本已内置推荐配置。</p></li>
+<li><p>支持单机多卡运行，默认使用 torchrun 启动；如需分布式多机，请在脚本顶部按注释设置 NNODES、MASTER_ADDR/PORT 等环境变量。</p></li>
+</ul>
+<p>以下是基于我们实验设置的详细命令与关键参数说明。</p>
+</section>
+<section id="id16">
+<h3>4.1 训练 Scalar Reward Model (SRM)<a class="headerlink" href="#id16" title="Permalink to this heading">¶</a></h3>
+<section id="t2i">
+<h4>4.1.1 基础训练脚本 (基于 T2I 实验)<a class="headerlink" href="#t2i" title="Permalink to this heading">¶</a></h4>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/bin/bash</span>
+
+<span class="c1"># 设置环境变量</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">GPUS_PER_NODE</span><span class="o">=</span><span class="w"> </span><span class="m">2</span><span class="w">             </span><span class="c1"># 每个节点的 GPU 数量</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">NNODES</span><span class="o">=</span><span class="m">1</span><span class="w">                     </span><span class="c1"># 节点数量</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">NODE_RANK</span><span class="o">=</span><span class="m">0</span><span class="w">                  </span><span class="c1"># 当前节点的 rank</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">MASTER_ADDR</span><span class="o">=</span><span class="m">127</span>.0.0.1<span class="w">        </span><span class="c1"># 主节点地址</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">MASTER_PORT</span><span class="o">=</span><span class="m">29500</span><span class="w">            </span><span class="c1"># 主节点端口</span>
+
+<span class="c1"># 训练参数</span>
+<span class="nv">PRETRAIN</span><span class="o">=</span><span class="s2">&quot;Qwen/Qwen2.5-VL-3B&quot;</span>
+<span class="c1"># 使用 HPDv3 训练集 和 测试集</span>
+<span class="nv">TRAIN_DATA</span><span class="o">=</span><span class="s2">&quot;/path/to/hpdv3/train.json&quot;</span>
+<span class="nv">EVAL_DATA</span><span class="o">=</span><span class="s2">&quot;/path/to/hpdv3/test.json&quot;</span>
+<span class="nv">SAVE_PATH</span><span class="o">=</span><span class="s2">&quot;./checkpoints/srm_qwen2.5vl_3b_hpdv3&quot;</span>
+
+<span class="c1"># 设置 Task Instruncion</span>
+<span class="nv">TASK_INSTRUCTION</span><span class="o">=</span><span class="s2">&quot;Your will act as an expert image evaluator for text-to-image generation.</span>
+<span class="s2">Given a text prompt and a generated image, your task is to assess the overall quality of the image in relation to the prompt.</span>
+<span class="s2">Your evaluation should focus on the following key aspects:</span>
+<span class="s2">• Preference: Which image would a human viewer find more satisfying or visually appealing overall.</span>
+<span class="s2">• Alignment: How well the image content matches the given text prompt in semantics, objects, and attributes.</span>
+<span class="s2">Your task is provided in the following, please give your judgement based on above criteria.</span>
+<span class="s2">The prompt used for generation is as follows: {prompt}.</span>
+<span class="s2">&quot;</span>
+
+<span class="c1"># 启动训练</span>
+<span class="nb">set</span><span class="w"> </span>-x
+
+torchrun<span class="w"> </span>--nnodes<span class="w"> </span><span class="nv">$NNODES</span><span class="w"> </span>--nproc-per-node<span class="w"> </span><span class="nv">$GPUS_PER_NODE</span><span class="w"> </span>--node_rank<span class="w"> </span><span class="nv">$NODE_RANK</span><span class="w"> </span>--master-port<span class="w"> </span><span class="nv">$MASTER_PORT</span><span class="w"> </span>--master-addr<span class="w"> </span><span class="nv">$MASTER_ADDR</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>examples/demo_srm_training/train_srm_vl.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--pretrain<span class="w"> </span><span class="nv">$PRETRAIN</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--train_data<span class="w"> </span><span class="nv">$TRAIN_DATA</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--save_path<span class="w"> </span><span class="nv">$SAVE_PATH</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--ckpt_path<span class="w"> </span><span class="nv">$SAVE_PATH</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--train_batch_size<span class="w"> </span><span class="m">32</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--micro_train_batch_size<span class="w"> </span><span class="m">2</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--max_epochs<span class="w"> </span><span class="m">5</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--actor_learning_rate<span class="w"> </span>1e-5<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--lr_warmup_ratio<span class="w"> </span><span class="m">0</span>.05<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--prompt_max_len<span class="w"> </span><span class="m">2048</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--pooling_method<span class="w"> </span>attn<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--probing_layer<span class="w"> </span>-1<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--heads_types<span class="w"> </span>preference<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--scale_for_train<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--margin<span class="w"> </span><span class="m">0</span>.1<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--task_instruction<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$TASK_INSTRUCTION</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--loss_type<span class="w"> </span>hps<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--zero_stage<span class="w"> </span><span class="m">2</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--bf16<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--flash_attn<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--gradient_checkpointing<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--logging_steps<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--save_steps<span class="w"> </span><span class="m">100</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--use_wandb<span class="w"> </span><span class="s2">&quot;your_wandb_key&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--wandb_project<span class="w"> </span><span class="s2">&quot;reward_model_training&quot;</span>
+</pre></div>
+</div>
+</section>
+<section id="id17">
+<h4>4.1.2 关键参数说明<a class="headerlink" href="#id17" title="Permalink to this heading">¶</a></h4>
+<p><strong>模型参数：</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">--pretrain</span></code>: 预训练模型路径。实验中使用 <code class="docutils literal notranslate"><span class="pre">Qwen/Qwen2.5-VL-3B</span></code>。</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--pooling_method</span></code>:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">attn</span></code>: 使用 attention pooling（<strong>实验中使用，推荐</strong>）。</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">last</span></code>: 使用最后一个 token。</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--probing_layer</span></code>: 从哪一层提取特征作为 reward head 的输入。</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">-1</span></code>: 最后一层（<strong>实验中使用，默认</strong>）。</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">17</span></code>: 第 17 层（可作为变体尝试）。</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--heads_types</span></code>: reward head 类型，默认只使用 <code class="docutils literal notranslate"><span class="pre">preference</span></code>。
+可以设置为多个维度，如 <code class="docutils literal notranslate"><span class="pre">preference</span> <span class="pre">alignment</span> <span class="pre">coherence</span></code>。
+但需要确保数据中包含对应的标签。</p></li>
+</ul>
+<p><strong>训练参数：</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">--train_batch_size</span></code>: 全局 batch size。T2I 实验设为 <code class="docutils literal notranslate"><span class="pre">32</span></code>，T2V 实验设为 <code class="docutils literal notranslate"><span class="pre">8</span></code>。</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--micro_train_batch_size</span></code>: 每个 GPU 的 batch size。</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--actor_learning_rate</span></code>: 学习率。<strong>实验中全量微调使用 <code class="docutils literal notranslate"><span class="pre">1e-5</span></code></strong>。</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--video_fps</span></code>: 视频数据的采样帧率，T2V 实验中设为 <code class="docutils literal notranslate"><span class="pre">2.0</span></code>。</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--scale_for_train</span></code>: 在训练过程中启用可学习的缩放系数 (learnable scaling factor)。</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--margin</span></code>: 在 BT Loss 中使用的 margin 值，HPS 和 LogExp 中无效。</p></li>
+</ul>
+<p><strong>Prompt 相关：</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">--task_instruction</span></code>: 任务指令，用于指导奖励模型理解评价标准。实验中 T2I 设为上述示例内容。</p></li>
+</ul>
+<p><strong>训练记录：</strong>
+LightRFT 支持多种训练日志记录方式：</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">--use_wandb</span></code>: 启用 Weights &amp; Biases 进行训练日志记录。</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--use_tensorboard</span></code>: 启用 TensorBoard 进行训练日志记录并保存到指定路径。
+可通过加入 –use_tensorboard “path/to/logs” 启用。</p></li>
+</ul>
+<p><strong>损失函数：</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">--loss_type</span></code>:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">hps</span></code>: 使用 HPS Scale Loss（<strong>实验中使用，默认</strong>）。</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">sigmoid</span></code>: 使用 BT (Bradley-Terry) Loss。</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">logexp</span></code>: 使用 LogExp Loss。</p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="lora">
+<h4>4.1.3 LoRA 训练<a class="headerlink" href="#lora" title="Permalink to this heading">¶</a></h4>
+<p>对于大模型（&gt; 7B）或显存受限情况，推荐使用 LoRA：</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>examples/demo_srm_training/train_srm.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--pretrain<span class="w"> </span><span class="s2">&quot;Qwen/Qwen2.5-VL-72B-Instruct&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>...<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--lora_rank<span class="w"> </span><span class="m">64</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--lora_alpha<span class="w"> </span><span class="m">128</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--lora_dropout<span class="w"> </span><span class="m">0</span>.1<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--target_modules<span class="w"> </span>all-linear<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--zero_stage<span class="w"> </span><span class="m">2</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="id18">
+<h3>4.2 训练 Generative Reward Model (GRM)<a class="headerlink" href="#id18" title="Permalink to this heading">¶</a></h3>
+<section id="id19">
+<h4>4.2.1 基础训练脚本 (基于 T2I 实验)<a class="headerlink" href="#id19" title="Permalink to this heading">¶</a></h4>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/bin/bash</span>
+
+<span class="nv">PRETRAIN</span><span class="o">=</span><span class="s2">&quot;Qwen/Qwen2.5-VL-3B&quot;</span>
+<span class="nv">TRAIN_DATA</span><span class="o">=</span><span class="s2">&quot;/path/to/ImageGen-CoT-Reward-5K.json&quot;</span>
+<span class="nv">SAVE_PATH</span><span class="o">=</span><span class="s2">&quot;./checkpoints/grm_qwen2.5vl_3b&quot;</span>
+
+torchrun<span class="w"> </span>--nnodes<span class="w"> </span><span class="nv">$NNODES</span><span class="w"> </span>--nproc-per-node<span class="w"> </span><span class="nv">$GPUS_PER_NODE</span><span class="w"> </span>--node_rank<span class="w"> </span><span class="nv">$NODE_RANK</span><span class="w"> </span>--master-port<span class="w"> </span><span class="nv">$MASTER_PORT</span><span class="w"> </span>--master-addr<span class="w"> </span><span class="nv">$MASTER_ADDR</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>examples/demo_grm_training/train_grm_vl.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--pretrain<span class="w"> </span><span class="nv">$PRETRAIN</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--train_data<span class="w"> </span><span class="nv">$TRAIN_DATA</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--save_path<span class="w"> </span><span class="nv">$SAVE_PATH</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--ckpt_path<span class="w"> </span><span class="nv">$SAVE_PATH</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--train_batch_size<span class="w"> </span><span class="m">4</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--micro_train_batch_size<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--max_epochs<span class="w"> </span><span class="m">2</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--actor_learning_rate<span class="w"> </span>1e-5<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--prompt_max_len<span class="w"> </span><span class="m">4096</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--zero_stage<span class="w"> </span><span class="m">2</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--bf16<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--flash_attn<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--gradient_checkpointing<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--logging_steps<span class="w"> </span><span class="m">10</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--save_steps<span class="w"> </span><span class="m">500</span>
+</pre></div>
+</div>
+<p><strong>注意事项：</strong></p>
+<ul class="simple">
+<li><p>GRM 通常需要更长的序列长度 (<code class="docutils literal notranslate"><span class="pre">--prompt_max_len</span> <span class="pre">4096</span></code>) 以容纳 CoT 文本。</p></li>
+<li><p>由于序列长，batch size 需相应减小，实验中使用 <code class="docutils literal notranslate"><span class="pre">4</span></code>。</p></li>
+<li><p>学习率与 SRM 实验保持一致 (<code class="docutils literal notranslate"><span class="pre">1e-5</span></code>)。</p></li>
+</ul>
+</section>
+</section>
+</section>
+<hr class="docutils" />
+<section id="id20">
+<h2>5. 模型评估<a class="headerlink" href="#id20" title="Permalink to this heading">¶</a></h2>
+<section id="id21">
+<h3>5.1 模型转换<a class="headerlink" href="#id21" title="Permalink to this heading">¶</a></h3>
+<p>我们的训练脚本默认使用 DeepSpeed ZeRO 作为训练引擎，训练中途会保存 DeepSpeed 格式的 checkpoint，因此需要将其转换为标准的 HuggingFace 格式以便进行推理和评估。</p>
+<p>对于 SRM 模型，我们推荐使用以下脚本进行转换：</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>examples/ckpt_scripts/ds2hf.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--hf_base<span class="w"> </span>/path/to/base/model<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--model_type<span class="w"> </span>srm_vl<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--checkpoint_dir<span class="w"> </span>/path/to/deepspeed/checkpoint/dir<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--output_dir<span class="w"> </span>/path/to/output/huggingface/output/dir<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--scale_for_train<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--pooling_method<span class="w"> </span>attn<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--heads_types<span class="w"> </span>preference
+</pre></div>
+</div>
+<p>对于 GRM 模型，可以使用以下脚本进行转换：</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>examples/ckpt_scripts/ds2hf.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--hf_base<span class="w"> </span>/path/to/base/model<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--model_type<span class="w"> </span>grm<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--checkpoint_dir<span class="w"> </span>/path/to/deepspeed/checkpoint/dir<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--output_dir<span class="w"> </span>/path/to/output/huggingface/output/dir
+</pre></div>
+</div>
+</section>
+<section id="id22">
+<h3>5.2 评估数据准备<a class="headerlink" href="#id22" title="Permalink to this heading">¶</a></h3>
+<p>评估数据格式与训练数据相同，但应为独立的测试集。</p>
+<p><strong>实验中使用的评估集：</strong></p>
+<ul class="simple">
+<li><p><strong>Text-to-Image (T2I) 任务</strong></p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">OmniReward-Bench-T2I</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">HPDv3</span> <span class="pre">Test</span> <span class="pre">Set</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ImageRewardDB</span> <span class="pre">Test</span> <span class="pre">Set</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">GenAI-Bench</span></code></p></li>
+</ul>
+</li>
+<li><p><strong>Text-to-Video (T2V) 任务</strong></p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">OmniReward-Bench-T2V</span></code></p></li>
+</ul>
+</li>
+<li><p><strong>Text-to-Audio (T2A) 任务</strong></p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">OmniReward-Bench-T2A</span></code></p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="id23">
+<h3>5.3 评估脚本示例<a class="headerlink" href="#id23" title="Permalink to this heading">¶</a></h3>
+<p>我们在 <code class="docutils literal notranslate"><span class="pre">examples/demo_srm_training</span></code> 和 <code class="docutils literal notranslate"><span class="pre">examples/demo_grm_training</span></code> 目录下提供了评估脚本 <code class="docutils literal notranslate"><span class="pre">test_srm_vl.py</span></code> 和 <code class="docutils literal notranslate"><span class="pre">test_grm_vl.py</span></code>，分别用于 SRM 和 GRM 的评测。评估脚本中为不同的 benchmark 实现相应的 Evaluator 类。支持实现自定义的 Evaluator 以适应新的评估需求。</p>
+<p>另外，也支持在训练脚本中指定评估数据，实现训练过程中的定期评估:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>--eval_data<span class="w"> </span><span class="s2">&quot;/path/to/your/eval.json&quot;</span><span class="w"> </span><span class="se">\</span>
+--eval_steps<span class="w"> </span><span class="m">100</span><span class="w">  </span><span class="c1"># 每 100 步评估一次</span>
+</pre></div>
+</div>
+<p>启用后，训练过程中会在指定步数进行进行评估，并将结果记录到 save_path 下的 jsonl 文件中。</p>
+</section>
+<section id="id24">
+<h3>5.4 评估指标<a class="headerlink" href="#id24" title="Permalink to this heading">¶</a></h3>
+<section id="srm">
+<h4>5.4.1 SRM 评估<a class="headerlink" href="#srm" title="Permalink to this heading">¶</a></h4>
+<ul class="simple">
+<li><p><strong>Accuracy</strong>: chosen 样本得分 &gt; reject 样本的比例。这是我们实验中的核心指标。</p></li>
+<li><p><strong>Mean Reward Gap</strong>: <code class="docutils literal notranslate"><span class="pre">mean(score_chosen</span> <span class="pre">-</span> <span class="pre">score_reject)</span></code>。</p></li>
+<li><p><strong>Score Distribution</strong>: 分析模型对 chosen/rejected 样本的打分分布。</p></li>
+</ul>
+</section>
+<section id="grm">
+<h4>5.4.2 GRM 评估<a class="headerlink" href="#grm" title="Permalink to this heading">¶</a></h4>
+<ul class="simple">
+<li><p><strong>Ranking Accuracy</strong>: 通过解析生成文本中的 <code class="docutils literal notranslate"><span class="pre">&lt;answer&gt;</span></code> 标签，计算其与真实偏好的一致性。</p></li>
+</ul>
+</section>
+</section>
+<section id="id25">
+<h3>5.5 基准测试<a class="headerlink" href="#id25" title="Permalink to this heading">¶</a></h3>
+<p>我们基于 <code class="docutils literal notranslate"><span class="pre">Qwen2.5-VL-3B</span></code> 模型进行了一系列基准测试。详细的设置和结果请参考 <strong>章节 7: 基准测试与性能参考</strong>。</p>
+</section>
+</section>
+<hr class="docutils" />
+<section id="id26">
+<h2>6. 常见问题<a class="headerlink" href="#id26" title="Permalink to this heading">¶</a></h2>
+<section id="id27">
+<h3>6.1 训练问题<a class="headerlink" href="#id27" title="Permalink to this heading">¶</a></h3>
+<section id="q1-oom-out-of-memory">
+<h4>Q1: OOM (Out of Memory)<a class="headerlink" href="#q1-oom-out-of-memory" title="Permalink to this heading">¶</a></h4>
+<p><strong>解决方案：</strong></p>
+<ol class="arabic simple">
+<li><p><strong>减小 batch size:</strong> <code class="docutils literal notranslate"><span class="pre">--micro_train_batch_size</span> <span class="pre">1</span></code>。</p></li>
+<li><p><strong>启用 gradient checkpointing:</strong> <code class="docutils literal notranslate"><span class="pre">--gradient_checkpointing</span></code>。</p></li>
+<li><p><strong>使用更高的 ZeRO stage:</strong> <code class="docutils literal notranslate"><span class="pre">--zero_stage</span> <span class="pre">3</span> <span class="pre">--adam_offload</span></code>。</p></li>
+<li><p><strong>使用 LoRA:</strong> <code class="docutils literal notranslate"><span class="pre">--lora_rank</span> <span class="pre">32</span></code>。</p></li>
+<li><p><strong>减小序列长度:</strong> <code class="docutils literal notranslate"><span class="pre">--prompt_max_len</span> <span class="pre">1024</span></code>。</p></li>
+<li><p><strong>使用 BF16/FP16:</strong> <code class="docutils literal notranslate"><span class="pre">--bf16</span></code>。</p></li>
+</ol>
+</section>
+<section id="q2-loss">
+<h4>Q2: 训练不稳定/Loss 不下降<a class="headerlink" href="#q2-loss" title="Permalink to this heading">¶</a></h4>
+<p><strong>可能原因和解决方案：</strong></p>
+<ol class="arabic simple">
+<li><p><strong>学习率不合适：</strong> 对于全量微调，<code class="docutils literal notranslate"><span class="pre">1e-5</span></code> 是一个较好的起点。如果模型更大或数据更少，可尝试 <code class="docutils literal notranslate"><span class="pre">5e-6</span></code> 或 <code class="docutils literal notranslate"><span class="pre">1e-6</span></code>。</p></li>
+<li><p><strong>数据问题：</strong> 检查数据清洗步骤是否到位，标签是否准确。</p></li>
+<li><p><strong>梯度爆炸：</strong> 尝试添加梯度裁剪。</p></li>
+<li><p><strong>Warmup 不足：</strong> 确保 <code class="docutils literal notranslate"><span class="pre">--lr_warmup_ratio</span></code> 设置合理（如 <code class="docutils literal notranslate"><span class="pre">0.05</span></code>）。</p></li>
+</ol>
+</section>
+</section>
+<section id="id28">
+<h3>6.2 推理问题<a class="headerlink" href="#id28" title="Permalink to this heading">¶</a></h3>
+<section id="q3">
+<h4>Q3: 如何使用训练好的模型进行推理<a class="headerlink" href="#q3" title="Permalink to this heading">¶</a></h4>
+<p>我们在 <code class="docutils literal notranslate"><span class="pre">examples/demo_srm_training/srm_vl_inference.py</span></code> 和 <code class="docutils literal notranslate"><span class="pre">examples/demo_grm_training/grm_vl_inference.py</span></code> 提供了 SRM 和 GRM 的推理脚本示例。
+请参考脚本中的用法说明，按需修改模型路径和输入数据，即可进行推理。</p>
+</section>
+</section>
+<section id="id29">
+<h3>6.3 数据集问题<a class="headerlink" href="#id29" title="Permalink to this heading">¶</a></h3>
+<section id="q4">
+<h4>Q4: 如何使用自己的数据集进行训练<a class="headerlink" href="#q4" title="Permalink to this heading">¶</a></h4>
+<p>LightRFT 使用 Data Handler 模式，通过为不同数据集实现相应的 Data Handler 类来支持多种数据集，从而实现灵活的数据加载与预处理。</p>
+<section id="data-handler">
+<h5>实现自定义的 Data Handler<a class="headerlink" href="#data-handler" title="Permalink to this heading">¶</a></h5>
+<ol class="arabic simple">
+<li><p><strong>继承 BaseDataHandler</strong>:
+创建一个新的 Python 类，继承自 <code class="docutils literal notranslate"><span class="pre">lightrft.datasets.BaseDataHandler</span></code>。</p></li>
+<li><p><strong>实现必要的方法</strong>:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">load_data</span></code>: 从数据配置文件（如 json, parquet等）或 文件夹 中加载所有数据项。返回原始数据项的列表。</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">get_media_info</span></code>: 从原始数据项中提取所有媒体信息（图片，视频 和 音频等）的路径信息。</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">parse_item</span></code>: 将原始数据项和加载的视觉内容解析为适合模型输入的标准格式，并返回包含标签等其他必要信息的字典。</p></li>
+</ul>
+</li>
+<li><p><strong>注册 Data Handler</strong>:
+在 <code class="docutils literal notranslate"><span class="pre">lightrft.datasets</span></code> 模块的 <code class="docutils literal notranslate"><span class="pre">srm_datset</span></code> 或者 <code class="docutils literal notranslate"><span class="pre">grm_dataset</span></code> 中的 <code class="docutils literal notranslate"><span class="pre">self.handlers</span></code> 字典中注册你的 Data Handler 类。</p></li>
+</ol>
+</section>
+<section id="id30">
+<h5>数据格式<a class="headerlink" href="#id30" title="Permalink to this heading">¶</a></h5>
+<section id="id31">
+<h6>SRM 数据格式<a class="headerlink" href="#id31" title="Permalink to this heading">¶</a></h6>
+<p><strong>一个典型的格式示例</strong> (JSON Lines):</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;prompt&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;A beautiful sunset over the ocean&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;image_0&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/path/to/image0.jpg&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;image_1&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/path/to/image1.jpg&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;preference&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;A&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;alignment&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;B&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>标签说明：</strong>
+我们使用如下所示的标签进行偏好训练。</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;A&quot;</span></code>: image_0/response_0 更好</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;B&quot;</span></code>: image_1/response_1 更好</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;C&quot;</span></code>: 两者相当</p></li>
+</ul>
+</section>
+<section id="id32">
+<h6>GRM 数据格式<a class="headerlink" href="#id32" title="Permalink to this heading">¶</a></h6>
+<p>GRM 的训练数据需要包含模型生成的文本评价，通常包含思维链和最终结论，以便基于 Next-Token Prediction 进行有监督微调训练。</p>
+<p><strong>一个数据格式示例</strong> (JSON Lines):</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;prompt&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Describe this image&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;image_0&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/path/to/image0.jpg&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;image_1&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/path/to/image1.jpg&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;response&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&lt;think&gt;Reasoning here&lt;/think&gt;&lt;answer&gt;Image 1 is better&lt;/answer&gt;&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>通常，<code class="docutils literal notranslate"><span class="pre">response</span></code> 中包含 <code class="docutils literal notranslate"><span class="pre">&lt;think&gt;</span></code> 和 <code class="docutils literal notranslate"><span class="pre">&lt;answer&gt;</span></code> 标签，用于训练模型生成结构化的评价和最终判断，同时方便进行文本解析。
+您也可以根据需要设计不同的标签体系。</p>
+</section>
+</section>
+<section id="id33">
+<h5>数据集组织<a class="headerlink" href="#id33" title="Permalink to this heading">¶</a></h5>
+<p><strong>推荐目录结构：</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>/data/reward_model/
+├── datasets/
+│   ├── HPDv3/
+│   │   ├── train.json
+│   │   ├── test.json
+│   │   └── images/
+│   │       ├── img_001.jpg
+│   │       ├── img_002.jpg
+│   │       └── ... 
+│   │   
+│   ├── ImageGen-CoT-Reward-5K/
+│   │   ├── train.json
+│   │   └── images/
+│   │       ├── img_001.jpg
+│   │       ├── img_002.jpg
+│   │       └── ...
+│   │
+│   ├── rapidata-text-2-video-human-preferences-pika2.2/
+│   │   ├── train.parquet
+│   │   └── videos/
+│   │       ├── vid_001.mp4
+│   │       ├── vid_002.mp4
+│   │       └── ...
+│   │
+└── ...
+</pre></div>
+</div>
+</section>
+<section id="id34">
+<h5>数据预处理<a class="headerlink" href="#id34" title="Permalink to this heading">¶</a></h5>
+<section id="id35">
+<h6>视觉数据预处理<a class="headerlink" href="#id35" title="Permalink to this heading">¶</a></h6>
+<ul class="simple">
+<li><p>图像应该存储为 JPEG/PNG/webp 格式</p></li>
+<li><p>建议分辨率: 224x224 到 1024x1024</p></li>
+<li><p>视频帧率: 实验中设置为 2.0 FPS (在配置中通过 –fps 指定)</p></li>
+</ul>
+</section>
+<section id="id36">
+<h6>数据清洗<a class="headerlink" href="#id36" title="Permalink to this heading">¶</a></h6>
+<p><strong>必须检查：</strong></p>
+<ol class="arabic simple">
+<li><p>✅ 所有文件路径是否存在</p></li>
+<li><p>✅ 标签是否合法 (A/B/C)</p></li>
+<li><p>✅ 图像是否可读</p></li>
+<li><p>✅ 文本是否包含特殊字符</p></li>
+</ol>
+<p><strong>示例脚本：</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">PIL</span><span class="w"> </span><span class="kn">import</span> <span class="n">Image</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">validate_dataset</span><span class="p">(</span><span class="n">json_path</span><span class="p">):</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">json_path</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">line_no</span><span class="p">,</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">item</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+            <span class="c1"># 根据你的数据格式进行检查...</span>
+            <span class="c1"># ...</span>
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+</section>
+</section>
+<hr class="docutils" />
+<section id="id37">
+<h2>7. 基准测试与性能参考<a class="headerlink" href="#id37" title="Permalink to this heading">¶</a></h2>
+<p>本章节提供了基于 LightRFT 框架的 SRM 和 GRM 模型的初步实验结果，可作为训练的性能参考。</p>
+<section id="id38">
+<h3>7.1 Scalar Reward Model (SRM) 实验<a class="headerlink" href="#id38" title="Permalink to this heading">¶</a></h3>
+<section id="text-to-image-t2i">
+<h4>7.1.2 Text-to-Image (T2I) 任务性能<a class="headerlink" href="#text-to-image-t2i" title="Permalink to this heading">¶</a></h4>
+<p><strong>实验设置</strong></p>
+<ul>
+<li><p><strong>基础模型</strong>: <code class="docutils literal notranslate"><span class="pre">Qwen2.5-VL-3B</span></code></p></li>
+<li><p><strong>训练方式</strong>: 全量微调 (Full fine-tuning)</p></li>
+<li><p><strong>Batch Size</strong>: 全局 Batch Size <code class="docutils literal notranslate"><span class="pre">32</span></code>，每卡 Micro Batch Size <code class="docutils literal notranslate"><span class="pre">4</span></code></p></li>
+<li><p><strong>最大训练轮数</strong>: 所有实验均训练 <code class="docutils literal notranslate"><span class="pre">5</span></code> 个 Epoch。我们取 2000 global step 的检查点进行评估。</p></li>
+<li><p><strong>学习率</strong>: <code class="docutils literal notranslate"><span class="pre">1e-5</span></code></p></li>
+<li><p><strong>Reward Head</strong>: 单一 Preference Head，输出整体偏好分数</p></li>
+<li><p><strong>硬件</strong>: 双卡 NVIDIA H200 (140GBx2)</p></li>
+<li><p><strong>任务指令</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Your will act as an expert image evaluator for text-to-image generation.
+Given a text prompt and a generated image, your task is to assess the overall quality of the image in relation to the prompt.
+Your evaluation should focus on the following key aspects:
+• Preference: Which image would a human viewer find more satisfying or visually appealing overall.
+• Alignment: How well the image content matches the given text prompt in semantics, objects, and attributes.
+Your task is provided in the following, please give your judgement based on above criteria.
+The prompt used for generation is as follows: {prompt}.
+</pre></div>
+</div>
+</li>
+</ul>
+<p><strong>训练数据</strong>:</p>
+<ul class="simple">
+<li><p><strong>HPDv3 Subset</strong>: 从 HPDv3-Train 中随机抽取的约 ~57K 样本对。原始的 HPDv3 包含约 1.17M 样本对，考虑到资源限制，我们使用了一个子集进行训练。</p></li>
+</ul>
+<p><strong>评估数据</strong>:</p>
+<ul class="simple">
+<li><p><strong>OmniReward-Bench-T2I</strong>: OmniReward-Bench 中的 Text-to-Image 评估子集。</p></li>
+<li><p><strong>HPDv3 Test Set</strong>: HPDv3 数据集的测试集部分。</p></li>
+<li><p><strong>ImageRewardDB Test Set</strong>: ImageRewardDB 数据集的测试集部分。</p></li>
+</ul>
+<p><strong>测试结果</strong>:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head text-left"><p>模型变体</p></th>
+<th class="head text-left"><p>损失函数</p></th>
+<th class="head text-left"><p>Scale for Train</p></th>
+<th class="head text-left"><p>Pooling Method</p></th>
+<th class="head text-left"><p>Probing Layer</p></th>
+<th class="head text-left"><p>OmniReward-Bench-T2I (Acc)</p></th>
+<th class="head text-left"><p>HPDv3 Test (Acc)</p></th>
+<th class="head text-left"><p>ImageRewardDB (Acc)</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td class="text-left"><p><strong>HPS</strong></p></td>
+<td class="text-left"><p>HPS</p></td>
+<td class="text-left"><p>No</p></td>
+<td class="text-left"><p>attn</p></td>
+<td class="text-left"><p>-1</p></td>
+<td class="text-left"><p>31.83%</p></td>
+<td class="text-left"><p>53.84%</p></td>
+<td class="text-left"><p>41.93%</p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p><strong>BT</strong></p></td>
+<td class="text-left"><p>BT</p></td>
+<td class="text-left"><p>No</p></td>
+<td class="text-left"><p>attn</p></td>
+<td class="text-left"><p>-1</p></td>
+<td class="text-left"><p>30.06%</p></td>
+<td class="text-left"><p>60.54%</p></td>
+<td class="text-left"><p>42.51%</p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p><strong>BT Scale</strong></p></td>
+<td class="text-left"><p>BT</p></td>
+<td class="text-left"><p>Yes</p></td>
+<td class="text-left"><p>attn</p></td>
+<td class="text-left"><p>-1</p></td>
+<td class="text-left"><p>53.83%</p></td>
+<td class="text-left"><p>69.74%</p></td>
+<td class="text-left"><p>58.98%</p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p><strong>HPS Scale</strong></p></td>
+<td class="text-left"><p>HPS</p></td>
+<td class="text-left"><p>Yes</p></td>
+<td class="text-left"><p>attn</p></td>
+<td class="text-left"><p>-1</p></td>
+<td class="text-left"><p>55.21%</p></td>
+<td class="text-left"><p><strong>72.35%</strong></p></td>
+<td class="text-left"><p><strong>61.37%</strong></p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p><strong>HPS + BT Scale</strong></p></td>
+<td class="text-left"><p>HPS + BT</p></td>
+<td class="text-left"><p>Yes</p></td>
+<td class="text-left"><p>attn</p></td>
+<td class="text-left"><p>-1</p></td>
+<td class="text-left"><p><strong>56.19%</strong></p></td>
+<td class="text-left"><p>68.86%</p></td>
+<td class="text-left"><p>59.48%</p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p><strong>HPS Scale Probing 17</strong></p></td>
+<td class="text-left"><p>HPS + BT</p></td>
+<td class="text-left"><p>Yes</p></td>
+<td class="text-left"><p>attn</p></td>
+<td class="text-left"><p>17</p></td>
+<td class="text-left"><p>55.21%</p></td>
+<td class="text-left"><p>71.4%</p></td>
+<td class="text-left"><p>57.37%</p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p><strong>HPS Scale Last</strong></p></td>
+<td class="text-left"><p>HPS + BT</p></td>
+<td class="text-left"><p>Yes</p></td>
+<td class="text-left"><p>last</p></td>
+<td class="text-left"><p>-1</p></td>
+<td class="text-left"><p>48.92%</p></td>
+<td class="text-left"><p>70.10%</p></td>
+<td class="text-left"><p>59.12%</p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p>—</p></td>
+<td class="text-left"><p>—</p></td>
+<td class="text-left"><p>—</p></td>
+<td class="text-left"><p>—</p></td>
+<td class="text-left"><p>—</p></td>
+<td class="text-left"><p>—</p></td>
+<td class="text-left"><p>—</p></td>
+<td class="text-left"><p>—</p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p><em>Baseline: HPSv3 (Qwen2VL-7B)</em></p></td>
+<td class="text-left"><p>-</p></td>
+<td class="text-left"><p>-</p></td>
+<td class="text-left"><p>-</p></td>
+<td class="text-left"><p>-</p></td>
+<td class="text-left"><p><em>76.9%</em></p></td>
+<td class="text-left"><p><em>66.8%</em></p></td>
+<td class="text-left"><p>-</p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p><em>Baseline: ImageReward (BLIP)</em></p></td>
+<td class="text-left"><p>-</p></td>
+<td class="text-left"><p>-</p></td>
+<td class="text-left"><p>-</p></td>
+<td class="text-left"><p>-</p></td>
+<td class="text-left"><p><em>58.6%</em></p></td>
+<td class="text-left"><p><em>65.1%</em></p></td>
+<td class="text-left"><p>-</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>训练日志</strong>:</p>
+<ul class="simple">
+<li><p><strong>使用不同损失函数进行训练的对比</strong>:</p>
+<ul>
+<li><p>HPS Loss (红线) vs. BT (灰线) vs. HPS Scale (浅蓝线) vs. BT Scale (深蓝线)
+<img alt="训练损失曲线图" src="../_images/srm_t2i_train_loss.png" />
+<img alt="评估准确率曲线图" src="../_images/srm_t2i_prefer_acc_mean.png" /></p></li>
+<li><p><strong>观察</strong>:</p>
+<ul>
+<li><p>对于 HPS 和 BT 两种损失函数，启用可学习的缩放系数（Scale for Train）显著提升了训练稳定性和最终性能。</p></li>
+<li><p>在启用 Scale for Train 的情况下，HPS 和 BT 两者的损失函数曲线基本一致，但在评估准确率上，HPS 加上 Scale 显著优于 BT。</p></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><strong>Pooling 方法对比</strong>:</p>
+<ul>
+<li><p>我们在 HPS Scale 的配置上对不同的 Pooling 方法进行了对比实验。</p></li>
+<li><p>Attention Pooling (浅蓝线) vs. Last Token Pooling (粉红线)
+<img alt="Pooling 方法训练损失曲线对比图" src="../_images/srm_t2i_pooling_comparison.png" /></p></li>
+<li><p><strong>观察</strong>: 从训练的损失曲线上看，两种 pooling 方法的收敛速度相似，但在评估准确率上，Attention Pooling 明显优于 Last Token Pooling。</p></li>
+</ul>
+</li>
+<li><p><strong>Probing Layer 对比</strong>:</p>
+<ul>
+<li><p>我们在 HPS Scale 的配置上对不同的 Probing Layer 进行了对比实验。
+使用最后一层　(浅蓝线) vs. 中间层 17 (橙线)
+<img alt="Probing Layer 训练损失曲线对比图" src="../_images/srm_t2i_probing_layer_comparison.png" /></p></li>
+<li><p><strong>观察</strong>: 两种 Probing Layer 的训练损失曲线均较为接近。但在评估准确率上，使用最后一层的特征优于中间层。</p></li>
+</ul>
+</li>
+</ul>
+<p><strong>分数分布</strong>:</p>
+<ul class="simple">
+<li><p>我们可视化了不同模型在在 OmniReward-Bench-T2I 和 HPDv3 Test 数据集上的分数分布情况。可以比较明显地的看到，在不启用 Scale for Train 的情况下，模型倾向于给出极端的分数（接近 0 或 1），而在启用 Scale for Train 后，样本的分数的分布更加均匀，</p></li>
+<li><p><strong>HPDv3 Test 数据集上的分数分布图</strong>:</p>
+<ul>
+<li><p><img alt="HPS 模型分数分布图" src="../_images/hps_hpdv3_score_distribution.png" /></p></li>
+<li><p><img alt="HPS Scale 模型分数分布图" src="../_images/hpsscale_hpdv3_score_distribution.png" /></p></li>
+<li><p><img alt="BT 模型分数分布图" src="../_images/bt_hpdv3_score_distribution.png" /></p></li>
+<li><p><img alt="BT Scale 模型分数分布图" src="../_images/btscale_hpdv3_score_distribution.png" /></p></li>
+</ul>
+</li>
+<li><p><strong>OmniReward-Bench-T2I 数据集上的分数分布图</strong>:</p>
+<ul>
+<li><p><img alt="HPS 模型分数分布图" src="../_images/hps_omni_t2i_score_distribution.png" /></p></li>
+<li><p><img alt="HPS Scale 模型分数分布图" src="../_images/hpsscale_omni_t2i_score_distribution.png" /></p></li>
+<li><p><img alt="BT 模型分数分布图" src="../_images/bt_omni_t2i_score_distribution.png" /></p></li>
+<li><p><img alt="BT Scale 模型分数分布图" src="../_images/btscale_omni_t2i_score_distribution.png" /></p></li>
+</ul>
+</li>
+</ul>
+<p><strong>结论与分析</strong>:</p>
+<ol class="arabic simple">
+<li><p><strong>损失函数选择</strong>: 在 T2I 任务上，<strong>BT Loss</strong> 明显好于 HPS Loss。 使用可学习温度缩放的 BT Loss（BT Scale）进一步提升了性能。而结合 HPS 和 BT 的混合损失（HPS + BT Scale）在 OmniReward-Bench-T2I 上取得了最佳结果（56.39%）。</p></li>
+<li><p><strong>可学习的缩放系数</strong>: 启用 <code class="docutils literal notranslate"><span class="pre">Scale</span> <span class="pre">for</span> <span class="pre">Train</span></code> （可学习的缩放系数）显著提升了模型性能，表明动态调整奖励分数的分布对于训练更有效的奖励模型至关重要。其中， HPS Loss 在启用缩放后提升尤为显著，在 HPDv3 Test 和 ImageRewardDB 上分别达到了 72.35% 和 61.37% 的准确率。</p></li>
+<li><p><strong>Pooling 方法</strong>: Attention Pooling 明显优于 Last Token Pooling，表明将整个序列的 token 进行加权聚合有助于提升奖励模型的判别能力。</p></li>
+<li><p><strong>Probing Layer 选择</strong>: 使用最后一层（-1）和 中间层（17）的特征作为奖励头的输入，结果表明两者的结果相近，但最后一层略优。</p></li>
+<li><p><strong>性能对比</strong>: 我们的 3B 模型在 HPS Scale 的配置下， 仅在从 HPDv3 中抽取得到的一个小子集数据上训练后，就能在 HPDv3 Test 和 ImageRewardDB 上分别达到 72.35% 和 61.37% 的准确率，接近此前基于 7B 模型的 SOTA 结果（分别为 76.9% 和 66.8%）。这表明 LightRFT 框架在训练高效且性能优异的奖励模型方面具有显著优势。</p></li>
+</ol>
+</section>
+</section>
+<section id="text-to-audio-t2a">
+<h3>7.1.3 Text-to-Audio (T2A) 任务性能<a class="headerlink" href="#text-to-audio-t2a" title="Permalink to this heading">¶</a></h3>
+<p>我们使用 T2I 任务中表现最优的 HPS Scale 配置，进行了 T2A 任务的初步实验。</p>
+<p><strong>实验设置</strong></p>
+<ul>
+<li><p><strong>训练方式</strong>: 全量微调 (Full fine-tuning)</p></li>
+<li><p><strong>Batch Size</strong>: 全局 Batch Size <code class="docutils literal notranslate"><span class="pre">32</span></code>，每卡 Micro Batch Size <code class="docutils literal notranslate"><span class="pre">4</span></code></p></li>
+<li><p><strong>最大训练轮数</strong>: 所有实验均训练 <code class="docutils literal notranslate"><span class="pre">5</span></code> 个 Epoch。取 500 global step 的检查点进行评估。</p></li>
+<li><p><strong>学习率</strong>: <code class="docutils literal notranslate"><span class="pre">1e-5</span></code></p></li>
+<li><p><strong>Reward Head</strong>: 单一 Preference Head，输出整体偏好分数</p></li>
+<li><p><strong>硬件</strong>: 双卡 NVIDIA H200 (140GBx2)</p></li>
+<li><p><strong>任务指令</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>You will act as an expert audio evaluator for text-to-audio generation.
+Given a text prompt and a generated audio clip, your task is to assess the overall quality of the audio in relation to the prompt.
+Your evaluation should focus on the following key aspects:
+• Preference: Which audio would a human listener find more satisfying or acoustically pleasing overall (considering audio fidelity, clarity, and musicality/naturalness).
+• Alignment: How well the audio content matches the given text prompt in semantics, sound events, mood, and acoustic attributes (e.g., genre, tempo, instruments).
+Your task is provided in the following, please give your judgement based on above criteria.
+The prompt used for generation is as follows: {prompt}.
+</pre></div>
+</div>
+</li>
+</ul>
+<p><strong>训练数据</strong>:</p>
+<ul class="simple">
+<li><p><strong>Audio-Alpca</strong>：包含 15K 条文本到音频的生成偏好数据。</p></li>
+</ul>
+<p><strong>评估数据</strong>:</p>
+<ul class="simple">
+<li><p><strong>OmniReward-Bench-T2A</strong>: OmniReward-Bench 中的 Text-to-Audio 评估子集。</p></li>
+</ul>
+<p><strong>测试结果</strong>:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head text-left"><p>模型变体</p></th>
+<th class="head text-left"><p>基础模型</p></th>
+<th class="head text-left"><p>训练数据</p></th>
+<th class="head text-left"><p>损失函数</p></th>
+<th class="head text-left"><p>OmniReward-Bench-T2A (Acc)</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td class="text-left"><p><strong>Qwen2.5-Omni-HPS</strong></p></td>
+<td class="text-left"><p>Qwen2.5-Omni-3B</p></td>
+<td class="text-left"><p>Audio-Alpca</p></td>
+<td class="text-left"><p>HPS</p></td>
+<td class="text-left"><p>69.10%</p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p><strong>Qwen2-Audio-HPS</strong></p></td>
+<td class="text-left"><p>Qwen2-Audio-7B</p></td>
+<td class="text-left"><p>Audio-Alpca</p></td>
+<td class="text-left"><p>HPS</p></td>
+<td class="text-left"><p><em>70.07%</em></p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p><strong>MiniCPM_o-HPS</strong></p></td>
+<td class="text-left"><p>MiniCPM-o 2.6</p></td>
+<td class="text-left"><p>Audio-Alpca</p></td>
+<td class="text-left"><p>HPS</p></td>
+<td class="text-left"><p><strong>70.32%</strong></p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p>—</p></td>
+<td class="text-left"><p>—</p></td>
+<td class="text-left"><p>—</p></td>
+<td class="text-left"><p>—</p></td>
+<td class="text-left"><p>—</p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p><em>Baseline: Qwen2.5-Omni-7B</em></p></td>
+<td class="text-left"><p>-</p></td>
+<td class="text-left"><p>-</p></td>
+<td class="text-left"><p>-</p></td>
+<td class="text-left"><p>50.76%</p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p><em>Baseline: Gemini-2.0-Flash</em></p></td>
+<td class="text-left"><p>-</p></td>
+<td class="text-left"><p>-</p></td>
+<td class="text-left"><p>-</p></td>
+<td class="text-left"><p>60.86%</p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p><em>Baseline: Gemini-2.5-Flash</em></p></td>
+<td class="text-left"><p>-</p></td>
+<td class="text-left"><p>-</p></td>
+<td class="text-left"><p>-</p></td>
+<td class="text-left"><p>60.10%</p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p><em>Baseline: Gemini-2.5-Pro</em></p></td>
+<td class="text-left"><p>-</p></td>
+<td class="text-left"><p>-</p></td>
+<td class="text-left"><p>-</p></td>
+<td class="text-left"><p><em>65.41%</em></p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p><em>Baseline: Omini-RewardModel-BT</em></p></td>
+<td class="text-left"><p>-</p></td>
+<td class="text-left"><p>-</p></td>
+<td class="text-left"><p>BT</p></td>
+<td class="text-left"><p>66.41%</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>训练日志</strong>:</p>
+<ul class="simple">
+<li><p>Qwen2.5-Omni-HPS (灰线) vs Qwen2-Audio-HPS (橙线) vs MiniCPM_o-HPS (绿线)</p></li>
+<li><p><em>训练损失曲线图</em> <img alt="训练损失曲线图" src="../_images/srm_t2a_train_loss.png" /></p></li>
+<li><p><em>评估准确率曲线图</em> <img alt="评估准确率曲线图" src="../_images/srm_t2a_train_acc.png" /></p></li>
+</ul>
+<p><strong>分数分布</strong>:</p>
+<ul class="simple">
+<li><p>我们可视化了模型在 OmniReward-Bench-T2A 数据集上的分数分布情况。</p>
+<ul>
+<li><p><em>Qwen2.5-Omni-HPS</em> <img alt="Qwen2.5-Omni-HPS 分数分布图" src="../_images/qwen2.5-omni-hps_t2a_score_distribution.png" /></p></li>
+<li><p><em>Qwen2-Audio-HPS</em> <img alt="Qwen2-Audio-HPS 分数分布图" src="../_images/qwen2-audio-hps_t2a_score_distribution.png" /></p></li>
+<li><p><em>MiniCPM_o-HPS</em> <img alt="MiniCPM_o-HPS 分数分布图" src="../_images/minicpm_o-hps_t2a_score_distribution.png" /></p></li>
+</ul>
+</li>
+</ul>
+<p><strong>结论与分析</strong>:</p>
+<ul class="simple">
+<li><p><strong>性能表现</strong>: 初步实验结果表明，LightRFT 框架能够有效应用于 Text-to-Audio（T2A）任务。在多种不同基础模型上，基于 <code class="docutils literal notranslate"><span class="pre">HPS</span> <span class="pre">Loss</span></code> 训练的奖励模型均取得了稳定且显著的性能提升。其中，<code class="docutils literal notranslate"><span class="pre">MiniCPM_o-HPS</span></code> 在 <code class="docutils literal notranslate"><span class="pre">OmniReward-Bench-T2A</span></code> 基准上达到了 <strong>70.32%</strong> 的最高准确率，展现出最优的整体表现。</p></li>
+<li><p><strong>超越基线</strong>: 与现有强基线相比，LightRFT 框架下训练的模型显著优于商业通用模型 <code class="docutils literal notranslate"><span class="pre">Gemini-2.5-Pro</span></code>（65.41%）以及专门设计的奖励模型 <code class="docutils literal notranslate"><span class="pre">Omini-RewardModel-BT</span></code>（66.41%）。这一结果验证了 LightRFT 在音频奖励建模场景中的有效性。</p></li>
+<li><p><strong>框架通用性</strong>: 在不同模型架构（<strong>Qwen2.5-Omni、Qwen2-Audio、MiniCPM-o</strong>）上的一致性能提升，进一步表明 LightRFT 框架具备良好的通用性，能够稳定支持音频–语言偏好建模任务。</p></li>
+</ul>
+<section id="text-to-video-t2v">
+<h4>7.1.4 Text-to-Video (T2V) 任务性能<a class="headerlink" href="#text-to-video-t2v" title="Permalink to this heading">¶</a></h4>
+<p><strong>实验设置</strong></p>
+<ul>
+<li><p><strong>基础模型</strong>: <code class="docutils literal notranslate"><span class="pre">Qwen2.5-VL-3B</span></code></p></li>
+<li><p><strong>训练方式</strong>: 全量微调 (Full fine-tuning)</p></li>
+<li><p><strong>Batch Size</strong>: 全局 Batch Size <code class="docutils literal notranslate"><span class="pre">32</span></code>，每卡 Micro Batch Size <code class="docutils literal notranslate"><span class="pre">4</span></code></p></li>
+<li><p><strong>学习率</strong>: <code class="docutils literal notranslate"><span class="pre">1e-5</span></code></p></li>
+<li><p><strong>Reward Head</strong>: 单一 Preference Head，输出整体偏好分数</p></li>
+<li><p><strong>Pooling Method</strong>: Attention Pooling</p></li>
+<li><p><strong>Probing Layer</strong>: 最后一层</p></li>
+<li><p><strong>Scale for Train</strong>: 启用</p></li>
+<li><p><strong>视频帧率</strong>: <code class="docutils literal notranslate"><span class="pre">2.0</span></code> FPS</p></li>
+<li><p><strong>硬件</strong>: 双卡 NVIDIA H200 (140GB)</p></li>
+<li><p><strong>任务指令</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Your will act as an expert video evaluator for text-to-video generation.
+Given a text prompt, and a generated video, your task is to assess the generated video on the following key aspects:
+• Preference: How visually appealing participants found each video, independent of the prompt.
+• Alignment: How well an video matches its prompt.
+• Coherence: Whether the generated video is logically consistent and free from artifacts or visual glitches.
+Your task is provided in the following. Please give your judgement based on above criteria.
+The prompt used for generation is as follows: {prompt}.
+</pre></div>
+</div>
+</li>
+</ul>
+<p><strong>训练数据</strong>:</p>
+<ul class="simple">
+<li><p>Rapidata-text-2-video-human-preferences-veo3</p></li>
+<li><p>Rapidata-text-2-video-human-preferences-pika2.2</p></li>
+<li><p>Rapidata-text-2-video-human-preferences-wan2.1</p></li>
+</ul>
+<p><strong>训练日志</strong>:</p>
+<ul class="simple">
+<li><p><em>训练损失曲线图</em>
+<img alt="训练损失曲线图" src="../_images/t2v-rapidata-loss.png" /></p></li>
+<li><p><em>准确率曲线图</em>
+<img alt="准确率曲线图" src="../_images/t2v-rapidata-acc.png" /></p></li>
+</ul>
+<p><strong>测试结果</strong>:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head text-left"><p>模型变体</p></th>
+<th class="head text-left"><p>损失函数</p></th>
+<th class="head text-left"><p>OmniReward-Bench-T2V (Acc)</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td class="text-left"><p><strong>BT Loss</strong> (step 100)</p></td>
+<td class="text-left"><p>BT</p></td>
+<td class="text-left"><p>59.74%</p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p><strong>HPS Loss</strong> (step 100)</p></td>
+<td class="text-left"><p>HPS</p></td>
+<td class="text-left"><p><em>62.19%</em></p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p>—</p></td>
+<td class="text-left"><p>—</p></td>
+<td class="text-left"><p>—</p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p><em>Baseline: Omni-RewardModel-BT</em></p></td>
+<td class="text-left"><p>BT</p></td>
+<td class="text-left"><p><strong>64.08%</strong></p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>结论与分析</strong>:</p>
+<ul class="simple">
+<li><p>初步实验表明，LignhtRFT 框架可以无缝扩展到针对 T2V 任务的标量奖励模型训练，并在 <code class="docutils literal notranslate"><span class="pre">OmniReward-Bench-T2V</span></code> 上取得了约 62% 的准确率, 接近现有的 SOTA 基线 <code class="docutils literal notranslate"><span class="pre">Omni-RewardModel-BT</span></code> (64.08%)。</p></li>
+</ul>
+</section>
+</section>
+<section id="id39">
+<h3>7.2 Generative Reward Model (GRM) 实验<a class="headerlink" href="#id39" title="Permalink to this heading">¶</a></h3>
+<section id="id40">
+<h4>7.2.1 实验设置<a class="headerlink" href="#id40" title="Permalink to this heading">¶</a></h4>
+<ul>
+<li><p><strong>基础模型</strong>: <code class="docutils literal notranslate"><span class="pre">Qwen2.5-VL-3B</span></code></p></li>
+<li><p><strong>训练方式</strong>: 全量微调</p></li>
+<li><p><strong>学习率</strong>: <code class="docutils literal notranslate"><span class="pre">1e-5</span></code></p></li>
+<li><p><strong>损失函数</strong>: Next-Token Prediction Loss</p></li>
+<li><p><strong>训练数据</strong>:</p></li>
+<li><p>ImageGen-CoT-Reward-5K: 包含详细的 CoT 评价过程，用于训练 Reasoning GRM。</p></li>
+<li><p>HPDv3 Train Subset: 无 CoT 标注，采用直接输出比较结果的形式，用于训练不带 Reasoning 过程 的 GRM。（这里的 HPDv3 采用的是与 Scalar RM 相同的子集）</p></li>
+<li><p><strong>Batch Size</strong>: 全局 Batch Size <code class="docutils literal notranslate"><span class="pre">8</span></code>，每卡 Micro Batch Size <code class="docutils literal notranslate"><span class="pre">4</span></code></p></li>
+<li><p><strong>硬件</strong>: 双卡 NVIDIA H200 (140GB)</p></li>
+<li><p><strong>任务指令</strong>:</p>
+<ul class="simple">
+<li><p>对于 ImageGen-CoT-Reward-5K，我们使用其自带的 CoT 评价指令；</p></li>
+<li><p>对于 HPDv3，我们使用如下任务指令，指导模型生成最终的偏好判断：</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>You will act as an expert image evaluator for text-to-image generation.
+Given a text prompt and two generated images, your task is to assess the overall quality of the images and determine which one is better.
+Your evaluation should focus on the following key aspects:
+• Preference: Which image would a human viewer find more satisfying or visually appealing overall.
+• Alignment: How well the image content matches the given text prompt in semantics, objects, and attributes.
+Your response must strictly follow the format with no extra text:
+&lt;answer&gt;Image 1 is better&lt;/answer&gt;
+or
+&lt;answer&gt;Image 2 is better&lt;/answer&gt;
+The task is provided below. Please give your judgment based on the above criteria.
+The prompt used for generation is as follows: {prompt}.
+</pre></div>
+</div>
+</li>
+</ul>
+</section>
+<section id="id41">
+<h4>7.2.2 Text-to-Image (T2I) 任务性能<a class="headerlink" href="#id41" title="Permalink to this heading">¶</a></h4>
+<p><strong>训练日志</strong>:</p>
+<ul class="simple">
+<li><p><em>ImageGen-CoT-Reward-5K 训练损失曲线图</em>
+<img alt="ImageGen-CoT-Reward-5K 训练损失曲线图" src="../_images/grm_imagegen_cot_reward_5k_train_loss.png" /></p></li>
+<li><p><em>HPDv3 Train Subset 训练损失曲线图</em>
+<img alt="HPDv3 Train Subset 训练损失曲线图" src="../_images/grm_hpdv3_train_subset_train_loss.png" /></p></li>
+</ul>
+<p><strong>测试结果</strong>:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head text-left"><p>模型变体</p></th>
+<th class="head text-left"><p>训练数据</p></th>
+<th class="head text-left"><p>HPDv3 Test (Acc)</p></th>
+<th class="head text-left"><p>OmniReward-Bench-T2I (Acc)</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td class="text-left"><p><strong>GRM (w/o reasoning)</strong> (step 8000)</p></td>
+<td class="text-left"><p>HPDv3 Train Subset (~56K)</p></td>
+<td class="text-left"><p><strong>71.88%</strong></p></td>
+<td class="text-left"><p><strong>59.33%</strong></p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p><strong>GRM (w/ reasoning)</strong> (step 3000)</p></td>
+<td class="text-left"><p>ImageGen-CoT-Reward-5K</p></td>
+<td class="text-left"><p>63.02%</p></td>
+<td class="text-left"><p>58.35%</p></td>
+</tr>
+</tbody>
+</table>
+<p><strong>结论与分析</strong>:</p>
+<ol class="arabic simple">
+<li><p><strong>数据规模的影响</strong>: 从结果上看，<code class="docutils literal notranslate"><span class="pre">GRM</span> <span class="pre">(w/o</span> <span class="pre">reasoning)</span></code> 在两个测试集上均取得了更高的准确率（HPDv3 Test: 71.88% vs 63.02%）。但这很大程度上归因于训练数据的差异：<code class="docutils literal notranslate"><span class="pre">GRM</span> <span class="pre">(w/o</span> <span class="pre">reasoning)</span></code> 使用了约 56K 的 HPDv3 训练数据，而 <code class="docutils literal notranslate"><span class="pre">GRM</span> <span class="pre">(w/</span> <span class="pre">reasoning)</span></code> 仅使用了 5K 的 ImageGen-CoT 数据。特别是在同源的 HPDv3 Test 上，数据量的优势使得 <code class="docutils literal notranslate"><span class="pre">GRM</span> <span class="pre">(w/o</span> <span class="pre">reasoning)</span></code> 表现更为突出。</p></li>
+<li><p><strong>推理能力的潜力</strong>: 尽管训练数据量仅为前者的 1/10，<code class="docutils literal notranslate"><span class="pre">GRM</span> <span class="pre">(w/</span> <span class="pre">reasoning)</span></code> 依然展现出了具有竞争力的性能（HPDv3 Test 63.02%）。这表明引入思维链（CoT）推理过程能够帮助模型在小样本下更有效地学习偏好判断。</p></li>
+<li><p><strong>未来改进方向</strong>: 目前 <code class="docutils literal notranslate"><span class="pre">GRM</span> <span class="pre">(w/</span> <span class="pre">reasoning)</span></code> 的性能受限于高质量 CoT 数据的稀缺。未来的工作可以集中在构建更大规模、更多样化的 CoT 偏好数据集上，或者通过强化微调来进一步释放推理型奖励模型的潜力。</p></li>
+</ol>
+</section>
+</section>
+</section>
+<hr class="docutils" />
+<section id="id42">
+<h2>8. 进阶话题<a class="headerlink" href="#id42" title="Permalink to this heading">¶</a></h2>
+<section id="id43">
+<h3>8.1 多任务学习<a class="headerlink" href="#id43" title="Permalink to this heading">¶</a></h3>
+<p>可以同时训练多个 reward head 来捕获不同维度的偏好：</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>--heads_types<span class="w"> </span>preference<span class="w"> </span>coherence<span class="w"> </span>alignment
+</pre></div>
+</div>
+<p>我们在 T2V 任务中，尝试在 Rapidata-text-2-video-human-preferences-veo3 数据集上同时训练 <code class="docutils literal notranslate"><span class="pre">preference</span></code>， <code class="docutils literal notranslate"><span class="pre">coherence</span></code> 和 <code class="docutils literal notranslate"><span class="pre">alignment</span></code> 三个维度的 reward head。在此实验中，多任务学习的训练过程中出现了多头挤占和梯度消失的问题，导致部分头的并未能有效学习到对应的偏好信号。</p>
+<p><strong>原因分析：</strong></p>
+<ol class="arabic simple">
+<li><p><strong>任务难度不平衡</strong>：不同维度的偏好判断难度不同（例如 <code class="docutils literal notranslate"><span class="pre">alignment</span></code> 可能比 <code class="docutils literal notranslate"><span class="pre">coherence</span></code> 更容易判断），导致简单任务的 Loss 快速下降并主导了梯度的方向，而困难任务未能得到充分训练。</p></li>
+<li><p><strong>梯度冲突 (Gradient Conflict)</strong>：不同任务对共享参数（Backbone）的更新方向可能存在冲突，导致某些任务的梯度被抵消或抑制。</p></li>
+<li><p><strong>标签分布差异</strong>：不同维度的标签分布可能存在差异，导致模型倾向于拟合占主导地位的标签分布。</p></li>
+</ol>
+<p><strong>未来研究方向：</strong>
+为了解决上述问题，未来的研究可以尝试以下方向：</p>
+<ul class="simple">
+<li><p><strong>动态权重调整</strong>：引入如 GradNorm 等算法，根据各任务的学习进度动态调整 Loss 权重，平衡任务间的训练速率。</p></li>
+<li><p><strong>梯度修正算法</strong>：采用 PCGrad (Projecting Conflicting Gradients) 等方法，将冲突的梯度投影到法线平面，减少任务间的干扰。</p></li>
+</ul>
+</section>
+<section id="reward-hacking">
+<h3>8.2 奖励欺骗 (Reward Hacking)<a class="headerlink" href="#reward-hacking" title="Permalink to this heading">¶</a></h3>
+<p>Reward Hacking 的出现的一个关键原因在于 <strong>Reward Model 仅仅是人类偏好的拟合与代理，而非偏好本身</strong>。由于训练数据的局限性和模型的泛化误差，RM 往往存在分布外 (OOD) 的盲区。当 Policy Model 在 RL 阶段针对 RM 进行强力优化时，很容易探索到这些盲区，通过“钻空子”的方式来获取极高的奖励分，而实际生成质量却大幅下降。</p>
+<ul class="simple">
+<li><p><strong>缓解策略</strong>:</p>
+<ul>
+<li><p>**使用生成式的 RM **: GRM 本身具有一定的推理能力，通过使用更大的基础模型和更丰富的训练数据，可以一定程度上提高 RM 的泛化能力，减少奖励欺骗的风险。</p></li>
+<li><p><strong>多维度约束</strong>: 我们可以训练一个能输出细粒度多维度评分的 RM（如 Section 9.1 中使用的多头 RM），这样在 RL 阶段可以对多个维度进行约束，减少单一维度过度优化的风险。</p></li>
+<li><p><strong>集成评估 (Ensemble)</strong>: 通过集成多个 RM 的评分，可以减少单一模型的盲区影响，提高整体评估的鲁棒性。</p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="reinforcement-fine-tuning-rft">
+<h3>8.3 强化微调 (Reinforcement Fine-tuning, RFT) 奖励模型<a class="headerlink" href="#reinforcement-fine-tuning-rft" title="Permalink to this heading">¶</a></h3>
+<p>最近的一些工作（UnifiedReward-Think, VisualQuality-R1 和 ImageDoctor 等）中采用了强化微调 (RFT) 的方法来提升奖励模型的性能。通过在少量 CoT（Chain-of-Thought）数据上进行有监督微调，赋予奖励模型一定的推理模式，然后再通过拒绝采样（Rejective Sampling）和 RL 进一步提升模型的判别能力。</p>
+<ul class="simple">
+<li><p><strong>优势</strong>: RFT 能够提升奖励模型的推理能力和泛化能力，从而更好地捕捉人类偏好。</p></li>
+<li><p><strong>挑战</strong>: RFT 过程复杂， 涉及多阶段的训练，训练成本较高；需要设计合适的奖励信号和采样策略。</p></li>
+</ul>
+</section>
+<section id="id44">
+<h3>8.4 过程奖励模型<a class="headerlink" href="#id44" title="Permalink to this heading">¶</a></h3>
+<p>传统的 RM 通常只对最终结果打分。对于一些对需要多轮或长序列决策的任务，比如 Agentic-RL，Agent 需要进行多步推理和工具调用，才能达成最终目标。而 ORM 只对最终结果判断，奖励信号稀疏。而过程奖励模型 (Process Reward Model, PRM) 则尝试对每一步的中间结果进行打分，从而提供更丰富的奖励信号。</p>
+<ul class="simple">
+<li><p><strong>优势</strong>: 提供更密集的奖励信号，而非仅仅依赖最终结果的反馈。</p></li>
+<li><p><strong>挑战</strong>: 标注成本高，需要针对步骤级别的数据；在多模态任务中定义“步骤”可能更为困难。</p></li>
+</ul>
+</section>
+</section>
+<hr class="docutils" />
+<section id="id45">
+<h2>9. 参考资源<a class="headerlink" href="#id45" title="Permalink to this heading">¶</a></h2>
+<section id="id46">
+<h3>9.1 论文<a class="headerlink" href="#id46" title="Permalink to this heading">¶</a></h3>
+<ol class="arabic simple">
+<li><p><strong>InstructGPT (2022)</strong>: Training language models to follow instructions with human feedback</p></li>
+<li><p><strong>DPO (2023)</strong>: Direct Preference Optimization</p></li>
+<li><p><strong>ImageReward (2023)</strong>: ImageReward: Learning and Evaluating Human Preferences for Text-to-Image Generation</p></li>
+<li><p><strong>GenAI-Bench (2024)</strong>: GenAI Arena: An Open Evaluation Platform for Generative Models</p></li>
+<li><p><strong>HPsv3 (2025)</strong>: HPSv3: Towards Wide-Spectrum Human Preference Score</p></li>
+<li><p><strong>Omni-Reward (2025)</strong>: Omni-Reward: Towards Generalist Omni-Modal Reward Modeling with Free-Form Preferences</p></li>
+<li><p><strong>UnifiedReward-Think (2025)</strong>: Unified Multimodal Chain-of-Thought Reward Model through Reinforcement Fine-Tuning</p></li>
+<li><p><strong>VisualQuality-R1 (2025)</strong>: VisualQuality-R1: Reasoning-Induced Image Quality Assessment via Reinforcement Learning to Rank</p></li>
+<li><p><strong>ImageDoctor (2025)</strong>: ImageDoctor: Diagnosing Text-to-Image Generation via Grounded Image Reasoning</p></li>
+</ol>
+</section>
+<section id="id47">
+<h3>9.2 代码示例<a class="headerlink" href="#id47" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">examples/demo_srm_training/</span></code>: SRM 训练示例</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">examples/demo_grm_training/</span></code>: GRM 训练示例</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">lightrft/models/</span></code>: 模型实现</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">lightrft/datasets/</span></code>: 数据集实现</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">lightrft/trainer/</span></code>: 训练器实现</p></li>
+</ul>
+</section>
+<section id="id48">
+<h3>9.3 数据集<a class="headerlink" href="#id48" title="Permalink to this heading">¶</a></h3>
+<ol class="arabic simple">
+<li><p><strong>HPDv3</strong>: <a class="reference external" href="https://huggingface.co/datasets/MizzenAI/HPDv3">https://huggingface.co/datasets/MizzenAI/HPDv3</a></p></li>
+<li><p><strong>OmniRewardBench</strong>: <a class="reference external" href="https://huggingface.co/datasets/HongbangYuan/OmniRewardBench">https://huggingface.co/datasets/HongbangYuan/OmniRewardBench</a></p></li>
+<li><p><strong>ImageGen-CoT-Reward-5K</strong>: <a class="reference external" href="https://huggingface.co/datasets/CodeGoat24/ImageGen-CoT-Reward-5K">https://huggingface.co/datasets/CodeGoat24/ImageGen-CoT-Reward-5K</a></p></li>
+<li><p><strong>Rapidata</strong>: <a class="reference external" href="https://huggingface.co/Rapidata/datasets">https://huggingface.co/Rapidata/datasets</a></p></li>
+<li><p><strong>ImageRewardDB</strong>: <a class="reference external" href="https://huggingface.co/datasets/zai-org/ImageRewardDB">https://huggingface.co/datasets/zai-org/ImageRewardDB</a></p></li>
+</ol>
+</section>
+<section id="id49">
+<h3>9.4 社区资源<a class="headerlink" href="#id49" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>LightRFT GitHub Issues</p></li>
+</ul>
+<hr class="docutils" />
+<p><strong>文档版本</strong>: v1.1 (with experimental results)
+<strong>最后更新</strong>: 2025-12-23
+<strong>维护者</strong>: LightRFT Team
+<strong>联系方式</strong>: <a class="reference external" href="mailto:opendilab&#37;&#52;&#48;pjlab&#46;org&#46;cn">opendilab<span>&#64;</span>pjlab<span>&#46;</span>org<span>&#46;</span>cn</a></p>
+</section>
+</section>
+<hr class="docutils" />
+<section id="id50">
+<h2>贡献指南<a class="headerlink" href="#id50" title="Permalink to this heading">¶</a></h2>
+<p>欢迎贡献改进建议、bug 报告和新功能！</p>
+<ol class="arabic simple">
+<li><p>Fork 本项目</p></li>
+<li><p>创建 feature 分支</p></li>
+<li><p>提交 Pull Request</p></li>
+<li><p>更新文档</p></li>
+</ol>
+<p>祝训练顺利！ 🚀</p>
+</section>
+</section>
+
+
+              </article>
+              
+            </div>
+            <footer>
+  
+
+  <hr>
+
+  <div role="contentinfo">
+    <p>
+      &copy; Copyright 2025, OpenDILab.
+
+    </p>
+  </div>
+  
+  <div>
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a
+      href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the
+      Docs</a>.
+  </div>
+   
+
+</footer>
+          </div>
+        </div>
+
+        <div class="pytorch-content-right" id="pytorch-content-right">
+          <div class="pytorch-right-menu" id="pytorch-right-menu">
+            <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
+              <ul>
+<li><a class="reference internal" href="#">LightRFT Reward Model 训练最佳实践指南</a><ul>
+<li><a class="reference internal" href="#id1">目录</a></li>
+<li><a class="reference internal" href="#id2">1. 概述</a><ul>
+<li><a class="reference internal" href="#reward-model">1.1 什么是 Reward Model</a></li>
+<li><a class="reference internal" href="#lightrft-rm">1.2 LightRFT 中的 RM 支持</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id3">2. Reward Model 类型</a><ul>
+<li><a class="reference internal" href="#scalar-reward-model-srm">2.1 Scalar Reward Model (SRM)</a><ul>
+<li><a class="reference internal" href="#id4">特点</a></li>
+<li><a class="reference internal" href="#id5">适用场景</a></li>
+<li><a class="reference internal" href="#id6">损失函数</a></li>
+<li><a class="reference internal" href="#id7">架构</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#generative-reward-model-grm">2.2 Generative Reward Model (GRM)</a><ul>
+<li><a class="reference internal" href="#id8">特点</a></li>
+<li><a class="reference internal" href="#id9">适用场景</a></li>
+<li><a class="reference internal" href="#id10">训练方式</a></li>
+<li><a class="reference internal" href="#id11">架构</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id12">2.3 选择建议</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id13">3. 环境准备</a><ul>
+<li><a class="reference internal" href="#id14">3.1 依赖安装</a></li>
+<li><a class="reference internal" href="#gpu">3.2 GPU 要求</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id15">4. 模型训练</a><ul>
+<li><a class="reference internal" href="#srm-grm">4.0 一键运行（SRM / GRM）</a></li>
+<li><a class="reference internal" href="#id16">4.1 训练 Scalar Reward Model (SRM)</a><ul>
+<li><a class="reference internal" href="#t2i">4.1.1 基础训练脚本 (基于 T2I 实验)</a></li>
+<li><a class="reference internal" href="#id17">4.1.2 关键参数说明</a></li>
+<li><a class="reference internal" href="#lora">4.1.3 LoRA 训练</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id18">4.2 训练 Generative Reward Model (GRM)</a><ul>
+<li><a class="reference internal" href="#id19">4.2.1 基础训练脚本 (基于 T2I 实验)</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id20">5. 模型评估</a><ul>
+<li><a class="reference internal" href="#id21">5.1 模型转换</a></li>
+<li><a class="reference internal" href="#id22">5.2 评估数据准备</a></li>
+<li><a class="reference internal" href="#id23">5.3 评估脚本示例</a></li>
+<li><a class="reference internal" href="#id24">5.4 评估指标</a><ul>
+<li><a class="reference internal" href="#srm">5.4.1 SRM 评估</a></li>
+<li><a class="reference internal" href="#grm">5.4.2 GRM 评估</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id25">5.5 基准测试</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id26">6. 常见问题</a><ul>
+<li><a class="reference internal" href="#id27">6.1 训练问题</a><ul>
+<li><a class="reference internal" href="#q1-oom-out-of-memory">Q1: OOM (Out of Memory)</a></li>
+<li><a class="reference internal" href="#q2-loss">Q2: 训练不稳定/Loss 不下降</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id28">6.2 推理问题</a><ul>
+<li><a class="reference internal" href="#q3">Q3: 如何使用训练好的模型进行推理</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id29">6.3 数据集问题</a><ul>
+<li><a class="reference internal" href="#q4">Q4: 如何使用自己的数据集进行训练</a><ul>
+<li><a class="reference internal" href="#data-handler">实现自定义的 Data Handler</a></li>
+<li><a class="reference internal" href="#id30">数据格式</a><ul>
+<li><a class="reference internal" href="#id31">SRM 数据格式</a></li>
+<li><a class="reference internal" href="#id32">GRM 数据格式</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id33">数据集组织</a></li>
+<li><a class="reference internal" href="#id34">数据预处理</a><ul>
+<li><a class="reference internal" href="#id35">视觉数据预处理</a></li>
+<li><a class="reference internal" href="#id36">数据清洗</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id37">7. 基准测试与性能参考</a><ul>
+<li><a class="reference internal" href="#id38">7.1 Scalar Reward Model (SRM) 实验</a><ul>
+<li><a class="reference internal" href="#text-to-image-t2i">7.1.2 Text-to-Image (T2I) 任务性能</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#text-to-audio-t2a">7.1.3 Text-to-Audio (T2A) 任务性能</a><ul>
+<li><a class="reference internal" href="#text-to-video-t2v">7.1.4 Text-to-Video (T2V) 任务性能</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id39">7.2 Generative Reward Model (GRM) 实验</a><ul>
+<li><a class="reference internal" href="#id40">7.2.1 实验设置</a></li>
+<li><a class="reference internal" href="#id41">7.2.2 Text-to-Image (T2I) 任务性能</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id42">8. 进阶话题</a><ul>
+<li><a class="reference internal" href="#id43">8.1 多任务学习</a></li>
+<li><a class="reference internal" href="#reward-hacking">8.2 奖励欺骗 (Reward Hacking)</a></li>
+<li><a class="reference internal" href="#reinforcement-fine-tuning-rft">8.3 强化微调 (Reinforcement Fine-tuning, RFT) 奖励模型</a></li>
+<li><a class="reference internal" href="#id44">8.4 过程奖励模型</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id45">9. 参考资源</a><ul>
+<li><a class="reference internal" href="#id46">9.1 论文</a></li>
+<li><a class="reference internal" href="#id47">9.2 代码示例</a></li>
+<li><a class="reference internal" href="#id48">9.3 数据集</a></li>
+<li><a class="reference internal" href="#id49">9.4 社区资源</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id50">贡献指南</a></li>
+</ul>
+</li>
+</ul>
+
+            </div>
+          </div>
+        </div>
+    </section>
+  </div>
+
+  
+
+
+  
+
+  
+  <script type="text/javascript" id="documentation_options" data-url_root="../"
+    src="../_static/documentation_options.js"></script>
+  <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+  <script src="../_static/doctools.js"></script>
+  <script src="../_static/sphinx_highlight.js"></script>
+  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+  
+
+  
+
+  <script type="text/javascript" src="../_static/js/vendor/popper.min.js"></script>
+  <script type="text/javascript" src="../_static/js/vendor/bootstrap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+    jQuery(function () {
+      SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+  <!-- Begin Footer -->
+
+  <div class="container-fluid docs-tutorials-resources" id="docs-tutorials-resources">
+  </div>
+
+  <!-- End Footer -->
+
+  <!-- Begin Mobile Menu -->
+
+  <div class="mobile-main-menu">
+    <div class="container-fluid">
+      <div class="container">
+        <div class="mobile-main-menu-header-container">
+          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
+        </div>
+      </div>
+    </div>
+
+    <div class="mobile-main-menu-links-container">
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://github.com/opendilab/LightRFT" target="_blank">GitHub</a>
+          </li>
+      </div>
+    </div>
+  </div>
+
+  <!-- End Mobile Menu -->
+
+  <script type="text/javascript" src="../_static/js/vendor/anchor.min.js"></script>
+
+  <script type="text/javascript">
+    $(document).ready(function () {
+      mobileMenu.bind();
+      mobileTOC.bind();
+      pytorchAnchors.bind();
+      sideMenus.bind();
+      scrollToAnchor.bind();
+      highlightNavigation.bind();
+      mainMenuDropdown.bind();
+      filterTags.bind();
+
+      // Add class to links that have code blocks, since we cannot create links in code blocks
+      $("article.pytorch-article a span.pre").each(function (e) {
+        $(this).closest("a").addClass("has-code");
+      });
+    })
+  </script>
+</body>
+
+</html>

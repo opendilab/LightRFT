@@ -1,0 +1,944 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js" lang="en">
+<!--<![endif]-->
+
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Strategy Usage Guide &mdash; LightRFT v0.1.1 documentation</title>
+  
+
+  <link rel="shortcut icon" href="../_static/images/favicon.ico" />
+  
+  
+
+  
+
+  
+  
+  
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/readthedocs.css" type="text/css" />
+  <link rel="index" title="Index" href="../genindex.html" />
+  <link rel="search" title="Search" href="../search.html" />
+  <link rel="next" title="LightRFT Strategy Design Philosophy" href="strategy_design_philosophy.html" />
+  <link rel="prev" title="LightRFT Reward Model Training Best Practices Guide" href="reward_model.html" />
+  <!-- Google Analytics -->
+  <script type="text/javascript">
+    var collapsedSections = [];
+  </script>
+  
+  <!-- End Google Analytics -->
+  
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+  <script>
+    MathJax = {
+        chtml: {
+            scale: 1,
+            minScale: 1,
+        },
+        svg: {
+            scale: 1,
+            minScale: 1,
+        }
+    }
+</script>
+
+  <!-- Preload the theme fonts -->
+
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-book.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/IBMPlexMono/IBMPlexMono-Medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-medium-italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/IBMPlexMono/IBMPlexMono-SemiBold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+
+<!-- Preload the katex fonts -->
+
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Math-Italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size1-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size4-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size2-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size3-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Caligraphic-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.2/css/all.css"
+    integrity="sha384-vSIIfh2YWi9wW0r9iZe7RJPrKwp6bG+s9QZMoITbCckVJqGCCRhc+ccxNcdpHuYu" crossorigin="anonymous">
+</head>
+
+<div class="container-fluid header-holder tutorials-header" id="header-holder">
+  <div class="container">
+    <div class="header-container">
+      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+        aria-label="OpenMMLab"></a>
+
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://github.com/opendilab/LightRFT" target="_blank">GitHub</a>
+          </li>
+          <li >
+            <div id="resourcesDropdownButton" data-toggle="resources-dropdown" class="resources-dropdown">
+              <a
+                class="resource-option with-down-arrow">
+                OpenDILab
+              </a>
+              <div class="resources-dropdown-menu">
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-engine" target="_blank">
+                  <span class="dropdown-title">DI-engine </span>
+                  <p>OpenDILab Decision AI Engine</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/LightZero" target="_blank">
+                  <span class="dropdown-title">LightZero </span>
+                  <p>OpenDILab Decision Monte Carlo Tree Search Framework</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/GenerativeRL" target="_blank">
+                  <span class="dropdown-title">GenerativeRL </span>
+                  <p>OpenDILab Generative AI Framework</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-star" target="_blank">
+                  <span class="dropdown-title">DI-star </span>
+                  <p>OpenDILab Decision AI in StarCraftII</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-drive" target="_blank">
+                  <span class="dropdown-title">DI-drive </span>
+                  <p>OpenDILab Auto-driving platform</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/GoBigger" target="_blank">
+                  <span class="dropdown-title">GoBigger </span>
+                  <p>OpenDILab Multi-Agent Environment</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-smartcross" target="_blank">
+                  <span class="dropdown-title">DI-smartcross </span>
+                  <p>Decision Intelligence Platform for Traffic Crossing Signal Control</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-treetensor" target="_blank">
+                  <span class="dropdown-title">DI-treetensor </span>
+                  <p>Tree Nested PyTorch Tensor Lib</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-sheep" target="_blank">
+                  <span class="dropdown-title">DI-sheep </span>
+                  <p>Deep Reinforcement Learning + 3 Tiles Game</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-model-based-RL" target="_blank">
+                  <span class="dropdown-title">awesome-model-based-RL </span>
+                  <p>A curated list of awesome model based RL resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-decision-transformer" target="_blank">
+                  <span class="dropdown-title">awesome-decision-transformer </span>
+                  <p>A curated list of Decision Transformer resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-exploration-rl" target="_blank">
+                  <span class="dropdown-title">awesome-exploration-rl </span>
+                  <p>A curated list of awesome exploration RL resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-multi-modal-reinforcement-learning" target="_blank">
+                  <span class="dropdown-title">awesome-multi-modal-reinforcement-learning </span>
+                  <p>A curated list of Multi-Modal Reinforcement Learning resources (continually updated)</p>
+                </a>
+              </div>
+          </li>
+        </ul>
+      </div>
+
+      <a class="main-menu-open-button" href="#" data-behavior="open-mobile-menu"></a>
+    </div>
+  </div>
+</div>
+
+<body class="pytorch-body">
+
+   
+
+  
+
+  <div class="table-of-contents-link-wrapper">
+    <span>Table of Contents</span>
+    <a href="#" class="toggle-table-of-contents" data-behavior="toggle-table-of-contents"></a>
+  </div>
+
+  <nav data-toggle="wy-nav-shift" class="pytorch-left-menu" id="pytorch-left-menu">
+    <div class="pytorch-side-scroll">
+      <div class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        <div class="pytorch-left-menu-search">
+          
+
+          
+          
+          
+          
+
+          
+
+
+
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search Docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        
+        
+        
+        
+        
+        <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../installation/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quick_start/index.html">Quick Start</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide &amp; Best Practices</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Best Practices</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/utils/index.html">lightrft.utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/datasets/index.html">lightrft.datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/models/index.html">lightrft.models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/strategy/index.html">lightrft.strategy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/trainer/index.html">lightrft.trainer</a></li>
+</ul>
+
+        
+        
+      </div>
+    </div>
+  </nav>
+
+  <div class="pytorch-container">
+    <div class="pytorch-page-level-bar" id="pytorch-page-level-bar">
+      <div class="pytorch-breadcrumbs-wrapper">
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="pytorch-breadcrumbs">
+    
+      <li>
+        <a href="../index.html">
+            Docs
+        </a> &gt;
+      </li>
+
+        
+          <li><a href="index.html">Best Practices</a> &gt;</li>
+        
+      <li>Strategy Usage Guide</li>
+    
+    
+      <li class="pytorch-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/best_practice/strategy.rst.txt" rel="nofollow"><img src="../_static/images/view-page-source-icon.svg"></a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+</div>
+      </div>
+
+      <div class="pytorch-shortcuts-wrapper" id="pytorch-shortcuts-wrapper">
+        Shortcuts
+      </div>
+    </div>
+
+    <section data-toggle="wy-nav-shift" id="pytorch-content-wrap" class="pytorch-content-wrap">
+      <div class="pytorch-content-left">
+        
+          <div class="rst-content">
+            
+            <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
+              <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
+                
+  <section id="strategy-usage-guide">
+<h1>Strategy Usage Guide<a class="headerlink" href="#strategy-usage-guide" title="Permalink to this heading">¶</a></h1>
+<section id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this heading">¶</a></h2>
+<p>LightRFT’s strategy module is the distributed training capabilities with additional features for efficient reinforcement learning fine-tuning. The strategy provides a unified interface for managing:</p>
+<ul class="simple">
+<li><p><strong>Distributed Training Backends</strong>: DeepSpeed ZeRO and FSDP (Fully Sharded Data Parallel)</p></li>
+<li><p><strong>Inference Engine Integration</strong>: vLLM and SGLang for high-throughput generation</p></li>
+<li><p><strong>Memory Optimization</strong>: Optimizer offloading, gradient accumulation, and engine sleep modes</p></li>
+<li><p><strong>Sequence Parallelism</strong>: Efficient handling of long sequences across multiple GPUs</p></li>
+</ul>
+</section>
+<section id="core-api-extensions">
+<h2>Core API Extensions<a class="headerlink" href="#core-api-extensions" title="Permalink to this heading">¶</a></h2>
+<p>LightRFT adds the following key methods to the strategy interface:</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 40.0%" />
+<col style="width: 60.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Method</p></th>
+<th class="head"><p>Purpose</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">setup_inference_engine()</span></code></p></td>
+<td><p>Initialize vLLM or SGLang inference engine</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">update_engine_weights()</span></code></p></td>
+<td><p>Synchronize actor model weights to inference engine</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">gather_and_generate()</span></code></p></td>
+<td><p>Distributed generation with automatic prompt gathering</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">maybe_load_optimizer()</span></code></p></td>
+<td><p>Load optimizer states from CPU (FSDP only)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">maybe_offload_optimizer()</span></code></p></td>
+<td><p>Offload optimizer states to CPU (FSDP only)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">wakeup_inference_engine()</span></code></p></td>
+<td><p>Wake up inference engine from sleep mode</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">maybe_sleep_inference_engine()</span></code></p></td>
+<td><p>Put inference engine to sleep to save memory</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="creating-a-strategy">
+<h2>Creating a Strategy<a class="headerlink" href="#creating-a-strategy" title="Permalink to this heading">¶</a></h2>
+<section id="basic-setup">
+<h3>Basic Setup<a class="headerlink" href="#basic-setup" title="Permalink to this heading">¶</a></h3>
+<p>Use the factory function <code class="docutils literal notranslate"><span class="pre">get_strategy()</span></code> to create a strategy instance:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">lightrft.strategy</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_strategy</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">lightrft.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">add_arguments</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">train</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
+    <span class="c1"># Create strategy (automatically selects DeepSpeed or FSDP based on args)</span>
+    <span class="n">strategy</span> <span class="o">=</span> <span class="n">get_strategy</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+
+    <span class="c1"># Setup inference engine for generation</span>
+    <span class="n">strategy</span><span class="o">.</span><span class="n">setup_inference_engine</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">engine_type</span><span class="o">=</span><span class="s1">&#39;vllm&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Access the engine if needed</span>
+    <span class="n">vllm_engine</span> <span class="o">=</span> <span class="n">strategy</span><span class="o">.</span><span class="n">inference_engine</span>
+
+    <span class="c1"># Create trainer</span>
+    <span class="n">trainer</span> <span class="o">=</span> <span class="n">SPMDPPOTrainer</span><span class="p">(</span>
+        <span class="n">strategy</span><span class="o">=</span><span class="n">strategy</span><span class="p">,</span>
+        <span class="n">actor</span><span class="o">=</span><span class="n">actor</span><span class="p">,</span>
+        <span class="n">critic</span><span class="o">=</span><span class="n">critic</span><span class="p">,</span>
+        <span class="n">reward_model</span><span class="o">=</span><span class="n">reward_model</span><span class="p">,</span>
+        <span class="n">initial_model</span><span class="o">=</span><span class="n">initial_model</span><span class="p">,</span>
+        <span class="n">ema_model</span><span class="o">=</span><span class="n">ema_model</span><span class="p">,</span>
+        <span class="n">actor_optim</span><span class="o">=</span><span class="n">actor_optim</span><span class="p">,</span>
+        <span class="n">critic_optim</span><span class="o">=</span><span class="n">critic_optim</span><span class="p">,</span>
+        <span class="n">actor_scheduler</span><span class="o">=</span><span class="n">actor_scheduler</span><span class="p">,</span>
+        <span class="n">critic_scheduler</span><span class="o">=</span><span class="n">critic_scheduler</span><span class="p">,</span>
+        <span class="o">...</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="strategy-selection">
+<h3>Strategy Selection<a class="headerlink" href="#strategy-selection" title="Permalink to this heading">¶</a></h3>
+<p>The strategy type is automatically determined by configuration arguments:</p>
+<ul class="simple">
+<li><p><strong>FSDP</strong>: Set <code class="docutils literal notranslate"><span class="pre">--fsdp</span></code> flag</p></li>
+<li><p><strong>DeepSpeed</strong>: Default when <code class="docutils literal notranslate"><span class="pre">--fsdp</span></code> is not set (configurable via <code class="docutils literal notranslate"><span class="pre">--zero_stage</span></code>)</p></li>
+</ul>
+</section>
+</section>
+<section id="using-strategy-in-trainers">
+<h2>Using Strategy in Trainers<a class="headerlink" href="#using-strategy-in-trainers" title="Permalink to this heading">¶</a></h2>
+<section id="standard-training-operations">
+<h3>Standard Training Operations<a class="headerlink" href="#standard-training-operations" title="Permalink to this heading">¶</a></h3>
+<p>The strategy provides standard distributed training operations:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Backward pass</span>
+<span class="n">strategy</span><span class="o">.</span><span class="n">backward</span><span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">)</span>
+
+<span class="c1"># Optimizer step with gradient clipping</span>
+<span class="n">strategy</span><span class="o">.</span><span class="n">optimizer_step</span><span class="p">(</span><span class="n">optimizer</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">scheduler</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;actor&quot;</span><span class="p">)</span>
+
+<span class="c1"># Distributed communication</span>
+<span class="n">averaged_value</span> <span class="o">=</span> <span class="n">strategy</span><span class="o">.</span><span class="n">all_reduce</span><span class="p">(</span><span class="n">local_value</span><span class="p">,</span> <span class="n">op</span><span class="o">=</span><span class="s2">&quot;mean&quot;</span><span class="p">)</span>
+<span class="n">gathered_values</span> <span class="o">=</span> <span class="n">strategy</span><span class="o">.</span><span class="n">all_gather</span><span class="p">(</span><span class="n">local_value</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="memory-optimized-training">
+<h3>Memory-Optimized Training<a class="headerlink" href="#memory-optimized-training" title="Permalink to this heading">¶</a></h3>
+<p>For FSDP-based training, use optimizer offloading to reduce GPU memory:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">ppo_train</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">global_steps</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">synchronize</span><span class="p">()</span>
+    <span class="n">train_begin</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+
+    <span class="c1"># Load optimizer states from CPU to GPU (FSDP only)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">maybe_load_optimizer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">actor_optim</span><span class="p">)</span>
+
+    <span class="c1"># Perform training</span>
+    <span class="n">train_ret</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">ppo_train</span><span class="p">(</span><span class="n">global_steps</span><span class="p">)</span>
+
+    <span class="c1"># Offload optimizer states from GPU to CPU (FSDP only)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">maybe_offload_optimizer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">actor_optim</span><span class="p">)</span>
+
+    <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">synchronize</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;PPO Train TIMECOST </span><span class="si">{</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">train_begin</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Synchronize actor weights to inference engine</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">update_engine_weights</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">actor</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">train_ret</span>
+</pre></div>
+</div>
+</section>
+<section id="engine-weight-synchronization">
+<h3>Engine Weight Synchronization<a class="headerlink" href="#engine-weight-synchronization" title="Permalink to this heading">¶</a></h3>
+<p>After training updates, synchronize model weights to the inference engine:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Update inference engine with latest actor weights</span>
+<span class="n">strategy</span><span class="o">.</span><span class="n">update_engine_weights</span><span class="p">(</span><span class="n">actor</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This ensures that the inference engine uses the most recent model parameters for generation.</p>
+</section>
+</section>
+<section id="using-strategy-in-experience-makers">
+<h2>Using Strategy in Experience Makers<a class="headerlink" href="#using-strategy-in-experience-makers" title="Permalink to this heading">¶</a></h2>
+<section id="text-generation-llm">
+<h3>Text Generation (LLM)<a class="headerlink" href="#text-generation-llm" title="Permalink to this heading">¶</a></h3>
+<p>Use <code class="docutils literal notranslate"><span class="pre">gather_and_generate()</span></code> for distributed text generation:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Tokenize prompts (without padding for efficiency)</span>
+<span class="n">all_prompt_token_ids</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tokenize_fn</span><span class="p">(</span>
+    <span class="n">all_prompts</span><span class="p">,</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">prompt_max_len</span><span class="p">,</span>
+    <span class="n">padding</span><span class="o">=</span><span class="kc">False</span>
+<span class="p">)[</span><span class="s2">&quot;input_ids&quot;</span><span class="p">]</span>
+
+<span class="c1"># Generate responses with automatic distribution</span>
+<span class="n">all_outputs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">gather_and_generate</span><span class="p">(</span>
+    <span class="n">sampling_params</span><span class="o">=</span><span class="n">sampling_params</span><span class="p">,</span>
+    <span class="n">all_prompt_token_ids</span><span class="o">=</span><span class="n">all_prompt_token_ids</span><span class="p">,</span>
+    <span class="n">sleep_engine</span><span class="o">=</span><span class="kc">True</span>  <span class="c1"># Automatically sleep engine after generation</span>
+<span class="p">)</span>
+
+<span class="k">if</span> <span class="n">dist</span><span class="o">.</span><span class="n">get_rank</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">vllm_mp_group</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Generated </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">all_outputs</span><span class="p">)</span><span class="si">}</span><span class="s2"> outputs&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="multimodal-generation-vlm">
+<h3>Multimodal Generation (VLM)<a class="headerlink" href="#multimodal-generation-vlm" title="Permalink to this heading">¶</a></h3>
+<p>For vision-language models with images:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Generate with multimodal inputs</span>
+<span class="n">all_outputs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">gather_and_generate</span><span class="p">(</span>
+    <span class="n">sampling_params</span><span class="o">=</span><span class="n">sampling_params</span><span class="p">,</span>
+    <span class="n">all_prompts</span><span class="o">=</span><span class="n">all_prompts</span><span class="p">,</span>        <span class="c1"># Text prompts</span>
+    <span class="n">all_images</span><span class="o">=</span><span class="n">all_images</span><span class="p">,</span>          <span class="c1"># Image data</span>
+    <span class="n">images_num</span><span class="o">=</span><span class="n">images_num</span><span class="p">,</span>          <span class="c1"># Number of images per prompt</span>
+    <span class="n">sleep_engine</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="how-gather-and-generate-works">
+<h3>How <code class="docutils literal notranslate"><span class="pre">gather_and_generate()</span></code> Works<a class="headerlink" href="#how-gather-and-generate-works" title="Permalink to this heading">¶</a></h3>
+<p>The method performs the following operations:</p>
+<ol class="arabic simple">
+<li><p><strong>Gather</strong>: Collects prompts from all ranks within the tensor-parallel group to rank 0</p>
+<ul class="simple">
+<li><p>Example: With <code class="docutils literal notranslate"><span class="pre">world_size=8</span></code> and <code class="docutils literal notranslate"><span class="pre">engine_tp_size=4</span></code>, ranks [0,1,2,3] gather to rank 0, and ranks [4,5,6,7] gather to rank 4</p></li>
+</ul>
+</li>
+<li><p><strong>Generate</strong>: Executes inference using the vLLM/SGLang engine on the gathered prompts</p></li>
+<li><p><strong>Distribute</strong>: Scatters the generated outputs back to the originating ranks in the same order</p></li>
+<li><p><strong>Sleep Management</strong>: Automatically handles engine sleep/wake cycles based on the <code class="docutils literal notranslate"><span class="pre">sleep_engine</span></code> parameter</p></li>
+</ol>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Users don’t need to manually manage engine sleep states when using this interface.</p>
+</div>
+</section>
+</section>
+<section id="required-arguments">
+<h2>Required Arguments<a class="headerlink" href="#required-arguments" title="Permalink to this heading">¶</a></h2>
+<p>Add LightRFT-specific arguments to your argument parser:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">lightrft.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">add_arguments</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">argparse</span>
+
+<span class="c1"># Create parser</span>
+<span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">()</span>
+
+<span class="c1"># Add LightRFT arguments</span>
+<span class="n">add_arguments</span><span class="p">(</span><span class="n">parser</span><span class="p">)</span>
+
+<span class="c1"># Parse arguments</span>
+<span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+</pre></div>
+</div>
+<section id="key-arguments">
+<h3>Key Arguments<a class="headerlink" href="#key-arguments" title="Permalink to this heading">¶</a></h3>
+<p><strong>Inference Engine Configuration:</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>--engine_tp_size<span class="w"> </span><span class="m">4</span><span class="w">              </span><span class="c1"># Tensor parallelism size for inference engine</span>
+--engine_mem_util<span class="w"> </span><span class="m">0</span>.85<span class="w">          </span><span class="c1"># GPU memory utilization for KV cache (0.0-1.0)</span>
+--engine_type<span class="w"> </span>vllm<span class="w">              </span><span class="c1"># Engine type: &#39;vllm&#39; or &#39;sglang&#39;</span>
+--enable_engine_sleep<span class="w">           </span><span class="c1"># Enable engine sleep mode (default: True)</span>
+--disable_engine_sleep<span class="w">          </span><span class="c1"># Disable engine sleep mode</span>
+</pre></div>
+</div>
+<p><strong>Distributed Training:</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>--fsdp<span class="w">                          </span><span class="c1"># Use FSDP instead of DeepSpeed</span>
+--zero_stage<span class="w"> </span><span class="m">2</span><span class="w">                  </span><span class="c1"># DeepSpeed ZeRO stage (1, 2, or 3)</span>
+--fsdp_cpu_offload<span class="w">              </span><span class="c1"># Offload FSDP optimizer states to CPU</span>
+--adam_offload<span class="w">                  </span><span class="c1"># Offload Adam optimizer states</span>
+--sp_size<span class="w"> </span><span class="m">2</span><span class="w">                     </span><span class="c1"># Sequence parallelism size</span>
+</pre></div>
+</div>
+<p><strong>Training Optimization:</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>--packing_samples<span class="w">               </span><span class="c1"># Pack multiple samples into sequences</span>
+--use_mp_opt<span class="w">                    </span><span class="c1"># Use mixed precision optimizer (FSDP)</span>
+--fused_linear_logprob<span class="w">          </span><span class="c1"># Fused linear layer and logprob computation</span>
+--chunk_size<span class="w"> </span><span class="m">4096</span><span class="w">               </span><span class="c1"># Chunk size for fused operations</span>
+</pre></div>
+</div>
+<p><strong>Monitoring:</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>--log_dir<span class="w"> </span>./logs<span class="w">                </span><span class="c1"># Directory for logs and visualizations</span>
+--plot_every<span class="w"> </span><span class="m">10</span><span class="w">                 </span><span class="c1"># Plot generation length distribution every N steps</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="strategy-implementation-details">
+<h2>Strategy Implementation Details<a class="headerlink" href="#strategy-implementation-details" title="Permalink to this heading">¶</a></h2>
+<section id="available-strategies">
+<h3>Available Strategies<a class="headerlink" href="#available-strategies" title="Permalink to this heading">¶</a></h3>
+<p>LightRFT provides two main strategy implementations:</p>
+<ol class="arabic simple">
+<li><p><strong>DeepspeedStrategy</strong> (default)</p>
+<ul class="simple">
+<li><p>Uses DeepSpeed ZeRO for memory-efficient training</p></li>
+<li><p>Configurable ZeRO stages (1, 2, or 3)</p></li>
+<li><p>Supports gradient accumulation and mixed precision</p></li>
+<li><p>Best for: General RLHF training, well-established workflows</p></li>
+</ul>
+</li>
+<li><p><strong>FSDPV2Strategy</strong> (when <code class="docutils literal notranslate"><span class="pre">--fsdp</span></code> is set)</p>
+<ul class="simple">
+<li><p>Uses PyTorch’s Fully Sharded Data Parallel</p></li>
+<li><p>Supports CPU offloading for optimizer states</p></li>
+<li><p>Native PyTorch implementation with better integration</p></li>
+<li><p>Best for: Maximum memory efficiency, PyTorch-native workflows</p></li>
+</ul>
+</li>
+</ol>
+</section>
+<section id="strategy-selection-logic">
+<h3>Strategy Selection Logic<a class="headerlink" href="#strategy-selection-logic" title="Permalink to this heading">¶</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># In get_strategy() function</span>
+<span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">fsdp</span><span class="p">:</span>
+    <span class="n">strategy</span> <span class="o">=</span> <span class="n">FSDPV2Strategy</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="n">strategy</span> <span class="o">=</span> <span class="n">DeepspeedStrategy</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="engine-sleep-wake-mechanism">
+<h2>Engine Sleep/Wake Mechanism<a class="headerlink" href="#engine-sleep-wake-mechanism" title="Permalink to this heading">¶</a></h2>
+<p>The strategy provides automatic memory management through engine sleep modes:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Engine lifecycle management</span>
+<span class="n">strategy</span><span class="o">.</span><span class="n">setup_inference_engine</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">engine_type</span><span class="o">=</span><span class="s1">&#39;vllm&#39;</span><span class="p">)</span>  <span class="c1"># Creates and wakes engine</span>
+<span class="n">strategy</span><span class="o">.</span><span class="n">maybe_sleep_inference_engine</span><span class="p">()</span>                     <span class="c1"># Sleep to save memory</span>
+<span class="n">strategy</span><span class="o">.</span><span class="n">wakeup_inference_engine</span><span class="p">()</span>                          <span class="c1"># Wake for generation</span>
+</pre></div>
+</div>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>When using <code class="docutils literal notranslate"><span class="pre">gather_and_generate()</span></code> with <code class="docutils literal notranslate"><span class="pre">sleep_engine=True</span></code>, the sleep/wake cycle is handled automatically.</p>
+</div>
+</section>
+<section id="configuration-examples">
+<h2>Configuration Examples<a class="headerlink" href="#configuration-examples" title="Permalink to this heading">¶</a></h2>
+<section id="high-throughput-setup-8-gpus-deepspeed">
+<h3>High-Throughput Setup (8 GPUs, DeepSpeed)<a class="headerlink" href="#high-throughput-setup-8-gpus-deepspeed" title="Permalink to this heading">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Using DeepSpeed ZeRO-2 with large tensor parallelism</span>
+python<span class="w"> </span>train.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--zero_stage<span class="w"> </span><span class="m">2</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--engine_tp_size<span class="w"> </span><span class="m">4</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--engine_mem_util<span class="w"> </span><span class="m">0</span>.9<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--enable_engine_sleep<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--micro_train_batch_size<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--train_batch_size<span class="w"> </span><span class="m">128</span>
+</pre></div>
+</div>
+</section>
+<section id="memory-efficient-setup-8-gpus-fsdp-with-cpu-offload">
+<h3>Memory-Efficient Setup (8 GPUs, FSDP with CPU Offload)<a class="headerlink" href="#memory-efficient-setup-8-gpus-fsdp-with-cpu-offload" title="Permalink to this heading">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Using FSDP with CPU offloading for maximum memory efficiency</span>
+python<span class="w"> </span>train.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--fsdp<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--fsdp_cpu_offload<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--use_mp_opt<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--engine_tp_size<span class="w"> </span><span class="m">2</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--engine_mem_util<span class="w"> </span><span class="m">0</span>.85<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--enable_engine_sleep<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--micro_train_batch_size<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--train_batch_size<span class="w"> </span><span class="m">64</span>
+</pre></div>
+</div>
+</section>
+<section id="vision-language-model-setup">
+<h3>Vision-Language Model Setup<a class="headerlink" href="#vision-language-model-setup" title="Permalink to this heading">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Training VLMs with multimodal data</span>
+python<span class="w"> </span>train_vl.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--fsdp<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--engine_tp_size<span class="w"> </span><span class="m">4</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--mixed_mm_data<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--packing_samples<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--enable_engine_sleep<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--plot_every<span class="w"> </span><span class="m">20</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="best-practices">
+<h2>Best Practices<a class="headerlink" href="#best-practices" title="Permalink to this heading">¶</a></h2>
+<section id="tensor-parallelism-configuration">
+<h3>1. Tensor Parallelism Configuration<a class="headerlink" href="#tensor-parallelism-configuration" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>Set <code class="docutils literal notranslate"><span class="pre">engine_tp_size</span></code> to match your model size and GPU count</p></li>
+<li><p>For 7B models: <code class="docutils literal notranslate"><span class="pre">engine_tp_size=1</span></code> or <code class="docutils literal notranslate"><span class="pre">2</span></code></p></li>
+<li><p>For 13B-70B models: <code class="docutils literal notranslate"><span class="pre">engine_tp_size=4</span></code> or <code class="docutils literal notranslate"><span class="pre">8</span></code></p></li>
+<li><p>Ensure <code class="docutils literal notranslate"><span class="pre">world_size</span> <span class="pre">%</span> <span class="pre">engine_tp_size</span> <span class="pre">==</span> <span class="pre">0</span></code></p></li>
+</ul>
+</section>
+<section id="memory-management">
+<h3>2. Memory Management<a class="headerlink" href="#memory-management" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>Enable engine sleep mode for memory-constrained setups: <code class="docutils literal notranslate"><span class="pre">--enable_engine_sleep</span></code></p></li>
+<li><p>Adjust <code class="docutils literal notranslate"><span class="pre">engine_mem_util</span></code> based on available memory (0.5-0.9)</p></li>
+<li><p>Use FSDP with CPU offload for maximum memory savings: <code class="docutils literal notranslate"><span class="pre">--fsdp</span> <span class="pre">--fsdp_cpu_offload</span></code></p></li>
+</ul>
+</section>
+<section id="performance-optimization">
+<h3>3. Performance Optimization<a class="headerlink" href="#performance-optimization" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>Use <code class="docutils literal notranslate"><span class="pre">--packing_samples</span></code> for varied sequence lengths</p></li>
+<li><p>Enable <code class="docutils literal notranslate"><span class="pre">--fused_linear_logprob</span></code> for large vocabulary models</p></li>
+<li><p>Set appropriate <code class="docutils literal notranslate"><span class="pre">micro_train_batch_size</span></code> to saturate GPU utilization</p></li>
+</ul>
+</section>
+<section id="debugging-and-monitoring">
+<h3>4. Debugging and Monitoring<a class="headerlink" href="#debugging-and-monitoring" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>Use <code class="docutils literal notranslate"><span class="pre">--plot_every</span></code> with <code class="docutils literal notranslate"><span class="pre">--log_dir</span></code> to track generation length distribution</p></li>
+<li><p>Monitor memory with <code class="docutils literal notranslate"><span class="pre">strategy.report_memory(prefix=&quot;checkpoint_name&quot;)</span></code></p></li>
+<li><p>Check engine status with <code class="docutils literal notranslate"><span class="pre">strategy.inference_engine_status</span></code></p></li>
+</ul>
+</section>
+</section>
+<section id="advanced-features">
+<h2>Advanced Features<a class="headerlink" href="#advanced-features" title="Permalink to this heading">¶</a></h2>
+<section id="sequence-parallelism">
+<h3>Sequence Parallelism<a class="headerlink" href="#sequence-parallelism" title="Permalink to this heading">¶</a></h3>
+<p>Enable sequence parallelism for very long sequences:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># In arguments</span>
+--sp_size<span class="w"> </span><span class="m">4</span><span class="w">  </span><span class="c1"># Split sequence across 4 GPUs</span>
+</pre></div>
+</div>
+<p>The strategy automatically creates sequence-parallel groups and handles communication.</p>
+</section>
+<section id="custom-reward-models">
+<h3>Custom Reward Models<a class="headerlink" href="#custom-reward-models" title="Permalink to this heading">¶</a></h3>
+<p>For multiple reward models or remote reward APIs:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Multiple reward models</span>
+<span class="n">reward_models</span> <span class="o">=</span> <span class="p">[</span><span class="n">reward_model_1</span><span class="p">,</span> <span class="n">reward_model_2</span><span class="p">,</span> <span class="n">reward_model_3</span><span class="p">]</span>
+<span class="n">strategy</span> <span class="o">=</span> <span class="n">get_strategy</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+
+<span class="c1"># Models are automatically sharded across GPUs</span>
+<span class="n">prepared_rms</span> <span class="o">=</span> <span class="p">[</span><span class="n">strategy</span><span class="o">.</span><span class="n">prepare_model</span><span class="p">(</span><span class="n">rm</span><span class="p">,</span> <span class="n">shard_size</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span> <span class="k">for</span> <span class="n">rm</span> <span class="ow">in</span> <span class="n">reward_models</span><span class="p">]</span>
+</pre></div>
+</div>
+</section>
+<section id="mixed-precision-training">
+<h3>Mixed Precision Training<a class="headerlink" href="#mixed-precision-training" title="Permalink to this heading">¶</a></h3>
+<p>Control mixed precision behavior:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Enable BF16 training</span>
+--bf16
+
+<span class="c1"># Use mixed precision optimizer (FSDP)</span>
+--use_mp_opt
+</pre></div>
+</div>
+</section>
+</section>
+<section id="troubleshooting">
+<h2>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permalink to this heading">¶</a></h2>
+<section id="common-issues">
+<h3>Common Issues<a class="headerlink" href="#common-issues" title="Permalink to this heading">¶</a></h3>
+<p><strong>Issue</strong>: Out of memory during generation</p>
+<ul class="simple">
+<li><p><strong>Solution</strong>: Reduce <code class="docutils literal notranslate"><span class="pre">engine_mem_util</span></code> or increase <code class="docutils literal notranslate"><span class="pre">engine_tp_size</span></code></p></li>
+</ul>
+<p><strong>Issue</strong>: Engine not updating with new weights</p>
+<ul class="simple">
+<li><p><strong>Solution</strong>: Ensure <code class="docutils literal notranslate"><span class="pre">update_engine_weights()</span></code> is called after training</p></li>
+</ul>
+<p><strong>Issue</strong>: Slow generation speed</p>
+<ul class="simple">
+<li><p><strong>Solution</strong>: Increase <code class="docutils literal notranslate"><span class="pre">micro_rollout_batch_size</span></code> or reduce <code class="docutils literal notranslate"><span class="pre">engine_tp_size</span></code></p></li>
+</ul>
+<p><strong>Issue</strong>: FSDP optimizer offload errors</p>
+<ul class="simple">
+<li><p><strong>Solution</strong>: Verify you’re using FSDP strategy (<code class="docutils literal notranslate"><span class="pre">--fsdp</span></code>) and calling offload/load in pairs</p></li>
+</ul>
+</section>
+</section>
+<section id="api-reference">
+<h2>API Reference<a class="headerlink" href="#api-reference" title="Permalink to this heading">¶</a></h2>
+<p>For detailed API documentation, see:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">lightrft.strategy.strategy_base.StrategyBase</span></code> - Base strategy class</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">lightrft.strategy.get_strategy()</span></code> - Strategy factory function</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">lightrft.utils.add_arguments()</span></code> - Argument configuration</p></li>
+</ul>
+</section>
+</section>
+
+
+              </article>
+              
+            </div>
+            <footer>
+  
+  <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+    
+    <a href="strategy_design_philosophy.html" class="btn btn-neutral float-right" title="LightRFT Strategy Design Philosophy" accesskey="n"
+      rel="next">Next <img src="../_static/images/chevron-right-blue.svg"
+        class="next-page"></a>
+    
+    
+    <a href="reward_model.html" class="btn btn-neutral" title="LightRFT Reward Model Training Best Practices Guide" accesskey="p"
+      rel="prev"><img src="../_static/images/chevron-right-blue.svg" class="previous-page"> Previous</a>
+    
+  </div>
+  
+
+  <hr>
+
+  <div role="contentinfo">
+    <p>
+      &copy; Copyright 2025, OpenDILab.
+
+    </p>
+  </div>
+  
+  <div>
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a
+      href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the
+      Docs</a>.
+  </div>
+   
+
+</footer>
+          </div>
+        </div>
+
+        <div class="pytorch-content-right" id="pytorch-content-right">
+          <div class="pytorch-right-menu" id="pytorch-right-menu">
+            <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
+              <ul>
+<li><a class="reference internal" href="#">Strategy Usage Guide</a><ul>
+<li><a class="reference internal" href="#overview">Overview</a></li>
+<li><a class="reference internal" href="#core-api-extensions">Core API Extensions</a></li>
+<li><a class="reference internal" href="#creating-a-strategy">Creating a Strategy</a><ul>
+<li><a class="reference internal" href="#basic-setup">Basic Setup</a></li>
+<li><a class="reference internal" href="#strategy-selection">Strategy Selection</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#using-strategy-in-trainers">Using Strategy in Trainers</a><ul>
+<li><a class="reference internal" href="#standard-training-operations">Standard Training Operations</a></li>
+<li><a class="reference internal" href="#memory-optimized-training">Memory-Optimized Training</a></li>
+<li><a class="reference internal" href="#engine-weight-synchronization">Engine Weight Synchronization</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#using-strategy-in-experience-makers">Using Strategy in Experience Makers</a><ul>
+<li><a class="reference internal" href="#text-generation-llm">Text Generation (LLM)</a></li>
+<li><a class="reference internal" href="#multimodal-generation-vlm">Multimodal Generation (VLM)</a></li>
+<li><a class="reference internal" href="#how-gather-and-generate-works">How <code class="docutils literal notranslate"><span class="pre">gather_and_generate()</span></code> Works</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#required-arguments">Required Arguments</a><ul>
+<li><a class="reference internal" href="#key-arguments">Key Arguments</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#strategy-implementation-details">Strategy Implementation Details</a><ul>
+<li><a class="reference internal" href="#available-strategies">Available Strategies</a></li>
+<li><a class="reference internal" href="#strategy-selection-logic">Strategy Selection Logic</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#engine-sleep-wake-mechanism">Engine Sleep/Wake Mechanism</a></li>
+<li><a class="reference internal" href="#configuration-examples">Configuration Examples</a><ul>
+<li><a class="reference internal" href="#high-throughput-setup-8-gpus-deepspeed">High-Throughput Setup (8 GPUs, DeepSpeed)</a></li>
+<li><a class="reference internal" href="#memory-efficient-setup-8-gpus-fsdp-with-cpu-offload">Memory-Efficient Setup (8 GPUs, FSDP with CPU Offload)</a></li>
+<li><a class="reference internal" href="#vision-language-model-setup">Vision-Language Model Setup</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#best-practices">Best Practices</a><ul>
+<li><a class="reference internal" href="#tensor-parallelism-configuration">1. Tensor Parallelism Configuration</a></li>
+<li><a class="reference internal" href="#memory-management">2. Memory Management</a></li>
+<li><a class="reference internal" href="#performance-optimization">3. Performance Optimization</a></li>
+<li><a class="reference internal" href="#debugging-and-monitoring">4. Debugging and Monitoring</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#advanced-features">Advanced Features</a><ul>
+<li><a class="reference internal" href="#sequence-parallelism">Sequence Parallelism</a></li>
+<li><a class="reference internal" href="#custom-reward-models">Custom Reward Models</a></li>
+<li><a class="reference internal" href="#mixed-precision-training">Mixed Precision Training</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#troubleshooting">Troubleshooting</a><ul>
+<li><a class="reference internal" href="#common-issues">Common Issues</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#api-reference">API Reference</a></li>
+</ul>
+</li>
+</ul>
+
+            </div>
+          </div>
+        </div>
+    </section>
+  </div>
+
+  
+
+
+  
+
+  
+  <script type="text/javascript" id="documentation_options" data-url_root="../"
+    src="../_static/documentation_options.js"></script>
+  <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+  <script src="../_static/doctools.js"></script>
+  <script src="../_static/sphinx_highlight.js"></script>
+  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+  
+
+  
+
+  <script type="text/javascript" src="../_static/js/vendor/popper.min.js"></script>
+  <script type="text/javascript" src="../_static/js/vendor/bootstrap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+    jQuery(function () {
+      SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+  <!-- Begin Footer -->
+
+  <div class="container-fluid docs-tutorials-resources" id="docs-tutorials-resources">
+  </div>
+
+  <!-- End Footer -->
+
+  <!-- Begin Mobile Menu -->
+
+  <div class="mobile-main-menu">
+    <div class="container-fluid">
+      <div class="container">
+        <div class="mobile-main-menu-header-container">
+          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
+        </div>
+      </div>
+    </div>
+
+    <div class="mobile-main-menu-links-container">
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://github.com/opendilab/LightRFT" target="_blank">GitHub</a>
+          </li>
+      </div>
+    </div>
+  </div>
+
+  <!-- End Mobile Menu -->
+
+  <script type="text/javascript" src="../_static/js/vendor/anchor.min.js"></script>
+
+  <script type="text/javascript">
+    $(document).ready(function () {
+      mobileMenu.bind();
+      mobileTOC.bind();
+      pytorchAnchors.bind();
+      sideMenus.bind();
+      scrollToAnchor.bind();
+      highlightNavigation.bind();
+      mainMenuDropdown.bind();
+      filterTags.bind();
+
+      // Add class to links that have code blocks, since we cannot create links in code blocks
+      $("article.pytorch-article a span.pre").each(function (e) {
+        $(this).closest("a").addClass("has-code");
+      });
+    })
+  </script>
+</body>
+
+</html>

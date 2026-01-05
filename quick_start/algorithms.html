@@ -1,0 +1,916 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js" lang="en">
+<!--<![endif]-->
+
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Supported Algorithms &mdash; LightRFT v0.1.1 documentation</title>
+  
+
+  <link rel="shortcut icon" href="../_static/images/favicon.ico" />
+  
+  
+
+  
+
+  
+  
+  
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/readthedocs.css" type="text/css" />
+  <link rel="index" title="Index" href="../genindex.html" />
+  <link rel="search" title="Search" href="../search.html" />
+  <link rel="next" title="Configuration Parameters" href="configuration.html" />
+  <link rel="prev" title="LightRFT Project Overview" href="project.html" />
+  <!-- Google Analytics -->
+  <script type="text/javascript">
+    var collapsedSections = [];
+  </script>
+  
+  <!-- End Google Analytics -->
+  
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+  <script>
+    MathJax = {
+        chtml: {
+            scale: 1,
+            minScale: 1,
+        },
+        svg: {
+            scale: 1,
+            minScale: 1,
+        }
+    }
+</script>
+
+  <!-- Preload the theme fonts -->
+
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-book.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/IBMPlexMono/IBMPlexMono-Medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-medium-italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/IBMPlexMono/IBMPlexMono-SemiBold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+
+<!-- Preload the katex fonts -->
+
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Math-Italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size1-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size4-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size2-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size3-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Caligraphic-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.2/css/all.css"
+    integrity="sha384-vSIIfh2YWi9wW0r9iZe7RJPrKwp6bG+s9QZMoITbCckVJqGCCRhc+ccxNcdpHuYu" crossorigin="anonymous">
+</head>
+
+<div class="container-fluid header-holder tutorials-header" id="header-holder">
+  <div class="container">
+    <div class="header-container">
+      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+        aria-label="OpenMMLab"></a>
+
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://github.com/opendilab/LightRFT" target="_blank">GitHub</a>
+          </li>
+          <li >
+            <div id="resourcesDropdownButton" data-toggle="resources-dropdown" class="resources-dropdown">
+              <a
+                class="resource-option with-down-arrow">
+                OpenDILab
+              </a>
+              <div class="resources-dropdown-menu">
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-engine" target="_blank">
+                  <span class="dropdown-title">DI-engine </span>
+                  <p>OpenDILab Decision AI Engine</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/LightZero" target="_blank">
+                  <span class="dropdown-title">LightZero </span>
+                  <p>OpenDILab Decision Monte Carlo Tree Search Framework</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/GenerativeRL" target="_blank">
+                  <span class="dropdown-title">GenerativeRL </span>
+                  <p>OpenDILab Generative AI Framework</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-star" target="_blank">
+                  <span class="dropdown-title">DI-star </span>
+                  <p>OpenDILab Decision AI in StarCraftII</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-drive" target="_blank">
+                  <span class="dropdown-title">DI-drive </span>
+                  <p>OpenDILab Auto-driving platform</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/GoBigger" target="_blank">
+                  <span class="dropdown-title">GoBigger </span>
+                  <p>OpenDILab Multi-Agent Environment</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-smartcross" target="_blank">
+                  <span class="dropdown-title">DI-smartcross </span>
+                  <p>Decision Intelligence Platform for Traffic Crossing Signal Control</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-treetensor" target="_blank">
+                  <span class="dropdown-title">DI-treetensor </span>
+                  <p>Tree Nested PyTorch Tensor Lib</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-sheep" target="_blank">
+                  <span class="dropdown-title">DI-sheep </span>
+                  <p>Deep Reinforcement Learning + 3 Tiles Game</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-model-based-RL" target="_blank">
+                  <span class="dropdown-title">awesome-model-based-RL </span>
+                  <p>A curated list of awesome model based RL resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-decision-transformer" target="_blank">
+                  <span class="dropdown-title">awesome-decision-transformer </span>
+                  <p>A curated list of Decision Transformer resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-exploration-rl" target="_blank">
+                  <span class="dropdown-title">awesome-exploration-rl </span>
+                  <p>A curated list of awesome exploration RL resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-multi-modal-reinforcement-learning" target="_blank">
+                  <span class="dropdown-title">awesome-multi-modal-reinforcement-learning </span>
+                  <p>A curated list of Multi-Modal Reinforcement Learning resources (continually updated)</p>
+                </a>
+              </div>
+          </li>
+        </ul>
+      </div>
+
+      <a class="main-menu-open-button" href="#" data-behavior="open-mobile-menu"></a>
+    </div>
+  </div>
+</div>
+
+<body class="pytorch-body">
+
+   
+
+  
+
+  <div class="table-of-contents-link-wrapper">
+    <span>Table of Contents</span>
+    <a href="#" class="toggle-table-of-contents" data-behavior="toggle-table-of-contents"></a>
+  </div>
+
+  <nav data-toggle="wy-nav-shift" class="pytorch-left-menu" id="pytorch-left-menu">
+    <div class="pytorch-side-scroll">
+      <div class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        <div class="pytorch-left-menu-search">
+          
+
+          
+          
+          
+          
+
+          
+
+
+
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search Docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        
+        
+        
+        
+        
+        <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation/index.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Quick Start</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide &amp; Best Practices</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../best_practice/index.html">Best Practices</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/utils/index.html">lightrft.utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/datasets/index.html">lightrft.datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/models/index.html">lightrft.models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/strategy/index.html">lightrft.strategy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/trainer/index.html">lightrft.trainer</a></li>
+</ul>
+
+        
+        
+      </div>
+    </div>
+  </nav>
+
+  <div class="pytorch-container">
+    <div class="pytorch-page-level-bar" id="pytorch-page-level-bar">
+      <div class="pytorch-breadcrumbs-wrapper">
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="pytorch-breadcrumbs">
+    
+      <li>
+        <a href="../index.html">
+            Docs
+        </a> &gt;
+      </li>
+
+        
+          <li><a href="index.html">Quick Start</a> &gt;</li>
+        
+      <li>Supported Algorithms</li>
+    
+    
+      <li class="pytorch-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/quick_start/algorithms.md.txt" rel="nofollow"><img src="../_static/images/view-page-source-icon.svg"></a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+</div>
+      </div>
+
+      <div class="pytorch-shortcuts-wrapper" id="pytorch-shortcuts-wrapper">
+        Shortcuts
+      </div>
+    </div>
+
+    <section data-toggle="wy-nav-shift" id="pytorch-content-wrap" class="pytorch-content-wrap">
+      <div class="pytorch-content-left">
+        
+          <div class="rst-content">
+            
+            <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
+              <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
+                
+  <section id="supported-algorithms">
+<h1>Supported Algorithms<a class="headerlink" href="#supported-algorithms" title="Permalink to this heading">¶</a></h1>
+<p>LightRFT supports a rich ecosystem of reinforcement learning algorithms for fine-tuning large language models. This comprehensive guide provides algorithm details and implementation references.</p>
+<section id="purpose-of-this-guide">
+<h2>Purpose of This Guide<a class="headerlink" href="#purpose-of-this-guide" title="Permalink to this heading">¶</a></h2>
+<p>With the rapid development in the RFT field and emerging algorithmic innovations, this guide helps you:</p>
+<ol class="arabic simple">
+<li><p><strong>Quickly identify</strong> which algorithms suit your needs</p></li>
+<li><p><strong>Understand implementation</strong> by mapping algorithms to code modules</p></li>
+<li><p><strong>Plan integration</strong> of multiple algorithms by identifying synergies or conflicts</p></li>
+<li><p><strong>Maintain clarity</strong> through documented relationships between algorithms and components</p></li>
+</ol>
+</section>
+<section id="algorithm-overview-with-implementation">
+<h2>Algorithm Overview with Implementation<a class="headerlink" href="#algorithm-overview-with-implementation" title="Permalink to this heading">¶</a></h2>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Algorithm</p></th>
+<th class="head"><p>Type</p></th>
+<th class="head"><p>Module</p></th>
+<th class="head"><p>Description</p></th>
+<th class="head"><p>Implementation</p></th>
+<th class="head"><p>Paper</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><strong>GRPO</strong></p></td>
+<td><p>Policy Optimization</p></td>
+<td><p>Advantage Estimation</p></td>
+<td><p>Uses group-based normalization for advantage estimation without requiring a separate value network</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">FastExperienceMaker._get_return_advs()</span></code></p></td>
+<td><p><a class="reference external" href="https://arxiv.org/pdf/2402.03300">arXiv:2402.03300</a></p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>GSPO</strong></p></td>
+<td><p>Policy Optimization</p></td>
+<td><p>Policy Loss</p></td>
+<td><p>Group sequence policy optimization</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">PolicyLoss.forward()</span></code></p></td>
+<td><p><a class="reference external" href="https://arxiv.org/abs/2507.18071">arXiv:2507.18071</a></p></td>
+</tr>
+<tr class="row-even"><td><p><strong>REINFORCE++</strong></p></td>
+<td><p>Advantage Estimation</p></td>
+<td><p>Advantage Estimation</p></td>
+<td><p>Modifies return and advantage calculation with improved baseline estimation</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">FastExperienceMaker._get_return_advs()</span></code></p></td>
+<td><p><a class="reference external" href="https://arxiv.org/abs/2501.03262">arXiv:2501.03262</a></p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>CPGD</strong></p></td>
+<td><p>Advantage Estimation</p></td>
+<td><p>Advantage Estimation</p></td>
+<td><p>Adds KL-based drift constraint and clipped log-ratio for stable return/advantage computation</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">FastExperienceMaker._get_return_advs()</span></code></p></td>
+<td><p><a class="reference external" href="https://arxiv.org/abs/2505.12504">arXiv:2505.12504</a></p></td>
+</tr>
+<tr class="row-even"><td><p><strong>FIRE Sampling</strong></p></td>
+<td><p>Sampling Strategy</p></td>
+<td><p>Experience Generation</p></td>
+<td><p>Modifies sample generation process with filtering and ranking strategies</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">FastExperienceMaker.generate_samples()</span></code></p></td>
+<td><p><a class="reference external" href="https://arxiv.org/abs/2410.21236">arXiv:2410.21236</a></p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>GMPO</strong></p></td>
+<td><p>Policy Optimization</p></td>
+<td><p>Policy Loss</p></td>
+<td><p>Geometric-Mean Policy Optimization</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">PolicyLoss.forward()</span></code></p></td>
+<td><p><a class="reference external" href="https://arxiv.org/abs/2507.20673">arXiv:2507.20673</a></p></td>
+</tr>
+<tr class="row-even"><td><p><strong>Dr.GRPO</strong></p></td>
+<td><p>Policy Optimization</p></td>
+<td><p>Policy Loss</p></td>
+<td><p>Introduces an unbiased policy optimization to mitigate length bias and improve token efficiency</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">PolicyLoss.forward()</span></code></p></td>
+<td><p><a class="reference external" href="https://arxiv.org/abs/2503.20783">arXiv:2503.20783</a></p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>DAPO</strong></p></td>
+<td><p>Policy Optimization</p></td>
+<td><p>Policy Loss</p></td>
+<td><p>Introduces decoupled clipping and dynamic sampling scheme to stabilize large-scale RL optimization</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">PolicyLoss.forward()</span></code></p></td>
+<td><p><a class="reference external" href="https://arxiv.org/abs/2503.14476">arXiv:2503.14476</a></p></td>
+</tr>
+<tr class="row-even"><td><p><strong>Token-Level Policy</strong></p></td>
+<td><p>Policy Optimization</p></td>
+<td><p>Policy Loss</p></td>
+<td><p>Optimizes policy at token granularity to improve stability and credit assignment</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">PolicyLoss.forward()</span></code></p></td>
+<td><p><a class="reference external" href="https://arxiv.org/abs/2503.14476">arXiv:2503.14476</a></p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>Reward Norm/Clip</strong></p></td>
+<td><p>Reward Processing</p></td>
+<td><p>Reward Processing</p></td>
+<td><p>Applies reward normalization and clipping to stabilize advantage computation</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">FastExperienceMaker._get_return_advs()</span></code></p></td>
+<td><p><a class="reference external" href="https://github.com/alibaba/ROLL">GitHub</a></p></td>
+</tr>
+<tr class="row-even"><td><p><strong>select_high_entropy_tokens</strong></p></td>
+<td><p>Policy Optimization</p></td>
+<td><p>Policy Loss</p></td>
+<td><p>Modifies PolicyLoss to implement high entropy token selection during training</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">PolicyLoss.forward()</span></code></p></td>
+<td><p><a class="reference external" href="https://arxiv.org/abs/2506.01939">arXiv:2506.01939</a></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="algorithm-architecture">
+<h2>Algorithm Architecture<a class="headerlink" href="#algorithm-architecture" title="Permalink to this heading">¶</a></h2>
+<section id="core-training-components">
+<h3>Core Training Components<a class="headerlink" href="#core-training-components" title="Permalink to this heading">¶</a></h3>
+<p>LightRFT’s algorithm implementations are organized around three main modules:</p>
+<section id="policy-loss-computation-lightrft-trainer-ppo-loss-py">
+<h4>1. Policy Loss Computation (<code class="docutils literal notranslate"><span class="pre">lightrft/trainer/ppo_loss.py</span></code>)<a class="headerlink" href="#policy-loss-computation-lightrft-trainer-ppo-loss-py" title="Permalink to this heading">¶</a></h4>
+<ul class="simple">
+<li><p><strong>Purpose</strong>: Implements PPO policy loss with multiple surrogate objectives</p></li>
+<li><p><strong>Key Method</strong>: <code class="docutils literal notranslate"><span class="pre">forward(log_probs,</span> <span class="pre">old_log_probs,</span> <span class="pre">advantages,</span> <span class="pre">action_mask)</span></code></p></li>
+<li><p><strong>Affected by</strong>: GSPO, GMPO, Dr.GRPO, DAPO, Token-Level Policy, select_high_entropy_tokens</p></li>
+<li><p><strong>Modification Type</strong>: Loss function design and token selection strategies</p></li>
+</ul>
+</section>
+<section id="experience-generation-lightrft-trainer-fast-exp-maker-py">
+<h4>2. Experience Generation (<code class="docutils literal notranslate"><span class="pre">lightrft/trainer/fast_exp_maker.py</span></code>)<a class="headerlink" href="#experience-generation-lightrft-trainer-fast-exp-maker-py" title="Permalink to this heading">¶</a></h4>
+<ul class="simple">
+<li><p><strong>Purpose</strong>: Generates experiences using vLLM and other inference backends</p></li>
+<li><p><strong>Key Methods</strong>:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">generate_samples()</span></code>: Sample generation with various strategies</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">_get_return_advs()</span></code>: Returns and advantages calculation</p></li>
+</ul>
+</li>
+<li><p><strong>Affected by</strong>: FIRE Sampling</p></li>
+<li><p><strong>Modification Type</strong>: Sampling strategies and inference optimization</p></li>
+</ul>
+</section>
+<section id="advantage-reward-processing-lightrft-trainer-fast-exp-maker-py">
+<h4>3. Advantage &amp; Reward Processing (<code class="docutils literal notranslate"><span class="pre">lightrft/trainer/fast_exp_maker.py</span></code>)<a class="headerlink" href="#advantage-reward-processing-lightrft-trainer-fast-exp-maker-py" title="Permalink to this heading">¶</a></h4>
+<ul class="simple">
+<li><p><strong>Purpose</strong>: Processes rewards and computes advantages for policy updates</p></li>
+<li><p><strong>Key Method</strong>: <code class="docutils literal notranslate"><span class="pre">_get_return_advs()</span></code>: Advantage estimation with various baselines</p></li>
+<li><p><strong>Affected by</strong>: GRPO, REINFORCE++, CPGD, Reward Norm/Clip</p></li>
+<li><p><strong>Modification Type</strong>: Advantage estimation methods and reward shaping</p></li>
+</ul>
+</section>
+</section>
+<section id="modification-types">
+<h3>Modification Types<a class="headerlink" href="#modification-types" title="Permalink to this heading">¶</a></h3>
+<p><strong>Algorithmic Changes</strong>:</p>
+<ul class="simple">
+<li><p><strong>Loss Design</strong>: Core objective function modifications</p></li>
+<li><p><strong>Advantage Estimation</strong>: Updates to advantage calculation methods</p></li>
+<li><p><strong>Sampling Strategy</strong>: Changes to sample generation processes</p></li>
+<li><p><strong>Token Selection</strong>: Which tokens are used in training</p></li>
+<li><p><strong>Reward Shaping</strong>: Reward preprocessing and filtering</p></li>
+</ul>
+<p><strong>Implementation Changes</strong>:</p>
+<ul class="simple">
+<li><p><strong>Efficiency Optimization</strong>: Performance improvements (e.g., FP8)</p></li>
+<li><p><strong>Parameter Tuning</strong>: Hyperparameter adjustments</p></li>
+<li><p><strong>Pipeline Integration</strong>: New components or workflow changes</p></li>
+</ul>
+</section>
+</section>
+<section id="policy-optimization-algorithms">
+<h2>Policy Optimization Algorithms<a class="headerlink" href="#policy-optimization-algorithms" title="Permalink to this heading">¶</a></h2>
+<section id="grpo-group-relative-policy-optimization">
+<h3>GRPO (Group Relative Policy Optimization)<a class="headerlink" href="#grpo-group-relative-policy-optimization" title="Permalink to this heading">¶</a></h3>
+<p><strong>Overview</strong>: GRPO uses group-based normalization for advantage estimation, providing stable training without requiring a separate value network.</p>
+<p><strong>Implementation</strong>: <code class="docutils literal notranslate"><span class="pre">FastExperienceMaker._get_return_advs()</span></code> - Advantage Estimation module
+<strong>Modification Type</strong>: Advantage Estimation</p>
+<p><strong>Key Features</strong>:</p>
+<ul class="simple">
+<li><p>No critic network required</p></li>
+<li><p>Group-normalized advantages</p></li>
+<li><p>Stable training with large batch sizes</p></li>
+<li><p>Memory efficient</p></li>
+</ul>
+<p><strong>Usage</strong>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>train.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--advantage_estimator<span class="w"> </span>group_norm<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--n_samples_per_prompt<span class="w"> </span><span class="m">8</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--kl_estimator<span class="w"> </span>k3
+</pre></div>
+</div>
+<p><strong>Best For</strong>:</p>
+<ul class="simple">
+<li><p>Large-scale training with limited memory</p></li>
+<li><p>Quick prototyping without value network</p></li>
+<li><p>Math reasoning and coding tasks</p></li>
+</ul>
+</section>
+<hr class="docutils" />
+<section id="gspo-group-sequence-policy-optimization">
+<h3>GSPO (Group Sequence Policy Optimization)<a class="headerlink" href="#gspo-group-sequence-policy-optimization" title="Permalink to this heading">¶</a></h3>
+<p><strong>Overview</strong>: GSPO generalizes the PPO objective with flexible surrogate functions, allowing for better control over policy updates.</p>
+<p><strong>Implementation</strong>: <code class="docutils literal notranslate"><span class="pre">PolicyLoss.forward()</span></code> - Policy Loss module
+<strong>Modification Type</strong>: Loss Design</p>
+<p><strong>Key Features</strong>:</p>
+<ul class="simple">
+<li><p>Generalized clipping objectives</p></li>
+<li><p>Adaptive trust region updates</p></li>
+<li><p>Better sample efficiency</p></li>
+</ul>
+<p><strong>Usage</strong>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>train.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--advantage_estimator<span class="w"> </span>gspo<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--gspo_alpha<span class="w"> </span><span class="m">0</span>.1<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--clip_range<span class="w"> </span><span class="m">0</span>.2
+</pre></div>
+</div>
+<p><strong>Best For</strong>:</p>
+<ul class="simple">
+<li><p>Tasks requiring precise policy control</p></li>
+<li><p>Multi-task learning scenarios</p></li>
+</ul>
+</section>
+<hr class="docutils" />
+<section id="gmpo-geometric-mean-policy-optimization">
+<h3>GMPO (Geometric-Mean Policy Optimization)<a class="headerlink" href="#gmpo-geometric-mean-policy-optimization" title="Permalink to this heading">¶</a></h3>
+<p><strong>Overview</strong>: GMPO leverages mirror descent principles for policy optimization, providing theoretical guarantees and improved convergence.</p>
+<p><strong>Implementation</strong>: <code class="docutils literal notranslate"><span class="pre">PolicyLoss.forward()</span></code> - Policy Loss module
+<strong>Modification Type</strong>: Loss Design</p>
+<p><strong>Key Features</strong>:</p>
+<ul class="simple">
+<li><p>Mirror descent updates</p></li>
+<li><p>Theoretical convergence guarantees</p></li>
+<li><p>Adaptive step sizes</p></li>
+</ul>
+<p><strong>Usage</strong>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>train.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--advantage_estimator<span class="w"> </span>gmpo<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--mirror_tau<span class="w"> </span><span class="m">0</span>.01
+</pre></div>
+</div>
+<p><strong>Best For</strong>:</p>
+<ul class="simple">
+<li><p>Research applications requiring theoretical guarantees</p></li>
+<li><p>Complex reward landscapes</p></li>
+</ul>
+</section>
+<hr class="docutils" />
+<section id="dr-grpo-group-relative-policy-optimization-done-right">
+<h3>Dr.GRPO (Group Relative Policy Optimization Done Right)<a class="headerlink" href="#dr-grpo-group-relative-policy-optimization-done-right" title="Permalink to this heading">¶</a></h3>
+<p><strong>Overview</strong>: Dr.GRPO addresses length bias in reward models by explicitly modeling and mitigating the reward-length correlation.</p>
+<p><strong>Implementation</strong>: <code class="docutils literal notranslate"><span class="pre">PolicyLoss.forward()</span></code> - Policy Loss module
+<strong>Modification Type</strong>: Loss Design (length bias mitigation)</p>
+<p><strong>Key Features</strong>:</p>
+<ul class="simple">
+<li><p>Length bias mitigation</p></li>
+<li><p>Reward debiasing mechanisms</p></li>
+<li><p>Improved response quality</p></li>
+</ul>
+<p><strong>Usage</strong>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>train.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--advantage_estimator<span class="w"> </span>group_norm<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--use_length_penalty<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--length_penalty_coef<span class="w"> </span><span class="m">0</span>.01
+</pre></div>
+</div>
+<p><strong>Best For</strong>:</p>
+<ul class="simple">
+<li><p>Tasks sensitive to response length</p></li>
+<li><p>Instruction following</p></li>
+<li><p>Open-ended generation</p></li>
+</ul>
+</section>
+<hr class="docutils" />
+<section id="dapo-dynamic-sampling-policy-optimization">
+<h3>DAPO (Dynamic sAmpling Policy Optimization)<a class="headerlink" href="#dapo-dynamic-sampling-policy-optimization" title="Permalink to this heading">¶</a></h3>
+<p><strong>Overview</strong>: DAPO uses separate upper and lower clipping bounds for advantage-weighted policy updates combined with dynamic sampling strategies, improving training stability.</p>
+<p><strong>Implementation</strong>: <code class="docutils literal notranslate"><span class="pre">PolicyLoss.forward()</span></code> - Policy Loss module
+<strong>Modification Type</strong>: Loss Design (decoupled clipping)</p>
+<p><strong>Key Features</strong>:</p>
+<ul class="simple">
+<li><p>Decoupled clipping for positive/negative advantages</p></li>
+<li><p>Dynamic sampling strategy</p></li>
+<li><p>Better handling of distribution shifts</p></li>
+<li><p>Improved stability</p></li>
+</ul>
+<p><strong>Usage</strong>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>train.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--use_clip_higher<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--clip_range_higher<span class="w"> </span><span class="m">0</span>.3<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--clip_range_lower<span class="w"> </span><span class="m">0</span>.2
+</pre></div>
+</div>
+<p><strong>Best For</strong>:</p>
+<ul class="simple">
+<li><p>Highly noisy reward signals</p></li>
+<li><p>Large distribution shifts</p></li>
+<li><p>Challenging domains</p></li>
+</ul>
+</section>
+<hr class="docutils" />
+<section id="token-level-policy">
+<h3>Token-Level Policy<a class="headerlink" href="#token-level-policy" title="Permalink to this heading">¶</a></h3>
+<p><strong>Overview</strong>: Optimizes policy at token granularity to improve stability and credit assignment.</p>
+<p><strong>Implementation</strong>: <code class="docutils literal notranslate"><span class="pre">PolicyLoss.forward()</span></code> - Policy Loss module
+<strong>Modification Type</strong>: Token Selection</p>
+<p><strong>Key Features</strong>:</p>
+<ul class="simple">
+<li><p>Token-granular optimization</p></li>
+<li><p>Improved credit assignment</p></li>
+<li><p>Better stability in long sequences</p></li>
+</ul>
+<p><strong>Usage</strong>: Typically combined with other policy optimization methods through implementation modifications.</p>
+</section>
+</section>
+<section id="advantage-estimation-methods">
+<h2>Advantage Estimation Methods<a class="headerlink" href="#advantage-estimation-methods" title="Permalink to this heading">¶</a></h2>
+<section id="reinforce">
+<h3>REINFORCE++<a class="headerlink" href="#reinforce" title="Permalink to this heading">¶</a></h3>
+<p><strong>Overview</strong>: An improved baseline estimation method that uses control variates to reduce variance in policy gradient estimates.</p>
+<p><strong>Implementation</strong>: <code class="docutils literal notranslate"><span class="pre">FastExperienceMaker._get_return_advs()</span></code> - Advantage Estimation module
+<strong>Modification Type</strong>: Advantage Estimation</p>
+<p><strong>Key Features</strong>:</p>
+<ul class="simple">
+<li><p>Lower variance gradients</p></li>
+<li><p>Faster convergence</p></li>
+<li><p>Compatible with all policy optimization methods</p></li>
+</ul>
+<p><strong>Usage</strong>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>train.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--advantage_estimator<span class="w"> </span>reinforce_plus<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--baseline_type<span class="w"> </span>value_network
+</pre></div>
+</div>
+<p><strong>Best For</strong>:</p>
+<ul class="simple">
+<li><p>High-variance environments</p></li>
+<li><p>Sparse rewards</p></li>
+<li><p>Combining with PPO or other on-policy methods</p></li>
+</ul>
+</section>
+<hr class="docutils" />
+<section id="cpgd-clipped-policy-gradient-optimization-with-policy-drift">
+<h3>CPGD (Clipped Policy Gradient Optimization with Policy Drift)<a class="headerlink" href="#cpgd-clipped-policy-gradient-optimization-with-policy-drift" title="Permalink to this heading">¶</a></h3>
+<p><strong>Overview</strong>: CPGD constrains policy updates using KL-divergence to prevent catastrophic forgetting and maintain stable training.</p>
+<p><strong>Implementation</strong>: <code class="docutils literal notranslate"><span class="pre">FastExperienceMaker._get_return_advs()</span></code> - Advantage Estimation module
+<strong>Modification Type</strong>: Advantage Estimation (KL-constrained)</p>
+<p><strong>Key Features</strong>:</p>
+<ul class="simple">
+<li><p>KL-constrained updates</p></li>
+<li><p>Prevents catastrophic forgetting</p></li>
+<li><p>Adaptive constraint adjustment</p></li>
+</ul>
+<p><strong>Usage</strong>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>train.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--advantage_estimator<span class="w"> </span>cpgd<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--kl_target<span class="w"> </span><span class="m">0</span>.01<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--kl_horizon<span class="w"> </span><span class="m">10000</span>
+</pre></div>
+</div>
+<p><strong>Best For</strong>:</p>
+<ul class="simple">
+<li><p>Fine-tuning pre-trained models</p></li>
+<li><p>Preserving original capabilities</p></li>
+<li><p>Multi-stage training</p></li>
+</ul>
+</section>
+</section>
+<section id="reward-processing">
+<h2>Reward Processing<a class="headerlink" href="#reward-processing" title="Permalink to this heading">¶</a></h2>
+<section id="reward-normalization-and-clipping">
+<h3>Reward Normalization and Clipping<a class="headerlink" href="#reward-normalization-and-clipping" title="Permalink to this heading">¶</a></h3>
+<p><strong>Overview</strong>: Standard reward preprocessing techniques to stabilize training.</p>
+<p><strong>Implementation</strong>: <code class="docutils literal notranslate"><span class="pre">FastExperienceMaker._get_return_advs()</span></code> - Reward Processing module
+<strong>Modification Type</strong>: Reward Shaping (normalization/clipping)</p>
+<p><strong>Key Features</strong>:</p>
+<ul class="simple">
+<li><p>Running reward statistics</p></li>
+<li><p>Advantage normalization</p></li>
+<li><p>Reward clipping</p></li>
+</ul>
+<p><strong>Usage</strong>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>train.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--reward_running_norm<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--reward_running_norm_minus_mean<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--reward_clip<span class="w"> </span><span class="m">10</span>.0<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--advantage_clip<span class="w"> </span><span class="m">10</span>.0
+</pre></div>
+</div>
+<p><strong>Best For</strong>:</p>
+<ul class="simple">
+<li><p>All training scenarios (recommended baseline)</p></li>
+<li><p>Reward scale varies across prompts</p></li>
+<li><p>Training stability</p></li>
+</ul>
+</section>
+</section>
+<section id="sampling-strategies">
+<h2>Sampling Strategies<a class="headerlink" href="#sampling-strategies" title="Permalink to this heading">¶</a></h2>
+<section id="fire-sampling">
+<h3>FIRE Sampling<a class="headerlink" href="#fire-sampling" title="Permalink to this heading">¶</a></h3>
+<p><strong>Overview</strong>: FIRE (Filtered and Improved Reward Estimation) combines filtering and ranking strategies for better sample selection.</p>
+<p><strong>Implementation</strong>: <code class="docutils literal notranslate"><span class="pre">FastExperienceMaker.generate_samples()</span></code> - Experience Generation module
+<strong>Modification Type</strong>: Sampling Strategy</p>
+<p><strong>Key Features</strong>:</p>
+<ul class="simple">
+<li><p>Multi-stage filtering</p></li>
+<li><p>Reward-based ranking</p></li>
+<li><p>Sample efficiency</p></li>
+</ul>
+<p><strong>Usage</strong>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>train.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--use_fire_sampling<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--fire_filter_ratio<span class="w"> </span><span class="m">0</span>.5<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--fire_rank_method<span class="w"> </span>reward
+</pre></div>
+</div>
+<p><strong>Best For</strong>:</p>
+<ul class="simple">
+<li><p>Limited computational budgets</p></li>
+<li><p>High-quality data generation</p></li>
+<li><p>Best-of-N sampling scenarios</p></li>
+</ul>
+</section>
+</section>
+<section id="implementation-notes">
+<h2>Implementation Notes<a class="headerlink" href="#implementation-notes" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>All policy loss algorithms modify the <strong>PolicyLoss</strong> module’s <code class="docutils literal notranslate"><span class="pre">forward()</span></code> method</p></li>
+<li><p>Advantage estimation algorithms modify <strong>FastExperienceMaker</strong>’s <code class="docutils literal notranslate"><span class="pre">_get_return_advs()</span></code> method</p></li>
+<li><p>Sampling strategies modify <strong>FastExperienceMaker</strong>’s <code class="docutils literal notranslate"><span class="pre">generate_samples()</span></code> method</p></li>
+<li><p>Reward processing algorithms primarily work within <code class="docutils literal notranslate"><span class="pre">_get_return_advs()</span></code> method</p></li>
+<li><p>Most modifications are in core training loop components rather than peripheral utilities</p></li>
+</ul>
+</section>
+<section id="references">
+<h2>References<a class="headerlink" href="#references" title="Permalink to this heading">¶</a></h2>
+<p>For detailed algorithm descriptions and experimental results, refer to the linked papers. Implementation details can be found in the source code:</p>
+<ul class="simple">
+<li><p>Policy Loss: <code class="docutils literal notranslate"><span class="pre">lightrft/models/loss.py</span></code></p></li>
+<li><p>Experience Maker: <code class="docutils literal notranslate"><span class="pre">lightrft/trainer/fast_exp_maker.py</span></code></p></li>
+<li><p>vLLM Utils: <code class="docutils literal notranslate"><span class="pre">lightrft/strategy/vllm_utils/</span></code></p></li>
+</ul>
+</section>
+</section>
+
+
+              </article>
+              
+            </div>
+            <footer>
+  
+  <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+    
+    <a href="configuration.html" class="btn btn-neutral float-right" title="Configuration Parameters" accesskey="n"
+      rel="next">Next <img src="../_static/images/chevron-right-blue.svg"
+        class="next-page"></a>
+    
+    
+    <a href="project.html" class="btn btn-neutral" title="LightRFT Project Overview" accesskey="p"
+      rel="prev"><img src="../_static/images/chevron-right-blue.svg" class="previous-page"> Previous</a>
+    
+  </div>
+  
+
+  <hr>
+
+  <div role="contentinfo">
+    <p>
+      &copy; Copyright 2025, OpenDILab.
+
+    </p>
+  </div>
+  
+  <div>
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a
+      href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the
+      Docs</a>.
+  </div>
+   
+
+</footer>
+          </div>
+        </div>
+
+        <div class="pytorch-content-right" id="pytorch-content-right">
+          <div class="pytorch-right-menu" id="pytorch-right-menu">
+            <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
+              <ul>
+<li><a class="reference internal" href="#">Supported Algorithms</a><ul>
+<li><a class="reference internal" href="#purpose-of-this-guide">Purpose of This Guide</a></li>
+<li><a class="reference internal" href="#algorithm-overview-with-implementation">Algorithm Overview with Implementation</a></li>
+<li><a class="reference internal" href="#algorithm-architecture">Algorithm Architecture</a><ul>
+<li><a class="reference internal" href="#core-training-components">Core Training Components</a><ul>
+<li><a class="reference internal" href="#policy-loss-computation-lightrft-trainer-ppo-loss-py">1. Policy Loss Computation (<code class="docutils literal notranslate"><span class="pre">lightrft/trainer/ppo_loss.py</span></code>)</a></li>
+<li><a class="reference internal" href="#experience-generation-lightrft-trainer-fast-exp-maker-py">2. Experience Generation (<code class="docutils literal notranslate"><span class="pre">lightrft/trainer/fast_exp_maker.py</span></code>)</a></li>
+<li><a class="reference internal" href="#advantage-reward-processing-lightrft-trainer-fast-exp-maker-py">3. Advantage &amp; Reward Processing (<code class="docutils literal notranslate"><span class="pre">lightrft/trainer/fast_exp_maker.py</span></code>)</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#modification-types">Modification Types</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#policy-optimization-algorithms">Policy Optimization Algorithms</a><ul>
+<li><a class="reference internal" href="#grpo-group-relative-policy-optimization">GRPO (Group Relative Policy Optimization)</a></li>
+<li><a class="reference internal" href="#gspo-group-sequence-policy-optimization">GSPO (Group Sequence Policy Optimization)</a></li>
+<li><a class="reference internal" href="#gmpo-geometric-mean-policy-optimization">GMPO (Geometric-Mean Policy Optimization)</a></li>
+<li><a class="reference internal" href="#dr-grpo-group-relative-policy-optimization-done-right">Dr.GRPO (Group Relative Policy Optimization Done Right)</a></li>
+<li><a class="reference internal" href="#dapo-dynamic-sampling-policy-optimization">DAPO (Dynamic sAmpling Policy Optimization)</a></li>
+<li><a class="reference internal" href="#token-level-policy">Token-Level Policy</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#advantage-estimation-methods">Advantage Estimation Methods</a><ul>
+<li><a class="reference internal" href="#reinforce">REINFORCE++</a></li>
+<li><a class="reference internal" href="#cpgd-clipped-policy-gradient-optimization-with-policy-drift">CPGD (Clipped Policy Gradient Optimization with Policy Drift)</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#reward-processing">Reward Processing</a><ul>
+<li><a class="reference internal" href="#reward-normalization-and-clipping">Reward Normalization and Clipping</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#sampling-strategies">Sampling Strategies</a><ul>
+<li><a class="reference internal" href="#fire-sampling">FIRE Sampling</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#implementation-notes">Implementation Notes</a></li>
+<li><a class="reference internal" href="#references">References</a></li>
+</ul>
+</li>
+</ul>
+
+            </div>
+          </div>
+        </div>
+    </section>
+  </div>
+
+  
+
+
+  
+
+  
+  <script type="text/javascript" id="documentation_options" data-url_root="../"
+    src="../_static/documentation_options.js"></script>
+  <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+  <script src="../_static/doctools.js"></script>
+  <script src="../_static/sphinx_highlight.js"></script>
+  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+  
+
+  
+
+  <script type="text/javascript" src="../_static/js/vendor/popper.min.js"></script>
+  <script type="text/javascript" src="../_static/js/vendor/bootstrap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+    jQuery(function () {
+      SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+  <!-- Begin Footer -->
+
+  <div class="container-fluid docs-tutorials-resources" id="docs-tutorials-resources">
+  </div>
+
+  <!-- End Footer -->
+
+  <!-- Begin Mobile Menu -->
+
+  <div class="mobile-main-menu">
+    <div class="container-fluid">
+      <div class="container">
+        <div class="mobile-main-menu-header-container">
+          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
+        </div>
+      </div>
+    </div>
+
+    <div class="mobile-main-menu-links-container">
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://github.com/opendilab/LightRFT" target="_blank">GitHub</a>
+          </li>
+      </div>
+    </div>
+  </div>
+
+  <!-- End Mobile Menu -->
+
+  <script type="text/javascript" src="../_static/js/vendor/anchor.min.js"></script>
+
+  <script type="text/javascript">
+    $(document).ready(function () {
+      mobileMenu.bind();
+      mobileTOC.bind();
+      pytorchAnchors.bind();
+      sideMenus.bind();
+      scrollToAnchor.bind();
+      highlightNavigation.bind();
+      mainMenuDropdown.bind();
+      filterTags.bind();
+
+      // Add class to links that have code blocks, since we cannot create links in code blocks
+      $("article.pytorch-article a span.pre").each(function (e) {
+        $(this).closest("a").addClass("has-code");
+      });
+    })
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,1312 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js" lang="en">
+<!--<![endif]-->
+
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Configuration Parameters &mdash; LightRFT v0.1.1 documentation</title>
+  
+
+  <link rel="shortcut icon" href="../_static/images/favicon.ico" />
+  
+  
+
+  
+
+  
+  
+  
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/readthedocs.css" type="text/css" />
+  <link rel="index" title="Index" href="../genindex.html" />
+  <link rel="search" title="Search" href="../search.html" />
+  <link rel="next" title="Best Practices" href="../best_practice/index.html" />
+  <link rel="prev" title="Supported Algorithms" href="algorithms.html" />
+  <!-- Google Analytics -->
+  <script type="text/javascript">
+    var collapsedSections = [];
+  </script>
+  
+  <!-- End Google Analytics -->
+  
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+  <script>
+    MathJax = {
+        chtml: {
+            scale: 1,
+            minScale: 1,
+        },
+        svg: {
+            scale: 1,
+            minScale: 1,
+        }
+    }
+</script>
+
+  <!-- Preload the theme fonts -->
+
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-book.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/IBMPlexMono/IBMPlexMono-Medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-medium-italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/IBMPlexMono/IBMPlexMono-SemiBold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+
+<!-- Preload the katex fonts -->
+
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Math-Italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size1-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size4-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size2-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size3-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Caligraphic-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.2/css/all.css"
+    integrity="sha384-vSIIfh2YWi9wW0r9iZe7RJPrKwp6bG+s9QZMoITbCckVJqGCCRhc+ccxNcdpHuYu" crossorigin="anonymous">
+</head>
+
+<div class="container-fluid header-holder tutorials-header" id="header-holder">
+  <div class="container">
+    <div class="header-container">
+      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+        aria-label="OpenMMLab"></a>
+
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://github.com/opendilab/LightRFT" target="_blank">GitHub</a>
+          </li>
+          <li >
+            <div id="resourcesDropdownButton" data-toggle="resources-dropdown" class="resources-dropdown">
+              <a
+                class="resource-option with-down-arrow">
+                OpenDILab
+              </a>
+              <div class="resources-dropdown-menu">
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-engine" target="_blank">
+                  <span class="dropdown-title">DI-engine </span>
+                  <p>OpenDILab Decision AI Engine</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/LightZero" target="_blank">
+                  <span class="dropdown-title">LightZero </span>
+                  <p>OpenDILab Decision Monte Carlo Tree Search Framework</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/GenerativeRL" target="_blank">
+                  <span class="dropdown-title">GenerativeRL </span>
+                  <p>OpenDILab Generative AI Framework</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-star" target="_blank">
+                  <span class="dropdown-title">DI-star </span>
+                  <p>OpenDILab Decision AI in StarCraftII</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-drive" target="_blank">
+                  <span class="dropdown-title">DI-drive </span>
+                  <p>OpenDILab Auto-driving platform</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/GoBigger" target="_blank">
+                  <span class="dropdown-title">GoBigger </span>
+                  <p>OpenDILab Multi-Agent Environment</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-smartcross" target="_blank">
+                  <span class="dropdown-title">DI-smartcross </span>
+                  <p>Decision Intelligence Platform for Traffic Crossing Signal Control</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-treetensor" target="_blank">
+                  <span class="dropdown-title">DI-treetensor </span>
+                  <p>Tree Nested PyTorch Tensor Lib</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-sheep" target="_blank">
+                  <span class="dropdown-title">DI-sheep </span>
+                  <p>Deep Reinforcement Learning + 3 Tiles Game</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-model-based-RL" target="_blank">
+                  <span class="dropdown-title">awesome-model-based-RL </span>
+                  <p>A curated list of awesome model based RL resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-decision-transformer" target="_blank">
+                  <span class="dropdown-title">awesome-decision-transformer </span>
+                  <p>A curated list of Decision Transformer resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-exploration-rl" target="_blank">
+                  <span class="dropdown-title">awesome-exploration-rl </span>
+                  <p>A curated list of awesome exploration RL resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-multi-modal-reinforcement-learning" target="_blank">
+                  <span class="dropdown-title">awesome-multi-modal-reinforcement-learning </span>
+                  <p>A curated list of Multi-Modal Reinforcement Learning resources (continually updated)</p>
+                </a>
+              </div>
+          </li>
+        </ul>
+      </div>
+
+      <a class="main-menu-open-button" href="#" data-behavior="open-mobile-menu"></a>
+    </div>
+  </div>
+</div>
+
+<body class="pytorch-body">
+
+   
+
+  
+
+  <div class="table-of-contents-link-wrapper">
+    <span>Table of Contents</span>
+    <a href="#" class="toggle-table-of-contents" data-behavior="toggle-table-of-contents"></a>
+  </div>
+
+  <nav data-toggle="wy-nav-shift" class="pytorch-left-menu" id="pytorch-left-menu">
+    <div class="pytorch-side-scroll">
+      <div class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        <div class="pytorch-left-menu-search">
+          
+
+          
+          
+          
+          
+
+          
+
+
+
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search Docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        
+        
+        
+        
+        
+        <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation/index.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Quick Start</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide &amp; Best Practices</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../best_practice/index.html">Best Practices</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/utils/index.html">lightrft.utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/datasets/index.html">lightrft.datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/models/index.html">lightrft.models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/strategy/index.html">lightrft.strategy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/trainer/index.html">lightrft.trainer</a></li>
+</ul>
+
+        
+        
+      </div>
+    </div>
+  </nav>
+
+  <div class="pytorch-container">
+    <div class="pytorch-page-level-bar" id="pytorch-page-level-bar">
+      <div class="pytorch-breadcrumbs-wrapper">
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="pytorch-breadcrumbs">
+    
+      <li>
+        <a href="../index.html">
+            Docs
+        </a> &gt;
+      </li>
+
+        
+          <li><a href="index.html">Quick Start</a> &gt;</li>
+        
+      <li>Configuration Parameters</li>
+    
+    
+      <li class="pytorch-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/quick_start/configuration.md.txt" rel="nofollow"><img src="../_static/images/view-page-source-icon.svg"></a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+</div>
+      </div>
+
+      <div class="pytorch-shortcuts-wrapper" id="pytorch-shortcuts-wrapper">
+        Shortcuts
+      </div>
+    </div>
+
+    <section data-toggle="wy-nav-shift" id="pytorch-content-wrap" class="pytorch-content-wrap">
+      <div class="pytorch-content-left">
+        
+          <div class="rst-content">
+            
+            <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
+              <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
+                
+  <section id="configuration-parameters">
+<h1>Configuration Parameters<a class="headerlink" href="#configuration-parameters" title="Permalink to this heading">¶</a></h1>
+<p>This comprehensive guide covers all configuration parameters available in LightRFT. Parameters are organized by category for easy reference.</p>
+<section id="table-of-contents">
+<h2>Table of Contents<a class="headerlink" href="#table-of-contents" title="Permalink to this heading">¶</a></h2>
+<ol class="arabic simple">
+<li><p><a class="reference internal" href="#model-parameters"><span class="std std-ref">Model Parameters</span></a></p></li>
+<li><p><a class="reference internal" href="#training-parameters"><span class="std std-ref">Training Parameters</span></a></p></li>
+<li><p><a class="reference internal" href="#batch-size-configuration"><span class="std std-ref">Batch Size Configuration</span></a></p></li>
+<li><p><a class="reference internal" href="#algorithm-parameters"><span class="std std-ref">Algorithm Parameters</span></a></p></li>
+<li><p><a class="reference internal" href="#distributed-training"><span class="std std-ref">Distributed Training</span></a></p></li>
+<li><p><a class="reference internal" href="#inference-engine"><span class="std std-ref">Inference Engine</span></a></p></li>
+<li><p><a class="reference internal" href="#memory-optimization"><span class="std std-ref">Memory Optimization</span></a></p></li>
+<li><p><a class="reference internal" href="#logging-and-monitoring"><span class="std std-ref">Logging and Monitoring</span></a></p></li>
+<li><p><a class="reference internal" href="#checkpoint-management"><span class="std std-ref">Checkpoint Management</span></a></p></li>
+</ol>
+</section>
+<section id="model-parameters">
+<h2>Model Parameters<a class="headerlink" href="#model-parameters" title="Permalink to this heading">¶</a></h2>
+<section id="pretrain">
+<h3><code class="docutils literal notranslate"><span class="pre">--pretrain</span></code><a class="headerlink" href="#pretrain" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>Type</strong>: <code class="docutils literal notranslate"><span class="pre">str</span></code></p></li>
+<li><p><strong>Required</strong>: Yes</p></li>
+<li><p><strong>Description</strong>: Path to pre-trained model and tokenizer</p></li>
+<li><p><strong>Example</strong>: <code class="docutils literal notranslate"><span class="pre">/path/to/Qwen2.5-7B-Instruct</span></code></p></li>
+</ul>
+</section>
+<section id="reward-pretrain">
+<h3><code class="docutils literal notranslate"><span class="pre">--reward_pretrain</span></code><a class="headerlink" href="#reward-pretrain" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>Type</strong>: <code class="docutils literal notranslate"><span class="pre">str</span></code></p></li>
+<li><p><strong>Default</strong>: Same as <code class="docutils literal notranslate"><span class="pre">--pretrain</span></code></p></li>
+<li><p><strong>Description</strong>: Path to reward model</p></li>
+<li><p><strong>Example</strong>: <code class="docutils literal notranslate"><span class="pre">/path/to/reward-model</span></code></p></li>
+</ul>
+</section>
+<section id="remote-rm-url">
+<h3><code class="docutils literal notranslate"><span class="pre">--remote_rm_url</span></code><a class="headerlink" href="#remote-rm-url" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>Type</strong>: <code class="docutils literal notranslate"><span class="pre">str</span></code></p></li>
+<li><p><strong>Default</strong>: <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
+<li><p><strong>Description</strong>: URL for remote reward model server</p></li>
+<li><p><strong>Example</strong>: <code class="docutils literal notranslate"><span class="pre">http://localhost:5000</span></code></p></li>
+</ul>
+</section>
+<section id="max-len">
+<h3><code class="docutils literal notranslate"><span class="pre">--max_len</span></code><a class="headerlink" href="#max-len" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>Type</strong>: <code class="docutils literal notranslate"><span class="pre">int</span></code></p></li>
+<li><p><strong>Default</strong>: <code class="docutils literal notranslate"><span class="pre">4096</span></code></p></li>
+<li><p><strong>Description</strong>: Maximum sequence length (prompt + response)</p></li>
+</ul>
+</section>
+<section id="prompt-max-len">
+<h3><code class="docutils literal notranslate"><span class="pre">--prompt_max_len</span></code><a class="headerlink" href="#prompt-max-len" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>Type</strong>: <code class="docutils literal notranslate"><span class="pre">int</span></code></p></li>
+<li><p><strong>Default</strong>: <code class="docutils literal notranslate"><span class="pre">2048</span></code></p></li>
+<li><p><strong>Description</strong>: Maximum prompt length</p></li>
+</ul>
+</section>
+</section>
+<section id="training-parameters">
+<h2>Training Parameters<a class="headerlink" href="#training-parameters" title="Permalink to this heading">¶</a></h2>
+<section id="num-episodes">
+<h3><code class="docutils literal notranslate"><span class="pre">--num_episodes</span></code><a class="headerlink" href="#num-episodes" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>Type</strong>: <code class="docutils literal notranslate"><span class="pre">int</span></code></p></li>
+<li><p><strong>Default</strong>: <code class="docutils literal notranslate"><span class="pre">1</span></code></p></li>
+<li><p><strong>Description</strong>: Total number of training episodes</p></li>
+<li><p><strong>Recommended</strong>: 10-100 for most tasks</p></li>
+</ul>
+</section>
+<section id="max-epochs">
+<h3><code class="docutils literal notranslate"><span class="pre">--max_epochs</span></code><a class="headerlink" href="#max-epochs" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>Type</strong>: <code class="docutils literal notranslate"><span class="pre">int</span></code></p></li>
+<li><p><strong>Default</strong>: <code class="docutils literal notranslate"><span class="pre">1</span></code></p></li>
+<li><p><strong>Description</strong>: Number of training epochs per episode</p></li>
+<li><p><strong>Recommended</strong>: 1-3</p></li>
+</ul>
+</section>
+<section id="actor-learning-rate">
+<h3><code class="docutils literal notranslate"><span class="pre">--actor_learning_rate</span></code><a class="headerlink" href="#actor-learning-rate" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>Type</strong>: <code class="docutils literal notranslate"><span class="pre">float</span></code></p></li>
+<li><p><strong>Default</strong>: <code class="docutils literal notranslate"><span class="pre">5e-7</span></code></p></li>
+<li><p><strong>Description</strong>: Learning rate for actor (policy) model</p></li>
+<li><p><strong>Recommended Range</strong>: <code class="docutils literal notranslate"><span class="pre">1e-7</span></code> to <code class="docutils literal notranslate"><span class="pre">5e-6</span></code></p></li>
+</ul>
+</section>
+<section id="critic-learning-rate">
+<h3><code class="docutils literal notranslate"><span class="pre">--critic_learning_rate</span></code><a class="headerlink" href="#critic-learning-rate" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>Type</strong>: <code class="docutils literal notranslate"><span class="pre">float</span></code></p></li>
+<li><p><strong>Default</strong>: <code class="docutils literal notranslate"><span class="pre">9e-6</span></code></p></li>
+<li><p><strong>Description</strong>: Learning rate for critic (value) model</p></li>
+<li><p><strong>Recommended Range</strong>: <code class="docutils literal notranslate"><span class="pre">1e-6</span></code> to <code class="docutils literal notranslate"><span class="pre">1e-5</span></code></p></li>
+</ul>
+</section>
+<section id="lr-warmup-ratio">
+<h3><code class="docutils literal notranslate"><span class="pre">--lr_warmup_ratio</span></code><a class="headerlink" href="#lr-warmup-ratio" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>Type</strong>: <code class="docutils literal notranslate"><span class="pre">float</span></code></p></li>
+<li><p><strong>Default</strong>: <code class="docutils literal notranslate"><span class="pre">0.03</span></code></p></li>
+<li><p><strong>Description</strong>: Ratio of warmup steps to total steps</p></li>
+<li><p><strong>Range</strong>: <code class="docutils literal notranslate"><span class="pre">0.0</span></code> to <code class="docutils literal notranslate"><span class="pre">0.1</span></code></p></li>
+</ul>
+</section>
+<section id="max-norm">
+<h3><code class="docutils literal notranslate"><span class="pre">--max_norm</span></code><a class="headerlink" href="#max-norm" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>Type</strong>: <code class="docutils literal notranslate"><span class="pre">float</span></code></p></li>
+<li><p><strong>Default</strong>: <code class="docutils literal notranslate"><span class="pre">1.0</span></code></p></li>
+<li><p><strong>Description</strong>: Maximum gradient norm for clipping</p></li>
+</ul>
+</section>
+<section id="l2">
+<h3><code class="docutils literal notranslate"><span class="pre">--l2</span></code><a class="headerlink" href="#l2" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>Type</strong>: <code class="docutils literal notranslate"><span class="pre">float</span></code></p></li>
+<li><p><strong>Default</strong>: <code class="docutils literal notranslate"><span class="pre">0.0</span></code></p></li>
+<li><p><strong>Description</strong>: L2 regularization coefficient</p></li>
+</ul>
+</section>
+<section id="adam-betas">
+<h3><code class="docutils literal notranslate"><span class="pre">--adam_betas</span></code><a class="headerlink" href="#adam-betas" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>Type</strong>: <code class="docutils literal notranslate"><span class="pre">tuple[float,</span> <span class="pre">float]</span></code></p></li>
+<li><p><strong>Default</strong>: <code class="docutils literal notranslate"><span class="pre">(0.9,</span> <span class="pre">0.95)</span></code></p></li>
+<li><p><strong>Description</strong>: Adam optimizer beta parameters</p></li>
+</ul>
+</section>
+</section>
+<section id="batch-size-configuration">
+<h2>Batch Size Configuration<a class="headerlink" href="#batch-size-configuration" title="Permalink to this heading">¶</a></h2>
+<section id="important-constraint">
+<h3>Important Constraint<a class="headerlink" href="#important-constraint" title="Permalink to this heading">¶</a></h3>
+<p><strong>Rule</strong>: <code class="docutils literal notranslate"><span class="pre">train_batch_size</span> <span class="pre">&gt;=</span> <span class="pre">rollout_batch_size</span> <span class="pre">×</span> <span class="pre">n_samples_per_prompt</span></code></p>
+</section>
+<section id="train-batch-size-tbs">
+<h3><code class="docutils literal notranslate"><span class="pre">--train_batch_size</span></code> (TBS)<a class="headerlink" href="#train-batch-size-tbs" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>Type</strong>: <code class="docutils literal notranslate"><span class="pre">int</span></code></p></li>
+<li><p><strong>Required</strong>: Yes</p></li>
+<li><p><strong>Description</strong>: Global training batch size across all GPUs</p></li>
+<li><p><strong>Example</strong>: <code class="docutils literal notranslate"><span class="pre">256</span></code></p></li>
+<li><p><strong>Calculation</strong>: <code class="docutils literal notranslate"><span class="pre">micro_train_batch_size</span> <span class="pre">×</span> <span class="pre">num_gpus</span> <span class="pre">×</span> <span class="pre">gradient_accumulation_steps</span></code></p></li>
+</ul>
+</section>
+<section id="micro-train-batch-size">
+<h3><code class="docutils literal notranslate"><span class="pre">--micro_train_batch_size</span></code><a class="headerlink" href="#micro-train-batch-size" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>Type</strong>: <code class="docutils literal notranslate"><span class="pre">int</span></code></p></li>
+<li><p><strong>Default</strong>: <code class="docutils literal notranslate"><span class="pre">1</span></code></p></li>
+<li><p><strong>Description</strong>: Per-GPU batch size for training</p></li>
+<li><p><strong>Typical Values</strong>: <code class="docutils literal notranslate"><span class="pre">1</span></code>, <code class="docutils literal notranslate"><span class="pre">2</span></code>, <code class="docutils literal notranslate"><span class="pre">4</span></code></p></li>
+</ul>
+</section>
+<section id="rollout-batch-size-rbs">
+<h3><code class="docutils literal notranslate"><span class="pre">--rollout_batch_size</span></code> (RBS)<a class="headerlink" href="#rollout-batch-size-rbs" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>Type</strong>: <code class="docutils literal notranslate"><span class="pre">int</span></code></p></li>
+<li><p><strong>Required</strong>: Yes</p></li>
+<li><p><strong>Description</strong>: Global batch size for experience generation</p></li>
+<li><p><strong>Example</strong>: <code class="docutils literal notranslate"><span class="pre">64</span></code></p></li>
+<li><p><strong>Note</strong>: Must be divisible by number of GPUs</p></li>
+</ul>
+</section>
+<section id="micro-rollout-batch-size">
+<h3><code class="docutils literal notranslate"><span class="pre">--micro_rollout_batch_size</span></code><a class="headerlink" href="#micro-rollout-batch-size" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>Type</strong>: <code class="docutils literal notranslate"><span class="pre">int</span></code></p></li>
+<li><p><strong>Default</strong>: <code class="docutils literal notranslate"><span class="pre">2</span></code></p></li>
+<li><p><strong>Description</strong>: Per-GPU batch size for rollout</p></li>
+<li><p><strong>Typical Values</strong>: <code class="docutils literal notranslate"><span class="pre">2</span></code>, <code class="docutils literal notranslate"><span class="pre">4</span></code>, <code class="docutils literal notranslate"><span class="pre">8</span></code></p></li>
+</ul>
+</section>
+<section id="example-configurations">
+<h3>Example Configurations<a class="headerlink" href="#example-configurations" title="Permalink to this heading">¶</a></h3>
+<p><strong>Configuration 1: 8 GPUs, Memory-Constrained</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>--train_batch_size<span class="w"> </span><span class="m">128</span><span class="w"> </span><span class="se">\</span>
+--micro_train_batch_size<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="se">\</span>
+--rollout_batch_size<span class="w"> </span><span class="m">64</span><span class="w"> </span><span class="se">\</span>
+--micro_rollout_batch_size<span class="w"> </span><span class="m">2</span>
+</pre></div>
+</div>
+<p><strong>Configuration 2: 8 GPUs, High-Throughput</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>--train_batch_size<span class="w"> </span><span class="m">512</span><span class="w"> </span><span class="se">\</span>
+--micro_train_batch_size<span class="w"> </span><span class="m">2</span><span class="w"> </span><span class="se">\</span>
+--rollout_batch_size<span class="w"> </span><span class="m">256</span><span class="w"> </span><span class="se">\</span>
+--micro_rollout_batch_size<span class="w"> </span><span class="m">8</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="algorithm-parameters">
+<h2>Algorithm Parameters<a class="headerlink" href="#algorithm-parameters" title="Permalink to this heading">¶</a></h2>
+<section id="advantage-estimator">
+<h3><code class="docutils literal notranslate"><span class="pre">--advantage_estimator</span></code><a class="headerlink" href="#advantage-estimator" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>Type</strong>: <code class="docutils literal notranslate"><span class="pre">str</span></code></p></li>
+<li><p><strong>Choices</strong>: <code class="docutils literal notranslate"><span class="pre">group_norm</span></code>, <code class="docutils literal notranslate"><span class="pre">reinforce</span></code>, <code class="docutils literal notranslate"><span class="pre">cpgd</span></code>, <code class="docutils literal notranslate"><span class="pre">gspo</span></code>, <code class="docutils literal notranslate"><span class="pre">gmpo</span></code></p></li>
+<li><p><strong>Default</strong>: <code class="docutils literal notranslate"><span class="pre">group_norm</span></code></p></li>
+<li><p><strong>Description</strong>: Method for advantage estimation</p></li>
+<li><p><strong>Recommendation</strong>:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">group_norm</span></code>: General purpose (GRPO)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">reinforce</span></code>: Low variance needed</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">cpgd</span></code>: Preserve base capabilities</p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="n-samples-per-prompt">
+<h3><code class="docutils literal notranslate"><span class="pre">--n_samples_per_prompt</span></code><a class="headerlink" href="#n-samples-per-prompt" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>Type</strong>: <code class="docutils literal notranslate"><span class="pre">int</span></code></p></li>
+<li><p><strong>Default</strong>: <code class="docutils literal notranslate"><span class="pre">4</span></code></p></li>
+<li><p><strong>Description</strong>: Number of responses to sample per prompt</p></li>
+<li><p><strong>Typical Values</strong>: <code class="docutils literal notranslate"><span class="pre">4</span></code>, <code class="docutils literal notranslate"><span class="pre">8</span></code>, <code class="docutils literal notranslate"><span class="pre">16</span></code></p></li>
+<li><p><strong>Note</strong>: Higher values = better but slower</p></li>
+</ul>
+</section>
+<section id="kl-estimator">
+<h3><code class="docutils literal notranslate"><span class="pre">--kl_estimator</span></code><a class="headerlink" href="#kl-estimator" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>Type</strong>: <code class="docutils literal notranslate"><span class="pre">str</span></code></p></li>
+<li><p><strong>Choices</strong>: <code class="docutils literal notranslate"><span class="pre">k1</span></code>, <code class="docutils literal notranslate"><span class="pre">k2</span></code>, <code class="docutils literal notranslate"><span class="pre">k3</span></code></p></li>
+<li><p><strong>Default</strong>: <code class="docutils literal notranslate"><span class="pre">k3</span></code></p></li>
+<li><p><strong>Description</strong>: KL divergence estimator type</p></li>
+<li><p><strong>Recommendation</strong>: <code class="docutils literal notranslate"><span class="pre">k3</span></code> for most cases</p></li>
+</ul>
+</section>
+<section id="init-kl-coef">
+<h3><code class="docutils literal notranslate"><span class="pre">--init_kl_coef</span></code><a class="headerlink" href="#init-kl-coef" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>Type</strong>: <code class="docutils literal notranslate"><span class="pre">float</span></code></p></li>
+<li><p><strong>Default</strong>: <code class="docutils literal notranslate"><span class="pre">0.001</span></code></p></li>
+<li><p><strong>Description</strong>: Initial KL penalty coefficient</p></li>
+<li><p><strong>Range</strong>: <code class="docutils literal notranslate"><span class="pre">0.0001</span></code> to <code class="docutils literal notranslate"><span class="pre">0.01</span></code></p></li>
+</ul>
+</section>
+<section id="kl-target">
+<h3><code class="docutils literal notranslate"><span class="pre">--kl_target</span></code><a class="headerlink" href="#kl-target" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>Type</strong>: <code class="docutils literal notranslate"><span class="pre">float</span></code></p></li>
+<li><p><strong>Default</strong>: <code class="docutils literal notranslate"><span class="pre">0.01</span></code></p></li>
+<li><p><strong>Description</strong>: Target KL divergence (for CPGD)</p></li>
+</ul>
+</section>
+<section id="clip-range">
+<h3><code class="docutils literal notranslate"><span class="pre">--clip_range</span></code><a class="headerlink" href="#clip-range" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>Type</strong>: <code class="docutils literal notranslate"><span class="pre">float</span></code></p></li>
+<li><p><strong>Default</strong>: <code class="docutils literal notranslate"><span class="pre">0.2</span></code></p></li>
+<li><p><strong>Description</strong>: PPO clipping range</p></li>
+<li><p><strong>Range</strong>: <code class="docutils literal notranslate"><span class="pre">0.1</span></code> to <code class="docutils literal notranslate"><span class="pre">0.3</span></code></p></li>
+</ul>
+</section>
+<section id="clip-range-higher">
+<h3><code class="docutils literal notranslate"><span class="pre">--clip_range_higher</span></code><a class="headerlink" href="#clip-range-higher" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>Type</strong>: <code class="docutils literal notranslate"><span class="pre">float</span></code></p></li>
+<li><p><strong>Default</strong>: <code class="docutils literal notranslate"><span class="pre">0.3</span></code></p></li>
+<li><p><strong>Description</strong>: Upper clipping range (Clip Higher algorithm)</p></li>
+</ul>
+</section>
+<section id="temperature">
+<h3><code class="docutils literal notranslate"><span class="pre">--temperature</span></code><a class="headerlink" href="#temperature" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>Type</strong>: <code class="docutils literal notranslate"><span class="pre">float</span></code></p></li>
+<li><p><strong>Default</strong>: <code class="docutils literal notranslate"><span class="pre">1.0</span></code></p></li>
+<li><p><strong>Description</strong>: Sampling temperature</p></li>
+<li><p><strong>Range</strong>: <code class="docutils literal notranslate"><span class="pre">0.6</span></code> to <code class="docutils literal notranslate"><span class="pre">1.2</span></code></p></li>
+<li><p><strong>Note</strong>: Lower = more deterministic</p></li>
+</ul>
+</section>
+<section id="top-p">
+<h3><code class="docutils literal notranslate"><span class="pre">--top_p</span></code><a class="headerlink" href="#top-p" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>Type</strong>: <code class="docutils literal notranslate"><span class="pre">float</span></code></p></li>
+<li><p><strong>Default</strong>: <code class="docutils literal notranslate"><span class="pre">0.9</span></code></p></li>
+<li><p><strong>Description</strong>: Nucleus sampling probability</p></li>
+<li><p><strong>Range</strong>: <code class="docutils literal notranslate"><span class="pre">0.8</span></code> to <code class="docutils literal notranslate"><span class="pre">1.0</span></code></p></li>
+</ul>
+</section>
+</section>
+<section id="distributed-training">
+<h2>Distributed Training<a class="headerlink" href="#distributed-training" title="Permalink to this heading">¶</a></h2>
+<section id="zero-stage">
+<h3><code class="docutils literal notranslate"><span class="pre">--zero_stage</span></code><a class="headerlink" href="#zero-stage" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>Type</strong>: <code class="docutils literal notranslate"><span class="pre">int</span></code></p></li>
+<li><p><strong>Choices</strong>: <code class="docutils literal notranslate"><span class="pre">1</span></code>, <code class="docutils literal notranslate"><span class="pre">2</span></code>, <code class="docutils literal notranslate"><span class="pre">3</span></code></p></li>
+<li><p><strong>Default</strong>: <code class="docutils literal notranslate"><span class="pre">2</span></code></p></li>
+<li><p><strong>Description</strong>: DeepSpeed ZeRO optimization stage</p></li>
+<li><p><strong>Recommendation</strong>:</p>
+<ul>
+<li><p>Stage 1: Optimizer state partitioning</p></li>
+<li><p>Stage 2: + Gradient partitioning (recommended)</p></li>
+<li><p>Stage 3: + Parameter partitioning (max memory saving)</p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="fsdp">
+<h3><code class="docutils literal notranslate"><span class="pre">--fsdp</span></code><a class="headerlink" href="#fsdp" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>Action</strong>: <code class="docutils literal notranslate"><span class="pre">store_true</span></code></p></li>
+<li><p><strong>Default</strong>: <code class="docutils literal notranslate"><span class="pre">False</span></code></p></li>
+<li><p><strong>Description</strong>: Use FSDP instead of DeepSpeed</p></li>
+<li><p><strong>When to Use</strong>: PyTorch-native workflows, maximum memory efficiency</p></li>
+</ul>
+</section>
+<section id="fsdp-cpu-offload">
+<h3><code class="docutils literal notranslate"><span class="pre">--fsdp_cpu_offload</span></code><a class="headerlink" href="#fsdp-cpu-offload" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>Action</strong>: <code class="docutils literal notranslate"><span class="pre">store_true</span></code></p></li>
+<li><p><strong>Default</strong>: <code class="docutils literal notranslate"><span class="pre">False</span></code></p></li>
+<li><p><strong>Description</strong>: Offload FSDP optimizer states to CPU</p></li>
+<li><p><strong>Note</strong>: Reduces GPU memory at cost of speed</p></li>
+</ul>
+</section>
+<section id="bf16">
+<h3><code class="docutils literal notranslate"><span class="pre">--bf16</span></code><a class="headerlink" href="#bf16" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>Action</strong>: <code class="docutils literal notranslate"><span class="pre">store_true</span></code></p></li>
+<li><p><strong>Default</strong>: Typically enabled</p></li>
+<li><p><strong>Description</strong>: Use bfloat16 mixed precision</p></li>
+</ul>
+</section>
+<section id="gradient-checkpointing">
+<h3><code class="docutils literal notranslate"><span class="pre">--gradient_checkpointing</span></code><a class="headerlink" href="#gradient-checkpointing" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>Action</strong>: <code class="docutils literal notranslate"><span class="pre">store_true</span></code></p></li>
+<li><p><strong>Default</strong>: <code class="docutils literal notranslate"><span class="pre">False</span></code></p></li>
+<li><p><strong>Description</strong>: Enable gradient checkpointing</p></li>
+<li><p><strong>Note</strong>: Trades computation for memory</p></li>
+</ul>
+</section>
+<section id="sp-size">
+<h3><code class="docutils literal notranslate"><span class="pre">--sp_size</span></code><a class="headerlink" href="#sp-size" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>Type</strong>: <code class="docutils literal notranslate"><span class="pre">int</span></code></p></li>
+<li><p><strong>Default</strong>: <code class="docutils literal notranslate"><span class="pre">1</span></code></p></li>
+<li><p><strong>Description</strong>: Sequence parallelism size</p></li>
+<li><p><strong>Recommendation</strong>: <code class="docutils literal notranslate"><span class="pre">1</span></code>, <code class="docutils literal notranslate"><span class="pre">2</span></code>, <code class="docutils literal notranslate"><span class="pre">4</span></code> for very long sequences</p></li>
+</ul>
+</section>
+</section>
+<section id="inference-engine">
+<h2>Inference Engine<a class="headerlink" href="#inference-engine" title="Permalink to this heading">¶</a></h2>
+<section id="engine-type">
+<h3><code class="docutils literal notranslate"><span class="pre">--engine_type</span></code><a class="headerlink" href="#engine-type" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>Type</strong>: <code class="docutils literal notranslate"><span class="pre">str</span></code></p></li>
+<li><p><strong>Choices</strong>: <code class="docutils literal notranslate"><span class="pre">vllm</span></code>, <code class="docutils literal notranslate"><span class="pre">sglang</span></code></p></li>
+<li><p><strong>Default</strong>: <code class="docutils literal notranslate"><span class="pre">vllm</span></code></p></li>
+<li><p><strong>Description</strong>: Inference engine type</p></li>
+</ul>
+</section>
+<section id="engine-tp-size">
+<h3><code class="docutils literal notranslate"><span class="pre">--engine_tp_size</span></code><a class="headerlink" href="#engine-tp-size" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>Type</strong>: <code class="docutils literal notranslate"><span class="pre">int</span></code></p></li>
+<li><p><strong>Default</strong>: <code class="docutils literal notranslate"><span class="pre">1</span></code></p></li>
+<li><p><strong>Description</strong>: Tensor parallelism size for inference engine</p></li>
+<li><p><strong>Recommendation</strong>:</p>
+<ul>
+<li><p>7B models: <code class="docutils literal notranslate"><span class="pre">1</span></code> or <code class="docutils literal notranslate"><span class="pre">2</span></code></p></li>
+<li><p>13B-34B models: <code class="docutils literal notranslate"><span class="pre">2</span></code> or <code class="docutils literal notranslate"><span class="pre">4</span></code></p></li>
+<li><p>70B+ models: <code class="docutils literal notranslate"><span class="pre">4</span></code> or <code class="docutils literal notranslate"><span class="pre">8</span></code></p></li>
+</ul>
+</li>
+<li><p><strong>Constraint</strong>: <code class="docutils literal notranslate"><span class="pre">world_size</span> <span class="pre">%</span> <span class="pre">engine_tp_size</span> <span class="pre">==</span> <span class="pre">0</span></code></p></li>
+</ul>
+</section>
+<section id="engine-mem-util">
+<h3><code class="docutils literal notranslate"><span class="pre">--engine_mem_util</span></code><a class="headerlink" href="#engine-mem-util" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>Type</strong>: <code class="docutils literal notranslate"><span class="pre">float</span></code></p></li>
+<li><p><strong>Default</strong>: <code class="docutils literal notranslate"><span class="pre">0.5</span></code></p></li>
+<li><p><strong>Range</strong>: <code class="docutils literal notranslate"><span class="pre">0.3</span></code> to <code class="docutils literal notranslate"><span class="pre">0.9</span></code></p></li>
+<li><p><strong>Description</strong>: GPU memory utilization for KV cache</p></li>
+<li><p><strong>Recommendation</strong>:</p>
+<ul>
+<li><p>High memory: <code class="docutils literal notranslate"><span class="pre">0.8</span></code> - <code class="docutils literal notranslate"><span class="pre">0.9</span></code></p></li>
+<li><p>Medium memory: <code class="docutils literal notranslate"><span class="pre">0.5</span></code> - <code class="docutils literal notranslate"><span class="pre">0.7</span></code></p></li>
+<li><p>Low memory: <code class="docutils literal notranslate"><span class="pre">0.3</span></code> - <code class="docutils literal notranslate"><span class="pre">0.5</span></code></p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="enable-engine-sleep">
+<h3><code class="docutils literal notranslate"><span class="pre">--enable_engine_sleep</span></code><a class="headerlink" href="#enable-engine-sleep" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>Action</strong>: <code class="docutils literal notranslate"><span class="pre">store_true</span></code></p></li>
+<li><p><strong>Default</strong>: <code class="docutils literal notranslate"><span class="pre">True</span></code></p></li>
+<li><p><strong>Description</strong>: Enable inference engine sleep mode</p></li>
+<li><p><strong>Note</strong>: Saves memory when engine not in use</p></li>
+</ul>
+</section>
+<section id="disable-engine-sleep">
+<h3><code class="docutils literal notranslate"><span class="pre">--disable_engine_sleep</span></code><a class="headerlink" href="#disable-engine-sleep" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>Action</strong>: <code class="docutils literal notranslate"><span class="pre">store_false</span></code></p></li>
+<li><p><strong>Dest</strong>: <code class="docutils literal notranslate"><span class="pre">enable_engine_sleep</span></code></p></li>
+<li><p><strong>Description</strong>: Disable engine sleep mode</p></li>
+</ul>
+</section>
+<section id="rm-use-engine">
+<h3><code class="docutils literal notranslate"><span class="pre">--rm_use_engine</span></code><a class="headerlink" href="#rm-use-engine" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>Action</strong>: <code class="docutils literal notranslate"><span class="pre">store_true</span></code></p></li>
+<li><p><strong>Default</strong>: <code class="docutils literal notranslate"><span class="pre">False</span></code></p></li>
+<li><p><strong>Description</strong>: Use inference engine for reward model</p></li>
+<li><p><strong>When to Use</strong>: High-throughput reward computation</p></li>
+</ul>
+</section>
+</section>
+<section id="memory-optimization">
+<h2>Memory Optimization<a class="headerlink" href="#memory-optimization" title="Permalink to this heading">¶</a></h2>
+<section id="adam-offload">
+<h3><code class="docutils literal notranslate"><span class="pre">--adam_offload</span></code><a class="headerlink" href="#adam-offload" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>Action</strong>: <code class="docutils literal notranslate"><span class="pre">store_true</span></code></p></li>
+<li><p><strong>Default</strong>: <code class="docutils literal notranslate"><span class="pre">False</span></code></p></li>
+<li><p><strong>Description</strong>: Offload Adam optimizer states to CPU</p></li>
+</ul>
+</section>
+<section id="use-mp-opt">
+<h3><code class="docutils literal notranslate"><span class="pre">--use_mp_opt</span></code><a class="headerlink" href="#use-mp-opt" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>Action</strong>: <code class="docutils literal notranslate"><span class="pre">store_true</span></code></p></li>
+<li><p><strong>Default</strong>: <code class="docutils literal notranslate"><span class="pre">False</span></code></p></li>
+<li><p><strong>Description</strong>: Use mixed precision optimizer (FSDP)</p></li>
+</ul>
+</section>
+<section id="packing-samples">
+<h3><code class="docutils literal notranslate"><span class="pre">--packing_samples</span></code><a class="headerlink" href="#packing-samples" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>Action</strong>: <code class="docutils literal notranslate"><span class="pre">store_true</span></code></p></li>
+<li><p><strong>Default</strong>: <code class="docutils literal notranslate"><span class="pre">False</span></code></p></li>
+<li><p><strong>Description</strong>: Pack multiple samples into sequences</p></li>
+<li><p><strong>When to Use</strong>: Varied sequence lengths, improve GPU utilization</p></li>
+</ul>
+</section>
+<section id="fused-linear-logprob">
+<h3><code class="docutils literal notranslate"><span class="pre">--fused_linear_logprob</span></code><a class="headerlink" href="#fused-linear-logprob" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>Action</strong>: <code class="docutils literal notranslate"><span class="pre">store_true</span></code></p></li>
+<li><p><strong>Default</strong>: <code class="docutils literal notranslate"><span class="pre">False</span></code></p></li>
+<li><p><strong>Description</strong>: Fused linear layer and logprob computation</p></li>
+<li><p><strong>Note</strong>: Saves memory for large vocabulary models</p></li>
+</ul>
+</section>
+<section id="chunk-size">
+<h3><code class="docutils literal notranslate"><span class="pre">--chunk_size</span></code><a class="headerlink" href="#chunk-size" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>Type</strong>: <code class="docutils literal notranslate"><span class="pre">int</span></code></p></li>
+<li><p><strong>Default</strong>: <code class="docutils literal notranslate"><span class="pre">4096</span></code></p></li>
+<li><p><strong>Description</strong>: Chunk size for fused operations</p></li>
+</ul>
+</section>
+</section>
+<section id="logging-and-monitoring">
+<h2>Logging and Monitoring<a class="headerlink" href="#logging-and-monitoring" title="Permalink to this heading">¶</a></h2>
+<section id="log-dir">
+<h3><code class="docutils literal notranslate"><span class="pre">--log_dir</span></code><a class="headerlink" href="#log-dir" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>Type</strong>: <code class="docutils literal notranslate"><span class="pre">str</span></code></p></li>
+<li><p><strong>Default</strong>: <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
+<li><p><strong>Description</strong>: Directory for logs and visualizations</p></li>
+</ul>
+</section>
+<section id="plot-every">
+<h3><code class="docutils literal notranslate"><span class="pre">--plot_every</span></code><a class="headerlink" href="#plot-every" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>Type</strong>: <code class="docutils literal notranslate"><span class="pre">int</span></code></p></li>
+<li><p><strong>Default</strong>: <code class="docutils literal notranslate"><span class="pre">10</span></code></p></li>
+<li><p><strong>Description</strong>: Plot generation length distribution every N steps</p></li>
+</ul>
+</section>
+<section id="use-tensorboard">
+<h3><code class="docutils literal notranslate"><span class="pre">--use_tensorboard</span></code><a class="headerlink" href="#use-tensorboard" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>Type</strong>: <code class="docutils literal notranslate"><span class="pre">str</span></code></p></li>
+<li><p><strong>Default</strong>: <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
+<li><p><strong>Description</strong>: TensorBoard log directory</p></li>
+</ul>
+</section>
+<section id="use-wandb">
+<h3><code class="docutils literal notranslate"><span class="pre">--use_wandb</span></code><a class="headerlink" href="#use-wandb" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>Type</strong>: <code class="docutils literal notranslate"><span class="pre">str</span></code></p></li>
+<li><p><strong>Default</strong>: <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
+<li><p><strong>Description</strong>: Weights &amp; Biases project name</p></li>
+</ul>
+</section>
+<section id="wandb-org">
+<h3><code class="docutils literal notranslate"><span class="pre">--wandb_org</span></code><a class="headerlink" href="#wandb-org" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>Type</strong>: <code class="docutils literal notranslate"><span class="pre">str</span></code></p></li>
+<li><p><strong>Default</strong>: <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
+<li><p><strong>Description</strong>: W&amp;B organization name</p></li>
+</ul>
+</section>
+<section id="wandb-run-name">
+<h3><code class="docutils literal notranslate"><span class="pre">--wandb_run_name</span></code><a class="headerlink" href="#wandb-run-name" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>Type</strong>: <code class="docutils literal notranslate"><span class="pre">str</span></code></p></li>
+<li><p><strong>Default</strong>: Auto-generated</p></li>
+<li><p><strong>Description</strong>: W&amp;B run name</p></li>
+</ul>
+</section>
+</section>
+<section id="checkpoint-management">
+<h2>Checkpoint Management<a class="headerlink" href="#checkpoint-management" title="Permalink to this heading">¶</a></h2>
+<section id="save-path">
+<h3><code class="docutils literal notranslate"><span class="pre">--save_path</span></code><a class="headerlink" href="#save-path" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>Type</strong>: <code class="docutils literal notranslate"><span class="pre">str</span></code></p></li>
+<li><p><strong>Required</strong>: Yes</p></li>
+<li><p><strong>Description</strong>: Directory to save checkpoints</p></li>
+</ul>
+</section>
+<section id="ckpt-path">
+<h3><code class="docutils literal notranslate"><span class="pre">--ckpt_path</span></code><a class="headerlink" href="#ckpt-path" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>Type</strong>: <code class="docutils literal notranslate"><span class="pre">str</span></code></p></li>
+<li><p><strong>Default</strong>: <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
+<li><p><strong>Description</strong>: Path to load checkpoint from</p></li>
+</ul>
+</section>
+<section id="load-checkpoint">
+<h3><code class="docutils literal notranslate"><span class="pre">--load_checkpoint</span></code><a class="headerlink" href="#load-checkpoint" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>Action</strong>: <code class="docutils literal notranslate"><span class="pre">store_true</span></code></p></li>
+<li><p><strong>Default</strong>: <code class="docutils literal notranslate"><span class="pre">False</span></code></p></li>
+<li><p><strong>Description</strong>: Enable checkpoint loading</p></li>
+</ul>
+</section>
+<section id="save-interval">
+<h3><code class="docutils literal notranslate"><span class="pre">--save_interval</span></code><a class="headerlink" href="#save-interval" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>Type</strong>: <code class="docutils literal notranslate"><span class="pre">int</span></code></p></li>
+<li><p><strong>Default</strong>: <code class="docutils literal notranslate"><span class="pre">1</span></code></p></li>
+<li><p><strong>Description</strong>: Save checkpoint every N episodes</p></li>
+</ul>
+</section>
+<section id="max-ckpt-num">
+<h3><code class="docutils literal notranslate"><span class="pre">--max_ckpt_num</span></code><a class="headerlink" href="#max-ckpt-num" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>Type</strong>: <code class="docutils literal notranslate"><span class="pre">int</span></code></p></li>
+<li><p><strong>Default</strong>: <code class="docutils literal notranslate"><span class="pre">3</span></code></p></li>
+<li><p><strong>Description</strong>: Maximum number of checkpoints to keep</p></li>
+</ul>
+</section>
+<section id="max-ckpt-mem">
+<h3><code class="docutils literal notranslate"><span class="pre">--max_ckpt_mem</span></code><a class="headerlink" href="#max-ckpt-mem" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>Type</strong>: <code class="docutils literal notranslate"><span class="pre">int</span></code></p></li>
+<li><p><strong>Default</strong>: <code class="docutils literal notranslate"><span class="pre">1000</span></code></p></li>
+<li><p><strong>Description</strong>: Maximum checkpoint memory in GB</p></li>
+</ul>
+</section>
+</section>
+<section id="reward-processing">
+<h2>Reward Processing<a class="headerlink" href="#reward-processing" title="Permalink to this heading">¶</a></h2>
+<section id="reward-running-norm">
+<h3><code class="docutils literal notranslate"><span class="pre">--reward_running_norm</span></code><a class="headerlink" href="#reward-running-norm" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>Action</strong>: <code class="docutils literal notranslate"><span class="pre">store_true</span></code></p></li>
+<li><p><strong>Default</strong>: <code class="docutils literal notranslate"><span class="pre">False</span></code></p></li>
+<li><p><strong>Description</strong>: Apply running normalization to rewards</p></li>
+</ul>
+</section>
+<section id="reward-running-norm-minus-mean">
+<h3><code class="docutils literal notranslate"><span class="pre">--reward_running_norm_minus_mean</span></code><a class="headerlink" href="#reward-running-norm-minus-mean" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>Action</strong>: <code class="docutils literal notranslate"><span class="pre">store_true</span></code></p></li>
+<li><p><strong>Default</strong>: <code class="docutils literal notranslate"><span class="pre">False</span></code></p></li>
+<li><p><strong>Description</strong>: Subtract mean during reward normalization</p></li>
+</ul>
+</section>
+<section id="advantages-norm">
+<h3><code class="docutils literal notranslate"><span class="pre">--advantages_norm</span></code><a class="headerlink" href="#advantages-norm" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>Action</strong>: <code class="docutils literal notranslate"><span class="pre">store_true</span></code></p></li>
+<li><p><strong>Default</strong>: <code class="docutils literal notranslate"><span class="pre">False</span></code></p></li>
+<li><p><strong>Description</strong>: Normalize advantages</p></li>
+</ul>
+</section>
+<section id="advantage-clip">
+<h3><code class="docutils literal notranslate"><span class="pre">--advantage_clip</span></code><a class="headerlink" href="#advantage-clip" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>Type</strong>: <code class="docutils literal notranslate"><span class="pre">float</span></code></p></li>
+<li><p><strong>Default</strong>: <code class="docutils literal notranslate"><span class="pre">0.0</span></code></p></li>
+<li><p><strong>Description</strong>: Clip advantages (0 = no clipping)</p></li>
+</ul>
+</section>
+<section id="reward-clip">
+<h3><code class="docutils literal notranslate"><span class="pre">--reward_clip</span></code><a class="headerlink" href="#reward-clip" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>Type</strong>: <code class="docutils literal notranslate"><span class="pre">float</span></code></p></li>
+<li><p><strong>Default</strong>: <code class="docutils literal notranslate"><span class="pre">0.0</span></code></p></li>
+<li><p><strong>Description</strong>: Clip rewards (0 = no clipping)</p></li>
+</ul>
+</section>
+</section>
+<section id="multimodal-vlm-parameters">
+<h2>Multimodal (VLM) Parameters<a class="headerlink" href="#multimodal-vlm-parameters" title="Permalink to this heading">¶</a></h2>
+<section id="mixed-mm-data">
+<h3><code class="docutils literal notranslate"><span class="pre">--mixed_mm_data</span></code><a class="headerlink" href="#mixed-mm-data" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>Action</strong>: <code class="docutils literal notranslate"><span class="pre">store_true</span></code></p></li>
+<li><p><strong>Default</strong>: <code class="docutils literal notranslate"><span class="pre">False</span></code></p></li>
+<li><p><strong>Description</strong>: Handle mixed multimodal and text-only data</p></li>
+</ul>
+</section>
+<section id="processor">
+<h3><code class="docutils literal notranslate"><span class="pre">--processor</span></code><a class="headerlink" href="#processor" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>Type</strong>: <code class="docutils literal notranslate"><span class="pre">str</span></code></p></li>
+<li><p><strong>Default</strong>: Auto-detected</p></li>
+<li><p><strong>Description</strong>: Multimodal processor type</p></li>
+</ul>
+</section>
+</section>
+<section id="complete-example-configuration">
+<h2>Complete Example Configuration<a class="headerlink" href="#complete-example-configuration" title="Permalink to this heading">¶</a></h2>
+<section id="math-reasoning-gsm8k-math">
+<h3>Math Reasoning (GSM8K, MATH)<a class="headerlink" href="#math-reasoning-gsm8k-math" title="Permalink to this heading">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>train.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span><span class="c1"># Model</span>
+<span class="w">    </span>--pretrain<span class="w"> </span>/path/to/Qwen2.5-7B-Instruct<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--reward_pretrain<span class="w"> </span>/path/to/reward-model<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--max_len<span class="w"> </span><span class="m">4096</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--prompt_max_len<span class="w"> </span><span class="m">2048</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span><span class="se">\</span>
+<span class="w">    </span><span class="c1"># Training</span>
+<span class="w">    </span>--num_episodes<span class="w"> </span><span class="m">20</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--max_epochs<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--actor_learning_rate<span class="w"> </span>5e-7<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--critic_learning_rate<span class="w"> </span>9e-6<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span><span class="se">\</span>
+<span class="w">    </span><span class="c1"># Batch Size</span>
+<span class="w">    </span>--train_batch_size<span class="w"> </span><span class="m">128</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--micro_train_batch_size<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--rollout_batch_size<span class="w"> </span><span class="m">64</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--micro_rollout_batch_size<span class="w"> </span><span class="m">2</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span><span class="se">\</span>
+<span class="w">    </span><span class="c1"># Algorithm</span>
+<span class="w">    </span>--advantage_estimator<span class="w"> </span>group_norm<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--n_samples_per_prompt<span class="w"> </span><span class="m">8</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--kl_estimator<span class="w"> </span>k3<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--init_kl_coef<span class="w"> </span><span class="m">0</span>.001<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--temperature<span class="w"> </span><span class="m">0</span>.6<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span><span class="se">\</span>
+<span class="w">    </span><span class="c1"># Distributed</span>
+<span class="w">    </span>--zero_stage<span class="w"> </span><span class="m">2</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--bf16<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--gradient_checkpointing<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span><span class="se">\</span>
+<span class="w">    </span><span class="c1"># Engine</span>
+<span class="w">    </span>--engine_type<span class="w"> </span>vllm<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--engine_tp_size<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--engine_mem_util<span class="w"> </span><span class="m">0</span>.85<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--enable_engine_sleep<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span><span class="se">\</span>
+<span class="w">    </span><span class="c1"># Memory</span>
+<span class="w">    </span>--adam_offload<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--fused_linear_logprob<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span><span class="se">\</span>
+<span class="w">    </span><span class="c1"># Logging</span>
+<span class="w">    </span>--use_tensorboard<span class="w"> </span>./tb_logs<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--plot_every<span class="w"> </span><span class="m">10</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span><span class="se">\</span>
+<span class="w">    </span><span class="c1"># Checkpoint</span>
+<span class="w">    </span>--save_path<span class="w"> </span>./checkpoints<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--save_interval<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--max_ckpt_num<span class="w"> </span><span class="m">3</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span><span class="se">\</span>
+<span class="w">    </span><span class="c1"># Reward</span>
+<span class="w">    </span>--reward_running_norm<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--advantages_norm
+</pre></div>
+</div>
+</section>
+<section id="multimodal-vlm-training">
+<h3>Multimodal VLM Training<a class="headerlink" href="#multimodal-vlm-training" title="Permalink to this heading">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>train_vl.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span><span class="c1"># Model</span>
+<span class="w">    </span>--pretrain<span class="w"> </span>/path/to/Qwen2-VL-7B-Instruct<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--max_len<span class="w"> </span><span class="m">4096</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span><span class="se">\</span>
+<span class="w">    </span><span class="c1"># Training</span>
+<span class="w">    </span>--num_episodes<span class="w"> </span><span class="m">10</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--actor_learning_rate<span class="w"> </span>1e-6<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span><span class="se">\</span>
+<span class="w">    </span><span class="c1"># Batch Size</span>
+<span class="w">    </span>--train_batch_size<span class="w"> </span><span class="m">64</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--micro_train_batch_size<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--rollout_batch_size<span class="w"> </span><span class="m">32</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--micro_rollout_batch_size<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span><span class="se">\</span>
+<span class="w">    </span><span class="c1"># Algorithm</span>
+<span class="w">    </span>--advantage_estimator<span class="w"> </span>group_norm<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--n_samples_per_prompt<span class="w"> </span><span class="m">4</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span><span class="se">\</span>
+<span class="w">    </span><span class="c1"># Distributed</span>
+<span class="w">    </span>--fsdp<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--fsdp_cpu_offload<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--gradient_checkpointing<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span><span class="se">\</span>
+<span class="w">    </span><span class="c1"># Engine</span>
+<span class="w">    </span>--engine_tp_size<span class="w"> </span><span class="m">4</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--engine_mem_util<span class="w"> </span><span class="m">0</span>.6<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span><span class="se">\</span>
+<span class="w">    </span><span class="c1"># VLM Specific</span>
+<span class="w">    </span>--mixed_mm_data<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--packing_samples
+</pre></div>
+</div>
+</section>
+</section>
+<section id="parameter-validation">
+<h2>Parameter Validation<a class="headerlink" href="#parameter-validation" title="Permalink to this heading">¶</a></h2>
+<p>LightRFT performs automatic validation of parameters. Common validation rules:</p>
+<ol class="arabic simple">
+<li><p><strong>Batch Size</strong>: <code class="docutils literal notranslate"><span class="pre">train_batch_size</span> <span class="pre">&gt;=</span> <span class="pre">rollout_batch_size</span> <span class="pre">×</span> <span class="pre">n_samples_per_prompt</span></code></p></li>
+<li><p><strong>Divisibility</strong>: Batch sizes must be divisible by number of GPUs</p></li>
+<li><p><strong>Memory</strong>: Engine TP size must divide world size evenly</p></li>
+<li><p><strong>Learning Rate</strong>: Actor LR typically &lt; Critic LR</p></li>
+<li><p><strong>KL Target</strong>: Should be small (0.001-0.01) for stable training</p></li>
+</ol>
+</section>
+<section id="environment-variables">
+<h2>Environment Variables<a class="headerlink" href="#environment-variables" title="Permalink to this heading">¶</a></h2>
+<p>Useful environment variables for optimization:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># NCCL optimization</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">TORCH_NCCL_AVOID_RECORD_STREAMS</span><span class="o">=</span><span class="m">1</span>
+
+<span class="c1"># CUDA optimization</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">CUDA_VISIBLE_DEVICES</span><span class="o">=</span><span class="m">0</span>,1,2,3,4,5,6,7
+
+<span class="c1"># Debugging</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">TORCH_DISTRIBUTED_DEBUG</span><span class="o">=</span>INFO
+<span class="nb">export</span><span class="w"> </span><span class="nv">NCCL_DEBUG</span><span class="o">=</span>INFO
+</pre></div>
+</div>
+</section>
+<section id="see-also">
+<h2>See Also<a class="headerlink" href="#see-also" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="algorithms.html"><span class="std std-doc">Algorithm Guide</span></a> - Detailed algorithm descriptions</p></li>
+<li><p><a class="reference internal" href="#../best_practice/strategy_usage.md"><span class="xref myst">Strategy Usage</span></a> - Distributed training strategies</p></li>
+<li><p><a class="reference internal" href="../installation/index.html"><span class="std std-doc">Installation</span></a> - Setup instructions</p></li>
+</ul>
+</section>
+</section>
+
+
+              </article>
+              
+            </div>
+            <footer>
+  
+  <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+    
+    <a href="../best_practice/index.html" class="btn btn-neutral float-right" title="Best Practices" accesskey="n"
+      rel="next">Next <img src="../_static/images/chevron-right-blue.svg"
+        class="next-page"></a>
+    
+    
+    <a href="algorithms.html" class="btn btn-neutral" title="Supported Algorithms" accesskey="p"
+      rel="prev"><img src="../_static/images/chevron-right-blue.svg" class="previous-page"> Previous</a>
+    
+  </div>
+  
+
+  <hr>
+
+  <div role="contentinfo">
+    <p>
+      &copy; Copyright 2025, OpenDILab.
+
+    </p>
+  </div>
+  
+  <div>
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a
+      href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the
+      Docs</a>.
+  </div>
+   
+
+</footer>
+          </div>
+        </div>
+
+        <div class="pytorch-content-right" id="pytorch-content-right">
+          <div class="pytorch-right-menu" id="pytorch-right-menu">
+            <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
+              <ul>
+<li><a class="reference internal" href="#">Configuration Parameters</a><ul>
+<li><a class="reference internal" href="#table-of-contents">Table of Contents</a></li>
+<li><a class="reference internal" href="#model-parameters">Model Parameters</a><ul>
+<li><a class="reference internal" href="#pretrain"><code class="docutils literal notranslate"><span class="pre">--pretrain</span></code></a></li>
+<li><a class="reference internal" href="#reward-pretrain"><code class="docutils literal notranslate"><span class="pre">--reward_pretrain</span></code></a></li>
+<li><a class="reference internal" href="#remote-rm-url"><code class="docutils literal notranslate"><span class="pre">--remote_rm_url</span></code></a></li>
+<li><a class="reference internal" href="#max-len"><code class="docutils literal notranslate"><span class="pre">--max_len</span></code></a></li>
+<li><a class="reference internal" href="#prompt-max-len"><code class="docutils literal notranslate"><span class="pre">--prompt_max_len</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#training-parameters">Training Parameters</a><ul>
+<li><a class="reference internal" href="#num-episodes"><code class="docutils literal notranslate"><span class="pre">--num_episodes</span></code></a></li>
+<li><a class="reference internal" href="#max-epochs"><code class="docutils literal notranslate"><span class="pre">--max_epochs</span></code></a></li>
+<li><a class="reference internal" href="#actor-learning-rate"><code class="docutils literal notranslate"><span class="pre">--actor_learning_rate</span></code></a></li>
+<li><a class="reference internal" href="#critic-learning-rate"><code class="docutils literal notranslate"><span class="pre">--critic_learning_rate</span></code></a></li>
+<li><a class="reference internal" href="#lr-warmup-ratio"><code class="docutils literal notranslate"><span class="pre">--lr_warmup_ratio</span></code></a></li>
+<li><a class="reference internal" href="#max-norm"><code class="docutils literal notranslate"><span class="pre">--max_norm</span></code></a></li>
+<li><a class="reference internal" href="#l2"><code class="docutils literal notranslate"><span class="pre">--l2</span></code></a></li>
+<li><a class="reference internal" href="#adam-betas"><code class="docutils literal notranslate"><span class="pre">--adam_betas</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#batch-size-configuration">Batch Size Configuration</a><ul>
+<li><a class="reference internal" href="#important-constraint">Important Constraint</a></li>
+<li><a class="reference internal" href="#train-batch-size-tbs"><code class="docutils literal notranslate"><span class="pre">--train_batch_size</span></code> (TBS)</a></li>
+<li><a class="reference internal" href="#micro-train-batch-size"><code class="docutils literal notranslate"><span class="pre">--micro_train_batch_size</span></code></a></li>
+<li><a class="reference internal" href="#rollout-batch-size-rbs"><code class="docutils literal notranslate"><span class="pre">--rollout_batch_size</span></code> (RBS)</a></li>
+<li><a class="reference internal" href="#micro-rollout-batch-size"><code class="docutils literal notranslate"><span class="pre">--micro_rollout_batch_size</span></code></a></li>
+<li><a class="reference internal" href="#example-configurations">Example Configurations</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#algorithm-parameters">Algorithm Parameters</a><ul>
+<li><a class="reference internal" href="#advantage-estimator"><code class="docutils literal notranslate"><span class="pre">--advantage_estimator</span></code></a></li>
+<li><a class="reference internal" href="#n-samples-per-prompt"><code class="docutils literal notranslate"><span class="pre">--n_samples_per_prompt</span></code></a></li>
+<li><a class="reference internal" href="#kl-estimator"><code class="docutils literal notranslate"><span class="pre">--kl_estimator</span></code></a></li>
+<li><a class="reference internal" href="#init-kl-coef"><code class="docutils literal notranslate"><span class="pre">--init_kl_coef</span></code></a></li>
+<li><a class="reference internal" href="#kl-target"><code class="docutils literal notranslate"><span class="pre">--kl_target</span></code></a></li>
+<li><a class="reference internal" href="#clip-range"><code class="docutils literal notranslate"><span class="pre">--clip_range</span></code></a></li>
+<li><a class="reference internal" href="#clip-range-higher"><code class="docutils literal notranslate"><span class="pre">--clip_range_higher</span></code></a></li>
+<li><a class="reference internal" href="#temperature"><code class="docutils literal notranslate"><span class="pre">--temperature</span></code></a></li>
+<li><a class="reference internal" href="#top-p"><code class="docutils literal notranslate"><span class="pre">--top_p</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#distributed-training">Distributed Training</a><ul>
+<li><a class="reference internal" href="#zero-stage"><code class="docutils literal notranslate"><span class="pre">--zero_stage</span></code></a></li>
+<li><a class="reference internal" href="#fsdp"><code class="docutils literal notranslate"><span class="pre">--fsdp</span></code></a></li>
+<li><a class="reference internal" href="#fsdp-cpu-offload"><code class="docutils literal notranslate"><span class="pre">--fsdp_cpu_offload</span></code></a></li>
+<li><a class="reference internal" href="#bf16"><code class="docutils literal notranslate"><span class="pre">--bf16</span></code></a></li>
+<li><a class="reference internal" href="#gradient-checkpointing"><code class="docutils literal notranslate"><span class="pre">--gradient_checkpointing</span></code></a></li>
+<li><a class="reference internal" href="#sp-size"><code class="docutils literal notranslate"><span class="pre">--sp_size</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#inference-engine">Inference Engine</a><ul>
+<li><a class="reference internal" href="#engine-type"><code class="docutils literal notranslate"><span class="pre">--engine_type</span></code></a></li>
+<li><a class="reference internal" href="#engine-tp-size"><code class="docutils literal notranslate"><span class="pre">--engine_tp_size</span></code></a></li>
+<li><a class="reference internal" href="#engine-mem-util"><code class="docutils literal notranslate"><span class="pre">--engine_mem_util</span></code></a></li>
+<li><a class="reference internal" href="#enable-engine-sleep"><code class="docutils literal notranslate"><span class="pre">--enable_engine_sleep</span></code></a></li>
+<li><a class="reference internal" href="#disable-engine-sleep"><code class="docutils literal notranslate"><span class="pre">--disable_engine_sleep</span></code></a></li>
+<li><a class="reference internal" href="#rm-use-engine"><code class="docutils literal notranslate"><span class="pre">--rm_use_engine</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#memory-optimization">Memory Optimization</a><ul>
+<li><a class="reference internal" href="#adam-offload"><code class="docutils literal notranslate"><span class="pre">--adam_offload</span></code></a></li>
+<li><a class="reference internal" href="#use-mp-opt"><code class="docutils literal notranslate"><span class="pre">--use_mp_opt</span></code></a></li>
+<li><a class="reference internal" href="#packing-samples"><code class="docutils literal notranslate"><span class="pre">--packing_samples</span></code></a></li>
+<li><a class="reference internal" href="#fused-linear-logprob"><code class="docutils literal notranslate"><span class="pre">--fused_linear_logprob</span></code></a></li>
+<li><a class="reference internal" href="#chunk-size"><code class="docutils literal notranslate"><span class="pre">--chunk_size</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#logging-and-monitoring">Logging and Monitoring</a><ul>
+<li><a class="reference internal" href="#log-dir"><code class="docutils literal notranslate"><span class="pre">--log_dir</span></code></a></li>
+<li><a class="reference internal" href="#plot-every"><code class="docutils literal notranslate"><span class="pre">--plot_every</span></code></a></li>
+<li><a class="reference internal" href="#use-tensorboard"><code class="docutils literal notranslate"><span class="pre">--use_tensorboard</span></code></a></li>
+<li><a class="reference internal" href="#use-wandb"><code class="docutils literal notranslate"><span class="pre">--use_wandb</span></code></a></li>
+<li><a class="reference internal" href="#wandb-org"><code class="docutils literal notranslate"><span class="pre">--wandb_org</span></code></a></li>
+<li><a class="reference internal" href="#wandb-run-name"><code class="docutils literal notranslate"><span class="pre">--wandb_run_name</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#checkpoint-management">Checkpoint Management</a><ul>
+<li><a class="reference internal" href="#save-path"><code class="docutils literal notranslate"><span class="pre">--save_path</span></code></a></li>
+<li><a class="reference internal" href="#ckpt-path"><code class="docutils literal notranslate"><span class="pre">--ckpt_path</span></code></a></li>
+<li><a class="reference internal" href="#load-checkpoint"><code class="docutils literal notranslate"><span class="pre">--load_checkpoint</span></code></a></li>
+<li><a class="reference internal" href="#save-interval"><code class="docutils literal notranslate"><span class="pre">--save_interval</span></code></a></li>
+<li><a class="reference internal" href="#max-ckpt-num"><code class="docutils literal notranslate"><span class="pre">--max_ckpt_num</span></code></a></li>
+<li><a class="reference internal" href="#max-ckpt-mem"><code class="docutils literal notranslate"><span class="pre">--max_ckpt_mem</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#reward-processing">Reward Processing</a><ul>
+<li><a class="reference internal" href="#reward-running-norm"><code class="docutils literal notranslate"><span class="pre">--reward_running_norm</span></code></a></li>
+<li><a class="reference internal" href="#reward-running-norm-minus-mean"><code class="docutils literal notranslate"><span class="pre">--reward_running_norm_minus_mean</span></code></a></li>
+<li><a class="reference internal" href="#advantages-norm"><code class="docutils literal notranslate"><span class="pre">--advantages_norm</span></code></a></li>
+<li><a class="reference internal" href="#advantage-clip"><code class="docutils literal notranslate"><span class="pre">--advantage_clip</span></code></a></li>
+<li><a class="reference internal" href="#reward-clip"><code class="docutils literal notranslate"><span class="pre">--reward_clip</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#multimodal-vlm-parameters">Multimodal (VLM) Parameters</a><ul>
+<li><a class="reference internal" href="#mixed-mm-data"><code class="docutils literal notranslate"><span class="pre">--mixed_mm_data</span></code></a></li>
+<li><a class="reference internal" href="#processor"><code class="docutils literal notranslate"><span class="pre">--processor</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#complete-example-configuration">Complete Example Configuration</a><ul>
+<li><a class="reference internal" href="#math-reasoning-gsm8k-math">Math Reasoning (GSM8K, MATH)</a></li>
+<li><a class="reference internal" href="#multimodal-vlm-training">Multimodal VLM Training</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#parameter-validation">Parameter Validation</a></li>
+<li><a class="reference internal" href="#environment-variables">Environment Variables</a></li>
+<li><a class="reference internal" href="#see-also">See Also</a></li>
+</ul>
+</li>
+</ul>
+
+            </div>
+          </div>
+        </div>
+    </section>
+  </div>
+
+  
+
+
+  
+
+  
+  <script type="text/javascript" id="documentation_options" data-url_root="../"
+    src="../_static/documentation_options.js"></script>
+  <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+  <script src="../_static/doctools.js"></script>
+  <script src="../_static/sphinx_highlight.js"></script>
+  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+  
+
+  
+
+  <script type="text/javascript" src="../_static/js/vendor/popper.min.js"></script>
+  <script type="text/javascript" src="../_static/js/vendor/bootstrap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+    jQuery(function () {
+      SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+  <!-- Begin Footer -->
+
+  <div class="container-fluid docs-tutorials-resources" id="docs-tutorials-resources">
+  </div>
+
+  <!-- End Footer -->
+
+  <!-- Begin Mobile Menu -->
+
+  <div class="mobile-main-menu">
+    <div class="container-fluid">
+      <div class="container">
+        <div class="mobile-main-menu-header-container">
+          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
+        </div>
+      </div>
+    </div>
+
+    <div class="mobile-main-menu-links-container">
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://github.com/opendilab/LightRFT" target="_blank">GitHub</a>
+          </li>
+      </div>
+    </div>
+  </div>
+
+  <!-- End Mobile Menu -->
+
+  <script type="text/javascript" src="../_static/js/vendor/anchor.min.js"></script>
+
+  <script type="text/javascript">
+    $(document).ready(function () {
+      mobileMenu.bind();
+      mobileTOC.bind();
+      pytorchAnchors.bind();
+      sideMenus.bind();
+      scrollToAnchor.bind();
+      highlightNavigation.bind();
+      mainMenuDropdown.bind();
+      filterTags.bind();
+
+      // Add class to links that have code blocks, since we cannot create links in code blocks
+      $("article.pytorch-article a span.pre").each(function (e) {
+        $(this).closest("a").addClass("has-code");
+      });
+    })
+  </script>
+</body>
+
+</html>
