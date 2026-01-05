@@ -68,6 +68,7 @@ class ExperienceVL:
         - attention_mask: (B, S)
         - action_mask: (B, A)
         - kl: (B, A)
+        - action_entropy: (B, A) - Entropy values for high-entropy token filtering
 
     :param sequences: Token sequences including both prompt and response.
     :type sequences: torch.Tensor
@@ -99,6 +100,11 @@ class ExperienceVL:
     :type info: Optional[dict]
     :param kl: KL divergence between current and reference policy, defaults to None.
     :type kl: Optional[torch.Tensor]
+    :param action_entropy: Entropy values for each action token, used for high-entropy token
+        filtering. When provided, enables training only on high-entropy tokens (forking tokens
+        that determine reasoning directions), improving training efficiency. Shape: (B, A).
+        See: https://arxiv.org/abs/2506.01939
+    :type action_entropy: Optional[torch.Tensor]
     """
 
     sequences: torch.Tensor
