@@ -17,5 +17,28 @@ from .prompts_dataset import PromptDataset
 from .prompts_dataset_vl import PromptDatasetVL
 from .sft_dataset import SFTDataset
 from .sft_dataset_vl import SFTDatasetVL
+from .rft_dataset import RFTDatasetVL
 
-__all__ = ["ProcessRewardDataset", "PromptDataset", "PromptDatasetVL", "SFTDataset", "SFTDatasetVL"]
+# Import PairHandlers for RFTDatasetVL
+from .rapidata import RapidataT2VPairHandler, RapidataI2VPairHandler
+from .hpdv3 import HPDv3PairHandler
+from .omnirewardbench import (
+    OmniRewardBenchT2IPairHandler, 
+    OmniRewardBenchT2VPairHandler,
+    VideoGenRewardBenchPairHandler,
+)
+
+__all__ = [
+    "ProcessRewardDataset", 
+    "PromptDataset", 
+    "PromptDatasetVL", 
+    "SFTDataset", 
+    "SFTDatasetVL", 
+    "RFTDatasetVL",
+    "RapidataT2VPairHandler",
+    "RapidataI2VPairHandler",
+    "HPDv3PairHandler",
+    "OmniRewardBenchT2IPairHandler",
+    "OmniRewardBenchT2VPairHandler",
+    "VideoGenRewardBenchPairHandler",
+]

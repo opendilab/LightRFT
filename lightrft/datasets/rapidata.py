@@ -23,6 +23,8 @@ class RapidataT2VHandler(BaseDataHandler):
 
     Dataset Repo: https://huggingface.co/Rapidata/datasets
     """
+    task_type = "text-to-video"
+
     def load_data(self, path: str) -> List[Dict[str, Any]]:
         """
         Loads data from parquet file.
@@ -52,16 +54,23 @@ class RapidataT2VHandler(BaseDataHandler):
         if 'file_name1' not in item or 'file_name2' not in item:
             raise ValueError(f"Item missing 'file_name1' or 'file_name2'.")
 
-        full_path1 = os.path.join(data_root, "videos", item['file_name1'])
-        full_path2 = os.path.join(data_root, "videos", item['file_name2'])
+        # Try both "videos" and "Videos"
+        video_dir = "videos"
+        if not os.path.exists(os.path.join(data_root, video_dir)):
+            if os.path.exists(os.path.join(data_root, "Videos")):
+                video_dir = "Videos"
+
+        full_path1 = os.path.join(data_root, video_dir, item['file_name1'])
+        full_path2 = os.path.join(data_root, video_dir, item['file_name2'])
 
         return {'video1': {'video_local_path': full_path1}, 'video2': {'video_local_path': full_path2}}
 
     def _get_label(self, val1: float, val2: float) -> str:
         """
         Helper to determine preference label based on two scores.
-        A > B, B > A, C == C
         """
+        if val1 is None or val2 is None:
+            return "C"
         if val1 > val2:
             return "A"
         elif val1 < val2:
@@ -85,6 +94,9 @@ class RapidataT2VHandler(BaseDataHandler):
         task_instruction_template = config["task_instruction"]
         task_instruction = task_instruction_template.format(prompt=video_gen_prompt)
 
+        # Get max_pixels from config (default to 720 * 480 if not provided)
+        max_pixels = config.get("max_pixels", 720 * 480)
+
         # Get FPS from config
         fps = config["video_fps"]
 
@@ -100,8 +112,8 @@ class RapidataT2VHandler(BaseDataHandler):
                     "type": "video",
                     "video": video1,
                     "fps": fps,
-                    "max_pixels": 720 * 480
-                }  # 480p limit to reduce memory
+                    "max_pixels": max_pixels
+                }
                             ]
             }
         ]
@@ -115,21 +127,25 @@ class RapidataT2VHandler(BaseDataHandler):
                 "type": "video",
                 "video": video2,
                 "fps": fps,
-                "max_pixels": 720 * 480
+                "max_pixels": max_pixels
             }]
         }]
 
-        # Get human preference labels based on weighted scores
-        pref_label = self._get_label(item["weighted_results1_Preference"], item["weighted_results2_Preference"])
-        cohe_label = self._get_label(item["weighted_results1_Coherence"], item["weighted_results2_Coherence"])
-        align_label = self._get_label(item['weighted_results1_Alignment'], item['weighted_results2_Alignment'])
+        # Get human preference labels and total scores based on weighted metrics
+        metrics = ['Preference', 'Coherence', 'Alignment']
+        labels = {
+            f"{m.lower()}_label": self._get_label(item.get(f'weighted_results1_{m}'), item.get(f'weighted_results2_{m}'))
+            for m in metrics
+        }
+
+        score1 = sum(item.get(f'weighted_results1_{m}') or 0.0 for m in metrics)
+        score2 = sum(item.get(f'weighted_results2_{m}') or 0.0 for m in metrics)
 
         other = {
-            "preference": pref_label,
-            "coherence": cohe_label,
-            "alignment": align_label,
+            "preference": self._get_label(score1, score2),
+            **labels,
             "source": item['source'],
-            "task_type": "t2v",
+            "task_type": self.task_type,
         }
         return messages0, messages1, other
 
@@ -142,6 +158,8 @@ class RapidataI2VHandler(RapidataT2VHandler):
     
     Dataset Repo: https://huggingface.co/Rapidata/datasets
     """
+    task_type = "image-to-video"
+
     def __init__(self):
         super().__init__()
 
@@ -204,6 +222,9 @@ class RapidataI2VHandler(RapidataT2VHandler):
         task_instruction_template = config["task_instruction"]
         task_instruction = task_instruction_template.format(prompt=prompt_text)
 
+        # Get max_pixels from config (default to 720 * 480 if not provided)
+        max_pixels = config.get("max_pixels", 720 * 480)
+
         # Get FPS from config
         fps = config["video_fps"]
 
@@ -216,12 +237,12 @@ class RapidataI2VHandler(RapidataT2VHandler):
             "content": [{
                 "type": "image",
                 "image": copy.deepcopy(init_image),
-                "max_pixels": 720 * 480
+                "max_pixels": max_pixels
             }, {
                 "type": "video",
                 "video": video1,
                 "fps": fps,
-                "max_pixels": 720 * 480
+                "max_pixels": max_pixels
             }]
         }]
 
@@ -233,25 +254,177 @@ class RapidataI2VHandler(RapidataT2VHandler):
             "content": [{
                 "type": "image",
                 "image": copy.deepcopy(init_image),
-                "max_pixels": 720 * 480
+                "max_pixels": max_pixels
             }, {
                 "type": "video",
                 "video": video2,
                 "fps": fps,
-                "max_pixels": 720 * 480
+                "max_pixels": max_pixels
             }]
         }]
 
-        # Get human preference labels based on weighted scores
-        pref_label = self._get_label(item['weighted_results1_Preference'], item['weighted_results2_Preference'])
-        cohe_label = self._get_label(item['weighted_results1_Coherence'], item['weighted_results2_Coherence'])
-        align_label = self._get_label(item['weighted_results1_Alignment'], item['weighted_results2_Alignment'])
+        # Get human preference labels and total scores based on weighted metrics
+        metrics = ['Preference', 'Coherence', 'Alignment']
+        labels = {
+            f"{m.lower()}_label": self._get_label(item.get(f'weighted_results1_{m}'), item.get(f'weighted_results2_{m}'))
+            for m in metrics
+        }
+
+        score1 = sum(item.get(f'weighted_results1_{m}') or 0.0 for m in metrics)
+        score2 = sum(item.get(f'weighted_results2_{m}') or 0.0 for m in metrics)
 
         other = {
-            "preference": pref_label,
-            "coherence": cohe_label,
-            "alignment": align_label,
+            "preference": self._get_label(score1, score2),
+            **labels,
             "source": item['source'],
-            "task_type": "t2v",  # Text-to-Video
+            "task_type": self.task_type,
         }
         return messages0, messages1, other
+
+
+class RapidataT2VPairHandler(RapidataT2VHandler):
+    """
+    Data Handler for Rapidata text-to-video human preferences dataset in pairwise format.
+    """
+    def __init__(self):
+        super().__init__()
+    
+    def parse_item(self, 
+                   item: Dict[str, Any], 
+                   media_content: Dict[str, Any], 
+                   config: Dict[str, Any]
+                   ) -> Tuple[List[Dict], List[Dict], Dict]:
+        
+        video1 = media_content['video1']
+        video2 = media_content['video2']
+
+        if not all([video1, video2]):
+            raise ValueError(f"Missing visual content for 'video1' or 'video2'.")
+
+        # Get generation prompt from data item
+        video_gen_prompt = item["prompt"]
+
+        # Get system prompts from config
+        task_instruction_template = config["task_instruction"]
+        task_instruction = task_instruction_template.format(prompt=video_gen_prompt)
+
+        # Get max_pixels from config (default to 720 * 480 if not provided)
+        max_pixels = config.get("max_pixels", 720 * 480)
+
+        # Get FPS from config
+        fps = config["video_fps"]
+
+        # Build messages
+        messages = [
+        {
+            "role": "system", 
+            "content": [{"type": "text", "text": task_instruction}]
+        },
+        {
+            "role": "user",
+            "content": [
+                {"type": "text", "text": "The following is the first video."},
+                {"type": "video", "video": video1, "fps": fps, "max_pixels": max_pixels},
+                
+                {"type": "text", "text": "The following is the second video."},
+                {"type": "video", "video": video2, "fps": fps, "max_pixels": max_pixels},
+                ]
+            }
+        ]
+        
+        # Get human preference labels and total scores based on weighted metrics
+        metrics = ['Preference', 'Coherence', 'Alignment']
+        labels = {
+            f"{m.lower()}_label": self._get_label(item.get(f'weighted_results1_{m}'), item.get(f'weighted_results2_{m}'))
+            for m in metrics
+        }
+
+        score1 = sum(item.get(f'weighted_results1_{m}') or 0.0 for m in metrics)
+        score2 = sum(item.get(f'weighted_results2_{m}') or 0.0 for m in metrics)
+
+        other = {
+            "preference": self._get_label(score1, score2),
+            **labels,
+            "source": item['source'],
+            "task_type": self.task_type,
+        }
+        return messages, other
+
+
+class RapidataI2VPairHandler(RapidataI2VHandler):
+    """
+    Data Handler for Rapidata image-to-video human preferences dataset in pairwise format.
+    """
+    task_type = "image-to-video"
+
+    def __init__(self):
+        super().__init__()
+    
+    def parse_item(self, 
+                   item: Dict[str, Any], 
+                   media_content: Dict[str, Any], 
+                   config: Dict[str, Any]
+                   ) -> Tuple[List[Dict], List[Dict], Dict]:
+        
+        video1 = media_content['video1']
+        video2 = media_content['video2']
+        init_image = media_content['init_image']
+
+        if not all([video1, video2, init_image]):
+            raise ValueError("Missing visual content for 'video1' or 'video2' or 'init_image'.")
+
+        # Get generation prompt from data item
+        prompt_text = item["prompt"]
+
+        # Get system prompts from config
+        task_instruction_template = config["task_instruction"]
+        task_instruction = task_instruction_template.format(prompt=prompt_text)
+
+        # Get FPS from config
+        fps = config["video_fps"]
+        max_pixels = config.get("max_pixels", 720 * 480)
+
+        # Build messages
+        messages = [
+        {
+            "role": "system", 
+            "content": [{"type": "text", "text": task_instruction}]
+        },
+        {
+            "role": "user",
+            "content": [
+                {"type": "text", "text": "Reference Image:"},
+                {"type": "image", "image": init_image, "max_pixels": max_pixels},
+                
+                {"type": "text", "text": "The following is the first video."},
+                {"type": "video", "video": video1, "fps": fps, "max_pixels": max_pixels},
+                
+                {"type": "text", "text": "The following is the second video."},
+                {"type": "video", "video": video2, "fps": fps, "max_pixels": max_pixels},
+                ]
+            }
+        ]
+        
+        # Get human preference labels and total scores based on weighted metrics
+        metrics = ['Preference', 'Coherence', 'Alignment']
+        labels = {
+            f"{m.lower()}_label": self._get_label(item.get(f'weighted_results1_{m}'), item.get(f'weighted_results2_{m}'))
+            for m in metrics
+        }
+
+        score1 = sum(item.get(f'weighted_results1_{m}') or 0.0 for m in metrics)
+        score2 = sum(item.get(f'weighted_results2_{m}') or 0.0 for m in metrics)
+
+        other = {
+            "preference": self._get_label(score1, score2),
+            **labels,
+            "source": item['source'],
+            "task_type": self.task_type,
+        }
+        return messages, other
+
+
+
+# Alias for RFTDatasetVL compatibility
+RapidataT2VPairHandler = RapidataT2VHandler
+RapidataI2VPairHandler = RapidataI2VHandler

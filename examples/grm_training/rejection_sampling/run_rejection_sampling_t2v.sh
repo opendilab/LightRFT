@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Rejection Sampling Training Script
+# Rejection Sampling Training Script for Text-to-Video (T2V)
 # This script performs the complete rejection sampling pipeline:
 # 1. Inference on dataset and filter correct samples
 # 2. Convert filtered samples to training format
@@ -19,13 +19,16 @@ unset HTTPS_PROXY
 MODEL_PATH="/mnt/shared-storage-user/puyuan/wanzunian/models/lightrlhf-grm-lr1e5-imagegen_cot_reward-qwen2.5vl3B-gs3000"
 
 # Dataset configuration
-# Please set your dataset path here (format: "source:path")
-DATA_PATH="hpdv3:/mnt/shared-storage-user/puyuan/wanzunian/datasets/HPDv3/train_subset_5percent.json"
-# Please set your dataset root directory here
-DATA_ROOT="/mnt/shared-storage-user/puyuan/wanzunian/datasets/HPDv3"
+# Multiple rapidata-t2v datasets
+DATA_PATH=(
+    "rapidata-t2v:/mnt/shared-storage-user/puyuan/wanzunian/datasets/rapidata/text-2-video-human-preferences-veo3/data/train-00000-of-00001.parquet"
+    "rapidata-t2v:/mnt/shared-storage-user/puyuan/wanzunian/datasets/rapidata/text-2-video-human-preferences-pika2.2/data/train-00000-of-00001.parquet"
+    "rapidata-t2v:/mnt/shared-storage-user/puyuan/wanzunian/datasets/rapidata/text-2-video-human-preferences-wan2.1/data/train-00000-of-00001.parquet"
+    "rapidata-t2v:/mnt/shared-storage-user/puyuan/wanzunian/datasets/rapidata/text-2-video-human-preferences/data/train-00000-of-00001.parquet"
+)
 
 # Output paths
-OUTPUT_DIR="./results/rejection_sampling_$(date +%Y%m%d_%H%M%S)"
+OUTPUT_DIR="./results/rejection_sampling_t2v_$(date +%Y%m%d_%H%M%S)"
 FILTERED_SAMPLES_PATH="${OUTPUT_DIR}/filtered_samples.json"
 TRAINING_DATA_PATH="${OUTPUT_DIR}/rejection_sampling_train.json"
 FINAL_CHECKPOINT_PATH="${OUTPUT_DIR}/checkpoint"
@@ -42,28 +45,30 @@ GRADIENT_ACCUMULATION_STEPS=32
 INFERENCE_BATCH_SIZE=8
 MAX_NEW_TOKENS=2048
 
-# Task instruction for CoT reasoning
-TASK_INSTRUCTION="""Given a caption and two images generated based on this caption, please analyze in detail the two provided images. 
-Evaluate them on various dimensions such as semantic consistency (how closely the image content aligns with the caption), 
-aesthetics (composition, color usage, artistic expression), authenticity (realism and attention to detail), 
-and any other factors you deem relevant. For each evaluation dimension, 
-provide a score between 1-10 for both images (e.g., Image 1: 8/10, Image 2: 6/10) and provide a concise rationale for the score. 
-Calculate the total score for each image by summing all dimension scores. 
-Use a chain-of-thought process to detail your reasoning steps, and enclose all your detailed reasoning within tags. 
-Then, in the <answer> tag, output exactly one of the following strings: 'Image 1 is better' or 'Image 2 is better' or 'Both are equal' based on the total scores. 
-No additional text is allowed in the <answer> section.
+# Video FPS configuration
+VIDEO_FPS=2.0
+
+# Task instruction for CoT reasoning (T2V)
+TASK_INSTRUCTION="""Given a caption and two videos generated based on this caption, please analyze in detail the two provided videos. 
+Evaluate them on various dimensions such as semantic consistency (how closely the video content aligns with the caption), temporal coherence (smoothness and logical flow of motion across frames), authenticity (realism and attention to detail), and any other factors you deem relevant. 
+For each evaluation dimension, provide a score between 1-10 for both videos (e.g., Video 1: 8/10, Video 2: 6/10) and provide a concise rationale for the score. 
+Calculate the total score for each video by summing all dimension scores. 
+Use a chain-of-thought process to detail your reasoning steps, and enclose all your detailed reasoning within <think> and </think> tags. Then, in the <answer> tag, output exactly one of the following strings:
+'Video 1 is better' or 'Video 2 is better' based on the total scores. No additional text is allowed in the <answer> section.
 Example output format:
 <think>
-Semantic consistency: Image 1 (9/10) - ...; Image 2 (7/10) - ...
-Aesthetics: Image 2 (8/10) - ...; Image 1 (8/10) - ...
-Authenticity: Image 1 (8/10) - ...; Image 2 (5/10) - ...
-[Additional dimensions if any]: Image 2 (8/10) - ...; Image 1 (6/10) - ...
+1. Semantic consistency: Video 1 (9/10) - ...; Video 2 (7/10) - ...
+2. Temporal coherence: Video 1 (8/10) - ...; Video 2 (6/10) - ...
+3. Authenticity: Video 1 (7/10) - ...; Video 2 (5/10) - ...
+...
+[Additional dimensions if any]: Video 2 (8/10) - ...; Video 1 (6/10) - ...
 Total score:
-Image 1: 9+8+8+6=31
-Image 2: 7+8+5+8=28
+Video 1: 9+8+7+6=30
+Video 2: 7+6+5+8=26
 </think>
-<answer>Image 1 is better</answer>
-Note: In the example above, scores and the final answer are placeholders meant only to demonstrate the format. Your actual evaluation should be based on the quality of two given images.
+<answer>Video 1 is better</answer>
+
+Note: In the example above, scores and the final answer are placeholders meant only to demonstrate the format. Your actual evaluation should be based on the quality of two given videos.
 Your task is provided as follows:
 Text Caption: **{prompt}**
 """
@@ -83,13 +88,8 @@ if [ -z "${MODEL_PATH}" ]; then
     exit 1
 fi
 
-if [ -z "${DATA_PATH}" ]; then
+if [ ${#DATA_PATH[@]} -eq 0 ]; then
     echo "Error: DATA_PATH is not set. Please configure it in the script."
-    exit 1
-fi
-
-if [ -z "${DATA_ROOT}" ]; then
-    echo "Error: DATA_ROOT is not set. Please configure it in the script."
     exit 1
 fi
 
@@ -99,10 +99,10 @@ LOG_BASE="${OUTPUT_DIR}/logs"
 mkdir -p ${LOG_BASE}
 
 echo "=========================================="
-echo "Rejection Sampling Training Pipeline"
+echo "Rejection Sampling Training Pipeline (T2V)"
 echo "=========================================="
 echo "Model: ${MODEL_PATH}"
-echo "Data: ${DATA_PATH}"
+echo "Data: ${DATA_PATH[@]}"
 echo "Output: ${OUTPUT_DIR}"
 echo "=========================================="
 
@@ -111,10 +111,13 @@ echo ""
 echo "Step 1: Running inference and filtering correct samples..."
 echo "=========================================="
 
+# Convert array to comma-separated string for Python script
+DATA_PATH_STR=$(IFS=','; echo "${DATA_PATH[*]}")
+
 # Use vLLM for inference (vLLM handles multi-GPU internally via tensor_parallel_size)
-python examples/grm_training/rejection_sampling/rejection_sampling_inference.py \
+python examples/grm_training/rejection_sampling/rejection_sampling_inference_t2v.py \
     --model_path ${MODEL_PATH} \
-    --data_path ${DATA_PATH} \
+    --data_path ${DATA_PATH_STR} \
     --output_path ${FILTERED_SAMPLES_PATH} \
     --batch_size ${INFERENCE_BATCH_SIZE} \
     --max_new_tokens ${MAX_NEW_TOKENS} \
@@ -122,6 +125,7 @@ python examples/grm_training/rejection_sampling/rejection_sampling_inference.py 
     --task_instruction "${TASK_INSTRUCTION}" \
     --tensor_parallel_size ${GPUS_PER_NODE} \
     --gpu_memory_utilization 0.9 \
+    --video_fps ${VIDEO_FPS} \
     2>&1 | tee ${LOG_BASE}/inference.log
 
 if [ ! -f "${FILTERED_SAMPLES_PATH}" ]; then
@@ -136,11 +140,11 @@ echo ""
 echo "Step 2: Converting filtered samples to training format..."
 echo "=========================================="
 
-python examples/grm_training/rejection_sampling/convert_to_rejection_sampling_data.py \
+python examples/grm_training/rejection_sampling/convert_to_rejection_sampling_data_t2v.py \
     --filtered_samples_path ${FILTERED_SAMPLES_PATH} \
     --output_path ${TRAINING_DATA_PATH} \
-    --data_root ${DATA_ROOT} \
     --task_instruction "${TASK_INSTRUCTION}" \
+    --video_fps ${VIDEO_FPS} \
     2>&1 | tee ${LOG_BASE}/convert.log
 
 if [ ! -f "${TRAINING_DATA_PATH}" ]; then
@@ -155,7 +159,7 @@ echo ""
 echo "Step 3: Training on filtered samples..."
 echo "=========================================="
 
-# Use imagegen-cot-reward handler for the converted data
+# Use imagegen-cot-reward handler for the converted data (it supports video too)
 TRAINING_DATA_SOURCE="imagegen-cot-reward-5k:${TRAINING_DATA_PATH}"
 
 torchrun --nnodes $NNODES --nproc-per-node $GPUS_PER_NODE \
@@ -169,7 +173,7 @@ torchrun --nnodes $NNODES --nproc-per-node $GPUS_PER_NODE \
     --max_epochs ${MAX_EPOCHS} \
     --lr_warmup_ratio 0.03 \
     --prompt_max_len ${MAX_LENGTH} \
-    --fps 2.0 \
+    --fps ${VIDEO_FPS} \
     --zero_stage 3 \
     --bf16 \
     --actor_learning_rate ${LR} \
@@ -185,7 +189,7 @@ torchrun --nnodes $NNODES --nproc-per-node $GPUS_PER_NODE \
 
 echo ""
 echo "=========================================="
-echo "Rejection Sampling Training Completed!"
+echo "Rejection Sampling Training Completed (T2V)!"
 echo "=========================================="
 echo "Final checkpoint: ${FINAL_CHECKPOINT_PATH}/final_checkpoint"
 echo "All outputs saved to: ${OUTPUT_DIR}"

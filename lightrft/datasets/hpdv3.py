@@ -133,6 +133,10 @@ class HPDv3Handler(BaseDataHandler):
         return messages0, messages1, other
 
 
+# Alias for RFTDatasetVL compatibility
+HPDv3PairHandler = HPDv3Handler
+
+
 class HPDv3GRMHandler(HPDv3Handler):
     """
     Data Handler for HPDv3 dataset with Generative Reward Model (GRM) training.

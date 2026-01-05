@@ -1,9 +1,12 @@
 """
-Rejection Sampling Inference Script
+Rejection Sampling Inference Script for Text-to-Video (T2V)
 
 This script performs inference on a dataset using a trained GRM model,
 filters out correctly predicted samples, and generates training data
 with CoT reasoning for rejection sampling training.
+
+For Rapidata-T2V, we compute gt_preference based on the sum of three dimensions:
+Alignment + Coherence + Preference
 """
 
 import os
@@ -17,39 +20,47 @@ from torch.utils.data import DataLoader
 
 from transformers import AutoProcessor, AutoTokenizer
 from vllm import LLM, SamplingParams
-from lightrft.datasets import GRMDataset, extract_answer
+from lightrft.datasets import extract_answer, RFTDatasetVL
+
+# Import qwen_vl_utils for processing vision info
+try:
+    from qwen_vl_utils import process_vision_info
+except ImportError:
+    try:
+        from keye_vl_utils import process_vision_info
+    except ImportError:
+        raise ImportError("Neither qwen_vl_utils nor keye_vl_utils is available")
 
 
-TASK_INSTRUCTION_COT = """Given a caption and two images generated based on this caption, please analyze in detail the two provided images. 
-Evaluate them on various dimensions such as semantic consistency (how closely the image content aligns with the caption), 
-aesthetics (composition, color usage, artistic expression), authenticity (realism and attention to detail), 
-and any other factors you deem relevant. For each evaluation dimension, 
-provide a score between 1-10 for both images (e.g., Image 1: 8/10, Image 2: 6/10) and provide a concise rationale for the score. 
-Calculate the total score for each image by summing all dimension scores. 
-Use a chain-of-thought process to detail your reasoning steps, and enclose all your detailed reasoning within <think> and </think> tags. 
-Then, in the <answer> tag, output exactly one of the following strings: 'Image 1 is better' or 'Image 2 is better' based on the total scores. 
-No additional text is allowed in the <answer> section.
+TASK_INSTRUCTION_COT_T2V = """Given a caption and two videos generated based on this caption, please analyze in detail the two provided videos. 
+Evaluate them on various dimensions such as semantic consistency (how closely the video content aligns with the caption), temporal coherence (smoothness and logical flow of motion across frames), authenticity (realism and attention to detail), and any other factors you deem relevant. 
+For each evaluation dimension, provide a score between 1-10 for both videos (e.g., Video 1: 8/10, Video 2: 6/10) and provide a concise rationale for the score. 
+Calculate the total score for each video by summing all dimension scores. 
+Use a chain-of-thought process to detail your reasoning steps, and enclose all your detailed reasoning within <think> and </think> tags. Then, in the <answer> tag, output exactly one of the following strings:
+'Video 1 is better' or 'Video 2 is better' based on the total scores. No additional text is allowed in the <answer> section.
 Example output format:
 <think>
-Semantic consistency: Image 1 (9/10) - ...; Image 2 (7/10) - ...
-Aesthetics: Image 2 (8/10) - ...; Image 1 (8/10) - ...
-Authenticity: Image 1 (8/10) - ...; Image 2 (5/10) - ...
-[Additional dimensions if any]: Image 2 (8/10) - ...; Image 1 (6/10) - ...
+1. Semantic consistency: Video 1 (9/10) - ...; Video 2 (7/10) - ...
+2. Temporal coherence: Video 1 (8/10) - ...; Video 2 (6/10) - ...
+3. Authenticity: Video 1 (7/10) - ...; Video 2 (5/10) - ...
+...
+[Additional dimensions if any]: Video 2 (8/10) - ...; Video 1 (6/10) - ...
 Total score:
-Image 1: 9+8+8+6=31
-Image 2: 7+8+5+8=28
+Video 1: 9+8+7+6=30
+Video 2: 7+6+5+8=26
 </think>
-<answer>Image 1 is better</answer>
-Note: In the example above, scores and the final answer are placeholders meant only to demonstrate the format. Your actual evaluation should be based on the quality of two given images.
+<answer>Video 1 is better</answer>
+
+Note: In the example above, scores and the final answer are placeholders meant only to demonstrate the format. Your actual evaluation should be based on the quality of two given videos.
 Your task is provided as follows:
-Text Caption: {prompt}
+Text Caption: **{prompt}**
 """
 
 
-class GRMPromptDatasetVL:
+class GRMPromptDatasetVLT2V:
     """
-    Dataset wrapper for vLLM inference that returns prompts and image/video paths
-    instead of tokenized inputs.
+    Dataset wrapper for vLLM inference that returns prompts and video paths
+    instead of tokenized inputs. Adapted for T2V with RFTDatasetVL.
     """
     def __init__(
         self,
@@ -61,14 +72,14 @@ class GRMPromptDatasetVL:
         config: Dict = None,
         is_training: bool = False,
     ):
-        self.base_dataset = GRMDataset(
+        self.base_dataset = RFTDatasetVL(
             dataset_paths,
             processor=processor,
             tokenizer=tokenizer,
             strategy=strategy,
             max_length=max_length,
             config=config,
-            is_training=is_training,
+            is_train=is_training,
         )
         self.processor = processor
         self.tokenizer = tokenizer
@@ -89,31 +100,66 @@ class GRMPromptDatasetVL:
         if loaded_content is None:
             raise RuntimeError(f"Failed to load media content: {media_info}")
         
-        # Parse item to get messages
-        messages, other = handler.parse_item(item, loaded_content, self.base_dataset.config)
+        # Parse item to get messages (returns messages0, messages1, other for PairHandler)
+        messages0, messages1, other = handler.parse_item(item, loaded_content, self.base_dataset.config)
+        
+        # Combine messages0 and messages1 to show both videos in the same conversation
+        # Similar to HPDv3GRMHandler format: system prompt + Video 1 + Video 2
+        messages = []
+        
+        # Add system prompt (from messages0)
+        if len(messages0) > 0 and messages0[0].get("role") == "system":
+            messages.append(messages0[0])
+        
+        # Add Video 1 with label
+        if len(messages0) > 1 and messages0[1].get("role") == "user":
+            video1_content = messages0[1]["content"]
+            messages.append({
+                "role": "user",
+                "content": [
+                    {
+                        "type": "text",
+                        "text": "**Video 1:**"
+                    },
+                    video1_content[0] if isinstance(video1_content, list) and len(video1_content) > 0 else video1_content
+                ]
+            })
+        
+        # Add Video 2 with label (from messages1)
+        if len(messages1) > 1 and messages1[1].get("role") == "user":
+            video2_content = messages1[1]["content"]
+            messages.append({
+                "role": "user",
+                "content": [
+                    {
+                        "type": "text",
+                        "text": "**Video 2:**"
+                    },
+                    video2_content[0] if isinstance(video2_content, list) and len(video2_content) > 0 else video2_content
+                ]
+            })
         
         # Get prompt text (exclude the last assistant message for inference)
-        messages_for_prompt = messages[:-1] if len(messages) > 0 else messages
+        messages_for_prompt = messages[:-1] if len(messages) > 0 and messages[-1].get("role") == "assistant" else messages
         prompt_text = self.processor.apply_chat_template(
             messages_for_prompt,
             tokenize=False,
             add_generation_prompt=True,
         )
         
-        # Extract image and video paths from media_info for vLLM
-        image_paths = []
-        video_paths = []
+        # Extract video information from messages using process_vision_info
+        # This is the same way test_grm_vl_vllm.py does it
+        # process_vision_info returns (image_inputs, video_inputs, video_kwargs)
+        # but we only need image_inputs and video_inputs for vLLM
+        image_inputs, video_inputs, _ = process_vision_info(
+            messages_for_prompt,
+            return_video_kwargs=True,
+        )
         
-        if media_info:
-            # media_info is typically a dict with 'images' and 'videos' keys
-            if isinstance(media_info, dict):
-                image_paths = media_info.get('images', [])
-                video_paths = media_info.get('videos', [])
-            elif isinstance(media_info, list):
-                # If it's a list, assume all are images
-                image_paths = media_info
+        # Store original item for accessing raw scores
+        other['_raw_item'] = item
         
-        return prompt_text, image_paths, video_paths, other
+        return prompt_text, image_inputs, video_inputs, other
     
     def collate_fn(self, batch):
         input_texts = []
@@ -121,13 +167,58 @@ class GRMPromptDatasetVL:
         video_inputs_list = []
         extras = []
         
-        for prompt_text, image_paths, video_paths, other in batch:
+        for prompt_text, image_inputs, video_inputs, other in batch:
             input_texts.append(prompt_text)
-            image_inputs_list.append(image_paths if image_paths else None)
-            video_inputs_list.append(video_paths if video_paths else None)
+            image_inputs_list.append(image_inputs if image_inputs else None)
+            video_inputs_list.append(video_inputs if video_inputs else None)
             extras.append(other)
         
         return input_texts, image_inputs_list, video_inputs_list, extras
+
+
+def safe_get_score(item: Dict, key: str, default: float = 0.0) -> float:
+    """
+    Safely get score value from item, handling None values.
+    
+    :param item: Dictionary containing score values
+    :param key: Key to look up in the dictionary
+    :param default: Default value to use if key is missing or value is None
+    :return: Float score value
+    """
+    value = item.get(key, default)
+    return default if value is None else float(value)
+
+
+def compute_total_score(item: Dict, video_num: int) -> float:
+    """
+    Compute total score for a video based on three dimensions.
+    
+    :param item: Dictionary containing score values
+    :param video_num: Video number (1 or 2)
+    :return: Total score (Alignment + Coherence + Preference)
+    """
+    alignment = safe_get_score(item, f"weighted_results{video_num}_Alignment", 0.0)
+    coherence = safe_get_score(item, f"weighted_results{video_num}_Coherence", 0.0)
+    preference = safe_get_score(item, f"weighted_results{video_num}_Preference", 0.0)
+    return alignment + coherence + preference
+
+
+def compute_gt_preference_from_scores(item: Dict) -> str:
+    """
+    Compute ground truth preference based on sum of three dimensions:
+    Alignment + Coherence + Preference
+    
+    Returns "A" if video1 has higher total score, "B" if video2 has higher total score.
+    """
+    total_score1 = compute_total_score(item, 1)
+    total_score2 = compute_total_score(item, 2)
+    
+    if total_score1 > total_score2:
+        return "A"  # Video 1 is better
+    elif total_score1 < total_score2:
+        return "B"  # Video 2 is better
+    else:
+        return "C"  # Equal (shouldn't happen often, but handle it)
 
 
 def inference_and_filter(
@@ -140,6 +231,7 @@ def inference_and_filter(
     use_cot: bool = True,
     tensor_parallel_size: int = 1,
     gpu_memory_utilization: float = 0.9,
+    video_fps: float = 2.0,
 ):
     """
     Perform inference on dataset and filter correctly predicted samples.
@@ -162,6 +254,8 @@ def inference_and_filter(
     :type tensor_parallel_size: int
     :param gpu_memory_utilization: GPU memory utilization ratio
     :type gpu_memory_utilization: float
+    :param video_fps: FPS for video processing
+    :type video_fps: float
     :return: List of correctly predicted samples with their generated text and reasoning
     :rtype: List[Dict]
     """
@@ -174,7 +268,7 @@ def inference_and_filter(
         trust_remote_code=True,
         gpu_memory_utilization=gpu_memory_utilization,
         limit_mm_per_prompt={
-            "image": 2,
+            "image": 0,
             "video": 2
         },
     )
@@ -191,7 +285,7 @@ def inference_and_filter(
     tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
     
     # Load Dataset
-    dataset = GRMPromptDatasetVL(
+    dataset = GRMPromptDatasetVLT2V(
         data_path,
         processor=processor,
         tokenizer=tokenizer,
@@ -219,7 +313,7 @@ def inference_and_filter(
         try:
             input_texts, image_inputs_list, video_inputs_list, extras = batch
             
-            # Prepare inputs for vLLM
+            # Prepare inputs for vLLM (same format as test_grm_vl_vllm.py)
             inputs = []
             for i in range(len(input_texts)):
                 prompt = input_texts[i]
@@ -247,48 +341,52 @@ def inference_and_filter(
             for i, (gen_text, extra) in enumerate(zip(gen_texts, extras)):
                 total_samples += 1
                 predicted_answer = extract_answer(gen_text)
-                gt_preference = extra['preference']  # A or B
+                
+                # Get raw item to compute gt_preference from scores
+                raw_item = extra.get('_raw_item', {})
+                gt_preference = compute_gt_preference_from_scores(raw_item)
                 
                 # Mapping logic: 
-                # In HPDv3GRMHandler, preference "A" means Image 1 (first shown) is preferred
-                # preference "B" means Image 2 (second shown) is preferred
-                # But the handler randomly swaps images, so we need to check the actual mapping
-                # The handler stores: preferred_path (path1) and rejected_path (path2)
-                # When preference is "A", image0 (which could be preferred or rejected) is shown as Image 1
-                # When preference is "B", image1 (which could be preferred or rejected) is shown as Image 1
-                
-                # Since the handler randomly assigns, we check based on the stored preference
-                # If gt_preference is "A", it means Image 1 (first shown) is better
-                # If gt_preference is "B", it means Image 2 (second shown) is better
+                # "A" means Video 1 is better
+                # "B" means Video 2 is better
                 is_correct = False
-                if gt_preference == "A" and predicted_answer == "Image 1 is better":
+                if gt_preference == "A" and predicted_answer == "Video 1 is better":
                     is_correct = True
-                elif gt_preference == "B" and predicted_answer == "Image 2 is better":
+                elif gt_preference == "B" and predicted_answer == "Video 2 is better":
                     is_correct = True
+                elif gt_preference == "C":
+                    # Handle tie case (should be rare)
+                    logger.warning(f"Tie detected in sample {total_samples}, skipping")
+                    continue
                 
                 if is_correct:
                     correct_count += 1
+                    # Get video paths from raw item
+                    data_root = raw_item.get('data_root', '')
+                    video1_path = os.path.join(data_root, "videos", raw_item.get('file_name1', ''))
+                    video2_path = os.path.join(data_root, "videos", raw_item.get('file_name2', ''))
+                    
                     # Prepare sample for rejection sampling training
                     sample = {
-                        "prompt": extra['prompt'],
-                        "path1": extra['preferred_path'],
-                        "path2": extra['rejected_path'],
+                        "prompt": raw_item.get('prompt', ''),
+                        "path1": video1_path,
+                        "path2": video2_path,
                         "preference": gt_preference,
                         "generated_text": gen_text,
                         "predicted_answer": predicted_answer,
+                        "score1_total": compute_total_score(raw_item, 1),
+                        "score2_total": compute_total_score(raw_item, 2),
                     }
                     
                     # If we want to use the generated CoT reasoning, extract it
                     if use_cot:
                         # Extract reasoning from generated text
-                        # Try both <think> and <think> tags (in case of different formats)
                         reasoning_match = None
-                        import re
-                        # Try <think> first (standard format)
+                        # Try <think> tag first
                         if "<think>" in gen_text:
                             reasoning_pattern = r"<think>(.*?)</think>"
                             reasoning_match = re.search(reasoning_pattern, gen_text, re.DOTALL)
-                        # Try <think> as fallback
+                        # Try <think> as fallback (in case model uses different format)
                         elif "<think>" in gen_text:
                             reasoning_pattern = r"<think>(.*?)</think>"
                             reasoning_match = re.search(reasoning_pattern, gen_text, re.DOTALL)
@@ -297,9 +395,7 @@ def inference_and_filter(
                             reasoning = reasoning_match.group(1).strip()
                             sample["reasoning"] = reasoning
                         else:
-                            # If no reasoning found, we'll use the full generated text (excluding answer)
-                            # or generate it during training data preparation
-                            # Remove answer part to get reasoning
+                            # If no reasoning found, use the full generated text (excluding answer)
                             answer_part = f"<answer>{predicted_answer}</answer>" if predicted_answer else ""
                             reasoning_candidate = gen_text.replace(answer_part, "").strip()
                             sample["reasoning"] = reasoning_candidate if reasoning_candidate else None
@@ -311,6 +407,8 @@ def inference_and_filter(
             
         except Exception as e:
             logger.error(f"Error at batch {batch_idx}: {e}")
+            import traceback
+            traceback.print_exc()
             raise
     
     # Summary
@@ -339,27 +437,29 @@ def inference_and_filter(
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Rejection Sampling Inference")
+    parser = argparse.ArgumentParser(description="Rejection Sampling Inference for T2V")
     parser.add_argument("--model_path", type=str, required=True, help="Path to trained GRM model")
-    parser.add_argument("--data_path", type=str, required=True, help="Dataset path in format 'source:path'")
+    parser.add_argument("--data_path", type=str, required=True, help="Dataset path(s) in format 'source:path' (comma-separated for multiple)")
     parser.add_argument("--output_path", type=str, required=True, help="Path to save filtered samples")
     parser.add_argument("--batch_size", type=int, default=32, help="Batch size for inference")
     parser.add_argument("--max_new_tokens", type=int, default=2048, help="Maximum tokens to generate")
     parser.add_argument("--use_cot", action="store_true", default=True, help="Use CoT instruction for reasoning")
-    parser.add_argument("--task_instruction", type=str, default=TASK_INSTRUCTION_COT, help="Task instruction template")
+    parser.add_argument("--task_instruction", type=str, default=TASK_INSTRUCTION_COT_T2V, help="Task instruction template")
     
     # vLLM arguments
     parser.add_argument("--tensor_parallel_size", type=int, default=1, help="Number of GPUs for tensor parallelism")
     parser.add_argument("--gpu_memory_utilization", type=float, default=0.9, help="GPU memory utilization ratio")
+    parser.add_argument("--video_fps", type=float, default=2.0, help="FPS for video processing")
     
     args = parser.parse_args()
     
     # Parse data path
-    data_paths = [args.data_path] if isinstance(args.data_path, str) else args.data_path.split(",")
+    data_paths = args.data_path.split(",") if isinstance(args.data_path, str) else args.data_path
     
     config = {
         "task_instruction": args.task_instruction,
-        "name": "rejection_sampling_inference",
+        "name": "rejection_sampling_inference_t2v",
+        "video_fps": args.video_fps,
     }
     
     inference_and_filter(
@@ -372,5 +472,6 @@ if __name__ == "__main__":
         use_cot=args.use_cot,
         tensor_parallel_size=args.tensor_parallel_size,
         gpu_memory_utilization=args.gpu_memory_utilization,
+        video_fps=args.video_fps,
     )
 

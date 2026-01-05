@@ -37,7 +37,7 @@ from lightrft.strategy.utils.parallel_utils import (
     set_sequence_parallel_group,
 )
 from lightrft.strategy.utils.statistic import GenLenAnalyser
-from .sglang_utils import get_sglang_engine_for_rollout
+# from .sglang_utils import get_sglang_engine_for_rollout
 from .vllm_utils import get_vllm_engine_for_rollout
 from lightrft.strategy.config import StrategyConfig
 

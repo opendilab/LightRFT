@@ -371,3 +371,19 @@ class OmniRewardBenchT2IGRMHandler(OmniRewardBenchT2IHandler):
             "model2": item['model2'],
         }
         return messages, other
+
+
+# Aliases for RFTDatasetVL compatibility
+OmniRewardBenchT2IPairHandler = OmniRewardBenchT2IHandler
+OmniRewardBenchT2VPairHandler = OmniRewardBenchT2VHandler
+
+
+# Placeholder for VideoGenRewardBenchPairHandler
+# TODO: Implement this handler when VideoGenRewardBench dataset is available
+class VideoGenRewardBenchPairHandler(OmniRewardBenchT2VHandler):
+    """
+    Placeholder handler for VideoGenRewardBench dataset.
+    Currently uses OmniRewardBenchT2VHandler as a fallback.
+    TODO: Implement proper handler when dataset is available.
+    """
+    pass
