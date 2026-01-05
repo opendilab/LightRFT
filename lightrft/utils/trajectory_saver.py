@@ -245,9 +245,9 @@ class TrajectorySaver:
                     elif key == 'reward_metrics':
                         metrics = {}
                         for metric_name, metric_tensor in value.items():
-                            if isinstance(metric_tensor,
-                                          torch.Tensor) and len(metric_tensor.shape
-                                                                ) > 0 and len(metric_tensor) == batch_size:
+                            if isinstance(metric_tensor, torch.Tensor) and len(
+                                metric_tensor.shape
+                            ) > 0 and len(metric_tensor) == batch_size:
                                 metrics[metric_name] = self._tensor_to_list(metric_tensor[i])
                             else:  # scalar metric, applies to all
                                 metrics[metric_name] = self._tensor_to_list(metric_tensor) if isinstance(

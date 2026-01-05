@@ -203,9 +203,7 @@ class StrategyBase(ABC):
                 raise ValueError(f"Unsupported backend: {self.config.engine_type}")
 
         self.world_size = dist.get_world_size()
-        self.accumulated_gradient = (
-            self.train_batch_size // self.micro_train_batch_size // self.world_size
-        )
+        self.accumulated_gradient = (self.train_batch_size // self.micro_train_batch_size // self.world_size)
 
         if self.train_batch_size % (self.micro_train_batch_size * self.world_size) != 0:
             raise ValueError(
