@@ -247,6 +247,8 @@ class GRMDataset(Dataset):
         input_masks = zero_pad_sequences(input_masks_list, side=padding_side)
         if labels_list:
             labels_list = zero_pad_sequences(labels_list, side=padding_side, value=-100)
+        else:
+            labels_list = None
 
         return (
             # Text inputs
@@ -259,7 +261,7 @@ class GRMDataset(Dataset):
             torch.cat(input_video_pixels, dim=0) if input_video_pixels else None,
             torch.cat(input_video_grid, dim=0) if input_video_grid else None,
             # Labels
-            labels_list if labels_list else None,
+            labels_list,
             # Extras
             extras_list
         )

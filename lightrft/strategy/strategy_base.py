@@ -627,7 +627,8 @@ class StrategyBase(ABC):
                 is_rlhf=True,
             )
         else:
-            return ((reward_model, reward_model_optim, reward_model_scheduler), )
+            # For FSDP: return wrapped model and optimizers
+            return reward_model, reward_model_optim, reward_model_scheduler
 
     @classmethod
     def report_memory(cls, prefix=""):

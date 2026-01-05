@@ -1,4 +1,4 @@
-from typing import Optional, Union
+from typing import Optional, Union, Tuple
 
 import torch
 import torch.nn as nn
@@ -166,6 +166,74 @@ class GenerativeRewardModelVL(nn.Module):
             return output
         else:
             return output.logits
+
+    @torch.no_grad()
+    def generate(
+        self,
+        input_ids: torch.Tensor,
+        attention_mask: Optional[torch.Tensor] = None,
+        pixel_values: torch.Tensor = None,
+        image_grid_thw: torch.Tensor = None,
+        pixel_values_videos: torch.Tensor = None,
+        video_grid_thw: torch.Tensor = None,
+        max_new_tokens: Optional[int] = None,
+        do_sample: bool = True,
+        temperature: float = 1.0,
+        top_k: Optional[int] = None,
+        top_p: Optional[float] = None,
+        num_beams: int = 1,
+        **kwargs
+    ) -> Union[ModelOutput, torch.LongTensor]:
+        """
+        Generate text sequences based on input text and visual information.
+
+        :param input_ids: Input token IDs representing the text prompt
+        :type input_ids: torch.Tensor
+        :param attention_mask: Attention mask for the sequences
+        :type attention_mask: Optional[torch.Tensor]
+        :param pixel_values: Preprocessed pixel values of input images
+        :type pixel_values: torch.Tensor
+        :param image_grid_thw: Image grid dimensions (time, height, width)
+        :type image_grid_thw: torch.Tensor
+        :param pixel_values_videos: Preprocessed pixel values of input videos
+        :type pixel_values_videos: torch.Tensor
+        :param video_grid_thw: Video grid dimensions (time, height, width)
+        :type video_grid_thw: torch.Tensor
+        :param max_new_tokens: Maximum number of new tokens to generate
+        :type max_new_tokens: Optional[int]
+        :param do_sample: Whether to use sampling for generation
+        :type do_sample: bool
+        :param temperature: The value used to module the next token probabilities
+        :type temperature: float
+        :param top_k: The number of highest probability vocabulary tokens to keep for top-k-filtering
+        :type top_k: Optional[int]
+        :param top_p: If set to float < 1, only the smallest set of most probable tokens with probabilities
+            that add up to top_p or higher are kept for generation
+        :type top_p: Optional[float]
+        :param num_beams: Number of beams for beam search
+        :type num_beams: int
+        :param kwargs: Additional generation parameters
+        :type kwargs: dict
+
+        :return: Generated sequences
+        :rtype: Union[ModelOutput, torch.LongTensor]
+        """
+        return self.model.generate(
+            input_ids=input_ids,
+            attention_mask=attention_mask,
+            pixel_values=pixel_values,
+            image_grid_thw=image_grid_thw,
+            pixel_values_videos=pixel_values_videos,
+            video_grid_thw=video_grid_thw,
+            max_new_tokens=max_new_tokens,
+            do_sample=do_sample,
+            temperature=temperature,
+            top_k=top_k,
+            top_p=top_p,
+            num_beams=num_beams,
+            use_cache=True,
+            **kwargs
+        )
 
     def gradient_checkpointing_enable(self, gradient_checkpointing_kwargs={"use_reentrant": False}):
         """

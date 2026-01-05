@@ -1,9 +1,11 @@
 import os
 import sys
+from typing import Any, Dict, List, Optional
 
 from datasets import interleave_datasets, load_dataset, load_from_disk, Dataset, DatasetDict
 from transformers import AutoTokenizer, AutoProcessor
 import torch
+import torch.distributed as dist
 
 
 def get_tokenizer(pretrain, model, padding_side="left", strategy=None, use_fast=True):
@@ -376,3 +378,75 @@ def ensure_video_input_available():
         import transformers
         transformers.image_utils.VideoInput = VideoInput
         sys.modules["transformers.image_utils"].VideoInput = VideoInput
+
+
+def all_gather_and_flatten(data: Any, group: Optional[dist.ProcessGroup] = None) -> List[Any]:
+    """
+    Gather data from all processes and flatten the result into a single list.
+
+    :param data: The data to gather from the current process.
+    :type data: Any
+    :param group: The process group to work on. If None, the default process group is used.
+    :type group: ProcessGroup, optional
+
+    :returns: A flattened list containing data from all processes.
+    :rtype: List[Any]
+    """
+    if not dist.is_initialized():
+        return data if isinstance(data, list) else [data]
+
+    world_size = dist.get_world_size(group=group)
+    gathered_data = [None] * world_size
+    dist.all_gather_object(gathered_data, data, group=group)
+
+    flattened_data = []
+    for item in gathered_data:
+        if isinstance(item, list):
+            flattened_data.extend(item)
+        else:
+            flattened_data.append(item)
+    return flattened_data
+
+
+def all_reduce_dict(metrics_dict: Dict[str, float],
+                    op: str = "sum",
+                    group: Optional[dist.ProcessGroup] = None) -> Dict[str, float]:
+    """
+    Perform all-reduce operation on a dictionary of metrics.
+    This function converts the dictionary values to a single tensor for efficient reduction.
+
+    :param metrics_dict: Dictionary of metrics to be reduced.
+    :type metrics_dict: Dict[str, float]
+    :param op: Reduction operation ('sum', 'max', 'min', 'mean').
+    :type op: str
+    :param group: The process group to work on. If None, the default process group is used.
+    :type group: ProcessGroup, optional
+
+    :returns: Reduced dictionary of metrics.
+    :rtype: Dict[str, float]
+    """
+    if not dist.is_initialized():
+        return metrics_dict
+
+    keys = sorted(metrics_dict.keys())
+    values = [metrics_dict[k] for k in keys]
+
+    # Use the current device if available, otherwise CPU
+    device = torch.cuda.current_device() if torch.cuda.is_available() else torch.device("cpu")
+    tensor = torch.tensor(values, device=device, dtype=torch.float64)
+
+    dist_op_map = {
+        "sum": dist.ReduceOp.SUM,
+        "max": dist.ReduceOp.MAX,
+        "min": dist.ReduceOp.MIN,
+        "mean": dist.ReduceOp.SUM,  # Mean is handled by sum then divide
+    }
+    dist_op = dist_op_map[op.lower()]
+
+    dist.all_reduce(tensor, op=dist_op, group=group)
+
+    if op.lower() == "mean":
+        tensor /= dist.get_world_size(group=group)
+
+    reduced_values = tensor.tolist()
+    return {k: v for k, v in zip(keys, reduced_values)}

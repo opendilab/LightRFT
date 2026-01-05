@@ -213,6 +213,7 @@ class HPDv3GRMHandler(HPDv3Handler):
 
         other = {
             "preference": preference,
+            "response": response,
             "source": item["source"],
             "task_type": self.task_type,
             "prompt": prompt_text,
