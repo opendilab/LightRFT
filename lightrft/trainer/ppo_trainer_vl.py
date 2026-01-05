@@ -665,7 +665,6 @@ class PPOTrainerVL(ABC):
 
             pixel_values = experience.pixel_values
             image_grid_thws = experience.image_grid_thws
-            image_flags = experience.image_flags
 
             old_action_log_probs = torch.cat(experience.action_log_probs, dim=0).unsqueeze(0)
             advantages = torch.cat(experience.advantages, dim=0).unsqueeze(0)
@@ -680,7 +679,6 @@ class PPOTrainerVL(ABC):
 
             pixel_values = experience.pixel_values
             image_grid_thws = experience.image_grid_thws
-            image_flags = experience.image_flags
 
             old_action_log_probs = experience.action_log_probs
             advantages = experience.advantages
@@ -698,7 +696,6 @@ class PPOTrainerVL(ABC):
             advantages = torch.clamp(advantages, min=-10.0, max=10.0)
 
         # Actor loss
-        # TODO: Adaptation required to support InternVL model
         action_log_probs, output = self.actor(
             sequences,
             num_actions,
@@ -707,7 +704,6 @@ class PPOTrainerVL(ABC):
             image_grid_thw=image_grid_thws,
             return_output=True,
             packed_seq_lens=packed_seq_lens,
-            image_flags=image_flags,
         )
 
         # NOTE: Explicit masking in log-space is incorrect - removed
@@ -769,7 +765,7 @@ class PPOTrainerVL(ABC):
 
         self.strategy.backward(loss, self.actor, self.actor_optim)
 
-        # TODO: Support InternVL for PTX loss
+        # PTX loss for supervised fine-tuning
         if self.pretrain_dataloader is not None:
             data = next(self.pretrain_dataloader)
             inputs = data[1].squeeze(1).to(torch.cuda.current_device())
@@ -904,8 +900,6 @@ class PPOTrainerVL(ABC):
         # Layer 3: Apply defensive device placement to all multimodal tensors
         pixel_values = ensure_device_and_contiguous(experience.pixel_values, "pixel_values")
         image_grid_thws = ensure_device_and_contiguous(experience.image_grid_thws, "image_grid_thws")
-        pixel_values_intern = ensure_device_and_contiguous(experience.pixel_values_intern, "pixel_values_intern")
-        image_flags = ensure_device_and_contiguous(experience.image_flags, "image_flags")
 
         # TODO: This is a bad indicator to say that data is packed...
         if isinstance(experience.sequences, list):
@@ -937,8 +931,6 @@ class PPOTrainerVL(ABC):
             image_grid_thw=image_grid_thws,
             return_output=True,
             packed_seq_lens=packed_seq_lens,
-            pixel_values_intern=pixel_values_intern,
-            image_flags=image_flags,
         )
         # Loss function
         critic_loss = self.critic_loss_fn(
