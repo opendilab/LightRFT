@@ -1,12 +1,32 @@
 """
 Loss functions used across LightRFT models.
 
-This module implements:
+This module implements a comprehensive collection of loss functions for reinforcement learning
+from human feedback (RLHF) and related training paradigms:
 
-- GPTLMLoss:  Next-token prediction for generative reward model training.
+**Policy Optimization Losses:**
+- PolicyLoss: Multi-purpose policy loss supporting PPO, CPGD (via use_cpg_loss), DAPO-style
+  decoupled clipping, and high-entropy token filtering for efficient training.
+- ValueLoss: Value function loss for PPO with optional value clipping.
+
+**Reward Model Losses:**
+- GPTLMLoss: Next-token prediction loss for generative reward model training.
 - LogSigmoidLoss: Log-sigmoid pairwise loss for scalar reward model training.
 - LogExpLoss: Log-exp pairwise loss for scalar reward model training.
 - HPSLoss: Human Preference Score loss for scalar reward model training.
+- PairWiseLoss: Generic pairwise preference loss for reward models.
+- PRMLoss: Process Reward Model loss for token-level reward prediction.
+
+**Preference Learning Losses:**
+- DPOLoss: Direct Preference Optimization loss for aligning language models with preferences.
+- KTOLoss: Kahneman-Tversky Optimization loss for uneven sampling scenarios.
+- VanillaKTOLoss: Simplified KTO loss for even sampling scenarios.
+
+**Knowledge Distillation:**
+- KDLoss: Knowledge Distillation loss for transferring knowledge from teacher to student models.
+
+All loss functions are designed to work seamlessly with the LightRFT training framework,
+supporting distributed training, mixed precision, and various optimization strategies.
 """
 
 from typing import Optional, Tuple
@@ -64,7 +84,89 @@ class GPTLMLoss(nn.Module):
 
 class PolicyLoss(nn.Module):
     """
-    Policy Loss for PPO
+    Multi-purpose policy loss function supporting multiple reinforcement learning algorithms.
+
+    This class implements a unified policy loss that can be configured to support various
+    policy optimization algorithms including PPO, CPGD, and high-entropy token filtering
+    strategies. The loss function computes clipped policy gradients with optional masking
+    for efficient training.
+
+    **Supported Algorithms:**
+
+    - **PPO (Proximal Policy Optimization)**: Default mode using standard clipped surrogate
+      objective. The loss is computed as ``-min(ratio * advantages, clipped_ratio * advantages)``
+      where ``ratio = exp(log_probs - old_log_probs)`` and clipping is applied to prevent
+      large policy updates.
+
+    - **CPGD (Clipped Policy Gradient Descent)**: Enabled via ``use_cpg_loss=True``. Uses
+      asymmetric clipping bounds for positive and negative advantages, providing better
+      stability for constrained policy optimization. See: https://arxiv.org/abs/2505.12504
+
+    - **High-Entropy Token Filtering**: Enabled via ``high_entropy_token_ratio > 0`` or by
+      providing an ``entropy_mask``. This feature allows training only on high-entropy tokens
+      (forking tokens that determine reasoning directions), significantly improving training
+      efficiency. Based on: https://arxiv.org/abs/2506.01939
+
+    :param clip_eps: Clipping epsilon for PPO-style policy updates. Determines the maximum
+        allowed ratio between new and old policy probabilities. Typical values range from
+        0.1 to 0.3. Default: 0.2
+    :type clip_eps: float
+    :param use_dapo: Flag for DAPO (Decoupled Clip and Dynamic sAmpling Policy Optimization).
+        Currently reserved for future implementation. Default: False
+    :type use_dapo: bool
+    :param use_cpg_loss: If True, uses CPGD-style clipped policy gradient loss with
+        asymmetric clipping bounds. When False, uses standard PPO clipping. Default: False
+    :type use_cpg_loss: bool
+    :param high_entropy_token_ratio: Ratio of high-entropy tokens to keep for training
+        (e.g., 0.2 means top 20% highest entropy tokens). When > 0, enables high-entropy
+        token filtering. Set to 0.0 to disable. Default: 0.0
+    :type high_entropy_token_ratio: float
+    :param entropy_mask: Pre-computed binary mask for high-entropy tokens. Shape should be
+        ``(batch_size, num_actions)``. If provided, this mask will be used instead of
+        computing one from ``high_entropy_token_ratio``. Default: None
+    :type entropy_mask: Optional[torch.Tensor]
+
+    **Loss Computation:**
+
+    The loss is computed as follows:
+
+    1. **Mask Application**: Combines ``action_mask`` (valid tokens) with ``entropy_mask``
+       (high-entropy tokens) to create a final mask for loss computation.
+
+    2. **PPO Mode** (default, ``use_cpg_loss=False``):
+       - Computes policy ratio: ``ratio = exp(log_probs - old_log_probs)``
+       - Clips ratio: ``clipped_ratio = clamp(ratio, 1 - clip_eps, 1 + clip_eps)``
+       - Loss: ``-min(ratio * advantages, clipped_ratio * advantages)``
+
+    3. **CPGD Mode** (``use_cpg_loss=True``):
+       - Uses asymmetric clipping: upper bound ``log(1 + clip_eps)`` for positive advantages,
+         lower bound ``log(1 - clip_eps)`` for negative advantages
+       - Loss: ``-clipped_log_probs * advantages``
+
+    4. **Masking**: The computed loss is masked using ``final_mask`` and averaged only over
+       valid, high-entropy tokens (if enabled).
+
+    **Example Usage:**
+
+    .. code-block:: python
+
+        # Standard PPO loss
+        policy_loss = PolicyLoss(clip_eps=0.2)
+        loss = policy_loss(log_probs, old_log_probs, advantages, action_mask)
+
+        # CPGD loss
+        policy_loss = PolicyLoss(clip_eps=0.2, use_cpg_loss=True)
+        loss = policy_loss(log_probs, old_log_probs, advantages, action_mask)
+
+        # PPO with high-entropy token filtering (top 20%)
+        policy_loss = PolicyLoss(clip_eps=0.2, high_entropy_token_ratio=0.2)
+        loss = policy_loss(log_probs, old_log_probs, advantages, action_mask, entropy_mask)
+
+    **References:**
+
+    - PPO: https://arxiv.org/abs/1707.06347
+    - CPGD: https://arxiv.org/abs/2505.12504
+    - High-Entropy Token Filtering: https://arxiv.org/abs/2506.01939
     """
     def __init__(
         self, 
@@ -89,6 +191,45 @@ class PolicyLoss(nn.Module):
         action_mask: Optional[torch.Tensor] = None,
         entropy_mask: Optional[torch.Tensor] = None,
     ) -> torch.Tensor:
+        """
+        Compute policy loss with optional masking and algorithm-specific clipping.
+
+        This method computes the policy loss based on the configured algorithm (PPO or CPGD)
+        and applies masking for valid tokens and optionally high-entropy tokens.
+
+        :param log_probs: Log probabilities of actions under the current policy.
+            Shape: ``(batch_size, num_actions)``
+        :type log_probs: torch.Tensor
+        :param old_log_probs: Log probabilities of actions under the old/reference policy.
+            Shape: ``(batch_size, num_actions)``
+        :type old_log_probs: torch.Tensor
+        :param advantages: Advantage estimates for each action. Positive values indicate
+            better-than-average actions. Shape: ``(batch_size, num_actions)``
+        :type advantages: torch.Tensor
+        :param action_mask: Binary mask indicating valid action tokens (1 for valid, 0 for padding).
+            If None, all tokens are considered valid. Shape: ``(batch_size, num_actions)``
+        :type action_mask: Optional[torch.Tensor]
+        :param entropy_mask: Binary mask for high-entropy tokens to keep for training.
+            If provided, overrides the instance-level ``entropy_mask``. Shape: ``(batch_size, num_actions)``
+        :type entropy_mask: Optional[torch.Tensor]
+
+        :returns: Scalar policy loss averaged over valid (and optionally high-entropy) tokens.
+        :rtype: torch.Tensor
+
+        **Masking Strategy:**
+
+        The final mask is computed as:
+        - If ``entropy_mask`` is provided: ``final_mask = action_mask * entropy_mask``
+        - Else if ``self.entropy_mask`` exists: ``final_mask = action_mask * self.entropy_mask``
+        - Else: ``final_mask = action_mask``
+
+        Only tokens where ``final_mask == 1`` contribute to the loss computation.
+
+        **Algorithm Details:**
+
+        - **PPO**: Uses symmetric clipping ``[1 - clip_eps, 1 + clip_eps]`` on the policy ratio.
+        - **CPGD**: Uses asymmetric clipping with log-space bounds for better stability.
+        """
         # Apply entropy mask if provided (for high-entropy token filtering)
         # action_mask shape: (batch_size, num_actions) - binary mask indicating valid tokens
         # entropy_mask shape: (batch_size, num_actions) - binary mask for high-entropy tokens
