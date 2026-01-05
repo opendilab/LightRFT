@@ -200,6 +200,7 @@ class HPDv3GRMHandler(HPDv3Handler):
 
         other = {
             "preference": preference,
+            "response": response,
             "source": item["source"],
             "prompt": prompt_text,
             "confidence": item.get("confidence"),

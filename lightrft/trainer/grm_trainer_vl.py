@@ -299,6 +299,7 @@ class GRMTrainerVL:
                     video_grid_thws = video_grid_thws.to(device)
 
                 # Generation
+                # Unwrap the model if it is wrapped in a DistributedDataParallel or similar wrapper
                 unwrapped_model = self.model.module if hasattr(self.model, "module") else self.model
                 generated_ids = unwrapped_model.generate(
                     input_ids=ids,
