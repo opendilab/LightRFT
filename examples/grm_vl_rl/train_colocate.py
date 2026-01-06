@@ -38,11 +38,11 @@ import itertools
 from datetime import datetime
 
 from lightrft.strategy import get_strategy
-from lightrft.datasets import RFTDatasetVL, SFTDatasetVL
+from lightrft.datasets import RFTDatasetVL
 from lightrft.models.actor_language import ActorLanguage
 from lightrft.models.actor_vl import ActorVL
 from lightrft.trainer import SPMDPPOTrainerVL
-from lightrft.utils import add_arguments, ensure_video_input_available, blending_datasets, get_tokenizer_processor_vl
+from lightrft.utils import add_arguments, ensure_video_input_available, get_tokenizer_processor_vl
 ensure_video_input_available()
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))

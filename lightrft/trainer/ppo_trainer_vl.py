@@ -679,7 +679,6 @@ class PPOTrainerVL(ABC):
             image_grid_thws = experience.image_grid_thws
             pixel_values_videos = getattr(experience, "pixel_values_videos", None)
             video_grid_thws = getattr(experience, "video_grid_thws", None)
-            image_flags = experience.image_flags
 
             old_action_log_probs = torch.cat(experience.action_log_probs, dim=0).unsqueeze(0)
             advantages = torch.cat(experience.advantages, dim=0).unsqueeze(0)
@@ -696,7 +695,6 @@ class PPOTrainerVL(ABC):
             image_grid_thws = experience.image_grid_thws
             pixel_values_videos = getattr(experience, "pixel_values_videos", None)
             video_grid_thws = getattr(experience, "video_grid_thws", None)
-            image_flags = experience.image_flags
 
             old_action_log_probs = experience.action_log_probs
             advantages = experience.advantages
@@ -714,7 +712,6 @@ class PPOTrainerVL(ABC):
             advantages = torch.clamp(advantages, min=-10.0, max=10.0)
 
         # Actor loss
-        # TODO: Adaptation required to support InternVL model
         action_log_probs, output = self.actor(
             sequences,
             num_actions,
@@ -725,7 +722,6 @@ class PPOTrainerVL(ABC):
             video_grid_thw=video_grid_thws,
             return_output=True,
             packed_seq_lens=packed_seq_lens,
-            image_flags=image_flags,
         )
 
         # NOTE: Explicit masking in log-space is incorrect - removed
@@ -787,7 +783,6 @@ class PPOTrainerVL(ABC):
 
         self.strategy.backward(loss, self.actor, self.actor_optim)
 
-        # TODO: Support InternVL for PTX loss
         if self.pretrain_dataloader is not None:
             data = next(self.pretrain_dataloader)
             inputs = data[1].squeeze(1).to(torch.cuda.current_device())
@@ -855,7 +850,7 @@ class PPOTrainerVL(ABC):
                 for sub_k, sub_v in v.items():
                     log_key = f"{k}/{sub_k}"
                     if isinstance(sub_v, torch.Tensor):
-                        status[log_key] = sub_v.mean().item()
+                        status[log_key] = sub_v.float().mean().item()
                     elif isinstance(sub_v, list) and sub_v and isinstance(sub_v[0], (int, float)):
                         status[log_key] = sum(sub_v) / len(sub_v)
                     elif isinstance(sub_v, (int, float)):
@@ -865,7 +860,7 @@ class PPOTrainerVL(ABC):
             # General handling for other keys
             if isinstance(v, torch.Tensor):
                 # If it's a tensor, it's safe to call .mean()
-                status[k] = v.mean().item()
+                status[k] = v.float().mean().item()
             elif isinstance(v, list):
                 # If it's a list, only compute mean if it contains numbers
                 if v and isinstance(v[0], (int, float)):
@@ -924,8 +919,6 @@ class PPOTrainerVL(ABC):
         image_grid_thws = ensure_device_and_contiguous(experience.image_grid_thws, "image_grid_thws")
         pixel_values_videos = ensure_device_and_contiguous(getattr(experience, "pixel_values_videos", None), "pixel_values_videos")
         video_grid_thws = ensure_device_and_contiguous(getattr(experience, "video_grid_thws", None), "video_grid_thws")
-        pixel_values_intern = ensure_device_and_contiguous(experience.pixel_values_intern, "pixel_values_intern")
-        image_flags = ensure_device_and_contiguous(experience.image_flags, "image_flags")
 
         # TODO: This is a bad indicator to say that data is packed...
         if isinstance(experience.sequences, list):
@@ -959,8 +952,6 @@ class PPOTrainerVL(ABC):
             video_grid_thw=video_grid_thws,
             return_output=True,
             packed_seq_lens=packed_seq_lens,
-            pixel_values_intern=pixel_values_intern,
-            image_flags=image_flags,
         )
         # Loss function
         critic_loss = self.critic_loss_fn(

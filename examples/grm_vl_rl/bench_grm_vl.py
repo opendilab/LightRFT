@@ -20,7 +20,7 @@ and any other factors you deem relevant. For each evaluation dimension,
 provide a score between 1-10 for both images (e.g., Image 1: 8/10, Image 2: 6/10) and provide a concise rationale for the score. 
 Calculate the total score for each image by summing all dimension scores. 
 Use a chain-of-thought process to detail your reasoning steps, and enclose all your detailed reasoning within tags. 
-Then, in the <answer> tag, output exactly one of the following strings: 'Image 1 is better' or 'Image 2 is better' or 'Both are equal' based on the total scores. 
+Then, in the <answer> tag, output exactly one of the following strings: 'Image 1 is better' or 'Image 2 is better' or 'Both images are equally good' based on the total scores. 
 No additional text is allowed in the <answer> section.
 Example output format:
 <think>
@@ -44,7 +44,7 @@ Evaluate them on various dimensions such as semantic consistency (how closely th
 For each evaluation dimension, provide a score between 1-10 for both videos (e.g., Video 1: 8/10, Video 2: 6/10) and provide a concise rationale for the score. 
 Calculate the total score for each video by summing all dimension scores. 
 Use a chain-of-thought process to detail your reasoning steps, and enclose all your detailed reasoning within <think> and </think> tags. Then, in the <answer> tag, output exactly one of the following strings:
-'Video 1 is better' or 'Video 2 is better' or 'Both are equal' based on the total scores. No additional text is allowed in the <answer> section.
+'Video 1 is better' or 'Video 2 is better' or 'Both videos are equally good' based on the total scores. No additional text is allowed in the <answer> section.
 Example output format:
 <think>
 1. Semantic consistency: Video 1 (9/10) - ...; Video 2 (7/10) - ...
@@ -127,14 +127,18 @@ class OmniRewardBenchEvaluator(BaseEvaluator):
             
             better_1 = f"{self.media_type} 1 is better"
             better_2 = f"{self.media_type} 2 is better"
-            equal = "Both are equal"
+            equal = f"Both {self.media_type.lower()}s are equally good"
 
             # Mapping logic: A -> 1, B -> 2, C -> Equal
+            is_correct = False
             if gt_preference == "A" and predicted_answer == better_1:
-                self.correct += 1
+                is_correct = True
             elif gt_preference == "B" and predicted_answer == better_2:
-                self.correct += 1
+                is_correct = True
             elif gt_preference == "C" and predicted_answer == equal:
+                is_correct = True
+
+            if is_correct:
                 self.correct += 1
             elif predicted_answer is None:
                 self.parse_failures += 1
@@ -149,6 +153,7 @@ class OmniRewardBenchEvaluator(BaseEvaluator):
                 "criteria": other['criteria'],
                 "ground_truth": gt_preference,
                 "predicted_answer": predicted_answer,
+                "is_correct": is_correct,
                 "generated_text": gen_text,
             })
 
@@ -161,9 +166,13 @@ class HPDv3GRMEvaluator(BaseEvaluator):
             gt_preference = other['preference'] # A, B, or C
             
             # Mapping logic: A -> Image 1, B -> Image 2
+            is_correct = False
             if gt_preference == "A" and predicted_answer == "Image 1 is better":
-                self.correct += 1
+                is_correct = True
             elif gt_preference == "B" and predicted_answer == "Image 2 is better":
+                is_correct = True
+            
+            if is_correct:
                 self.correct += 1
             elif predicted_answer is None:
                 self.parse_failures += 1
@@ -177,6 +186,7 @@ class HPDv3GRMEvaluator(BaseEvaluator):
                 "ground_truth": gt_preference,
                 "predicted_answer": predicted_answer,
                 "generated_text": gen_text,
+                "is_correct": is_correct,
                 "model_chosen": other['model_chosen'],
                 "model_rejected": other['model_rejected'],
                 "preferred_path": other['preferred_path'],
@@ -266,6 +276,8 @@ def test_grm_vllm(
             f.write(f"Dataset paths: {data_path}\n")
             f.write(f"Model path: {model_path}\n")
             f.write(f"Evaluator: {evaluator.__class__.__name__}\n")
+            if config and "task_instruction" in config:
+                f.write(f"Task Instruction:\n{config['task_instruction']}\n")
             f.write(f"Max new tokens: {sampling_params.max_tokens}\n")
             f.write(f"Accuracy: {accuracy*100:.2f}% ({evaluator.correct}/{evaluator.total})\n")
             f.write(f"Parse Failure Rate: {failure_rate*100:.2f}% ({evaluator.parse_failures}/{evaluator.total})\n")

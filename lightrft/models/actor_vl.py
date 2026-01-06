@@ -246,8 +246,6 @@ class ActorVL(nn.Module):
         return_output=False,
         ring_attn_group: Optional[dist.ProcessGroup] = None,
         packed_seq_lens: Optional[list[int]] = None,
-        pixel_values_intern: torch.Tensor = None,
-        image_flags: torch.Tensor = None,
     ) -> torch.Tensor:
         """
         Forward pass to compute action log probabilities for reinforcement learning.
@@ -276,10 +274,6 @@ class ActorVL(nn.Module):
         :type ring_attn_group: Optional[dist.ProcessGroup]
         :param packed_seq_lens: Sequence lengths for packed samples
         :type packed_seq_lens: Optional[list[int]]
-        :param pixel_values_intern: Pixel values for InternVL models
-        :type pixel_values_intern: torch.Tensor
-        :param image_flags: Flags indicating image positions for InternVL models
-        :type image_flags: torch.Tensor
 
         :return: Action log probabilities or tuple of (action_log_probs, output) if return_output=True
         :rtype: torch.Tensor
@@ -312,24 +306,16 @@ class ActorVL(nn.Module):
             position_ids = reset_position_ids(attention_mask)
             # explicitly ignore attention_mask for packing_samples
             attention_mask = None
-        if pixel_values_intern is not None:
-            output = self.model(
-                pixel_values_intern,
-                sequences,
-                attention_mask=attention_mask,
-                position_ids=position_ids,
-                image_flags=image_flags,
-            )
-        else:
-            output = self.model(
-                sequences,
-                attention_mask=attention_mask,
-                position_ids=position_ids,
-                pixel_values=pixel_values,
-                image_grid_thw=image_grid_thw,
-                pixel_values_videos=pixel_values_videos,
-                video_grid_thw=video_grid_thw,
-            )
+        
+        output = self.model(
+            sequences,
+            attention_mask=attention_mask,
+            position_ids=position_ids,
+            pixel_values=pixel_values,
+            image_grid_thw=image_grid_thw,
+            pixel_values_videos=pixel_values_videos,
+            video_grid_thw=video_grid_thw,
+        )
 
         if num_actions is None:  # defult
             assert return_output
