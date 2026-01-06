@@ -36,6 +36,7 @@ class BufferItem:
     advantages: (1)
     attention_mask: (S)
     action_mask: (A)
+    action_entropy: (A) - Entropy values for high-entropy token filtering
 
     "A" is the number of actions.
     """
@@ -49,6 +50,7 @@ class BufferItem:
     attention_mask: Optional[torch.LongTensor]
     action_mask: Optional[torch.BoolTensor]
     info: Optional[dict]
+    action_entropy: Optional[torch.Tensor] = None  # Entropy for high-entropy token filtering
 
 
 @dataclass
@@ -67,6 +69,7 @@ class BufferItemVL:
     advantages: (1)
     attention_mask: (S)
     action_mask: (A)
+    action_entropy: (A) - Entropy values for high-entropy token filtering
 
     "A" is the number of actions.
     """
@@ -87,6 +90,7 @@ class BufferItemVL:
     attention_mask: Optional[torch.LongTensor] = None
     action_mask: Optional[torch.BoolTensor] = None
     info: Optional[dict] = None
+    action_entropy: Optional[torch.Tensor] = None  # Entropy for high-entropy token filtering
 
 
 def is_vl_experience(experience: Union[Experience, ExperienceVL]) -> bool:
@@ -191,6 +195,18 @@ def _split_experience_batch(experience: Experience) -> List:
         assert batch_size == len(vals)
         for i, v in enumerate(vals):
             batch_kwargs[i][key] = v
+
+    # Handle action_entropy separately
+    if hasattr(experience, 'action_entropy') and experience.action_entropy is not None:
+        entropy_vals = experience.action_entropy
+        if isinstance(entropy_vals, torch.Tensor):
+            entropy_vals = torch.unbind(entropy_vals)
+        assert batch_size == len(entropy_vals)
+        for i, v in enumerate(entropy_vals):
+            batch_kwargs[i]["action_entropy"] = v
+    else:
+        for i in range(batch_size):
+            batch_kwargs[i]["action_entropy"] = None
 
     for i in range(batch_size):
         batch_kwargs[i]["info"] = {}
@@ -308,6 +324,18 @@ def _split_experience_batch_vl(experience: ExperienceVL) -> List:
     if experience.raw_images is not None:
         for i in range(len(batch_kwargs)):
             batch_kwargs[i]["raw_images"] = experience.raw_images[i]
+
+    # Handle action_entropy separately
+    if hasattr(experience, 'action_entropy') and experience.action_entropy is not None:
+        entropy_vals = experience.action_entropy
+        if isinstance(entropy_vals, torch.Tensor):
+            entropy_vals = torch.unbind(entropy_vals)
+        assert batch_size == len(entropy_vals)
+        for i, v in enumerate(entropy_vals):
+            batch_kwargs[i]["action_entropy"] = v
+    else:
+        for i in range(batch_size):
+            batch_kwargs[i]["action_entropy"] = None
 
     for i in range(batch_size):
         batch_kwargs[i]["info"] = {}
@@ -469,6 +497,27 @@ def _make_experience_batch(items: List, packing_samples: bool = False) -> Experi
             batch_data = vals if vals[0] is not None else None
         kwargs[key] = batch_data
 
+    # Handle action_entropy if it exists in any item
+    # action_entropy has shape (A,) per item, handle it like action_mask
+    if items and hasattr(items[0], 'action_entropy') and items[0].action_entropy is not None:
+        entropy_vals = [getattr(item, 'action_entropy', None) for item in items]
+        if all(v is not None for v in entropy_vals):
+            if not packing_samples:
+                # For padded batches, pad action_entropy to match action_mask
+                kwargs["action_entropy"] = zero_pad_sequences(entropy_vals, "left")
+            else:
+                # For packed batches, check if all have the same length
+                lengths = [len(v) for v in entropy_vals]
+                if len(set(lengths)) == 1:
+                    kwargs["action_entropy"] = torch.stack(entropy_vals, dim=0)
+                else:
+                    # If lengths differ, pad to max length
+                    kwargs["action_entropy"] = zero_pad_sequences(entropy_vals, "left")
+        else:
+            kwargs["action_entropy"] = None
+    else:
+        kwargs["action_entropy"] = None
+
     kwargs["info"] = {}
     if items and items[0].info:
         for key in items[0].info.keys():
@@ -542,6 +591,27 @@ def _make_experience_batch_vl(items: List, packing_samples: bool = False) -> Exp
         else:
             batch_data = vals if vals[0] is not None else None
         kwargs[key] = batch_data
+
+    # Handle action_entropy if it exists in any item
+    # action_entropy has shape (A,) per item, handle it like action_mask
+    if items and hasattr(items[0], 'action_entropy') and items[0].action_entropy is not None:
+        entropy_vals = [getattr(item, 'action_entropy', None) for item in items]
+        if all(v is not None for v in entropy_vals):
+            if not packing_samples:
+                # For padded batches, pad action_entropy to match action_mask
+                kwargs["action_entropy"] = zero_pad_sequences(entropy_vals, "left")
+            else:
+                # For packed batches, check if all have the same length
+                lengths = [len(v) for v in entropy_vals]
+                if len(set(lengths)) == 1:
+                    kwargs["action_entropy"] = torch.stack(entropy_vals, dim=0)
+                else:
+                    # If lengths differ, pad to max length
+                    kwargs["action_entropy"] = zero_pad_sequences(entropy_vals, "left")
+        else:
+            kwargs["action_entropy"] = None
+    else:
+        kwargs["action_entropy"] = None
 
     # Image data processing
     pixel_values_list = [

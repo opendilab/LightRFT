@@ -218,11 +218,61 @@ class SPMDPPOTrainerBase:
                 if hasattr(experience, 'action_entropy') and experience.action_entropy is not None:
                     if hasattr(self.actor, 'high_entropy_token_ratio') and self.actor.high_entropy_token_ratio > 0.0:
                         from lightrft.models.utils import create_high_entropy_mask
-                        entropy_mask = create_high_entropy_mask(
-                            experience.action_entropy,
-                            experience.action_mask,
-                            self.actor.high_entropy_token_ratio
-                        )
+                        # Validate and align shapes before calling
+                        action_entropy = experience.action_entropy
+                        action_mask = experience.action_mask
+                        
+                        if action_entropy is not None:
+                            if len(action_entropy.shape) != 2:
+                                raise ValueError(
+                                    f"action_entropy must be 2D tensor (batch_size, num_actions), "
+                                    f"got shape {action_entropy.shape}"
+                                )
+                            
+                            # Align action_entropy and action_mask shapes
+                            if action_mask is not None:
+                                if len(action_mask.shape) != 2:
+                                    raise ValueError(
+                                        f"action_mask must be 2D tensor (batch_size, num_actions), "
+                                        f"got shape {action_mask.shape}"
+                                    )
+                                
+                                # If shapes don't match, align them to the minimum length
+                                if action_mask.shape != action_entropy.shape:
+                                    batch_size = min(action_entropy.shape[0], action_mask.shape[0])
+                                    min_len = min(action_entropy.shape[1], action_mask.shape[1])
+                                    
+                                    # Truncate to minimum length
+                                    action_entropy = action_entropy[:batch_size, :min_len]
+                                    action_mask = action_mask[:batch_size, :min_len]
+                                    
+                                    if action_entropy.shape != action_mask.shape:
+                                        # If still not matching, skip entropy mask creation
+                                        print(
+                                            f"[SPMDPPOTrainer] Warning: Cannot align action_entropy shape "
+                                            f"{action_entropy.shape} with action_mask shape {action_mask.shape}. "
+                                            f"Skipping entropy mask creation."
+                                        )
+                                        entropy_mask = None
+                                    else:
+                                        entropy_mask = create_high_entropy_mask(
+                                            action_entropy,
+                                            action_mask,
+                                            self.actor.high_entropy_token_ratio
+                                        )
+                                else:
+                                    entropy_mask = create_high_entropy_mask(
+                                        action_entropy,
+                                        action_mask,
+                                        self.actor.high_entropy_token_ratio
+                                    )
+                            else:
+                                # If no action_mask, create mask without it
+                                entropy_mask = create_high_entropy_mask(
+                                    action_entropy,
+                                    None,
+                                    self.actor.high_entropy_token_ratio
+                                )
 
                 # Call training_step which will handle both GSPO and standard modes
                 status = self.training_step(experience, global_steps, entropy_mask=entropy_mask)

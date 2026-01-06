@@ -430,6 +430,7 @@ if __name__ == "__main__":
     parser.add_argument("--disable_ds_ckpt", action="store_true", default=False)
     parser.add_argument("--save_trajectories", action="store_true", default=False, help="Save experience trajectories to JSON for debugging")
     parser.add_argument("--num_trajectories_to_save", type=int, default=10, help="Number of trajectories to save per checkpoint")
+    parser.add_argument("--mark_high_entropy_tokens", action="store_true", default=False, help="Mark high-entropy tokens in saved trajectories with special markers (requires --save_trajectories). When enabled, uses default markers: <HIGH_ENTROPY> and </HIGH_ENTROPY>")
     parser.add_argument("--print_replay_buffer_stats", action="store_true", default=False, help="Print detailed replay buffer statistics during training")
     parser.add_argument("--logging_steps", type=int, default=1)
     parser.add_argument("--eval_steps", type=int, default=-1)
