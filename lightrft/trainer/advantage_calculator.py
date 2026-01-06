@@ -9,7 +9,6 @@ common interface, making it easy to add new methods and maintain existing ones.
 The module includes:
     - AdvantageCalculator: Abstract base class defining the standard interface
     - Concrete implementations for various advantage estimation methods
-    - CPGD (Clipped Policy Gradient Optimization) utility functions
     - Factory function for creating calculator instances
 
 Key Features:
@@ -29,95 +28,6 @@ import torch
 import warnings
 
 from .utils import RunningMoments, compute_clip_fraction
-
-
-# ============================================================================
-# CPGD Utility Functions
-# ============================================================================
-
-def _get_cpgd_advantages_returns(
-    reward: torch.Tensor,
-    action_mask: torch.Tensor,
-    weight_factor: str = "STD_weight",
-    epsilon: float = 1e-6,
-) -> Tuple[torch.Tensor, torch.Tensor]:
-    """
-    Aggregate token-level rewards into episode-level scores, normalise them
-    group-wise, and then broadcast the normalised scores back to the
-    token dimension to obtain both the advantages and the returns that are
-    required by the CPGD (Clipped Policy Gradient Optimization with Policy Drift)
-    algorithm.
-
-    :param reward: Tensor of shape (num_actions, seq_len) containing token-level rewards
-                   produced by the reward model. Each row corresponds to one sampled
-                   response (action trajectory).
-    :type reward: torch.Tensor
-    :param action_mask: Tensor of the same shape as `reward`. Elements belonging to the
-                       generated response tokens are 1; padding / prompt tokens are 0.
-                       The mask is used so that only response tokens contribute to the
-                       final advantages / returns.
-    :type action_mask: torch.Tensor
-    :param weight_factor: Determines how the per-sample scalar scores are normalised.
-                         Options:
-                         - "STD_weight": z-score normalisation
-                           score_i = (score_i − mean) / (std + ε)
-                         - "clip_filter_like_weight": a simplified version of the
-                           Clip-Filter weight used in early RLHF repos.
-                           score_i = (score_i − mean) * clamp(num_actions / nz, max=3)
-                         - any other value: mean-centering only
-                           score_i = score_i − mean
-    :type weight_factor: str
-    :param epsilon: Small constant added to the denominator to avoid division by zero.
-    :type epsilon: float
-    :return: Tuple of (advantages, returns). Both are normalised per-token values,
-             shape (num_actions, seq_len). Non-response tokens are always zero.
-    :rtype: Tuple[torch.Tensor, torch.Tensor]
-
-    Notes:
-        * Both `advantages` and `returns` are masked so that non-response tokens
-          are always zero.
-        * The function performs no gradient-tracking operations and is intended
-          to be called outside the optimisation graph.
-    """
-    # ------------------------------------------------------------------ #
-    # 1. Collapse token-level rewards to a single scalar per trajectory  #
-    # ------------------------------------------------------------------ #
-    # shape: (num_actions,)
-    scores = reward.sum(dim=-1)
-
-    # Mean and (biased) standard deviation across the batch
-    mean = scores.mean()
-    std = scores.std(unbiased=False)
-
-    # ------------------------------------------------------------------ #
-    # 2. Group-wise normalisation                                        #
-    # ------------------------------------------------------------------ #
-    if weight_factor == "STD_weight":
-        # Standard z-score normalisation
-        scores = (scores - mean) / (std + epsilon)
-
-    elif weight_factor == "clip_filter_like_weight":
-        # A rough approximation of the clip-filter weighting
-        # Count of (std > 0) is always ≥ 1, prevents division by zero
-        non_zero = (std > 0).sum().clamp(min=1)
-        # Scale by (batch_size / non_zero) but clip to a maximum of 3
-        scores = (scores - mean) * (scores.size(0) / non_zero).clamp(max=3.0)
-
-    else:
-        # Fallback: mean-centering only
-        scores = scores - mean
-
-    # ------------------------------------------------------------------ #
-    # 3. Broadcast back to token dimension and apply the mask            #
-    # ------------------------------------------------------------------ #
-    # shape: (num_actions, seq_len)
-    scores = scores.unsqueeze(-1) * action_mask
-
-    # In CPGD the advantage equals the return
-    advantages = scores
-    returns = deepcopy(scores)
-
-    return advantages, returns
 
 
 # ============================================================================
@@ -151,6 +61,50 @@ class AdvantageCalculator(ABC):
         self.strategy = strategy
         self.config = strategy.config
         self.reward_running_moments = None
+
+    def get_cumulative_returns(
+        self,
+        rewards: torch.Tensor,
+        action_mask: torch.Tensor,
+        gamma: float,
+    ) -> torch.Tensor:
+        """
+        Compute cumulative returns from rewards using REINFORCE.
+
+        REINFORCE uses cumulative returns without GAE (Generalized Advantage Estimation).
+
+        :param rewards: Tensor of shape (batch_size, response_size).
+        :type rewards: torch.Tensor
+        :param action_mask: Binary mask tensor of shape (batch_size, response_size).
+        :type action_mask: torch.Tensor
+        :param gamma: Discount factor.
+        :type gamma: float
+        :return: Returns tensor of shape (batch_size, response_size).
+        :rtype: torch.Tensor
+        """
+        if isinstance(rewards, list):
+            # Packing samples
+            # TODO: This is slow...
+            returns = []
+            for r in rewards:
+                ret = self.get_cumulative_returns(r.unsqueeze(0), action_mask, gamma)
+                returns.append(ret.squeeze(0))
+            return returns
+
+        response_length = rewards.size(1)
+        returns = torch.zeros_like(rewards)
+        cumulative_return = torch.zeros(rewards.size(0), device=rewards.device)
+
+        # Mask invalid responses if action_mask is provided
+        if action_mask is not None:
+            rewards = action_mask * rewards
+
+        # Calculate returns by accumulating discounted rewards
+        for t in reversed(range(response_length)):
+            cumulative_return = rewards[:, t] + gamma * cumulative_return
+            returns[:, t] = cumulative_return
+
+        return returns
 
     @abstractmethod
     def preprocess_rewards(
@@ -194,6 +148,10 @@ class AdvantageCalculator(ABC):
         This method performs the core advantage computation after reward
         normalization and KL penalty have been applied.
 
+        Note: The get_advantages_and_returns_fn and get_cumulative_returns_fn parameters
+        are kept for backward compatibility but are deprecated. Subclasses should
+        implement their own methods internally.
+
         :param experience: Experience object containing sequences, values, action_mask, etc.
         :type experience: object
         :param final_reward: Processed reward tensor (after normalization and KL penalty)
@@ -202,9 +160,9 @@ class AdvantageCalculator(ABC):
         :type generate_kwargs: Dict
         :param reward_running_moments: Optional RunningMoments for reward normalization
         :type reward_running_moments: Optional[RunningMoments]
-        :param get_advantages_and_returns_fn: Optional function for GAE computation
+        :param get_advantages_and_returns_fn: Deprecated - kept for backward compatibility
         :type get_advantages_and_returns_fn: Optional[Callable]
-        :param get_cumulative_returns_fn: Optional function for cumulative returns computation
+        :param get_cumulative_returns_fn: Deprecated - kept for backward compatibility
         :type get_cumulative_returns_fn: Optional[Callable]
         :return: Tuple of (advantages, returns, info_dict). info_dict may contain
                  additional metrics like advantage_clip_frac.
@@ -252,8 +210,96 @@ class GAECalculator(DefaultAdvantageCalculator):
     Generalized Advantage Estimation (GAE) calculator.
 
     Uses value function estimates to compute advantages with reduced variance.
-    Supports advantage whitening and clipping through the parent class method.
+    Supports advantage whitening and clipping.
+
+    Reference: GAE: https://arxiv.org/pdf/1506.02438
     """
+
+    def get_advantages_and_returns(
+        self,
+        values: torch.Tensor,
+        rewards: torch.Tensor,
+        action_mask: torch.Tensor,
+        gamma: float,
+        lambd: float,
+    ) -> Tuple[torch.Tensor, torch.Tensor, float]:
+        """
+        Compute advantages and returns using Generalized Advantage Estimation (GAE).
+
+        Calculated as in the original PPO paper: https://arxiv.org/abs/1707.06347
+        Note that rewards may include a KL divergence loss term.
+
+        Advantages formula:
+            Adv1 =  R1 + γ * λ * R2     + γ^2 * λ^2 * R3       + ...
+                  - V1 + γ * (1 - λ) V2 + γ^2 * λ * (1 - λ) V3 + ...
+
+        Returns formula:
+            Ret1 =  R1 + γ * λ * R2     + γ^2 * λ^2 * R3       + ...
+                       + γ * (1 - λ) V2 + γ^2 * λ * (1 - λ) V3 + ...
+
+        :param values: Tensor of shape (batch_size, response_size).
+        :type values: torch.Tensor
+        :param rewards: Tensor of shape (batch_size, response_size).
+        :type rewards: torch.Tensor
+        :param action_mask: Tensor of shape (batch_size, response_size).
+        :type action_mask: torch.Tensor
+        :param gamma: Discount factor.
+        :type gamma: float
+        :param lambd: GAE lambda parameter.
+        :type lambd: float
+        :return: Tuple of (advantages, returns, advantage_clip_fraction)
+        :rtype: Tuple[torch.Tensor, torch.Tensor, float]
+        """
+        if isinstance(values, list):
+            # Packing samples
+            # TODO: This is slow...
+            advantages = []
+            returns = []
+            for v, r in zip(values, rewards):
+                adv, ret, _ = self.get_advantages_and_returns(v.unsqueeze(0), r.unsqueeze(0), action_mask, gamma, lambd)
+                advantages.append(adv.squeeze(0))
+                returns.append(ret.squeeze(0))
+            # For list case, compute clip fraction on concatenated advantages
+            all_advantages = torch.cat(advantages)
+            advantage_clip_frac = 0.0
+            if self.config.advantage_clip > 0:
+                advantage_clip_frac = compute_clip_fraction(
+                    all_advantages, self.config.advantage_clip, -self.config.advantage_clip
+                )
+            return advantages, returns, advantage_clip_frac
+
+        lastgaelam = 0
+        advantages_reversed = []
+        response_length = rewards.size(1)
+
+        # Mask invalid responses
+        if action_mask is not None:
+            values = action_mask * values
+            rewards = action_mask * rewards
+
+        for t in reversed(range(response_length)):
+            nextvalues = values[:, t + 1] if t < response_length - 1 else 0.0
+            delta = rewards[:, t] + gamma * nextvalues - values[:, t]
+            lastgaelam = delta + gamma * lambd * lastgaelam
+            advantages_reversed.append(lastgaelam)
+        advantages = torch.stack(advantages_reversed[::-1], dim=1)
+        returns = advantages + values
+        advantages = advantages.detach()
+
+        # Advantage whitening (normalization)
+        if self.config.advantages_norm:
+            masked_adv = torch.masked_select(advantages, action_mask)
+            adv_mean = masked_adv.mean()
+            adv_std = masked_adv.std()
+            advantages = (advantages - adv_mean) / (adv_std + 1e-9)
+
+        # Advantage clipping
+        advantage_clip_frac = 0.0
+        if self.config.advantage_clip > 0:
+            advantages = torch.clamp(advantages, -self.config.advantage_clip, self.config.advantage_clip)
+            advantage_clip_frac = compute_clip_fraction(advantages, self.config.advantage_clip, -self.config.advantage_clip)
+
+        return advantages, returns, advantage_clip_frac
 
     def compute(
         self,
@@ -267,10 +313,6 @@ class GAECalculator(DefaultAdvantageCalculator):
         """
         Compute advantages using GAE.
 
-        The GAE computation is delegated to the FastExperienceMaker's
-        get_advantages_and_returns method, which also handles whitening
-        and clipping internally.
-
         :param experience: Experience object with values and action_mask
         :type experience: object
         :param final_reward: Processed reward tensor
@@ -279,17 +321,14 @@ class GAECalculator(DefaultAdvantageCalculator):
         :type generate_kwargs: Dict
         :param reward_running_moments: Unused (reward already normalized)
         :type reward_running_moments: Optional[RunningMoments]
-        :param get_advantages_and_returns_fn: Function to compute GAE advantages and returns
-        :type get_advantages_and_returns_fn: Callable
+        :param get_advantages_and_returns_fn: Unused (method now uses class method)
+        :type get_advantages_and_returns_fn: Optional[Callable]
         :param get_cumulative_returns_fn: Unused for GAE
-        :type get_cumulative_returns_fn: Callable
+        :type get_cumulative_returns_fn: Optional[Callable]
         :return: Tuple of (advantages, returns, info_dict)
         :rtype: Tuple[torch.Tensor, torch.Tensor, Dict]
         """
-        if get_advantages_and_returns_fn is None:
-            raise ValueError("GAE requires get_advantages_and_returns_fn")
-
-        advantages, returns, advantage_clip_frac = get_advantages_and_returns_fn(
+        advantages, returns, advantage_clip_frac = self.get_advantages_and_returns(
             experience.values,
             final_reward,
             experience.action_mask,
@@ -305,7 +344,94 @@ class CPGDCalculator(DefaultAdvantageCalculator):
 
     Aggregates token-level rewards into episode-level scores, normalizes
     them group-wise, and broadcasts back to token dimension.
+
+    Reference: CPGD: https://arxiv.org/abs/2505.12504
     """
+
+    def _get_cpgd_advantages_returns(
+        self,
+        reward: torch.Tensor,
+        action_mask: torch.Tensor,
+        weight_factor: str = "STD_weight",
+        epsilon: float = 1e-6,
+    ) -> Tuple[torch.Tensor, torch.Tensor]:
+        """
+        Aggregate token-level rewards into episode-level scores, normalise them
+        group-wise, and then broadcast the normalised scores back to the
+        token dimension to obtain both the advantages and the returns that are
+        required by the CPGD (Clipped Policy Gradient Optimization with Policy Drift)
+        algorithm.
+
+        :param reward: Tensor of shape (num_actions, seq_len) containing token-level rewards
+                       produced by the reward model. Each row corresponds to one sampled
+                       response (action trajectory).
+        :type reward: torch.Tensor
+        :param action_mask: Tensor of the same shape as `reward`. Elements belonging to the
+                           generated response tokens are 1; padding / prompt tokens are 0.
+                           The mask is used so that only response tokens contribute to the
+                           final advantages / returns.
+        :type action_mask: torch.Tensor
+        :param weight_factor: Determines how the per-sample scalar scores are normalised.
+                             Options:
+                             - "STD_weight": z-score normalisation
+                               score_i = (score_i − mean) / (std + ε)
+                             - "clip_filter_like_weight": a simplified version of the
+                               Clip-Filter weight used in early RLHF repos.
+                               score_i = (score_i − mean) * clamp(num_actions / nz, max=3)
+                             - any other value: mean-centering only
+                               score_i = score_i − mean
+        :type weight_factor: str
+        :param epsilon: Small constant added to the denominator to avoid division by zero.
+        :type epsilon: float
+        :return: Tuple of (advantages, returns). Both are normalised per-token values,
+                 shape (num_actions, seq_len). Non-response tokens are always zero.
+        :rtype: Tuple[torch.Tensor, torch.Tensor]
+
+        Notes:
+            * Both `advantages` and `returns` are masked so that non-response tokens
+              are always zero.
+            * The function performs no gradient-tracking operations and is intended
+              to be called outside the optimisation graph.
+        """
+        # ------------------------------------------------------------------ #
+        # 1. Collapse token-level rewards to a single scalar per trajectory  #
+        # ------------------------------------------------------------------ #
+        # shape: (num_actions,)
+        scores = reward.sum(dim=-1)
+
+        # Mean and (biased) standard deviation across the batch
+        mean = scores.mean()
+        std = scores.std(unbiased=False)
+
+        # ------------------------------------------------------------------ #
+        # 2. Group-wise normalisation                                        #
+        # ------------------------------------------------------------------ #
+        if weight_factor == "STD_weight":
+            # Standard z-score normalisation
+            scores = (scores - mean) / (std + epsilon)
+
+        elif weight_factor == "clip_filter_like_weight":
+            # A rough approximation of the clip-filter weighting
+            # Count of (std > 0) is always ≥ 1, prevents division by zero
+            non_zero = (std > 0).sum().clamp(min=1)
+            # Scale by (batch_size / non_zero) but clip to a maximum of 3
+            scores = (scores - mean) * (scores.size(0) / non_zero).clamp(max=3.0)
+
+        else:
+            # Fallback: mean-centering only
+            scores = scores - mean
+
+        # ------------------------------------------------------------------ #
+        # 3. Broadcast back to token dimension and apply the mask            #
+        # ------------------------------------------------------------------ #
+        # shape: (num_actions, seq_len)
+        scores = scores.unsqueeze(-1) * action_mask
+
+        # In CPGD the advantage equals the return
+        advantages = scores
+        returns = deepcopy(scores)
+
+        return advantages, returns
 
     def compute(
         self,
@@ -331,15 +457,15 @@ class CPGDCalculator(DefaultAdvantageCalculator):
         :param reward_running_moments: Unused
         :type reward_running_moments: Optional[RunningMoments]
         :param get_advantages_and_returns_fn: Unused for CPGD
-        :type get_advantages_and_returns_fn: Callable
+        :type get_advantages_and_returns_fn: Optional[Callable]
         :param get_cumulative_returns_fn: Unused for CPGD
-        :type get_cumulative_returns_fn: Callable
+        :type get_cumulative_returns_fn: Optional[Callable]
         :return: Tuple of (advantages, returns, empty_info_dict)
         :rtype: Tuple[torch.Tensor, torch.Tensor, Dict]
         """
         # CPGD uses original reward from experience, not final_reward
         original_reward = experience.info["reward"].to(final_reward.device)
-        advantages, returns = _get_cpgd_advantages_returns(
+        advantages, returns = self._get_cpgd_advantages_returns(
             original_reward, experience.action_mask
         )
         return advantages, returns, {}
@@ -351,6 +477,9 @@ class REINFORCECalculator(DefaultAdvantageCalculator):
 
     Computes cumulative returns and uses them as advantages.
     Supports advantage whitening and clipping.
+
+    Reference: REINFORCE: Williams, R. J. (1992). Simple statistical gradient-following
+    algorithms for connectionist reinforcement learning. Machine learning, 8(3-4), 229-256.
     """
 
     def __init__(self, strategy):
@@ -380,17 +509,14 @@ class REINFORCECalculator(DefaultAdvantageCalculator):
         :param reward_running_moments: Unused
         :type reward_running_moments: Optional[RunningMoments]
         :param get_advantages_and_returns_fn: Unused for REINFORCE
-        :type get_advantages_and_returns_fn: Callable
-        :param get_cumulative_returns_fn: Function to compute cumulative returns
-        :type get_cumulative_returns_fn: Callable
+        :type get_advantages_and_returns_fn: Optional[Callable]
+        :param get_cumulative_returns_fn: Unused (method now uses class method)
+        :type get_cumulative_returns_fn: Optional[Callable]
         :return: Tuple of (advantages, returns, info_dict)
         :rtype: Tuple[torch.Tensor, torch.Tensor, Dict]
         """
-        if get_cumulative_returns_fn is None:
-            raise ValueError("REINFORCE requires get_cumulative_returns_fn")
-
         # Compute cumulative returns
-        returns = get_cumulative_returns_fn(
+        returns = self.get_cumulative_returns(
             final_reward, experience.action_mask, generate_kwargs["gamma"]
         )
         advantages = deepcopy(returns)
@@ -420,6 +546,8 @@ class RLOOCalculator(AdvantageCalculator):
 
     Uses leave-one-out baseline for variance reduction. Requires reward
     preprocessing to compute the baseline.
+
+    Reference: RLOO: https://arxiv.org/abs/2402.14740
     """
 
     def preprocess_rewards(
@@ -478,17 +606,14 @@ class RLOOCalculator(AdvantageCalculator):
         :param reward_running_moments: Unused
         :type reward_running_moments: Optional[RunningMoments]
         :param get_advantages_and_returns_fn: Unused for RLOO
-        :type get_advantages_and_returns_fn: Callable
-        :param get_cumulative_returns_fn: Function to compute cumulative returns
-        :type get_cumulative_returns_fn: Callable
+        :type get_advantages_and_returns_fn: Optional[Callable]
+        :param get_cumulative_returns_fn: Unused (method now uses class method)
+        :type get_cumulative_returns_fn: Optional[Callable]
         :return: Tuple of (advantages, returns, info_dict)
         :rtype: Tuple[torch.Tensor, torch.Tensor, Dict]
         """
-        if get_cumulative_returns_fn is None:
-            raise ValueError("RLOO requires get_cumulative_returns_fn")
-
         # Compute cumulative returns
-        returns = get_cumulative_returns_fn(
+        returns = self.get_cumulative_returns(
             final_reward, experience.action_mask, generate_kwargs["gamma"]
         )
         advantages = deepcopy(returns)
@@ -517,6 +642,9 @@ class REINFORCEBaselineCalculator(AdvantageCalculator):
     REINFORCE with baseline calculator.
 
     Subtracts the mean reward within each group as baseline.
+
+    Reference: REINFORCE: Williams, R. J. (1992). Simple statistical gradient-following
+    algorithms for connectionist reinforcement learning. Machine learning, 8(3-4), 229-256.
     """
 
     def preprocess_rewards(
@@ -571,17 +699,14 @@ class REINFORCEBaselineCalculator(AdvantageCalculator):
         :param reward_running_moments: Unused
         :type reward_running_moments: Optional[RunningMoments]
         :param get_advantages_and_returns_fn: Unused for REINFORCE baseline
-        :type get_advantages_and_returns_fn: Callable
-        :param get_cumulative_returns_fn: Function to compute cumulative returns
-        :type get_cumulative_returns_fn: Callable
+        :type get_advantages_and_returns_fn: Optional[Callable]
+        :param get_cumulative_returns_fn: Unused (method now uses class method)
+        :type get_cumulative_returns_fn: Optional[Callable]
         :return: Tuple of (advantages, returns, info_dict)
         :rtype: Tuple[torch.Tensor, torch.Tensor, Dict]
         """
-        if get_cumulative_returns_fn is None:
-            raise ValueError("REINFORCE baseline requires get_cumulative_returns_fn")
-
         # Compute cumulative returns
-        returns = get_cumulative_returns_fn(
+        returns = self.get_cumulative_returns(
             final_reward, experience.action_mask, generate_kwargs["gamma"]
         )
         advantages = deepcopy(returns)
@@ -610,6 +735,8 @@ class GroupNormCalculator(AdvantageCalculator):
     Group normalization calculator.
 
     Normalizes rewards within each group and optionally filters degenerate cases.
+
+    Reference: GRPO: https://arxiv.org/pdf/2402.03300
     """
 
     def preprocess_rewards(
@@ -678,17 +805,14 @@ class GroupNormCalculator(AdvantageCalculator):
         :param reward_running_moments: Unused
         :type reward_running_moments: Optional[RunningMoments]
         :param get_advantages_and_returns_fn: Unused for Group Norm
-        :type get_advantages_and_returns_fn: Callable
-        :param get_cumulative_returns_fn: Function to compute cumulative returns
-        :type get_cumulative_returns_fn: Callable
+        :type get_advantages_and_returns_fn: Optional[Callable]
+        :param get_cumulative_returns_fn: Unused (method now uses class method)
+        :type get_cumulative_returns_fn: Optional[Callable]
         :return: Tuple of (advantages, returns, info_dict)
         :rtype: Tuple[torch.Tensor, torch.Tensor, Dict]
         """
-        if get_cumulative_returns_fn is None:
-            raise ValueError("Group Norm requires get_cumulative_returns_fn")
-
         # Compute cumulative returns
-        returns = get_cumulative_returns_fn(
+        returns = self.get_cumulative_returns(
             final_reward, experience.action_mask, generate_kwargs["gamma"]
         )
         advantages = deepcopy(returns)
