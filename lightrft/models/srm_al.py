@@ -181,7 +181,10 @@ class ScalarRewardModelAL(nn.Module):
         :return: A dictionary containing reward scores from different heads
         :rtype: Dict
 
-        Example::
+        **Example:**
+
+        .. code-block:: python
+
             # Compute reward scores from sequences and audio inputs
             # Suppose `reward_model` has two heads: "preference" and "alignment"
             scores = reward_model(

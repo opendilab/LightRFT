@@ -9,10 +9,12 @@ from .utils import BaseDataHandler
 class RapidataT2VHandler(BaseDataHandler):
     """
     Data Handler for Rapidata text-to-video human preferences dataset.
+
     Support datasets:
-        - Rapidata/text-2-video-human-preferences-pika2.2
-        - Rapidata/text-2-image-human-preferences-veo3:
-        - Rapidata/text-2-video-human-preferences-wan2.1:
+
+    - Rapidata/text-2-video-human-preferences-pika2.2
+    - Rapidata/text-2-image-human-preferences-veo3:
+    - Rapidata/text-2-video-human-preferences-wan2.1:
 
     This dataset contains pairs of videos (video1, video2) generated from a prompt.
     It includes weighted scores for Preference, Coherence, and Alignment.
@@ -137,8 +139,10 @@ class RapidataT2VHandler(BaseDataHandler):
 class RapidataI2VHandler(RapidataT2VHandler):
     """
     Data Handler for Rapidata image-to-video human preferences dataset.
+
     Support datasets:
-        - Rapidata/image-2-video-human-preferences-seedance-1-pro
+
+    - Rapidata/image-2-video-human-preferences-seedance-1-pro
 
     Dataset Repo: https://huggingface.co/Rapidata/datasets
     """

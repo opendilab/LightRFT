@@ -123,7 +123,10 @@ class GenerativeRewardModelVL(nn.Module):
         :return: Model output or logits based on return_outputs flag
         :rtype: Union[ModelOutput, torch.Tensor]
 
-        Example::
+        **Example:**
+
+        .. code-block:: python
+
             # Coumpute logits from sequences and visual inputs
             logits = reward_model(
                 sequences=input_ids,
