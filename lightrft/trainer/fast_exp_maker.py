@@ -85,9 +85,8 @@ class _SamplesOutput:
         image_grid_thw: Image grid dimensions [temporal, height, width]
         video_grid_thw: Video grid dimensions [temporal, height, width]
         raw_images: Original PIL images
-        raw_videos: Original Video tensors
         references: Reference texts for evaluation
-        img_num: Number of images per sample
+        image_num: Number of images per sample
 
         # Model inference outputs
         action_log_probs: Log probabilities from actor model
@@ -115,9 +114,8 @@ class _SamplesOutput:
     pixel_values_videos: Optional[torch.Tensor] = None
     video_grid_thw: Optional[torch.Tensor] = None
     raw_images: Optional[list] = None
-    raw_videos: Optional[list] = None
     references: Optional[list] = None
-    img_num: Optional[List[int]] = None
+    image_num: Optional[List[int]] = None
     video_num: Optional[List[int]] = None
 
     # Model outputs
@@ -762,7 +760,7 @@ class RewardComputationEngine:
         flat_data = {
             "prompt_and_output": [],
             "raw_images": [],
-            "img_num": [],
+            "image_num": [],
             "references": [],
             "labels": [],
         }
@@ -780,7 +778,7 @@ class RewardComputationEngine:
                     needed_positions.append((mb_idx, samp_idx))
                     flat_data["prompt_and_output"].append(output.prompt_and_output[samp_idx])
                     flat_data["raw_images"].append(output.raw_images[samp_idx])
-                    flat_data["img_num"].append(output.img_num[samp_idx])
+                    flat_data["image_num"].append(output.image_num[samp_idx])
                     flat_data["references"].append(output.references[samp_idx])
                     flat_data["labels"].append(output.labels[samp_idx])
 
@@ -795,7 +793,7 @@ class RewardComputationEngine:
             None,
             prompt_and_outputs=flat_data["prompt_and_output"],
             raw_images=flat_data["raw_images"],
-            img_num=flat_data["img_num"],
+            img_num=flat_data["image_num"],
             references=flat_data["references"],
             labels=flat_data["labels"],
         )
@@ -833,7 +831,7 @@ class RewardComputationEngine:
         flat_data = {
             "prompt_and_output": [],
             "raw_images": [],
-            "img_num": [],
+            "image_num": [],
             "references": [],
             "labels": [],
         }
@@ -841,7 +839,7 @@ class RewardComputationEngine:
         for output in outputs:
             flat_data["prompt_and_output"].extend(output.prompt_and_output)
             flat_data["raw_images"].extend(output.raw_images)
-            flat_data["img_num"].extend(output.img_num)
+            flat_data["image_num"].extend(output.image_num)
             flat_data["references"].extend(output.references)
             flat_data["labels"].extend(output.labels)
 
@@ -851,7 +849,7 @@ class RewardComputationEngine:
             None,
             prompt_and_outputs=flat_data["prompt_and_output"],
             raw_images=flat_data["raw_images"],
-            img_num=flat_data["img_num"],
+            img_num=flat_data["image_num"],
             references=flat_data["references"],
             labels=flat_data["labels"],
         )
@@ -899,7 +897,7 @@ class RewardComputationEngine:
                 output.attention_mask,
                 prompt_and_output=output.prompt_and_output,
                 raw_images=output.raw_images,
-                img_num=output.img_num,
+                img_num=output.image_num,
                 **output.inputs_extra_kwargs,
             )
 
@@ -1324,7 +1322,6 @@ class FastExperienceMaker(NaiveExperienceMaker):
             micro_batch_grid_thw = None
             micro_batch_video_grid_thw = None
             micro_batch_raw_images = None
-            micro_batch_raw_videos = None
 
             if is_multimodal:
                 rollout_image_count = sum(
@@ -1342,7 +1339,6 @@ class FastExperienceMaker(NaiveExperienceMaker):
                 micro_batch_video_grid_thw = all_videos_grid_thw[
                     video_start_idx : video_start_idx + rollout_video_count
                 ]
-                micro_batch_raw_videos = all_videos[i : i + config.micro_rollout_batch_size]
                 video_start_idx += rollout_video_count
 
             micro_batch_references = (
@@ -1365,7 +1361,6 @@ class FastExperienceMaker(NaiveExperienceMaker):
                     grid_thw=micro_batch_grid_thw,
                     video_grid_thw=micro_batch_video_grid_thw,
                     raw_images=micro_batch_raw_images,
-                    raw_videos=micro_batch_raw_videos,
                     pixel_values=all_images_pixel_values if is_multimodal else None,
                     pixel_values_videos=all_videos_pixel_values if is_multimodal else None,
                     images_num=all_images_num[i : i + config.micro_rollout_batch_size] if is_multimodal else None,
@@ -1847,9 +1842,8 @@ class FastExperienceMaker(NaiveExperienceMaker):
             pixel_values_videos=getattr(sample, "pixel_values_videos", None),
             video_grid_thw=getattr(sample, "video_grid_thws", None),
             raw_images=getattr(sample, "raw_images", None),
-            raw_videos=getattr(sample, "raw_videos", None),
-            img_num=getattr(sample, "img_num", None),
-            video_num=getattr(sample, "videos_num", None),
+            image_num=getattr(sample, "image_num", None),
+            video_num=getattr(sample, "video_num", None),
             references=references,
             inputs_extra_kwargs=extra_kwargs,
             prompt_and_output=([p + (o or "") for p, o in zip(prompts, output_texts)] if output_texts else None),
@@ -1941,7 +1935,7 @@ class FastExperienceMaker(NaiveExperienceMaker):
             response_length=output.response_length,
             total_length=output.total_length,
             num_actions=output.num_actions,
-            img_num=output.img_num,
+            image_num=output.image_num,
             video_num=output.video_num,
         )
 
@@ -2039,7 +2033,6 @@ class FastExperienceMaker(NaiveExperienceMaker):
             image_patch_idx = kwargs["image_patch_idx"]
 
             video_grid_thw = kwargs["video_grid_thw"]
-            raw_videos = kwargs["raw_videos"]
             pixel_values_videos_tensor = kwargs["pixel_values_videos"]
             videos_num = kwargs["videos_num"]
             video_patch_idx = kwargs["video_patch_idx"]
@@ -2131,7 +2124,6 @@ class FastExperienceMaker(NaiveExperienceMaker):
                 image_grid_thws=(torch.cat(image_grid_thw_list, dim=0).to("cuda") if image_grid_thw_list else None),
                 video_grid_thws=(torch.cat(video_grid_thw_list, dim=0).to("cuda") if video_grid_thw_list else None),
                 raw_images=raw_images,
-                raw_videos=raw_videos,
                 pixel_values=pixel_values,
                 pixel_values_videos=pixel_values_videos,
                 num_actions=action_mask.size(1),
@@ -2142,8 +2134,8 @@ class FastExperienceMaker(NaiveExperienceMaker):
                 labels=labels,
                 prompts=prompts,
                 output_texts=output_texts,
-                img_num=all_img_num,
-                videos_num=all_vid_num,
+                image_num=all_img_num,
+                video_num=all_vid_num,
             ), image_patch_idx, video_patch_idx
 
     def _build_packed_sample(

@@ -70,9 +70,9 @@ export MASTER_PORT=$MLP_WORKER_0_PORT
 
 # --- Generate dynamic names and paths ---
 EXPERIMENT_NAME="LightRFT-GRM-VL-GRPO"
-RUN_NAME="${EXPERIMENT_NAME}-dataset-base_model"
 current_time=$(date +"%m%d%H%M")
-SAVE_MODEL_NAME=${RUN_NAME}-${TBS}-rbs_${RBS}-sample_$N_SAMPLES-kl_${KL}-warmup_${WARMUP}-ep_${EPISODE}-lr_${LR}-${current_time}
+RUN_NAME="${EXPERIMENT_NAME}--dataset-base_model-${current_time}"
+SAVE_MODEL_NAME=${RUN_NAME}-${TBS}-rbs_${RBS}-sample_$N_SAMPLES-kl_${KL}-warmup_${WARMUP}-ep_${EPISODE}-lr_${LR}
 LOG_BASE=log
 
 # --- Create directories for logs and checkpoints ---

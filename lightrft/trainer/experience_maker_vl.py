@@ -58,6 +58,8 @@ class ExperienceVL:
         - pixel_values: (B * h, w) - image pixels processed by HF processor
         - image_grid_thws: (B, 3) - image grid thw
         - raw_images: Optional[List[Image.Image]] - raw images before processing
+        - pixel_values_videos: (B * f, c * h * w) - video pixels processed by HF processor
+        - video_grid_thws: (B, 3) - video grid thw
         - action_log_probs: (B, A) where A is number of actions
         - base_action_log_probs: (B, A)
         - values: (B, A)
@@ -73,8 +75,12 @@ class ExperienceVL:
     :type pixel_values: Optional[torch.Tensor]
     :param image_grid_thws: Image grid thw, defaults to None.
     :type image_grid_thws: Optional[torch.Tensor]
-    :param raw_images: Raw images before processing, defaults to None.
+    :param raw_images: Raw image data list, defaults to None.
     :type raw_images: Optional[List[Image.Image]]
+    :param pixel_values_videos: Video pixel values processed by HF processor, defaults to None.
+    :type pixel_values_videos: Optional[torch.Tensor]
+    :param video_grid_thws: Video grid thw, defaults to None.
+    :type video_grid_thws: Optional[torch.Tensor]
     :param action_log_probs: Log probabilities of actions from the current policy, defaults to None.
     :type action_log_probs: torch.Tensor
     :param base_action_log_probs: Log probabilities from the reference policy, defaults to None.
@@ -97,10 +103,11 @@ class ExperienceVL:
 
     sequences: torch.Tensor
     # Image processing related
-    pixel_values: Optional[torch.Tensor] = None  # image pixel processed by HF processor
-    image_grid_thws: Optional[torch.Tensor] = None  # image grid thw
-    raw_images: Optional[List[Image.Image]] = None  # raw images before processing
+    pixel_values: Optional[torch.Tensor] = None
+    image_grid_thws: Optional[torch.Tensor] = None
+    raw_images: Optional[List[Image.Image]] = None
     
+    # Video processing related
     pixel_values_videos: Optional[torch.Tensor] = None
     video_grid_thws: Optional[torch.Tensor] = None
 
@@ -188,6 +195,8 @@ class SamplesVL:
         - pixel_values: Optional[torch.Tensor] - image pixels processed by HF processor
         - image_grid_thws: Optional[torch.Tensor] - image grid thw
         - raw_images: Optional[List[Image.Image]] - raw image data list
+        - pixel_values_videos: Optional[torch.Tensor] - video pixels processed by HF processor
+        - video_grid_thws: Optional[torch.Tensor] - video grid thw
         - num_actions: int or (B,) - number of actions (tokens) in the response
         - packed_seq_lens: None or (B,) - length of each sample in packed format
         - response_length: (B,) - number of tokens in the response
@@ -196,7 +205,8 @@ class SamplesVL:
         - references: Optional[List[str]] - reference texts
         - labels: Optional[List[str]] - ground truth labels
         - output_texts: list[str] - generated output texts
-        - img_num: Optional[List[str]] - image numbers
+        - image_num: Optional[List[int]] - image numbers
+        - video_num: Optional[List[int]] - video numbers
 
     :param sequences: Token sequences including both prompt and response.
     :type sequences: torch.Tensor
@@ -226,22 +236,24 @@ class SamplesVL:
     :type prompts: list[str]
     :param output_texts: Generated output texts, defaults to None.
     :type output_texts: list[str]
-    :param img_num: Image numbers, defaults to None.
-    :type img_num: Optional[List[str]]
+    :param image_num: Image numbers, defaults to None.
+    :type image_num: Optional[List[int]]
+    :param video_num: Video numbers, defaults to None.
+    :type video_num: Optional[List[int]]
     """
 
     sequences: torch.Tensor
     attention_mask: Optional[torch.LongTensor] = None
     action_mask: Optional[torch.BoolTensor] = None
 
-    pixel_values: Optional[torch.Tensor] = None  # image pixel processed by HF processor
-    image_grid_thws: Optional[torch.Tensor] = None  # image grid thw
-    raw_images: Optional[List[Image.Image]] = None  # raw image data list
+    pixel_values: Optional[torch.Tensor] = None
+    image_grid_thws: Optional[torch.Tensor] = None
+    raw_images: Optional[List[Image.Image]] = None
+    image_num: Optional[List[int]] = None
     
     pixel_values_videos: Optional[torch.Tensor] = None
     video_grid_thws: Optional[torch.Tensor] = None
-    raw_videos: Optional[List] = None
-    videos_num: Optional[List[int]] = None
+    video_num: Optional[List[int]] = None
 
     num_actions: Union[int, torch.Tensor] = None
     packed_seq_lens: Optional[torch.Tensor] = None
@@ -253,7 +265,6 @@ class SamplesVL:
     prompts: list[str] = None
 
     output_texts: list[str] = None
-    img_num: Optional[List[str]] = None
 
 
 class NaiveExperienceMakerVL(ABC):

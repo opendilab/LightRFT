@@ -227,13 +227,13 @@ def _split_experience_batch_vl(experience: ExperienceVL) -> List:
     This function handles the complex logic of de-stacking vision-language data. 
     Unlike text-only data, vision components (images/videos) are often flattened 
     into a single continuous tensor for efficiency during rollout. This function 
-    uses metadata in `experience.info` (`img_num` and `video_num`) to correctly 
+    uses metadata in `experience.info` (`image_num` and `video_num`) to correctly 
     slice these flattened tensors back into their per-sample components.
 
     Splitting Logic:
     1. Standard Tensors: `sequences`, `values`, etc. are split using `torch.unbind`.
-    2. Grid Metadata: `image_grid_thws` (N, 3) is sliced based on `experience.info["img_num"]`.
-       For example, if `img_num` is [2, 1], the first sample gets the first 2 rows of grids.
+    2. Grid Metadata: `image_grid_thws` (N, 3) is sliced based on `experience.info["image_num"]`.
+       For example, if `image_num` is [2, 1], the first sample gets the first 2 rows of grids.
     3. Pixel Values: `pixel_values` (Total_Patches, patches) is sliced based on the sum 
        of tokens calculated from the sample's corresponding `image_grid_thws`.
 
@@ -252,7 +252,7 @@ def _split_experience_batch_vl(experience: ExperienceVL) -> List:
             image_grid_thws=torch.tensor([[1, 10, 10], [1, 20, 20], [1, 15, 15]]),
             pixel_values=torch.randn(100+400+225, 1152), # flattened patches
             info={
-                "img_num": torch.tensor([2, 1], dtype=torch.float32)
+                "image_num": torch.tensor([2, 1], dtype=torch.float32)
             }
         )
 
@@ -290,7 +290,7 @@ def _split_experience_batch_vl(experience: ExperienceVL) -> List:
             batch_kwargs[i][key] = v
 
     # Split image_grid_thws and video_grid_thws accurately using metadata
-    for grid_key, num_key in [("image_grid_thws", "img_num"), ("video_grid_thws", "video_num")]:
+    for grid_key, num_key in [("image_grid_thws", "image_num"), ("video_grid_thws", "video_num")]:
         grid_data = getattr(experience, grid_key, None)
         if grid_data is not None:
             # If it's already a list, it was pre-split by _process_multi_image_video_thws in FastExperienceMaker
@@ -549,7 +549,7 @@ def _make_experience_batch_vl(items: List, packing_samples: bool = False) -> Exp
 
     This function aggregates individual `BufferItemVL` objects into a single `ExperienceVL` 
     batch. It concatenates visual data (pixels and grids) into flattened tensors 
-    and automatically records the count per sample (`img_num`, `video_num`) in 
+    and automatically records the count per sample (`image_num`, `video_num`) in 
     the `info` dictionary to enable later splitting.
 
     :param items: List of individual vision-language experience items
@@ -575,7 +575,7 @@ def _make_experience_batch_vl(items: List, packing_samples: bool = False) -> Exp
 
         batch = _make_experience_batch_vl([item1, item2])
         # batch.image_grid_thws: Shape [3, 3] (2 + 1 rows concatenated)
-        # batch.info["img_num"]: tensor([2., 1.], dtype=float32)
+        # batch.info["image_num"]: tensor([2., 1.], dtype=float32)
     """
     kwargs = {}
     keys = (
@@ -630,14 +630,14 @@ def _make_experience_batch_vl(items: List, packing_samples: bool = False) -> Exp
     # Record the number of components (images/videos) per sample into info dictionary.
     # This ensures accuracy when splitting the batch back into individual items.
     kwargs["info"] = {}
-    img_nums = []
+    image_nums = []
     video_nums = []
     for item in items:
         # Determine number of image components
         if item.image_grid_thws is not None:
-             img_nums.append(item.image_grid_thws.size(0) if item.image_grid_thws.dim() > 1 else 1)
+             image_nums.append(item.image_grid_thws.size(0) if item.image_grid_thws.dim() > 1 else 1)
         else:
-             img_nums.append(0)
+             image_nums.append(0)
         
         # Determine number of video components
         if item.video_grid_thws is not None:
@@ -645,13 +645,8 @@ def _make_experience_batch_vl(items: List, packing_samples: bool = False) -> Exp
         else:
              video_nums.append(0)
     
-    kwargs["info"]["img_num"] = torch.tensor(img_nums, dtype=torch.float32)
-    kwargs["info"]["video_num"] = torch.tensor(video_nums, dtype=torch.float32)
-
     if items and items[0].info:
         for key in items[0].info.keys():
-            if key in ["img_num", "video_num"]:
-                continue
             vals = [item.info[key] for item in items]
             # Check if the values can be converted to a tensor (i.e., are numeric)
             if isinstance(vals[0], (int, float, bool)):
