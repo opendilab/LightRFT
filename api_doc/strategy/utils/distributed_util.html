@@ -308,117 +308,8 @@
             <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
               <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
                 
-  <section id="module-lightrft.strategy.utils.distributed_util">
-<span id="lightrft-strategy-utils-distributed-util"></span><h1>lightrft.strategy.utils.distributed_util<a class="headerlink" href="#module-lightrft.strategy.utils.distributed_util" title="Permalink to this heading">¶</a></h1>
-<dl class="py function">
-<dt class="sig sig-object py" id="lightrft.strategy.utils.distributed_util.all_gather_all_prompt_token_ids">
-<span class="sig-prename descclassname"><span class="pre">lightrft.strategy.utils.distributed_util.</span></span><span class="sig-name descname"><span class="pre">all_gather_all_prompt_token_ids</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">all_prompt_token_ids</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.distributed.ProcessGroup</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/lightrft/strategy/utils/distributed_util.html#all_gather_all_prompt_token_ids"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.utils.distributed_util.all_gather_all_prompt_token_ids" title="Permalink to this definition">¶</a></dt>
-<dd><p>Collect prompt token_ids across processes with different lengths, handle padding and alignment.</p>
-<p>This function gathers prompt token lists from all processes in the distributed group.
-It handles sequences of different lengths by padding them to the maximum length,
-performing the all-gather operation, and then removing the padding from the results.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>all_prompt_token_ids</strong> (<em>List</em><em>[</em><em>List</em><em>[</em><em>int</em><em>]</em><em>]</em>) – List of prompt token lists from the current process.
-Each inner list represents tokens for one prompt.</p></li>
-<li><p><strong>group</strong> (<em>dist.ProcessGroup</em>) – Distributed communication group for gathering operations.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Collected and processed prompt token lists from all processes.
-The padding tokens (-1) are removed from the final result.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>List[List[int]]</p>
-</dd>
-<dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>AssertionError</strong> – If distributed environment is not initialized.</p>
-</dd>
-</dl>
-<p>Example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Gather tokens across processes</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">tokens</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">]]</span>  <span class="c1"># Current process tokens</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">gathered_tokens</span> <span class="o">=</span> <span class="n">all_gather_all_prompt_token_ids</span><span class="p">(</span><span class="n">tokens</span><span class="p">,</span> <span class="n">process_group</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Result contains tokens from all processes in the group</span>
-</pre></div>
-</div>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="lightrft.strategy.utils.distributed_util.create_sub_group">
-<span class="sig-prename descclassname"><span class="pre">lightrft.strategy.utils.distributed_util.</span></span><span class="sig-name descname"><span class="pre">create_sub_group</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">group_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">backend</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'nccl'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">torch.distributed.ProcessGroup</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">torch.distributed.ProcessGroup</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/lightrft/strategy/utils/distributed_util.html#create_sub_group"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.utils.distributed_util.create_sub_group" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create process subgroups for distributed computing with validation and communication testing.</p>
-<p>This function creates two types of process groups for distributed computing:
-1. Regular groups: processes are grouped consecutively (e.g., [0,1,2,3], [4,5,6,7])
-2. Orthogonal groups: processes are grouped with stride equal to group_size (e.g., [0,4], [1,5], [2,6], [3,7])</p>
-<p>The function also performs communication testing to ensure the groups are working correctly.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>group_size</strong> (<em>int</em>) – Size of each process subgroup. Must be a divisor of world_size.</p></li>
-<li><p><strong>backend</strong> (<em>str</em>) – Backend for distributed communication (“nccl” for GPU, other options for CPU).</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Tuple of (regular process group, orthogonal process group).</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Tuple[dist.ProcessGroup, dist.ProcessGroup]</p>
-</dd>
-<dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>ValueError</strong> – If world_size is not divisible by group_size.</p>
-</dd>
-</dl>
-<p>Example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Create subgroups with size 4 using NCCL backend</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">regular_group</span><span class="p">,</span> <span class="n">orthogonal_group</span> <span class="o">=</span> <span class="n">create_sub_group</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="s2">&quot;nccl&quot;</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># With world_size=8, this creates:</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Regular groups: [0,1,2,3] and [4,5,6,7]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Orthogonal groups: [0,4], [1,5], [2,6], [3,7]</span>
-</pre></div>
-</div>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="lightrft.strategy.utils.distributed_util.gather_inputs_object_for_inference">
-<span class="sig-prename descclassname"><span class="pre">lightrft.strategy.utils.distributed_util.</span></span><span class="sig-name descname"><span class="pre">gather_inputs_object_for_inference</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.distributed.ProcessGroup</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/lightrft/strategy/utils/distributed_util.html#gather_inputs_object_for_inference"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.utils.distributed_util.gather_inputs_object_for_inference" title="Permalink to this definition">¶</a></dt>
-<dd><p>All-gather data between inference engine tensor parallel group.</p>
-<p>This function collects data from all processes in the specified process group
-and returns a combined list of all items. It’s useful for aggregating distributed
-inputs before processing in a tensor-parallel inference setup. The function
-handles arbitrary Python objects using PyTorch’s object gathering mechanism.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>input_data</strong> (<em>List</em><em>[</em><em>Any</em><em>]</em>) – List of objects to be gathered from the current process.
-Can contain any serializable Python objects.</p></li>
-<li><p><strong>group</strong> (<em>torch.distributed.ProcessGroup</em>) – Inference engine tensor parallel process group that defines the
-communication context for gathering operations.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Combined list of objects from all processes in the group.
-Items from each process are flattened into a single list.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>List[Any]</p>
-</dd>
-</dl>
-<p>Example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Gather inference inputs across tensor parallel processes</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">local_inputs</span> <span class="o">=</span> <span class="p">[{</span><span class="s2">&quot;prompt&quot;</span><span class="p">:</span> <span class="s2">&quot;Hello&quot;</span><span class="p">},</span> <span class="p">{</span><span class="s2">&quot;prompt&quot;</span><span class="p">:</span> <span class="s2">&quot;World&quot;</span><span class="p">}]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">all_inputs</span> <span class="o">=</span> <span class="n">gather_inputs_object_for_inference</span><span class="p">(</span><span class="n">local_inputs</span><span class="p">,</span> <span class="n">tp_group</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Result contains inputs from all processes in the tensor parallel group</span>
-</pre></div>
-</div>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="lightrft.strategy.utils.distributed_util.init_process_group">
-<span class="sig-prename descclassname"><span class="pre">lightrft.strategy.utils.distributed_util.</span></span><span class="sig-name descname"><span class="pre">init_process_group</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">backend</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">torch.distributed.distributed_c10d.Backend</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_method</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">timedelta</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rank</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">store</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.distributed.distributed_c10d.Store</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pg_options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/lightrft/strategy/utils/distributed_util.html#init_process_group"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.utils.distributed_util.init_process_group" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
+  <section id="lightrft-strategy-utils-distributed-util">
+<h1>lightrft.strategy.utils.distributed_util<a class="headerlink" href="#lightrft-strategy-utils-distributed-util" title="Permalink to this heading">¶</a></h1>
 </section>
 
 
@@ -464,13 +355,7 @@ Items from each process are flattened into a single list.</p>
           <div class="pytorch-right-menu" id="pytorch-right-menu">
             <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
               <ul>
-<li><a class="reference internal" href="#">lightrft.strategy.utils.distributed_util</a><ul>
-<li><a class="reference internal" href="#lightrft.strategy.utils.distributed_util.all_gather_all_prompt_token_ids"><code class="docutils literal notranslate"><span class="pre">all_gather_all_prompt_token_ids()</span></code></a></li>
-<li><a class="reference internal" href="#lightrft.strategy.utils.distributed_util.create_sub_group"><code class="docutils literal notranslate"><span class="pre">create_sub_group()</span></code></a></li>
-<li><a class="reference internal" href="#lightrft.strategy.utils.distributed_util.gather_inputs_object_for_inference"><code class="docutils literal notranslate"><span class="pre">gather_inputs_object_for_inference()</span></code></a></li>
-<li><a class="reference internal" href="#lightrft.strategy.utils.distributed_util.init_process_group"><code class="docutils literal notranslate"><span class="pre">init_process_group()</span></code></a></li>
-</ul>
-</li>
+<li><a class="reference internal" href="#">lightrft.strategy.utils.distributed_util</a></li>
 </ul>
 
             </div>

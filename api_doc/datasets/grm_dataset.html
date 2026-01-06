@@ -306,52 +306,8 @@
             <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
               <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
                 
-  <section id="module-lightrft.datasets.grm_dataset">
-<span id="lightrft-datasets-grm-dataset"></span><h1>lightrft.datasets.grm_dataset<a class="headerlink" href="#module-lightrft.datasets.grm_dataset" title="Permalink to this heading">¶</a></h1>
-<dl class="py class">
-<dt class="sig sig-object py" id="lightrft.datasets.grm_dataset.GRMDataset">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">lightrft.datasets.grm_dataset.</span></span><span class="sig-name descname"><span class="pre">GRMDataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/datasets/grm_dataset.html#GRMDataset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.datasets.grm_dataset.GRMDataset" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Dataset</span></code></p>
-<p>Dataset for Generative Reward Model (GRM) training.</p>
-<p>GRMDataset supports multiple data sources through pluggable Data Handlers
-and covers both understanding tasks (image-to-text, video-to-text) and
-generation tasks (text-to-image, text-to-video).</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>dataset_paths</strong> (<em>List</em><em>[</em><em>str</em><em>]</em>) – List of dataset file paths or directories, in the format <code class="docutils literal notranslate"><span class="pre">source:path</span></code> where
-the handler is determined by the source keyword such as hpdv3, imagegen-cot-reward, or omnirewardbench.</p></li>
-<li><p><strong>processor</strong> (<em>transformers.AutoProcessor</em>) – Multimodal processor used for tokenization and visual
-processing.</p></li>
-<li><p><strong>tokenizer</strong> (<em>transformers.AutoTokenizer</em>) – Tokenizer used for text tokenization (provides
-<code class="docutils literal notranslate"><span class="pre">eos_token</span></code> and <code class="docutils literal notranslate"><span class="pre">pad_token_id</span></code> attributes).</p></li>
-<li><p><strong>strategy</strong> (<em>Any</em>) – Optional data loading strategy.</p></li>
-<li><p><strong>max_length</strong> (<em>int</em>) – Maximum sequence length for tokenization/truncation.</p></li>
-<li><p><strong>config</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – <p>Additional configuration options. Supported keys include:
-- <code class="docutils literal notranslate"><span class="pre">task_instruction</span></code> (str): Instruction for the evaluation task.
-- <code class="docutils literal notranslate"><span class="pre">system_prompt_template</span></code> (str): Template for the system prompt</p>
-<blockquote>
-<div><p>with a <code class="docutils literal notranslate"><span class="pre">{prompt}</span></code> placeholder.</p>
-</div></blockquote>
-</p></li>
-<li><p><strong>is_training</strong> (<em>bool</em>) – Whether the dataset is used for training (returns
-labels) or evaluation (no labels returned).</p></li>
-</ul>
-</dd>
-</dl>
-<p><strong>Example:</strong></p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">dataset</span> <span class="o">=</span> <span class="n">GRMDataset</span><span class="p">([</span>
-<span class="gp">... </span>    <span class="s1">&#39;imagegen-cot-reward-5k:/data/imagegen-cot-reward-5k/train.json&#39;</span>
-<span class="gp">... </span><span class="p">],</span> <span class="n">processor</span><span class="o">=</span><span class="n">proc</span><span class="p">,</span> <span class="n">tokenizer</span><span class="o">=</span><span class="n">tok</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">4096</span><span class="p">,</span> <span class="n">is_training</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</pre></div>
-</div>
-<dl class="py method">
-<dt class="sig sig-object py" id="lightrft.datasets.grm_dataset.GRMDataset.collate_fn">
-<span class="sig-name descname"><span class="pre">collate_fn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/datasets/grm_dataset.html#GRMDataset.collate_fn"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.datasets.grm_dataset.GRMDataset.collate_fn" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
+  <section id="lightrft-datasets-grm-dataset">
+<h1>lightrft.datasets.grm_dataset<a class="headerlink" href="#lightrft-datasets-grm-dataset" title="Permalink to this heading">¶</a></h1>
 </section>
 
 
@@ -397,13 +353,7 @@ labels) or evaluation (no labels returned).</p></li>
           <div class="pytorch-right-menu" id="pytorch-right-menu">
             <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
               <ul>
-<li><a class="reference internal" href="#">lightrft.datasets.grm_dataset</a><ul>
-<li><a class="reference internal" href="#lightrft.datasets.grm_dataset.GRMDataset"><code class="docutils literal notranslate"><span class="pre">GRMDataset</span></code></a><ul>
-<li><a class="reference internal" href="#lightrft.datasets.grm_dataset.GRMDataset.collate_fn"><code class="docutils literal notranslate"><span class="pre">GRMDataset.collate_fn()</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
+<li><a class="reference internal" href="#">lightrft.datasets.grm_dataset</a></li>
 </ul>
 
             </div>

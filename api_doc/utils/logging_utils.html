@@ -306,35 +306,8 @@
             <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
               <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
                 
-  <section id="module-lightrft.utils.logging_utils">
-<span id="lightrft-utils-logging-utils"></span><h1>lightrft.utils.logging_utils<a class="headerlink" href="#module-lightrft.utils.logging_utils" title="Permalink to this heading">¶</a></h1>
-<p>Logging configuration for vLLM.</p>
-<dl class="py class">
-<dt class="sig sig-object py" id="lightrft.utils.logging_utils.NewLineFormatter">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">lightrft.utils.logging_utils.</span></span><span class="sig-name descname"><span class="pre">NewLineFormatter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fmt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">datefmt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/utils/logging_utils.html#NewLineFormatter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.utils.logging_utils.NewLineFormatter" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Formatter</span></code></p>
-<p>Adds logging prefix to newlines to align multi-line messages.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="lightrft.utils.logging_utils.NewLineFormatter.format">
-<span class="sig-name descname"><span class="pre">format</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/utils/logging_utils.html#NewLineFormatter.format"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.utils.logging_utils.NewLineFormatter.format" title="Permalink to this definition">¶</a></dt>
-<dd><p>Format the specified record as text.</p>
-<p>The record’s attribute dictionary is used as the operand to a
-string formatting operation which yields the returned string.
-Before formatting the dictionary, a couple of preparatory steps
-are carried out. The message attribute of the record is computed
-using LogRecord.getMessage(). If the formatting string uses the
-time (as determined by a call to usesTime(), formatTime() is
-called to format the event time. If there is exception information,
-it is formatted using formatException() and appended to the message.</p>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="lightrft.utils.logging_utils.init_logger">
-<span class="sig-prename descclassname"><span class="pre">lightrft.utils.logging_utils.</span></span><span class="sig-name descname"><span class="pre">init_logger</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/utils/logging_utils.html#init_logger"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.utils.logging_utils.init_logger" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
+  <section id="lightrft-utils-logging-utils">
+<h1>lightrft.utils.logging_utils<a class="headerlink" href="#lightrft-utils-logging-utils" title="Permalink to this heading">¶</a></h1>
 </section>
 
 
@@ -380,14 +353,7 @@ it is formatted using formatException() and appended to the message.</p>
           <div class="pytorch-right-menu" id="pytorch-right-menu">
             <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
               <ul>
-<li><a class="reference internal" href="#">lightrft.utils.logging_utils</a><ul>
-<li><a class="reference internal" href="#lightrft.utils.logging_utils.NewLineFormatter"><code class="docutils literal notranslate"><span class="pre">NewLineFormatter</span></code></a><ul>
-<li><a class="reference internal" href="#lightrft.utils.logging_utils.NewLineFormatter.format"><code class="docutils literal notranslate"><span class="pre">NewLineFormatter.format()</span></code></a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#lightrft.utils.logging_utils.init_logger"><code class="docutils literal notranslate"><span class="pre">init_logger()</span></code></a></li>
-</ul>
-</li>
+<li><a class="reference internal" href="#">lightrft.utils.logging_utils</a></li>
 </ul>
 
             </div>

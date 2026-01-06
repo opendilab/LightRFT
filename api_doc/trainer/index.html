@@ -304,269 +304,32 @@
             <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
               <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
                 
-  <section id="module-lightrft.trainer">
-<span id="lightrft-trainer"></span><h1>lightrft.trainer<a class="headerlink" href="#module-lightrft.trainer" title="Permalink to this heading">¶</a></h1>
+  <section id="lightrft-trainer">
+<h1>lightrft.trainer<a class="headerlink" href="#lightrft-trainer" title="Permalink to this heading">¶</a></h1>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="experience_maker.html">lightrft.trainer.experience_maker</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.Experience"><code class="docutils literal notranslate"><span class="pre">Experience</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.Experience.action_log_probs"><code class="docutils literal notranslate"><span class="pre">Experience.action_log_probs</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.Experience.action_mask"><code class="docutils literal notranslate"><span class="pre">Experience.action_mask</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.Experience.advantages"><code class="docutils literal notranslate"><span class="pre">Experience.advantages</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.Experience.attention_mask"><code class="docutils literal notranslate"><span class="pre">Experience.attention_mask</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.Experience.base_action_log_probs"><code class="docutils literal notranslate"><span class="pre">Experience.base_action_log_probs</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.Experience.info"><code class="docutils literal notranslate"><span class="pre">Experience.info</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.Experience.kl"><code class="docutils literal notranslate"><span class="pre">Experience.kl</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.Experience.pin_memory"><code class="docutils literal notranslate"><span class="pre">Experience.pin_memory()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.Experience.returns"><code class="docutils literal notranslate"><span class="pre">Experience.returns</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.Experience.sequences"><code class="docutils literal notranslate"><span class="pre">Experience.sequences</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.Experience.to_device"><code class="docutils literal notranslate"><span class="pre">Experience.to_device()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.Experience.values"><code class="docutils literal notranslate"><span class="pre">Experience.values</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.NaiveExperienceMaker"><code class="docutils literal notranslate"><span class="pre">NaiveExperienceMaker</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.NaiveExperienceMaker.generate_samples"><code class="docutils literal notranslate"><span class="pre">NaiveExperienceMaker.generate_samples()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.NaiveExperienceMaker.get_advantages_and_returns"><code class="docutils literal notranslate"><span class="pre">NaiveExperienceMaker.get_advantages_and_returns()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.NaiveExperienceMaker.get_cumulative_returns"><code class="docutils literal notranslate"><span class="pre">NaiveExperienceMaker.get_cumulative_returns()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.NaiveExperienceMaker.make_experience"><code class="docutils literal notranslate"><span class="pre">NaiveExperienceMaker.make_experience()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.NaiveExperienceMaker.make_experience_list"><code class="docutils literal notranslate"><span class="pre">NaiveExperienceMaker.make_experience_list()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.NaiveExperienceMaker.process_experiences"><code class="docutils literal notranslate"><span class="pre">NaiveExperienceMaker.process_experiences()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.NaiveExperienceMaker.tokenize_fn"><code class="docutils literal notranslate"><span class="pre">NaiveExperienceMaker.tokenize_fn()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.Samples"><code class="docutils literal notranslate"><span class="pre">Samples</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.Samples.action_mask"><code class="docutils literal notranslate"><span class="pre">Samples.action_mask</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.Samples.attention_mask"><code class="docutils literal notranslate"><span class="pre">Samples.attention_mask</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.Samples.labels"><code class="docutils literal notranslate"><span class="pre">Samples.labels</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.Samples.num_actions"><code class="docutils literal notranslate"><span class="pre">Samples.num_actions</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.Samples.packed_seq_lens"><code class="docutils literal notranslate"><span class="pre">Samples.packed_seq_lens</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.Samples.pad_len"><code class="docutils literal notranslate"><span class="pre">Samples.pad_len</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.Samples.prompts"><code class="docutils literal notranslate"><span class="pre">Samples.prompts</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.Samples.response_length"><code class="docutils literal notranslate"><span class="pre">Samples.response_length</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.Samples.sequences"><code class="docutils literal notranslate"><span class="pre">Samples.sequences</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.Samples.total_length"><code class="docutils literal notranslate"><span class="pre">Samples.total_length</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.clip_filter_like_weight_func"><code class="docutils literal notranslate"><span class="pre">clip_filter_like_weight_func()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.pin_memory"><code class="docutils literal notranslate"><span class="pre">pin_memory()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.to"><code class="docutils literal notranslate"><span class="pre">to()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="experience_maker_vl.html">lightrft.trainer.experience_maker_vl</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="experience_maker_vl.html#lightrft.trainer.experience_maker_vl.ExperienceVL"><code class="docutils literal notranslate"><span class="pre">ExperienceVL</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker_vl.html#lightrft.trainer.experience_maker_vl.ExperienceVL.action_log_probs"><code class="docutils literal notranslate"><span class="pre">ExperienceVL.action_log_probs</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker_vl.html#lightrft.trainer.experience_maker_vl.ExperienceVL.action_mask"><code class="docutils literal notranslate"><span class="pre">ExperienceVL.action_mask</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker_vl.html#lightrft.trainer.experience_maker_vl.ExperienceVL.advantages"><code class="docutils literal notranslate"><span class="pre">ExperienceVL.advantages</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker_vl.html#lightrft.trainer.experience_maker_vl.ExperienceVL.attention_mask"><code class="docutils literal notranslate"><span class="pre">ExperienceVL.attention_mask</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker_vl.html#lightrft.trainer.experience_maker_vl.ExperienceVL.base_action_log_probs"><code class="docutils literal notranslate"><span class="pre">ExperienceVL.base_action_log_probs</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker_vl.html#lightrft.trainer.experience_maker_vl.ExperienceVL.image_flags"><code class="docutils literal notranslate"><span class="pre">ExperienceVL.image_flags</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker_vl.html#lightrft.trainer.experience_maker_vl.ExperienceVL.image_grid_thws"><code class="docutils literal notranslate"><span class="pre">ExperienceVL.image_grid_thws</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker_vl.html#lightrft.trainer.experience_maker_vl.ExperienceVL.info"><code class="docutils literal notranslate"><span class="pre">ExperienceVL.info</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker_vl.html#lightrft.trainer.experience_maker_vl.ExperienceVL.kl"><code class="docutils literal notranslate"><span class="pre">ExperienceVL.kl</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker_vl.html#lightrft.trainer.experience_maker_vl.ExperienceVL.pin_memory"><code class="docutils literal notranslate"><span class="pre">ExperienceVL.pin_memory()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker_vl.html#lightrft.trainer.experience_maker_vl.ExperienceVL.pixel_values"><code class="docutils literal notranslate"><span class="pre">ExperienceVL.pixel_values</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker_vl.html#lightrft.trainer.experience_maker_vl.ExperienceVL.pixel_values_intern"><code class="docutils literal notranslate"><span class="pre">ExperienceVL.pixel_values_intern</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker_vl.html#lightrft.trainer.experience_maker_vl.ExperienceVL.raw_images"><code class="docutils literal notranslate"><span class="pre">ExperienceVL.raw_images</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker_vl.html#lightrft.trainer.experience_maker_vl.ExperienceVL.returns"><code class="docutils literal notranslate"><span class="pre">ExperienceVL.returns</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker_vl.html#lightrft.trainer.experience_maker_vl.ExperienceVL.sequences"><code class="docutils literal notranslate"><span class="pre">ExperienceVL.sequences</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker_vl.html#lightrft.trainer.experience_maker_vl.ExperienceVL.to_device"><code class="docutils literal notranslate"><span class="pre">ExperienceVL.to_device()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker_vl.html#lightrft.trainer.experience_maker_vl.ExperienceVL.values"><code class="docutils literal notranslate"><span class="pre">ExperienceVL.values</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="experience_maker_vl.html#lightrft.trainer.experience_maker_vl.NaiveExperienceMakerVL"><code class="docutils literal notranslate"><span class="pre">NaiveExperienceMakerVL</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker_vl.html#lightrft.trainer.experience_maker_vl.NaiveExperienceMakerVL.generate_samples"><code class="docutils literal notranslate"><span class="pre">NaiveExperienceMakerVL.generate_samples()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker_vl.html#lightrft.trainer.experience_maker_vl.NaiveExperienceMakerVL.get_advantages_and_returns"><code class="docutils literal notranslate"><span class="pre">NaiveExperienceMakerVL.get_advantages_and_returns()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker_vl.html#lightrft.trainer.experience_maker_vl.NaiveExperienceMakerVL.get_cumulative_returns"><code class="docutils literal notranslate"><span class="pre">NaiveExperienceMakerVL.get_cumulative_returns()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker_vl.html#lightrft.trainer.experience_maker_vl.NaiveExperienceMakerVL.make_experience"><code class="docutils literal notranslate"><span class="pre">NaiveExperienceMakerVL.make_experience()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker_vl.html#lightrft.trainer.experience_maker_vl.NaiveExperienceMakerVL.make_experience_list"><code class="docutils literal notranslate"><span class="pre">NaiveExperienceMakerVL.make_experience_list()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker_vl.html#lightrft.trainer.experience_maker_vl.NaiveExperienceMakerVL.process_experiences"><code class="docutils literal notranslate"><span class="pre">NaiveExperienceMakerVL.process_experiences()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker_vl.html#lightrft.trainer.experience_maker_vl.NaiveExperienceMakerVL.processor_fn"><code class="docutils literal notranslate"><span class="pre">NaiveExperienceMakerVL.processor_fn()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker_vl.html#lightrft.trainer.experience_maker_vl.NaiveExperienceMakerVL.tokenize_fn"><code class="docutils literal notranslate"><span class="pre">NaiveExperienceMakerVL.tokenize_fn()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="experience_maker_vl.html#lightrft.trainer.experience_maker_vl.SamplesVL"><code class="docutils literal notranslate"><span class="pre">SamplesVL</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker_vl.html#lightrft.trainer.experience_maker_vl.SamplesVL.action_mask"><code class="docutils literal notranslate"><span class="pre">SamplesVL.action_mask</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker_vl.html#lightrft.trainer.experience_maker_vl.SamplesVL.attention_mask"><code class="docutils literal notranslate"><span class="pre">SamplesVL.attention_mask</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker_vl.html#lightrft.trainer.experience_maker_vl.SamplesVL.image_flags"><code class="docutils literal notranslate"><span class="pre">SamplesVL.image_flags</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker_vl.html#lightrft.trainer.experience_maker_vl.SamplesVL.image_grid_thws"><code class="docutils literal notranslate"><span class="pre">SamplesVL.image_grid_thws</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker_vl.html#lightrft.trainer.experience_maker_vl.SamplesVL.img_num"><code class="docutils literal notranslate"><span class="pre">SamplesVL.img_num</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker_vl.html#lightrft.trainer.experience_maker_vl.SamplesVL.labels"><code class="docutils literal notranslate"><span class="pre">SamplesVL.labels</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker_vl.html#lightrft.trainer.experience_maker_vl.SamplesVL.num_actions"><code class="docutils literal notranslate"><span class="pre">SamplesVL.num_actions</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker_vl.html#lightrft.trainer.experience_maker_vl.SamplesVL.output_texts"><code class="docutils literal notranslate"><span class="pre">SamplesVL.output_texts</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker_vl.html#lightrft.trainer.experience_maker_vl.SamplesVL.packed_seq_lens"><code class="docutils literal notranslate"><span class="pre">SamplesVL.packed_seq_lens</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker_vl.html#lightrft.trainer.experience_maker_vl.SamplesVL.pixel_values"><code class="docutils literal notranslate"><span class="pre">SamplesVL.pixel_values</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker_vl.html#lightrft.trainer.experience_maker_vl.SamplesVL.pixel_values_intern"><code class="docutils literal notranslate"><span class="pre">SamplesVL.pixel_values_intern</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker_vl.html#lightrft.trainer.experience_maker_vl.SamplesVL.prompts"><code class="docutils literal notranslate"><span class="pre">SamplesVL.prompts</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker_vl.html#lightrft.trainer.experience_maker_vl.SamplesVL.raw_images"><code class="docutils literal notranslate"><span class="pre">SamplesVL.raw_images</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker_vl.html#lightrft.trainer.experience_maker_vl.SamplesVL.references"><code class="docutils literal notranslate"><span class="pre">SamplesVL.references</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker_vl.html#lightrft.trainer.experience_maker_vl.SamplesVL.response_length"><code class="docutils literal notranslate"><span class="pre">SamplesVL.response_length</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker_vl.html#lightrft.trainer.experience_maker_vl.SamplesVL.sequences"><code class="docutils literal notranslate"><span class="pre">SamplesVL.sequences</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker_vl.html#lightrft.trainer.experience_maker_vl.SamplesVL.total_length"><code class="docutils literal notranslate"><span class="pre">SamplesVL.total_length</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="experience_maker_vl.html#lightrft.trainer.experience_maker_vl.cumulative_product"><code class="docutils literal notranslate"><span class="pre">cumulative_product()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="experience_maker_vl.html#lightrft.trainer.experience_maker_vl.pin_memory"><code class="docutils literal notranslate"><span class="pre">pin_memory()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="experience_maker_vl.html#lightrft.trainer.experience_maker_vl.to"><code class="docutils literal notranslate"><span class="pre">to()</span></code></a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="experience_maker.html">lightrft.trainer.experience_maker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="experience_maker_vl.html">lightrft.trainer.experience_maker_vl</a></li>
 <li class="toctree-l1"><a class="reference internal" href="fast_exp_maker.html">lightrft.trainer.fast_exp_maker</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="fast_exp_maker.html#fastexperiencemaker">FastExperienceMaker</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="fast_exp_maker.html#lightrft.trainer.fast_exp_maker.FastExperienceMaker"><code class="docutils literal notranslate"><span class="pre">FastExperienceMaker</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="fast_exp_maker.html#fastexperiencemaker">FastExperienceMaker</a></li>
 </ul>
 </li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="grm_trainer_vl.html">lightrft.trainer.grm_trainer_vl</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="grm_trainer_vl.html#lightrft.trainer.grm_trainer_vl.GRMTrainerVL"><code class="docutils literal notranslate"><span class="pre">GRMTrainerVL</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="grm_trainer_vl.html#lightrft.trainer.grm_trainer_vl.GRMTrainerVL.evaluate"><code class="docutils literal notranslate"><span class="pre">GRMTrainerVL.evaluate()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="grm_trainer_vl.html#lightrft.trainer.grm_trainer_vl.GRMTrainerVL.fit"><code class="docutils literal notranslate"><span class="pre">GRMTrainerVL.fit()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="grm_trainer_vl.html#lightrft.trainer.grm_trainer_vl.GRMTrainerVL.save_logs_and_checkpoints"><code class="docutils literal notranslate"><span class="pre">GRMTrainerVL.save_logs_and_checkpoints()</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="kl_controller.html">lightrft.trainer.kl_controller</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="kl_controller.html#lightrft.trainer.kl_controller.AdaptiveKLController"><code class="docutils literal notranslate"><span class="pre">AdaptiveKLController</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="kl_controller.html#lightrft.trainer.kl_controller.AdaptiveKLController.update"><code class="docutils literal notranslate"><span class="pre">AdaptiveKLController.update()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="kl_controller.html#lightrft.trainer.kl_controller.FixedKLController"><code class="docutils literal notranslate"><span class="pre">FixedKLController</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="kl_controller.html#lightrft.trainer.kl_controller.FixedKLController.update"><code class="docutils literal notranslate"><span class="pre">FixedKLController.update()</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="ppo_trainer.html">lightrft.trainer.ppo_trainer</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="ppo_trainer.html#lightrft.trainer.ppo_trainer.PPOTrainer"><code class="docutils literal notranslate"><span class="pre">PPOTrainer</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="ppo_trainer.html#lightrft.trainer.ppo_trainer.PPOTrainer.fit"><code class="docutils literal notranslate"><span class="pre">PPOTrainer.fit()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="ppo_trainer.html#lightrft.trainer.ppo_trainer.PPOTrainer.ppo_train"><code class="docutils literal notranslate"><span class="pre">PPOTrainer.ppo_train()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="ppo_trainer.html#lightrft.trainer.ppo_trainer.PPOTrainer.save_logs_and_checkpoints"><code class="docutils literal notranslate"><span class="pre">PPOTrainer.save_logs_and_checkpoints()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="ppo_trainer.html#lightrft.trainer.ppo_trainer.PPOTrainer.training_step"><code class="docutils literal notranslate"><span class="pre">PPOTrainer.training_step()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="ppo_trainer.html#lightrft.trainer.ppo_trainer.PPOTrainer.training_step_actor"><code class="docutils literal notranslate"><span class="pre">PPOTrainer.training_step_actor()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="ppo_trainer.html#lightrft.trainer.ppo_trainer.PPOTrainer.training_step_critic"><code class="docutils literal notranslate"><span class="pre">PPOTrainer.training_step_critic()</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="ppo_trainer_vl.html">lightrft.trainer.ppo_trainer_vl</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="ppo_trainer_vl.html#lightrft.trainer.ppo_trainer_vl.PPOTrainerVL"><code class="docutils literal notranslate"><span class="pre">PPOTrainerVL</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="ppo_trainer_vl.html#lightrft.trainer.ppo_trainer_vl.PPOTrainerVL.evaluate"><code class="docutils literal notranslate"><span class="pre">PPOTrainerVL.evaluate()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="ppo_trainer_vl.html#lightrft.trainer.ppo_trainer_vl.PPOTrainerVL.fit"><code class="docutils literal notranslate"><span class="pre">PPOTrainerVL.fit()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="ppo_trainer_vl.html#lightrft.trainer.ppo_trainer_vl.PPOTrainerVL.ppo_train"><code class="docutils literal notranslate"><span class="pre">PPOTrainerVL.ppo_train()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="ppo_trainer_vl.html#lightrft.trainer.ppo_trainer_vl.PPOTrainerVL.save_logs_and_checkpoints"><code class="docutils literal notranslate"><span class="pre">PPOTrainerVL.save_logs_and_checkpoints()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="ppo_trainer_vl.html#lightrft.trainer.ppo_trainer_vl.PPOTrainerVL.training_step"><code class="docutils literal notranslate"><span class="pre">PPOTrainerVL.training_step()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="ppo_trainer_vl.html#lightrft.trainer.ppo_trainer_vl.PPOTrainerVL.training_step_actor"><code class="docutils literal notranslate"><span class="pre">PPOTrainerVL.training_step_actor()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="ppo_trainer_vl.html#lightrft.trainer.ppo_trainer_vl.PPOTrainerVL.training_step_critic"><code class="docutils literal notranslate"><span class="pre">PPOTrainerVL.training_step_critic()</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="replay_buffer.html">lightrft.trainer.replay_buffer</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="replay_buffer.html#lightrft.trainer.replay_buffer.NaiveReplayBuffer"><code class="docutils literal notranslate"><span class="pre">NaiveReplayBuffer</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="replay_buffer.html#lightrft.trainer.replay_buffer.NaiveReplayBuffer.append"><code class="docutils literal notranslate"><span class="pre">NaiveReplayBuffer.append()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="replay_buffer.html#lightrft.trainer.replay_buffer.NaiveReplayBuffer.clear"><code class="docutils literal notranslate"><span class="pre">NaiveReplayBuffer.clear()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="replay_buffer.html#lightrft.trainer.replay_buffer.NaiveReplayBuffer.collate_fn"><code class="docutils literal notranslate"><span class="pre">NaiveReplayBuffer.collate_fn()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="replay_buffer.html#lightrft.trainer.replay_buffer.NaiveReplayBuffer.normalize"><code class="docutils literal notranslate"><span class="pre">NaiveReplayBuffer.normalize()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="replay_buffer.html#lightrft.trainer.replay_buffer.NaiveReplayBuffer.sample"><code class="docutils literal notranslate"><span class="pre">NaiveReplayBuffer.sample()</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="replay_buffer_utils.html">lightrft.trainer.replay_buffer_utils</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="replay_buffer_utils.html#lightrft.trainer.replay_buffer_utils.BufferItem"><code class="docutils literal notranslate"><span class="pre">BufferItem</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="replay_buffer_utils.html#lightrft.trainer.replay_buffer_utils.BufferItem.action_log_probs"><code class="docutils literal notranslate"><span class="pre">BufferItem.action_log_probs</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="replay_buffer_utils.html#lightrft.trainer.replay_buffer_utils.BufferItem.action_mask"><code class="docutils literal notranslate"><span class="pre">BufferItem.action_mask</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="replay_buffer_utils.html#lightrft.trainer.replay_buffer_utils.BufferItem.advantages"><code class="docutils literal notranslate"><span class="pre">BufferItem.advantages</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="replay_buffer_utils.html#lightrft.trainer.replay_buffer_utils.BufferItem.attention_mask"><code class="docutils literal notranslate"><span class="pre">BufferItem.attention_mask</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="replay_buffer_utils.html#lightrft.trainer.replay_buffer_utils.BufferItem.base_action_log_probs"><code class="docutils literal notranslate"><span class="pre">BufferItem.base_action_log_probs</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="replay_buffer_utils.html#lightrft.trainer.replay_buffer_utils.BufferItem.info"><code class="docutils literal notranslate"><span class="pre">BufferItem.info</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="replay_buffer_utils.html#lightrft.trainer.replay_buffer_utils.BufferItem.returns"><code class="docutils literal notranslate"><span class="pre">BufferItem.returns</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="replay_buffer_utils.html#lightrft.trainer.replay_buffer_utils.BufferItem.sequences"><code class="docutils literal notranslate"><span class="pre">BufferItem.sequences</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="replay_buffer_utils.html#lightrft.trainer.replay_buffer_utils.BufferItem.values"><code class="docutils literal notranslate"><span class="pre">BufferItem.values</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="replay_buffer_utils.html#lightrft.trainer.replay_buffer_utils.BufferItemVL"><code class="docutils literal notranslate"><span class="pre">BufferItemVL</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="replay_buffer_utils.html#lightrft.trainer.replay_buffer_utils.BufferItemVL.action_log_probs"><code class="docutils literal notranslate"><span class="pre">BufferItemVL.action_log_probs</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="replay_buffer_utils.html#lightrft.trainer.replay_buffer_utils.BufferItemVL.action_mask"><code class="docutils literal notranslate"><span class="pre">BufferItemVL.action_mask</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="replay_buffer_utils.html#lightrft.trainer.replay_buffer_utils.BufferItemVL.advantages"><code class="docutils literal notranslate"><span class="pre">BufferItemVL.advantages</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="replay_buffer_utils.html#lightrft.trainer.replay_buffer_utils.BufferItemVL.attention_mask"><code class="docutils literal notranslate"><span class="pre">BufferItemVL.attention_mask</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="replay_buffer_utils.html#lightrft.trainer.replay_buffer_utils.BufferItemVL.base_action_log_probs"><code class="docutils literal notranslate"><span class="pre">BufferItemVL.base_action_log_probs</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="replay_buffer_utils.html#lightrft.trainer.replay_buffer_utils.BufferItemVL.image_flags"><code class="docutils literal notranslate"><span class="pre">BufferItemVL.image_flags</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="replay_buffer_utils.html#lightrft.trainer.replay_buffer_utils.BufferItemVL.image_grid_thws"><code class="docutils literal notranslate"><span class="pre">BufferItemVL.image_grid_thws</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="replay_buffer_utils.html#lightrft.trainer.replay_buffer_utils.BufferItemVL.info"><code class="docutils literal notranslate"><span class="pre">BufferItemVL.info</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="replay_buffer_utils.html#lightrft.trainer.replay_buffer_utils.BufferItemVL.pixel_values"><code class="docutils literal notranslate"><span class="pre">BufferItemVL.pixel_values</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="replay_buffer_utils.html#lightrft.trainer.replay_buffer_utils.BufferItemVL.pixel_values_intern"><code class="docutils literal notranslate"><span class="pre">BufferItemVL.pixel_values_intern</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="replay_buffer_utils.html#lightrft.trainer.replay_buffer_utils.BufferItemVL.raw_images"><code class="docutils literal notranslate"><span class="pre">BufferItemVL.raw_images</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="replay_buffer_utils.html#lightrft.trainer.replay_buffer_utils.BufferItemVL.returns"><code class="docutils literal notranslate"><span class="pre">BufferItemVL.returns</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="replay_buffer_utils.html#lightrft.trainer.replay_buffer_utils.BufferItemVL.sequences"><code class="docutils literal notranslate"><span class="pre">BufferItemVL.sequences</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="replay_buffer_utils.html#lightrft.trainer.replay_buffer_utils.BufferItemVL.values"><code class="docutils literal notranslate"><span class="pre">BufferItemVL.values</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="replay_buffer_utils.html#lightrft.trainer.replay_buffer_utils.is_vl_experience"><code class="docutils literal notranslate"><span class="pre">is_vl_experience()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="replay_buffer_utils.html#lightrft.trainer.replay_buffer_utils.make_experience_batch"><code class="docutils literal notranslate"><span class="pre">make_experience_batch()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="replay_buffer_utils.html#lightrft.trainer.replay_buffer_utils.remove_padding_in_sequences"><code class="docutils literal notranslate"><span class="pre">remove_padding_in_sequences()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="replay_buffer_utils.html#lightrft.trainer.replay_buffer_utils.split_experience_batch"><code class="docutils literal notranslate"><span class="pre">split_experience_batch()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="replay_buffer_utils.html#lightrft.trainer.replay_buffer_utils.zero_pad_sequences"><code class="docutils literal notranslate"><span class="pre">zero_pad_sequences()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="replay_buffer_vl.html">lightrft.trainer.replay_buffer_vl</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="replay_buffer_vl.html#lightrft.trainer.replay_buffer_vl.NaiveReplayBufferVL"><code class="docutils literal notranslate"><span class="pre">NaiveReplayBufferVL</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="replay_buffer_vl.html#lightrft.trainer.replay_buffer_vl.NaiveReplayBufferVL.append"><code class="docutils literal notranslate"><span class="pre">NaiveReplayBufferVL.append()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="replay_buffer_vl.html#lightrft.trainer.replay_buffer_vl.NaiveReplayBufferVL.clear"><code class="docutils literal notranslate"><span class="pre">NaiveReplayBufferVL.clear()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="replay_buffer_vl.html#lightrft.trainer.replay_buffer_vl.NaiveReplayBufferVL.collate_fn"><code class="docutils literal notranslate"><span class="pre">NaiveReplayBufferVL.collate_fn()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="replay_buffer_vl.html#lightrft.trainer.replay_buffer_vl.NaiveReplayBufferVL.normalize"><code class="docutils literal notranslate"><span class="pre">NaiveReplayBufferVL.normalize()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="replay_buffer_vl.html#lightrft.trainer.replay_buffer_vl.NaiveReplayBufferVL.sample"><code class="docutils literal notranslate"><span class="pre">NaiveReplayBufferVL.sample()</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="grm_trainer_vl.html">lightrft.trainer.grm_trainer_vl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="kl_controller.html">lightrft.trainer.kl_controller</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ppo_trainer.html">lightrft.trainer.ppo_trainer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ppo_trainer_vl.html">lightrft.trainer.ppo_trainer_vl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="replay_buffer.html">lightrft.trainer.replay_buffer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="replay_buffer_utils.html">lightrft.trainer.replay_buffer_utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="replay_buffer_vl.html">lightrft.trainer.replay_buffer_vl</a></li>
 <li class="toctree-l1"><a class="reference internal" href="spmd_ppo_trainer.html">lightrft.trainer.spmd_ppo_trainer</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="spmd_ppo_trainer.html#spmdppotrainerbase">SPMDPPOTrainerBase</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="spmd_ppo_trainer.html#lightrft.trainer.spmd_ppo_trainer.SPMDPPOTrainerBase"><code class="docutils literal notranslate"><span class="pre">SPMDPPOTrainerBase</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="spmd_ppo_trainer.html#spmdppotrainerbase">SPMDPPOTrainerBase</a></li>
+<li class="toctree-l2"><a class="reference internal" href="spmd_ppo_trainer.html#spmdppotrainer">SPMDPPOTrainer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="spmd_ppo_trainer.html#spmdppotrainervl">SPMDPPOTrainerVL</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="spmd_ppo_trainer.html#spmdppotrainer">SPMDPPOTrainer</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="spmd_ppo_trainer.html#lightrft.trainer.spmd_ppo_trainer.SPMDPPOTrainer"><code class="docutils literal notranslate"><span class="pre">SPMDPPOTrainer</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="spmd_ppo_trainer.html#spmdppotrainervl">SPMDPPOTrainerVL</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="spmd_ppo_trainer.html#lightrft.trainer.spmd_ppo_trainer.SPMDPPOTrainerVL"><code class="docutils literal notranslate"><span class="pre">SPMDPPOTrainerVL</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="srm_trainer_al.html">lightrft.trainer.srm_trainer_al</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="srm_trainer_al.html#lightrft.trainer.srm_trainer_al.SRMTrainerAL"><code class="docutils literal notranslate"><span class="pre">SRMTrainerAL</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="srm_trainer_al.html#lightrft.trainer.srm_trainer_al.SRMTrainerAL.concatenated_forward"><code class="docutils literal notranslate"><span class="pre">SRMTrainerAL.concatenated_forward()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="srm_trainer_al.html#lightrft.trainer.srm_trainer_al.SRMTrainerAL.concatenated_inputs"><code class="docutils literal notranslate"><span class="pre">SRMTrainerAL.concatenated_inputs()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="srm_trainer_al.html#lightrft.trainer.srm_trainer_al.SRMTrainerAL.evaluate"><code class="docutils literal notranslate"><span class="pre">SRMTrainerAL.evaluate()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="srm_trainer_al.html#lightrft.trainer.srm_trainer_al.SRMTrainerAL.fit"><code class="docutils literal notranslate"><span class="pre">SRMTrainerAL.fit()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="srm_trainer_al.html#lightrft.trainer.srm_trainer_al.SRMTrainerAL.save_logs_and_checkpoints"><code class="docutils literal notranslate"><span class="pre">SRMTrainerAL.save_logs_and_checkpoints()</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="srm_trainer_vl.html">lightrft.trainer.srm_trainer_vl</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="srm_trainer_vl.html#lightrft.trainer.srm_trainer_vl.SRMTrainerVL"><code class="docutils literal notranslate"><span class="pre">SRMTrainerVL</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="srm_trainer_vl.html#lightrft.trainer.srm_trainer_vl.SRMTrainerVL.concatenated_forward"><code class="docutils literal notranslate"><span class="pre">SRMTrainerVL.concatenated_forward()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="srm_trainer_vl.html#lightrft.trainer.srm_trainer_vl.SRMTrainerVL.concatenated_inputs"><code class="docutils literal notranslate"><span class="pre">SRMTrainerVL.concatenated_inputs()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="srm_trainer_vl.html#lightrft.trainer.srm_trainer_vl.SRMTrainerVL.evaluate"><code class="docutils literal notranslate"><span class="pre">SRMTrainerVL.evaluate()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="srm_trainer_vl.html#lightrft.trainer.srm_trainer_vl.SRMTrainerVL.fit"><code class="docutils literal notranslate"><span class="pre">SRMTrainerVL.fit()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="srm_trainer_vl.html#lightrft.trainer.srm_trainer_vl.SRMTrainerVL.save_logs_and_checkpoints"><code class="docutils literal notranslate"><span class="pre">SRMTrainerVL.save_logs_and_checkpoints()</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="utils.html">lightrft.trainer.utils</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="utils.html#lightrft.trainer.utils.RunningMoments"><code class="docutils literal notranslate"><span class="pre">RunningMoments</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="utils.html#lightrft.trainer.utils.RunningMoments.update"><code class="docutils literal notranslate"><span class="pre">RunningMoments.update()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="utils.html#lightrft.trainer.utils.compute_clip_fraction"><code class="docutils literal notranslate"><span class="pre">compute_clip_fraction()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="utils.html#lightrft.trainer.utils.fire_sampling"><code class="docutils literal notranslate"><span class="pre">fire_sampling()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="utils.html#lightrft.trainer.utils.get_cpgd_advantages_returns"><code class="docutils literal notranslate"><span class="pre">get_cpgd_advantages_returns()</span></code></a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="srm_trainer_al.html">lightrft.trainer.srm_trainer_al</a></li>
+<li class="toctree-l1"><a class="reference internal" href="srm_trainer_vl.html">lightrft.trainer.srm_trainer_vl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">lightrft.trainer.utils</a></li>
 </ul>
 </div>
 </section>

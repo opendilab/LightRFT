@@ -306,105 +306,8 @@
             <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
               <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
                 
-  <section id="module-lightrft.datasets.rapidata">
-<span id="lightrft-datasets-rapidata"></span><h1>lightrft.datasets.rapidata<a class="headerlink" href="#module-lightrft.datasets.rapidata" title="Permalink to this heading">¶</a></h1>
-<dl class="py class">
-<dt class="sig sig-object py" id="lightrft.datasets.rapidata.RapidataI2VHandler">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">lightrft.datasets.rapidata.</span></span><span class="sig-name descname"><span class="pre">RapidataI2VHandler</span></span><a class="reference internal" href="../../_modules/lightrft/datasets/rapidata.html#RapidataI2VHandler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.datasets.rapidata.RapidataI2VHandler" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#lightrft.datasets.rapidata.RapidataT2VHandler" title="lightrft.datasets.rapidata.RapidataT2VHandler"><code class="xref py py-class docutils literal notranslate"><span class="pre">RapidataT2VHandler</span></code></a></p>
-<p>Data Handler for Rapidata image-to-video human preferences dataset.</p>
-<p>Support datasets:</p>
-<ul class="simple">
-<li><p>Rapidata/image-2-video-human-preferences-seedance-1-pro</p></li>
-</ul>
-<p>Dataset Repo: <a class="reference external" href="https://huggingface.co/Rapidata/datasets">https://huggingface.co/Rapidata/datasets</a></p>
-<dl class="py method">
-<dt class="sig sig-object py" id="lightrft.datasets.rapidata.RapidataI2VHandler.get_media_info">
-<span class="sig-name descname"><span class="pre">get_media_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/lightrft/datasets/rapidata.html#RapidataI2VHandler.get_media_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.datasets.rapidata.RapidataI2VHandler.get_media_info" title="Permalink to this definition">¶</a></dt>
-<dd><p>Extract path info for the two videos.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="lightrft.datasets.rapidata.RapidataI2VHandler.parse_item">
-<span class="sig-name descname"><span class="pre">parse_item</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">media_content</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/lightrft/datasets/rapidata.html#RapidataI2VHandler.parse_item"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.datasets.rapidata.RapidataI2VHandler.parse_item" title="Permalink to this definition">¶</a></dt>
-<dd><p>Parse the raw item and the loaded media_content into the standard format.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>item</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – The raw data item.</p></li>
-<li><p><strong>media_content</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – A dict containing loaded content.</p></li>
-<li><p><strong>config</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – A dict of additional configuration options.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A tuple containing lists of dictionaries and one dictionary.
-For pointwise scoring data: (messages_chosen, messages_rejected, other)
-For pairwise ranking data: (messages, other)</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Union[Tuple[List[Dict], List[Dict], Dict], Tuple[List[Dict], Dict]]</p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="lightrft.datasets.rapidata.RapidataT2VHandler">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">lightrft.datasets.rapidata.</span></span><span class="sig-name descname"><span class="pre">RapidataT2VHandler</span></span><a class="reference internal" href="../../_modules/lightrft/datasets/rapidata.html#RapidataT2VHandler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.datasets.rapidata.RapidataT2VHandler" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="utils.html#lightrft.datasets.utils.BaseDataHandler" title="lightrft.datasets.utils.BaseDataHandler"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseDataHandler</span></code></a></p>
-<p>Data Handler for Rapidata text-to-video human preferences dataset.</p>
-<p>Support datasets:</p>
-<ul class="simple">
-<li><p>Rapidata/text-2-video-human-preferences-pika2.2</p></li>
-<li><p>Rapidata/text-2-image-human-preferences-veo3:</p></li>
-<li><p>Rapidata/text-2-video-human-preferences-wan2.1:</p></li>
-</ul>
-<p>This dataset contains pairs of videos (video1, video2) generated from a prompt.
-It includes weighted scores for Preference, Coherence, and Alignment.</p>
-<ul class="simple">
-<li><p>‘A’ means video1 (messages0) is preferred.</p></li>
-<li><p>‘B’ means video2 (messages1) is preferred.</p></li>
-<li><p>‘C’ means they are equal or tied.</p></li>
-</ul>
-<p>Dataset Repo: <a class="reference external" href="https://huggingface.co/Rapidata/datasets">https://huggingface.co/Rapidata/datasets</a></p>
-<dl class="py method">
-<dt class="sig sig-object py" id="lightrft.datasets.rapidata.RapidataT2VHandler.get_media_info">
-<span class="sig-name descname"><span class="pre">get_media_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/lightrft/datasets/rapidata.html#RapidataT2VHandler.get_media_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.datasets.rapidata.RapidataT2VHandler.get_media_info" title="Permalink to this definition">¶</a></dt>
-<dd><p>Extract path info for the two videos.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="lightrft.datasets.rapidata.RapidataT2VHandler.load_data">
-<span class="sig-name descname"><span class="pre">load_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/lightrft/datasets/rapidata.html#RapidataT2VHandler.load_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.datasets.rapidata.RapidataT2VHandler.load_data" title="Permalink to this definition">¶</a></dt>
-<dd><p>Loads data from parquet file.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="lightrft.datasets.rapidata.RapidataT2VHandler.parse_item">
-<span class="sig-name descname"><span class="pre">parse_item</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">media_content</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/lightrft/datasets/rapidata.html#RapidataT2VHandler.parse_item"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.datasets.rapidata.RapidataT2VHandler.parse_item" title="Permalink to this definition">¶</a></dt>
-<dd><p>Parse the raw item and the loaded media_content into the standard format.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>item</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – The raw data item.</p></li>
-<li><p><strong>media_content</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – A dict containing loaded content.</p></li>
-<li><p><strong>config</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – A dict of additional configuration options.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A tuple containing lists of dictionaries and one dictionary.
-For pointwise scoring data: (messages_chosen, messages_rejected, other)
-For pairwise ranking data: (messages, other)</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Union[Tuple[List[Dict], List[Dict], Dict], Tuple[List[Dict], Dict]]</p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
+  <section id="lightrft-datasets-rapidata">
+<h1>lightrft.datasets.rapidata<a class="headerlink" href="#lightrft-datasets-rapidata" title="Permalink to this heading">¶</a></h1>
 </section>
 
 
@@ -450,20 +353,7 @@ For pairwise ranking data: (messages, other)</p>
           <div class="pytorch-right-menu" id="pytorch-right-menu">
             <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
               <ul>
-<li><a class="reference internal" href="#">lightrft.datasets.rapidata</a><ul>
-<li><a class="reference internal" href="#lightrft.datasets.rapidata.RapidataI2VHandler"><code class="docutils literal notranslate"><span class="pre">RapidataI2VHandler</span></code></a><ul>
-<li><a class="reference internal" href="#lightrft.datasets.rapidata.RapidataI2VHandler.get_media_info"><code class="docutils literal notranslate"><span class="pre">RapidataI2VHandler.get_media_info()</span></code></a></li>
-<li><a class="reference internal" href="#lightrft.datasets.rapidata.RapidataI2VHandler.parse_item"><code class="docutils literal notranslate"><span class="pre">RapidataI2VHandler.parse_item()</span></code></a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#lightrft.datasets.rapidata.RapidataT2VHandler"><code class="docutils literal notranslate"><span class="pre">RapidataT2VHandler</span></code></a><ul>
-<li><a class="reference internal" href="#lightrft.datasets.rapidata.RapidataT2VHandler.get_media_info"><code class="docutils literal notranslate"><span class="pre">RapidataT2VHandler.get_media_info()</span></code></a></li>
-<li><a class="reference internal" href="#lightrft.datasets.rapidata.RapidataT2VHandler.load_data"><code class="docutils literal notranslate"><span class="pre">RapidataT2VHandler.load_data()</span></code></a></li>
-<li><a class="reference internal" href="#lightrft.datasets.rapidata.RapidataT2VHandler.parse_item"><code class="docutils literal notranslate"><span class="pre">RapidataT2VHandler.parse_item()</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
+<li><a class="reference internal" href="#">lightrft.datasets.rapidata</a></li>
 </ul>
 
             </div>

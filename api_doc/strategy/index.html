@@ -304,64 +304,11 @@
             <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
               <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
                 
-  <section id="module-lightrft.strategy">
-<span id="lightrft-strategy"></span><h1>lightrft.strategy<a class="headerlink" href="#module-lightrft.strategy" title="Permalink to this heading">¶</a></h1>
+  <section id="lightrft-strategy">
+<h1>lightrft.strategy<a class="headerlink" href="#lightrft-strategy" title="Permalink to this heading">¶</a></h1>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="config.html">lightrft.strategy.config</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="config.html#lightrft.strategy.config.StrategyConfig"><code class="docutils literal notranslate"><span class="pre">StrategyConfig</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="config.html#lightrft.strategy.config.StrategyConfig.actor_learning_rate"><code class="docutils literal notranslate"><span class="pre">StrategyConfig.actor_learning_rate</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="config.html#lightrft.strategy.config.StrategyConfig.adam_betas"><code class="docutils literal notranslate"><span class="pre">StrategyConfig.adam_betas</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="config.html#lightrft.strategy.config.StrategyConfig.adam_offload"><code class="docutils literal notranslate"><span class="pre">StrategyConfig.adam_offload</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="config.html#lightrft.strategy.config.StrategyConfig.advantage_clip"><code class="docutils literal notranslate"><span class="pre">StrategyConfig.advantage_clip</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="config.html#lightrft.strategy.config.StrategyConfig.advantage_estimator"><code class="docutils literal notranslate"><span class="pre">StrategyConfig.advantage_estimator</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="config.html#lightrft.strategy.config.StrategyConfig.advantages_norm"><code class="docutils literal notranslate"><span class="pre">StrategyConfig.advantages_norm</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="config.html#lightrft.strategy.config.StrategyConfig.bf16"><code class="docutils literal notranslate"><span class="pre">StrategyConfig.bf16</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="config.html#lightrft.strategy.config.StrategyConfig.critic_learning_rate"><code class="docutils literal notranslate"><span class="pre">StrategyConfig.critic_learning_rate</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="config.html#lightrft.strategy.config.StrategyConfig.critic_pretrain"><code class="docutils literal notranslate"><span class="pre">StrategyConfig.critic_pretrain</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="config.html#lightrft.strategy.config.StrategyConfig.dynamic_sampling"><code class="docutils literal notranslate"><span class="pre">StrategyConfig.dynamic_sampling</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="config.html#lightrft.strategy.config.StrategyConfig.enable_engine_sleep"><code class="docutils literal notranslate"><span class="pre">StrategyConfig.enable_engine_sleep</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="config.html#lightrft.strategy.config.StrategyConfig.engine_tp_size"><code class="docutils literal notranslate"><span class="pre">StrategyConfig.engine_tp_size</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="config.html#lightrft.strategy.config.StrategyConfig.engine_type"><code class="docutils literal notranslate"><span class="pre">StrategyConfig.engine_type</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="config.html#lightrft.strategy.config.StrategyConfig.extra_args"><code class="docutils literal notranslate"><span class="pre">StrategyConfig.extra_args</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="config.html#lightrft.strategy.config.StrategyConfig.from_args"><code class="docutils literal notranslate"><span class="pre">StrategyConfig.from_args()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="config.html#lightrft.strategy.config.StrategyConfig.fsdp"><code class="docutils literal notranslate"><span class="pre">StrategyConfig.fsdp</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="config.html#lightrft.strategy.config.StrategyConfig.fsdp_cpu_offload"><code class="docutils literal notranslate"><span class="pre">StrategyConfig.fsdp_cpu_offload</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="config.html#lightrft.strategy.config.StrategyConfig.fused_linear_logprob"><code class="docutils literal notranslate"><span class="pre">StrategyConfig.fused_linear_logprob</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="config.html#lightrft.strategy.config.StrategyConfig.grad_accum_dtype"><code class="docutils literal notranslate"><span class="pre">StrategyConfig.grad_accum_dtype</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="config.html#lightrft.strategy.config.StrategyConfig.kl_estimator"><code class="docutils literal notranslate"><span class="pre">StrategyConfig.kl_estimator</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="config.html#lightrft.strategy.config.StrategyConfig.l2"><code class="docutils literal notranslate"><span class="pre">StrategyConfig.l2</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="config.html#lightrft.strategy.config.StrategyConfig.local_rank"><code class="docutils literal notranslate"><span class="pre">StrategyConfig.local_rank</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="config.html#lightrft.strategy.config.StrategyConfig.lr_warmup_ratio"><code class="docutils literal notranslate"><span class="pre">StrategyConfig.lr_warmup_ratio</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="config.html#lightrft.strategy.config.StrategyConfig.max_norm"><code class="docutils literal notranslate"><span class="pre">StrategyConfig.max_norm</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="config.html#lightrft.strategy.config.StrategyConfig.micro_rollout_batch_size"><code class="docutils literal notranslate"><span class="pre">StrategyConfig.micro_rollout_batch_size</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="config.html#lightrft.strategy.config.StrategyConfig.micro_train_batch_size"><code class="docutils literal notranslate"><span class="pre">StrategyConfig.micro_train_batch_size</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="config.html#lightrft.strategy.config.StrategyConfig.mixed_mm_data"><code class="docutils literal notranslate"><span class="pre">StrategyConfig.mixed_mm_data</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="config.html#lightrft.strategy.config.StrategyConfig.n_samples_per_prompt"><code class="docutils literal notranslate"><span class="pre">StrategyConfig.n_samples_per_prompt</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="config.html#lightrft.strategy.config.StrategyConfig.overlap_comm"><code class="docutils literal notranslate"><span class="pre">StrategyConfig.overlap_comm</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="config.html#lightrft.strategy.config.StrategyConfig.overlong_buffer"><code class="docutils literal notranslate"><span class="pre">StrategyConfig.overlong_buffer</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="config.html#lightrft.strategy.config.StrategyConfig.overlong_buffer_len"><code class="docutils literal notranslate"><span class="pre">StrategyConfig.overlong_buffer_len</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="config.html#lightrft.strategy.config.StrategyConfig.overlong_buffer_penalty_factor"><code class="docutils literal notranslate"><span class="pre">StrategyConfig.overlong_buffer_penalty_factor</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="config.html#lightrft.strategy.config.StrategyConfig.plot_every"><code class="docutils literal notranslate"><span class="pre">StrategyConfig.plot_every</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="config.html#lightrft.strategy.config.StrategyConfig.pretrain_data"><code class="docutils literal notranslate"><span class="pre">StrategyConfig.pretrain_data</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="config.html#lightrft.strategy.config.StrategyConfig.print_config_summary"><code class="docutils literal notranslate"><span class="pre">StrategyConfig.print_config_summary()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="config.html#lightrft.strategy.config.StrategyConfig.remote_rm_url"><code class="docutils literal notranslate"><span class="pre">StrategyConfig.remote_rm_url</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="config.html#lightrft.strategy.config.StrategyConfig.reward_clip"><code class="docutils literal notranslate"><span class="pre">StrategyConfig.reward_clip</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="config.html#lightrft.strategy.config.StrategyConfig.reward_running_norm"><code class="docutils literal notranslate"><span class="pre">StrategyConfig.reward_running_norm</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="config.html#lightrft.strategy.config.StrategyConfig.reward_running_norm_minus_mean"><code class="docutils literal notranslate"><span class="pre">StrategyConfig.reward_running_norm_minus_mean</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="config.html#lightrft.strategy.config.StrategyConfig.ring_attn_size"><code class="docutils literal notranslate"><span class="pre">StrategyConfig.ring_attn_size</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="config.html#lightrft.strategy.config.StrategyConfig.seed"><code class="docutils literal notranslate"><span class="pre">StrategyConfig.seed</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="config.html#lightrft.strategy.config.StrategyConfig.sp_size"><code class="docutils literal notranslate"><span class="pre">StrategyConfig.sp_size</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="config.html#lightrft.strategy.config.StrategyConfig.train_batch_size"><code class="docutils literal notranslate"><span class="pre">StrategyConfig.train_batch_size</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="config.html#lightrft.strategy.config.StrategyConfig.use_kl_loss"><code class="docutils literal notranslate"><span class="pre">StrategyConfig.use_kl_loss</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="config.html#lightrft.strategy.config.StrategyConfig.use_mp_opt"><code class="docutils literal notranslate"><span class="pre">StrategyConfig.use_mp_opt</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="config.html#lightrft.strategy.config.StrategyConfig.use_tensorboard"><code class="docutils literal notranslate"><span class="pre">StrategyConfig.use_tensorboard</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="config.html#lightrft.strategy.config.StrategyConfig.zero_stage"><code class="docutils literal notranslate"><span class="pre">StrategyConfig.zero_stage</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="config.html#lightrft.strategy.config.StrategyConfig.zpg"><code class="docutils literal notranslate"><span class="pre">StrategyConfig.zpg</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="config.html">lightrft.strategy.config</a></li>
 <li class="toctree-l1"><a class="reference internal" href="deepspeed/index.html">lightrft.strategy.deepspeed</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="deepspeed/deepspeed.html">lightrft.strategy.deepspeed.deepspeed</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="deepspeed/deepspeed.html#modeloptimpair">ModelOptimPair</a></li>
@@ -378,33 +325,7 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="fake_strategy.html">lightrft.strategy.fake_strategy</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="fake_strategy.html#lightrft.strategy.fake_strategy.FakeStrategy"><code class="docutils literal notranslate"><span class="pre">FakeStrategy</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="fake_strategy.html#lightrft.strategy.fake_strategy.FakeStrategy.all_gather"><code class="docutils literal notranslate"><span class="pre">FakeStrategy.all_gather()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="fake_strategy.html#lightrft.strategy.fake_strategy.FakeStrategy.all_reduce"><code class="docutils literal notranslate"><span class="pre">FakeStrategy.all_reduce()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="fake_strategy.html#lightrft.strategy.fake_strategy.FakeStrategy.backward"><code class="docutils literal notranslate"><span class="pre">FakeStrategy.backward()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="fake_strategy.html#lightrft.strategy.fake_strategy.FakeStrategy.create_optimizer"><code class="docutils literal notranslate"><span class="pre">FakeStrategy.create_optimizer()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="fake_strategy.html#lightrft.strategy.fake_strategy.FakeStrategy.engine_generate_local"><code class="docutils literal notranslate"><span class="pre">FakeStrategy.engine_generate_local()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="fake_strategy.html#lightrft.strategy.fake_strategy.FakeStrategy.gather_and_generate"><code class="docutils literal notranslate"><span class="pre">FakeStrategy.gather_and_generate()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="fake_strategy.html#lightrft.strategy.fake_strategy.FakeStrategy.get_rank"><code class="docutils literal notranslate"><span class="pre">FakeStrategy.get_rank()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="fake_strategy.html#lightrft.strategy.fake_strategy.FakeStrategy.init_model_context"><code class="docutils literal notranslate"><span class="pre">FakeStrategy.init_model_context()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="fake_strategy.html#lightrft.strategy.fake_strategy.FakeStrategy.is_rank_0"><code class="docutils literal notranslate"><span class="pre">FakeStrategy.is_rank_0()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="fake_strategy.html#lightrft.strategy.fake_strategy.FakeStrategy.load_ckpt"><code class="docutils literal notranslate"><span class="pre">FakeStrategy.load_ckpt()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="fake_strategy.html#lightrft.strategy.fake_strategy.FakeStrategy.maybe_load_optimizer"><code class="docutils literal notranslate"><span class="pre">FakeStrategy.maybe_load_optimizer()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="fake_strategy.html#lightrft.strategy.fake_strategy.FakeStrategy.maybe_offload_optimizer"><code class="docutils literal notranslate"><span class="pre">FakeStrategy.maybe_offload_optimizer()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="fake_strategy.html#lightrft.strategy.fake_strategy.FakeStrategy.maybe_sleep_inference_engine"><code class="docutils literal notranslate"><span class="pre">FakeStrategy.maybe_sleep_inference_engine()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="fake_strategy.html#lightrft.strategy.fake_strategy.FakeStrategy.optimizer_step"><code class="docutils literal notranslate"><span class="pre">FakeStrategy.optimizer_step()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="fake_strategy.html#lightrft.strategy.fake_strategy.FakeStrategy.prepare"><code class="docutils literal notranslate"><span class="pre">FakeStrategy.prepare()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="fake_strategy.html#lightrft.strategy.fake_strategy.FakeStrategy.save_ckpt"><code class="docutils literal notranslate"><span class="pre">FakeStrategy.save_ckpt()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="fake_strategy.html#lightrft.strategy.fake_strategy.FakeStrategy.setup_distributed"><code class="docutils literal notranslate"><span class="pre">FakeStrategy.setup_distributed()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="fake_strategy.html#lightrft.strategy.fake_strategy.FakeStrategy.setup_inference_engine"><code class="docutils literal notranslate"><span class="pre">FakeStrategy.setup_inference_engine()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="fake_strategy.html#lightrft.strategy.fake_strategy.FakeStrategy.update_engine_weights"><code class="docutils literal notranslate"><span class="pre">FakeStrategy.update_engine_weights()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="fake_strategy.html#lightrft.strategy.fake_strategy.FakeStrategy.wakeup_inference_engine"><code class="docutils literal notranslate"><span class="pre">FakeStrategy.wakeup_inference_engine()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="fake_strategy.html#lightrft.strategy.fake_strategy.get_fake_strategy"><code class="docutils literal notranslate"><span class="pre">get_fake_strategy()</span></code></a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="fake_strategy.html">lightrft.strategy.fake_strategy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="fsdp/index.html">lightrft.strategy.fsdp</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="fsdp/fsdp_optimizer.html">lightrft.strategy.fsdp.fsdp_optimizer</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="fsdp/fsdp_optimizer.html#dtensor-supported">DTENSOR_SUPPORTED</a></li>
@@ -442,37 +363,18 @@
 <li class="toctree-l3"><a class="reference internal" href="sglang_utils/sglang_engine.html#rlgenerationengine">RLGenerationEngine</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="sglang_utils/sgl_model_saver.html">lightrft.strategy.sglang_utils.sgl_model_saver</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="sglang_utils/sgl_model_saver.html#lightrft.strategy.sglang_utils.sgl_model_saver.release_memory_occupation"><code class="docutils literal notranslate"><span class="pre">release_memory_occupation()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="sglang_utils/sgl_model_saver.html#lightrft.strategy.sglang_utils.sgl_model_saver.resume_memory_occupation"><code class="docutils literal notranslate"><span class="pre">resume_memory_occupation()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="sglang_utils/index.html#get-sglang-engine">get_sglang_engine</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="sglang_utils/index.html#lightrft.strategy.sglang_utils.get_sglang_engine"><code class="docutils literal notranslate"><span class="pre">get_sglang_engine()</span></code></a></li>
-</ul>
-</li>
+<li class="toctree-l2"><a class="reference internal" href="sglang_utils/sgl_model_saver.html">lightrft.strategy.sglang_utils.sgl_model_saver</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sglang_utils/index.html#get-sglang-engine">get_sglang_engine</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="strategy.html">lightrft.strategy.strategy</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="strategy.html#get-strategy">get_strategy</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="strategy.html#lightrft.strategy.strategy.get_strategy"><code class="docutils literal notranslate"><span class="pre">get_strategy()</span></code></a></li>
-</ul>
-</li>
+<li class="toctree-l2"><a class="reference internal" href="strategy.html#get-strategy">get_strategy</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="strategy_base.html">lightrft.strategy.strategy_base</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="strategy_base.html#enginestatus">EngineStatus</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="strategy_base.html#lightrft.strategy.strategy_base.EngineStatus"><code class="docutils literal notranslate"><span class="pre">EngineStatus</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="strategy_base.html#strategybase">StrategyBase</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="strategy_base.html#lightrft.strategy.strategy_base.StrategyBase"><code class="docutils literal notranslate"><span class="pre">StrategyBase</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="strategy_base.html#is-actor">is_actor</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="strategy_base.html#lightrft.strategy.strategy_base.is_actor"><code class="docutils literal notranslate"><span class="pre">is_actor()</span></code></a></li>
-</ul>
-</li>
+<li class="toctree-l2"><a class="reference internal" href="strategy_base.html#enginestatus">EngineStatus</a></li>
+<li class="toctree-l2"><a class="reference internal" href="strategy_base.html#strategybase">StrategyBase</a></li>
+<li class="toctree-l2"><a class="reference internal" href="strategy_base.html#is-actor">is_actor</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="utils/index.html">lightrft.strategy.utils</a><ul>
@@ -488,13 +390,7 @@
 <li class="toctree-l3"><a class="reference internal" href="utils/data_utils.html#distributedsampler">DistributedSampler</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="utils/distributed_util.html">lightrft.strategy.utils.distributed_util</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="utils/distributed_util.html#lightrft.strategy.utils.distributed_util.all_gather_all_prompt_token_ids"><code class="docutils literal notranslate"><span class="pre">all_gather_all_prompt_token_ids()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="utils/distributed_util.html#lightrft.strategy.utils.distributed_util.create_sub_group"><code class="docutils literal notranslate"><span class="pre">create_sub_group()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="utils/distributed_util.html#lightrft.strategy.utils.distributed_util.gather_inputs_object_for_inference"><code class="docutils literal notranslate"><span class="pre">gather_inputs_object_for_inference()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="utils/distributed_util.html#lightrft.strategy.utils.distributed_util.init_process_group"><code class="docutils literal notranslate"><span class="pre">init_process_group()</span></code></a></li>
-</ul>
-</li>
+<li class="toctree-l2"><a class="reference internal" href="utils/distributed_util.html">lightrft.strategy.utils.distributed_util</a></li>
 <li class="toctree-l2"><a class="reference internal" href="utils/optimizer_utils.html">lightrft.strategy.utils.optimizer_utils</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="utils/optimizer_utils.html#default-no-decay-name-list">_DEFAULT_NO_DECAY_NAME_LIST</a></li>
 <li class="toctree-l3"><a class="reference internal" href="utils/optimizer_utils.html#get-optimizer-grouped-parameters">get_optimizer_grouped_parameters</a></li>
@@ -525,10 +421,7 @@
 <li class="toctree-l3"><a class="reference internal" href="vllm_utils/vllm_worker_wrap_no_ray.html#workerwrap">WorkerWrap</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="vllm_utils/index.html#get-vllm-engine">get_vllm_engine</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="vllm_utils/index.html#lightrft.strategy.vllm_utils.get_vllm_engine"><code class="docutils literal notranslate"><span class="pre">get_vllm_engine()</span></code></a></li>
-</ul>
-</li>
+<li class="toctree-l2"><a class="reference internal" href="vllm_utils/index.html#get-vllm-engine">get_vllm_engine</a></li>
 </ul>
 </li>
 </ul>
