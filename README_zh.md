@@ -346,7 +346,7 @@ make docs-live
 非常欢迎并感谢您的贡献！为了确保协作顺畅，请遵循以下开发流程：
 
 1.  **Fork 本仓库**：点击右上角的 "Fork" 按钮，将项目复刻到您的 GitHub 账户下。
-2.  **创建特性分支**：建议基于 `main` 或 `dev` 分支创建新分支。
+2.  **创建特性分支**：建议基于 `main` 分支创建新分支。确保属于文档的分支以 *doc* 模式命名，以便自动部署文档站点。
     ```bash
     git checkout -b feature/your-feature-name
     ```

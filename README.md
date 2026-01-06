@@ -346,7 +346,7 @@ make docs-live
 We welcome and appreciate contributions from the community! To ensure a smooth workflow, please follow these steps:
 
 1.  **Fork the Repository**: Click the "Fork" button at the top right to copy this project to your GitHub account.
-2.  **Create a Feature Branch**: Create a new branch for your changes, preferably based on `main` or `dev`.
+2.  **Create a Feature Branch**: Create a new branch for your changes, preferably based on `main`. Ensure documentation branches are named with the *doc* pattern to enable auto-deployment of the docs site.
     ```bash
     git checkout -b feature/your-feature-name
     ```

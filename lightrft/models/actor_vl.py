@@ -157,7 +157,8 @@ class ActorVL(nn.Module):
         self, input_ids: torch.Tensor, pixel_values: torch.Tensor, image_grid_thw: torch.Tensor, **kwargs
     ) -> Union[
         Tuple[torch.LongTensor, torch.LongTensor],
-        Tuple[torch.LongTensor, torch.LongTensor, torch.BoolTensor], ]:
+        Tuple[torch.LongTensor, torch.LongTensor, torch.BoolTensor],
+    ]:
         """
         Generate text sequences based on input text and visual information.
 

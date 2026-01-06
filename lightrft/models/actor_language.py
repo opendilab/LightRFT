@@ -166,7 +166,8 @@ class ActorLanguage(nn.Module):
         **kwargs,
     ) -> Union[
         Tuple[torch.LongTensor, torch.LongTensor],
-        Tuple[torch.LongTensor, torch.LongTensor, torch.BoolTensor], ]:
+        Tuple[torch.LongTensor, torch.LongTensor, torch.BoolTensor],
+    ]:
         """
         Generate text sequences using the actor model.
 

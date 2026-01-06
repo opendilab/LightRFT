@@ -24,8 +24,7 @@ class OmniRewardBenchT2IHandler(BaseDataHandler):
         raw_data = [{
             name: col[i].as_py()
             for name, col in zip(data_table.column_names, data_table.itercolumns())
-        }
-                    for i in range(data_table.num_rows)]
+        } for i in range(data_table.num_rows)]
 
         data_root = os.path.dirname(os.path.dirname(path))
         for item in raw_data:
