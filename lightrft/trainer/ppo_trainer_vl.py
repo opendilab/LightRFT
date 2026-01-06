@@ -334,23 +334,23 @@ class PPOTrainerVL(ABC):
         if args.train_batch_size < args.rollout_batch_size:
             updates_per_rollout = samples_per_rollout / samples_per_train
             self.strategy.print(
-                f"\n{'='*80}\n"
+                f"\n{'=' * 80}\n"
                 f"HIGH FREQUENCY UPDATE MODE: train_batch_size ({args.train_batch_size}) < rollout_batch_size ({args.rollout_batch_size})\n"  # noqa
-                f"{'='*80}\n"
+                f"{'=' * 80}\n"
                 f"Behavior:\n"
                 f"  - Each rollout generates {samples_per_rollout} samples.\n"
                 f"  - Each rollout will trigger {updates_per_rollout:.2f} optimizer updates.\n"
                 f"  - Total updates will be HIGHER than standard mode for the same amount of data.\n"
-                f"{'='*80}\n"
+                f"{'=' * 80}\n"
             )
         elif args.train_batch_size > args.rollout_batch_size:
             self.strategy.print(
-                f"\n{'='*80}\n"
+                f"\n{'=' * 80}\n"
                 f"ACCUMULATION MODE: train_batch_size ({args.train_batch_size}) > rollout_batch_size ({args.rollout_batch_size})\n"  # noqa
-                f"{'='*80}\n"
+                f"{'=' * 80}\n"
                 f"Behavior:\n"
                 f"  - Multiple rollouts needed for one update.\n"
-                f"{'='*80}\n"
+                f"{'=' * 80}\n"
             )
 
         # Calculate number of rollouts per episode.
@@ -1076,9 +1076,9 @@ class PPOTrainerVL(ABC):
         if eval_dataloader is None:
             return {}
 
-        self.strategy.print(f"\n{'='*60}")
+        self.strategy.print(f"\n{'=' * 60}")
         self.strategy.print(f"Starting evaluation at step {global_step}")
-        self.strategy.print(f"{'='*60}")
+        self.strategy.print(f"{'=' * 60}")
 
         self.actor.eval()
         if self.critic is not None:
@@ -1187,12 +1187,12 @@ class PPOTrainerVL(ABC):
         eval_metrics["eval_num_samples"] = len(all_rewards)
 
         # Print evaluation results
-        self.strategy.print(f"\n{'='*60}")
+        self.strategy.print(f"\n{'=' * 60}")
         self.strategy.print(f"Evaluation Results (Step {global_step}):")
-        self.strategy.print(f"{'='*60}")
+        self.strategy.print(f"{'=' * 60}")
         for k, v in eval_metrics.items():
             self.strategy.print(f"  {k}: {v:.4f}")
-        self.strategy.print(f"{'='*60}\n")
+        self.strategy.print(f"{'=' * 60}\n")
 
         # Set models back to train mode
         self.actor.train()
