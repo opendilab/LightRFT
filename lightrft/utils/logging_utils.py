@@ -3,7 +3,10 @@ from loguru import logger
 import sys
 
 # Configure loguru with format similar to the old logging configuration
-_FORMAT = "<level>{level: <8}</level> <green>{time:MM-DD HH:mm:ss}</green> <cyan>{name}</cyan>:<cyan>{line}</cyan>] {message}"
+_FORMAT = (
+    "<level>{level: <8}</level> <green>{time:MM-DD HH:mm:ss}</green> "
+    "<cyan>{name}</cyan>:<cyan>{line}</cyan>] {message}"
+)
 
 # Remove default handler and add custom one
 logger.remove()
