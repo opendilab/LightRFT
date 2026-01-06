@@ -306,8 +306,233 @@
             <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
               <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
                 
-  <section id="lightrft-models-actor-vl">
-<h1>lightrft.models.actor_vl<a class="headerlink" href="#lightrft-models-actor-vl" title="Permalink to this heading">¶</a></h1>
+  <section id="module-lightrft.models.actor_vl">
+<span id="lightrft-models-actor-vl"></span><h1>lightrft.models.actor_vl<a class="headerlink" href="#module-lightrft.models.actor_vl" title="Permalink to this heading">¶</a></h1>
+<p>Vision-Language Actor Model Module for Reinforcement Learning.</p>
+<p>This module provides the ActorVL class, which implements an actor model specifically designed
+for vision-language tasks in reinforcement learning scenarios. The actor is responsible for
+generating actions (text sequences) based on both visual inputs (images) and textual prompts.</p>
+<p>The module supports various optimization techniques including:
+- LoRA (Low-Rank Adaptation) for parameter-efficient fine-tuning
+- Flash Attention 2.0 for improved performance
+- DeepSpeed integration for distributed training
+- Sample packing for efficient batch processing</p>
+<p>Key Features:
+- Multi-modal input processing (text + vision)
+- Flexible model loading from pretrained checkpoints
+- Support for various vision-language model architectures
+- Gradient checkpointing for memory optimization
+- MoE (Mixture of Experts) model support</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="lightrft.models.actor_vl.ActorVL">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">lightrft.models.actor_vl.</span></span><span class="sig-name descname"><span class="pre">ActorVL</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/models/actor_vl.html#ActorVL"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.models.actor_vl.ActorVL" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>Vision-Language Actor model for reinforcement learning applications.</p>
+<p>This class serves as a foundation for implementing vision-language actor models in RL,
+which are responsible for generating text sequences (actions) based on both visual and
+textual inputs. The model supports various optimization techniques including LoRA
+adaptation, quantization, and distributed training.</p>
+<p>The actor model can be initialized either from a pretrained model path or from an
+existing model instance, providing flexibility in model deployment scenarios.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pretrain_or_model</strong> (<em>Union</em><em>[</em><em>str</em><em>, </em><em>nn.Module</em><em>]</em>) – Either a string path to a pretrained model or a model instance</p></li>
+<li><p><strong>use_flash_attention_2</strong> (<em>bool</em>) – Whether to utilize Flash Attention 2.0 for improved performance</p></li>
+<li><p><strong>bf16</strong> (<em>bool</em>) – Enable bfloat16 precision for model computations</p></li>
+<li><p><strong>lora_rank</strong> (<em>int</em>) – Rank for LoRA adaptation (0 disables LoRA)</p></li>
+<li><p><strong>lora_alpha</strong> (<em>int</em>) – Alpha parameter for LoRA scaling</p></li>
+<li><p><strong>lora_dropout</strong> (<em>float</em>) – Dropout rate for LoRA layers</p></li>
+<li><p><strong>target_modules</strong> (<em>Optional</em><em>[</em><em>list</em><em>]</em>) – List of target modules for applying LoRA (auto-detected if None)</p></li>
+<li><p><strong>ds_config</strong> (<em>Optional</em><em>[</em><em>dict</em><em>]</em>) – Configuration for DeepSpeed distributed training</p></li>
+<li><p><strong>device_map</strong> (<em>Optional</em><em>[</em><em>dict</em><em>]</em>) – Device mapping for loading the model onto specific devices</p></li>
+<li><p><strong>packing_samples</strong> (<em>bool</em>) – Whether to pack samples during training for efficiency</p></li>
+</ul>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Initialize with a pretrained model path</span>
+<span class="n">actor</span> <span class="o">=</span> <span class="n">ActorVL</span><span class="p">(</span>
+    <span class="n">pretrain_or_model</span><span class="o">=</span><span class="s2">&quot;microsoft/LLaVA-1.5-7b-hf&quot;</span><span class="p">,</span>
+    <span class="n">use_flash_attention_2</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">lora_rank</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span>
+    <span class="n">lora_alpha</span><span class="o">=</span><span class="mi">32</span>
+<span class="p">)</span>
+
+<span class="c1"># Generate responses</span>
+<span class="n">sequences</span><span class="p">,</span> <span class="n">attention_mask</span><span class="p">,</span> <span class="n">action_mask</span> <span class="o">=</span> <span class="n">actor</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span>
+    <span class="n">input_ids</span><span class="o">=</span><span class="n">input_tensor</span><span class="p">,</span>
+    <span class="n">pixel_values</span><span class="o">=</span><span class="n">image_tensor</span><span class="p">,</span>
+    <span class="n">image_grid_thw</span><span class="o">=</span><span class="n">grid_tensor</span><span class="p">,</span>
+    <span class="n">max_new_tokens</span><span class="o">=</span><span class="mi">100</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.models.actor_vl.ActorVL.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sequences</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.LongTensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_actions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attention_mask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pixel_values</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">image_grid_thw</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ring_attn_group</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.distributed.ProcessGroup</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">packed_seq_lens</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pixel_values_intern</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">image_flags</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">torch.Tensor</span></span></span><a class="reference internal" href="../../_modules/lightrft/models/actor_vl.html#ActorVL.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.models.actor_vl.ActorVL.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Forward pass to compute action log probabilities for reinforcement learning.</p>
+<p>This method processes input sequences and visual information to compute log probabilities
+of actions (tokens) for RL training. It supports both standard and packed sequence formats
+and can return either just the action log probabilities or the full model output.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sequences</strong> (<em>torch.LongTensor</em>) – Input token sequences</p></li>
+<li><p><strong>num_actions</strong> (<em>Optional</em><em>[</em><em>Union</em><em>[</em><em>int</em><em>, </em><em>list</em><em>[</em><em>int</em><em>]</em><em>]</em><em>]</em>) – Number of action tokens to extract log probs for</p></li>
+<li><p><strong>attention_mask</strong> (<em>Optional</em><em>[</em><em>torch.Tensor</em><em>]</em>) – Attention mask for the sequences</p></li>
+<li><p><strong>pixel_values</strong> (<em>torch.Tensor</em>) – Preprocessed pixel values of input images</p></li>
+<li><p><strong>image_grid_thw</strong> (<em>torch.Tensor</em>) – Image grid dimensions (time, height, width)</p></li>
+<li><p><strong>return_output</strong> (<em>bool</em>) – Whether to return the full model output along with log probs</p></li>
+<li><p><strong>ring_attn_group</strong> (<em>Optional</em><em>[</em><em>dist.ProcessGroup</em><em>]</em>) – Process group for ring attention (distributed training)</p></li>
+<li><p><strong>packed_seq_lens</strong> (<em>Optional</em><em>[</em><em>list</em><em>[</em><em>int</em><em>]</em><em>]</em>) – Sequence lengths for packed samples</p></li>
+<li><p><strong>pixel_values_intern</strong> (<em>torch.Tensor</em>) – Pixel values for InternVL models</p></li>
+<li><p><strong>image_flags</strong> (<em>torch.Tensor</em>) – Flags indicating image positions for InternVL models</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Action log probabilities or tuple of (action_log_probs, output) if return_output=True</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Compute action log probabilities for RL training</span>
+<span class="n">log_probs</span> <span class="o">=</span> <span class="n">actor</span><span class="p">(</span>
+    <span class="n">sequences</span><span class="o">=</span><span class="n">token_sequences</span><span class="p">,</span>
+    <span class="n">num_actions</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+    <span class="n">pixel_values</span><span class="o">=</span><span class="n">image_tensor</span><span class="p">,</span>
+    <span class="n">image_grid_thw</span><span class="o">=</span><span class="n">grid_tensor</span>
+<span class="p">)</span>
+
+<span class="c1"># Get both log probs and full output</span>
+<span class="n">log_probs</span><span class="p">,</span> <span class="n">output</span> <span class="o">=</span> <span class="n">actor</span><span class="p">(</span>
+    <span class="n">sequences</span><span class="o">=</span><span class="n">token_sequences</span><span class="p">,</span>
+    <span class="n">num_actions</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+    <span class="n">pixel_values</span><span class="o">=</span><span class="n">image_tensor</span><span class="p">,</span>
+    <span class="n">image_grid_thw</span><span class="o">=</span><span class="n">grid_tensor</span><span class="p">,</span>
+    <span class="n">return_output</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.models.actor_vl.ActorVL.generate">
+<span class="sig-name descname"><span class="pre">generate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_ids</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pixel_values</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">image_grid_thw</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">torch.LongTensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">torch.LongTensor</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">torch.LongTensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">torch.LongTensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">torch.BoolTensor</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#lightrft.models.actor_vl.ActorVL.generate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate text sequences based on input text and visual information.</p>
+<p>This method performs text generation conditioned on both textual prompts and visual inputs.
+It handles the generation process with various sampling strategies and returns the generated
+sequences along with attention masks and action masks for RL training.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_ids</strong> (<em>torch.Tensor</em>) – Input token IDs representing the text prompt</p></li>
+<li><p><strong>pixel_values</strong> (<em>torch.Tensor</em>) – Preprocessed pixel values of input images</p></li>
+<li><p><strong>image_grid_thw</strong> (<em>torch.Tensor</em>) – Image grid dimensions (time, height, width)</p></li>
+<li><p><strong>kwargs</strong> (<em>dict</em>) – Additional generation parameters (top_k, top_p, temperature, etc.)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Tuple containing generated sequences, attention mask, and action mask</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Union[Tuple[torch.LongTensor, torch.LongTensor], Tuple[torch.LongTensor, torch.LongTensor, torch.BoolTensor]]  # noqa</p>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sequences</span><span class="p">,</span> <span class="n">attention_mask</span><span class="p">,</span> <span class="n">action_mask</span> <span class="o">=</span> <span class="n">actor</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span>
+    <span class="n">input_ids</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]]),</span>
+    <span class="n">pixel_values</span><span class="o">=</span><span class="n">image_tensor</span><span class="p">,</span>
+    <span class="n">image_grid_thw</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">24</span><span class="p">,</span> <span class="mi">24</span><span class="p">]]),</span>
+    <span class="n">max_new_tokens</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>
+    <span class="n">temperature</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span>
+    <span class="n">do_sample</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.models.actor_vl.ActorVL.gradient_checkpointing_disable">
+<span class="sig-name descname"><span class="pre">gradient_checkpointing_disable</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/models/actor_vl.html#ActorVL.gradient_checkpointing_disable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.models.actor_vl.ActorVL.gradient_checkpointing_disable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Disable gradient checkpointing to use normal forward/backward computation.</p>
+<p>This method restores the default behavior where all intermediate activations
+are stored during the forward pass for use in the backward pass. This increases
+memory usage but reduces computation time.</p>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Disable gradient checkpointing</span>
+<span class="n">actor</span><span class="o">.</span><span class="n">gradient_checkpointing_disable</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.models.actor_vl.ActorVL.gradient_checkpointing_enable">
+<span class="sig-name descname"><span class="pre">gradient_checkpointing_enable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gradient_checkpointing_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{'use_reentrant':</span> <span class="pre">False}</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/models/actor_vl.html#ActorVL.gradient_checkpointing_enable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.models.actor_vl.ActorVL.gradient_checkpointing_enable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Enable gradient checkpointing to reduce memory usage during training.</p>
+<p>Gradient checkpointing trades compute for memory by recomputing intermediate
+activations during the backward pass instead of storing them. This is particularly
+useful for training large vision-language models with limited GPU memory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>gradient_checkpointing_kwargs</strong> (<em>dict</em>) – Additional arguments for gradient checkpointing</p>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Enable gradient checkpointing with default settings</span>
+<span class="n">actor</span><span class="o">.</span><span class="n">gradient_checkpointing_enable</span><span class="p">()</span>
+
+<span class="c1"># Enable with custom settings</span>
+<span class="n">actor</span><span class="o">.</span><span class="n">gradient_checkpointing_enable</span><span class="p">({</span><span class="s2">&quot;use_reentrant&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">})</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.models.actor_vl.ActorVL.print_trainable_parameters">
+<span class="sig-name descname"><span class="pre">print_trainable_parameters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/models/actor_vl.html#ActorVL.print_trainable_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.models.actor_vl.ActorVL.print_trainable_parameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print information about trainable parameters in the model.</p>
+<p>This method displays the number and percentage of trainable parameters,
+which is particularly useful when using parameter-efficient methods like LoRA.
+It helps monitor the efficiency of the fine-tuning approach.</p>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Print trainable parameter statistics</span>
+<span class="n">actor</span><span class="o">.</span><span class="n">print_trainable_parameters</span><span class="p">()</span>
+<span class="c1"># Output: trainable params: 4,194,304 || all params: 7,241,732,096 || trainable%: 0.058</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.models.actor_vl.ActorVL.process_sequences">
+<span class="sig-name descname"><span class="pre">process_sequences</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sequences</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_len</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eos_token_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pad_token_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">torch.Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">torch.Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">torch.Tensor</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/lightrft/models/actor_vl.html#ActorVL.process_sequences"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.models.actor_vl.ActorVL.process_sequences" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called by <cite>trainer/fast_exp_maker.py</cite>.</p>
+<p>Process generated sequences to create proper attention and action masks.</p>
+<p>This method post-processes the generated sequences to ensure proper handling of
+end-of-sequence tokens and creates masks needed for reinforcement learning training.
+It handles edge cases like multiple EOS tokens and ensures consistent sequence formatting.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sequences</strong> (<em>torch.Tensor</em>) – Generated token sequences</p></li>
+<li><p><strong>input_len</strong> (<em>int</em>) – Length of the input prompt</p></li>
+<li><p><strong>eos_token_id</strong> (<em>int</em>) – End-of-sequence token ID</p></li>
+<li><p><strong>pad_token_id</strong> (<em>int</em>) – Padding token ID</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Tuple of processed sequences, attention mask, and action mask</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tuple[torch.Tensor, torch.Tensor, torch.Tensor]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 
 
@@ -353,7 +578,18 @@
           <div class="pytorch-right-menu" id="pytorch-right-menu">
             <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
               <ul>
-<li><a class="reference internal" href="#">lightrft.models.actor_vl</a></li>
+<li><a class="reference internal" href="#">lightrft.models.actor_vl</a><ul>
+<li><a class="reference internal" href="#lightrft.models.actor_vl.ActorVL"><code class="docutils literal notranslate"><span class="pre">ActorVL</span></code></a><ul>
+<li><a class="reference internal" href="#lightrft.models.actor_vl.ActorVL.forward"><code class="docutils literal notranslate"><span class="pre">ActorVL.forward()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.models.actor_vl.ActorVL.generate"><code class="docutils literal notranslate"><span class="pre">ActorVL.generate()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.models.actor_vl.ActorVL.gradient_checkpointing_disable"><code class="docutils literal notranslate"><span class="pre">ActorVL.gradient_checkpointing_disable()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.models.actor_vl.ActorVL.gradient_checkpointing_enable"><code class="docutils literal notranslate"><span class="pre">ActorVL.gradient_checkpointing_enable()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.models.actor_vl.ActorVL.print_trainable_parameters"><code class="docutils literal notranslate"><span class="pre">ActorVL.print_trainable_parameters()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.models.actor_vl.ActorVL.process_sequences"><code class="docutils literal notranslate"><span class="pre">ActorVL.process_sequences()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 
             </div>

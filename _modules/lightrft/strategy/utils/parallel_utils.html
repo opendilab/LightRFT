@@ -1,0 +1,827 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js" lang="en">
+<!--<![endif]-->
+
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>lightrft.strategy.utils.parallel_utils &mdash; LightRFT v0.1.1 documentation</title>
+  
+
+  <link rel="shortcut icon" href="../../../../_static/images/favicon.ico" />
+  
+  
+
+  
+
+  
+  
+  
+
+  
+
+  <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  <!-- <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" /> -->
+  <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/css/readthedocs.css" type="text/css" />
+  <link rel="index" title="Index" href="../../../../genindex.html" />
+  <link rel="search" title="Search" href="../../../../search.html" />
+  <!-- Google Analytics -->
+  <script type="text/javascript">
+    var collapsedSections = [];
+  </script>
+  
+  <!-- End Google Analytics -->
+  
+
+  
+  <script src="../../../../_static/js/modernizr.min.js"></script>
+  <script>
+    MathJax = {
+        chtml: {
+            scale: 1,
+            minScale: 1,
+        },
+        svg: {
+            scale: 1,
+            minScale: 1,
+        }
+    }
+</script>
+
+  <!-- Preload the theme fonts -->
+
+<link rel="preload" href="../../../../_static/fonts/FreightSans/freight-sans-book.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../../_static/fonts/FreightSans/freight-sans-medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../../_static/fonts/IBMPlexMono/IBMPlexMono-Medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../../_static/fonts/FreightSans/freight-sans-bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../../_static/fonts/FreightSans/freight-sans-medium-italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../../_static/fonts/IBMPlexMono/IBMPlexMono-SemiBold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+
+<!-- Preload the katex fonts -->
+
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Math-Italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size1-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size4-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size2-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size3-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Caligraphic-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.2/css/all.css"
+    integrity="sha384-vSIIfh2YWi9wW0r9iZe7RJPrKwp6bG+s9QZMoITbCckVJqGCCRhc+ccxNcdpHuYu" crossorigin="anonymous">
+</head>
+
+<div class="container-fluid header-holder tutorials-header" id="header-holder">
+  <div class="container">
+    <div class="header-container">
+      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+        aria-label="OpenMMLab"></a>
+
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://github.com/opendilab/LightRFT" target="_blank">GitHub</a>
+          </li>
+          <li >
+            <div id="resourcesDropdownButton" data-toggle="resources-dropdown" class="resources-dropdown">
+              <a
+                class="resource-option with-down-arrow">
+                OpenDILab
+              </a>
+              <div class="resources-dropdown-menu">
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-engine" target="_blank">
+                  <span class="dropdown-title">DI-engine </span>
+                  <p>OpenDILab Decision AI Engine</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/LightZero" target="_blank">
+                  <span class="dropdown-title">LightZero </span>
+                  <p>OpenDILab Decision Monte Carlo Tree Search Framework</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/GenerativeRL" target="_blank">
+                  <span class="dropdown-title">GenerativeRL </span>
+                  <p>OpenDILab Generative AI Framework</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-star" target="_blank">
+                  <span class="dropdown-title">DI-star </span>
+                  <p>OpenDILab Decision AI in StarCraftII</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-drive" target="_blank">
+                  <span class="dropdown-title">DI-drive </span>
+                  <p>OpenDILab Auto-driving platform</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/GoBigger" target="_blank">
+                  <span class="dropdown-title">GoBigger </span>
+                  <p>OpenDILab Multi-Agent Environment</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-smartcross" target="_blank">
+                  <span class="dropdown-title">DI-smartcross </span>
+                  <p>Decision Intelligence Platform for Traffic Crossing Signal Control</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-treetensor" target="_blank">
+                  <span class="dropdown-title">DI-treetensor </span>
+                  <p>Tree Nested PyTorch Tensor Lib</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-sheep" target="_blank">
+                  <span class="dropdown-title">DI-sheep </span>
+                  <p>Deep Reinforcement Learning + 3 Tiles Game</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-model-based-RL" target="_blank">
+                  <span class="dropdown-title">awesome-model-based-RL </span>
+                  <p>A curated list of awesome model based RL resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-decision-transformer" target="_blank">
+                  <span class="dropdown-title">awesome-decision-transformer </span>
+                  <p>A curated list of Decision Transformer resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-exploration-rl" target="_blank">
+                  <span class="dropdown-title">awesome-exploration-rl </span>
+                  <p>A curated list of awesome exploration RL resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-multi-modal-reinforcement-learning" target="_blank">
+                  <span class="dropdown-title">awesome-multi-modal-reinforcement-learning </span>
+                  <p>A curated list of Multi-Modal Reinforcement Learning resources (continually updated)</p>
+                </a>
+              </div>
+          </li>
+        </ul>
+      </div>
+
+      <a class="main-menu-open-button" href="#" data-behavior="open-mobile-menu"></a>
+    </div>
+  </div>
+</div>
+
+<body class="pytorch-body">
+
+   
+
+  
+
+  <div class="table-of-contents-link-wrapper">
+    <span>Table of Contents</span>
+    <a href="#" class="toggle-table-of-contents" data-behavior="toggle-table-of-contents"></a>
+  </div>
+
+  <nav data-toggle="wy-nav-shift" class="pytorch-left-menu" id="pytorch-left-menu">
+    <div class="pytorch-side-scroll">
+      <div class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        <div class="pytorch-left-menu-search">
+          
+
+          
+          
+          
+          
+
+          
+
+
+
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search Docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        
+        
+        
+        
+        
+        <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../installation/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../quick_start/index.html">Quick Start</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide &amp; Best Practices</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../best_practice/index.html">Best Practices</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api_doc/utils/index.html">lightrft.utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api_doc/datasets/index.html">lightrft.datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api_doc/models/index.html">lightrft.models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api_doc/strategy/index.html">lightrft.strategy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api_doc/trainer/index.html">lightrft.trainer</a></li>
+</ul>
+
+        
+        
+      </div>
+    </div>
+  </nav>
+
+  <div class="pytorch-container">
+    <div class="pytorch-page-level-bar" id="pytorch-page-level-bar">
+      <div class="pytorch-breadcrumbs-wrapper">
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="pytorch-breadcrumbs">
+    
+      <li>
+        <a href="../../../../index.html">
+            Docs
+        </a> &gt;
+      </li>
+
+        
+          <li><a href="../../../index.html">Module code</a> &gt;</li>
+        
+      <li>lightrft.strategy.utils.parallel_utils</li>
+    
+    
+      <li class="pytorch-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+</div>
+      </div>
+
+      <div class="pytorch-shortcuts-wrapper" id="pytorch-shortcuts-wrapper">
+        Shortcuts
+      </div>
+    </div>
+
+    <section data-toggle="wy-nav-shift" id="pytorch-content-wrap" class="pytorch-content-wrap">
+      <div class="pytorch-content-left">
+        
+          <div class="rst-content">
+            
+            <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
+              <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
+                
+  <h1>Source code for lightrft.strategy.utils.parallel_utils</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Sequence Parallelism Utilities for Distributed Training</span>
+
+<span class="sd">This module provides utilities for sequence parallelism in distributed training environments.</span>
+<span class="sd">It includes functions for managing sequence parallel groups, data processing for sequence</span>
+<span class="sd">parallelism, and operations for tensor splitting, gathering, and all-to-all communication</span>
+<span class="sd">in sequence parallel contexts.</span>
+
+<span class="sd">The module supports:</span>
+<span class="sd">- Setting and retrieving sequence parallel groups</span>
+<span class="sd">- Processing data for sequence parallel distribution</span>
+<span class="sd">- Slicing and padding inputs for sequence parallelism</span>
+<span class="sd">- Specialized tensor operations for sequence parallel training</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch.distributed</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">dist</span>
+
+<span class="n">_SEQUENCE_PARALLEL_GROUP</span> <span class="o">=</span> <span class="kc">None</span>
+
+
+<div class="viewcode-block" id="set_sequence_parallel_group"><a class="viewcode-back" href="../../../../api_doc/strategy/utils/parallel_utils.html#lightrft.strategy.utils.parallel_utils.set_sequence_parallel_group">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">set_sequence_parallel_group</span><span class="p">(</span><span class="n">group</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Set the global sequence parallel process group.</span>
+
+<span class="sd">    :param group: The process group to use for sequence parallelism.</span>
+<span class="sd">    :type group: torch.distributed.ProcessGroup</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">global</span> <span class="n">_SEQUENCE_PARALLEL_GROUP</span>  <span class="c1"># pylint: disable=W0602</span>
+    <span class="n">_SEQUENCE_PARALLEL_GROUP</span> <span class="o">=</span> <span class="n">group</span></div>
+
+
+<div class="viewcode-block" id="get_sequence_parallel_group"><a class="viewcode-back" href="../../../../api_doc/strategy/utils/parallel_utils.html#lightrft.strategy.utils.parallel_utils.get_sequence_parallel_group">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">get_sequence_parallel_group</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get the current sequence parallel process group.</span>
+
+<span class="sd">    :return: The current sequence parallel process group.</span>
+<span class="sd">    :rtype: torch.distributed.ProcessGroup or None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">global</span> <span class="n">_SEQUENCE_PARALLEL_GROUP</span>  <span class="c1"># pylint: disable=W0602  # noqa: F824</span>
+    <span class="k">return</span> <span class="n">_SEQUENCE_PARALLEL_GROUP</span></div>
+
+
+<div class="viewcode-block" id="get_sequence_parallel_world_size"><a class="viewcode-back" href="../../../../api_doc/strategy/utils/parallel_utils.html#lightrft.strategy.utils.parallel_utils.get_sequence_parallel_world_size">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">get_sequence_parallel_world_size</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get the world size of the sequence parallel group.</span>
+
+<span class="sd">    :return: The world size of the sequence parallel group, or 1 if no group is set.</span>
+<span class="sd">    :rtype: int</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">global</span> <span class="n">_SEQUENCE_PARALLEL_GROUP</span>  <span class="c1"># pylint: disable=W0602  # noqa: F824</span>
+    <span class="k">if</span> <span class="n">_SEQUENCE_PARALLEL_GROUP</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">distributed</span><span class="o">.</span><span class="n">get_world_size</span><span class="p">(</span><span class="n">_SEQUENCE_PARALLEL_GROUP</span><span class="p">)</span>
+    <span class="k">return</span> <span class="mi">1</span></div>
+
+
+<div class="viewcode-block" id="get_sequence_parallel_rank"><a class="viewcode-back" href="../../../../api_doc/strategy/utils/parallel_utils.html#lightrft.strategy.utils.parallel_utils.get_sequence_parallel_rank">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">get_sequence_parallel_rank</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get the rank of the current process in the sequence parallel group.</span>
+
+<span class="sd">    :return: The rank in the sequence parallel group, or 0 if no group is set.</span>
+<span class="sd">    :rtype: int</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">global</span> <span class="n">_SEQUENCE_PARALLEL_GROUP</span>  <span class="c1"># pylint: disable=W0602  # noqa: F824</span>
+    <span class="k">if</span> <span class="n">_SEQUENCE_PARALLEL_GROUP</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">distributed</span><span class="o">.</span><span class="n">get_rank</span><span class="p">(</span><span class="n">_SEQUENCE_PARALLEL_GROUP</span><span class="p">)</span>
+    <span class="k">return</span> <span class="mi">0</span></div>
+
+
+<div class="viewcode-block" id="SPDataProcessor"><a class="viewcode-back" href="../../../../api_doc/strategy/utils/parallel_utils.html#lightrft.strategy.utils.parallel_utils.SPDataProcessor">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">SPDataProcessor</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A context manager for preprocessing data before conducting sequence parallel operations.</span>
+
+<span class="sd">    This class handles the distribution and collection of data across sequence parallel ranks,</span>
+<span class="sd">    ensuring proper data sharding and gathering for sequence parallel training.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize the sequence parallel data processor.</span>
+
+<span class="sd">        Sets up the sequence parallel size, group, and rank for data processing.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sp_size</span> <span class="o">=</span> <span class="n">get_sequence_parallel_world_size</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sp_group</span> <span class="o">=</span> <span class="n">get_sequence_parallel_group</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sp_rank</span> <span class="o">=</span> <span class="n">get_sequence_parallel_rank</span><span class="p">()</span>
+
+<div class="viewcode-block" id="SPDataProcessor.preprocess"><a class="viewcode-back" href="../../../../api_doc/strategy/utils/parallel_utils.html#lightrft.strategy.utils.parallel_utils.SPDataProcessor.preprocess">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">preprocess</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Preprocess data for sequence parallelism by gathering data from all ranks.</span>
+
+<span class="sd">        :param data: The data to preprocess.</span>
+<span class="sd">        :type data: Any</span>
+
+<span class="sd">        :return: The preprocessed data, gathered from all ranks if sp_size &gt; 1.</span>
+<span class="sd">        :rtype: Any</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sp_size</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">data</span>
+        <span class="c1"># gather data for rank in the same dp group</span>
+        <span class="n">gathered_data</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sp_size</span><span class="p">)]</span>
+        <span class="n">torch</span><span class="o">.</span><span class="n">distributed</span><span class="o">.</span><span class="n">all_gather_object</span><span class="p">(</span><span class="n">gathered_data</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sp_group</span><span class="p">)</span>
+        <span class="n">all_data</span> <span class="o">=</span> <span class="p">[</span><span class="n">data_item</span> <span class="k">for</span> <span class="n">rank_data</span> <span class="ow">in</span> <span class="n">gathered_data</span> <span class="k">for</span> <span class="n">data_item</span> <span class="ow">in</span> <span class="n">rank_data</span><span class="p">]</span>
+        <span class="k">del</span> <span class="n">gathered_data</span>
+        <span class="k">return</span> <span class="n">all_data</span></div>
+
+<div class="viewcode-block" id="SPDataProcessor.postprocess"><a class="viewcode-back" href="../../../../api_doc/strategy/utils/parallel_utils.html#lightrft.strategy.utils.parallel_utils.SPDataProcessor.postprocess">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">postprocess</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Postprocess data after sequence parallel operations by distributing data to appropriate ranks.</span>
+
+<span class="sd">        :param data: The data to postprocess.</span>
+<span class="sd">        :type data: Any</span>
+
+<span class="sd">        :return: The postprocessed data, distributed to the current rank.</span>
+<span class="sd">        :rtype: Any</span>
+<span class="sd">        :raises AssertionError: If the data length is not divisible by sp_size.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sp_size</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">data</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">sp_size</span> <span class="o">==</span> <span class="mi">0</span>
+        <span class="n">local_num</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">//</span> <span class="bp">self</span><span class="o">.</span><span class="n">sp_size</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">sp_rank</span> <span class="o">*</span> <span class="n">local_num</span><span class="p">:(</span><span class="bp">self</span><span class="o">.</span><span class="n">sp_rank</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">local_num</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">data</span></div></div>
+
+
+<span class="c1"># adapted from https://github.com/volcengine/verl/blob/main/verl/utils/ulysses.py</span>
+<div class="viewcode-block" id="sp_slice_and_pad_input"><a class="viewcode-back" href="../../../../api_doc/strategy/utils/parallel_utils.html#lightrft.strategy.utils.parallel_utils.sp_slice_and_pad_input">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">sp_slice_and_pad_input</span><span class="p">(</span><span class="n">input_ids</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">position_ids</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Pad and slice input_ids to be divisible by sp_size and pad position_ids to be divisible by sp_size.</span>
+
+<span class="sd">    Note both input_ids and position_ids will be padded, but only input_ids will be sliced.</span>
+<span class="sd">    This is the utility of pre-forward for ulysses sequence parallelism.</span>
+
+<span class="sd">    :param input_ids: Input tensor with shape [bsz, seqlen].</span>
+<span class="sd">    :type input_ids: torch.Tensor</span>
+<span class="sd">    :param position_ids: Position IDs tensor with shape [bsz, seqlen], where bsz must be 1.</span>
+<span class="sd">    :type position_ids: torch.Tensor</span>
+
+<span class="sd">    :return: A tuple containing:</span>
+<span class="sd">             - Padded and sliced input_ids</span>
+<span class="sd">             - Padded position_ids</span>
+<span class="sd">             - Size of padding added</span>
+<span class="sd">    :rtype: Tuple[torch.Tensor, torch.Tensor, int]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">sp_group</span> <span class="o">=</span> <span class="n">get_sequence_parallel_group</span><span class="p">()</span>
+    <span class="n">sp_size</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">distributed</span><span class="o">.</span><span class="n">get_world_size</span><span class="p">(</span><span class="n">sp_group</span><span class="p">)</span>
+    <span class="n">sp_rank</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">distributed</span><span class="o">.</span><span class="n">get_rank</span><span class="p">(</span><span class="n">sp_group</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">position_ids</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="n">position_ids</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
+        <span class="k">assert</span> <span class="n">input_ids</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">==</span> <span class="n">position_ids</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">sp_size</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">input_ids</span><span class="p">,</span> <span class="n">position_ids</span><span class="p">,</span> <span class="mi">0</span>
+    <span class="n">_</span><span class="p">,</span> <span class="n">total_seq_len</span> <span class="o">=</span> <span class="n">input_ids</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">pad_size</span> <span class="o">=</span> <span class="p">(</span><span class="n">sp_size</span> <span class="o">-</span> <span class="n">total_seq_len</span> <span class="o">%</span> <span class="n">sp_size</span><span class="p">)</span> <span class="o">%</span> <span class="n">sp_size</span>
+    <span class="k">if</span> <span class="n">pad_size</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">input_ids</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">functional</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">input_ids</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">pad_size</span><span class="p">),</span> <span class="n">value</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">position_ids</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">pad_pos_ids</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">pad_size</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">position_ids</span><span class="o">.</span><span class="n">device</span><span class="p">)</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">position_ids</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="n">position_ids</span><span class="p">,</span> <span class="n">pad_pos_ids</span><span class="p">),</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="c1"># we don&#39;t need to slice position ids</span>
+    <span class="n">parts</span> <span class="o">=</span> <span class="n">input_ids</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">//</span> <span class="n">sp_size</span>
+    <span class="n">slc</span> <span class="o">=</span> <span class="p">[</span><span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">)]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">input_ids</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+    <span class="n">slc</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="n">sp_rank</span> <span class="o">*</span> <span class="n">parts</span><span class="p">,</span> <span class="p">(</span><span class="n">sp_rank</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">parts</span><span class="p">)</span>
+    <span class="n">input_ids</span> <span class="o">=</span> <span class="n">input_ids</span><span class="p">[</span><span class="n">slc</span><span class="p">]</span><span class="o">.</span><span class="n">contiguous</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">input_ids</span><span class="p">,</span> <span class="n">position_ids</span><span class="p">,</span> <span class="n">pad_size</span></div>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_split</span><span class="p">(</span><span class="n">input_</span><span class="p">,</span> <span class="n">group</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Split a tensor along the specified dimension according to the world size.</span>
+
+<span class="sd">    :param input_: The input tensor to split.</span>
+<span class="sd">    :type input_: torch.Tensor</span>
+<span class="sd">    :param group: The process group for determining world size and rank.</span>
+<span class="sd">    :type group: torch.distributed.ProcessGroup</span>
+<span class="sd">    :param dim: The dimension to split along, defaults to -1.</span>
+<span class="sd">    :type dim: int</span>
+
+<span class="sd">    :return: The portion of the input tensor corresponding to the current rank.</span>
+<span class="sd">    :rtype: torch.Tensor</span>
+<span class="sd">    :raises AssertionError: If the dimension size is not divisible by world size.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># skip if only one rank involved</span>
+    <span class="n">world_size</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">distributed</span><span class="o">.</span><span class="n">get_world_size</span><span class="p">(</span><span class="n">group</span><span class="o">=</span><span class="n">group</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">world_size</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">input_</span>
+    <span class="c1"># Split along last dimension.</span>
+    <span class="n">dim_size</span> <span class="o">=</span> <span class="n">input_</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">dim</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">dim_size</span> <span class="o">%</span> <span class="n">world_size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;The dimension to split (</span><span class="si">{</span><span class="n">dim_size</span><span class="si">}</span><span class="s2">) is not a multiple of world size (</span><span class="si">{</span><span class="n">world_size</span><span class="si">}</span><span class="s2">), &quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;cannot split tensor evenly&quot;</span>
+    <span class="p">)</span>
+    <span class="n">tensor_list</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">input_</span><span class="p">,</span> <span class="n">dim_size</span> <span class="o">//</span> <span class="n">world_size</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="n">dim</span><span class="p">)</span>
+    <span class="n">rank</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">distributed</span><span class="o">.</span><span class="n">get_rank</span><span class="p">(</span><span class="n">group</span><span class="o">=</span><span class="n">group</span><span class="p">)</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">tensor_list</span><span class="p">[</span><span class="n">rank</span><span class="p">]</span><span class="o">.</span><span class="n">contiguous</span><span class="p">()</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">output</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">output</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_gather</span><span class="p">(</span><span class="n">input_</span><span class="p">,</span> <span class="n">group</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Gather tensors from all ranks and concatenate them along the specified dimension.</span>
+
+<span class="sd">    :param input_: The input tensor from the current rank.</span>
+<span class="sd">    :type input_: torch.Tensor</span>
+<span class="sd">    :param group: The process group for gathering.</span>
+<span class="sd">    :type group: torch.distributed.ProcessGroup</span>
+<span class="sd">    :param dim: The dimension along which to concatenate the gathered tensors, defaults to -1.</span>
+<span class="sd">    :type dim: int</span>
+
+<span class="sd">    :return: The concatenated tensor from all ranks.</span>
+<span class="sd">    :rtype: torch.Tensor</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># skip if only one rank involved</span>
+    <span class="n">world_size</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">distributed</span><span class="o">.</span><span class="n">get_world_size</span><span class="p">(</span><span class="n">group</span><span class="o">=</span><span class="n">group</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">world_size</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">input_</span>
+    <span class="c1"># all gather</span>
+    <span class="n">rank</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">distributed</span><span class="o">.</span><span class="n">get_rank</span><span class="p">(</span><span class="n">group</span><span class="o">=</span><span class="n">group</span><span class="p">)</span>
+    <span class="n">tensor_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">empty_like</span><span class="p">(</span><span class="n">input_</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">world_size</span><span class="p">)]</span>
+    <span class="n">tensor_list</span><span class="p">[</span><span class="n">rank</span><span class="p">]</span> <span class="o">=</span> <span class="n">input_</span>
+    <span class="n">dist</span><span class="o">.</span><span class="n">all_gather</span><span class="p">(</span><span class="n">tensor_list</span><span class="p">,</span> <span class="n">input_</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">group</span><span class="p">)</span>
+    <span class="c1"># concat</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">tensor_list</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="n">dim</span><span class="p">)</span><span class="o">.</span><span class="n">contiguous</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">output</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">_GatherForwardSplitBackward</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Function</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Custom autograd function that gathers input from model parallel region during forward pass</span>
+<span class="sd">    and splits gradients during backward pass.</span>
+
+<span class="sd">    This function is useful for operations that need to be performed on the full tensor</span>
+<span class="sd">    in the forward pass but can have their gradients computed in parallel.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">symbolic</span><span class="p">(</span><span class="n">input_</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Symbolic function for torchscript.</span>
+
+<span class="sd">        :param input_: The input tensor.</span>
+<span class="sd">        :type input_: torch.Tensor</span>
+
+<span class="sd">        :return: The gathered tensor.</span>
+<span class="sd">        :rtype: torch.Tensor</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">_gather</span><span class="p">(</span><span class="n">input_</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">input_</span><span class="p">,</span> <span class="n">group</span><span class="p">,</span> <span class="n">dim</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Forward pass: gather the input tensor from all ranks.</span>
+
+<span class="sd">        :param ctx: Context object to save information for backward pass.</span>
+<span class="sd">        :type ctx: torch.autograd.function.FunctionCtx</span>
+<span class="sd">        :param input_: The input tensor from the current rank.</span>
+<span class="sd">        :type input_: torch.Tensor</span>
+<span class="sd">        :param group: The process group for gathering.</span>
+<span class="sd">        :type group: torch.distributed.ProcessGroup</span>
+<span class="sd">        :param dim: The dimension along which to gather.</span>
+<span class="sd">        :type dim: int</span>
+
+<span class="sd">        :return: The gathered tensor from all ranks.</span>
+<span class="sd">        :rtype: torch.Tensor</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ctx</span><span class="o">.</span><span class="n">group</span> <span class="o">=</span> <span class="n">group</span>
+        <span class="n">ctx</span><span class="o">.</span><span class="n">dim</span> <span class="o">=</span> <span class="n">dim</span>
+        <span class="k">return</span> <span class="n">_gather</span><span class="p">(</span><span class="n">input_</span><span class="p">,</span> <span class="n">group</span><span class="p">,</span> <span class="n">dim</span><span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">backward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">grad_output</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Backward pass: split the gradient tensor across ranks.</span>
+
+<span class="sd">        :param ctx: Context object with saved information from forward pass.</span>
+<span class="sd">        :type ctx: torch.autograd.function.FunctionCtx</span>
+<span class="sd">        :param grad_output: The gradient tensor to split.</span>
+<span class="sd">        :type grad_output: torch.Tensor</span>
+
+<span class="sd">        :return: The split gradient tensor for the current rank, and None for other inputs.</span>
+<span class="sd">        :rtype: Tuple[torch.Tensor, None, None]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">_split</span><span class="p">(</span><span class="n">grad_output</span><span class="p">,</span> <span class="n">ctx</span><span class="o">.</span><span class="n">group</span><span class="p">,</span> <span class="n">ctx</span><span class="o">.</span><span class="n">dim</span><span class="p">),</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
+
+<div class="viewcode-block" id="gather_forward_split_backward_and_unpad"><a class="viewcode-back" href="../../../../api_doc/strategy/utils/parallel_utils.html#lightrft.strategy.utils.parallel_utils.gather_forward_split_backward_and_unpad">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">gather_forward_split_backward_and_unpad</span><span class="p">(</span><span class="n">input_</span><span class="p">,</span> <span class="n">group</span><span class="p">,</span> <span class="n">dim</span><span class="p">,</span> <span class="n">padding_size</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">unpad_dim</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Gather tensors in the forward pass, split gradients in the backward pass, and remove padding if needed.</span>
+
+<span class="sd">    :param input_: The input tensor from the current rank.</span>
+<span class="sd">    :type input_: torch.Tensor</span>
+<span class="sd">    :param group: The process group for gathering.</span>
+<span class="sd">    :type group: torch.distributed.ProcessGroup</span>
+<span class="sd">    :param dim: The dimension along which to gather/split.</span>
+<span class="sd">    :type dim: int</span>
+<span class="sd">    :param padding_size: Size of padding to remove, defaults to 0.</span>
+<span class="sd">    :type padding_size: int</span>
+<span class="sd">    :param unpad_dim: Dimension from which to remove padding, defaults to None.</span>
+<span class="sd">    :type unpad_dim: int or None</span>
+
+<span class="sd">    :return: The gathered (and possibly unpadded) tensor.</span>
+<span class="sd">    :rtype: torch.Tensor</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">gather_input</span> <span class="o">=</span> <span class="n">_GatherForwardSplitBackward</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">input_</span><span class="p">,</span> <span class="n">group</span><span class="p">,</span> <span class="n">dim</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">padding_size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">gather_input</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">slc</span> <span class="o">=</span> <span class="p">[</span><span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">)]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">gather_input</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="n">slc</span><span class="p">[</span><span class="n">unpad_dim</span><span class="p">]</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="n">padding_size</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">gather_input</span><span class="p">[</span><span class="n">slc</span><span class="p">]</span></div>
+
+
+<span class="c1"># adpated from https://github.com/microsoft/DeepSpeed/blob/master/deepspeed/sequence/layer.py</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">_SeqAllToAll</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Function</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Custom autograd function for sequence all-to-all communication.</span>
+
+<span class="sd">    This function performs all-to-all communication in the forward pass and handles</span>
+<span class="sd">    the corresponding backward pass correctly.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span>
+        <span class="n">ctx</span><span class="p">,</span>
+        <span class="n">group</span><span class="p">:</span> <span class="n">dist</span><span class="o">.</span><span class="n">ProcessGroup</span><span class="p">,</span>
+        <span class="n">scatter_idx</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="nb">int</span><span class="p">]],</span>
+        <span class="n">gather_idx</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="nb">int</span><span class="p">]],</span>
+        <span class="o">*</span><span class="n">input_</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Forward pass: perform all-to-all communication.</span>
+
+<span class="sd">        :param ctx: Context object to save information for backward pass.</span>
+<span class="sd">        :type ctx: torch.autograd.function.FunctionCtx</span>
+<span class="sd">        :param group: The process group for all-to-all communication.</span>
+<span class="sd">        :type group: dist.ProcessGroup</span>
+<span class="sd">        :param scatter_idx: Dimension(s) to scatter along.</span>
+<span class="sd">        :type scatter_idx: Optional[Union[List[int], int]]</span>
+<span class="sd">        :param gather_idx: Dimension(s) to gather along.</span>
+<span class="sd">        :type gather_idx: Optional[Union[List[int], int]]</span>
+<span class="sd">        :param input_: Input tensor(s) to communicate.</span>
+<span class="sd">        :type input_: torch.Tensor</span>
+
+<span class="sd">        :return: The result of all-to-all communication.</span>
+<span class="sd">        :rtype: torch.Tensor or Tuple[torch.Tensor]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ctx</span><span class="o">.</span><span class="n">group</span> <span class="o">=</span> <span class="n">group</span>
+        <span class="n">ctx</span><span class="o">.</span><span class="n">scatter_idx</span> <span class="o">=</span> <span class="n">scatter_idx</span>
+        <span class="n">ctx</span><span class="o">.</span><span class="n">gather_idx</span> <span class="o">=</span> <span class="n">gather_idx</span>
+        <span class="n">seq_world_size</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">get_world_size</span><span class="p">(</span><span class="n">group</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">dist</span><span class="o">.</span><span class="n">get_world_size</span><span class="p">(</span><span class="n">group</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">input_</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">input_</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">return</span> <span class="n">input_</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">input_</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">input_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">contiguous</span><span class="p">()</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor_split</span><span class="p">(</span><span class="n">input_</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">seq_world_size</span><span class="p">,</span> <span class="n">scatter_idx</span><span class="p">)]</span>
+            <span class="n">output_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">empty_like</span><span class="p">(</span><span class="n">input_list</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">seq_world_size</span><span class="p">)]</span>
+            <span class="c1"># TODO: use all_to_all_single instead</span>
+            <span class="n">dist</span><span class="o">.</span><span class="n">all_to_all</span><span class="p">(</span><span class="n">output_list</span><span class="p">,</span> <span class="n">input_list</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">group</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">output_list</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="n">gather_idx</span><span class="p">)</span><span class="o">.</span><span class="n">contiguous</span><span class="p">()</span>
+        <span class="n">outputs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">scatter_idx</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">gather_idx</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">gather_idx</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">input_</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">input_</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">input_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">contiguous</span><span class="p">()</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor_split</span><span class="p">(</span><span class="n">input_</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">seq_world_size</span><span class="p">,</span> <span class="n">scatter_idx</span><span class="p">[</span><span class="n">i</span><span class="p">])]</span>
+                <span class="n">output_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">empty_like</span><span class="p">(</span><span class="n">input_list</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">seq_world_size</span><span class="p">)]</span>
+                <span class="n">handle_last</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">all_to_all</span><span class="p">(</span><span class="n">output_list</span><span class="p">,</span> <span class="n">input_list</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">group</span><span class="p">,</span> <span class="n">async_op</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="c1"># conduct the next all2all</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">input_</span><span class="p">):</span>
+                <span class="n">input_list_next</span> <span class="o">=</span> <span class="p">[</span>
+                    <span class="n">t</span><span class="o">.</span><span class="n">contiguous</span><span class="p">()</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor_split</span><span class="p">(</span><span class="n">input_</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">],</span> <span class="n">seq_world_size</span><span class="p">,</span> <span class="n">scatter_idx</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span>
+                <span class="p">]</span>
+                <span class="n">output_list_next</span> <span class="o">=</span> <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">empty_like</span><span class="p">(</span><span class="n">input_list_next</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">seq_world_size</span><span class="p">)]</span>
+                <span class="n">handle_next</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">all_to_all</span><span class="p">(</span><span class="n">output_list_next</span><span class="p">,</span> <span class="n">input_list_next</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">group</span><span class="p">,</span> <span class="n">async_op</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">handle_last</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>  <span class="c1"># pylint: disable=E0606</span>
+            <span class="n">outputs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">output_list</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="n">gather_idx</span><span class="p">[</span><span class="n">i</span><span class="p">])</span><span class="o">.</span><span class="n">contiguous</span><span class="p">())</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">input_</span><span class="p">):</span>
+                <span class="n">handle_last</span> <span class="o">=</span> <span class="n">handle_next</span>
+                <span class="n">input_list</span> <span class="o">=</span> <span class="n">input_list_next</span>
+                <span class="n">output_list</span> <span class="o">=</span> <span class="n">output_list_next</span>
+        <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">outputs</span><span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">backward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="o">*</span><span class="n">grad_output</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Backward pass for the custom autograd function.</span>
+
+<span class="sd">        This method handles the gradient computation during backpropagation. If the distributed</span>
+<span class="sd">        world size is 1 or less, it simply passes through the gradient outputs. Otherwise,</span>
+<span class="sd">        it applies the sequence all-to-all operation on the gradients.</span>
+
+<span class="sd">        :param ctx: The saved context from the forward pass</span>
+<span class="sd">        :type ctx: torch.autograd.function.FunctionCtx</span>
+<span class="sd">        :param grad_output: The gradient tensors from the next layer</span>
+<span class="sd">        :type grad_output: torch.Tensor</span>
+
+<span class="sd">        :return: Tuple containing None for non-tensor inputs and the gradient tensors</span>
+<span class="sd">        :rtype: Tuple[None, torch.Tensor, None, None]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">dist</span><span class="o">.</span><span class="n">get_world_size</span><span class="p">(</span><span class="n">ctx</span><span class="o">.</span><span class="n">group</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="n">grad_output</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="n">_SeqAllToAll</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">ctx</span><span class="o">.</span><span class="n">group</span><span class="p">,</span> <span class="n">ctx</span><span class="o">.</span><span class="n">gather_idx</span><span class="p">,</span> <span class="n">ctx</span><span class="o">.</span><span class="n">scatter_idx</span><span class="p">,</span> <span class="o">*</span><span class="n">grad_output</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">grad_output</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">res</span>
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="n">res</span>
+</pre></div>
+
+              </article>
+              
+            </div>
+            <footer>
+  
+
+  <hr>
+
+  <div role="contentinfo">
+    <p>
+      &copy; Copyright 2025, OpenDILab.
+
+    </p>
+  </div>
+  
+  <div>
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a
+      href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the
+      Docs</a>.
+  </div>
+   
+
+</footer>
+          </div>
+        </div>
+
+        <div class="pytorch-content-right" id="pytorch-content-right">
+          <div class="pytorch-right-menu" id="pytorch-right-menu">
+            <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
+              
+            </div>
+          </div>
+        </div>
+    </section>
+  </div>
+
+  
+
+
+  
+
+  
+  <script type="text/javascript" id="documentation_options" data-url_root="../../../../"
+    src="../../../../_static/documentation_options.js"></script>
+  <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+  <script src="../../../../_static/doctools.js"></script>
+  <script src="../../../../_static/sphinx_highlight.js"></script>
+  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+  
+
+  
+
+  <script type="text/javascript" src="../../../../_static/js/vendor/popper.min.js"></script>
+  <script type="text/javascript" src="../../../../_static/js/vendor/bootstrap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
+  <script type="text/javascript" src="../../../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+    jQuery(function () {
+      SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+  <!-- Begin Footer -->
+
+  <div class="container-fluid docs-tutorials-resources" id="docs-tutorials-resources">
+  </div>
+
+  <!-- End Footer -->
+
+  <!-- Begin Mobile Menu -->
+
+  <div class="mobile-main-menu">
+    <div class="container-fluid">
+      <div class="container">
+        <div class="mobile-main-menu-header-container">
+          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
+        </div>
+      </div>
+    </div>
+
+    <div class="mobile-main-menu-links-container">
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://github.com/opendilab/LightRFT" target="_blank">GitHub</a>
+          </li>
+      </div>
+    </div>
+  </div>
+
+  <!-- End Mobile Menu -->
+
+  <script type="text/javascript" src="../../../../_static/js/vendor/anchor.min.js"></script>
+
+  <script type="text/javascript">
+    $(document).ready(function () {
+      mobileMenu.bind();
+      mobileTOC.bind();
+      pytorchAnchors.bind();
+      sideMenus.bind();
+      scrollToAnchor.bind();
+      highlightNavigation.bind();
+      mainMenuDropdown.bind();
+      filterTags.bind();
+
+      // Add class to links that have code blocks, since we cannot create links in code blocks
+      $("article.pytorch-article a span.pre").each(function (e) {
+        $(this).closest("a").addClass("has-code");
+      });
+    })
+  </script>
+</body>
+
+</html>

@@ -306,8 +306,82 @@
             <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
               <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
                 
-  <section id="lightrft-utils-trajectory-saver">
-<h1>lightrft.utils.trajectory_saver<a class="headerlink" href="#lightrft-utils-trajectory-saver" title="Permalink to this heading">¶</a></h1>
+  <section id="module-lightrft.utils.trajectory_saver">
+<span id="lightrft-utils-trajectory-saver"></span><h1>lightrft.utils.trajectory_saver<a class="headerlink" href="#module-lightrft.utils.trajectory_saver" title="Permalink to this heading">¶</a></h1>
+<p>Trajectory Saver Utility for debugging and analysis.</p>
+<p>This module provides utilities to save experience trajectories to JSON files
+for debugging and analysis purposes.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="lightrft.utils.trajectory_saver.TrajectorySaver">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">lightrft.utils.trajectory_saver.</span></span><span class="sig-name descname"><span class="pre">TrajectorySaver</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">save_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tokenizer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_images_separately</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_image_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">512</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/utils/trajectory_saver.html#TrajectorySaver"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.utils.trajectory_saver.TrajectorySaver" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Utility class to save experience trajectories to JSON files.</p>
+<dl class="simple">
+<dt>Features:</dt><dd><ul class="simple">
+<li><p>Saves experience sequences, rewards, and metadata for individual samples.</p></li>
+<li><p>Supports both text-only and vision-language models.</p></li>
+<li><p>Efficiently handles image data by saving them to a separate directory with clear linkage.</p></li>
+<li><p>Only saves on rank 0 to avoid duplication.</p></li>
+<li><p>Produces human-readable JSON output for easy debugging.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>save_dir</strong> (<em>str</em>) – Directory to save trajectory files</p></li>
+<li><p><strong>tokenizer</strong> (<em>Any</em>) – Tokenizer for decoding sequences</p></li>
+<li><p><strong>save_images_separately</strong> (<em>bool</em>) – If True, save images as separate files. Default to True</p></li>
+<li><p><strong>max_image_size</strong> (<em>int</em>) – Maximum dimension for saved images (to reduce file size). Default to 512</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.utils.trajectory_saver.TrajectorySaver.save_trajectories">
+<span class="sig-name descname"><span class="pre">save_trajectories</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">experiences</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_samples</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'trajectories'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/lightrft/utils/trajectory_saver.html#TrajectorySaver.save_trajectories"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.utils.trajectory_saver.TrajectorySaver.save_trajectories" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save a subset of experiences to a JSON file.</p>
+<p>Each Experience object is a micro-batch. This function unpacks them
+into individual sample trajectories before saving.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>experiences</strong> (<em>List</em><em>[</em><em>Any</em><em>]</em>) – List of Experience or ExperienceVL objects from the replay buffer</p></li>
+<li><p><strong>step</strong> (<em>int</em>) – Current training step (used in filename)</p></li>
+<li><p><strong>num_samples</strong> (<em>int</em>) – Target number of individual sample trajectories to save. Default to 10</p></li>
+<li><p><strong>prefix</strong> (<em>str</em>) – Prefix for the output filename. Default to “trajectories”</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Path to the saved JSON file (None if not rank 0 or no experiences)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Optional[str]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="lightrft.utils.trajectory_saver.create_trajectory_saver">
+<span class="sig-prename descclassname"><span class="pre">lightrft.utils.trajectory_saver.</span></span><span class="sig-name descname"><span class="pre">create_trajectory_saver</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tokenizer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#lightrft.utils.trajectory_saver.TrajectorySaver" title="lightrft.utils.trajectory_saver.TrajectorySaver"><span class="pre">TrajectorySaver</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/lightrft/utils/trajectory_saver.html#create_trajectory_saver"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.utils.trajectory_saver.create_trajectory_saver" title="Permalink to this definition">¶</a></dt>
+<dd><p>Factory function to create TrajectorySaver if enabled.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>args</strong> (<em>Any</em>) – Training arguments containing save_trajectories flag and save_path</p></li>
+<li><p><strong>tokenizer</strong> (<em>Any</em>) – Tokenizer for decoding sequences</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>TrajectorySaver instance or None if not enabled</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Optional[<a class="reference internal" href="#lightrft.utils.trajectory_saver.TrajectorySaver" title="lightrft.utils.trajectory_saver.TrajectorySaver">TrajectorySaver</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 
 
@@ -353,7 +427,14 @@
           <div class="pytorch-right-menu" id="pytorch-right-menu">
             <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
               <ul>
-<li><a class="reference internal" href="#">lightrft.utils.trajectory_saver</a></li>
+<li><a class="reference internal" href="#">lightrft.utils.trajectory_saver</a><ul>
+<li><a class="reference internal" href="#lightrft.utils.trajectory_saver.TrajectorySaver"><code class="docutils literal notranslate"><span class="pre">TrajectorySaver</span></code></a><ul>
+<li><a class="reference internal" href="#lightrft.utils.trajectory_saver.TrajectorySaver.save_trajectories"><code class="docutils literal notranslate"><span class="pre">TrajectorySaver.save_trajectories()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#lightrft.utils.trajectory_saver.create_trajectory_saver"><code class="docutils literal notranslate"><span class="pre">create_trajectory_saver()</span></code></a></li>
+</ul>
+</li>
 </ul>
 
             </div>

@@ -306,10 +306,41 @@
             <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
               <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
                 
-  <section id="lightrft-utils-cli-args">
-<h1>lightrft.utils.cli_args<a class="headerlink" href="#lightrft-utils-cli-args" title="Permalink to this heading">¶</a></h1>
+  <section id="module-lightrft.utils.cli_args">
+<span id="lightrft-utils-cli-args"></span><h1>lightrft.utils.cli_args<a class="headerlink" href="#module-lightrft.utils.cli_args" title="Permalink to this heading">¶</a></h1>
+<p>Command-line Argument Parser Configuration Module</p>
+<p>This module provides functionality to configure command-line arguments for training and inference
+with various distributed training frameworks like vLLM, SGL, DeepSpeed, and FSDP.
+It includes arguments for model parallelism, memory utilization, sequence packing,
+gradient clipping, and logging options.</p>
 <section id="add-arguments">
 <h2>add_arguments<a class="headerlink" href="#add-arguments" title="Permalink to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="lightrft.utils.cli_args.add_arguments">
+<span class="sig-prename descclassname"><span class="pre">lightrft.utils.cli_args.</span></span><span class="sig-name descname"><span class="pre">add_arguments</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parser</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ArgumentParser</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/utils/cli_args.html#add_arguments"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.utils.cli_args.add_arguments" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add training and inference related arguments to an ArgumentParser.</p>
+<p>This function configures an argument parser with options for:
+- Inference Engine settings (vLLM/SGLang)
+- Training parameters
+- FSDP (Fully Sharded Data Parallelism) configuration
+- Logging and visualization options</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>parser</strong> (<em>argparse.ArgumentParser</em>) – The argument parser to which arguments will be added</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">argparse</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">add_arguments</span><span class="p">(</span><span class="n">parser</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd></dl>
+
 </section>
 </section>
 
@@ -357,7 +388,10 @@
             <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
               <ul>
 <li><a class="reference internal" href="#">lightrft.utils.cli_args</a><ul>
-<li><a class="reference internal" href="#add-arguments">add_arguments</a></li>
+<li><a class="reference internal" href="#add-arguments">add_arguments</a><ul>
+<li><a class="reference internal" href="#lightrft.utils.cli_args.add_arguments"><code class="docutils literal notranslate"><span class="pre">add_arguments()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

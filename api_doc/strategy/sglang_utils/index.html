@@ -306,19 +306,90 @@
             <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
               <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
                 
-  <section id="lightrft-strategy-sglang-utils">
-<h1>lightrft.strategy.sglang_utils<a class="headerlink" href="#lightrft-strategy-sglang-utils" title="Permalink to this heading">¶</a></h1>
+  <section id="module-lightrft.strategy.sglang_utils">
+<span id="lightrft-strategy-sglang-utils"></span><h1>lightrft.strategy.sglang_utils<a class="headerlink" href="#module-lightrft.strategy.sglang_utils" title="Permalink to this heading">¶</a></h1>
+<p>This module provides functionality for initializing and configuring a SGLang generation engine
+for reinforcement learning with human feedback (RLHF) applications. It handles distributed
+training setup, device coordination, and engine initialization with appropriate parameters.</p>
+<p>The main component is the get_sglang_engine function which creates and returns a configured
+RLGenerationEngine instance based on the provided arguments, taking into account the distributed
+training environment.</p>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="sglang_engine.html">lightrft.strategy.sglang_utils.sglang_engine</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="sglang_engine.html#rlgenerationengine">RLGenerationEngine</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sglang_engine.html#rlgenerationengine">RLGenerationEngine</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="sglang_engine.html#lightrft.strategy.sglang_utils.sglang_engine.RLGenerationEngine"><code class="docutils literal notranslate"><span class="pre">RLGenerationEngine</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="sgl_model_saver.html">lightrft.strategy.sglang_utils.sgl_model_saver</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="sgl_model_saver.html">lightrft.strategy.sglang_utils.sgl_model_saver</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="sgl_model_saver.html#lightrft.strategy.sglang_utils.sgl_model_saver.release_memory_occupation"><code class="docutils literal notranslate"><span class="pre">release_memory_occupation()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="sgl_model_saver.html#lightrft.strategy.sglang_utils.sgl_model_saver.resume_memory_occupation"><code class="docutils literal notranslate"><span class="pre">resume_memory_occupation()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </div>
 <section id="get-sglang-engine">
 <h2>get_sglang_engine<a class="headerlink" href="#get-sglang-engine" title="Permalink to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="lightrft.strategy.sglang_utils.get_sglang_engine">
+<span class="sig-prename descclassname"><span class="pre">lightrft.strategy.sglang_utils.</span></span><span class="sig-name descname"><span class="pre">get_sglang_engine</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_name_or_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">engine_mem_util</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enable_engine_sleep</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tp_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_tokenizer_init</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'bfloat16'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">disable_cuda_graph</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/lightrft/strategy/sglang_utils.html#get_sglang_engine"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.sglang_utils.get_sglang_engine" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize and configure a SGLang generation engine with distributed processing support.</p>
+<p>This function creates a RLGenerationEngine instance with proper distributed training
+configuration, including tensor parallelism setup, device coordination, and memory
+management. It handles the complex initialization process required for distributed
+inference in RLHF scenarios.</p>
+<p>The function automatically detects the distributed environment settings from environment
+variables and configures the engine accordingly. It sets up tensor parallel groups,
+manages GPU allocation, and initializes the engine with optimized parameters for
+high-throughput generation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model_name_or_path</strong> (<em>str</em>) – Path to the model or Hugging Face model identifier</p></li>
+<li><p><strong>engine_mem_util</strong> (<em>float</em>) – Memory utilization fraction for the engine (0.0 to 1.0)</p></li>
+<li><p><strong>enable_engine_sleep</strong> (<em>bool</em>) – Whether to enable memory saver mode that releases KV cache
+when memory is limited</p></li>
+<li><p><strong>tp_size</strong> (<em>int</em>) – Tensor parallelism size for distributed inference</p></li>
+<li><p><strong>skip_tokenizer_init</strong> (<em>bool</em>) – Whether to skip tokenizer initialization for faster startup</p></li>
+<li><p><strong>dtype</strong> (<em>str</em>) – Data type for model weights and computations (“bfloat16” or “float16”)</p></li>
+<li><p><strong>disable_cuda_graph</strong> (<em>bool</em>) – Whether to disable CUDA graph optimization</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Configured RLGenerationEngine instance ready for distributed inference</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="sglang_engine.html#lightrft.strategy.sglang_utils.sglang_engine.RLGenerationEngine" title="lightrft.strategy.sglang_utils.sglang_engine.RLGenerationEngine">RLGenerationEngine</a></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>AssertionError</strong> – If PyTorch distributed is not initialized</p></li>
+<li><p><strong>AssertionError</strong> – If world size is not evenly divisible by tensor parallelism size</p></li>
+</ul>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Initialize engine for single GPU</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">engine</span> <span class="o">=</span> <span class="n">get_sglang_engine</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">model_name_or_path</span><span class="o">=</span><span class="s2">&quot;meta-llama/Llama-2-7b-hf&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">engine_mem_util</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">tp_size</span><span class="o">=</span><span class="mi">1</span>
+<span class="gp">... </span><span class="p">)</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Initialize engine with tensor parallelism</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">engine</span> <span class="o">=</span> <span class="n">get_sglang_engine</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">model_name_or_path</span><span class="o">=</span><span class="s2">&quot;meta-llama/Llama-2-70b-hf&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">engine_mem_util</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">tp_size</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">enable_engine_sleep</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;float16&quot;</span>
+<span class="gp">... </span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
 </section>
 </section>
 
@@ -366,7 +437,10 @@
             <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
               <ul>
 <li><a class="reference internal" href="#">lightrft.strategy.sglang_utils</a><ul>
-<li><a class="reference internal" href="#get-sglang-engine">get_sglang_engine</a></li>
+<li><a class="reference internal" href="#get-sglang-engine">get_sglang_engine</a><ul>
+<li><a class="reference internal" href="#lightrft.strategy.sglang_utils.get_sglang_engine"><code class="docutils literal notranslate"><span class="pre">get_sglang_engine()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

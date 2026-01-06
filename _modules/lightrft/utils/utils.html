@@ -1,0 +1,872 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js" lang="en">
+<!--<![endif]-->
+
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>lightrft.utils.utils &mdash; LightRFT v0.1.1 documentation</title>
+  
+
+  <link rel="shortcut icon" href="../../../_static/images/favicon.ico" />
+  
+  
+
+  
+
+  
+  
+  
+
+  
+
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <!-- <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" /> -->
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/readthedocs.css" type="text/css" />
+  <link rel="index" title="Index" href="../../../genindex.html" />
+  <link rel="search" title="Search" href="../../../search.html" />
+  <!-- Google Analytics -->
+  <script type="text/javascript">
+    var collapsedSections = [];
+  </script>
+  
+  <!-- End Google Analytics -->
+  
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+  <script>
+    MathJax = {
+        chtml: {
+            scale: 1,
+            minScale: 1,
+        },
+        svg: {
+            scale: 1,
+            minScale: 1,
+        }
+    }
+</script>
+
+  <!-- Preload the theme fonts -->
+
+<link rel="preload" href="../../../_static/fonts/FreightSans/freight-sans-book.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../_static/fonts/FreightSans/freight-sans-medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../_static/fonts/IBMPlexMono/IBMPlexMono-Medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../_static/fonts/FreightSans/freight-sans-bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../_static/fonts/FreightSans/freight-sans-medium-italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../_static/fonts/IBMPlexMono/IBMPlexMono-SemiBold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+
+<!-- Preload the katex fonts -->
+
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Math-Italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size1-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size4-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size2-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size3-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Caligraphic-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.2/css/all.css"
+    integrity="sha384-vSIIfh2YWi9wW0r9iZe7RJPrKwp6bG+s9QZMoITbCckVJqGCCRhc+ccxNcdpHuYu" crossorigin="anonymous">
+</head>
+
+<div class="container-fluid header-holder tutorials-header" id="header-holder">
+  <div class="container">
+    <div class="header-container">
+      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+        aria-label="OpenMMLab"></a>
+
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://github.com/opendilab/LightRFT" target="_blank">GitHub</a>
+          </li>
+          <li >
+            <div id="resourcesDropdownButton" data-toggle="resources-dropdown" class="resources-dropdown">
+              <a
+                class="resource-option with-down-arrow">
+                OpenDILab
+              </a>
+              <div class="resources-dropdown-menu">
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-engine" target="_blank">
+                  <span class="dropdown-title">DI-engine </span>
+                  <p>OpenDILab Decision AI Engine</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/LightZero" target="_blank">
+                  <span class="dropdown-title">LightZero </span>
+                  <p>OpenDILab Decision Monte Carlo Tree Search Framework</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/GenerativeRL" target="_blank">
+                  <span class="dropdown-title">GenerativeRL </span>
+                  <p>OpenDILab Generative AI Framework</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-star" target="_blank">
+                  <span class="dropdown-title">DI-star </span>
+                  <p>OpenDILab Decision AI in StarCraftII</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-drive" target="_blank">
+                  <span class="dropdown-title">DI-drive </span>
+                  <p>OpenDILab Auto-driving platform</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/GoBigger" target="_blank">
+                  <span class="dropdown-title">GoBigger </span>
+                  <p>OpenDILab Multi-Agent Environment</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-smartcross" target="_blank">
+                  <span class="dropdown-title">DI-smartcross </span>
+                  <p>Decision Intelligence Platform for Traffic Crossing Signal Control</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-treetensor" target="_blank">
+                  <span class="dropdown-title">DI-treetensor </span>
+                  <p>Tree Nested PyTorch Tensor Lib</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-sheep" target="_blank">
+                  <span class="dropdown-title">DI-sheep </span>
+                  <p>Deep Reinforcement Learning + 3 Tiles Game</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-model-based-RL" target="_blank">
+                  <span class="dropdown-title">awesome-model-based-RL </span>
+                  <p>A curated list of awesome model based RL resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-decision-transformer" target="_blank">
+                  <span class="dropdown-title">awesome-decision-transformer </span>
+                  <p>A curated list of Decision Transformer resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-exploration-rl" target="_blank">
+                  <span class="dropdown-title">awesome-exploration-rl </span>
+                  <p>A curated list of awesome exploration RL resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-multi-modal-reinforcement-learning" target="_blank">
+                  <span class="dropdown-title">awesome-multi-modal-reinforcement-learning </span>
+                  <p>A curated list of Multi-Modal Reinforcement Learning resources (continually updated)</p>
+                </a>
+              </div>
+          </li>
+        </ul>
+      </div>
+
+      <a class="main-menu-open-button" href="#" data-behavior="open-mobile-menu"></a>
+    </div>
+  </div>
+</div>
+
+<body class="pytorch-body">
+
+   
+
+  
+
+  <div class="table-of-contents-link-wrapper">
+    <span>Table of Contents</span>
+    <a href="#" class="toggle-table-of-contents" data-behavior="toggle-table-of-contents"></a>
+  </div>
+
+  <nav data-toggle="wy-nav-shift" class="pytorch-left-menu" id="pytorch-left-menu">
+    <div class="pytorch-side-scroll">
+      <div class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        <div class="pytorch-left-menu-search">
+          
+
+          
+          
+          
+          
+
+          
+
+
+
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search Docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        
+        
+        
+        
+        
+        <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../quick_start/index.html">Quick Start</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide &amp; Best Practices</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../best_practice/index.html">Best Practices</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_doc/utils/index.html">lightrft.utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_doc/datasets/index.html">lightrft.datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_doc/models/index.html">lightrft.models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_doc/strategy/index.html">lightrft.strategy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_doc/trainer/index.html">lightrft.trainer</a></li>
+</ul>
+
+        
+        
+      </div>
+    </div>
+  </nav>
+
+  <div class="pytorch-container">
+    <div class="pytorch-page-level-bar" id="pytorch-page-level-bar">
+      <div class="pytorch-breadcrumbs-wrapper">
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="pytorch-breadcrumbs">
+    
+      <li>
+        <a href="../../../index.html">
+            Docs
+        </a> &gt;
+      </li>
+
+        
+          <li><a href="../../index.html">Module code</a> &gt;</li>
+        
+      <li>lightrft.utils.utils</li>
+    
+    
+      <li class="pytorch-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+</div>
+      </div>
+
+      <div class="pytorch-shortcuts-wrapper" id="pytorch-shortcuts-wrapper">
+        Shortcuts
+      </div>
+    </div>
+
+    <section data-toggle="wy-nav-shift" id="pytorch-content-wrap" class="pytorch-content-wrap">
+      <div class="pytorch-content-left">
+        
+          <div class="rst-content">
+            
+            <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
+              <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
+                
+  <h1>Source code for lightrft.utils.utils</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">datasets</span><span class="w"> </span><span class="kn">import</span> <span class="n">interleave_datasets</span><span class="p">,</span> <span class="n">load_dataset</span><span class="p">,</span> <span class="n">load_from_disk</span><span class="p">,</span> <span class="n">Dataset</span><span class="p">,</span> <span class="n">DatasetDict</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">transformers</span><span class="w"> </span><span class="kn">import</span> <span class="n">AutoTokenizer</span><span class="p">,</span> <span class="n">AutoProcessor</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch.distributed</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">dist</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">get_tokenizer</span><span class="p">(</span><span class="n">pretrain</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">padding_side</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">,</span> <span class="n">strategy</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">use_fast</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="n">tokenizer</span> <span class="o">=</span> <span class="n">AutoTokenizer</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">pretrain</span><span class="p">,</span> <span class="n">trust_remote_code</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">use_fast</span><span class="o">=</span><span class="n">use_fast</span><span class="p">)</span>
+    <span class="n">tokenizer</span><span class="o">.</span><span class="n">padding_side</span> <span class="o">=</span> <span class="n">padding_side</span>
+    <span class="c1"># NOTE: When enable vLLM, do not resize_token_embeddings, or the vocab size will mismatch with vLLM.</span>
+    <span class="c1"># https://github.com/facebookresearch/llama-recipes/pull/196</span>
+    <span class="k">if</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">pad_token</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">tokenizer</span><span class="o">.</span><span class="n">pad_token</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">eos_token</span>
+        <span class="n">tokenizer</span><span class="o">.</span><span class="n">pad_token_id</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">eos_token_id</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">pad_token_id</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">pad_token_id</span>
+
+    <span class="k">return</span> <span class="n">tokenizer</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">get_tokenizer_processor_vl</span><span class="p">(</span><span class="n">pretrain</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">padding_side</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">,</span> <span class="n">strategy</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">use_fast</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="n">tokenizer</span> <span class="o">=</span> <span class="n">AutoTokenizer</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">pretrain</span><span class="p">,</span> <span class="n">trust_remote_code</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">use_fast</span><span class="o">=</span><span class="n">use_fast</span><span class="p">)</span>
+    <span class="n">processor</span> <span class="o">=</span> <span class="n">AutoProcessor</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">pretrain</span><span class="p">,</span> <span class="n">trust_remote_code</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">use_fast</span><span class="o">=</span><span class="n">use_fast</span><span class="p">)</span>
+
+    <span class="n">tokenizer</span><span class="o">.</span><span class="n">padding_side</span> <span class="o">=</span> <span class="n">padding_side</span>
+    <span class="c1"># NOTE: When enable vLLM, do not resize_token_embeddings, or the vocab size will mismatch with vLLM.</span>
+    <span class="c1"># https://github.com/facebookresearch/llama-recipes/pull/196</span>
+    <span class="k">if</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">pad_token</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">tokenizer</span><span class="o">.</span><span class="n">pad_token</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">eos_token</span>
+        <span class="n">tokenizer</span><span class="o">.</span><span class="n">pad_token_id</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">eos_token_id</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">pad_token_id</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">pad_token_id</span>
+
+    <span class="k">return</span> <span class="n">tokenizer</span><span class="p">,</span> <span class="n">processor</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">blending_datasets</span><span class="p">(</span>
+    <span class="n">datasets</span><span class="p">,</span>
+    <span class="n">probabilities</span><span class="p">,</span>
+    <span class="n">strategy</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">seed</span><span class="o">=</span><span class="mi">42</span><span class="p">,</span>
+    <span class="n">max_count</span><span class="o">=</span><span class="mi">5000000</span><span class="p">,</span>
+    <span class="n">return_eval</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">stopping_strategy</span><span class="o">=</span><span class="s2">&quot;first_exhausted&quot;</span><span class="p">,</span>
+    <span class="n">train_split</span><span class="o">=</span><span class="s2">&quot;train&quot;</span><span class="p">,</span>
+    <span class="n">eval_split</span><span class="o">=</span><span class="s2">&quot;test&quot;</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="n">datasets</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
+    <span class="n">probabilities</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">probabilities</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)))</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">probabilities</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">datasets</span><span class="p">)</span>
+
+    <span class="n">train_data_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">eval_data_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">dataset</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">datasets</span><span class="p">):</span>
+        <span class="n">dataset</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">strategy</span><span class="p">:</span>
+            <span class="n">strategy</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;dataset: </span><span class="si">{</span><span class="n">dataset</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="n">data_dir</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;@&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">if</span> <span class="s2">&quot;@&quot;</span> <span class="ow">in</span> <span class="n">dataset</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="n">dataset</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;@&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="n">dataset_basename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
+
+        <span class="n">ext</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">dataset</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="c1"># local python script</span>
+        <span class="k">if</span> <span class="n">ext</span> <span class="o">==</span> <span class="s2">&quot;.py&quot;</span> <span class="ow">or</span> <span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">dataset_basename</span><span class="si">}</span><span class="s2">.py&quot;</span><span class="p">))):</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">load_dataset</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">trust_remote_code</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">strategy</span><span class="p">:</span>
+                <span class="n">strategy</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;loaded </span><span class="si">{</span><span class="n">dataset</span><span class="si">}</span><span class="s2"> with python script&quot;</span><span class="p">)</span>
+        <span class="c1"># local text file</span>
+        <span class="k">elif</span> <span class="n">ext</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;.json&quot;</span><span class="p">,</span> <span class="s2">&quot;.jsonl&quot;</span><span class="p">,</span> <span class="s2">&quot;.csv&quot;</span><span class="p">]:</span>
+            <span class="n">ext</span> <span class="o">=</span> <span class="n">ext</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">ext</span> <span class="o">==</span> <span class="s2">&quot;jsonl&quot;</span><span class="p">:</span>
+                <span class="n">ext</span> <span class="o">=</span> <span class="s2">&quot;json&quot;</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">load_dataset</span><span class="p">(</span><span class="n">ext</span><span class="p">,</span> <span class="n">data_files</span><span class="o">=</span><span class="n">dataset</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">strategy</span><span class="p">:</span>
+                <span class="n">strategy</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;loaded </span><span class="si">{</span><span class="n">dataset</span><span class="si">}</span><span class="s2"> with data_files=</span><span class="si">{</span><span class="n">dataset</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="c1"># local dataset saved with `datasets.Dataset.save_to_disk`</span>
+        <span class="k">elif</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">dataset</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="n">load_from_disk</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">strategy</span><span class="p">:</span>
+                    <span class="n">strategy</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;loaded </span><span class="si">{</span><span class="n">dataset</span><span class="si">}</span><span class="s2"> from disk&quot;</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">strategy</span><span class="p">:</span>
+                    <span class="n">strategy</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;failed to load </span><span class="si">{</span><span class="n">dataset</span><span class="si">}</span><span class="s2"> from disk: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="n">load_dataset</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">data_dir</span><span class="o">=</span><span class="n">data_dir</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">strategy</span><span class="p">:</span>
+                    <span class="n">strategy</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;loaded </span><span class="si">{</span><span class="n">dataset</span><span class="si">}</span><span class="s2"> from files&quot;</span><span class="p">)</span>
+        <span class="c1"># remote/local folder or common file</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">load_dataset</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">data_dir</span><span class="o">=</span><span class="n">data_dir</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">strategy</span><span class="p">:</span>
+                <span class="n">strategy</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;loaded </span><span class="si">{</span><span class="n">dataset</span><span class="si">}</span><span class="s2"> from files&quot;</span><span class="p">)</span>
+
+        <span class="c1"># ==================== FIX AND OPTIMIZATION START ====================</span>
+        <span class="c1"># This block is made robust to handle both Dataset and DatasetDict objects.</span>
+
+        <span class="c1"># Try to get the specified training split</span>
+        <span class="k">if</span> <span class="n">train_split</span> <span class="ow">and</span> <span class="n">train_split</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+            <span class="n">train_data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">train_split</span><span class="p">]</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">max_count</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">train_split</span><span class="p">]))))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># If the specified split is not found, or if data is a single Dataset</span>
+            <span class="n">actual_dataset</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">DatasetDict</span><span class="p">):</span>
+                <span class="c1"># If it&#39;s a DatasetDict, intelligently use the first available split.</span>
+                <span class="c1"># This makes the function compatible with datasets that don&#39;t have a &#39;train&#39; split.</span>
+                <span class="n">available_splits</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">available_splits</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;DatasetDict loaded from </span><span class="si">{</span><span class="n">dataset</span><span class="si">}</span><span class="s2"> is empty and has no splits.&quot;</span><span class="p">)</span>
+
+                <span class="n">split_name</span> <span class="o">=</span> <span class="n">available_splits</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">actual_dataset</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">split_name</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">strategy</span><span class="p">:</span>
+                    <span class="n">strategy</span><span class="o">.</span><span class="n">print</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;WARN: &#39;</span><span class="si">{</span><span class="n">train_split</span><span class="si">}</span><span class="s2">&#39; split not found or not provided. Using the first split: &#39;</span><span class="si">{</span><span class="n">split_name</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
+                    <span class="p">)</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">Dataset</span><span class="p">):</span>
+                <span class="c1"># If it&#39;s already a single Dataset, use it directly.</span>
+                <span class="n">actual_dataset</span> <span class="o">=</span> <span class="n">data</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Loaded data from </span><span class="si">{</span><span class="n">dataset</span><span class="si">}</span><span class="s2"> is of an unexpected type: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="n">train_data</span> <span class="o">=</span> <span class="n">actual_dataset</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">max_count</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">actual_dataset</span><span class="p">))))</span>
+
+        <span class="n">train_data_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">train_data</span><span class="p">)</span>
+        <span class="c1"># ===================== FIX AND OPTIMIZATION END =====================</span>
+
+        <span class="k">if</span> <span class="n">return_eval</span><span class="p">:</span>
+            <span class="c1"># Try to get the specified evaluation split</span>
+            <span class="k">if</span> <span class="n">eval_split</span> <span class="ow">and</span> <span class="n">eval_split</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+                <span class="n">eval_data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">eval_split</span><span class="p">]</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">max_count</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">eval_split</span><span class="p">]))))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Fallback for evaluation data: use a small fraction of the training data.</span>
+                <span class="c1"># This part is safe because `train_data` is guaranteed to be a `Dataset` object.</span>
+                <span class="n">eval_data</span> <span class="o">=</span> <span class="n">train_data</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">max_count</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">train_data</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.03</span><span class="p">))))</span>
+                <span class="k">if</span> <span class="n">strategy</span><span class="p">:</span>
+                    <span class="n">strategy</span><span class="o">.</span><span class="n">print</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;WARN: &#39;</span><span class="si">{</span><span class="n">eval_split</span><span class="si">}</span><span class="s2">&#39; split not found. Using 3% of the training data for evaluation.&quot;</span>
+                    <span class="p">)</span>
+            <span class="n">eval_data_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">eval_data</span><span class="p">)</span>
+
+    <span class="c1"># merge datasets</span>
+    <span class="k">if</span> <span class="n">strategy</span> <span class="ow">and</span> <span class="n">strategy</span><span class="o">.</span><span class="n">is_rank_0</span><span class="p">():</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Blending </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">train_data_list</span><span class="p">)</span><span class="si">}</span><span class="s2"> training datasets...&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">train_data_list</span><span class="p">)</span>
+
+    <span class="n">train_dataset</span> <span class="o">=</span> <span class="n">interleave_datasets</span><span class="p">(</span>
+        <span class="n">train_data_list</span><span class="p">,</span>
+        <span class="n">probabilities</span><span class="o">=</span><span class="n">probabilities</span><span class="p">,</span>
+        <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span>
+        <span class="n">stopping_strategy</span><span class="o">=</span><span class="n">stopping_strategy</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="n">return_eval</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">strategy</span> <span class="ow">and</span> <span class="n">strategy</span><span class="o">.</span><span class="n">is_rank_0</span><span class="p">():</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Blending </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">eval_data_list</span><span class="p">)</span><span class="si">}</span><span class="s2"> evaluation datasets...&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">eval_data_list</span><span class="p">)</span>
+        <span class="n">eval_dataset</span> <span class="o">=</span> <span class="n">interleave_datasets</span><span class="p">(</span>
+            <span class="n">eval_data_list</span><span class="p">,</span>
+            <span class="n">probabilities</span><span class="o">=</span><span class="n">probabilities</span><span class="p">,</span>
+            <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span>
+            <span class="n">stopping_strategy</span><span class="o">=</span><span class="n">stopping_strategy</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">train_dataset</span><span class="p">,</span> <span class="n">eval_dataset</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">train_dataset</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">convert_token_to_id</span><span class="p">(</span><span class="n">token</span><span class="p">,</span> <span class="n">tokenizer</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">token</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">token</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="n">token</span><span class="p">,</span> <span class="n">add_special_tokens</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">token</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="n">token</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;token should be int or str&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="print_rank_0"><a class="viewcode-back" href="../../../api_doc/utils/utils.html#lightrft.utils.utils.print_rank_0">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">print_rank_0</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Prints message only from rank 0 process in distributed training.</span>
+
+<span class="sd">    This function helps avoid duplicate prints in multi-GPU training by</span>
+<span class="sd">    only printing from the main process (rank 0).</span>
+
+<span class="sd">    :param msg: The message to print</span>
+<span class="sd">    :type msg: str</span>
+<span class="sd">    :param args: Additional positional arguments to include in the message</span>
+<span class="sd">    :param kwargs: Additional keyword arguments to include in the message</span>
+
+<span class="sd">    Example::</span>
+
+<span class="sd">        &gt;&gt;&gt; print_rank_0(&quot;Training started&quot;, epoch=1)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">distributed</span><span class="o">.</span><span class="n">get_rank</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;RANK 0: </span><span class="si">{</span><span class="n">msg</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">args</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">kwargs</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="get_current_device"><a class="viewcode-back" href="../../../api_doc/utils/utils.html#lightrft.utils.utils.get_current_device">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">get_current_device</span><span class="p">(</span><span class="n">num_device_per_node</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Returns the current CUDA device.</span>
+
+<span class="sd">    This function provides a convenient way to get the current CUDA device</span>
+<span class="sd">    being used by PyTorch.</span>
+
+<span class="sd">    :param num_device_per_node: Number of devices per node for distributed training</span>
+<span class="sd">    :type num_device_per_node: int</span>
+<span class="sd">    :return: Current CUDA device</span>
+<span class="sd">    :rtype: torch.device</span>
+
+<span class="sd">    Example::</span>
+
+<span class="sd">        &gt;&gt;&gt; device = get_current_device()</span>
+<span class="sd">        &gt;&gt;&gt; model = model.to(device)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">torch</span><span class="o">.</span><span class="n">distributed</span><span class="o">.</span><span class="n">is_initialized</span><span class="p">():</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">current_device</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;cuda:</span><span class="si">{</span><span class="n">torch</span><span class="o">.</span><span class="n">distributed</span><span class="o">.</span><span class="n">get_rank</span><span class="p">()</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="n">num_device_per_node</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="get_torch_profiler"><a class="viewcode-back" href="../../../api_doc/utils/utils.html#lightrft.utils.utils.get_torch_profiler">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">get_torch_profiler</span><span class="p">(</span><span class="n">output_file</span><span class="p">,</span> <span class="n">warmup</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">active</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">repeat</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Creates and returns a PyTorch profiler configured for distributed training.</span>
+
+<span class="sd">    This function returns a properly configured PyTorch profiler for the current process.</span>
+<span class="sd">    For rank 0 process, it returns a full-featured profiler that records CPU and CUDA activities.</span>
+<span class="sd">    For other ranks, it returns a dummy profiler that does nothing.</span>
+
+<span class="sd">    For more details on PyTorch Profiler, see: https://docs.pytorch.org/docs/stable/profiler.html</span>
+
+<span class="sd">    :param output_file: Path where profiling results will be saved (only for rank 0)</span>
+<span class="sd">    :type output_file: str</span>
+<span class="sd">    :param warmup: Number of steps to wait before profiling starts</span>
+<span class="sd">    :type warmup: int</span>
+<span class="sd">    :param active: Number of steps with active profiling</span>
+<span class="sd">    :type active: int</span>
+<span class="sd">    :param repeat: Number of times to repeat the profiling cycle</span>
+<span class="sd">    :type repeat: int</span>
+
+<span class="sd">    :return: A PyTorch profiler object or a dummy profiler</span>
+<span class="sd">    :rtype: torch.profiler.profile or DummyProfile</span>
+
+<span class="sd">    Example::</span>
+
+<span class="sd">        &gt;&gt;&gt; with get_torch_profiler(&quot;./profiler_output&quot;, warmup=5, active=10) as prof:</span>
+<span class="sd">        &gt;&gt;&gt;     for step in range(100):</span>
+<span class="sd">        &gt;&gt;&gt;         train_step()</span>
+<span class="sd">        &gt;&gt;&gt;         prof.step()</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">torch.profiler</span><span class="w"> </span><span class="kn">import</span> <span class="n">ProfilerActivity</span>
+
+    <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">distributed</span><span class="o">.</span><span class="n">get_rank</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">prof</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">profiler</span><span class="o">.</span><span class="n">profile</span><span class="p">(</span>
+            <span class="n">schedule</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">profiler</span><span class="o">.</span><span class="n">schedule</span><span class="p">(</span><span class="n">wait</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">warmup</span><span class="o">=</span><span class="n">warmup</span><span class="p">,</span> <span class="n">active</span><span class="o">=</span><span class="n">active</span><span class="p">,</span> <span class="n">repeat</span><span class="o">=</span><span class="n">repeat</span><span class="p">),</span>
+            <span class="n">on_trace_ready</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">profiler</span><span class="o">.</span><span class="n">tensorboard_trace_handler</span><span class="p">(</span><span class="n">output_file</span><span class="p">),</span>
+            <span class="n">activities</span><span class="o">=</span><span class="p">[</span><span class="n">ProfilerActivity</span><span class="o">.</span><span class="n">CPU</span><span class="p">,</span> <span class="n">ProfilerActivity</span><span class="o">.</span><span class="n">CUDA</span><span class="p">],</span>
+            <span class="n">record_shapes</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">with_stack</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">profile_memory</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">prof</span> <span class="o">=</span> <span class="n">DummyProfile</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">prof</span></div>
+
+
+<div class="viewcode-block" id="DummyProfile"><a class="viewcode-back" href="../../../api_doc/utils/utils.html#lightrft.utils.utils.DummyProfile">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">DummyProfile</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Dummy Profile class that mimics the PyTorch profiler API but does nothing.</span>
+
+<span class="sd">    This class is used as a placeholder for non-rank-0 processes where profiling</span>
+<span class="sd">    is not needed, allowing the same code to be used across all processes without</span>
+<span class="sd">    conditional branches.</span>
+
+<span class="sd">    Example::</span>
+
+<span class="sd">        &gt;&gt;&gt; prof = DummyProfile() if rank != 0 else torch.profiler.profile(...)</span>
+<span class="sd">        &gt;&gt;&gt; with prof:</span>
+<span class="sd">        &gt;&gt;&gt;     # code to be profiled</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="DummyProfile.__init__"><a class="viewcode-back" href="../../../api_doc/utils/utils.html#lightrft.utils.utils.DummyProfile.__init__">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize a dummy profiler instance.</span>
+
+<span class="sd">        :param args: Positional arguments (ignored)</span>
+<span class="sd">        :param kwargs: Keyword arguments (ignored)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="DummyProfile.__enter__"><a class="viewcode-back" href="../../../api_doc/utils/utils.html#lightrft.utils.utils.DummyProfile.__enter__">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Context manager entry method.</span>
+
+<span class="sd">        :return: Self instance</span>
+<span class="sd">        :rtype: DummyProfile</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+<div class="viewcode-block" id="DummyProfile.__exit__"><a class="viewcode-back" href="../../../api_doc/utils/utils.html#lightrft.utils.utils.DummyProfile.__exit__">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Context manager exit method.</span>
+
+<span class="sd">        :param a: Exception type</span>
+<span class="sd">        :param b: Exception value</span>
+<span class="sd">        :param c: Exception traceback</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="DummyProfile.start"><a class="viewcode-back" href="../../../api_doc/utils/utils.html#lightrft.utils.utils.DummyProfile.start">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Dummy implementation of the profiler start method.</span>
+<span class="sd">        Does nothing.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="DummyProfile.stop"><a class="viewcode-back" href="../../../api_doc/utils/utils.html#lightrft.utils.utils.DummyProfile.stop">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Dummy implementation of the profiler stop method.</span>
+<span class="sd">        Does nothing.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="DummyProfile.step"><a class="viewcode-back" href="../../../api_doc/utils/utils.html#lightrft.utils.utils.DummyProfile.step">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Dummy implementation of the profiler step method.</span>
+<span class="sd">        Does nothing.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div></div>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">ensure_video_input_available</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Ensure ``VideoInput`` is available from ``transformers.image_utils``.</span>
+
+<span class="sd">    This function handles compatibility issues across different versions of</span>
+<span class="sd">    Transformers where ``VideoInput`` may be defined in different modules.</span>
+
+<span class="sd">    Version behavior</span>
+<span class="sd">    ----------------</span>
+<span class="sd">    * Transformers &lt; 4.52.0:</span>
+<span class="sd">        ``VideoInput`` is defined in ``transformers.image_utils``, so</span>
+<span class="sd">        ``from transformers.image_utils import VideoInput`` works.</span>
+
+<span class="sd">    * Transformers &gt;= 4.52.0:</span>
+<span class="sd">        ``VideoInput`` has been moved to ``transformers.video_utils`` and is</span>
+<span class="sd">        no longer exported from ``transformers.image_utils``. Importing</span>
+<span class="sd">        ``VideoInput`` from ``transformers.image_utils`` will fail unless we</span>
+<span class="sd">        manually patch it.</span>
+
+<span class="sd">    What this helper does</span>
+<span class="sd">    ---------------------</span>
+<span class="sd">    * Tries to import ``VideoInput`` from ``transformers.image_utils``.</span>
+<span class="sd">    * If that fails (e.g. Transformers &gt;= 4.52.0), it tries to import</span>
+<span class="sd">      ``VideoInput`` from ``transformers.video_utils`` instead.</span>
+<span class="sd">    * If both imports fail, it creates a dummy ``VideoInput`` class as a</span>
+<span class="sd">      fallback.</span>
+<span class="sd">    * In all non-error cases, it also attaches ``VideoInput`` back onto the</span>
+<span class="sd">      ``transformers.image_utils`` module so that:</span>
+
+<span class="sd">        &gt;&gt;&gt; ensure_video_input_available()</span>
+<span class="sd">        &gt;&gt;&gt; from transformers.image_utils import VideoInput  # now works for</span>
+<span class="sd">        ...                                                  # both old and</span>
+<span class="sd">        ...                                                  # new versions</span>
+
+<span class="sd">    This keeps downstream code compatible with projects that expect</span>
+<span class="sd">    ``transformers.image_utils.VideoInput`` to exist, regardless of the</span>
+<span class="sd">    installed Transformers version.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">transformers.image_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">VideoInput</span>
+    <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">transformers.video_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">VideoInput</span>
+        <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+
+            <span class="k">class</span><span class="w"> </span><span class="nc">VideoInput</span><span class="p">:</span>
+                <span class="k">pass</span>
+
+        <span class="kn">import</span><span class="w"> </span><span class="nn">transformers</span>
+        <span class="n">transformers</span><span class="o">.</span><span class="n">image_utils</span><span class="o">.</span><span class="n">VideoInput</span> <span class="o">=</span> <span class="n">VideoInput</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="s2">&quot;transformers.image_utils&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">VideoInput</span> <span class="o">=</span> <span class="n">VideoInput</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">all_gather_and_flatten</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">group</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">dist</span><span class="o">.</span><span class="n">ProcessGroup</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Gather data from all processes and flatten the result into a single list.</span>
+
+<span class="sd">    :param data: The data to gather from the current process.</span>
+<span class="sd">    :type data: Any</span>
+<span class="sd">    :param group: The process group to work on. If None, the default process group is used.</span>
+<span class="sd">    :type group: ProcessGroup, optional</span>
+
+<span class="sd">    :returns: A flattened list containing data from all processes.</span>
+<span class="sd">    :rtype: List[Any]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">dist</span><span class="o">.</span><span class="n">is_initialized</span><span class="p">():</span>
+        <span class="k">return</span> <span class="n">data</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="k">else</span> <span class="p">[</span><span class="n">data</span><span class="p">]</span>
+
+    <span class="n">world_size</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">get_world_size</span><span class="p">(</span><span class="n">group</span><span class="o">=</span><span class="n">group</span><span class="p">)</span>
+    <span class="n">gathered_data</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">world_size</span>
+    <span class="n">dist</span><span class="o">.</span><span class="n">all_gather_object</span><span class="p">(</span><span class="n">gathered_data</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">group</span><span class="p">)</span>
+
+    <span class="n">flattened_data</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">gathered_data</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="n">flattened_data</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">flattened_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">flattened_data</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">all_reduce_dict</span><span class="p">(</span><span class="n">metrics_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span>
+                    <span class="n">op</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;sum&quot;</span><span class="p">,</span>
+                    <span class="n">group</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">dist</span><span class="o">.</span><span class="n">ProcessGroup</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Perform all-reduce operation on a dictionary of metrics.</span>
+<span class="sd">    This function converts the dictionary values to a single tensor for efficient reduction.</span>
+
+<span class="sd">    :param metrics_dict: Dictionary of metrics to be reduced.</span>
+<span class="sd">    :type metrics_dict: Dict[str, float]</span>
+<span class="sd">    :param op: Reduction operation (&#39;sum&#39;, &#39;max&#39;, &#39;min&#39;, &#39;mean&#39;).</span>
+<span class="sd">    :type op: str</span>
+<span class="sd">    :param group: The process group to work on. If None, the default process group is used.</span>
+<span class="sd">    :type group: ProcessGroup, optional</span>
+
+<span class="sd">    :returns: Reduced dictionary of metrics.</span>
+<span class="sd">    :rtype: Dict[str, float]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">dist</span><span class="o">.</span><span class="n">is_initialized</span><span class="p">():</span>
+        <span class="k">return</span> <span class="n">metrics_dict</span>
+
+    <span class="n">keys</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">metrics_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+    <span class="n">values</span> <span class="o">=</span> <span class="p">[</span><span class="n">metrics_dict</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">]</span>
+
+    <span class="c1"># Use the current device if available, otherwise CPU</span>
+    <span class="n">device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">current_device</span><span class="p">()</span> <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="k">else</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
+    <span class="n">tensor</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+
+    <span class="n">dist_op_map</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;sum&quot;</span><span class="p">:</span> <span class="n">dist</span><span class="o">.</span><span class="n">ReduceOp</span><span class="o">.</span><span class="n">SUM</span><span class="p">,</span>
+        <span class="s2">&quot;max&quot;</span><span class="p">:</span> <span class="n">dist</span><span class="o">.</span><span class="n">ReduceOp</span><span class="o">.</span><span class="n">MAX</span><span class="p">,</span>
+        <span class="s2">&quot;min&quot;</span><span class="p">:</span> <span class="n">dist</span><span class="o">.</span><span class="n">ReduceOp</span><span class="o">.</span><span class="n">MIN</span><span class="p">,</span>
+        <span class="s2">&quot;mean&quot;</span><span class="p">:</span> <span class="n">dist</span><span class="o">.</span><span class="n">ReduceOp</span><span class="o">.</span><span class="n">SUM</span><span class="p">,</span>  <span class="c1"># Mean is handled by sum then divide</span>
+    <span class="p">}</span>
+    <span class="n">dist_op</span> <span class="o">=</span> <span class="n">dist_op_map</span><span class="p">[</span><span class="n">op</span><span class="o">.</span><span class="n">lower</span><span class="p">()]</span>
+
+    <span class="n">dist</span><span class="o">.</span><span class="n">all_reduce</span><span class="p">(</span><span class="n">tensor</span><span class="p">,</span> <span class="n">op</span><span class="o">=</span><span class="n">dist_op</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">group</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">op</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;mean&quot;</span><span class="p">:</span>
+        <span class="n">tensor</span> <span class="o">/=</span> <span class="n">dist</span><span class="o">.</span><span class="n">get_world_size</span><span class="p">(</span><span class="n">group</span><span class="o">=</span><span class="n">group</span><span class="p">)</span>
+
+    <span class="n">reduced_values</span> <span class="o">=</span> <span class="n">tensor</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+    <span class="k">return</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="n">reduced_values</span><span class="p">)}</span>
+</pre></div>
+
+              </article>
+              
+            </div>
+            <footer>
+  
+
+  <hr>
+
+  <div role="contentinfo">
+    <p>
+      &copy; Copyright 2025, OpenDILab.
+
+    </p>
+  </div>
+  
+  <div>
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a
+      href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the
+      Docs</a>.
+  </div>
+   
+
+</footer>
+          </div>
+        </div>
+
+        <div class="pytorch-content-right" id="pytorch-content-right">
+          <div class="pytorch-right-menu" id="pytorch-right-menu">
+            <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
+              
+            </div>
+          </div>
+        </div>
+    </section>
+  </div>
+
+  
+
+
+  
+
+  
+  <script type="text/javascript" id="documentation_options" data-url_root="../../../"
+    src="../../../_static/documentation_options.js"></script>
+  <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+  <script src="../../../_static/doctools.js"></script>
+  <script src="../../../_static/sphinx_highlight.js"></script>
+  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+  
+
+  
+
+  <script type="text/javascript" src="../../../_static/js/vendor/popper.min.js"></script>
+  <script type="text/javascript" src="../../../_static/js/vendor/bootstrap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
+  <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+    jQuery(function () {
+      SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+  <!-- Begin Footer -->
+
+  <div class="container-fluid docs-tutorials-resources" id="docs-tutorials-resources">
+  </div>
+
+  <!-- End Footer -->
+
+  <!-- Begin Mobile Menu -->
+
+  <div class="mobile-main-menu">
+    <div class="container-fluid">
+      <div class="container">
+        <div class="mobile-main-menu-header-container">
+          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
+        </div>
+      </div>
+    </div>
+
+    <div class="mobile-main-menu-links-container">
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://github.com/opendilab/LightRFT" target="_blank">GitHub</a>
+          </li>
+      </div>
+    </div>
+  </div>
+
+  <!-- End Mobile Menu -->
+
+  <script type="text/javascript" src="../../../_static/js/vendor/anchor.min.js"></script>
+
+  <script type="text/javascript">
+    $(document).ready(function () {
+      mobileMenu.bind();
+      mobileTOC.bind();
+      pytorchAnchors.bind();
+      sideMenus.bind();
+      scrollToAnchor.bind();
+      highlightNavigation.bind();
+      mainMenuDropdown.bind();
+      filterTags.bind();
+
+      // Add class to links that have code blocks, since we cannot create links in code blocks
+      $("article.pytorch-article a span.pre").each(function (e) {
+        $(this).closest("a").addClass("has-code");
+      });
+    })
+  </script>
+</body>
+
+</html>

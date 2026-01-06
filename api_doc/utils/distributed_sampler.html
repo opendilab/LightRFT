@@ -306,8 +306,81 @@
             <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
               <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
                 
-  <section id="lightrft-utils-distributed-sampler">
-<h1>lightrft.utils.distributed_sampler<a class="headerlink" href="#lightrft-utils-distributed-sampler" title="Permalink to this heading">¶</a></h1>
+  <section id="module-lightrft.utils.distributed_sampler">
+<span id="lightrft-utils-distributed-sampler"></span><h1>lightrft.utils.distributed_sampler<a class="headerlink" href="#module-lightrft.utils.distributed_sampler" title="Permalink to this heading">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="lightrft.utils.distributed_sampler.DistributedSampler">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">lightrft.utils.distributed_sampler.</span></span><span class="sig-name descname"><span class="pre">DistributedSampler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/utils/distributed_sampler.html#DistributedSampler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.utils.distributed_sampler.DistributedSampler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">+_T_co</span></code></p>
+<p>Sampler that restricts data loading to a subset of the dataset.</p>
+<p>It is especially useful in conjunction with
+<code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.parallel.DistributedDataParallel</span></code>. In such a case, each
+process can pass a <code class="xref py py-class docutils literal notranslate"><span class="pre">DistributedSampler</span></code> instance as a
+<code class="xref py py-class docutils literal notranslate"><span class="pre">DataLoader</span></code> sampler, and load a subset of the
+original dataset that is exclusive to it.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Dataset is assumed to be of constant size and that any instance of it always
+returns the same elements in the same order.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dataset</strong> – Dataset used for sampling.</p></li>
+<li><p><strong>num_replicas</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of processes participating in
+distributed training. By default, <code class="xref py py-attr docutils literal notranslate"><span class="pre">world_size</span></code> is retrieved from the
+current distributed group.</p></li>
+<li><p><strong>rank</strong> (<em>int</em><em>, </em><em>optional</em>) – Rank of the current process within <code class="xref py py-attr docutils literal notranslate"><span class="pre">num_replicas</span></code>.
+By default, <code class="xref py py-attr docutils literal notranslate"><span class="pre">rank</span></code> is retrieved from the current distributed
+group.</p></li>
+<li><p><strong>shuffle</strong> (<em>bool</em><em>, </em><em>optional</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code> (default), sampler will shuffle the
+indices.</p></li>
+<li><p><strong>seed</strong> – <dl class="simple">
+<dt>random seed used to shuffle the sampler if</dt><dd><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">shuffle=True</span></code>. This number should be identical across all
+processes in the distributed group. Default: <code class="docutils literal notranslate"><span class="pre">0</span></code>.</p>
+</dd>
+<dt>drop_last (bool, optional): if <code class="docutils literal notranslate"><span class="pre">True</span></code>, then the sampler will drop the</dt><dd><p>tail of the data to make it evenly divisible across the number of
+replicas. If <code class="docutils literal notranslate"><span class="pre">False</span></code>, the sampler will add extra indices to make
+the data evenly divisible across the replicas. Default: <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p>
+</dd>
+</dl>
+</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>In distributed mode, calling the <a class="reference internal" href="#lightrft.utils.distributed_sampler.DistributedSampler.set_epoch" title="lightrft.utils.distributed_sampler.DistributedSampler.set_epoch"><code class="xref py py-meth docutils literal notranslate"><span class="pre">set_epoch()</span></code></a> method at
+the beginning of each epoch <strong>before</strong> creating the <code class="xref py py-class docutils literal notranslate"><span class="pre">DataLoader</span></code> iterator
+is necessary to make shuffling work properly across multiple epochs. Otherwise,
+the same ordering will be always used.</p>
+</div>
+<p><strong>Example:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># xdoctest: +SKIP</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sampler</span> <span class="o">=</span> <span class="n">DistributedSampler</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span> <span class="k">if</span> <span class="n">is_distributed</span> <span class="k">else</span> <span class="kc">None</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">loader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="p">(</span><span class="n">sampler</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">),</span>
+<span class="gp">... </span>                    <span class="n">sampler</span><span class="o">=</span><span class="n">sampler</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">start_epoch</span><span class="p">,</span> <span class="n">n_epochs</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">if</span> <span class="n">is_distributed</span><span class="p">:</span>
+<span class="gp">... </span>        <span class="n">sampler</span><span class="o">.</span><span class="n">set_epoch</span><span class="p">(</span><span class="n">epoch</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">train</span><span class="p">(</span><span class="n">loader</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.utils.distributed_sampler.DistributedSampler.set_epoch">
+<span class="sig-name descname"><span class="pre">set_epoch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">epoch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">consumed_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/lightrft/utils/distributed_sampler.html#DistributedSampler.set_epoch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.utils.distributed_sampler.DistributedSampler.set_epoch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the epoch for this sampler.</p>
+<p>When <code class="xref py py-attr docutils literal notranslate"><span class="pre">shuffle=True</span></code>, this ensures all replicas
+use a different random ordering for each epoch. Otherwise, the next iteration of this
+sampler will yield the same ordering.</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>epoch (int): Epoch number.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 
 
@@ -353,7 +426,13 @@
           <div class="pytorch-right-menu" id="pytorch-right-menu">
             <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
               <ul>
-<li><a class="reference internal" href="#">lightrft.utils.distributed_sampler</a></li>
+<li><a class="reference internal" href="#">lightrft.utils.distributed_sampler</a><ul>
+<li><a class="reference internal" href="#lightrft.utils.distributed_sampler.DistributedSampler"><code class="docutils literal notranslate"><span class="pre">DistributedSampler</span></code></a><ul>
+<li><a class="reference internal" href="#lightrft.utils.distributed_sampler.DistributedSampler.set_epoch"><code class="docutils literal notranslate"><span class="pre">DistributedSampler.set_epoch()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 
             </div>

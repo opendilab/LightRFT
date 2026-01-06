@@ -306,8 +306,377 @@
             <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
               <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
                 
-  <section id="lightrft-strategy-fake-strategy">
-<h1>lightrft.strategy.fake_strategy<a class="headerlink" href="#lightrft-strategy-fake-strategy" title="Permalink to this heading">¶</a></h1>
+  <section id="module-lightrft.strategy.fake_strategy">
+<span id="lightrft-strategy-fake-strategy"></span><h1>lightrft.strategy.fake_strategy<a class="headerlink" href="#module-lightrft.strategy.fake_strategy" title="Permalink to this heading">¶</a></h1>
+<p>FakeStrategy for testing LightRFT without distributed environment.</p>
+<p>This module provides a FakeStrategy class that mimics the behavior of real
+distributed training strategies (DeepSpeed, FSDP) but runs in a single process
+without actual distributed communication. This is useful for unit testing and
+development environments where distributed setup is not available.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="lightrft.strategy.fake_strategy.FakeStrategy">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">lightrft.strategy.fake_strategy.</span></span><span class="sig-name descname"><span class="pre">FakeStrategy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">42</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_norm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">micro_train_batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">128</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/strategy/fake_strategy.html#FakeStrategy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.fake_strategy.FakeStrategy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="strategy_base.html#lightrft.strategy.strategy_base.StrategyBase" title="lightrft.strategy.strategy_base.StrategyBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">StrategyBase</span></code></a></p>
+<p>Fake strategy for testing without distributed environment.</p>
+<p>This strategy provides the same API as real distributed strategies but
+runs everything in a single process without actual distributed communication.
+It’s useful for unit testing and development.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>seed</strong> (<em>int</em>) – Random seed for reproducibility</p></li>
+<li><p><strong>max_norm</strong> (<em>float</em>) – Maximum gradient norm for clipping</p></li>
+<li><p><strong>micro_train_batch_size</strong> (<em>int</em>) – Batch size for each training step</p></li>
+<li><p><strong>train_batch_size</strong> (<em>int</em>) – Total batch size for training</p></li>
+<li><p><strong>args</strong> (<em>Any</em>) – Additional configuration arguments</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.fake_strategy.FakeStrategy.all_gather">
+<span class="sig-name descname"><span class="pre">all_gather</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/strategy/fake_strategy.html#FakeStrategy.all_gather"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.fake_strategy.FakeStrategy.all_gather" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fake all-gather operation - returns data wrapped in list.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>data</strong> (<em>Union</em><em>[</em><em>torch.Tensor</em><em>, </em><em>dict</em><em>]</em>) – Data to be gathered</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Data wrapped to mimic gathered result</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Union[torch.Tensor, dict]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.fake_strategy.FakeStrategy.all_reduce">
+<span class="sig-name descname"><span class="pre">all_reduce</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">op</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mean'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/strategy/fake_strategy.html#FakeStrategy.all_reduce"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.fake_strategy.FakeStrategy.all_reduce" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fake all-reduce operation - returns data unchanged.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>Union</em><em>[</em><em>torch.Tensor</em><em>, </em><em>dict</em><em>]</em>) – Data to be reduced</p></li>
+<li><p><strong>op</strong> (<em>str</em>) – Reduction operation (ignored in fake mode)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Data unchanged</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Union[torch.Tensor, dict]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.fake_strategy.FakeStrategy.backward">
+<span class="sig-name descname"><span class="pre">backward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">loss</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.nn.Module</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.optim.Optimizer</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/lightrft/strategy/fake_strategy.html#FakeStrategy.backward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.fake_strategy.FakeStrategy.backward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform backward pass using standard PyTorch.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>loss</strong> (<em>torch.Tensor</em>) – The loss to backpropagate</p></li>
+<li><p><strong>model</strong> (<em>nn.Module</em>) – The model</p></li>
+<li><p><strong>optimizer</strong> (<em>Optimizer</em>) – The optimizer</p></li>
+<li><p><strong>kwargs</strong> – Additional arguments</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.fake_strategy.FakeStrategy.create_optimizer">
+<span class="sig-name descname"><span class="pre">create_optimizer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.nn.Module</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">torch.optim.Optimizer</span></span></span><a class="reference internal" href="../../_modules/lightrft/strategy/fake_strategy.html#FakeStrategy.create_optimizer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.fake_strategy.FakeStrategy.create_optimizer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a standard optimizer for the model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> (<em>nn.Module</em>) – The model to optimize</p></li>
+<li><p><strong>kwargs</strong> – Additional optimizer arguments</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The created optimizer</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Optimizer</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.fake_strategy.FakeStrategy.engine_generate_local">
+<span class="sig-name descname"><span class="pre">engine_generate_local</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sampling_params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prompt_token_ids</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multi_modal_inputs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/strategy/fake_strategy.html#FakeStrategy.engine_generate_local"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.fake_strategy.FakeStrategy.engine_generate_local" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fake generation - returns empty results.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sampling_params</strong> – Parameters for generation (ignored)</p></li>
+<li><p><strong>prompt_token_ids</strong> – Prompt token IDs (ignored)</p></li>
+<li><p><strong>multi_modal_inputs</strong> – Multimodal inputs (ignored)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Empty list</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.fake_strategy.FakeStrategy.gather_and_generate">
+<span class="sig-name descname"><span class="pre">gather_and_generate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sampling_params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_prompt_token_ids</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_prompts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_images</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sleep_engine</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">images_num</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/strategy/fake_strategy.html#FakeStrategy.gather_and_generate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.fake_strategy.FakeStrategy.gather_and_generate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fake gather and generate - returns empty results.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sampling_params</strong> – Parameters for generation (ignored)</p></li>
+<li><p><strong>all_prompt_token_ids</strong> – All prompt token IDs (ignored)</p></li>
+<li><p><strong>all_prompts</strong> – All prompts (ignored)</p></li>
+<li><p><strong>all_images</strong> – All images (ignored)</p></li>
+<li><p><strong>sleep_engine</strong> (<em>bool</em>) – Whether to sleep engine after generation (ignored)</p></li>
+<li><p><strong>images_num</strong> – Number of images (ignored)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Empty list</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.fake_strategy.FakeStrategy.get_rank">
+<span class="sig-name descname"><span class="pre">get_rank</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="reference internal" href="../../_modules/lightrft/strategy/fake_strategy.html#FakeStrategy.get_rank"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.fake_strategy.FakeStrategy.get_rank" title="Permalink to this definition">¶</a></dt>
+<dd><p>Always returns 0 in fake mode (single process).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>0</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.fake_strategy.FakeStrategy.init_model_context">
+<span class="sig-name descname"><span class="pre">init_model_context</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/strategy/fake_strategy.html#FakeStrategy.init_model_context"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.fake_strategy.FakeStrategy.init_model_context" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fake model initialization context - does nothing.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.fake_strategy.FakeStrategy.is_rank_0">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_rank_0</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../../_modules/lightrft/strategy/fake_strategy.html#FakeStrategy.is_rank_0"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.fake_strategy.FakeStrategy.is_rank_0" title="Permalink to this definition">¶</a></dt>
+<dd><p>Always returns True in fake mode (single process is rank 0).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>True</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.fake_strategy.FakeStrategy.load_ckpt">
+<span class="sig-name descname"><span class="pre">load_ckpt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">load_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tag</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">load_module_strict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">load_optimizer_states</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">load_lr_scheduler_states</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">load_module_only</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/strategy/fake_strategy.html#FakeStrategy.load_ckpt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.fake_strategy.FakeStrategy.load_ckpt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load checkpoint using standard PyTorch loading.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> – The model to load checkpoint into</p></li>
+<li><p><strong>load_dir</strong> (<em>str</em>) – Directory containing the checkpoint</p></li>
+<li><p><strong>tag</strong> – Optional specific checkpoint tag to load</p></li>
+<li><p><strong>load_module_strict</strong> (<em>bool</em>) – Whether to use strict loading for module states</p></li>
+<li><p><strong>load_optimizer_states</strong> (<em>bool</em>) – Whether to load optimizer states</p></li>
+<li><p><strong>load_lr_scheduler_states</strong> (<em>bool</em>) – Whether to load learning rate scheduler states</p></li>
+<li><p><strong>load_module_only</strong> (<em>bool</em>) – Whether to load only the module states</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Tuple of (load_path, client_states)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.fake_strategy.FakeStrategy.maybe_load_optimizer">
+<span class="sig-name descname"><span class="pre">maybe_load_optimizer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">optimizer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">torch.cuda.current_device</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/strategy/fake_strategy.html#FakeStrategy.maybe_load_optimizer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.fake_strategy.FakeStrategy.maybe_load_optimizer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fake optimizer loading - returns optimizer unchanged.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>optimizer</strong> (<em>torch.optim.Optimizer</em>) – The optimizer to potentially load</p></li>
+<li><p><strong>device</strong> (<em>torch.device</em>) – Target device for loading (ignored)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The original optimizer</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.optim.Optimizer</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.fake_strategy.FakeStrategy.maybe_offload_optimizer">
+<span class="sig-name descname"><span class="pre">maybe_offload_optimizer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">optimizer</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/strategy/fake_strategy.html#FakeStrategy.maybe_offload_optimizer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.fake_strategy.FakeStrategy.maybe_offload_optimizer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fake optimizer offloading - returns optimizer unchanged.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>optimizer</strong> (<em>torch.optim.Optimizer</em>) – The optimizer to potentially offload</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The original optimizer</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.optim.Optimizer</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.fake_strategy.FakeStrategy.maybe_sleep_inference_engine">
+<span class="sig-name descname"><span class="pre">maybe_sleep_inference_engine</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/strategy/fake_strategy.html#FakeStrategy.maybe_sleep_inference_engine"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.fake_strategy.FakeStrategy.maybe_sleep_inference_engine" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fake inference engine sleep - does nothing.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.fake_strategy.FakeStrategy.optimizer_step">
+<span class="sig-name descname"><span class="pre">optimizer_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">optimizer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.optim.Optimizer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.nn.Module</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scheduler</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'model'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/lightrft/strategy/fake_strategy.html#FakeStrategy.optimizer_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.fake_strategy.FakeStrategy.optimizer_step" title="Permalink to this definition">¶</a></dt>
+<dd><p>Take optimizer step using standard PyTorch.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>optimizer</strong> (<em>Optimizer</em>) – The optimizer</p></li>
+<li><p><strong>model</strong> (<em>nn.Module</em>) – The model</p></li>
+<li><p><strong>scheduler</strong> – The learning rate scheduler (optional)</p></li>
+<li><p><strong>name</strong> (<em>str</em>) – Name for logging purposes</p></li>
+<li><p><strong>kwargs</strong> – Additional arguments</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.fake_strategy.FakeStrategy.prepare">
+<span class="sig-name descname"><span class="pre">prepare</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">models_or_model_optim_pairs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.nn.Module</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">torch.nn.Module</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">torch.optim.Optimizer</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">torch.nn.Module</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">torch.nn.Module</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">torch.optim.Optimizer</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">torch.nn.Module</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">torch.nn.Module</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">torch.optim.Optimizer</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/lightrft/strategy/fake_strategy.html#FakeStrategy.prepare"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.fake_strategy.FakeStrategy.prepare" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prepare models and optimizers - returns them as-is in fake mode.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>models_or_model_optim_pairs</strong> – Models or (model, optimizer) pairs to prepare</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Prepared models/optimizers (unchanged in fake mode)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Union[List[ModelOrModelOptimPair], ModelOrModelOptimPair]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.fake_strategy.FakeStrategy.save_ckpt">
+<span class="sig-name descname"><span class="pre">save_ckpt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tag</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_num</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_mem</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">client_state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_latest</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/lightrft/strategy/fake_strategy.html#FakeStrategy.save_ckpt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.fake_strategy.FakeStrategy.save_ckpt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save checkpoint using standard PyTorch saving.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> – The model to save</p></li>
+<li><p><strong>save_dir</strong> (<em>str</em>) – Directory to save the checkpoint</p></li>
+<li><p><strong>tag</strong> – Optional tag for the checkpoint</p></li>
+<li><p><strong>max_num</strong> (<em>int</em>) – Maximum number of checkpoints to keep</p></li>
+<li><p><strong>max_mem</strong> (<em>int</em>) – Maximum memory in MB for checkpoints (ignored)</p></li>
+<li><p><strong>client_state</strong> (<em>dict</em>) – Additional state to save</p></li>
+<li><p><strong>save_latest</strong> (<em>bool</em>) – Whether to save as latest checkpoint</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.fake_strategy.FakeStrategy.setup_distributed">
+<span class="sig-name descname"><span class="pre">setup_distributed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_gpu_per_node</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/lightrft/strategy/fake_strategy.html#FakeStrategy.setup_distributed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.fake_strategy.FakeStrategy.setup_distributed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fake distributed setup - does nothing in single process mode.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>timeout</strong> (<em>timedelta</em><em>, </em><em>optional</em>) – Maximum time to wait for initialization (ignored)</p></li>
+<li><p><strong>num_gpu_per_node</strong> (<em>int</em>) – Number of GPUs per node (ignored)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.fake_strategy.FakeStrategy.setup_inference_engine">
+<span class="sig-name descname"><span class="pre">setup_inference_engine</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">engine_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'vllm'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">actor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/strategy/fake_strategy.html#FakeStrategy.setup_inference_engine"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.fake_strategy.FakeStrategy.setup_inference_engine" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fake inference engine setup - returns None.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>args</strong> (<em>argparse.Namespace</em>) – Configuration arguments</p></li>
+<li><p><strong>engine_type</strong> (<em>str</em>) – Type of inference engine (ignored)</p></li>
+<li><p><strong>actor</strong> (<em>torch.nn.Module</em>) – The actor module (ignored)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.fake_strategy.FakeStrategy.update_engine_weights">
+<span class="sig-name descname"><span class="pre">update_engine_weights</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">actor</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/strategy/fake_strategy.html#FakeStrategy.update_engine_weights"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.fake_strategy.FakeStrategy.update_engine_weights" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fake engine weight update - does nothing.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>actor</strong> – The actor model (ignored)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.fake_strategy.FakeStrategy.wakeup_inference_engine">
+<span class="sig-name descname"><span class="pre">wakeup_inference_engine</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/strategy/fake_strategy.html#FakeStrategy.wakeup_inference_engine"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.fake_strategy.FakeStrategy.wakeup_inference_engine" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fake inference engine wakeup - does nothing.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="lightrft.strategy.fake_strategy.get_fake_strategy">
+<span class="sig-prename descclassname"><span class="pre">lightrft.strategy.fake_strategy.</span></span><span class="sig-name descname"><span class="pre">get_fake_strategy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/strategy/fake_strategy.html#get_fake_strategy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.fake_strategy.get_fake_strategy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create and return a FakeStrategy instance.</p>
+<p>This is a convenience function similar to get_strategy() but for fake strategy.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>args</strong> (<em>object</em>) – Configuration arguments</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A FakeStrategy instance</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#lightrft.strategy.fake_strategy.FakeStrategy" title="lightrft.strategy.fake_strategy.FakeStrategy">FakeStrategy</a></p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 
 
@@ -353,7 +722,33 @@
           <div class="pytorch-right-menu" id="pytorch-right-menu">
             <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
               <ul>
-<li><a class="reference internal" href="#">lightrft.strategy.fake_strategy</a></li>
+<li><a class="reference internal" href="#">lightrft.strategy.fake_strategy</a><ul>
+<li><a class="reference internal" href="#lightrft.strategy.fake_strategy.FakeStrategy"><code class="docutils literal notranslate"><span class="pre">FakeStrategy</span></code></a><ul>
+<li><a class="reference internal" href="#lightrft.strategy.fake_strategy.FakeStrategy.all_gather"><code class="docutils literal notranslate"><span class="pre">FakeStrategy.all_gather()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.fake_strategy.FakeStrategy.all_reduce"><code class="docutils literal notranslate"><span class="pre">FakeStrategy.all_reduce()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.fake_strategy.FakeStrategy.backward"><code class="docutils literal notranslate"><span class="pre">FakeStrategy.backward()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.fake_strategy.FakeStrategy.create_optimizer"><code class="docutils literal notranslate"><span class="pre">FakeStrategy.create_optimizer()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.fake_strategy.FakeStrategy.engine_generate_local"><code class="docutils literal notranslate"><span class="pre">FakeStrategy.engine_generate_local()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.fake_strategy.FakeStrategy.gather_and_generate"><code class="docutils literal notranslate"><span class="pre">FakeStrategy.gather_and_generate()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.fake_strategy.FakeStrategy.get_rank"><code class="docutils literal notranslate"><span class="pre">FakeStrategy.get_rank()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.fake_strategy.FakeStrategy.init_model_context"><code class="docutils literal notranslate"><span class="pre">FakeStrategy.init_model_context()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.fake_strategy.FakeStrategy.is_rank_0"><code class="docutils literal notranslate"><span class="pre">FakeStrategy.is_rank_0()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.fake_strategy.FakeStrategy.load_ckpt"><code class="docutils literal notranslate"><span class="pre">FakeStrategy.load_ckpt()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.fake_strategy.FakeStrategy.maybe_load_optimizer"><code class="docutils literal notranslate"><span class="pre">FakeStrategy.maybe_load_optimizer()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.fake_strategy.FakeStrategy.maybe_offload_optimizer"><code class="docutils literal notranslate"><span class="pre">FakeStrategy.maybe_offload_optimizer()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.fake_strategy.FakeStrategy.maybe_sleep_inference_engine"><code class="docutils literal notranslate"><span class="pre">FakeStrategy.maybe_sleep_inference_engine()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.fake_strategy.FakeStrategy.optimizer_step"><code class="docutils literal notranslate"><span class="pre">FakeStrategy.optimizer_step()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.fake_strategy.FakeStrategy.prepare"><code class="docutils literal notranslate"><span class="pre">FakeStrategy.prepare()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.fake_strategy.FakeStrategy.save_ckpt"><code class="docutils literal notranslate"><span class="pre">FakeStrategy.save_ckpt()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.fake_strategy.FakeStrategy.setup_distributed"><code class="docutils literal notranslate"><span class="pre">FakeStrategy.setup_distributed()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.fake_strategy.FakeStrategy.setup_inference_engine"><code class="docutils literal notranslate"><span class="pre">FakeStrategy.setup_inference_engine()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.fake_strategy.FakeStrategy.update_engine_weights"><code class="docutils literal notranslate"><span class="pre">FakeStrategy.update_engine_weights()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.fake_strategy.FakeStrategy.wakeup_inference_engine"><code class="docutils literal notranslate"><span class="pre">FakeStrategy.wakeup_inference_engine()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#lightrft.strategy.fake_strategy.get_fake_strategy"><code class="docutils literal notranslate"><span class="pre">get_fake_strategy()</span></code></a></li>
+</ul>
+</li>
 </ul>
 
             </div>

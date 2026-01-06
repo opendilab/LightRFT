@@ -1,0 +1,639 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js" lang="en">
+<!--<![endif]-->
+
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>lightrft.strategy.deepspeed.deepspeed_utils &mdash; LightRFT v0.1.1 documentation</title>
+  
+
+  <link rel="shortcut icon" href="../../../../_static/images/favicon.ico" />
+  
+  
+
+  
+
+  
+  
+  
+
+  
+
+  <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  <!-- <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" /> -->
+  <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/css/readthedocs.css" type="text/css" />
+  <link rel="index" title="Index" href="../../../../genindex.html" />
+  <link rel="search" title="Search" href="../../../../search.html" />
+  <!-- Google Analytics -->
+  <script type="text/javascript">
+    var collapsedSections = [];
+  </script>
+  
+  <!-- End Google Analytics -->
+  
+
+  
+  <script src="../../../../_static/js/modernizr.min.js"></script>
+  <script>
+    MathJax = {
+        chtml: {
+            scale: 1,
+            minScale: 1,
+        },
+        svg: {
+            scale: 1,
+            minScale: 1,
+        }
+    }
+</script>
+
+  <!-- Preload the theme fonts -->
+
+<link rel="preload" href="../../../../_static/fonts/FreightSans/freight-sans-book.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../../_static/fonts/FreightSans/freight-sans-medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../../_static/fonts/IBMPlexMono/IBMPlexMono-Medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../../_static/fonts/FreightSans/freight-sans-bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../../_static/fonts/FreightSans/freight-sans-medium-italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../../_static/fonts/IBMPlexMono/IBMPlexMono-SemiBold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+
+<!-- Preload the katex fonts -->
+
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Math-Italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size1-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size4-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size2-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size3-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Caligraphic-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.2/css/all.css"
+    integrity="sha384-vSIIfh2YWi9wW0r9iZe7RJPrKwp6bG+s9QZMoITbCckVJqGCCRhc+ccxNcdpHuYu" crossorigin="anonymous">
+</head>
+
+<div class="container-fluid header-holder tutorials-header" id="header-holder">
+  <div class="container">
+    <div class="header-container">
+      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+        aria-label="OpenMMLab"></a>
+
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://github.com/opendilab/LightRFT" target="_blank">GitHub</a>
+          </li>
+          <li >
+            <div id="resourcesDropdownButton" data-toggle="resources-dropdown" class="resources-dropdown">
+              <a
+                class="resource-option with-down-arrow">
+                OpenDILab
+              </a>
+              <div class="resources-dropdown-menu">
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-engine" target="_blank">
+                  <span class="dropdown-title">DI-engine </span>
+                  <p>OpenDILab Decision AI Engine</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/LightZero" target="_blank">
+                  <span class="dropdown-title">LightZero </span>
+                  <p>OpenDILab Decision Monte Carlo Tree Search Framework</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/GenerativeRL" target="_blank">
+                  <span class="dropdown-title">GenerativeRL </span>
+                  <p>OpenDILab Generative AI Framework</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-star" target="_blank">
+                  <span class="dropdown-title">DI-star </span>
+                  <p>OpenDILab Decision AI in StarCraftII</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-drive" target="_blank">
+                  <span class="dropdown-title">DI-drive </span>
+                  <p>OpenDILab Auto-driving platform</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/GoBigger" target="_blank">
+                  <span class="dropdown-title">GoBigger </span>
+                  <p>OpenDILab Multi-Agent Environment</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-smartcross" target="_blank">
+                  <span class="dropdown-title">DI-smartcross </span>
+                  <p>Decision Intelligence Platform for Traffic Crossing Signal Control</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-treetensor" target="_blank">
+                  <span class="dropdown-title">DI-treetensor </span>
+                  <p>Tree Nested PyTorch Tensor Lib</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-sheep" target="_blank">
+                  <span class="dropdown-title">DI-sheep </span>
+                  <p>Deep Reinforcement Learning + 3 Tiles Game</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-model-based-RL" target="_blank">
+                  <span class="dropdown-title">awesome-model-based-RL </span>
+                  <p>A curated list of awesome model based RL resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-decision-transformer" target="_blank">
+                  <span class="dropdown-title">awesome-decision-transformer </span>
+                  <p>A curated list of Decision Transformer resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-exploration-rl" target="_blank">
+                  <span class="dropdown-title">awesome-exploration-rl </span>
+                  <p>A curated list of awesome exploration RL resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-multi-modal-reinforcement-learning" target="_blank">
+                  <span class="dropdown-title">awesome-multi-modal-reinforcement-learning </span>
+                  <p>A curated list of Multi-Modal Reinforcement Learning resources (continually updated)</p>
+                </a>
+              </div>
+          </li>
+        </ul>
+      </div>
+
+      <a class="main-menu-open-button" href="#" data-behavior="open-mobile-menu"></a>
+    </div>
+  </div>
+</div>
+
+<body class="pytorch-body">
+
+   
+
+  
+
+  <div class="table-of-contents-link-wrapper">
+    <span>Table of Contents</span>
+    <a href="#" class="toggle-table-of-contents" data-behavior="toggle-table-of-contents"></a>
+  </div>
+
+  <nav data-toggle="wy-nav-shift" class="pytorch-left-menu" id="pytorch-left-menu">
+    <div class="pytorch-side-scroll">
+      <div class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        <div class="pytorch-left-menu-search">
+          
+
+          
+          
+          
+          
+
+          
+
+
+
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search Docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        
+        
+        
+        
+        
+        <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../installation/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../quick_start/index.html">Quick Start</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide &amp; Best Practices</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../best_practice/index.html">Best Practices</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api_doc/utils/index.html">lightrft.utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api_doc/datasets/index.html">lightrft.datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api_doc/models/index.html">lightrft.models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api_doc/strategy/index.html">lightrft.strategy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api_doc/trainer/index.html">lightrft.trainer</a></li>
+</ul>
+
+        
+        
+      </div>
+    </div>
+  </nav>
+
+  <div class="pytorch-container">
+    <div class="pytorch-page-level-bar" id="pytorch-page-level-bar">
+      <div class="pytorch-breadcrumbs-wrapper">
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="pytorch-breadcrumbs">
+    
+      <li>
+        <a href="../../../../index.html">
+            Docs
+        </a> &gt;
+      </li>
+
+        
+          <li><a href="../../../index.html">Module code</a> &gt;</li>
+        
+      <li>lightrft.strategy.deepspeed.deepspeed_utils</li>
+    
+    
+      <li class="pytorch-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+</div>
+      </div>
+
+      <div class="pytorch-shortcuts-wrapper" id="pytorch-shortcuts-wrapper">
+        Shortcuts
+      </div>
+    </div>
+
+    <section data-toggle="wy-nav-shift" id="pytorch-content-wrap" class="pytorch-content-wrap">
+      <div class="pytorch-content-left">
+        
+          <div class="rst-content">
+            
+            <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
+              <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
+                
+  <h1>Source code for lightrft.strategy.deepspeed.deepspeed_utils</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">DeepSpeed Configuration and Optimization Utilities Module.</span>
+
+<span class="sd">This module provides utility functions for configuring DeepSpeed for training and evaluation,</span>
+<span class="sd">managing optimizer parameters, and handling DeepSpeed ZeRO stage 3 states. It includes</span>
+<span class="sd">functions for creating DeepSpeed configurations with various optimization options,</span>
+<span class="sd">organizing model parameters for optimizers with weight decay control, and</span>
+<span class="sd">offloading/reloading DeepSpeed states to manage memory efficiently.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">deepspeed.runtime.zero.partition_parameters</span><span class="w"> </span><span class="kn">import</span> <span class="n">ZeroParamStatus</span>
+
+
+<div class="viewcode-block" id="get_train_ds_config"><a class="viewcode-back" href="../../../../api_doc/strategy/deepspeed/deepspeed_utils.html#lightrft.strategy.deepspeed.deepspeed_utils.get_train_ds_config">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">get_train_ds_config</span><span class="p">(</span>  <span class="c1"># pylint: disable=R0917</span>
+    <span class="n">offload</span><span class="p">,</span>
+    <span class="n">adam_offload</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">stage</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+    <span class="n">bf16</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">max_norm</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+    <span class="n">zpg</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+    <span class="n">grad_accum_dtype</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">overlap_comm</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generate a DeepSpeed configuration dictionary for training.</span>
+
+<span class="sd">    :param offload: Whether to offload parameters to CPU.</span>
+<span class="sd">    :type offload: bool</span>
+<span class="sd">    :param adam_offload: Whether to offload Adam optimizer states to CPU.</span>
+<span class="sd">    :type adam_offload: bool</span>
+<span class="sd">    :param stage: ZeRO optimization stage (0, 1, 2, or 3).</span>
+<span class="sd">    :type stage: int</span>
+<span class="sd">    :param bf16: Whether to use bfloat16 precision.</span>
+<span class="sd">    :type bf16: bool</span>
+<span class="sd">    :param max_norm: Maximum norm for gradient clipping.</span>
+<span class="sd">    :type max_norm: float</span>
+<span class="sd">    :param zpg: ZeRO++ partition size.</span>
+<span class="sd">    :type zpg: int</span>
+<span class="sd">    :param grad_accum_dtype: Data type for gradient accumulation.</span>
+<span class="sd">    :type grad_accum_dtype: str or None</span>
+<span class="sd">    :param overlap_comm: Whether to overlap communication with computation.</span>
+<span class="sd">    :type overlap_comm: bool</span>
+
+<span class="sd">    :return: DeepSpeed configuration dictionary for training.</span>
+<span class="sd">    :rtype: dict</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">device</span> <span class="o">=</span> <span class="s2">&quot;cpu&quot;</span> <span class="k">if</span> <span class="n">offload</span> <span class="k">else</span> <span class="s2">&quot;none&quot;</span>
+    <span class="n">zero_opt_dict</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;stage&quot;</span><span class="p">:</span> <span class="n">stage</span><span class="p">,</span>
+        <span class="s2">&quot;offload_param&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;device&quot;</span><span class="p">:</span> <span class="n">device</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;offload_optimizer&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;device&quot;</span><span class="p">:</span> <span class="s2">&quot;cpu&quot;</span> <span class="k">if</span> <span class="n">adam_offload</span> <span class="k">else</span> <span class="s2">&quot;none&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;pin_memory&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;sub_group_size&quot;</span><span class="p">:</span> <span class="s2">&quot;auto&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;stage3_max_live_parameters&quot;</span><span class="p">:</span> <span class="s2">&quot;auto&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;stage3_max_reuse_distance&quot;</span><span class="p">:</span> <span class="s2">&quot;auto&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;stage3_param_persistence_threshold&quot;</span><span class="p">:</span> <span class="s2">&quot;auto&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;stage3_prefetch_bucket_size&quot;</span><span class="p">:</span> <span class="s2">&quot;auto&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;reduce_bucket_size&quot;</span><span class="p">:</span> <span class="s2">&quot;auto&quot;</span><span class="p">,</span>
+        <span class="c1"># ZeRO++</span>
+        <span class="s2">&quot;zero_hpz_partition_size&quot;</span><span class="p">:</span> <span class="n">zpg</span><span class="p">,</span>
+        <span class="s2">&quot;zero_quantized_weights&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="s2">&quot;zero_quantized_gradients&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">}</span>
+    <span class="k">if</span> <span class="n">overlap_comm</span><span class="p">:</span>
+        <span class="n">zero_opt_dict</span><span class="p">[</span><span class="s2">&quot;overlap_comm&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">zero_opt_dict</span><span class="p">[</span><span class="s2">&quot;contiguous_gradients&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s2">&quot;steps_per_print&quot;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
+        <span class="s2">&quot;zero_optimization&quot;</span><span class="p">:</span> <span class="n">zero_opt_dict</span><span class="p">,</span>
+        <span class="s2">&quot;bf16&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;enabled&quot;</span><span class="p">:</span> <span class="n">bf16</span><span class="p">,</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;gradient_clipping&quot;</span><span class="p">:</span> <span class="n">max_norm</span><span class="p">,</span>
+        <span class="s2">&quot;prescale_gradients&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="s2">&quot;wall_clock_breakdown&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="s2">&quot;data_types&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;grad_accum_dtype&quot;</span><span class="p">:</span> <span class="n">grad_accum_dtype</span>
+        <span class="p">},</span>
+    <span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="get_eval_ds_config"><a class="viewcode-back" href="../../../../api_doc/strategy/deepspeed/deepspeed_utils.html#lightrft.strategy.deepspeed.deepspeed_utils.get_eval_ds_config">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">get_eval_ds_config</span><span class="p">(</span>
+    <span class="n">offload</span><span class="p">,</span>
+    <span class="n">stage</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">bf16</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generate a DeepSpeed configuration dictionary for evaluation.</span>
+
+<span class="sd">    :param offload: Whether to offload parameters to CPU.</span>
+<span class="sd">    :type offload: bool</span>
+<span class="sd">    :param stage: ZeRO optimization stage (0, 1, 2, or 3).</span>
+<span class="sd">    :type stage: int</span>
+<span class="sd">    :param bf16: Whether to use bfloat16 precision.</span>
+<span class="sd">    :type bf16: bool</span>
+
+<span class="sd">    :return: DeepSpeed configuration dictionary for evaluation.</span>
+<span class="sd">    :rtype: dict</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">zero_opt_dict</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;stage&quot;</span><span class="p">:</span> <span class="n">stage</span><span class="p">,</span>
+        <span class="s2">&quot;stage3_param_persistence_threshold&quot;</span><span class="p">:</span> <span class="s2">&quot;auto&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;offload_param&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;device&quot;</span><span class="p">:</span> <span class="s2">&quot;cpu&quot;</span> <span class="k">if</span> <span class="n">offload</span> <span class="k">else</span> <span class="s2">&quot;none&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;pin_memory&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="p">},</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s2">&quot;steps_per_print&quot;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
+        <span class="s2">&quot;zero_optimization&quot;</span><span class="p">:</span> <span class="n">zero_opt_dict</span><span class="p">,</span>
+        <span class="s2">&quot;bf16&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;enabled&quot;</span><span class="p">:</span> <span class="n">bf16</span><span class="p">,</span>
+        <span class="p">},</span>
+        <span class="s2">&quot;gradient_clipping&quot;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span>
+        <span class="s2">&quot;prescale_gradients&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="s2">&quot;wall_clock_breakdown&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">}</span></div>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_z3_params_to_fetch</span><span class="p">(</span><span class="n">param_list</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Filter parameters that need to be fetched in ZeRO stage 3.</span>
+
+<span class="sd">    :param param_list: List of parameters to check.</span>
+<span class="sd">    :type param_list: list</span>
+
+<span class="sd">    :return: List of parameters that are not available and need to be fetched.</span>
+<span class="sd">    :rtype: list</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">param_list</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="s2">&quot;ds_id&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">p</span><span class="o">.</span><span class="n">ds_status</span> <span class="o">==</span> <span class="n">ZeroParamStatus</span><span class="o">.</span><span class="n">NOT_AVAILABLE</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="offload_deepspeed_states"><a class="viewcode-back" href="../../../../api_doc/strategy/deepspeed/deepspeed_utils.html#lightrft.strategy.deepspeed.deepspeed_utils.offload_deepspeed_states">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">offload_deepspeed_states</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">pin_memory</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">non_blocking</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Offload DeepSpeed optimizer states to CPU to save GPU memory.</span>
+
+<span class="sd">    This function is particularly useful for ZeRO stage 3 when not using Adam optimizer offloading.</span>
+<span class="sd">    It offloads various states to CPU, empties partition cache, and synchronizes devices.</span>
+
+<span class="sd">    :param model: DeepSpeed model with optimizer.</span>
+<span class="sd">    :type model: deepspeed.DeepSpeedEngine</span>
+<span class="sd">    :param pin_memory: Whether to use pinned memory for offloaded states.</span>
+<span class="sd">    :type pin_memory: bool</span>
+<span class="sd">    :param non_blocking: Whether to perform non-blocking transfers.</span>
+<span class="sd">    :type non_blocking: bool</span>
+
+<span class="sd">    :raises NotImplementedError: If ZeRO stage is not 3.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">zero_stage</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">zero_optimization_stage</span><span class="p">()</span>  <span class="c1"># config[&#39;zero_optimization&#39;][&#39;stage&#39;]</span>
+    <span class="n">adam_offload</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;zero_optimization&quot;</span><span class="p">][</span><span class="s2">&quot;offload_optimizer&quot;</span><span class="p">][</span><span class="s2">&quot;device&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;cpu&quot;</span>
+
+    <span class="c1"># state offloading not required when using Adam optimizer offloading</span>
+    <span class="k">if</span> <span class="n">adam_offload</span><span class="p">:</span>
+        <span class="k">return</span>
+
+    <span class="k">if</span> <span class="n">zero_stage</span> <span class="o">!=</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Only Zero stage 3 is currently supported&quot;</span><span class="p">)</span>
+
+    <span class="c1"># if zero_stage == 3 and not adam_offload:</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">deepspeed.runtime.zero.offload_config</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+        <span class="n">OffloadDeviceEnum</span><span class="p">,</span>
+        <span class="n">OffloadStateTypeEnum</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">model</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">offload_states</span><span class="p">(</span>
+        <span class="n">include</span><span class="o">=</span><span class="p">[</span>
+            <span class="n">OffloadStateTypeEnum</span><span class="o">.</span><span class="n">optim_states</span><span class="p">,</span>
+            <span class="n">OffloadStateTypeEnum</span><span class="o">.</span><span class="n">contiguous_grad_buffer</span><span class="p">,</span>
+            <span class="n">OffloadStateTypeEnum</span><span class="o">.</span><span class="n">hp_params</span><span class="p">,</span>
+            <span class="c1"># Not released yet, fixed in https://github.com/deepspeedai/DeepSpeed/pull/7050</span>
+            <span class="c1"># OffloadStateTypeEnum.lp_grads,</span>
+            <span class="c1"># OffloadStateTypeEnum.lp_params,</span>
+        <span class="p">],</span>
+        <span class="n">device</span><span class="o">=</span><span class="n">OffloadDeviceEnum</span><span class="o">.</span><span class="n">cpu</span><span class="p">,</span>
+        <span class="n">pin_memory</span><span class="o">=</span><span class="n">pin_memory</span><span class="p">,</span>
+        <span class="n">non_blocking</span><span class="o">=</span><span class="n">non_blocking</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">empty_partition_cache</span><span class="p">()</span>
+    <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">empty_cache</span><span class="p">()</span>
+    <span class="n">torch</span><span class="o">.</span><span class="n">distributed</span><span class="o">.</span><span class="n">barrier</span><span class="p">()</span>
+    <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">synchronize</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="reload_deepspeed_states"><a class="viewcode-back" href="../../../../api_doc/strategy/deepspeed/deepspeed_utils.html#lightrft.strategy.deepspeed.deepspeed_utils.reload_deepspeed_states">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">reload_deepspeed_states</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">non_blocking</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Reload DeepSpeed optimizer states from CPU back to GPU.</span>
+
+<span class="sd">    This function is used to restore states previously offloaded with offload_deepspeed_states().</span>
+
+<span class="sd">    :param model: DeepSpeed model with optimizer.</span>
+<span class="sd">    :type model: deepspeed.DeepSpeedEngine</span>
+<span class="sd">    :param non_blocking: Whether to perform non-blocking transfers.</span>
+<span class="sd">    :type non_blocking: bool</span>
+
+<span class="sd">    :raises NotImplementedError: If ZeRO stage is not 3.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">zero_stage</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">zero_optimization_stage</span><span class="p">()</span>  <span class="c1"># config[&#39;zero_optimization&#39;][&#39;stage&#39;]</span>
+    <span class="n">adam_offload</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;zero_optimization&quot;</span><span class="p">][</span><span class="s2">&quot;offload_optimizer&quot;</span><span class="p">][</span><span class="s2">&quot;device&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;cpu&quot;</span>
+
+    <span class="c1"># state offloading not required when using Adam optimizer offloading</span>
+    <span class="k">if</span> <span class="n">adam_offload</span><span class="p">:</span>
+        <span class="k">return</span>
+
+    <span class="k">if</span> <span class="n">zero_stage</span> <span class="o">!=</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Only Zero stage 3 is currently supported&quot;</span><span class="p">)</span>
+
+    <span class="c1"># if zero_stage == 3 and not adam_offload:</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+
+    <span class="n">model</span><span class="o">.</span><span class="n">reload_states</span><span class="p">(</span><span class="n">non_blocking</span><span class="o">=</span><span class="n">non_blocking</span><span class="p">)</span>
+    <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">empty_cache</span><span class="p">()</span>
+    <span class="n">torch</span><span class="o">.</span><span class="n">distributed</span><span class="o">.</span><span class="n">barrier</span><span class="p">()</span>
+    <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">synchronize</span><span class="p">()</span></div>
+</pre></div>
+
+              </article>
+              
+            </div>
+            <footer>
+  
+
+  <hr>
+
+  <div role="contentinfo">
+    <p>
+      &copy; Copyright 2025, OpenDILab.
+
+    </p>
+  </div>
+  
+  <div>
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a
+      href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the
+      Docs</a>.
+  </div>
+   
+
+</footer>
+          </div>
+        </div>
+
+        <div class="pytorch-content-right" id="pytorch-content-right">
+          <div class="pytorch-right-menu" id="pytorch-right-menu">
+            <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
+              
+            </div>
+          </div>
+        </div>
+    </section>
+  </div>
+
+  
+
+
+  
+
+  
+  <script type="text/javascript" id="documentation_options" data-url_root="../../../../"
+    src="../../../../_static/documentation_options.js"></script>
+  <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+  <script src="../../../../_static/doctools.js"></script>
+  <script src="../../../../_static/sphinx_highlight.js"></script>
+  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+  
+
+  
+
+  <script type="text/javascript" src="../../../../_static/js/vendor/popper.min.js"></script>
+  <script type="text/javascript" src="../../../../_static/js/vendor/bootstrap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
+  <script type="text/javascript" src="../../../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+    jQuery(function () {
+      SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+  <!-- Begin Footer -->
+
+  <div class="container-fluid docs-tutorials-resources" id="docs-tutorials-resources">
+  </div>
+
+  <!-- End Footer -->
+
+  <!-- Begin Mobile Menu -->
+
+  <div class="mobile-main-menu">
+    <div class="container-fluid">
+      <div class="container">
+        <div class="mobile-main-menu-header-container">
+          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
+        </div>
+      </div>
+    </div>
+
+    <div class="mobile-main-menu-links-container">
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://github.com/opendilab/LightRFT" target="_blank">GitHub</a>
+          </li>
+      </div>
+    </div>
+  </div>
+
+  <!-- End Mobile Menu -->
+
+  <script type="text/javascript" src="../../../../_static/js/vendor/anchor.min.js"></script>
+
+  <script type="text/javascript">
+    $(document).ready(function () {
+      mobileMenu.bind();
+      mobileTOC.bind();
+      pytorchAnchors.bind();
+      sideMenus.bind();
+      scrollToAnchor.bind();
+      highlightNavigation.bind();
+      mainMenuDropdown.bind();
+      filterTags.bind();
+
+      // Add class to links that have code blocks, since we cannot create links in code blocks
+      $("article.pytorch-article a span.pre").each(function (e) {
+        $(this).closest("a").addClass("has-code");
+      });
+    })
+  </script>
+</body>
+
+</html>

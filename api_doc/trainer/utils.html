@@ -305,8 +305,180 @@
             <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
               <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
                 
-  <section id="lightrft-trainer-utils">
-<h1>lightrft.trainer.utils<a class="headerlink" href="#lightrft-trainer-utils" title="Permalink to this heading">¶</a></h1>
+  <section id="module-lightrft.trainer.utils">
+<span id="lightrft-trainer-utils"></span><h1>lightrft.trainer.utils<a class="headerlink" href="#module-lightrft.trainer.utils" title="Permalink to this heading">¶</a></h1>
+<p>This module provides utilities for statistical computations commonly used in reinforcement learning
+and machine learning workflows. It includes functions for computing clipping fractions and classes
+for tracking running statistics of data streams.</p>
+<p>The main components are:
+- compute_clip_fraction: Calculates the fraction of tensor elements that fall outside specified bounds
+- RunningMoments: Maintains running mean and standard deviation statistics for streaming data
+- get_cpgd_advantages_returns: Computes advantages and returns for CPGD algorithm</p>
+<p>These utilities are particularly useful in RL algorithms like PPO where clipping statistics and
+normalization are important for training stability and monitoring.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="lightrft.trainer.utils.RunningMoments">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">lightrft.trainer.utils.</span></span><span class="sig-name descname"><span class="pre">RunningMoments</span></span><a class="reference internal" href="../../_modules/lightrft/trainer/utils.html#RunningMoments"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.trainer.utils.RunningMoments" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Calculate the running mean and standard deviation of a data stream.</p>
+<p>This class implements Welford’s online algorithm for computing running statistics,
+allowing efficient computation of mean and standard deviation as new data arrives
+without storing all historical data. This is particularly useful for normalizing
+inputs in reinforcement learning or for monitoring training statistics.</p>
+<p>The implementation uses a parallel algorithm to combine statistics from new batches
+with existing running statistics, ensuring numerical stability even with large
+amounts of data.</p>
+<p>Adapted from <a class="reference external" href="https://github.com/alibaba/ROLL">https://github.com/alibaba/ROLL</a></p>
+<p><strong>Example:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">moments</span> <span class="o">=</span> <span class="n">RunningMoments</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">batch1</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mean1</span><span class="p">,</span> <span class="n">std1</span> <span class="o">=</span> <span class="n">moments</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">batch1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">batch2</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mean2</span><span class="p">,</span> <span class="n">std2</span> <span class="o">=</span> <span class="n">moments</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">batch2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Running mean: </span><span class="si">{</span><span class="n">moments</span><span class="o">.</span><span class="n">mean</span><span class="si">}</span><span class="s2">, Running std: </span><span class="si">{</span><span class="n">moments</span><span class="o">.</span><span class="n">std</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.trainer.utils.RunningMoments.update">
+<span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#lightrft.trainer.utils.RunningMoments.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update running statistics with a new batch of data.</p>
+<p>This method uses Welford’s online algorithm combined with a parallel algorithm
+to efficiently update the running mean, variance, and standard deviation with
+a new batch of data. The algorithm is numerically stable and doesn’t require
+storing all previous data points.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>xs</strong> (<em>torch.Tensor</em>) – The new tensor of data to incorporate into the running statistics.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A tuple of (mean, std) for the current batch <cite>xs</cite>.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tuple[float, float]</p>
+</dd>
+</dl>
+<p><strong>Example:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">moments</span> <span class="o">=</span> <span class="n">RunningMoments</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">new_data</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">,</span> <span class="mf">4.0</span><span class="p">,</span> <span class="mf">5.0</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">batch_mean</span><span class="p">,</span> <span class="n">batch_std</span> <span class="o">=</span> <span class="n">moments</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">new_data</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Batch mean: </span><span class="si">{</span><span class="n">batch_mean</span><span class="si">}</span><span class="s2">, Batch std: </span><span class="si">{</span><span class="n">batch_std</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="lightrft.trainer.utils.compute_clip_fraction">
+<span class="sig-prename descclassname"><span class="pre">lightrft.trainer.utils.</span></span><span class="sig-name descname"><span class="pre">compute_clip_fraction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">values</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clip_max</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clip_min</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">torch.Tensor</span></span></span><a class="reference internal" href="../../_modules/lightrft/trainer/utils.html#compute_clip_fraction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.trainer.utils.compute_clip_fraction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the fraction of elements in a tensor that are clipped.</p>
+<p>This function calculates what proportion of the input tensor’s elements fall outside
+the specified clipping bounds [clip_min, clip_max]. This is commonly used in
+reinforcement learning to monitor how often policy updates are being clipped,
+which can indicate training stability.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>values</strong> (<em>torch.Tensor</em>) – The input tensor to analyze for clipping.</p></li>
+<li><p><strong>clip_max</strong> (<em>float</em>) – The maximum value for clipping bounds.</p></li>
+<li><p><strong>clip_min</strong> (<em>float</em>) – The minimum value for clipping bounds.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A tensor of shape (batch_size,) where each element is the fraction of
+clipped values in the input tensor.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+<p><strong>Example:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">values</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">clip_fraction</span> <span class="o">=</span> <span class="n">compute_clip_fraction</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">clip_max</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">clip_min</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">clip_fraction</span><span class="p">)</span>  <span class="c1"># Should show fraction of values outside [1.0, 2.0]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="lightrft.trainer.utils.fire_sampling">
+<span class="sig-prename descclassname"><span class="pre">lightrft.trainer.utils.</span></span><span class="sig-name descname"><span class="pre">fire_sampling</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">all_prompt_token_ids</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">generate_fn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">engine_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'vllm'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">first_token_temperature</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">temperature</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">first_token_top_k</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">first_token_top_p</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_multimodal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_prompts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_images</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_images_num</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sampling_params</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">object</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span></span></span><a class="reference internal" href="../../_modules/lightrft/trainer/utils.html#fire_sampling"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.trainer.utils.fire_sampling" title="Permalink to this definition">¶</a></dt>
+<dd><p>FIRE sampling (Flaming-hot Initiation with Regular Execution)</p>
+<p>FIRE sampling paper link: <a class="reference external" href="https://arxiv.org/abs/2410.21236">https://arxiv.org/abs/2410.21236</a>
+The first token is generated with high temperature and optional filters,
+and the rest tokens are generated with normal temperature.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>all_prompt_token_ids</strong> (<em>List</em><em>[</em><em>List</em><em>[</em><em>int</em><em>]</em><em>]</em>) – List of tokenized prompts</p></li>
+<li><p><strong>generate_fn</strong> (<em>Callable</em>) – Function to call for generation (with pre-configured parameters)</p></li>
+<li><p><strong>engine_type</strong> (<em>str</em>) – Backend type (“vllm” or “sglang”)</p></li>
+<li><p><strong>first_token_temperature</strong> (<em>float</em>) – Temperature for first token generation</p></li>
+<li><p><strong>temperature</strong> (<em>float</em>) – Temperature for remaining tokens</p></li>
+<li><p><strong>first_token_top_k</strong> (<em>int</em>) – Top-k for first token</p></li>
+<li><p><strong>first_token_top_p</strong> (<em>float</em>) – Top-p for first token</p></li>
+<li><p><strong>is_multimodal</strong> (<em>bool</em>) – Whether this is multimodal generation</p></li>
+<li><p><strong>all_prompts</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><em>str</em><em>]</em><em>]</em>) – Text prompts (for multimodal)</p></li>
+<li><p><strong>all_images</strong> (<em>Optional</em><em>[</em><em>List</em><em>]</em>) – Images (for multimodal)</p></li>
+<li><p><strong>all_images_num</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><em>int</em><em>]</em><em>]</em>) – Number of images per prompt</p></li>
+<li><p><strong>sampling_params</strong> (<em>Optional</em><em>[</em><em>Union</em><em>[</em><em>dict</em><em>, </em><em>object</em><em>]</em><em>]</em>) – Original sampling parameters (for fallback)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>List of generation outputs</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="lightrft.trainer.utils.get_cpgd_advantages_returns">
+<span class="sig-prename descclassname"><span class="pre">lightrft.trainer.utils.</span></span><span class="sig-name descname"><span class="pre">get_cpgd_advantages_returns</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reward</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">action_mask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight_factor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'STD_weight'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epsilon</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1e-06</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">torch.Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">torch.Tensor</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/lightrft/trainer/utils.html#get_cpgd_advantages_returns"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.trainer.utils.get_cpgd_advantages_returns" title="Permalink to this definition">¶</a></dt>
+<dd><p>Aggregate token-level rewards into episode-level scores, normalize them
+group-wise, and then broadcast the normalized scores back to the
+token dimension to obtain both the advantages and the returns that are
+required by the CPGD (Clipped Policy Gradient Optimization with Policy Drift) algorithm.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>reward</strong> (<em>torch.Tensor</em>) – Tensor of shape (num_actions, seq_len) containing token-level rewards
+produced by the reward model. Each row corresponds to one sampled
+response (action trajectory).</p></li>
+<li><p><strong>action_mask</strong> (<em>torch.Tensor</em>) – Tensor of the same shape as <cite>reward</cite>. Elements belonging to the
+generated response tokens are 1; padding / prompt tokens are 0.
+The mask is used so that only response tokens contribute to the
+final advantages / returns.</p></li>
+<li><p><strong>weight_factor</strong> (<em>str</em>) – <p>Determines how the per-sample scalar scores are normalized:</p>
+<ul>
+<li><p>”STD_weight”: z-score normalization: score_i = (score_i − mean) / (std + ε)</p></li>
+<li><p>”clip_filter_like_weight”: a simplified version of the Clip-Filter weight
+used in early RLHF repos: score_i = (score_i − mean) * clamp(num_actions / nz, max=3)</p></li>
+<li><p>any other value: mean-centering only: score_i = score_i − mean</p></li>
+</ul>
+<p>Defaults to “STD_weight”.</p>
+</p></li>
+<li><p><strong>epsilon</strong> (<em>float</em>) – Small constant added to the denominator to avoid division by zero, defaults to 1e-6.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A tuple of (advantages, returns).
+- advantages: Normalized per-token advantages, shape (num_actions, seq_len).
+- returns: Identical to <cite>advantages</cite> in CPGD; returned separately for API symmetry.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tuple[torch.Tensor, torch.Tensor]</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Both <cite>advantages</cite> and <cite>returns</cite> are masked so that non-response tokens
+are always zero. The function performs no gradient-tracking operations and is intended
+to be called outside the optimization graph.</p>
+</div>
+</dd></dl>
+
 </section>
 
 
@@ -348,7 +520,16 @@
           <div class="pytorch-right-menu" id="pytorch-right-menu">
             <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
               <ul>
-<li><a class="reference internal" href="#">lightrft.trainer.utils</a></li>
+<li><a class="reference internal" href="#">lightrft.trainer.utils</a><ul>
+<li><a class="reference internal" href="#lightrft.trainer.utils.RunningMoments"><code class="docutils literal notranslate"><span class="pre">RunningMoments</span></code></a><ul>
+<li><a class="reference internal" href="#lightrft.trainer.utils.RunningMoments.update"><code class="docutils literal notranslate"><span class="pre">RunningMoments.update()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#lightrft.trainer.utils.compute_clip_fraction"><code class="docutils literal notranslate"><span class="pre">compute_clip_fraction()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.trainer.utils.fire_sampling"><code class="docutils literal notranslate"><span class="pre">fire_sampling()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.trainer.utils.get_cpgd_advantages_returns"><code class="docutils literal notranslate"><span class="pre">get_cpgd_advantages_returns()</span></code></a></li>
+</ul>
+</li>
 </ul>
 
             </div>

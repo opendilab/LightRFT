@@ -306,8 +306,52 @@
             <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
               <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
                 
-  <section id="lightrft-datasets-imagegen-cot-reward">
-<h1>lightrft.datasets.imagegen_cot_reward<a class="headerlink" href="#lightrft-datasets-imagegen-cot-reward" title="Permalink to this heading">¶</a></h1>
+  <section id="module-lightrft.datasets.imagegen_cot_reward">
+<span id="lightrft-datasets-imagegen-cot-reward"></span><h1>lightrft.datasets.imagegen_cot_reward<a class="headerlink" href="#module-lightrft.datasets.imagegen_cot_reward" title="Permalink to this heading">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="lightrft.datasets.imagegen_cot_reward.ImageGenCoTRewardHandler">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">lightrft.datasets.imagegen_cot_reward.</span></span><span class="sig-name descname"><span class="pre">ImageGenCoTRewardHandler</span></span><a class="reference internal" href="../../_modules/lightrft/datasets/imagegen_cot_reward.html#ImageGenCoTRewardHandler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.datasets.imagegen_cot_reward.ImageGenCoTRewardHandler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="utils.html#lightrft.datasets.utils.BaseDataHandler" title="lightrft.datasets.utils.BaseDataHandler"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseDataHandler</span></code></a></p>
+<p>Data handler for ImageGen-CoT-Reward-5K dataset. For Text-to-Image generation task.</p>
+<p>Paper: <a class="reference external" href="https://arxiv.org/pdf/2505.03318">https://arxiv.org/pdf/2505.03318</a>
+Dataset Repo: <a class="reference external" href="https://huggingface.co/datasets/CodeGoat24/ImageGen-CoT-Reward-5K">https://huggingface.co/datasets/CodeGoat24/ImageGen-CoT-Reward-5K</a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.datasets.imagegen_cot_reward.ImageGenCoTRewardHandler.get_media_info">
+<span class="sig-name descname"><span class="pre">get_media_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/lightrft/datasets/imagegen_cot_reward.html#ImageGenCoTRewardHandler.get_media_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.datasets.imagegen_cot_reward.ImageGenCoTRewardHandler.get_media_info" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract path info for the two images.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.datasets.imagegen_cot_reward.ImageGenCoTRewardHandler.load_data">
+<span class="sig-name descname"><span class="pre">load_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/lightrft/datasets/imagegen_cot_reward.html#ImageGenCoTRewardHandler.load_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.datasets.imagegen_cot_reward.ImageGenCoTRewardHandler.load_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads data from json file.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.datasets.imagegen_cot_reward.ImageGenCoTRewardHandler.parse_item">
+<span class="sig-name descname"><span class="pre">parse_item</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">media_content</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/lightrft/datasets/imagegen_cot_reward.html#ImageGenCoTRewardHandler.parse_item"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.datasets.imagegen_cot_reward.ImageGenCoTRewardHandler.parse_item" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse the raw item and the loaded media_content into the standard format.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>item</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – The raw data item.</p></li>
+<li><p><strong>media_content</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – A dict containing loaded content.</p></li>
+<li><p><strong>config</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – A dict of additional configuration options.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A tuple containing lists of dictionaries and one dictionary.
+For pointwise scoring data: (messages_chosen, messages_rejected, other)
+For pairwise ranking data: (messages, other)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Union[Tuple[List[Dict], List[Dict], Dict], Tuple[List[Dict], Dict]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 
 
@@ -353,7 +397,15 @@
           <div class="pytorch-right-menu" id="pytorch-right-menu">
             <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
               <ul>
-<li><a class="reference internal" href="#">lightrft.datasets.imagegen_cot_reward</a></li>
+<li><a class="reference internal" href="#">lightrft.datasets.imagegen_cot_reward</a><ul>
+<li><a class="reference internal" href="#lightrft.datasets.imagegen_cot_reward.ImageGenCoTRewardHandler"><code class="docutils literal notranslate"><span class="pre">ImageGenCoTRewardHandler</span></code></a><ul>
+<li><a class="reference internal" href="#lightrft.datasets.imagegen_cot_reward.ImageGenCoTRewardHandler.get_media_info"><code class="docutils literal notranslate"><span class="pre">ImageGenCoTRewardHandler.get_media_info()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.datasets.imagegen_cot_reward.ImageGenCoTRewardHandler.load_data"><code class="docutils literal notranslate"><span class="pre">ImageGenCoTRewardHandler.load_data()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.datasets.imagegen_cot_reward.ImageGenCoTRewardHandler.parse_item"><code class="docutils literal notranslate"><span class="pre">ImageGenCoTRewardHandler.parse_item()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 
             </div>

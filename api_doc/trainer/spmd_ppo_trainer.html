@@ -306,16 +306,353 @@
             <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
               <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
                 
-  <section id="lightrft-trainer-spmd-ppo-trainer">
-<h1>lightrft.trainer.spmd_ppo_trainer<a class="headerlink" href="#lightrft-trainer-spmd-ppo-trainer" title="Permalink to this heading">¶</a></h1>
+  <section id="module-lightrft.trainer.spmd_ppo_trainer">
+<span id="lightrft-trainer-spmd-ppo-trainer"></span><h1>lightrft.trainer.spmd_ppo_trainer<a class="headerlink" href="#module-lightrft.trainer.spmd_ppo_trainer" title="Permalink to this heading">¶</a></h1>
+<p>SPMD (Single Program Multiple Data) PPO Trainer for distributed reinforcement learning.</p>
+<p>This module extends the base PPOTrainer with SPMD capabilities, enabling efficient
+distributed training across multiple devices. It provides specialized implementations
+for both text-only language models and vision-language models with optimized
+tensor parallelism and distributed inference using vLLM.</p>
+<p>The module includes:
+- SPMDPPOTrainerBase: Base class with core SPMD functionality
+- SPMDPPOTrainer: Implementation for Large Language Models (LLMs)
+- SPMDPPOTrainerVL: Implementation for Vision-Language Models (VLMs)</p>
+<p>Key features:
+- FastExperienceMaker for improved throughput during experience collection
+- Optimized memory management and communication patterns
+- Support for both text-only and multi-modal reinforcement learning
+- Efficient distributed training across multiple devices and nodes</p>
 <section id="spmdppotrainerbase">
 <h2>SPMDPPOTrainerBase<a class="headerlink" href="#spmdppotrainerbase" title="Permalink to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="lightrft.trainer.spmd_ppo_trainer.SPMDPPOTrainerBase">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">lightrft.trainer.spmd_ppo_trainer.</span></span><span class="sig-name descname"><span class="pre">SPMDPPOTrainerBase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss_agg_mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'seq-mean-token-mean'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_gspo</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">VLM</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/trainer/spmd_ppo_trainer.html#SPMDPPOTrainerBase"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.trainer.spmd_ppo_trainer.SPMDPPOTrainerBase" title="Permalink to this definition">¶</a></dt>
+<dd><p>PPO Trainer implementation optimized for Single Program Multiple Data (SPMD) execution.</p>
+<p>This trainer extends the base PPOTrainer with specialized handling for tensor parallelism
+and distributed inference using vLLM. It includes optimizations for experience collection
+and training across multiple devices.</p>
+<p>The base class provides core functionality for SPMD training including:
+- FastExperienceMaker integration for improved throughput
+- Tensor parallelism support with vLLM engine
+- Optimized memory management during training
+- Support for both text-only and vision-language models</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Performance
+This implementation uses FastExperienceMaker for improved throughput during
+experience collection compared to the standard implementation.</p>
+</div>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>Requirements
+Requires tensor parallelism configuration with engine_tp_size &gt; 0.</p>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.trainer.spmd_ppo_trainer.SPMDPPOTrainerBase.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss_agg_mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'seq-mean-token-mean'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_gspo</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">VLM</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/trainer/spmd_ppo_trainer.html#SPMDPPOTrainerBase.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.trainer.spmd_ppo_trainer.SPMDPPOTrainerBase.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize the SPMD PPO Trainer base class.</p>
+<p>Sets up the distributed training environment, creates the experience maker,
+and configures the policy loss function for SPMD execution.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>args</strong> (<em>tuple</em>) – Positional arguments passed to the parent PPOTrainer, including strategy, actor, critic,
+reward_model, initial_model, etc.</p></li>
+<li><p><strong>loss_agg_mode</strong> (<em>str</em>) – Mode for aggregating policy losses, either “seq-mean-token-mean” or other supported modes</p></li>
+<li><p><strong>use_gspo</strong> (<em>bool</em>) – Whether to enable GSPO (Group Sequence Policy Optimization) mode</p></li>
+<li><p><strong>VLM</strong> (<em>bool</em>) – Whether to use Vision-Language Model mode (True) or Language Model mode (False)</p></li>
+<li><p><strong>kwargs</strong> (<em>dict</em>) – Keyword arguments for configuration including packing_samples, processor, and other parameters.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>AssertionError</strong> – If engine_tp_size is not properly configured (must be &gt; 0)</p>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">trainer_base</span> <span class="o">=</span> <span class="n">SPMDPPOTrainerBase</span><span class="p">(</span>
+    <span class="n">strategy</span><span class="p">,</span>
+    <span class="n">actor_model</span><span class="p">,</span>
+    <span class="n">critic_model</span><span class="p">,</span>
+    <span class="n">reward_model</span><span class="p">,</span>
+    <span class="n">initial_model</span><span class="p">,</span>
+    <span class="n">ema_model</span><span class="p">,</span>
+    <span class="n">actor_optim</span><span class="p">,</span>
+    <span class="n">critic_optim</span><span class="p">,</span>
+    <span class="n">actor_scheduler</span><span class="p">,</span>
+    <span class="n">critic_scheduler</span><span class="p">,</span>
+    <span class="n">loss_agg_mode</span><span class="o">=</span><span class="s2">&quot;seq-mean-token-mean&quot;</span><span class="p">,</span>
+    <span class="n">VLM</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">packing_samples</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.trainer.spmd_ppo_trainer.SPMDPPOTrainerBase.ppo_train">
+<span class="sig-name descname"><span class="pre">ppo_train</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">global_steps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/trainer/spmd_ppo_trainer.html#SPMDPPOTrainerBase.ppo_train"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.trainer.spmd_ppo_trainer.SPMDPPOTrainerBase.ppo_train" title="Permalink to this definition">¶</a></dt>
+<dd><p>Execute a full PPO training iteration with SPMD optimizations.</p>
+<p>This method processes the replay buffer data, trains the actor and critic models
+for multiple epochs, and updates the inference engine weights. It includes
+optimized memory management and distributed training coordination.</p>
+<p>The training process includes:
+1. Data preprocessing for distributed execution
+2. Multi-epoch training with experience batching
+3. Loss computation and optimization
+4. Memory cleanup and weight synchronization</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>global_steps</strong> (<em>int</em>) – Current global step counter for logging and scheduling</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dictionary of training metrics averaged across all training steps</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dict[str, float]</p>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">metrics</span> <span class="o">=</span> <span class="n">trainer</span><span class="o">.</span><span class="n">ppo_train</span><span class="p">(</span><span class="n">global_steps</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Policy loss: </span><span class="si">{</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;policy_loss&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Critic loss: </span><span class="si">{</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;critic_loss&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 <section id="spmdppotrainer">
 <h2>SPMDPPOTrainer<a class="headerlink" href="#spmdppotrainer" title="Permalink to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="lightrft.trainer.spmd_ppo_trainer.SPMDPPOTrainer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">lightrft.trainer.spmd_ppo_trainer.</span></span><span class="sig-name descname"><span class="pre">SPMDPPOTrainer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/trainer/spmd_ppo_trainer.html#SPMDPPOTrainer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.trainer.spmd_ppo_trainer.SPMDPPOTrainer" title="Permalink to this definition">¶</a></dt>
+<dd><p>PPOTrainer for SPMD on Large Language Models and Multi-modal Large Language Models.</p>
+<p>This class combines the SPMD (Single Program Multiple Data) base functionality with the
+standard PPOTrainer for efficient distributed training of large language models (LLMs)
+and multi-modal large language models (MLLMs). It supports training across multiple
+devices and nodes with optimized communication patterns for both text-only and
+multi-modal reinforcement learning scenarios.</p>
+<p>The trainer provides:
+- Distributed PPO training with tensor parallelism
+- Efficient experience collection using FastExperienceMaker
+- Memory-optimized training loops
+- Support for various loss aggregation modes
+- Integration with vLLM inference engine</p>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">trainer</span> <span class="o">=</span> <span class="n">SPMDPPOTrainer</span><span class="p">(</span>
+    <span class="n">strategy</span><span class="o">=</span><span class="n">my_strategy</span><span class="p">,</span>
+    <span class="n">actor</span><span class="o">=</span><span class="n">actor_model</span><span class="p">,</span>
+    <span class="n">critic</span><span class="o">=</span><span class="n">critic_model</span><span class="p">,</span>
+    <span class="n">reward_model</span><span class="o">=</span><span class="n">reward_model</span><span class="p">,</span>
+    <span class="n">initial_model</span><span class="o">=</span><span class="n">reference_model</span><span class="p">,</span>
+    <span class="n">ema_model</span><span class="o">=</span><span class="n">ema_model</span><span class="p">,</span>
+    <span class="n">actor_optim</span><span class="o">=</span><span class="n">actor_optimizer</span><span class="p">,</span>
+    <span class="n">critic_optim</span><span class="o">=</span><span class="n">critic_optimizer</span><span class="p">,</span>
+    <span class="n">actor_scheduler</span><span class="o">=</span><span class="n">actor_scheduler</span><span class="p">,</span>
+    <span class="n">critic_scheduler</span><span class="o">=</span><span class="n">critic_scheduler</span><span class="p">,</span>
+    <span class="n">tokenizer</span><span class="o">=</span><span class="n">tokenizer</span><span class="p">,</span>
+    <span class="c1"># Additional PPO parameters</span>
+    <span class="n">max_epochs</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+    <span class="n">micro_train_batch_size</span><span class="o">=</span><span class="mi">16</span>
+<span class="p">)</span>
+
+<span class="c1"># Train for multiple iterations</span>
+<span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">training_steps</span><span class="p">):</span>
+    <span class="n">trainer</span><span class="o">.</span><span class="n">make_experience</span><span class="p">()</span>
+    <span class="n">metrics</span> <span class="o">=</span> <span class="n">trainer</span><span class="o">.</span><span class="n">ppo_train</span><span class="p">(</span><span class="n">step</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.trainer.spmd_ppo_trainer.SPMDPPOTrainer.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/trainer/spmd_ppo_trainer.html#SPMDPPOTrainer.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.trainer.spmd_ppo_trainer.SPMDPPOTrainer.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize the SPMD PPO Trainer for language models.</p>
+<p>Creates a trainer instance optimized for distributed training of language models
+using SPMD execution patterns. Inherits from both SPMDPPOTrainerBase and PPOTrainer
+to combine SPMD optimizations with standard PPO functionality.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>args</strong> (<em>tuple</em>) – Positional arguments passed to the parent PPOTrainer including strategy, actor, critic,
+reward_model, initial_model, ema_model, actor_optim, critic_optim, actor_scheduler,
+critic_scheduler.</p></li>
+<li><p><strong>kwargs</strong> (<em>dict</em>) – Keyword arguments for configuration including training hyperparameters like max_epochs,
+micro_train_batch_size, eps_clip, value_clip, etc.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">trainer</span> <span class="o">=</span> <span class="n">SPMDPPOTrainer</span><span class="p">(</span>
+    <span class="n">strategy</span><span class="p">,</span>
+    <span class="n">actor_model</span><span class="p">,</span>
+    <span class="n">critic_model</span><span class="p">,</span>
+    <span class="n">reward_model</span><span class="p">,</span>
+    <span class="n">reference_model</span><span class="p">,</span>
+    <span class="n">ema_model</span><span class="p">,</span>
+    <span class="n">actor_optimizer</span><span class="p">,</span>
+    <span class="n">critic_optimizer</span><span class="p">,</span>
+    <span class="n">actor_scheduler</span><span class="p">,</span>
+    <span class="n">critic_scheduler</span><span class="p">,</span>
+    <span class="n">tokenizer</span><span class="o">=</span><span class="n">my_tokenizer</span><span class="p">,</span>
+    <span class="n">loss_agg_mode</span><span class="o">=</span><span class="s2">&quot;seq-mean-token-mean&quot;</span><span class="p">,</span>
+    <span class="n">packing_samples</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">max_epochs</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+    <span class="n">micro_train_batch_size</span><span class="o">=</span><span class="mi">16</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.trainer.spmd_ppo_trainer.SPMDPPOTrainer.ppo_train">
+<span class="sig-name descname"><span class="pre">ppo_train</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">global_steps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#lightrft.trainer.spmd_ppo_trainer.SPMDPPOTrainer.ppo_train" title="Permalink to this definition">¶</a></dt>
+<dd><p>Execute a full PPO training iteration with SPMD optimizations.</p>
+<p>This method processes the replay buffer data, trains the actor and critic models
+for multiple epochs, and updates the inference engine weights. It includes
+optimized memory management and distributed training coordination.</p>
+<p>The training process includes:
+1. Data preprocessing for distributed execution
+2. Multi-epoch training with experience batching
+3. Loss computation and optimization
+4. Memory cleanup and weight synchronization</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>global_steps</strong> (<em>int</em>) – Current global step counter for logging and scheduling</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dictionary of training metrics averaged across all training steps</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dict[str, float]</p>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">metrics</span> <span class="o">=</span> <span class="n">trainer</span><span class="o">.</span><span class="n">ppo_train</span><span class="p">(</span><span class="n">global_steps</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Policy loss: </span><span class="si">{</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;policy_loss&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Critic loss: </span><span class="si">{</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;critic_loss&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 <section id="spmdppotrainervl">
 <h2>SPMDPPOTrainerVL<a class="headerlink" href="#spmdppotrainervl" title="Permalink to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="lightrft.trainer.spmd_ppo_trainer.SPMDPPOTrainerVL">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">lightrft.trainer.spmd_ppo_trainer.</span></span><span class="sig-name descname"><span class="pre">SPMDPPOTrainerVL</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/trainer/spmd_ppo_trainer.html#SPMDPPOTrainerVL"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.trainer.spmd_ppo_trainer.SPMDPPOTrainerVL" title="Permalink to this definition">¶</a></dt>
+<dd><p>PPOTrainer for SPMD with Vision-Language Models (VLM).</p>
+<p>This class combines the SPMD base functionality with the VLM-specific PPOTrainer
+for efficient distributed training of vision-language models. It extends the standard
+VLM training capabilities with SPMD optimizations for better performance across
+multiple devices.</p>
+<p>Key features for VLM training:
+- Multi-modal experience collection and processing
+- Vision-language specific batch creation
+- Processor integration for image and text handling
+- Optimized memory management for large multi-modal models</p>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">trainer</span> <span class="o">=</span> <span class="n">SPMDPPOTrainerVL</span><span class="p">(</span>
+    <span class="n">strategy</span><span class="o">=</span><span class="n">my_strategy</span><span class="p">,</span>
+    <span class="n">actor</span><span class="o">=</span><span class="n">actor_model</span><span class="p">,</span>
+    <span class="n">critic</span><span class="o">=</span><span class="n">critic_model</span><span class="p">,</span>
+    <span class="n">reward_model</span><span class="o">=</span><span class="n">reward_model</span><span class="p">,</span>
+    <span class="n">initial_model</span><span class="o">=</span><span class="n">reference_model</span><span class="p">,</span>
+    <span class="n">ema_model</span><span class="o">=</span><span class="n">ema_model</span><span class="p">,</span>
+    <span class="n">actor_optim</span><span class="o">=</span><span class="n">actor_optimizer</span><span class="p">,</span>
+    <span class="n">critic_optim</span><span class="o">=</span><span class="n">critic_optimizer</span><span class="p">,</span>
+    <span class="n">actor_scheduler</span><span class="o">=</span><span class="n">actor_scheduler</span><span class="p">,</span>
+    <span class="n">critic_scheduler</span><span class="o">=</span><span class="n">critic_scheduler</span><span class="p">,</span>
+    <span class="n">tokenizer</span><span class="o">=</span><span class="n">tokenizer</span><span class="p">,</span>
+    <span class="n">processor</span><span class="o">=</span><span class="n">image_processor</span><span class="p">,</span>  <span class="c1"># Required for VLM</span>
+    <span class="c1"># Additional PPO parameters</span>
+    <span class="n">max_epochs</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+    <span class="n">micro_train_batch_size</span><span class="o">=</span><span class="mi">16</span>
+<span class="p">)</span>
+
+<span class="c1"># Train for multiple iterations</span>
+<span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">training_steps</span><span class="p">):</span>
+    <span class="n">trainer</span><span class="o">.</span><span class="n">make_experience</span><span class="p">()</span>
+    <span class="n">metrics</span> <span class="o">=</span> <span class="n">trainer</span><span class="o">.</span><span class="n">ppo_train</span><span class="p">(</span><span class="n">step</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.trainer.spmd_ppo_trainer.SPMDPPOTrainerVL.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/trainer/spmd_ppo_trainer.html#SPMDPPOTrainerVL.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.trainer.spmd_ppo_trainer.SPMDPPOTrainerVL.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize the SPMD PPO Trainer for vision-language models.</p>
+<p>Creates a trainer instance specifically designed for distributed training of
+vision-language models using SPMD execution patterns. Requires a processor
+for handling multi-modal inputs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>args</strong> (<em>tuple</em>) – Positional arguments passed to the parent PPOTrainerVL including strategy, actor, critic,
+reward_model, initial_model, ema_model, actor_optim, critic_optim, actor_scheduler,
+critic_scheduler.</p></li>
+<li><p><strong>kwargs</strong> (<em>dict</em>) – Keyword arguments for configuration, must include ‘processor’ for image processing along
+with other training parameters.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>AssertionError</strong> – If processor is not provided or is None.</p>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">trainer</span> <span class="o">=</span> <span class="n">SPMDPPOTrainerVL</span><span class="p">(</span>
+    <span class="n">strategy</span><span class="p">,</span>
+    <span class="n">vlm_actor</span><span class="p">,</span>
+    <span class="n">vlm_critic</span><span class="p">,</span>
+    <span class="n">vlm_reward_model</span><span class="p">,</span>
+    <span class="n">vlm_reference</span><span class="p">,</span>
+    <span class="n">vlm_ema_model</span><span class="p">,</span>
+    <span class="n">actor_optimizer</span><span class="p">,</span>
+    <span class="n">critic_optimizer</span><span class="p">,</span>
+    <span class="n">actor_scheduler</span><span class="p">,</span>
+    <span class="n">critic_scheduler</span><span class="p">,</span>
+    <span class="n">tokenizer</span><span class="o">=</span><span class="n">my_tokenizer</span><span class="p">,</span>
+    <span class="n">processor</span><span class="o">=</span><span class="n">my_image_processor</span><span class="p">,</span>  <span class="c1"># Required!</span>
+    <span class="n">loss_agg_mode</span><span class="o">=</span><span class="s2">&quot;seq-mean-token-mean&quot;</span><span class="p">,</span>
+    <span class="n">max_epochs</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+    <span class="n">micro_train_batch_size</span><span class="o">=</span><span class="mi">8</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.trainer.spmd_ppo_trainer.SPMDPPOTrainerVL.ppo_train">
+<span class="sig-name descname"><span class="pre">ppo_train</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">global_steps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#lightrft.trainer.spmd_ppo_trainer.SPMDPPOTrainerVL.ppo_train" title="Permalink to this definition">¶</a></dt>
+<dd><p>Execute a full PPO training iteration with SPMD optimizations.</p>
+<p>This method processes the replay buffer data, trains the actor and critic models
+for multiple epochs, and updates the inference engine weights. It includes
+optimized memory management and distributed training coordination.</p>
+<p>The training process includes:
+1. Data preprocessing for distributed execution
+2. Multi-epoch training with experience batching
+3. Loss computation and optimization
+4. Memory cleanup and weight synchronization</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>global_steps</strong> (<em>int</em>) – Current global step counter for logging and scheduling</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dictionary of training metrics averaged across all training steps</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dict[str, float]</p>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">metrics</span> <span class="o">=</span> <span class="n">trainer</span><span class="o">.</span><span class="n">ppo_train</span><span class="p">(</span><span class="n">global_steps</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Policy loss: </span><span class="si">{</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;policy_loss&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Critic loss: </span><span class="si">{</span><span class="n">metrics</span><span class="p">[</span><span class="s1">&#39;critic_loss&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 </section>
 
@@ -363,9 +700,30 @@
             <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
               <ul>
 <li><a class="reference internal" href="#">lightrft.trainer.spmd_ppo_trainer</a><ul>
-<li><a class="reference internal" href="#spmdppotrainerbase">SPMDPPOTrainerBase</a></li>
-<li><a class="reference internal" href="#spmdppotrainer">SPMDPPOTrainer</a></li>
-<li><a class="reference internal" href="#spmdppotrainervl">SPMDPPOTrainerVL</a></li>
+<li><a class="reference internal" href="#spmdppotrainerbase">SPMDPPOTrainerBase</a><ul>
+<li><a class="reference internal" href="#lightrft.trainer.spmd_ppo_trainer.SPMDPPOTrainerBase"><code class="docutils literal notranslate"><span class="pre">SPMDPPOTrainerBase</span></code></a><ul>
+<li><a class="reference internal" href="#lightrft.trainer.spmd_ppo_trainer.SPMDPPOTrainerBase.__init__"><code class="docutils literal notranslate"><span class="pre">SPMDPPOTrainerBase.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.trainer.spmd_ppo_trainer.SPMDPPOTrainerBase.ppo_train"><code class="docutils literal notranslate"><span class="pre">SPMDPPOTrainerBase.ppo_train()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#spmdppotrainer">SPMDPPOTrainer</a><ul>
+<li><a class="reference internal" href="#lightrft.trainer.spmd_ppo_trainer.SPMDPPOTrainer"><code class="docutils literal notranslate"><span class="pre">SPMDPPOTrainer</span></code></a><ul>
+<li><a class="reference internal" href="#lightrft.trainer.spmd_ppo_trainer.SPMDPPOTrainer.__init__"><code class="docutils literal notranslate"><span class="pre">SPMDPPOTrainer.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.trainer.spmd_ppo_trainer.SPMDPPOTrainer.ppo_train"><code class="docutils literal notranslate"><span class="pre">SPMDPPOTrainer.ppo_train()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#spmdppotrainervl">SPMDPPOTrainerVL</a><ul>
+<li><a class="reference internal" href="#lightrft.trainer.spmd_ppo_trainer.SPMDPPOTrainerVL"><code class="docutils literal notranslate"><span class="pre">SPMDPPOTrainerVL</span></code></a><ul>
+<li><a class="reference internal" href="#lightrft.trainer.spmd_ppo_trainer.SPMDPPOTrainerVL.__init__"><code class="docutils literal notranslate"><span class="pre">SPMDPPOTrainerVL.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.trainer.spmd_ppo_trainer.SPMDPPOTrainerVL.ppo_train"><code class="docutils literal notranslate"><span class="pre">SPMDPPOTrainerVL.ppo_train()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

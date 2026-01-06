@@ -306,10 +306,151 @@
             <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
               <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
                 
-  <section id="lightrft-trainer-fast-exp-maker">
-<h1>lightrft.trainer.fast_exp_maker<a class="headerlink" href="#lightrft-trainer-fast-exp-maker" title="Permalink to this heading">¶</a></h1>
+  <section id="module-lightrft.trainer.fast_exp_maker">
+<span id="lightrft-trainer-fast-exp-maker"></span><h1>lightrft.trainer.fast_exp_maker<a class="headerlink" href="#module-lightrft.trainer.fast_exp_maker" title="Permalink to this heading">¶</a></h1>
+<p>FastExperienceMaker Module</p>
+<p>This module provides an optimized experience maker for RLHF (Reinforcement Learning from Human Feedback)
+that supports high-performance inference backends like VLLM and SGLang. It extends the base
+NaiveExperienceMaker with enhanced features for multimodal data processing, reward computation,
+and advantage estimation.</p>
+<dl class="simple">
+<dt>Key Features:</dt><dd><ul class="simple">
+<li><p>VLLM/SGLang backend support for efficient text generation</p></li>
+<li><p>Multimodal (vision-language) data processing</p></li>
+<li><p>Multiple advantage estimation methods (GAE, RLOO, REINFORCE, Group Norm)</p></li>
+<li><p>Flexible reward model composition with custom reward functions</p></li>
+<li><p>Sample packing support for improved training efficiency</p></li>
+<li><p>Running reward normalization and advantage whitening</p></li>
+</ul>
+</dd>
+<dt>Classes:</dt><dd><p>MultimodalDataProcessor: Handles preprocessing of mixed text/image data
+RewardComputationEngine: Manages reward model inference and aggregation
+FastExperienceMaker: Main experience generation class</p>
+</dd>
+</dl>
 <section id="fastexperiencemaker">
 <h2>FastExperienceMaker<a class="headerlink" href="#fastexperiencemaker" title="Permalink to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="lightrft.trainer.fast_exp_maker.FastExperienceMaker">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">lightrft.trainer.fast_exp_maker.</span></span><span class="sig-name descname"><span class="pre">FastExperienceMaker</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">packing_samples</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">processor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/trainer/fast_exp_maker.html#FastExperienceMaker"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.trainer.fast_exp_maker.FastExperienceMaker" title="Permalink to this definition">¶</a></dt>
+<dd><p>Optimized experience maker with VLLM/SGLang support and advanced RL features.</p>
+<dl class="simple">
+<dt>This class extends NaiveExperienceMaker to provide:</dt><dd><ul class="simple">
+<li><p>High-performance inference via VLLM or SGLang backends</p></li>
+<li><p>Multimodal (vision-language) data processing</p></li>
+<li><p>Multiple advantage estimation algorithms (GAE, RLOO, REINFORCE, Group Norm)</p></li>
+<li><p>Flexible reward model composition with custom aggregation</p></li>
+<li><p>Sample packing for improved training efficiency</p></li>
+<li><p>Running reward normalization and advantage whitening/clipping</p></li>
+</ul>
+</dd>
+<dt>The experience generation pipeline:</dt><dd><ol class="arabic simple">
+<li><p>Sample Generation: Use inference engine to generate responses</p></li>
+<li><p>Shard-Parallel Preprocessing: Distribute samples across shards</p></li>
+<li><p>Model Inference: Batch forward through actor, critic, initial, and reward models</p></li>
+<li><p>Shard-Parallel Postprocessing: Gather results back</p></li>
+<li><p>Reward Processing: Apply transformations (normalization, shaping, filtering)</p></li>
+<li><p>Advantage Estimation: Compute advantages and returns</p></li>
+</ol>
+</dd>
+<dt>Args:</dt><dd><p>packing_samples: Whether to pack multiple sequences into single batch
+processor: Multimodal processor for vision-language models
+<a href="#id1"><span class="problematic" id="id2">*</span></a>args, <a href="#id3"><span class="problematic" id="id4">**</span></a>kwargs: Arguments passed to parent NaiveExperienceMaker</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.trainer.fast_exp_maker.FastExperienceMaker.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">packing_samples</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">processor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/trainer/fast_exp_maker.html#FastExperienceMaker.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.trainer.fast_exp_maker.FastExperienceMaker.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize FastExperienceMaker.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>args</strong> (<em>tuple</em>) – Positional arguments for NaiveExperienceMaker</p></li>
+<li><p><strong>packing_samples</strong> (<em>bool</em>) – Enable sample packing for efficiency</p></li>
+<li><p><strong>processor</strong> (<em>Optional</em><em>[</em><em>Any</em><em>]</em>) – Multimodal processor (required for VLM models)</p></li>
+<li><p><strong>kwargs</strong> (<em>dict</em>) – Keyword arguments for NaiveExperienceMaker</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.trainer.fast_exp_maker.FastExperienceMaker.generate_samples">
+<span class="sig-name descname"><span class="pre">generate_samples</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">all_prompts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_images</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">images_num</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_references</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_labels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">generate_kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.Samples" title="lightrft.trainer.experience_maker.Samples"><span class="pre">Samples</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#lightrft.trainer.fast_exp_maker.FastExperienceMaker.generate_samples" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate samples using the inference engine (VLLM or SGLang).</p>
+<dl class="simple">
+<dt>This method handles:</dt><dd><ul class="simple">
+<li><p>Sampling parameter configuration</p></li>
+<li><p>Multimodal data processing</p></li>
+<li><p>Inference engine invocation</p></li>
+<li><p>Output processing into Samples format</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>all_prompts</strong> (<em>List</em><em>[</em><em>str</em><em>]</em>) – List of text prompts</p></li>
+<li><p><strong>all_images</strong> (<em>Optional</em><em>[</em><em>List</em><em>]</em>) – Optional images for VLM</p></li>
+<li><p><strong>images_num</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><em>int</em><em>]</em><em>]</em>) – Number of images per prompt</p></li>
+<li><p><strong>all_references</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><em>str</em><em>]</em><em>]</em>) – Reference texts</p></li>
+<li><p><strong>all_labels</strong> (<em>Optional</em><em>[</em><em>List</em><em>]</em>) – Sample labels</p></li>
+<li><p><strong>generate_kwargs</strong> (<em>dict</em>) – Generation parameters (temperature, max_new_tokens, etc.)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>List of Samples or SamplesVL objects</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List[Union[<a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.Samples" title="lightrft.trainer.experience_maker.Samples">Samples</a>, <a class="reference internal" href="experience_maker_vl.html#lightrft.trainer.experience_maker_vl.SamplesVL" title="lightrft.trainer.experience_maker_vl.SamplesVL">SamplesVL</a>]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.trainer.fast_exp_maker.FastExperienceMaker.make_experience">
+<span class="sig-name descname"><span class="pre">make_experience</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">samples</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.Samples" title="lightrft.trainer.experience_maker.Samples"><span class="pre">Samples</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.Experience" title="lightrft.trainer.experience_maker.Experience"><span class="pre">Experience</span></a></span></span><a class="headerlink" href="#lightrft.trainer.fast_exp_maker.FastExperienceMaker.make_experience" title="Permalink to this definition">¶</a></dt>
+<dd><p>Turn samples into experience by calculating log probs, values, rewards, and KL divergence.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>samples</strong> (<a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.Samples" title="lightrft.trainer.experience_maker.Samples"><em>Samples</em></a>) – Samples object containing sequences and metadata.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Experience object with all computed values.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.Experience" title="lightrft.trainer.experience_maker.Experience">Experience</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.trainer.fast_exp_maker.FastExperienceMaker.make_experience_list">
+<span class="sig-name descname"><span class="pre">make_experience_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">all_prompts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_images</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_references</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_labels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">generate_kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="experience_maker_vl.html#lightrft.trainer.experience_maker_vl.ExperienceVL" title="lightrft.trainer.experience_maker_vl.ExperienceVL"><span class="pre">ExperienceVL</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#lightrft.trainer.fast_exp_maker.FastExperienceMaker.make_experience_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a list of experiences from prompts and optional multimodal inputs.</p>
+<p>This is the main entry point for experience generation. It orchestrates the
+entire pipeline from sampling to advantage computation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>all_prompts</strong> (<em>List</em><em>[</em><em>str</em><em>]</em>) – List of text prompts</p></li>
+<li><p><strong>all_images</strong> (<em>Optional</em><em>[</em><em>List</em><em>]</em>) – Optional images for multimodal generation</p></li>
+<li><p><strong>all_references</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><em>str</em><em>]</em><em>]</em>) – Optional reference texts for evaluation</p></li>
+<li><p><strong>all_labels</strong> (<em>Optional</em><em>[</em><em>List</em><em>]</em>) – Optional labels for samples</p></li>
+<li><p><strong>generate_kwargs</strong> (<em>dict</em>) – Generation parameters (temperature, max_new_tokens, etc.)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>List of Experience or ExperienceVL objects with computed advantages and returns</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List[Union[<a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.Experience" title="lightrft.trainer.experience_maker.Experience">Experience</a>, <a class="reference internal" href="experience_maker_vl.html#lightrft.trainer.experience_maker_vl.ExperienceVL" title="lightrft.trainer.experience_maker_vl.ExperienceVL">ExperienceVL</a>]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 </section>
 
@@ -357,7 +498,16 @@
             <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
               <ul>
 <li><a class="reference internal" href="#">lightrft.trainer.fast_exp_maker</a><ul>
-<li><a class="reference internal" href="#fastexperiencemaker">FastExperienceMaker</a></li>
+<li><a class="reference internal" href="#fastexperiencemaker">FastExperienceMaker</a><ul>
+<li><a class="reference internal" href="#lightrft.trainer.fast_exp_maker.FastExperienceMaker"><code class="docutils literal notranslate"><span class="pre">FastExperienceMaker</span></code></a><ul>
+<li><a class="reference internal" href="#lightrft.trainer.fast_exp_maker.FastExperienceMaker.__init__"><code class="docutils literal notranslate"><span class="pre">FastExperienceMaker.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.trainer.fast_exp_maker.FastExperienceMaker.generate_samples"><code class="docutils literal notranslate"><span class="pre">FastExperienceMaker.generate_samples()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.trainer.fast_exp_maker.FastExperienceMaker.make_experience"><code class="docutils literal notranslate"><span class="pre">FastExperienceMaker.make_experience()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.trainer.fast_exp_maker.FastExperienceMaker.make_experience_list"><code class="docutils literal notranslate"><span class="pre">FastExperienceMaker.make_experience_list()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

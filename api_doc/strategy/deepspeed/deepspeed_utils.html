@@ -308,19 +308,110 @@
             <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
               <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
                 
-  <section id="lightrft-strategy-deepspeed-deepspeed-utils">
-<h1>lightrft.strategy.deepspeed.deepspeed_utils<a class="headerlink" href="#lightrft-strategy-deepspeed-deepspeed-utils" title="Permalink to this heading">¶</a></h1>
+  <section id="module-lightrft.strategy.deepspeed.deepspeed_utils">
+<span id="lightrft-strategy-deepspeed-deepspeed-utils"></span><h1>lightrft.strategy.deepspeed.deepspeed_utils<a class="headerlink" href="#module-lightrft.strategy.deepspeed.deepspeed_utils" title="Permalink to this heading">¶</a></h1>
+<p>DeepSpeed Configuration and Optimization Utilities Module.</p>
+<p>This module provides utility functions for configuring DeepSpeed for training and evaluation,
+managing optimizer parameters, and handling DeepSpeed ZeRO stage 3 states. It includes
+functions for creating DeepSpeed configurations with various optimization options,
+organizing model parameters for optimizers with weight decay control, and
+offloading/reloading DeepSpeed states to manage memory efficiently.</p>
 <section id="get-train-ds-config">
 <h2>get_train_ds_config<a class="headerlink" href="#get-train-ds-config" title="Permalink to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="lightrft.strategy.deepspeed.deepspeed_utils.get_train_ds_config">
+<span class="sig-prename descclassname"><span class="pre">lightrft.strategy.deepspeed.deepspeed_utils.</span></span><span class="sig-name descname"><span class="pre">get_train_ds_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">offload</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">adam_offload</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stage</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bf16</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_norm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zpg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grad_accum_dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overlap_comm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/lightrft/strategy/deepspeed/deepspeed_utils.html#get_train_ds_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.deepspeed.deepspeed_utils.get_train_ds_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a DeepSpeed configuration dictionary for training.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>offload</strong> (<em>bool</em>) – Whether to offload parameters to CPU.</p></li>
+<li><p><strong>adam_offload</strong> (<em>bool</em>) – Whether to offload Adam optimizer states to CPU.</p></li>
+<li><p><strong>stage</strong> (<em>int</em>) – ZeRO optimization stage (0, 1, 2, or 3).</p></li>
+<li><p><strong>bf16</strong> (<em>bool</em>) – Whether to use bfloat16 precision.</p></li>
+<li><p><strong>max_norm</strong> (<em>float</em>) – Maximum norm for gradient clipping.</p></li>
+<li><p><strong>zpg</strong> (<em>int</em>) – ZeRO++ partition size.</p></li>
+<li><p><strong>grad_accum_dtype</strong> (<em>str</em><em> or </em><em>None</em>) – Data type for gradient accumulation.</p></li>
+<li><p><strong>overlap_comm</strong> (<em>bool</em>) – Whether to overlap communication with computation.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>DeepSpeed configuration dictionary for training.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 <section id="get-eval-ds-config">
 <h2>get_eval_ds_config<a class="headerlink" href="#get-eval-ds-config" title="Permalink to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="lightrft.strategy.deepspeed.deepspeed_utils.get_eval_ds_config">
+<span class="sig-prename descclassname"><span class="pre">lightrft.strategy.deepspeed.deepspeed_utils.</span></span><span class="sig-name descname"><span class="pre">get_eval_ds_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">offload</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stage</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bf16</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/lightrft/strategy/deepspeed/deepspeed_utils.html#get_eval_ds_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.deepspeed.deepspeed_utils.get_eval_ds_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a DeepSpeed configuration dictionary for evaluation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>offload</strong> (<em>bool</em>) – Whether to offload parameters to CPU.</p></li>
+<li><p><strong>stage</strong> (<em>int</em>) – ZeRO optimization stage (0, 1, 2, or 3).</p></li>
+<li><p><strong>bf16</strong> (<em>bool</em>) – Whether to use bfloat16 precision.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>DeepSpeed configuration dictionary for evaluation.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 <section id="offload-deepspeed-states">
 <h2>offload_deepspeed_states<a class="headerlink" href="#offload-deepspeed-states" title="Permalink to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="lightrft.strategy.deepspeed.deepspeed_utils.offload_deepspeed_states">
+<span class="sig-prename descclassname"><span class="pre">lightrft.strategy.deepspeed.deepspeed_utils.</span></span><span class="sig-name descname"><span class="pre">offload_deepspeed_states</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pin_memory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">non_blocking</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/lightrft/strategy/deepspeed/deepspeed_utils.html#offload_deepspeed_states"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.deepspeed.deepspeed_utils.offload_deepspeed_states" title="Permalink to this definition">¶</a></dt>
+<dd><p>Offload DeepSpeed optimizer states to CPU to save GPU memory.</p>
+<p>This function is particularly useful for ZeRO stage 3 when not using Adam optimizer offloading.
+It offloads various states to CPU, empties partition cache, and synchronizes devices.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> (<em>deepspeed.DeepSpeedEngine</em>) – DeepSpeed model with optimizer.</p></li>
+<li><p><strong>pin_memory</strong> (<em>bool</em>) – Whether to use pinned memory for offloaded states.</p></li>
+<li><p><strong>non_blocking</strong> (<em>bool</em>) – Whether to perform non-blocking transfers.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>NotImplementedError</strong> – If ZeRO stage is not 3.</p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 <section id="reload-deepspeed-states">
 <h2>reload_deepspeed_states<a class="headerlink" href="#reload-deepspeed-states" title="Permalink to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="lightrft.strategy.deepspeed.deepspeed_utils.reload_deepspeed_states">
+<span class="sig-prename descclassname"><span class="pre">lightrft.strategy.deepspeed.deepspeed_utils.</span></span><span class="sig-name descname"><span class="pre">reload_deepspeed_states</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">non_blocking</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/lightrft/strategy/deepspeed/deepspeed_utils.html#reload_deepspeed_states"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.deepspeed.deepspeed_utils.reload_deepspeed_states" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reload DeepSpeed optimizer states from CPU back to GPU.</p>
+<p>This function is used to restore states previously offloaded with offload_deepspeed_states().</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> (<em>deepspeed.DeepSpeedEngine</em>) – DeepSpeed model with optimizer.</p></li>
+<li><p><strong>non_blocking</strong> (<em>bool</em>) – Whether to perform non-blocking transfers.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>NotImplementedError</strong> – If ZeRO stage is not 3.</p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 </section>
 
@@ -368,10 +459,22 @@
             <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
               <ul>
 <li><a class="reference internal" href="#">lightrft.strategy.deepspeed.deepspeed_utils</a><ul>
-<li><a class="reference internal" href="#get-train-ds-config">get_train_ds_config</a></li>
-<li><a class="reference internal" href="#get-eval-ds-config">get_eval_ds_config</a></li>
-<li><a class="reference internal" href="#offload-deepspeed-states">offload_deepspeed_states</a></li>
-<li><a class="reference internal" href="#reload-deepspeed-states">reload_deepspeed_states</a></li>
+<li><a class="reference internal" href="#get-train-ds-config">get_train_ds_config</a><ul>
+<li><a class="reference internal" href="#lightrft.strategy.deepspeed.deepspeed_utils.get_train_ds_config"><code class="docutils literal notranslate"><span class="pre">get_train_ds_config()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#get-eval-ds-config">get_eval_ds_config</a><ul>
+<li><a class="reference internal" href="#lightrft.strategy.deepspeed.deepspeed_utils.get_eval_ds_config"><code class="docutils literal notranslate"><span class="pre">get_eval_ds_config()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#offload-deepspeed-states">offload_deepspeed_states</a><ul>
+<li><a class="reference internal" href="#lightrft.strategy.deepspeed.deepspeed_utils.offload_deepspeed_states"><code class="docutils literal notranslate"><span class="pre">offload_deepspeed_states()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#reload-deepspeed-states">reload_deepspeed_states</a><ul>
+<li><a class="reference internal" href="#lightrft.strategy.deepspeed.deepspeed_utils.reload_deepspeed_states"><code class="docutils literal notranslate"><span class="pre">reload_deepspeed_states()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

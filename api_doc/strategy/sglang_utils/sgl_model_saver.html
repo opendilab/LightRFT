@@ -308,8 +308,82 @@
             <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
               <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
                 
-  <section id="lightrft-strategy-sglang-utils-sgl-model-saver">
-<h1>lightrft.strategy.sglang_utils.sgl_model_saver<a class="headerlink" href="#lightrft-strategy-sglang-utils-sgl-model-saver" title="Permalink to this heading">¶</a></h1>
+  <section id="module-lightrft.strategy.sglang_utils.sgl_model_saver">
+<span id="lightrft-strategy-sglang-utils-sgl-model-saver"></span><h1>lightrft.strategy.sglang_utils.sgl_model_saver<a class="headerlink" href="#module-lightrft.strategy.sglang_utils.sgl_model_saver" title="Permalink to this heading">¶</a></h1>
+<p>This module provides memory management utilities for SGLang model execution.</p>
+<p>The module implements memory saving functionality by allowing temporary release and restoration
+of GPU memory occupied by model weights and states. This is particularly useful in scenarios
+where multiple models or processes need to share limited GPU memory resources efficiently.</p>
+<p>The module patches the SGLang Scheduler class with additional methods for memory management,
+enabling dynamic memory occupation control during model inference and training workflows.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="lightrft.strategy.sglang_utils.sgl_model_saver.release_memory_occupation">
+<span class="sig-prename descclassname"><span class="pre">lightrft.strategy.sglang_utils.sgl_model_saver.</span></span><span class="sig-name descname"><span class="pre">release_memory_occupation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recv_req</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">sglang.srt.managers.io_struct.ReleaseMemoryOccupationReqInput</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/lightrft/strategy/sglang_utils/sgl_model_saver.html#release_memory_occupation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.sglang_utils.sgl_model_saver.release_memory_occupation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Release memory occupation by stashing model weights and states to CPU memory.</p>
+<p>This method temporarily frees GPU memory by moving model parameters and static states
+to CPU memory. It’s designed to be used when the model is temporarily not needed,
+allowing other processes or models to utilize the freed GPU memory.</p>
+<p>The method performs the following operations:
+1. Validates the memory saver adapter
+2. Exports and stashes the model’s static state
+3. Clones model parameters to CPU memory if not already done
+4. Pauses the memory saver adapter
+5. Flushes the model cache</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>recv_req</strong> (<em>ReleaseMemoryOccupationReqInput</em>) – Request input for releasing memory occupation</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Response indicating successful memory release</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ReleaseMemoryOccupationReqOutput</p>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">scheduler</span> <span class="o">=</span> <span class="n">Scheduler</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">req</span> <span class="o">=</span> <span class="n">ReleaseMemoryOccupationReqInput</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">response</span> <span class="o">=</span> <span class="n">scheduler</span><span class="o">.</span><span class="n">release_memory_occupation</span><span class="p">(</span><span class="n">req</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># GPU memory is now freed for other uses</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="lightrft.strategy.sglang_utils.sgl_model_saver.resume_memory_occupation">
+<span class="sig-prename descclassname"><span class="pre">lightrft.strategy.sglang_utils.sgl_model_saver.</span></span><span class="sig-name descname"><span class="pre">resume_memory_occupation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recv_req</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">sglang.srt.managers.io_struct.ResumeMemoryOccupationReqInput</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/lightrft/strategy/sglang_utils/sgl_model_saver.html#resume_memory_occupation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.sglang_utils.sgl_model_saver.resume_memory_occupation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resume memory occupation by restoring model weights and states from CPU memory.</p>
+<p>This method restores the model to its fully operational state by loading back
+the previously stashed model parameters and static states from CPU memory to GPU.
+It should be called after release_memory_occupation() when the model needs to
+be used again.</p>
+<p>The method performs the following operations:
+1. Validates the memory saver adapter
+2. Resumes the memory saver adapter
+3. Imports the previously stashed static state
+4. Restores model parameters from CPU to GPU
+5. Cleans up temporary static state storage</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>recv_req</strong> (<em>ResumeMemoryOccupationReqInput</em>) – Request input for resuming memory occupation</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Response indicating successful memory restoration</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ResumeMemoryOccupationReqOutput</p>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">scheduler</span> <span class="o">=</span> <span class="n">Scheduler</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># After previously calling release_memory_occupation()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">req</span> <span class="o">=</span> <span class="n">ResumeMemoryOccupationReqInput</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">response</span> <span class="o">=</span> <span class="n">scheduler</span><span class="o">.</span><span class="n">resume_memory_occupation</span><span class="p">(</span><span class="n">req</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Model is now ready for inference again</span>
+</pre></div>
+</div>
+</dd></dl>
+
 </section>
 
 
@@ -355,7 +429,11 @@
           <div class="pytorch-right-menu" id="pytorch-right-menu">
             <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
               <ul>
-<li><a class="reference internal" href="#">lightrft.strategy.sglang_utils.sgl_model_saver</a></li>
+<li><a class="reference internal" href="#">lightrft.strategy.sglang_utils.sgl_model_saver</a><ul>
+<li><a class="reference internal" href="#lightrft.strategy.sglang_utils.sgl_model_saver.release_memory_occupation"><code class="docutils literal notranslate"><span class="pre">release_memory_occupation()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.sglang_utils.sgl_model_saver.resume_memory_occupation"><code class="docutils literal notranslate"><span class="pre">resume_memory_occupation()</span></code></a></li>
+</ul>
+</li>
 </ul>
 
             </div>

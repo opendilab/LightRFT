@@ -1,0 +1,1174 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js" lang="en">
+<!--<![endif]-->
+
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>lightrft.trainer.replay_buffer_utils &mdash; LightRFT v0.1.1 documentation</title>
+  
+
+  <link rel="shortcut icon" href="../../../_static/images/favicon.ico" />
+  
+  
+
+  
+
+  
+  
+  
+
+  
+
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <!-- <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" /> -->
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/readthedocs.css" type="text/css" />
+  <link rel="index" title="Index" href="../../../genindex.html" />
+  <link rel="search" title="Search" href="../../../search.html" />
+  <!-- Google Analytics -->
+  <script type="text/javascript">
+    var collapsedSections = [];
+  </script>
+  
+  <!-- End Google Analytics -->
+  
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+  <script>
+    MathJax = {
+        chtml: {
+            scale: 1,
+            minScale: 1,
+        },
+        svg: {
+            scale: 1,
+            minScale: 1,
+        }
+    }
+</script>
+
+  <!-- Preload the theme fonts -->
+
+<link rel="preload" href="../../../_static/fonts/FreightSans/freight-sans-book.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../_static/fonts/FreightSans/freight-sans-medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../_static/fonts/IBMPlexMono/IBMPlexMono-Medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../_static/fonts/FreightSans/freight-sans-bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../_static/fonts/FreightSans/freight-sans-medium-italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../_static/fonts/IBMPlexMono/IBMPlexMono-SemiBold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+
+<!-- Preload the katex fonts -->
+
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Math-Italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size1-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size4-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size2-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size3-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Caligraphic-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.2/css/all.css"
+    integrity="sha384-vSIIfh2YWi9wW0r9iZe7RJPrKwp6bG+s9QZMoITbCckVJqGCCRhc+ccxNcdpHuYu" crossorigin="anonymous">
+</head>
+
+<div class="container-fluid header-holder tutorials-header" id="header-holder">
+  <div class="container">
+    <div class="header-container">
+      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+        aria-label="OpenMMLab"></a>
+
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://github.com/opendilab/LightRFT" target="_blank">GitHub</a>
+          </li>
+          <li >
+            <div id="resourcesDropdownButton" data-toggle="resources-dropdown" class="resources-dropdown">
+              <a
+                class="resource-option with-down-arrow">
+                OpenDILab
+              </a>
+              <div class="resources-dropdown-menu">
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-engine" target="_blank">
+                  <span class="dropdown-title">DI-engine </span>
+                  <p>OpenDILab Decision AI Engine</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/LightZero" target="_blank">
+                  <span class="dropdown-title">LightZero </span>
+                  <p>OpenDILab Decision Monte Carlo Tree Search Framework</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/GenerativeRL" target="_blank">
+                  <span class="dropdown-title">GenerativeRL </span>
+                  <p>OpenDILab Generative AI Framework</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-star" target="_blank">
+                  <span class="dropdown-title">DI-star </span>
+                  <p>OpenDILab Decision AI in StarCraftII</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-drive" target="_blank">
+                  <span class="dropdown-title">DI-drive </span>
+                  <p>OpenDILab Auto-driving platform</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/GoBigger" target="_blank">
+                  <span class="dropdown-title">GoBigger </span>
+                  <p>OpenDILab Multi-Agent Environment</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-smartcross" target="_blank">
+                  <span class="dropdown-title">DI-smartcross </span>
+                  <p>Decision Intelligence Platform for Traffic Crossing Signal Control</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-treetensor" target="_blank">
+                  <span class="dropdown-title">DI-treetensor </span>
+                  <p>Tree Nested PyTorch Tensor Lib</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-sheep" target="_blank">
+                  <span class="dropdown-title">DI-sheep </span>
+                  <p>Deep Reinforcement Learning + 3 Tiles Game</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-model-based-RL" target="_blank">
+                  <span class="dropdown-title">awesome-model-based-RL </span>
+                  <p>A curated list of awesome model based RL resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-decision-transformer" target="_blank">
+                  <span class="dropdown-title">awesome-decision-transformer </span>
+                  <p>A curated list of Decision Transformer resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-exploration-rl" target="_blank">
+                  <span class="dropdown-title">awesome-exploration-rl </span>
+                  <p>A curated list of awesome exploration RL resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-multi-modal-reinforcement-learning" target="_blank">
+                  <span class="dropdown-title">awesome-multi-modal-reinforcement-learning </span>
+                  <p>A curated list of Multi-Modal Reinforcement Learning resources (continually updated)</p>
+                </a>
+              </div>
+          </li>
+        </ul>
+      </div>
+
+      <a class="main-menu-open-button" href="#" data-behavior="open-mobile-menu"></a>
+    </div>
+  </div>
+</div>
+
+<body class="pytorch-body">
+
+   
+
+  
+
+  <div class="table-of-contents-link-wrapper">
+    <span>Table of Contents</span>
+    <a href="#" class="toggle-table-of-contents" data-behavior="toggle-table-of-contents"></a>
+  </div>
+
+  <nav data-toggle="wy-nav-shift" class="pytorch-left-menu" id="pytorch-left-menu">
+    <div class="pytorch-side-scroll">
+      <div class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        <div class="pytorch-left-menu-search">
+          
+
+          
+          
+          
+          
+
+          
+
+
+
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search Docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        
+        
+        
+        
+        
+        <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../quick_start/index.html">Quick Start</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide &amp; Best Practices</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../best_practice/index.html">Best Practices</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_doc/utils/index.html">lightrft.utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_doc/datasets/index.html">lightrft.datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_doc/models/index.html">lightrft.models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_doc/strategy/index.html">lightrft.strategy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_doc/trainer/index.html">lightrft.trainer</a></li>
+</ul>
+
+        
+        
+      </div>
+    </div>
+  </nav>
+
+  <div class="pytorch-container">
+    <div class="pytorch-page-level-bar" id="pytorch-page-level-bar">
+      <div class="pytorch-breadcrumbs-wrapper">
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="pytorch-breadcrumbs">
+    
+      <li>
+        <a href="../../../index.html">
+            Docs
+        </a> &gt;
+      </li>
+
+        
+          <li><a href="../../index.html">Module code</a> &gt;</li>
+        
+      <li>lightrft.trainer.replay_buffer_utils</li>
+    
+    
+      <li class="pytorch-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+</div>
+      </div>
+
+      <div class="pytorch-shortcuts-wrapper" id="pytorch-shortcuts-wrapper">
+        Shortcuts
+      </div>
+    </div>
+
+    <section data-toggle="wy-nav-shift" id="pytorch-content-wrap" class="pytorch-content-wrap">
+      <div class="pytorch-content-left">
+        
+          <div class="rst-content">
+            
+            <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
+              <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
+                
+  <h1>Source code for lightrft.trainer.replay_buffer_utils</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Utility functions for replay buffer operations in reinforcement learning.</span>
+
+<span class="sd">This module provides specialized functions for handling both language model</span>
+<span class="sd">experiences and vision-language model experiences. It includes utilities for batch</span>
+<span class="sd">splitting, sequence padding, and experience creation optimized for distributed training.</span>
+
+<span class="sd">Key features:</span>
+<span class="sd">- Automatic detection of experience types</span>
+<span class="sd">- Efficient batch splitting and creation</span>
+<span class="sd">- Sequence padding and padding removal</span>
+<span class="sd">- Support for both packed and unpacked samples</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch.nn.functional</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">F</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">PIL</span><span class="w"> </span><span class="kn">import</span> <span class="n">Image</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.experience_maker</span><span class="w"> </span><span class="kn">import</span> <span class="n">Experience</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.experience_maker_vl</span><span class="w"> </span><span class="kn">import</span> <span class="n">ExperienceVL</span>
+
+
+<div class="viewcode-block" id="BufferItem"><a class="viewcode-back" href="../../../api_doc/trainer/replay_buffer_utils.html#lightrft.trainer.replay_buffer_utils.BufferItem">[docs]</a><span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">BufferItem</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;BufferItem is an item of experience data.</span>
+
+<span class="sd">    Shapes of each tensor:</span>
+<span class="sd">    sequences: (S)</span>
+<span class="sd">    action_log_probs: (A)</span>
+<span class="sd">    base_action_log_probs: (A)</span>
+<span class="sd">    values: (1)</span>
+<span class="sd">    returns: (1)</span>
+<span class="sd">    advantages: (1)</span>
+<span class="sd">    attention_mask: (S)</span>
+<span class="sd">    action_mask: (A)</span>
+
+<span class="sd">    &quot;A&quot; is the number of actions.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">sequences</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
+    <span class="n">action_log_probs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
+    <span class="n">base_action_log_probs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
+    <span class="n">values</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
+    <span class="n">returns</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
+    <span class="n">advantages</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
+    <span class="n">attention_mask</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">LongTensor</span><span class="p">]</span>
+    <span class="n">action_mask</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">BoolTensor</span><span class="p">]</span>
+    <span class="n">info</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="BufferItemVL"><a class="viewcode-back" href="../../../api_doc/trainer/replay_buffer_utils.html#lightrft.trainer.replay_buffer_utils.BufferItemVL">[docs]</a><span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">BufferItemVL</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;BufferItemVL is an item of experience data.</span>
+
+<span class="sd">    Shapes of each tensor:</span>
+<span class="sd">    sequences: (S)</span>
+<span class="sd">    pixel_values: (B*H, W)</span>
+<span class="sd">    image_grid_thws: (B, 3)</span>
+<span class="sd">    raw_images: Optional[List[Image.Image]]  # raw images before processing</span>
+<span class="sd">    action_log_probs: (A)</span>
+<span class="sd">    base_action_log_probs: (A)</span>
+<span class="sd">    values: (1)</span>
+<span class="sd">    returns: (1)</span>
+<span class="sd">    advantages: (1)</span>
+<span class="sd">    attention_mask: (S)</span>
+<span class="sd">    action_mask: (A)</span>
+
+<span class="sd">    &quot;A&quot; is the number of actions.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">sequences</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
+
+    <span class="n">pixel_values</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># image pixel processed by HF processor</span>
+    <span class="n">image_grid_thws</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># image grid thw</span>
+    <span class="n">raw_images</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Image</span><span class="o">.</span><span class="n">Image</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># raw images before processing</span>
+    <span class="n">pixel_values_intern</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># InternVL image_info</span>
+    <span class="n">image_flags</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="n">action_log_probs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">base_action_log_probs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">values</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">returns</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">advantages</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">attention_mask</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">LongTensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">action_mask</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">BoolTensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">info</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="is_vl_experience"><a class="viewcode-back" href="../../../api_doc/trainer/replay_buffer_utils.html#lightrft.trainer.replay_buffer_utils.is_vl_experience">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">is_vl_experience</span><span class="p">(</span><span class="n">experience</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Experience</span><span class="p">,</span> <span class="n">ExperienceVL</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Determine if an experience is a vision-language experience.</span>
+
+<span class="sd">    Checks for the presence of vision-specific attributes to distinguish between</span>
+<span class="sd">    language model experiences and vision-language experiences.</span>
+
+<span class="sd">    :param experience: The experience object to check</span>
+<span class="sd">    :type experience: Union[Experience, ExperienceVL]</span>
+<span class="sd">    :return: True if the experience contains vision data, False otherwise</span>
+<span class="sd">    :rtype: bool</span>
+
+<span class="sd">    Example::</span>
+
+<span class="sd">        exp = ExperienceVL(...)</span>
+<span class="sd">        if is_vl_experience(exp):</span>
+<span class="sd">            print(&quot;This is a vision-language experience&quot;)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">experience</span><span class="p">,</span> <span class="s1">&#39;pixel_values&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">experience</span><span class="p">,</span> <span class="s1">&#39;pixel_values_intern&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="split_experience_batch"><a class="viewcode-back" href="../../../api_doc/trainer/replay_buffer_utils.html#lightrft.trainer.replay_buffer_utils.split_experience_batch">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">split_experience_batch</span><span class="p">(</span><span class="n">experience</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Experience</span><span class="p">,</span> <span class="n">ExperienceVL</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Split a batch of experiences into individual items.</span>
+
+<span class="sd">    Automatically detects the experience type and delegates to the appropriate</span>
+<span class="sd">    splitting function. This is a generic interface that handles both types of experiences.</span>
+
+<span class="sd">    :param experience: Batch experience to split into individual items</span>
+<span class="sd">    :type experience: Union[Experience, ExperienceVL]</span>
+<span class="sd">    :return: List of individual experience items</span>
+<span class="sd">    :rtype: List</span>
+
+<span class="sd">    Example::</span>
+
+<span class="sd">        # Split a batch of experiences</span>
+<span class="sd">        batch_experience = make_experience_batch(items)</span>
+<span class="sd">        individual_items = split_experience_batch(batch_experience)</span>
+
+<span class="sd">        # Process each item individually</span>
+<span class="sd">        for item in individual_items:</span>
+<span class="sd">            process_item(item)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">is_vl_experience</span><span class="p">(</span><span class="n">experience</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">_split_experience_batch_vl</span><span class="p">(</span><span class="n">experience</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_split_experience_batch</span><span class="p">(</span><span class="n">experience</span><span class="p">)</span></div>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_split_experience_batch</span><span class="p">(</span><span class="n">experience</span><span class="p">:</span> <span class="n">Experience</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Split a batch of language model experiences into individual items.</span>
+
+<span class="sd">    This function processes a batch of experiences (without vision data)</span>
+<span class="sd">    and splits them into individual BufferItem objects. It handles all</span>
+<span class="sd">    experience attributes including sequences, log probabilities, values, returns,</span>
+<span class="sd">    advantages, masks, and additional info.</span>
+
+<span class="sd">    :param experience: Batch of experiences to split</span>
+<span class="sd">    :type experience: Experience</span>
+<span class="sd">    :return: List of individual BufferItem objects</span>
+<span class="sd">    :rtype: List</span>
+<span class="sd">    :raises AssertionError: If batch size consistency check fails</span>
+
+<span class="sd">    Example::</span>
+
+<span class="sd">        # Create a batch experience</span>
+<span class="sd">        batch_exp = Experience(</span>
+<span class="sd">            sequences=torch.tensor([[1,2,3],[4,5,6]]),</span>
+<span class="sd">            action_log_probs=torch.tensor([[0.1,0.2],[0.3,0.4]]),</span>
+<span class="sd">            # ... other attributes</span>
+<span class="sd">        )</span>
+
+<span class="sd">        # Split into individual items</span>
+<span class="sd">        items = _split_experience_batch(batch_exp)</span>
+<span class="sd">        print(f&quot;Split {len(items)} items from batch&quot;)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">batch_size</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">experience</span><span class="o">.</span><span class="n">sequences</span><span class="p">)</span>
+    <span class="n">batch_kwargs</span> <span class="o">=</span> <span class="p">[{}</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">batch_size</span><span class="p">)]</span>
+    <span class="n">keys</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s2">&quot;sequences&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;action_log_probs&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;base_action_log_probs&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;values&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;returns&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;advantages&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;attention_mask&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;action_mask&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">experience</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">batch_size</span><span class="p">):</span>
+                <span class="n">batch_kwargs</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">continue</span>
+        <span class="n">vals</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">vals</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
+            <span class="n">vals</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">unbind</span><span class="p">(</span><span class="n">vals</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">batch_size</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">vals</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">vals</span><span class="p">):</span>
+            <span class="n">batch_kwargs</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">batch_size</span><span class="p">):</span>
+        <span class="n">batch_kwargs</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s2">&quot;info&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="c1"># Instead of unbinding tensors, we handle various data types in info.</span>
+    <span class="k">if</span> <span class="n">experience</span><span class="o">.</span><span class="n">info</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v_batch</span> <span class="ow">in</span> <span class="n">experience</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v_batch</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
+                <span class="c1"># If it&#39;s a tensor, unbind it as before</span>
+                <span class="n">vals</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">unbind</span><span class="p">(</span><span class="n">v_batch</span><span class="p">)</span>
+                <span class="k">assert</span> <span class="n">batch_size</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">vals</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">vv</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">vals</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">vv</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="ow">and</span> <span class="n">vv</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                        <span class="n">batch_kwargs</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s2">&quot;info&quot;</span><span class="p">][</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">vv</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">batch_kwargs</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s2">&quot;info&quot;</span><span class="p">][</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">vv</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v_batch</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">v_batch</span><span class="p">)</span> <span class="o">==</span> <span class="n">batch_size</span><span class="p">:</span>
+                <span class="c1"># If it&#39;s a list (e.g., list of strings, dicts), distribute it</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">batch_size</span><span class="p">):</span>
+                    <span class="n">batch_kwargs</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s2">&quot;info&quot;</span><span class="p">][</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v_batch</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># For other cases, broadcast the same value (if not a sequence)</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">batch_size</span><span class="p">):</span>
+                    <span class="n">batch_kwargs</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s2">&quot;info&quot;</span><span class="p">][</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v_batch</span>
+
+    <span class="n">items</span> <span class="o">=</span> <span class="p">[</span><span class="n">BufferItem</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="k">for</span> <span class="n">kwargs</span> <span class="ow">in</span> <span class="n">batch_kwargs</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">items</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_split_experience_batch_vl</span><span class="p">(</span><span class="n">experience</span><span class="p">:</span> <span class="n">ExperienceVL</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Split a batch of vision-language experiences into individual items.</span>
+
+<span class="sd">    This function processes a batch of vision-language experiences and splits them</span>
+<span class="sd">    into individual BufferItemVL objects. It handles both text and vision data</span>
+<span class="sd">    including pixel values, image grids, and additional vision-specific attributes.</span>
+
+<span class="sd">    :param experience: Batch of vision-language experiences to split</span>
+<span class="sd">    :type experience: ExperienceVL</span>
+<span class="sd">    :return: List of individual BufferItemVL objects</span>
+<span class="sd">    :rtype: List</span>
+<span class="sd">    :raises AssertionError: If batch size consistency check fails</span>
+
+<span class="sd">    Example::</span>
+
+<span class="sd">        # Create a batch of vision-language experiences</span>
+<span class="sd">        batch_exp = ExperienceVL(</span>
+<span class="sd">            sequences=torch.tensor([[1,2,3],[4,5,6]]),</span>
+<span class="sd">            pixel_values=torch.randn(2, 3, 224, 224),</span>
+<span class="sd">            image_grid_thws=torch.tensor([[1,1,1],[1,1,1]]),</span>
+<span class="sd">            # ... other attributes</span>
+<span class="sd">        )</span>
+
+<span class="sd">        # Split into individual items</span>
+<span class="sd">        items = _split_experience_batch_vl(batch_exp)</span>
+<span class="sd">        print(f&quot;Split {len(items)} vision-language items from batch&quot;)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">batch_size</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">experience</span><span class="o">.</span><span class="n">sequences</span><span class="p">)</span>
+    <span class="n">batch_kwargs</span> <span class="o">=</span> <span class="p">[{}</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">batch_size</span><span class="p">)]</span>
+    <span class="n">keys</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s2">&quot;sequences&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;image_grid_thws&quot;</span><span class="p">,</span>  <span class="c1"># 3</span>
+        <span class="s2">&quot;action_log_probs&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;base_action_log_probs&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;values&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;returns&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;advantages&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;attention_mask&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;action_mask&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">experience</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">batch_size</span><span class="p">):</span>
+                <span class="n">batch_kwargs</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">continue</span>
+        <span class="n">vals</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">vals</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
+            <span class="n">vals</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">unbind</span><span class="p">(</span><span class="n">vals</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">batch_size</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">vals</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">vals</span><span class="p">):</span>
+            <span class="n">batch_kwargs</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+
+    <span class="c1"># Split image data</span>
+    <span class="k">if</span> <span class="n">experience</span><span class="o">.</span><span class="n">pixel_values</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">pixel_values</span> <span class="o">=</span> <span class="n">experience</span><span class="o">.</span><span class="n">pixel_values</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pixel_values</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
+            <span class="n">index</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">batch_kwargs</span><span class="p">)):</span>
+                <span class="n">num_images</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">batch_kwargs</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s2">&quot;image_grid_thws&quot;</span><span class="p">]</span>
+                                        <span class="p">)</span> <span class="k">if</span> <span class="n">batch_kwargs</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s2">&quot;image_grid_thws&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="mi">0</span>
+                <span class="n">batch_kwargs</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s2">&quot;pixel_values&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pixel_values</span><span class="p">[</span><span class="n">index</span><span class="p">:</span><span class="n">index</span> <span class="o">+</span> <span class="n">num_images</span><span class="p">]</span>
+                <span class="n">index</span> <span class="o">+=</span> <span class="n">num_images</span>
+    <span class="k">if</span> <span class="n">experience</span><span class="o">.</span><span class="n">pixel_values_intern</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">pixel_values_intern</span> <span class="o">=</span> <span class="n">experience</span><span class="o">.</span><span class="n">pixel_values_intern</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pixel_values_intern</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
+            <span class="n">index</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">batch_kwargs</span><span class="p">)):</span>
+                <span class="n">num_images</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">batch_kwargs</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s2">&quot;image_grid_thws&quot;</span><span class="p">]</span>
+                                        <span class="p">)</span> <span class="k">if</span> <span class="n">batch_kwargs</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s2">&quot;image_grid_thws&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="mi">0</span>
+                <span class="n">batch_kwargs</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s2">&quot;pixel_values_intern&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pixel_values_intern</span><span class="p">[</span><span class="n">index</span><span class="p">:</span><span class="n">index</span> <span class="o">+</span> <span class="n">num_images</span><span class="p">]</span>
+                <span class="n">index</span> <span class="o">+=</span> <span class="n">num_images</span>
+    <span class="k">if</span> <span class="n">experience</span><span class="o">.</span><span class="n">image_flags</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">image_flags</span> <span class="o">=</span> <span class="n">experience</span><span class="o">.</span><span class="n">image_flags</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">image_flags</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
+            <span class="n">index</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">batch_kwargs</span><span class="p">)):</span>
+                <span class="n">num_images</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">batch_kwargs</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s2">&quot;image_grid_thws&quot;</span><span class="p">]</span>
+                                        <span class="p">)</span> <span class="k">if</span> <span class="n">batch_kwargs</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s2">&quot;image_grid_thws&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="mi">0</span>
+                <span class="n">batch_kwargs</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s2">&quot;image_flags&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">image_flags</span><span class="p">[</span><span class="n">index</span><span class="p">:</span><span class="n">index</span> <span class="o">+</span> <span class="n">num_images</span><span class="p">]</span>
+                <span class="n">index</span> <span class="o">+=</span> <span class="n">num_images</span>
+
+    <span class="c1"># Split raw images</span>
+    <span class="k">if</span> <span class="n">experience</span><span class="o">.</span><span class="n">raw_images</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">batch_kwargs</span><span class="p">)):</span>
+            <span class="n">batch_kwargs</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s2">&quot;raw_images&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">experience</span><span class="o">.</span><span class="n">raw_images</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">batch_size</span><span class="p">):</span>
+        <span class="n">batch_kwargs</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s2">&quot;info&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="c1"># Instead of unbinding tensors, we handle various data types in info.</span>
+    <span class="k">if</span> <span class="n">experience</span><span class="o">.</span><span class="n">info</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v_batch</span> <span class="ow">in</span> <span class="n">experience</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v_batch</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
+                <span class="c1"># If it&#39;s a tensor, unbind it as before</span>
+                <span class="n">vals</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">unbind</span><span class="p">(</span><span class="n">v_batch</span><span class="p">)</span>
+                <span class="k">assert</span> <span class="n">batch_size</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">vals</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">vv</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">vals</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">vv</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="ow">and</span> <span class="n">vv</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                        <span class="n">batch_kwargs</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s2">&quot;info&quot;</span><span class="p">][</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">vv</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">batch_kwargs</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s2">&quot;info&quot;</span><span class="p">][</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">vv</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">v_batch</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">v_batch</span><span class="p">)</span> <span class="o">==</span> <span class="n">batch_size</span><span class="p">:</span>
+                <span class="c1"># If it&#39;s a list (e.g., list of strings, dicts), distribute it</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">batch_size</span><span class="p">):</span>
+                    <span class="n">batch_kwargs</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s2">&quot;info&quot;</span><span class="p">][</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v_batch</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># For other cases, broadcast the same value (if not a sequence)</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">batch_size</span><span class="p">):</span>
+                    <span class="n">batch_kwargs</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s2">&quot;info&quot;</span><span class="p">][</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v_batch</span>
+
+    <span class="n">items</span> <span class="o">=</span> <span class="p">[</span><span class="n">BufferItemVL</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="k">for</span> <span class="n">kwargs</span> <span class="ow">in</span> <span class="n">batch_kwargs</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">items</span>
+
+
+<div class="viewcode-block" id="zero_pad_sequences"><a class="viewcode-back" href="../../../api_doc/trainer/replay_buffer_utils.html#lightrft.trainer.replay_buffer_utils.zero_pad_sequences">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">zero_pad_sequences</span><span class="p">(</span><span class="n">sequences</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span> <span class="n">side</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;left&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Zero-pad a list of sequences to the same length.</span>
+
+<span class="sd">    This utility function pads sequences to the maximum length in the batch,</span>
+<span class="sd">    either on the left or right side. It is used for creating batched tensors</span>
+<span class="sd">    from variable-length sequences.</span>
+
+<span class="sd">    :param sequences: List of sequences to pad (each sequence is a 1D tensor)</span>
+<span class="sd">    :type sequences: List[torch.Tensor]</span>
+<span class="sd">    :param side: Padding side, either &quot;left&quot; or &quot;right&quot;</span>
+<span class="sd">    :type side: str</span>
+<span class="sd">    :return: Batched tensor of padded sequences</span>
+<span class="sd">    :rtype: torch.Tensor</span>
+<span class="sd">    :raises AssertionError: If side is not &quot;left&quot; or &quot;right&quot;</span>
+
+<span class="sd">    Example::</span>
+
+<span class="sd">        sequences = [</span>
+<span class="sd">            torch.tensor([1, 2, 3]),</span>
+<span class="sd">            torch.tensor([4, 5]),</span>
+<span class="sd">            torch.tensor([6, 7, 8, 9])</span>
+<span class="sd">        ]</span>
+
+<span class="sd">        # Pad to the right</span>
+<span class="sd">        padded = zero_pad_sequences(sequences, side=&quot;right&quot;)</span>
+<span class="sd">        # Result: tensor([[1, 2, 3, 0],</span>
+<span class="sd">        #                 [4, 5, 0, 0],</span>
+<span class="sd">        #                 [6, 7, 8, 9]])</span>
+
+<span class="sd">        # Pad to the left</span>
+<span class="sd">        padded_left = zero_pad_sequences(sequences, side=&quot;left&quot;)</span>
+<span class="sd">        # Result: tensor([[0, 1, 2, 3],</span>
+<span class="sd">        #                 [0, 0, 4, 5],</span>
+<span class="sd">        #                 [6, 7, 8, 9]])</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="n">side</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;left&quot;</span><span class="p">,</span> <span class="s2">&quot;right&quot;</span><span class="p">)</span>
+    <span class="n">max_len</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">seq</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="k">for</span> <span class="n">seq</span> <span class="ow">in</span> <span class="n">sequences</span><span class="p">)</span>
+    <span class="n">padded_sequences</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">seq</span> <span class="ow">in</span> <span class="n">sequences</span><span class="p">:</span>
+        <span class="n">pad_len</span> <span class="o">=</span> <span class="n">max_len</span> <span class="o">-</span> <span class="n">seq</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">padding</span> <span class="o">=</span> <span class="p">(</span><span class="n">pad_len</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="k">if</span> <span class="n">side</span> <span class="o">==</span> <span class="s2">&quot;left&quot;</span> <span class="k">else</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">pad_len</span><span class="p">)</span>
+        <span class="n">padded_sequences</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">F</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">seq</span><span class="p">,</span> <span class="n">padding</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">padded_sequences</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="make_experience_batch"><a class="viewcode-back" href="../../../api_doc/trainer/replay_buffer_utils.html#lightrft.trainer.replay_buffer_utils.make_experience_batch">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">make_experience_batch</span><span class="p">(</span><span class="n">items</span><span class="p">:</span> <span class="n">List</span><span class="p">,</span> <span class="n">packing_samples</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">Experience</span><span class="p">,</span> <span class="n">ExperienceVL</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create a batch experience from individual items.</span>
+
+<span class="sd">    This generic function automatically detects the item type</span>
+<span class="sd">    and delegates to the appropriate batch creation function. It handles both packed</span>
+<span class="sd">    and unpacked samples efficiently.</span>
+
+<span class="sd">    :param items: List of individual experience items to batch</span>
+<span class="sd">    :type items: List</span>
+<span class="sd">    :param packing_samples: Whether to pack samples without padding (True) or use padding (False)</span>
+<span class="sd">    :type packing_samples: bool</span>
+<span class="sd">    :return: Batched experience (either Experience or ExperienceVL)</span>
+<span class="sd">    :rtype: Union[Experience, ExperienceVL]</span>
+<span class="sd">    :raises ValueError: If items list is empty</span>
+
+<span class="sd">    Example::</span>
+
+<span class="sd">        # Create batch from items</span>
+<span class="sd">        items = [BufferItem(...), BufferItem(...)]</span>
+<span class="sd">        batch_exp = make_experience_batch(items, packing_samples=False)</span>
+
+<span class="sd">        # Create batch from vision-language items</span>
+<span class="sd">        vl_items = [BufferItemVL(...), BufferItemVL(...)]</span>
+<span class="sd">        batch_vl_exp = make_experience_batch(vl_items, packing_samples=True)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">items</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;items list cannot be empty&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Determine experience type by checking the first item</span>
+    <span class="n">first_item</span> <span class="o">=</span> <span class="n">items</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">first_item</span><span class="p">,</span> <span class="s1">&#39;pixel_values&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">first_item</span><span class="p">,</span> <span class="s1">&#39;pixel_values_intern&#39;</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">_make_experience_batch_vl</span><span class="p">(</span><span class="n">items</span><span class="p">,</span> <span class="n">packing_samples</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_make_experience_batch</span><span class="p">(</span><span class="n">items</span><span class="p">,</span> <span class="n">packing_samples</span><span class="p">)</span></div>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_make_experience_batch</span><span class="p">(</span><span class="n">items</span><span class="p">:</span> <span class="n">List</span><span class="p">,</span> <span class="n">packing_samples</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Experience</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create a batch of experiences from individual items.</span>
+
+<span class="sd">    This function aggregates individual experience items into a batched</span>
+<span class="sd">    Experience object. It handles both packed and unpacked samples, with padding</span>
+<span class="sd">    applied for unpacked samples to ensure consistent tensor shapes.</span>
+
+<span class="sd">    :param items: List of individual experience items</span>
+<span class="sd">    :type items: List</span>
+<span class="sd">    :param packing_samples: Whether to pack samples without padding (True) or use padding (False)</span>
+<span class="sd">    :type packing_samples: bool</span>
+<span class="sd">    :return: Batched experience</span>
+<span class="sd">    :rtype: Experience</span>
+
+<span class="sd">    Example::</span>
+
+<span class="sd">        items = [</span>
+<span class="sd">            BufferItem(sequences=torch.tensor([1,2,3]), ...),</span>
+<span class="sd">            BufferItem(sequences=torch.tensor([4,5,6,7]), ...)</span>
+<span class="sd">        ]</span>
+
+<span class="sd">        # With padding (packing_samples=False)</span>
+<span class="sd">        batch_exp = _make_experience_batch(items, packing_samples=False)</span>
+<span class="sd">        # sequences will be padded to length 4</span>
+
+<span class="sd">        # Without padding (packing_samples=True)</span>
+<span class="sd">        packed_batch = _make_experience_batch(items, packing_samples=True)</span>
+<span class="sd">        # sequences will remain as a list of variable-length tensors</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">keys</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s2">&quot;sequences&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;action_log_probs&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;base_action_log_probs&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;values&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;returns&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;advantages&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;attention_mask&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;action_mask&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
+        <span class="n">vals</span> <span class="o">=</span> <span class="p">[</span><span class="nb">getattr</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">items</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">packing_samples</span><span class="p">:</span>
+            <span class="n">batch_data</span> <span class="o">=</span> <span class="n">zero_pad_sequences</span><span class="p">(</span><span class="n">vals</span><span class="p">,</span> <span class="s2">&quot;left&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="n">vals</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">batch_data</span> <span class="o">=</span> <span class="n">vals</span> <span class="k">if</span> <span class="n">vals</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">batch_data</span>
+
+    <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;info&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">if</span> <span class="n">items</span> <span class="ow">and</span> <span class="n">items</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">info</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">items</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">vals</span> <span class="o">=</span> <span class="p">[</span><span class="n">item</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">items</span><span class="p">]</span>
+            <span class="c1"># Check if the values can be converted to a tensor (i.e., are numeric)</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">vals</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)):</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="c1"># Convert numeric types to a tensor</span>
+                    <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;info&quot;</span><span class="p">][</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">vals</span><span class="p">)</span>
+                <span class="k">except</span> <span class="p">(</span><span class="ne">TypeError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
+                    <span class="c1"># Fallback for mixed types or other errors</span>
+                    <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;info&quot;</span><span class="p">][</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">vals</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># For non-numeric types (str, list, dict), keep them as a Python list</span>
+                <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;info&quot;</span><span class="p">][</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">vals</span>
+
+    <span class="k">return</span> <span class="n">Experience</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_make_experience_batch_vl</span><span class="p">(</span><span class="n">items</span><span class="p">:</span> <span class="n">List</span><span class="p">,</span> <span class="n">packing_samples</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ExperienceVL</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create a batch of vision-language experiences from individual items.</span>
+
+<span class="sd">    This function aggregates individual vision-language experience items into a batched</span>
+<span class="sd">    ExperienceVL object. It handles both text and vision data, including pixel values,</span>
+<span class="sd">    image grids, and other vision-specific attributes. For text sequences, it applies</span>
+<span class="sd">    padding for unpacked samples to ensure consistent tensor shapes.</span>
+
+<span class="sd">    :param items: List of individual vision-language experience items</span>
+<span class="sd">    :type items: List</span>
+<span class="sd">    :param packing_samples: Whether to pack samples without padding (True) or use padding (False)</span>
+<span class="sd">    :type packing_samples: bool</span>
+<span class="sd">    :return: Batched vision-language experience</span>
+<span class="sd">    :rtype: ExperienceVL</span>
+
+<span class="sd">    Example::</span>
+
+<span class="sd">        vl_items = [</span>
+<span class="sd">            BufferItemVL(</span>
+<span class="sd">                sequences=torch.tensor([1,2,3]),</span>
+<span class="sd">                pixel_values=torch.randn(1, 3, 224, 224),</span>
+<span class="sd">                image_grid_thws=torch.tensor([1,1,1]),</span>
+<span class="sd">                ...</span>
+<span class="sd">            ),</span>
+<span class="sd">            BufferItemVL(</span>
+<span class="sd">                sequences=torch.tensor([4,5,6,7]),</span>
+<span class="sd">                pixel_values=torch.randn(1, 3, 224, 224),</span>
+<span class="sd">                image_grid_thws=torch.tensor([1,1,1]),</span>
+<span class="sd">                ...</span>
+<span class="sd">            )</span>
+<span class="sd">        ]</span>
+
+<span class="sd">        # Create batched vision-language experience</span>
+<span class="sd">        batch_vl_exp = _make_experience_batch_vl(vl_items, packing_samples=False)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">keys</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s2">&quot;sequences&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;action_log_probs&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;base_action_log_probs&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;values&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;returns&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;advantages&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;attention_mask&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;action_mask&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">:</span>
+        <span class="n">vals</span> <span class="o">=</span> <span class="p">[</span><span class="nb">getattr</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">items</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">packing_samples</span><span class="p">:</span>
+            <span class="n">batch_data</span> <span class="o">=</span> <span class="n">zero_pad_sequences</span><span class="p">(</span><span class="n">vals</span><span class="p">,</span> <span class="s2">&quot;left&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="n">vals</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">batch_data</span> <span class="o">=</span> <span class="n">vals</span> <span class="k">if</span> <span class="n">vals</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">batch_data</span>
+
+    <span class="c1"># Image data processing</span>
+    <span class="n">pixel_values_list</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">item</span><span class="o">.</span><span class="n">pixel_values</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">items</span> <span class="k">if</span> <span class="n">item</span><span class="o">.</span><span class="n">pixel_values</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">item</span><span class="o">.</span><span class="n">pixel_values</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span>
+    <span class="p">]</span>
+    <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;pixel_values&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">pixel_values_list</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="k">if</span> <span class="n">pixel_values_list</span> <span class="k">else</span> <span class="kc">None</span>
+
+    <span class="n">image_grid_thws_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">item</span><span class="o">.</span><span class="n">image_grid_thws</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">items</span><span class="p">]</span>
+    <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;image_grid_thws&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">image_grid_thws_list</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span>
+                                            <span class="p">)</span> <span class="k">if</span> <span class="n">image_grid_thws_list</span> <span class="ow">and</span> <span class="n">image_grid_thws_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
+
+    <span class="n">raw_images_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">item</span><span class="o">.</span><span class="n">raw_images</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">items</span><span class="p">]</span>
+    <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;raw_images&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">raw_images_list</span> <span class="k">if</span> <span class="n">raw_images_list</span> <span class="ow">and</span> <span class="n">raw_images_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
+
+    <span class="n">pixel_values_intern_list</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">item</span><span class="o">.</span><span class="n">pixel_values_intern</span>
+        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">items</span>
+        <span class="k">if</span> <span class="n">item</span><span class="o">.</span><span class="n">pixel_values_intern</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">item</span><span class="o">.</span><span class="n">pixel_values_intern</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span>
+    <span class="p">]</span>
+    <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;pixel_values_intern&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">pixel_values_intern_list</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="k">if</span> <span class="n">pixel_values_intern_list</span> <span class="k">else</span> <span class="kc">None</span>
+
+    <span class="n">image_flags_list</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">item</span><span class="o">.</span><span class="n">image_flags</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">items</span> <span class="k">if</span> <span class="n">item</span><span class="o">.</span><span class="n">image_flags</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">item</span><span class="o">.</span><span class="n">image_flags</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span>
+    <span class="p">]</span>
+    <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;image_flags&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">image_flags_list</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="k">if</span> <span class="n">image_flags_list</span> <span class="k">else</span> <span class="kc">None</span>
+
+    <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;info&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">if</span> <span class="n">items</span> <span class="ow">and</span> <span class="n">items</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">info</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">items</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">vals</span> <span class="o">=</span> <span class="p">[</span><span class="n">item</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">items</span><span class="p">]</span>
+            <span class="c1"># Check if the values can be converted to a tensor (i.e., are numeric)</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">vals</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)):</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="c1"># Convert numeric types to a tensor</span>
+                    <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;info&quot;</span><span class="p">][</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">vals</span><span class="p">)</span>
+                <span class="k">except</span> <span class="p">(</span><span class="ne">TypeError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
+                    <span class="c1"># Fallback for mixed types or other errors</span>
+                    <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;info&quot;</span><span class="p">][</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">vals</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># For non-numeric types (str, list, dict), keep them as a Python list</span>
+                <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;info&quot;</span><span class="p">][</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">vals</span>
+
+    <span class="k">return</span> <span class="n">ExperienceVL</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="remove_padding_in_sequences"><a class="viewcode-back" href="../../../api_doc/trainer/replay_buffer_utils.html#lightrft.trainer.replay_buffer_utils.remove_padding_in_sequences">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">remove_padding_in_sequences</span><span class="p">(</span><span class="n">items</span><span class="p">:</span> <span class="n">List</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Remove padding from sequences in experience items.</span>
+
+<span class="sd">    This generic function automatically detects the item type and delegates to the</span>
+<span class="sd">    appropriate padding removal function. It removes both left and right padding</span>
+<span class="sd">    from sequences to restore their original lengths.</span>
+
+<span class="sd">    :param items: List of experience items with padded sequences</span>
+<span class="sd">    :type items: List</span>
+<span class="sd">    :return: List of experience items with padding removed</span>
+<span class="sd">    :rtype: List</span>
+
+<span class="sd">    Example::</span>
+
+<span class="sd">        # Remove padding from items</span>
+<span class="sd">        padded_items = [BufferItem(sequences=torch.tensor([0,0,1,2,3,0,0]), ...)]</span>
+<span class="sd">        clean_items = remove_padding_in_sequences(padded_items)</span>
+<span class="sd">        # Result: sequences become torch.tensor([1,2,3])</span>
+
+<span class="sd">        # Remove padding from vision-language items</span>
+<span class="sd">        padded_vl_items = [BufferItemVL(sequences=torch.tensor([0,0,4,5,6,0]), ...)]</span>
+<span class="sd">        clean_vl_items = remove_padding_in_sequences(padded_vl_items)</span>
+<span class="sd">        # Result: sequences become torch.tensor([4,5,6])</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">items</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">items</span>
+
+    <span class="c1"># Determine item type by checking the first item</span>
+    <span class="n">first_item</span> <span class="o">=</span> <span class="n">items</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">first_item</span><span class="p">,</span> <span class="s1">&#39;pixel_values&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">first_item</span><span class="p">,</span> <span class="s1">&#39;pixel_values_intern&#39;</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">_remove_padding_in_sequences_vl</span><span class="p">(</span><span class="n">items</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_remove_padding_in_sequences</span><span class="p">(</span><span class="n">items</span><span class="p">)</span></div>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_remove_padding_in_sequences</span><span class="p">(</span><span class="n">items</span><span class="p">:</span> <span class="n">List</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Remove padding from sequences in experience items.</span>
+
+<span class="sd">    This function processes experience items and removes both left and right</span>
+<span class="sd">    padding from sequences and related tensors. It uses attention masks and action masks</span>
+<span class="sd">    to determine the original sequence boundaries.</span>
+
+<span class="sd">    :param items: List of experience items with padded sequences</span>
+<span class="sd">    :type items: List</span>
+<span class="sd">    :return: List of experience items with padding removed</span>
+<span class="sd">    :rtype: List</span>
+
+<span class="sd">    Example::</span>
+
+<span class="sd">        # Item with left and right padding</span>
+<span class="sd">        item = BufferItem(</span>
+<span class="sd">            sequences=torch.tensor([0, 0, 1, 2, 3, 0, 0]),  # padded sequence</span>
+<span class="sd">            attention_mask=torch.tensor([0, 0, 1, 1, 1, 0, 0]),</span>
+<span class="sd">            action_mask=torch.tensor([0, 0, 1, 1, 1, 0, 0]),</span>
+<span class="sd">            # ... other attributes</span>
+<span class="sd">        )</span>
+
+<span class="sd">        # Remove padding</span>
+<span class="sd">        clean_item = _remove_padding_in_sequences([item])[0]</span>
+<span class="sd">        # Result: sequences become torch.tensor([1, 2, 3])</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">items</span><span class="p">:</span>
+        <span class="n">seq</span><span class="p">,</span> <span class="n">act_log_prob</span><span class="p">,</span> <span class="n">base_act_log_prob</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">ret</span><span class="p">,</span> <span class="n">adv</span><span class="p">,</span> <span class="n">att_mask</span><span class="p">,</span> <span class="n">act_mask</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">item</span><span class="o">.</span><span class="n">sequences</span><span class="p">,</span>
+            <span class="n">item</span><span class="o">.</span><span class="n">action_log_probs</span><span class="p">,</span>
+            <span class="n">item</span><span class="o">.</span><span class="n">base_action_log_probs</span><span class="p">,</span>
+            <span class="n">item</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+            <span class="n">item</span><span class="o">.</span><span class="n">returns</span><span class="p">,</span>
+            <span class="n">item</span><span class="o">.</span><span class="n">advantages</span><span class="p">,</span>
+            <span class="n">item</span><span class="o">.</span><span class="n">attention_mask</span><span class="p">,</span>
+            <span class="n">item</span><span class="o">.</span><span class="n">action_mask</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">right_pad</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">act_mask</span><span class="o">.</span><span class="n">long</span><span class="p">())</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+        <span class="n">right_pad</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">right_pad</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="o">-</span><span class="n">right_pad</span>
+
+        <span class="c1"># left_pad for seq and att_mask</span>
+        <span class="n">left_pad</span> <span class="o">=</span> <span class="n">att_mask</span><span class="o">.</span><span class="n">long</span><span class="p">()</span><span class="o">.</span><span class="n">argmax</span><span class="p">()</span>
+        <span class="p">(</span>
+            <span class="n">item</span><span class="o">.</span><span class="n">sequences</span><span class="p">,</span>
+            <span class="n">item</span><span class="o">.</span><span class="n">action_log_probs</span><span class="p">,</span>
+            <span class="n">item</span><span class="o">.</span><span class="n">base_action_log_probs</span><span class="p">,</span>
+            <span class="n">item</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+            <span class="n">item</span><span class="o">.</span><span class="n">returns</span><span class="p">,</span>
+            <span class="n">item</span><span class="o">.</span><span class="n">advantages</span><span class="p">,</span>
+            <span class="n">item</span><span class="o">.</span><span class="n">attention_mask</span><span class="p">,</span>
+            <span class="n">item</span><span class="o">.</span><span class="n">action_mask</span><span class="p">,</span>
+        <span class="p">)</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">seq</span><span class="p">[</span><span class="n">left_pad</span><span class="p">:</span><span class="n">right_pad</span><span class="p">],</span>
+            <span class="n">act_log_prob</span><span class="p">[:</span><span class="n">right_pad</span><span class="p">],</span>
+            <span class="n">base_act_log_prob</span><span class="p">[:</span><span class="n">right_pad</span><span class="p">]</span> <span class="k">if</span> <span class="n">item</span><span class="o">.</span><span class="n">base_action_log_probs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">value</span><span class="p">[:</span><span class="n">right_pad</span><span class="p">]</span> <span class="k">if</span> <span class="n">item</span><span class="o">.</span><span class="n">values</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">ret</span><span class="p">[:</span><span class="n">right_pad</span><span class="p">],</span>
+            <span class="n">adv</span><span class="p">[:</span><span class="n">right_pad</span><span class="p">],</span>
+            <span class="n">att_mask</span><span class="p">[</span><span class="n">left_pad</span><span class="p">:</span><span class="n">right_pad</span><span class="p">],</span>
+            <span class="n">act_mask</span><span class="p">[:</span><span class="n">right_pad</span><span class="p">],</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="n">items</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_remove_padding_in_sequences_vl</span><span class="p">(</span><span class="n">items</span><span class="p">:</span> <span class="n">List</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Remove padding from sequences in vision-language experience items.</span>
+
+<span class="sd">    This function processes vision-language experience items and removes both left</span>
+<span class="sd">    and right padding from sequences and related tensors. The vision data (pixel values,</span>
+<span class="sd">    image grids, etc.) remains unchanged as they don&#39;t require padding removal.</span>
+
+<span class="sd">    :param items: List of vision-language experience items with padded sequences</span>
+<span class="sd">    :type items: List</span>
+<span class="sd">    :return: List of vision-language experience items with padding removed</span>
+<span class="sd">    :rtype: List</span>
+
+<span class="sd">    Example::</span>
+
+<span class="sd">        # Vision-language item with padding</span>
+<span class="sd">        item = BufferItemVL(</span>
+<span class="sd">            sequences=torch.tensor([0, 0, 4, 5, 6, 0]),  # padded sequence</span>
+<span class="sd">            attention_mask=torch.tensor([0, 0, 1, 1, 1, 0]),</span>
+<span class="sd">            action_mask=torch.tensor([0, 0, 1, 1, 1, 0]),</span>
+<span class="sd">            pixel_values=torch.randn(1, 3, 224, 224),  # vision data unchanged</span>
+<span class="sd">            # ... other attributes</span>
+<span class="sd">        )</span>
+
+<span class="sd">        # Remove padding</span>
+<span class="sd">        clean_item = _remove_padding_in_sequences_vl([item])[0]</span>
+<span class="sd">        # Result: sequences become torch.tensor([4, 5, 6])</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">items</span><span class="p">:</span>
+        <span class="n">seq</span><span class="p">,</span> <span class="n">act_log_prob</span><span class="p">,</span> <span class="n">base_act_log_prob</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">ret</span><span class="p">,</span> <span class="n">adv</span><span class="p">,</span> <span class="n">att_mask</span><span class="p">,</span> <span class="n">act_mask</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">item</span><span class="o">.</span><span class="n">sequences</span><span class="p">,</span>
+            <span class="n">item</span><span class="o">.</span><span class="n">action_log_probs</span><span class="p">,</span>
+            <span class="n">item</span><span class="o">.</span><span class="n">base_action_log_probs</span><span class="p">,</span>
+            <span class="n">item</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+            <span class="n">item</span><span class="o">.</span><span class="n">returns</span><span class="p">,</span>
+            <span class="n">item</span><span class="o">.</span><span class="n">advantages</span><span class="p">,</span>
+            <span class="n">item</span><span class="o">.</span><span class="n">attention_mask</span><span class="p">,</span>
+            <span class="n">item</span><span class="o">.</span><span class="n">action_mask</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">right_pad</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">act_mask</span><span class="o">.</span><span class="n">long</span><span class="p">())</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+        <span class="n">right_pad</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">right_pad</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="o">-</span><span class="n">right_pad</span>
+
+        <span class="c1"># left_pad for seq and att_mask</span>
+        <span class="n">left_pad</span> <span class="o">=</span> <span class="n">att_mask</span><span class="o">.</span><span class="n">long</span><span class="p">()</span><span class="o">.</span><span class="n">argmax</span><span class="p">()</span>
+        <span class="p">(</span>
+            <span class="n">item</span><span class="o">.</span><span class="n">sequences</span><span class="p">,</span>
+            <span class="n">item</span><span class="o">.</span><span class="n">action_log_probs</span><span class="p">,</span>
+            <span class="n">item</span><span class="o">.</span><span class="n">base_action_log_probs</span><span class="p">,</span>
+            <span class="n">item</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+            <span class="n">item</span><span class="o">.</span><span class="n">returns</span><span class="p">,</span>
+            <span class="n">item</span><span class="o">.</span><span class="n">advantages</span><span class="p">,</span>
+            <span class="n">item</span><span class="o">.</span><span class="n">attention_mask</span><span class="p">,</span>
+            <span class="n">item</span><span class="o">.</span><span class="n">action_mask</span><span class="p">,</span>
+        <span class="p">)</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">seq</span><span class="p">[</span><span class="n">left_pad</span><span class="p">:</span><span class="n">right_pad</span><span class="p">],</span>
+            <span class="n">act_log_prob</span><span class="p">[:</span><span class="n">right_pad</span><span class="p">],</span>
+            <span class="n">base_act_log_prob</span><span class="p">[:</span><span class="n">right_pad</span><span class="p">]</span> <span class="k">if</span> <span class="n">item</span><span class="o">.</span><span class="n">base_action_log_probs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">value</span><span class="p">[:</span><span class="n">right_pad</span><span class="p">]</span> <span class="k">if</span> <span class="n">item</span><span class="o">.</span><span class="n">values</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">ret</span><span class="p">[:</span><span class="n">right_pad</span><span class="p">],</span>
+            <span class="n">adv</span><span class="p">[:</span><span class="n">right_pad</span><span class="p">],</span>
+            <span class="n">att_mask</span><span class="p">[</span><span class="n">left_pad</span><span class="p">:</span><span class="n">right_pad</span><span class="p">],</span>
+            <span class="n">act_mask</span><span class="p">[:</span><span class="n">right_pad</span><span class="p">],</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="n">items</span>
+</pre></div>
+
+              </article>
+              
+            </div>
+            <footer>
+  
+
+  <hr>
+
+  <div role="contentinfo">
+    <p>
+      &copy; Copyright 2025, OpenDILab.
+
+    </p>
+  </div>
+  
+  <div>
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a
+      href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the
+      Docs</a>.
+  </div>
+   
+
+</footer>
+          </div>
+        </div>
+
+        <div class="pytorch-content-right" id="pytorch-content-right">
+          <div class="pytorch-right-menu" id="pytorch-right-menu">
+            <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
+              
+            </div>
+          </div>
+        </div>
+    </section>
+  </div>
+
+  
+
+
+  
+
+  
+  <script type="text/javascript" id="documentation_options" data-url_root="../../../"
+    src="../../../_static/documentation_options.js"></script>
+  <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+  <script src="../../../_static/doctools.js"></script>
+  <script src="../../../_static/sphinx_highlight.js"></script>
+  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+  
+
+  
+
+  <script type="text/javascript" src="../../../_static/js/vendor/popper.min.js"></script>
+  <script type="text/javascript" src="../../../_static/js/vendor/bootstrap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
+  <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+    jQuery(function () {
+      SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+  <!-- Begin Footer -->
+
+  <div class="container-fluid docs-tutorials-resources" id="docs-tutorials-resources">
+  </div>
+
+  <!-- End Footer -->
+
+  <!-- Begin Mobile Menu -->
+
+  <div class="mobile-main-menu">
+    <div class="container-fluid">
+      <div class="container">
+        <div class="mobile-main-menu-header-container">
+          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
+        </div>
+      </div>
+    </div>
+
+    <div class="mobile-main-menu-links-container">
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://github.com/opendilab/LightRFT" target="_blank">GitHub</a>
+          </li>
+      </div>
+    </div>
+  </div>
+
+  <!-- End Mobile Menu -->
+
+  <script type="text/javascript" src="../../../_static/js/vendor/anchor.min.js"></script>
+
+  <script type="text/javascript">
+    $(document).ready(function () {
+      mobileMenu.bind();
+      mobileTOC.bind();
+      pytorchAnchors.bind();
+      sideMenus.bind();
+      scrollToAnchor.bind();
+      highlightNavigation.bind();
+      mainMenuDropdown.bind();
+      filterTags.bind();
+
+      // Add class to links that have code blocks, since we cannot create links in code blocks
+      $("article.pytorch-article a span.pre").each(function (e) {
+        $(this).closest("a").addClass("has-code");
+      });
+    })
+  </script>
+</body>
+
+</html>

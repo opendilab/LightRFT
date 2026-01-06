@@ -1,0 +1,777 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js" lang="en">
+<!--<![endif]-->
+
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>lightrft.trainer.utils &mdash; LightRFT v0.1.1 documentation</title>
+  
+
+  <link rel="shortcut icon" href="../../../_static/images/favicon.ico" />
+  
+  
+
+  
+
+  
+  
+  
+
+  
+
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <!-- <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" /> -->
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/readthedocs.css" type="text/css" />
+  <link rel="index" title="Index" href="../../../genindex.html" />
+  <link rel="search" title="Search" href="../../../search.html" />
+  <!-- Google Analytics -->
+  <script type="text/javascript">
+    var collapsedSections = [];
+  </script>
+  
+  <!-- End Google Analytics -->
+  
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+  <script>
+    MathJax = {
+        chtml: {
+            scale: 1,
+            minScale: 1,
+        },
+        svg: {
+            scale: 1,
+            minScale: 1,
+        }
+    }
+</script>
+
+  <!-- Preload the theme fonts -->
+
+<link rel="preload" href="../../../_static/fonts/FreightSans/freight-sans-book.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../_static/fonts/FreightSans/freight-sans-medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../_static/fonts/IBMPlexMono/IBMPlexMono-Medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../_static/fonts/FreightSans/freight-sans-bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../_static/fonts/FreightSans/freight-sans-medium-italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../_static/fonts/IBMPlexMono/IBMPlexMono-SemiBold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+
+<!-- Preload the katex fonts -->
+
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Math-Italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size1-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size4-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size2-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size3-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Caligraphic-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.2/css/all.css"
+    integrity="sha384-vSIIfh2YWi9wW0r9iZe7RJPrKwp6bG+s9QZMoITbCckVJqGCCRhc+ccxNcdpHuYu" crossorigin="anonymous">
+</head>
+
+<div class="container-fluid header-holder tutorials-header" id="header-holder">
+  <div class="container">
+    <div class="header-container">
+      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+        aria-label="OpenMMLab"></a>
+
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://github.com/opendilab/LightRFT" target="_blank">GitHub</a>
+          </li>
+          <li >
+            <div id="resourcesDropdownButton" data-toggle="resources-dropdown" class="resources-dropdown">
+              <a
+                class="resource-option with-down-arrow">
+                OpenDILab
+              </a>
+              <div class="resources-dropdown-menu">
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-engine" target="_blank">
+                  <span class="dropdown-title">DI-engine </span>
+                  <p>OpenDILab Decision AI Engine</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/LightZero" target="_blank">
+                  <span class="dropdown-title">LightZero </span>
+                  <p>OpenDILab Decision Monte Carlo Tree Search Framework</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/GenerativeRL" target="_blank">
+                  <span class="dropdown-title">GenerativeRL </span>
+                  <p>OpenDILab Generative AI Framework</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-star" target="_blank">
+                  <span class="dropdown-title">DI-star </span>
+                  <p>OpenDILab Decision AI in StarCraftII</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-drive" target="_blank">
+                  <span class="dropdown-title">DI-drive </span>
+                  <p>OpenDILab Auto-driving platform</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/GoBigger" target="_blank">
+                  <span class="dropdown-title">GoBigger </span>
+                  <p>OpenDILab Multi-Agent Environment</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-smartcross" target="_blank">
+                  <span class="dropdown-title">DI-smartcross </span>
+                  <p>Decision Intelligence Platform for Traffic Crossing Signal Control</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-treetensor" target="_blank">
+                  <span class="dropdown-title">DI-treetensor </span>
+                  <p>Tree Nested PyTorch Tensor Lib</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-sheep" target="_blank">
+                  <span class="dropdown-title">DI-sheep </span>
+                  <p>Deep Reinforcement Learning + 3 Tiles Game</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-model-based-RL" target="_blank">
+                  <span class="dropdown-title">awesome-model-based-RL </span>
+                  <p>A curated list of awesome model based RL resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-decision-transformer" target="_blank">
+                  <span class="dropdown-title">awesome-decision-transformer </span>
+                  <p>A curated list of Decision Transformer resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-exploration-rl" target="_blank">
+                  <span class="dropdown-title">awesome-exploration-rl </span>
+                  <p>A curated list of awesome exploration RL resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-multi-modal-reinforcement-learning" target="_blank">
+                  <span class="dropdown-title">awesome-multi-modal-reinforcement-learning </span>
+                  <p>A curated list of Multi-Modal Reinforcement Learning resources (continually updated)</p>
+                </a>
+              </div>
+          </li>
+        </ul>
+      </div>
+
+      <a class="main-menu-open-button" href="#" data-behavior="open-mobile-menu"></a>
+    </div>
+  </div>
+</div>
+
+<body class="pytorch-body">
+
+   
+
+  
+
+  <div class="table-of-contents-link-wrapper">
+    <span>Table of Contents</span>
+    <a href="#" class="toggle-table-of-contents" data-behavior="toggle-table-of-contents"></a>
+  </div>
+
+  <nav data-toggle="wy-nav-shift" class="pytorch-left-menu" id="pytorch-left-menu">
+    <div class="pytorch-side-scroll">
+      <div class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        <div class="pytorch-left-menu-search">
+          
+
+          
+          
+          
+          
+
+          
+
+
+
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search Docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        
+        
+        
+        
+        
+        <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../quick_start/index.html">Quick Start</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide &amp; Best Practices</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../best_practice/index.html">Best Practices</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_doc/utils/index.html">lightrft.utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_doc/datasets/index.html">lightrft.datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_doc/models/index.html">lightrft.models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_doc/strategy/index.html">lightrft.strategy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_doc/trainer/index.html">lightrft.trainer</a></li>
+</ul>
+
+        
+        
+      </div>
+    </div>
+  </nav>
+
+  <div class="pytorch-container">
+    <div class="pytorch-page-level-bar" id="pytorch-page-level-bar">
+      <div class="pytorch-breadcrumbs-wrapper">
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="pytorch-breadcrumbs">
+    
+      <li>
+        <a href="../../../index.html">
+            Docs
+        </a> &gt;
+      </li>
+
+        
+          <li><a href="../../index.html">Module code</a> &gt;</li>
+        
+      <li>lightrft.trainer.utils</li>
+    
+    
+      <li class="pytorch-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+</div>
+      </div>
+
+      <div class="pytorch-shortcuts-wrapper" id="pytorch-shortcuts-wrapper">
+        Shortcuts
+      </div>
+    </div>
+
+    <section data-toggle="wy-nav-shift" id="pytorch-content-wrap" class="pytorch-content-wrap">
+      <div class="pytorch-content-left">
+        
+          <div class="rst-content">
+            
+            <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
+              <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
+                
+  <h1>Source code for lightrft.trainer.utils</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This module provides utilities for statistical computations commonly used in reinforcement learning</span>
+<span class="sd">and machine learning workflows. It includes functions for computing clipping fractions and classes</span>
+<span class="sd">for tracking running statistics of data streams.</span>
+
+<span class="sd">The main components are:</span>
+<span class="sd">- compute_clip_fraction: Calculates the fraction of tensor elements that fall outside specified bounds</span>
+<span class="sd">- RunningMoments: Maintains running mean and standard deviation statistics for streaming data</span>
+<span class="sd">- get_cpgd_advantages_returns: Computes advantages and returns for CPGD algorithm</span>
+
+<span class="sd">These utilities are particularly useful in RL algorithms like PPO where clipping statistics and</span>
+<span class="sd">normalization are important for training stability and monitoring.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">copy</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">copy</span><span class="w"> </span><span class="kn">import</span> <span class="n">deepcopy</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Optional</span>
+
+
+<div class="viewcode-block" id="fire_sampling"><a class="viewcode-back" href="../../../api_doc/trainer/utils.html#lightrft.trainer.utils.fire_sampling">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">fire_sampling</span><span class="p">(</span>
+    <span class="n">all_prompt_token_ids</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]],</span>
+    <span class="n">generate_fn</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>
+    <span class="n">engine_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;vllm&quot;</span><span class="p">,</span>
+    <span class="n">first_token_temperature</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">10.0</span><span class="p">,</span>
+    <span class="n">temperature</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+    <span class="n">first_token_top_k</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">first_token_top_p</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+    <span class="n">is_multimodal</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">all_prompts</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">all_images</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">all_images_num</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">sampling_params</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="nb">object</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    FIRE sampling (Flaming-hot Initiation with Regular Execution)</span>
+
+<span class="sd">    FIRE sampling paper link: https://arxiv.org/abs/2410.21236</span>
+<span class="sd">    The first token is generated with high temperature and optional filters,</span>
+<span class="sd">    and the rest tokens are generated with normal temperature.</span>
+
+<span class="sd">    :param all_prompt_token_ids: List of tokenized prompts</span>
+<span class="sd">    :type all_prompt_token_ids: List[List[int]]</span>
+<span class="sd">    :param generate_fn: Function to call for generation (with pre-configured parameters)</span>
+<span class="sd">    :type generate_fn: Callable</span>
+<span class="sd">    :param engine_type: Backend type (&quot;vllm&quot; or &quot;sglang&quot;)</span>
+<span class="sd">    :type engine_type: str</span>
+<span class="sd">    :param first_token_temperature: Temperature for first token generation</span>
+<span class="sd">    :type first_token_temperature: float</span>
+<span class="sd">    :param temperature: Temperature for remaining tokens</span>
+<span class="sd">    :type temperature: float</span>
+<span class="sd">    :param first_token_top_k: Top-k for first token</span>
+<span class="sd">    :type first_token_top_k: int</span>
+<span class="sd">    :param first_token_top_p: Top-p for first token</span>
+<span class="sd">    :type first_token_top_p: float</span>
+<span class="sd">    :param is_multimodal: Whether this is multimodal generation</span>
+<span class="sd">    :type is_multimodal: bool</span>
+<span class="sd">    :param all_prompts: Text prompts (for multimodal)</span>
+<span class="sd">    :type all_prompts: Optional[List[str]]</span>
+<span class="sd">    :param all_images: Images (for multimodal)</span>
+<span class="sd">    :type all_images: Optional[List]</span>
+<span class="sd">    :param all_images_num: Number of images per prompt</span>
+<span class="sd">    :type all_images_num: Optional[List[int]]</span>
+<span class="sd">    :param sampling_params: Original sampling parameters (for fallback)</span>
+<span class="sd">    :type sampling_params: Optional[Union[dict, object]]</span>
+
+<span class="sd">    :return: List of generation outputs</span>
+<span class="sd">    :rtype: List</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Step 1: Generate the first token with high temperature</span>
+    <span class="k">if</span> <span class="n">engine_type</span> <span class="o">==</span> <span class="s2">&quot;vllm&quot;</span><span class="p">:</span>
+        <span class="n">sampling_params_first</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">sampling_params</span><span class="p">)</span>
+        <span class="n">sampling_params_first</span><span class="o">.</span><span class="n">temperature</span> <span class="o">=</span> <span class="n">first_token_temperature</span>
+        <span class="n">sampling_params_first</span><span class="o">.</span><span class="n">top_k</span> <span class="o">=</span> <span class="n">first_token_top_k</span>
+        <span class="n">sampling_params_first</span><span class="o">.</span><span class="n">top_p</span> <span class="o">=</span> <span class="n">first_token_top_p</span>
+        <span class="n">sampling_params_first</span><span class="o">.</span><span class="n">max_tokens</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">else</span><span class="p">:</span>  <span class="c1"># sglang</span>
+        <span class="n">sampling_params_first</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">sampling_params</span><span class="p">)</span>
+        <span class="n">sampling_params_first</span><span class="p">[</span><span class="s2">&quot;temperature&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">first_token_temperature</span>
+        <span class="n">sampling_params_first</span><span class="p">[</span><span class="s2">&quot;top_k&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">first_token_top_k</span>
+        <span class="n">sampling_params_first</span><span class="p">[</span><span class="s2">&quot;top_p&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">first_token_top_p</span>
+        <span class="n">sampling_params_first</span><span class="p">[</span><span class="s2">&quot;max_new_tokens&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+
+    <span class="c1"># Generate first token</span>
+    <span class="n">first_token_outputs</span> <span class="o">=</span> <span class="n">generate_fn</span><span class="p">(</span>
+        <span class="n">sampling_params</span><span class="o">=</span><span class="n">sampling_params_first</span><span class="p">,</span>
+        <span class="n">all_prompt_token_ids</span><span class="o">=</span><span class="n">all_prompt_token_ids</span><span class="p">,</span>
+        <span class="n">all_prompts</span><span class="o">=</span><span class="n">all_prompts</span> <span class="k">if</span> <span class="n">is_multimodal</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">all_images</span><span class="o">=</span><span class="n">all_images</span><span class="p">,</span>
+        <span class="n">images_num</span><span class="o">=</span><span class="n">all_images_num</span> <span class="k">if</span> <span class="n">is_multimodal</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Concatenate the first token to the prompt</span>
+    <span class="n">new_prompt_token_ids</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">orig_ids</span><span class="p">,</span> <span class="n">out</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">all_prompt_token_ids</span><span class="p">,</span> <span class="n">first_token_outputs</span><span class="p">):</span>
+        <span class="n">first_tok</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">out</span><span class="o">.</span><span class="n">output_token_ids</span><span class="p">)</span>  <span class="c1"># [token_id]</span>
+        <span class="n">new_prompt_token_ids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">orig_ids</span> <span class="o">+</span> <span class="n">first_tok</span><span class="p">)</span>
+
+    <span class="c1"># Step 2: Generate remaining tokens with normal temperature</span>
+    <span class="k">if</span> <span class="n">engine_type</span> <span class="o">==</span> <span class="s2">&quot;vllm&quot;</span><span class="p">:</span>
+        <span class="n">sampling_params_rest</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">sampling_params</span><span class="p">)</span>
+        <span class="n">sampling_params_rest</span><span class="o">.</span><span class="n">temperature</span> <span class="o">=</span> <span class="n">temperature</span>
+        <span class="n">sampling_params_rest</span><span class="o">.</span><span class="n">max_tokens</span> <span class="o">=</span> <span class="n">sampling_params</span><span class="o">.</span><span class="n">max_tokens</span> <span class="o">-</span> <span class="mi">1</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">sampling_params_rest</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">sampling_params</span><span class="p">)</span>
+        <span class="n">sampling_params_rest</span><span class="p">[</span><span class="s2">&quot;temperature&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">temperature</span>
+        <span class="n">sampling_params_rest</span><span class="p">[</span><span class="s2">&quot;max_new_tokens&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sampling_params</span><span class="p">[</span><span class="s2">&quot;max_new_tokens&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span>
+
+    <span class="c1"># Generate remaining tokens</span>
+    <span class="n">rest_outputs</span> <span class="o">=</span> <span class="n">generate_fn</span><span class="p">(</span>
+        <span class="n">sampling_params</span><span class="o">=</span><span class="n">sampling_params_rest</span><span class="p">,</span>
+        <span class="n">all_prompt_token_ids</span><span class="o">=</span><span class="n">new_prompt_token_ids</span><span class="p">,</span>
+        <span class="n">all_prompts</span><span class="o">=</span><span class="n">all_prompts</span> <span class="k">if</span> <span class="n">is_multimodal</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">all_images</span><span class="o">=</span><span class="n">all_images</span><span class="p">,</span>
+        <span class="n">images_num</span><span class="o">=</span><span class="n">all_images_num</span> <span class="k">if</span> <span class="n">is_multimodal</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Merge the first token with the remaining tokens</span>
+    <span class="n">all_outputs</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">first_out</span><span class="p">,</span> <span class="n">rest_out</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">first_token_outputs</span><span class="p">,</span> <span class="n">rest_outputs</span><span class="p">):</span>
+        <span class="n">merged</span> <span class="o">=</span> <span class="n">rest_out</span>
+        <span class="n">merged</span><span class="o">.</span><span class="n">prompt_token_ids</span> <span class="o">=</span> <span class="n">first_out</span><span class="o">.</span><span class="n">prompt_token_ids</span>
+        <span class="n">merged</span><span class="o">.</span><span class="n">output_token_ids</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">first_out</span><span class="o">.</span><span class="n">output_token_ids</span><span class="p">)</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">rest_out</span><span class="o">.</span><span class="n">output_token_ids</span><span class="p">)</span>
+        <span class="n">all_outputs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">merged</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">all_outputs</span></div>
+
+
+<div class="viewcode-block" id="compute_clip_fraction"><a class="viewcode-back" href="../../../api_doc/trainer/utils.html#lightrft.trainer.utils.compute_clip_fraction">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">compute_clip_fraction</span><span class="p">(</span><span class="n">values</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">clip_max</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">clip_min</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute the fraction of elements in a tensor that are clipped.</span>
+
+<span class="sd">    This function calculates what proportion of the input tensor&#39;s elements fall outside</span>
+<span class="sd">    the specified clipping bounds [clip_min, clip_max]. This is commonly used in</span>
+<span class="sd">    reinforcement learning to monitor how often policy updates are being clipped,</span>
+<span class="sd">    which can indicate training stability.</span>
+
+<span class="sd">    :param values: The input tensor to analyze for clipping.</span>
+<span class="sd">    :type values: torch.Tensor</span>
+<span class="sd">    :param clip_max: The maximum value for clipping bounds.</span>
+<span class="sd">    :type clip_max: float</span>
+<span class="sd">    :param clip_min: The minimum value for clipping bounds.</span>
+<span class="sd">    :type clip_min: float</span>
+<span class="sd">    :return: A tensor of shape (batch_size,) where each element is the fraction of</span>
+<span class="sd">             clipped values in the input tensor.</span>
+<span class="sd">    :rtype: torch.Tensor</span>
+
+<span class="sd">    **Example:**</span>
+
+
+
+<span class="sd">    .. code-block:: python</span>
+
+
+<span class="sd">        &gt;&gt;&gt; values = torch.tensor([[1.0, 2.0, 3.0], [0.5, 1.5, 2.5]])</span>
+<span class="sd">        &gt;&gt;&gt; clip_fraction = compute_clip_fraction(values, clip_max=2.0, clip_min=1.0)</span>
+<span class="sd">        &gt;&gt;&gt; print(clip_fraction)  # Should show fraction of values outside [1.0, 2.0]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">numel</span> <span class="o">=</span> <span class="n">values</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">numel</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">values</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">device</span><span class="o">=</span><span class="n">values</span><span class="o">.</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+
+    <span class="n">batch_size</span> <span class="o">=</span> <span class="n">values</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="c1"># Count elements that are either above clip_max or below clip_min</span>
+    <span class="n">num_clipped</span> <span class="o">=</span> <span class="p">(</span><span class="n">values</span> <span class="o">&gt;</span> <span class="n">clip_max</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span> <span class="o">+</span> <span class="p">(</span><span class="n">values</span> <span class="o">&lt;</span> <span class="n">clip_min</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+
+    <span class="n">clip_fraction</span> <span class="o">=</span> <span class="n">num_clipped</span> <span class="o">/</span> <span class="n">numel</span>
+
+    <span class="c1"># The result is expanded to the batch size for compatibility with downstream logging</span>
+    <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="n">clip_fraction</span><span class="p">],</span> <span class="n">device</span><span class="o">=</span><span class="n">values</span><span class="o">.</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span><span class="o">.</span><span class="n">expand</span><span class="p">(</span><span class="n">batch_size</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="RunningMoments"><a class="viewcode-back" href="../../../api_doc/trainer/utils.html#lightrft.trainer.utils.RunningMoments">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">RunningMoments</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate the running mean and standard deviation of a data stream.</span>
+
+<span class="sd">    This class implements Welford&#39;s online algorithm for computing running statistics,</span>
+<span class="sd">    allowing efficient computation of mean and standard deviation as new data arrives</span>
+<span class="sd">    without storing all historical data. This is particularly useful for normalizing</span>
+<span class="sd">    inputs in reinforcement learning or for monitoring training statistics.</span>
+
+<span class="sd">    The implementation uses a parallel algorithm to combine statistics from new batches</span>
+<span class="sd">    with existing running statistics, ensuring numerical stability even with large</span>
+<span class="sd">    amounts of data.</span>
+
+<span class="sd">    Adapted from https://github.com/alibaba/ROLL</span>
+
+<span class="sd">    **Example:**</span>
+
+
+
+<span class="sd">    .. code-block:: python</span>
+
+
+<span class="sd">        &gt;&gt;&gt; moments = RunningMoments()</span>
+<span class="sd">        &gt;&gt;&gt; batch1 = torch.randn(100)</span>
+<span class="sd">        &gt;&gt;&gt; mean1, std1 = moments.update(batch1)</span>
+<span class="sd">        &gt;&gt;&gt; batch2 = torch.randn(100)</span>
+<span class="sd">        &gt;&gt;&gt; mean2, std2 = moments.update(batch2)</span>
+<span class="sd">        &gt;&gt;&gt; print(f&quot;Running mean: {moments.mean}, Running std: {moments.std}&quot;)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize the RunningMoments tracker.</span>
+
+<span class="sd">        Sets initial values for mean, standard deviation, variance, and count.</span>
+<span class="sd">        The count is initialized to a small positive value to prevent division by zero.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mean</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">std</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">var</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="c1"># Initialize count with a small value to prevent division by zero</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">count</span> <span class="o">=</span> <span class="mf">1e-24</span>
+
+    <span class="nd">@torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">()</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Update running statistics with a new batch of data.</span>
+
+<span class="sd">        This method uses Welford&#39;s online algorithm combined with a parallel algorithm</span>
+<span class="sd">        to efficiently update the running mean, variance, and standard deviation with</span>
+<span class="sd">        a new batch of data. The algorithm is numerically stable and doesn&#39;t require</span>
+<span class="sd">        storing all previous data points.</span>
+
+<span class="sd">        :param xs: The new tensor of data to incorporate into the running statistics.</span>
+<span class="sd">        :type xs: torch.Tensor</span>
+<span class="sd">        :return: A tuple of (mean, std) for the current batch `xs`.</span>
+<span class="sd">        :rtype: Tuple[float, float]</span>
+
+<span class="sd">        **Example:**</span>
+
+
+
+<span class="sd">        .. code-block:: python</span>
+
+
+<span class="sd">            &gt;&gt;&gt; moments = RunningMoments()</span>
+<span class="sd">            &gt;&gt;&gt; new_data = torch.tensor([1.0, 2.0, 3.0, 4.0, 5.0])</span>
+<span class="sd">            &gt;&gt;&gt; batch_mean, batch_std = moments.update(new_data)</span>
+<span class="sd">            &gt;&gt;&gt; print(f&quot;Batch mean: {batch_mean}, Batch std: {batch_std}&quot;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># 1. Get statistics for the new batch</span>
+        <span class="n">xs_count</span> <span class="o">=</span> <span class="n">xs</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span>
+        <span class="c1"># `torch.var_mean` with unbiased=False calculates population variance</span>
+        <span class="n">xs_var</span><span class="p">,</span> <span class="n">xs_mean</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">var_mean</span><span class="p">(</span><span class="n">xs</span><span class="p">,</span> <span class="n">unbiased</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">xs_mean</span><span class="p">,</span> <span class="n">xs_var</span> <span class="o">=</span> <span class="n">xs_mean</span><span class="o">.</span><span class="n">float</span><span class="p">(),</span> <span class="n">xs_var</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
+
+        <span class="c1"># 2. Use a parallel algorithm to combine running stats with new batch stats</span>
+        <span class="n">delta</span> <span class="o">=</span> <span class="n">xs_mean</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean</span>
+        <span class="n">tot_count</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">count</span> <span class="o">+</span> <span class="n">xs_count</span>
+
+        <span class="c1"># The new combined sum of squared differences (M2) is calculated</span>
+        <span class="c1"># It&#39;s the sum of the old M2, the new M2, and a correction term</span>
+        <span class="c1"># that accounts for the difference in means between the two sets</span>
+        <span class="n">old_sum_sq_diff</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">var</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">count</span>
+        <span class="n">new_sum_sq_diff</span> <span class="o">=</span> <span class="n">xs_var</span> <span class="o">*</span> <span class="n">xs_count</span>
+        <span class="n">correction_term</span> <span class="o">=</span> <span class="n">delta</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">count</span> <span class="o">*</span> <span class="n">xs_count</span> <span class="o">/</span> <span class="n">tot_count</span>
+
+        <span class="n">tot_sum_sq_diff</span> <span class="o">=</span> <span class="n">old_sum_sq_diff</span> <span class="o">+</span> <span class="n">new_sum_sq_diff</span> <span class="o">+</span> <span class="n">correction_term</span>
+
+        <span class="c1"># 3. Update running mean, variance, and standard deviation</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mean</span> <span class="o">+=</span> <span class="n">delta</span> <span class="o">*</span> <span class="n">xs_count</span> <span class="o">/</span> <span class="n">tot_count</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">var</span> <span class="o">=</span> <span class="n">tot_sum_sq_diff</span> <span class="o">/</span> <span class="n">tot_count</span>
+        <span class="c1"># Convert running population variance to unbiased sample standard deviation</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">std</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">var</span> <span class="o">*</span> <span class="n">tot_count</span> <span class="o">/</span> <span class="p">(</span><span class="n">tot_count</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">.</span><span class="n">sqrt</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">count</span> <span class="o">=</span> <span class="n">tot_count</span>
+
+        <span class="c1"># 4. Return the mean and sample standard deviation of the current batch</span>
+        <span class="n">xs_std</span> <span class="o">=</span> <span class="p">(</span><span class="n">xs_var</span> <span class="o">*</span> <span class="n">xs_count</span> <span class="o">/</span> <span class="p">(</span><span class="n">xs_count</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">.</span><span class="n">sqrt</span><span class="p">()</span> <span class="k">if</span> <span class="n">xs_count</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">xs_mean</span><span class="o">.</span><span class="n">item</span><span class="p">(),</span> <span class="n">xs_std</span><span class="o">.</span><span class="n">item</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="get_cpgd_advantages_returns"><a class="viewcode-back" href="../../../api_doc/trainer/utils.html#lightrft.trainer.utils.get_cpgd_advantages_returns">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">get_cpgd_advantages_returns</span><span class="p">(</span>
+    <span class="n">reward</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">action_mask</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">weight_factor</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;STD_weight&quot;</span><span class="p">,</span>
+    <span class="n">epsilon</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-6</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Aggregate token-level rewards into episode-level scores, normalize them</span>
+<span class="sd">    group-wise, and then broadcast the normalized scores back to the</span>
+<span class="sd">    token dimension to obtain both the advantages and the returns that are</span>
+<span class="sd">    required by the CPGD (Clipped Policy Gradient Optimization with Policy Drift) algorithm.</span>
+
+<span class="sd">    :param reward: Tensor of shape (num_actions, seq_len) containing token-level rewards</span>
+<span class="sd">        produced by the reward model. Each row corresponds to one sampled</span>
+<span class="sd">        response (action trajectory).</span>
+<span class="sd">    :type reward: torch.Tensor</span>
+<span class="sd">    :param action_mask: Tensor of the same shape as `reward`. Elements belonging to the</span>
+<span class="sd">        generated response tokens are 1; padding / prompt tokens are 0.</span>
+<span class="sd">        The mask is used so that only response tokens contribute to the</span>
+<span class="sd">        final advantages / returns.</span>
+<span class="sd">    :type action_mask: torch.Tensor</span>
+<span class="sd">    :param weight_factor: Determines how the per-sample scalar scores are normalized:</span>
+
+<span class="sd">        - &quot;STD_weight&quot;: z-score normalization: score_i = (score_i − mean) / (std + ε)</span>
+<span class="sd">        - &quot;clip_filter_like_weight&quot;: a simplified version of the Clip-Filter weight</span>
+<span class="sd">          used in early RLHF repos: score_i = (score_i − mean) * clamp(num_actions / nz, max=3)</span>
+<span class="sd">        - any other value: mean-centering only: score_i = score_i − mean</span>
+
+<span class="sd">        Defaults to &quot;STD_weight&quot;.</span>
+
+<span class="sd">    :type weight_factor: str</span>
+<span class="sd">    :param epsilon: Small constant added to the denominator to avoid division by zero, defaults to 1e-6.</span>
+<span class="sd">    :type epsilon: float</span>
+<span class="sd">    :return: A tuple of (advantages, returns).</span>
+<span class="sd">        - advantages: Normalized per-token advantages, shape (num_actions, seq_len).</span>
+<span class="sd">        - returns: Identical to `advantages` in CPGD; returned separately for API symmetry.</span>
+<span class="sd">    :rtype: Tuple[torch.Tensor, torch.Tensor]</span>
+
+<span class="sd">    .. note::</span>
+
+<span class="sd">        Both `advantages` and `returns` are masked so that non-response tokens</span>
+<span class="sd">        are always zero. The function performs no gradient-tracking operations and is intended</span>
+<span class="sd">        to be called outside the optimization graph.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># ------------------------------------------------------------------</span>
+    <span class="c1"># 1. Collapse token-level rewards to a single scalar per trajectory</span>
+    <span class="c1"># ------------------------------------------------------------------</span>
+    <span class="c1"># Shape: (num_actions,)</span>
+    <span class="n">scores</span> <span class="o">=</span> <span class="n">reward</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># Mean and (biased) standard deviation across the batch</span>
+    <span class="n">mean</span> <span class="o">=</span> <span class="n">scores</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+    <span class="n">std</span> <span class="o">=</span> <span class="n">scores</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">unbiased</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="c1"># ------------------------------------------------------------------</span>
+    <span class="c1"># 2. Group-wise normalization</span>
+    <span class="c1"># ------------------------------------------------------------------</span>
+    <span class="k">if</span> <span class="n">weight_factor</span> <span class="o">==</span> <span class="s2">&quot;STD_weight&quot;</span><span class="p">:</span>
+        <span class="c1"># Standard z-score normalization</span>
+        <span class="n">scores</span> <span class="o">=</span> <span class="p">(</span><span class="n">scores</span> <span class="o">-</span> <span class="n">mean</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">std</span> <span class="o">+</span> <span class="n">epsilon</span><span class="p">)</span>
+
+    <span class="k">elif</span> <span class="n">weight_factor</span> <span class="o">==</span> <span class="s2">&quot;clip_filter_like_weight&quot;</span><span class="p">:</span>
+        <span class="c1"># A rough approximation of the clip-filter weighting</span>
+        <span class="c1"># Count of (std &gt; 0) is always ≥ 1, prevents division by zero</span>
+        <span class="n">non_zero</span> <span class="o">=</span> <span class="p">(</span><span class="n">std</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="nb">min</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="c1"># Scale by (batch_size / non_zero) but clip to a maximum of 3</span>
+        <span class="n">scores</span> <span class="o">=</span> <span class="p">(</span><span class="n">scores</span> <span class="o">-</span> <span class="n">mean</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">scores</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">/</span> <span class="n">non_zero</span><span class="p">)</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="nb">max</span><span class="o">=</span><span class="mf">3.0</span><span class="p">)</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Fallback: mean-centering only</span>
+        <span class="n">scores</span> <span class="o">=</span> <span class="n">scores</span> <span class="o">-</span> <span class="n">mean</span>
+
+    <span class="c1"># ------------------------------------------------------------------</span>
+    <span class="c1"># 3. Broadcast back to token dimension and apply the mask</span>
+    <span class="c1"># ------------------------------------------------------------------</span>
+    <span class="c1"># Shape: (num_actions, seq_len)</span>
+    <span class="n">scores</span> <span class="o">=</span> <span class="n">scores</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">action_mask</span>
+
+    <span class="c1"># In CPGD the advantage equals the return</span>
+    <span class="n">advantages</span> <span class="o">=</span> <span class="n">scores</span>
+    <span class="n">returns</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">scores</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">advantages</span><span class="p">,</span> <span class="n">returns</span></div>
+</pre></div>
+
+              </article>
+              
+            </div>
+            <footer>
+  
+
+  <hr>
+
+  <div role="contentinfo">
+    <p>
+      &copy; Copyright 2025, OpenDILab.
+
+    </p>
+  </div>
+  
+  <div>
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a
+      href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the
+      Docs</a>.
+  </div>
+   
+
+</footer>
+          </div>
+        </div>
+
+        <div class="pytorch-content-right" id="pytorch-content-right">
+          <div class="pytorch-right-menu" id="pytorch-right-menu">
+            <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
+              
+            </div>
+          </div>
+        </div>
+    </section>
+  </div>
+
+  
+
+
+  
+
+  
+  <script type="text/javascript" id="documentation_options" data-url_root="../../../"
+    src="../../../_static/documentation_options.js"></script>
+  <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+  <script src="../../../_static/doctools.js"></script>
+  <script src="../../../_static/sphinx_highlight.js"></script>
+  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+  
+
+  
+
+  <script type="text/javascript" src="../../../_static/js/vendor/popper.min.js"></script>
+  <script type="text/javascript" src="../../../_static/js/vendor/bootstrap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
+  <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+    jQuery(function () {
+      SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+  <!-- Begin Footer -->
+
+  <div class="container-fluid docs-tutorials-resources" id="docs-tutorials-resources">
+  </div>
+
+  <!-- End Footer -->
+
+  <!-- Begin Mobile Menu -->
+
+  <div class="mobile-main-menu">
+    <div class="container-fluid">
+      <div class="container">
+        <div class="mobile-main-menu-header-container">
+          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
+        </div>
+      </div>
+    </div>
+
+    <div class="mobile-main-menu-links-container">
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://github.com/opendilab/LightRFT" target="_blank">GitHub</a>
+          </li>
+      </div>
+    </div>
+  </div>
+
+  <!-- End Mobile Menu -->
+
+  <script type="text/javascript" src="../../../_static/js/vendor/anchor.min.js"></script>
+
+  <script type="text/javascript">
+    $(document).ready(function () {
+      mobileMenu.bind();
+      mobileTOC.bind();
+      pytorchAnchors.bind();
+      sideMenus.bind();
+      scrollToAnchor.bind();
+      highlightNavigation.bind();
+      mainMenuDropdown.bind();
+      filterTags.bind();
+
+      // Add class to links that have code blocks, since we cannot create links in code blocks
+      $("article.pytorch-article a span.pre").each(function (e) {
+        $(this).closest("a").addClass("has-code");
+      });
+    })
+  </script>
+</body>
+
+</html>

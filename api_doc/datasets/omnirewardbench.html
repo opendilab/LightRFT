@@ -306,8 +306,164 @@
             <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
               <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
                 
-  <section id="lightrft-datasets-omnirewardbench">
-<h1>lightrft.datasets.omnirewardbench<a class="headerlink" href="#lightrft-datasets-omnirewardbench" title="Permalink to this heading">¶</a></h1>
+  <section id="module-lightrft.datasets.omnirewardbench">
+<span id="lightrft-datasets-omnirewardbench"></span><h1>lightrft.datasets.omnirewardbench<a class="headerlink" href="#module-lightrft.datasets.omnirewardbench" title="Permalink to this heading">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="lightrft.datasets.omnirewardbench.OmniRewardBenchT2AHandler">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">lightrft.datasets.omnirewardbench.</span></span><span class="sig-name descname"><span class="pre">OmniRewardBenchT2AHandler</span></span><a class="reference internal" href="../../_modules/lightrft/datasets/omnirewardbench.html#OmniRewardBenchT2AHandler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.datasets.omnirewardbench.OmniRewardBenchT2AHandler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#lightrft.datasets.omnirewardbench.OmniRewardBenchT2IHandler" title="lightrft.datasets.omnirewardbench.OmniRewardBenchT2IHandler"><code class="xref py py-class docutils literal notranslate"><span class="pre">OmniRewardBenchT2IHandler</span></code></a></p>
+<p>Data Handler for OmniRewardBench text-to-audio human preferences benchmark.
+Process for scalar reward model training of pairwise-ranking task.</p>
+<p>Paper: <a class="reference external" href="https://huggingface.co/papers/2510.23451">https://huggingface.co/papers/2510.23451</a>
+Dataset Repo: <a class="reference external" href="https://huggingface.co/datasets/HongbangYuan/OmniRewardBench">https://huggingface.co/datasets/HongbangYuan/OmniRewardBench</a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.datasets.omnirewardbench.OmniRewardBenchT2AHandler.get_media_info">
+<span class="sig-name descname"><span class="pre">get_media_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/lightrft/datasets/omnirewardbench.html#OmniRewardBenchT2AHandler.get_media_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.datasets.omnirewardbench.OmniRewardBenchT2AHandler.get_media_info" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract path info for the two audios.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.datasets.omnirewardbench.OmniRewardBenchT2AHandler.parse_item">
+<span class="sig-name descname"><span class="pre">parse_item</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">media_content</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/lightrft/datasets/omnirewardbench.html#OmniRewardBenchT2AHandler.parse_item"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.datasets.omnirewardbench.OmniRewardBenchT2AHandler.parse_item" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse the raw item and the loaded media_content into the standard format.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>item</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – The raw data item.</p></li>
+<li><p><strong>media_content</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – A dict containing loaded content.</p></li>
+<li><p><strong>config</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – A dict of additional configuration options.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A tuple containing lists of dictionaries and one dictionary.
+For pointwise scoring data: (messages_chosen, messages_rejected, other)
+For pairwise ranking data: (messages, other)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Union[Tuple[List[Dict], List[Dict], Dict], Tuple[List[Dict], Dict]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="lightrft.datasets.omnirewardbench.OmniRewardBenchT2IGRMHandler">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">lightrft.datasets.omnirewardbench.</span></span><span class="sig-name descname"><span class="pre">OmniRewardBenchT2IGRMHandler</span></span><a class="reference internal" href="../../_modules/lightrft/datasets/omnirewardbench.html#OmniRewardBenchT2IGRMHandler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.datasets.omnirewardbench.OmniRewardBenchT2IGRMHandler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#lightrft.datasets.omnirewardbench.OmniRewardBenchT2IHandler" title="lightrft.datasets.omnirewardbench.OmniRewardBenchT2IHandler"><code class="xref py py-class docutils literal notranslate"><span class="pre">OmniRewardBenchT2IHandler</span></code></a></p>
+<p>Data Handler for OmniRewardBench text-to-image human preferences benchmark.
+Process for generative reward model training of pair-wise ranking task.</p>
+<p>Paper: <a class="reference external" href="https://huggingface.co/papers/2510.23451">https://huggingface.co/papers/2510.23451</a>
+Dataset Repo: <a class="reference external" href="https://huggingface.co/datasets/HongbangYuan/OmniRewardBench">https://huggingface.co/datasets/HongbangYuan/OmniRewardBench</a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.datasets.omnirewardbench.OmniRewardBenchT2IGRMHandler.parse_item">
+<span class="sig-name descname"><span class="pre">parse_item</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">media_content</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/lightrft/datasets/omnirewardbench.html#OmniRewardBenchT2IGRMHandler.parse_item"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.datasets.omnirewardbench.OmniRewardBenchT2IGRMHandler.parse_item" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse the raw item and the loaded media_content into the standard format.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>item</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – The raw data item.</p></li>
+<li><p><strong>media_content</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – A dict containing loaded content.</p></li>
+<li><p><strong>config</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – A dict of additional configuration options.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A tuple containing lists of dictionaries and one dictionary.
+For pointwise scoring data: (messages_chosen, messages_rejected, other)
+For pairwise ranking data: (messages, other)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Union[Tuple[List[Dict], List[Dict], Dict], Tuple[List[Dict], Dict]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="lightrft.datasets.omnirewardbench.OmniRewardBenchT2IHandler">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">lightrft.datasets.omnirewardbench.</span></span><span class="sig-name descname"><span class="pre">OmniRewardBenchT2IHandler</span></span><a class="reference internal" href="../../_modules/lightrft/datasets/omnirewardbench.html#OmniRewardBenchT2IHandler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.datasets.omnirewardbench.OmniRewardBenchT2IHandler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="utils.html#lightrft.datasets.utils.BaseDataHandler" title="lightrft.datasets.utils.BaseDataHandler"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseDataHandler</span></code></a></p>
+<p>Data Handler for OmniRewardBench text-to-image human preferences benchmark.
+Process for scalar reward model training of pairwise-ranking task.</p>
+<p>Paper: <a class="reference external" href="https://huggingface.co/papers/2510.23451">https://huggingface.co/papers/2510.23451</a>
+Dataset Repo: <a class="reference external" href="https://huggingface.co/datasets/HongbangYuan/OmniRewardBench">https://huggingface.co/datasets/HongbangYuan/OmniRewardBench</a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.datasets.omnirewardbench.OmniRewardBenchT2IHandler.get_media_info">
+<span class="sig-name descname"><span class="pre">get_media_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/lightrft/datasets/omnirewardbench.html#OmniRewardBenchT2IHandler.get_media_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.datasets.omnirewardbench.OmniRewardBenchT2IHandler.get_media_info" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract path info for the two videos.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.datasets.omnirewardbench.OmniRewardBenchT2IHandler.load_data">
+<span class="sig-name descname"><span class="pre">load_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/lightrft/datasets/omnirewardbench.html#OmniRewardBenchT2IHandler.load_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.datasets.omnirewardbench.OmniRewardBenchT2IHandler.load_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads data from parquet file.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.datasets.omnirewardbench.OmniRewardBenchT2IHandler.parse_item">
+<span class="sig-name descname"><span class="pre">parse_item</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">media_content</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/lightrft/datasets/omnirewardbench.html#OmniRewardBenchT2IHandler.parse_item"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.datasets.omnirewardbench.OmniRewardBenchT2IHandler.parse_item" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse the raw item and the loaded media_content into the standard format.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>item</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – The raw data item.</p></li>
+<li><p><strong>media_content</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – A dict containing loaded content.</p></li>
+<li><p><strong>config</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – A dict of additional configuration options.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A tuple containing lists of dictionaries and one dictionary.
+For pointwise scoring data: (messages_chosen, messages_rejected, other)
+For pairwise ranking data: (messages, other)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Union[Tuple[List[Dict], List[Dict], Dict], Tuple[List[Dict], Dict]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="lightrft.datasets.omnirewardbench.OmniRewardBenchT2VHandler">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">lightrft.datasets.omnirewardbench.</span></span><span class="sig-name descname"><span class="pre">OmniRewardBenchT2VHandler</span></span><a class="reference internal" href="../../_modules/lightrft/datasets/omnirewardbench.html#OmniRewardBenchT2VHandler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.datasets.omnirewardbench.OmniRewardBenchT2VHandler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#lightrft.datasets.omnirewardbench.OmniRewardBenchT2IHandler" title="lightrft.datasets.omnirewardbench.OmniRewardBenchT2IHandler"><code class="xref py py-class docutils literal notranslate"><span class="pre">OmniRewardBenchT2IHandler</span></code></a></p>
+<p>Data Handler for OmniRewardBench text-to-video human preferences benchmark.
+Process for scalar reward model training of pairwise-ranking task.</p>
+<p>Paper: <a class="reference external" href="https://huggingface.co/papers/2510.23451">https://huggingface.co/papers/2510.23451</a>
+Dataset Repo: <a class="reference external" href="https://huggingface.co/datasets/HongbangYuan/OmniRewardBench">https://huggingface.co/datasets/HongbangYuan/OmniRewardBench</a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.datasets.omnirewardbench.OmniRewardBenchT2VHandler.get_media_info">
+<span class="sig-name descname"><span class="pre">get_media_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/lightrft/datasets/omnirewardbench.html#OmniRewardBenchT2VHandler.get_media_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.datasets.omnirewardbench.OmniRewardBenchT2VHandler.get_media_info" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract path info for the two videos.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.datasets.omnirewardbench.OmniRewardBenchT2VHandler.parse_item">
+<span class="sig-name descname"><span class="pre">parse_item</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">media_content</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/lightrft/datasets/omnirewardbench.html#OmniRewardBenchT2VHandler.parse_item"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.datasets.omnirewardbench.OmniRewardBenchT2VHandler.parse_item" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse the raw item and the loaded media_content into the standard format.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>item</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – The raw data item.</p></li>
+<li><p><strong>media_content</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – A dict containing loaded content.</p></li>
+<li><p><strong>config</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – A dict of additional configuration options.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A tuple containing lists of dictionaries and one dictionary.
+For pointwise scoring data: (messages_chosen, messages_rejected, other)
+For pairwise ranking data: (messages, other)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Union[Tuple[List[Dict], List[Dict], Dict], Tuple[List[Dict], Dict]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 
 
@@ -353,7 +509,29 @@
           <div class="pytorch-right-menu" id="pytorch-right-menu">
             <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
               <ul>
-<li><a class="reference internal" href="#">lightrft.datasets.omnirewardbench</a></li>
+<li><a class="reference internal" href="#">lightrft.datasets.omnirewardbench</a><ul>
+<li><a class="reference internal" href="#lightrft.datasets.omnirewardbench.OmniRewardBenchT2AHandler"><code class="docutils literal notranslate"><span class="pre">OmniRewardBenchT2AHandler</span></code></a><ul>
+<li><a class="reference internal" href="#lightrft.datasets.omnirewardbench.OmniRewardBenchT2AHandler.get_media_info"><code class="docutils literal notranslate"><span class="pre">OmniRewardBenchT2AHandler.get_media_info()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.datasets.omnirewardbench.OmniRewardBenchT2AHandler.parse_item"><code class="docutils literal notranslate"><span class="pre">OmniRewardBenchT2AHandler.parse_item()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#lightrft.datasets.omnirewardbench.OmniRewardBenchT2IGRMHandler"><code class="docutils literal notranslate"><span class="pre">OmniRewardBenchT2IGRMHandler</span></code></a><ul>
+<li><a class="reference internal" href="#lightrft.datasets.omnirewardbench.OmniRewardBenchT2IGRMHandler.parse_item"><code class="docutils literal notranslate"><span class="pre">OmniRewardBenchT2IGRMHandler.parse_item()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#lightrft.datasets.omnirewardbench.OmniRewardBenchT2IHandler"><code class="docutils literal notranslate"><span class="pre">OmniRewardBenchT2IHandler</span></code></a><ul>
+<li><a class="reference internal" href="#lightrft.datasets.omnirewardbench.OmniRewardBenchT2IHandler.get_media_info"><code class="docutils literal notranslate"><span class="pre">OmniRewardBenchT2IHandler.get_media_info()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.datasets.omnirewardbench.OmniRewardBenchT2IHandler.load_data"><code class="docutils literal notranslate"><span class="pre">OmniRewardBenchT2IHandler.load_data()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.datasets.omnirewardbench.OmniRewardBenchT2IHandler.parse_item"><code class="docutils literal notranslate"><span class="pre">OmniRewardBenchT2IHandler.parse_item()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#lightrft.datasets.omnirewardbench.OmniRewardBenchT2VHandler"><code class="docutils literal notranslate"><span class="pre">OmniRewardBenchT2VHandler</span></code></a><ul>
+<li><a class="reference internal" href="#lightrft.datasets.omnirewardbench.OmniRewardBenchT2VHandler.get_media_info"><code class="docutils literal notranslate"><span class="pre">OmniRewardBenchT2VHandler.get_media_info()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.datasets.omnirewardbench.OmniRewardBenchT2VHandler.parse_item"><code class="docutils literal notranslate"><span class="pre">OmniRewardBenchT2VHandler.parse_item()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 
             </div>

@@ -308,10 +308,71 @@
             <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
               <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
                 
-  <section id="lightrft-strategy-utils-broadcast-utils">
-<h1>lightrft.strategy.utils.broadcast_utils<a class="headerlink" href="#lightrft-strategy-utils-broadcast-utils" title="Permalink to this heading">¶</a></h1>
+  <section id="module-lightrft.strategy.utils.broadcast_utils">
+<span id="lightrft-strategy-utils-broadcast-utils"></span><h1>lightrft.strategy.utils.broadcast_utils<a class="headerlink" href="#module-lightrft.strategy.utils.broadcast_utils" title="Permalink to this heading">¶</a></h1>
+<p>Module for managing weight synchronization between training and inference engines.</p>
+<p>This module provides functionality to broadcast model weights from training to inference engines,
+supporting different distributed training strategies including DeepSpeed and FSDP (Fully Sharded
+Data Parallel v2). It handles the complexities of gathering sharded
+parameters and efficiently transferring them to inference engines like vllm and sglang.</p>
 <section id="broadcastmanager">
 <h2>BroadcastManager<a class="headerlink" href="#broadcastmanager" title="Permalink to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="lightrft.strategy.utils.broadcast_utils.BroadcastManager">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">lightrft.strategy.utils.broadcast_utils.</span></span><span class="sig-name descname"><span class="pre">BroadcastManager</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">actor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strategy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inference_engine</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/lightrft/strategy/utils/broadcast_utils.html#BroadcastManager"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.utils.broadcast_utils.BroadcastManager" title="Permalink to this definition">¶</a></dt>
+<dd><p>Manage the weight synchronization between training and inference engine.</p>
+<p>This class handles the broadcasting of model weights from a distributed training setup
+to inference engines. It supports different distributed training strategies including
+DeepSpeed ZeRO and PyTorch’s FSDP v2.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>actor</strong> – The actor model containing weights to be broadcasted</p></li>
+<li><p><strong>strategy</strong> – The training strategy object containing configuration and methods</p></li>
+<li><p><strong>inference_engine</strong> – The inference engine (vllm or sglang) to receive the weights</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.utils.broadcast_utils.BroadcastManager.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">actor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strategy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inference_engine</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../../_modules/lightrft/strategy/utils/broadcast_utils.html#BroadcastManager.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.utils.broadcast_utils.BroadcastManager.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize the BroadcastManager with the necessary components.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>actor</strong> (<em>torch.nn.Module</em>) – The actor model containing weights to be broadcasted</p></li>
+<li><p><strong>strategy</strong> (<em>object</em>) – The training strategy object containing configuration and methods</p></li>
+<li><p><strong>inference_engine</strong> (<em>object</em>) – The inference engine (vllm or sglang) to receive the weights</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.utils.broadcast_utils.BroadcastManager.broadcast_to_engine">
+<span class="sig-name descname"><span class="pre">broadcast_to_engine</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/lightrft/strategy/utils/broadcast_utils.html#BroadcastManager.broadcast_to_engine"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.utils.broadcast_utils.BroadcastManager.broadcast_to_engine" title="Permalink to this definition">¶</a></dt>
+<dd><p>Broadcast model weights to the inference engine.</p>
+<p>This method selects the appropriate broadcasting strategy based on the
+distributed training configuration (DeepSpeed, FSDP v2). It automatically
+detects whether to use DeepSpeed or FSDP broadcasting based on the strategy
+configuration.</p>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Initialize the broadcast manager</span>
+<span class="n">broadcast_manager</span> <span class="o">=</span> <span class="n">BroadcastManager</span><span class="p">(</span><span class="n">actor_model</span><span class="p">,</span> <span class="n">strategy</span><span class="p">,</span> <span class="n">inference_engine</span><span class="p">)</span>
+
+<span class="c1"># Broadcast weights to inference engine</span>
+<span class="n">broadcast_manager</span><span class="o">.</span><span class="n">broadcast_to_engine</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>NotImplementedError</strong> – If an unsupported configuration is used</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 </section>
 
@@ -359,7 +420,14 @@
             <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
               <ul>
 <li><a class="reference internal" href="#">lightrft.strategy.utils.broadcast_utils</a><ul>
-<li><a class="reference internal" href="#broadcastmanager">BroadcastManager</a></li>
+<li><a class="reference internal" href="#broadcastmanager">BroadcastManager</a><ul>
+<li><a class="reference internal" href="#lightrft.strategy.utils.broadcast_utils.BroadcastManager"><code class="docutils literal notranslate"><span class="pre">BroadcastManager</span></code></a><ul>
+<li><a class="reference internal" href="#lightrft.strategy.utils.broadcast_utils.BroadcastManager.__init__"><code class="docutils literal notranslate"><span class="pre">BroadcastManager.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.utils.broadcast_utils.BroadcastManager.broadcast_to_engine"><code class="docutils literal notranslate"><span class="pre">BroadcastManager.broadcast_to_engine()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

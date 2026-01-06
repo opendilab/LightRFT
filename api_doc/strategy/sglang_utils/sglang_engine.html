@@ -308,10 +308,180 @@
             <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
               <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
                 
-  <section id="lightrft-strategy-sglang-utils-sglang-engine">
-<h1>lightrft.strategy.sglang_utils.sglang_engine<a class="headerlink" href="#lightrft-strategy-sglang-utils-sglang-engine" title="Permalink to this heading">¶</a></h1>
+  <section id="module-lightrft.strategy.sglang_utils.sglang_engine">
+<span id="lightrft-strategy-sglang-utils-sglang-engine"></span><h1>lightrft.strategy.sglang_utils.sglang_engine<a class="headerlink" href="#module-lightrft.strategy.sglang_utils.sglang_engine" title="Permalink to this heading">¶</a></h1>
+<p>This module provides a distributed reinforcement learning generation engine for language models.</p>
+<p>The RLGenerationEngine class facilitates text generation across multiple processes and nodes,
+leveraging PyTorch’s distributed capabilities. It supports tensor parallelism for efficient
+model execution and provides methods for generating text, updating model weights, and
+managing memory resources.</p>
+<p>The module is designed to work with the SGLang runtime (srt) system and supports features
+such as batch processing, custom sampling parameters, and LoRA fine-tuning.</p>
 <section id="rlgenerationengine">
 <h2>RLGenerationEngine<a class="headerlink" href="#rlgenerationengine" title="Permalink to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="lightrft.strategy.sglang_utils.sglang_engine.RLGenerationEngine">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">lightrft.strategy.sglang_utils.sglang_engine.</span></span><span class="sig-name descname"><span class="pre">RLGenerationEngine</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tp_group_cpu</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_gpu_per_node</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/lightrft/strategy/sglang_utils/sglang_engine.html#RLGenerationEngine"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.sglang_utils.sglang_engine.RLGenerationEngine" title="Permalink to this definition">¶</a></dt>
+<dd><p>A distributed reinforcement learning generation engine for language models.</p>
+<p>This class manages text generation across multiple processes and nodes using tensor parallelism.
+It wraps the SGLang Engine to provide distributed generation capabilities with efficient memory
+management and weight updating functionality.</p>
+<p>The engine automatically handles distributed coordination, ensuring that only the leader rank
+performs actual generation while broadcasting results to all participating processes. It supports
+various input formats including text prompts, token IDs, and image data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tp_group_cpu</strong> (<em>torch.distributed.ProcessGroup</em>) – PyTorch process group for tensor parallelism on CPU</p></li>
+<li><p><strong>num_gpu_per_node</strong> (<em>int</em>) – Number of GPUs per node, defaults to 8</p></li>
+<li><p><strong>kwargs</strong> – Additional arguments to pass to the underlying SGLang Engine</p></li>
+</ul>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">torch.distributed</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">dist</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Initialize distributed environment</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dist</span><span class="o">.</span><span class="n">init_process_group</span><span class="p">(</span><span class="s2">&quot;nccl&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">tp_group</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">new_group</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">engine</span> <span class="o">=</span> <span class="n">RLGenerationEngine</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">tp_group_cpu</span><span class="o">=</span><span class="n">tp_group</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">num_gpu_per_node</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">model</span><span class="o">=</span><span class="s2">&quot;llama2-7b&quot;</span>
+<span class="gp">... </span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.sglang_utils.sglang_engine.RLGenerationEngine.generate">
+<span class="sig-name descname"><span class="pre">generate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prompt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sampling_params</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_ids</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">image_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_logprob</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logprob_start_len</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">top_logprobs_num</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lora_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom_logit_processor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gather_inputs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span></span></span><a class="reference internal" href="../../../_modules/lightrft/strategy/sglang_utils/sglang_engine.html#RLGenerationEngine.generate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.sglang_utils.sglang_engine.RLGenerationEngine.generate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate text using the language model in a distributed manner.</p>
+<p>This method coordinates text generation across multiple processes, with only the leader
+rank performing actual generation and broadcasting results to all participants. It supports
+various input formats and generation parameters.</p>
+<p>The arguments of this function are the same as <cite>sglang/srt/managers/io_struct.py::GenerateReqInput</cite>.
+Please refer to <cite>GenerateReqInput</cite> for detailed documentation of each parameter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>prompt</strong> (<em>Optional</em><em>[</em><em>Union</em><em>[</em><em>List</em><em>[</em><em>str</em><em>]</em><em>, </em><em>str</em><em>]</em><em>]</em>) – The input prompt(s) for text generation</p></li>
+<li><p><strong>sampling_params</strong> (<em>Optional</em><em>[</em><em>Union</em><em>[</em><em>List</em><em>[</em><em>Dict</em><em>]</em><em>, </em><em>Dict</em><em>]</em><em>]</em>) – Parameters controlling the sampling strategy (temperature, top_p, etc.)</p></li>
+<li><p><strong>input_ids</strong> (<em>Optional</em><em>[</em><em>Union</em><em>[</em><em>List</em><em>[</em><em>List</em><em>[</em><em>int</em><em>]</em><em>]</em><em>, </em><em>List</em><em>[</em><em>int</em><em>]</em><em>]</em><em>]</em>) – Token IDs for input text (alternative to using prompt)</p></li>
+<li><p><strong>image_data</strong> (<em>Optional</em><em>[</em><em>Union</em><em>[</em><em>List</em><em>[</em><em>str</em><em>]</em><em>, </em><em>str</em><em>]</em><em>]</em>) – Image input as file name, URL, or base64 encoded string</p></li>
+<li><p><strong>return_logprob</strong> (<em>Optional</em><em>[</em><em>Union</em><em>[</em><em>List</em><em>[</em><em>bool</em><em>]</em><em>, </em><em>bool</em><em>]</em><em>]</em>) – Whether to return log probabilities for generated tokens</p></li>
+<li><p><strong>logprob_start_len</strong> (<em>Optional</em><em>[</em><em>Union</em><em>[</em><em>List</em><em>[</em><em>int</em><em>]</em><em>, </em><em>int</em><em>]</em><em>]</em>) – Start position for log probability calculation</p></li>
+<li><p><strong>top_logprobs_num</strong> (<em>Optional</em><em>[</em><em>Union</em><em>[</em><em>List</em><em>[</em><em>int</em><em>]</em><em>, </em><em>int</em><em>]</em><em>]</em>) – Number of top log probabilities to return</p></li>
+<li><p><strong>lora_path</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><em>Optional</em><em>[</em><em>str</em><em>]</em><em>]</em><em>]</em>) – Paths to LoRA weights to apply during generation</p></li>
+<li><p><strong>custom_logit_processor</strong> (<em>Optional</em><em>[</em><em>Union</em><em>[</em><em>List</em><em>[</em><em>str</em><em>]</em><em>, </em><em>str</em><em>]</em><em>]</em>) – Custom logit processor for modifying logits</p></li>
+<li><p><strong>gather_inputs</strong> (<em>bool</em>) – Whether to gather inputs across all ranks before generation</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Generation results including generated text and metadata</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dict</p>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">engine</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">prompt</span><span class="o">=</span><span class="s2">&quot;Translate this to French: Hello, world!&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">sampling_params</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;temperature&quot;</span><span class="p">:</span> <span class="mf">0.7</span><span class="p">,</span> <span class="s2">&quot;max_tokens&quot;</span><span class="p">:</span> <span class="mi">50</span><span class="p">}</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s2">&quot;text&quot;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Batch generation with different parameters</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">results</span> <span class="o">=</span> <span class="n">engine</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">prompt</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Hello&quot;</span><span class="p">,</span> <span class="s2">&quot;Goodbye&quot;</span><span class="p">],</span>
+<span class="gp">... </span>    <span class="n">sampling_params</span><span class="o">=</span><span class="p">[{</span><span class="s2">&quot;temperature&quot;</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">},</span> <span class="p">{</span><span class="s2">&quot;temperature&quot;</span><span class="p">:</span> <span class="mf">0.9</span><span class="p">}],</span>
+<span class="gp">... </span>    <span class="n">return_logprob</span><span class="o">=</span><span class="kc">True</span>
+<span class="gp">... </span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.sglang_utils.sglang_engine.RLGenerationEngine.shutdown">
+<span class="sig-name descname"><span class="pre">shutdown</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/lightrft/strategy/sglang_utils/sglang_engine.html#RLGenerationEngine.shutdown"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.sglang_utils.sglang_engine.RLGenerationEngine.shutdown" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shut down the engine and release all resources.</p>
+<p>This method should be called when the engine is no longer needed to
+properly clean up resources including GPU memory, process groups, and
+any background threads. It ensures a clean termination of the engine.</p>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">try</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="c1"># Use engine for generation</span>
+<span class="gp">... </span>    <span class="n">results</span> <span class="o">=</span> <span class="n">engine</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="s2">&quot;Hello&quot;</span><span class="p">)</span>
+<span class="gp">... </span><span class="k">finally</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="n">engine</span><span class="o">.</span><span class="n">shutdown</span><span class="p">()</span>  <span class="c1"># Always clean up resources</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.sglang_utils.sglang_engine.RLGenerationEngine.sleep">
+<span class="sig-name descname"><span class="pre">sleep</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/lightrft/strategy/sglang_utils/sglang_engine.html#RLGenerationEngine.sleep"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.sglang_utils.sglang_engine.RLGenerationEngine.sleep" title="Permalink to this definition">¶</a></dt>
+<dd><p>Release memory resources temporarily to free up GPU memory.</p>
+<p>This method can be used to temporarily reduce memory usage when the engine
+is not actively generating text. It’s particularly useful in scenarios where
+multiple models or processes need to share GPU memory resources efficiently.</p>
+<dl class="simple">
+<dt>Note:</dt><dd><p>After calling sleep(), you must call wake_up() before using the engine again.</p>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">engine</span><span class="o">.</span><span class="n">sleep</span><span class="p">()</span>  <span class="c1"># Free up memory during idle periods</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># ... other operations that need GPU memory ...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">engine</span><span class="o">.</span><span class="n">wake_up</span><span class="p">()</span>  <span class="c1"># Resume before next generation</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.sglang_utils.sglang_engine.RLGenerationEngine.update_weights_from_tensor">
+<span class="sig-name descname"><span class="pre">update_weights_from_tensor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tensor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flush_cache</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">load_format</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/lightrft/strategy/sglang_utils/sglang_engine.html#RLGenerationEngine.update_weights_from_tensor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.sglang_utils.sglang_engine.RLGenerationEngine.update_weights_from_tensor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update model weights with the provided tensor in a distributed manner.</p>
+<p>This method allows dynamic updating of model parameters during runtime, which is
+particularly useful for reinforcement learning scenarios where model weights need
+to be updated based on training feedback. The method handles distributed coordination
+to ensure all ranks participate in the weight update process.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – Name of the weight tensor to update (e.g., “model.layers.0.self_attn.q_proj.weight”)</p></li>
+<li><p><strong>tensor</strong> (<em>torch.Tensor</em>) – New weight tensor to replace the existing weights</p></li>
+<li><p><strong>flush_cache</strong> (<em>bool</em>) – Whether to flush the KV cache after updating weights</p></li>
+<li><p><strong>load_format</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – Format specification for loading the weights</p></li>
+</ul>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Update a specific layer&#39;s weights</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">new_weights</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">768</span><span class="p">,</span> <span class="mi">768</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">engine</span><span class="o">.</span><span class="n">update_weights_from_tensor</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="s2">&quot;model.layers.0.self_attn.q_proj.weight&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">new_weights</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">flush_cache</span><span class="o">=</span><span class="kc">True</span>
+<span class="gp">... </span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.sglang_utils.sglang_engine.RLGenerationEngine.wake_up">
+<span class="sig-name descname"><span class="pre">wake_up</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/lightrft/strategy/sglang_utils/sglang_engine.html#RLGenerationEngine.wake_up"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.sglang_utils.sglang_engine.RLGenerationEngine.wake_up" title="Permalink to this definition">¶</a></dt>
+<dd><p>Resume memory occupation after a call to sleep().</p>
+<p>This method should be called before using the engine for generation
+after a previous call to sleep(). It restores the engine to its fully
+operational state with all necessary memory allocations.</p>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">engine</span><span class="o">.</span><span class="n">sleep</span><span class="p">()</span>    <span class="c1"># Free memory</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># ... do other work ...</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">engine</span><span class="o">.</span><span class="n">wake_up</span><span class="p">()</span>  <span class="c1"># Prepare engine for generation</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">engine</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="s2">&quot;Hello world&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 </section>
 
@@ -359,7 +529,17 @@
             <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
               <ul>
 <li><a class="reference internal" href="#">lightrft.strategy.sglang_utils.sglang_engine</a><ul>
-<li><a class="reference internal" href="#rlgenerationengine">RLGenerationEngine</a></li>
+<li><a class="reference internal" href="#rlgenerationengine">RLGenerationEngine</a><ul>
+<li><a class="reference internal" href="#lightrft.strategy.sglang_utils.sglang_engine.RLGenerationEngine"><code class="docutils literal notranslate"><span class="pre">RLGenerationEngine</span></code></a><ul>
+<li><a class="reference internal" href="#lightrft.strategy.sglang_utils.sglang_engine.RLGenerationEngine.generate"><code class="docutils literal notranslate"><span class="pre">RLGenerationEngine.generate()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.sglang_utils.sglang_engine.RLGenerationEngine.shutdown"><code class="docutils literal notranslate"><span class="pre">RLGenerationEngine.shutdown()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.sglang_utils.sglang_engine.RLGenerationEngine.sleep"><code class="docutils literal notranslate"><span class="pre">RLGenerationEngine.sleep()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.sglang_utils.sglang_engine.RLGenerationEngine.update_weights_from_tensor"><code class="docutils literal notranslate"><span class="pre">RLGenerationEngine.update_weights_from_tensor()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.sglang_utils.sglang_engine.RLGenerationEngine.wake_up"><code class="docutils literal notranslate"><span class="pre">RLGenerationEngine.wake_up()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

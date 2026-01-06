@@ -306,18 +306,70 @@
             <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
               <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
                 
-  <section id="lightrft-strategy-vllm-utils">
-<h1>lightrft.strategy.vllm_utils<a class="headerlink" href="#lightrft-strategy-vllm-utils" title="Permalink to this heading">¶</a></h1>
+  <section id="module-lightrft.strategy.vllm_utils">
+<span id="lightrft-strategy-vllm-utils"></span><h1>lightrft.strategy.vllm_utils<a class="headerlink" href="#module-lightrft.strategy.vllm_utils" title="Permalink to this heading">¶</a></h1>
+<p>This module provides utilities for initializing and configuring a vLLM engine.</p>
+<p>The module simplifies the process of creating a vLLM engine with specific configurations
+for large language model inference, particularly in reinforcement learning from human feedback
+(RLHF) contexts. It offers both high-level and low-level functions for engine creation,
+with support for tensor parallelism, memory optimization, and multimodal capabilities.</p>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="vllm_worker_wrap_no_ray.html">lightrft.strategy.vllm_utils.vllm_worker_wrap_no_ray</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="vllm_worker_wrap_no_ray.html#workerwrap">WorkerWrap</a></li>
+<li class="toctree-l2"><a class="reference internal" href="vllm_worker_wrap_no_ray.html#workerwrap">WorkerWrap</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="vllm_worker_wrap_no_ray.html#lightrft.strategy.vllm_utils.vllm_worker_wrap_no_ray.WorkerWrap"><code class="docutils literal notranslate"><span class="pre">WorkerWrap</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
 </div>
 <section id="get-vllm-engine">
 <h2>get_vllm_engine<a class="headerlink" href="#get-vllm-engine" title="Permalink to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="lightrft.strategy.vllm_utils.get_vllm_engine">
+<span class="sig-prename descclassname"><span class="pre">lightrft.strategy.vllm_utils.</span></span><span class="sig-name descname"><span class="pre">get_vllm_engine</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrain_name_or_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'bfloat16'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tp_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mem_util</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_model_len</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">4096</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">enable_sleep</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">vllm.LLM</span></span></span><a class="reference internal" href="../../../_modules/lightrft/strategy/vllm_utils.html#get_vllm_engine"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.vllm_utils.get_vllm_engine" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create and configure a vLLM engine with specified parameters.</p>
+<p>This is the core function for initializing a vLLM engine with custom configurations.
+It sets up the engine with distributed execution capabilities, memory optimization,
+and custom worker classes for RLHF training scenarios.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pretrain_name_or_path</strong> (<em>str</em>) – Path or name of the pretrained model to load.</p></li>
+<li><p><strong>dtype</strong> (<em>str</em>) – Data type for model weights, either “bfloat16” or “float16”. Defaults to “bfloat16”.</p></li>
+<li><p><strong>tp_size</strong> (<em>int</em>) – Tensor parallel size for distributed inference. Defaults to 1.</p></li>
+<li><p><strong>mem_util</strong> (<em>float</em>) – GPU memory utilization ratio (0.0 to 1.0). Defaults to 0.5.</p></li>
+<li><p><strong>max_model_len</strong> (<em>int</em>) – Maximum sequence length the model can handle. Defaults to 4096.</p></li>
+<li><p><strong>enable_sleep</strong> (<em>bool</em>) – Whether to enable sleep mode for memory efficiency. Defaults to True.</p></li>
+<li><p><strong>kwargs</strong> (<em>Any</em>) – Additional keyword arguments passed to the LLM constructor.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Configured vLLM engine instance.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>vllm.LLM</p>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">engine</span> <span class="o">=</span> <span class="n">get_vllm_engine</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="s2">&quot;Qwen/Qwen2.5-14B-Instruct&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;bfloat16&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">tp_size</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">mem_util</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">max_model_len</span><span class="o">=</span><span class="mi">2048</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">enable_sleep</span><span class="o">=</span><span class="kc">True</span>
+<span class="gp">... </span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="simple">
+<dt>Note:</dt><dd><p>Uses external launcher for distributed execution and custom worker class
+for integration with lightrft strategy components.</p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 </section>
 
@@ -365,7 +417,10 @@
             <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
               <ul>
 <li><a class="reference internal" href="#">lightrft.strategy.vllm_utils</a><ul>
-<li><a class="reference internal" href="#get-vllm-engine">get_vllm_engine</a></li>
+<li><a class="reference internal" href="#get-vllm-engine">get_vllm_engine</a><ul>
+<li><a class="reference internal" href="#lightrft.strategy.vllm_utils.get_vllm_engine"><code class="docutils literal notranslate"><span class="pre">get_vllm_engine()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

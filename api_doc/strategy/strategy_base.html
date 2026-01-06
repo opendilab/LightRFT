@@ -306,16 +306,553 @@
             <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
               <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
                 
-  <section id="lightrft-strategy-strategy-base">
-<h1>lightrft.strategy.strategy_base<a class="headerlink" href="#lightrft-strategy-strategy-base" title="Permalink to this heading">¶</a></h1>
+  <section id="module-lightrft.strategy.strategy_base">
+<span id="lightrft-strategy-strategy-base"></span><h1>lightrft.strategy.strategy_base<a class="headerlink" href="#module-lightrft.strategy.strategy_base" title="Permalink to this heading">¶</a></h1>
+<p>A module for implementing training strategies in deep learning, particularly for RLVR and RLHF.</p>
+<p>This module provides base classes and utilities for different training strategies like DeepSpeed and FSDP.
+It handles distributed training setup, model/optimizer preparation, checkpointing, and inference engine management.</p>
 <section id="enginestatus">
 <h2>EngineStatus<a class="headerlink" href="#enginestatus" title="Permalink to this heading">¶</a></h2>
+<dl class="py class enum">
+<dt class="sig sig-object py" id="lightrft.strategy.strategy_base.EngineStatus">
+<em class="property"><span class="pre">enum</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">lightrft.strategy.strategy_base.</span></span><span class="sig-name descname"><span class="pre">EngineStatus</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/strategy/strategy_base.html#EngineStatus"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.strategy_base.EngineStatus" title="Permalink to this definition">¶</a></dt>
+<dd><p>Enum class for inference engine status.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Variables<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>SLEEPED</strong> – Engine is in sleep mode</p></li>
+<li><p><strong>WAKEUP</strong> – Engine is awake and ready</p></li>
+</ul>
+</dd>
+</dl>
+<p>Valid values are as follows:</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lightrft.strategy.strategy_base.EngineStatus.SLEEPED">
+<span class="sig-name descname"><span class="pre">SLEEPED</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;EngineStatus.SLEEPED:</span> <span class="pre">0&gt;</span></em><a class="headerlink" href="#lightrft.strategy.strategy_base.EngineStatus.SLEEPED" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lightrft.strategy.strategy_base.EngineStatus.WAKEUP">
+<span class="sig-name descname"><span class="pre">WAKEUP</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;EngineStatus.WAKEUP:</span> <span class="pre">1&gt;</span></em><a class="headerlink" href="#lightrft.strategy.strategy_base.EngineStatus.WAKEUP" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
 </section>
 <section id="strategybase">
 <h2>StrategyBase<a class="headerlink" href="#strategybase" title="Permalink to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="lightrft.strategy.strategy_base.StrategyBase">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">lightrft.strategy.strategy_base.</span></span><span class="sig-name descname"><span class="pre">StrategyBase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_norm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">micro_train_batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/strategy/strategy_base.html#StrategyBase"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.strategy_base.StrategyBase" title="Permalink to this definition">¶</a></dt>
+<dd><p>Base class for training strategies (DeepSpeed and FSDP).</p>
+<p>Provides common functionality for distributed training setup, model preparation,
+optimization, checkpointing, and inference engine management.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>seed</strong> (<em>int</em>) – Random seed for reproducibility</p></li>
+<li><p><strong>max_norm</strong> (<em>float</em>) – Maximum gradient norm for clipping</p></li>
+<li><p><strong>micro_train_batch_size</strong> (<em>int</em>) – Batch size for each training step</p></li>
+<li><p><strong>train_batch_size</strong> (<em>int</em>) – Total batch size for training</p></li>
+<li><p><strong>args</strong> (<em>Any</em>) – Additional configuration arguments</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.strategy_base.StrategyBase.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_norm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">micro_train_batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/lightrft/strategy/strategy_base.html#StrategyBase.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.strategy_base.StrategyBase.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize strategy with common parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>seed</strong> (<em>int</em>) – Random seed for reproducibility</p></li>
+<li><p><strong>max_norm</strong> (<em>float</em>) – Maximum gradient norm for clipping</p></li>
+<li><p><strong>micro_train_batch_size</strong> (<em>int</em>) – Batch size for each training step</p></li>
+<li><p><strong>train_batch_size</strong> (<em>int</em>) – Total batch size for training</p></li>
+<li><p><strong>args</strong> (<em>Any</em>) – Additional configuration arguments</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.strategy_base.StrategyBase._build_multimodal_inputs">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_build_multimodal_inputs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">all_prompts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_images</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">images_num</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/strategy/strategy_base.html#StrategyBase._build_multimodal_inputs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.strategy_base.StrategyBase._build_multimodal_inputs" title="Permalink to this definition">¶</a></dt>
+<dd><p>In this function, we build multimodal inputs for inference engine.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.strategy_base.StrategyBase.all_gather">
+<span class="sig-name descname"><span class="pre">all_gather</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/strategy/strategy_base.html#StrategyBase.all_gather"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.strategy_base.StrategyBase.all_gather" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gather data from all distributed processes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>data</strong> (<em>Union</em><em>[</em><em>torch.Tensor</em><em>, </em><em>dict</em><em>]</em>) – Data to be gathered, can be a tensor or dictionary of tensors</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Gathered data concatenated from all processes</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Union[torch.Tensor, dict]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.strategy_base.StrategyBase.all_reduce">
+<span class="sig-name descname"><span class="pre">all_reduce</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">op</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'mean'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/strategy/strategy_base.html#StrategyBase.all_reduce"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.strategy_base.StrategyBase.all_reduce" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform all-reduce operation across distributed processes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>Union</em><em>[</em><em>torch.Tensor</em><em>, </em><em>dict</em><em>]</em>) – Data to be reduced, can be a tensor or dictionary of tensors</p></li>
+<li><p><strong>op</strong> (<em>str</em>) – Reduction operation (‘mean’, ‘max’, ‘sum’)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Reduced data in the same format as input</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Union[torch.Tensor, dict]</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>AssertionError</strong> – If op is not one of ‘mean’, ‘max’, ‘sum’</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.strategy_base.StrategyBase.backward">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">backward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">loss</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.nn.Module</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.optim.Optimizer</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/lightrft/strategy/strategy_base.html#StrategyBase.backward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.strategy_base.StrategyBase.backward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform backward pass.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>loss</strong> (<em>torch.Tensor</em>) – The loss to backpropagate</p></li>
+<li><p><strong>model</strong> (<em>nn.Module</em>) – The model</p></li>
+<li><p><strong>optimizer</strong> (<em>optim.Optimizer</em>) – The optimizer</p></li>
+<li><p><strong>kwargs</strong> – Additional arguments</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.strategy_base.StrategyBase.create_optimizer">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">create_optimizer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.nn.Module</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">torch.optim.Optimizer</span></span></span><a class="reference internal" href="../../_modules/lightrft/strategy/strategy_base.html#StrategyBase.create_optimizer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.strategy_base.StrategyBase.create_optimizer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create optimizer for the model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> (<em>nn.Module</em>) – The model to optimize</p></li>
+<li><p><strong>kwargs</strong> – Additional optimizer arguments</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The created optimizer</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>optim.Optimizer</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.strategy_base.StrategyBase.engine_generate_local">
+<span class="sig-name descname"><span class="pre">engine_generate_local</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sampling_params</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prompt_token_ids</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multi_modal_inputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">EasyDict</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/lightrft/strategy/strategy_base.html#StrategyBase.engine_generate_local"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.strategy_base.StrategyBase.engine_generate_local" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform text or multimodal generation using different inference engines based on the input mode.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sampling_params</strong> – Parameters used for controlling the generation process (e.g., temperature, top_k).</p></li>
+<li><p><strong>prompt_token_ids</strong> – List of text token IDs.</p></li>
+<li><p><strong>multi_modal_inputs</strong> – <p>A list of dictionaries representing multimodal inputs.
+Each dictionary should contain a raw text under the “prompt” key,
+and additional modalities (such as images) under the “multi_modal_data” key.
+Example:
+multi_modal_inputs = [{</p>
+<blockquote>
+<div><p>”prompt”: […],
+“multi_modal_data”: {</p>
+<blockquote>
+<div><p>”image”: […],
+“video”: […]</p>
+</div></blockquote>
+<p>}</p>
+</div></blockquote>
+<p>}]</p>
+</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A list of generated outputs in EasyDict format, produced by the selected inference engine.</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ValueError</strong> – If both prompt_token_ids and multi_modal_inputs are None.</p></li>
+<li><p><strong>ValueError</strong> – If both prompt_token_ids and multi_modal_inputs are not None.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.strategy_base.StrategyBase.gather_and_generate">
+<span class="sig-name descname"><span class="pre">gather_and_generate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sampling_params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_prompt_token_ids</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_prompts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_images</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sleep_engine</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">images_num</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/strategy/strategy_base.html#StrategyBase.gather_and_generate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.strategy_base.StrategyBase.gather_and_generate" title="Permalink to this definition">¶</a></dt>
+<dd><ol class="arabic simple">
+<li><p>Gather prompts within a vllm tp_group and do generation together.</p></li>
+<li><p>split the generated outputs and return to each rank.</p></li>
+<li><p>conditinally sleep inference engine.</p></li>
+</ol>
+<p>In multi-modal case, the input for inference engine could be very different:
+1. one prompt = one text + one image
+2. one prompt = one text + multi image</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.strategy_base.StrategyBase.get_rank">
+<span class="sig-name descname"><span class="pre">get_rank</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="reference internal" href="../../_modules/lightrft/strategy/strategy_base.html#StrategyBase.get_rank"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.strategy_base.StrategyBase.get_rank" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get current process rank.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Current process rank</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.strategy_base.StrategyBase.init_model_context">
+<span class="sig-name descname"><span class="pre">init_model_context</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/strategy/strategy_base.html#StrategyBase.init_model_context"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.strategy_base.StrategyBase.init_model_context" title="Permalink to this definition">¶</a></dt>
+<dd><p>Context manager for model initialization.</p>
+<p>Currently does nothing by default, used only for DeepSpeed.
+Reports memory usage after completion.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.strategy_base.StrategyBase.is_rank_0">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_rank_0</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../../_modules/lightrft/strategy/strategy_base.html#StrategyBase.is_rank_0"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.strategy_base.StrategyBase.is_rank_0" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if current process is rank 0.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>True if current process is rank 0</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.strategy_base.StrategyBase.load_ckpt">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">load_ckpt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">load_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tag</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">load_module_strict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">load_optimizer_states</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">load_lr_scheduler_states</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">load_module_only</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/strategy/strategy_base.html#StrategyBase.load_ckpt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.strategy_base.StrategyBase.load_ckpt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load training checkpoint with various options.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> – The model to load checkpoint into</p></li>
+<li><p><strong>load_dir</strong> (<em>str</em>) – Directory containing the checkpoint</p></li>
+<li><p><strong>tag</strong> – Optional specific checkpoint tag to load</p></li>
+<li><p><strong>load_module_strict</strong> (<em>bool</em>) – Whether to use strict loading for module states, defaults to True</p></li>
+<li><p><strong>load_optimizer_states</strong> (<em>bool</em>) – Whether to load optimizer states, defaults to True</p></li>
+<li><p><strong>load_lr_scheduler_states</strong> (<em>bool</em>) – Whether to load learning rate scheduler states, defaults to True</p></li>
+<li><p><strong>load_module_only</strong> (<em>bool</em>) – Whether to load only the module states, defaults to False</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.strategy_base.StrategyBase.maybe_load_optimizer">
+<span class="sig-name descname"><span class="pre">maybe_load_optimizer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">optimizer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">torch.cuda.current_device</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/strategy/strategy_base.html#StrategyBase.maybe_load_optimizer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.strategy_base.StrategyBase.maybe_load_optimizer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Placeholder for FSDP optimizer loading functionality.
+:param optimizer: The optimizer to potentially load
+:type optimizer: torch.optim.Optimizer
+:param device: Target device for loading
+:type device: torch.device</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.strategy_base.StrategyBase.maybe_offload_optimizer">
+<span class="sig-name descname"><span class="pre">maybe_offload_optimizer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">optimizer</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/strategy/strategy_base.html#StrategyBase.maybe_offload_optimizer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.strategy_base.StrategyBase.maybe_offload_optimizer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Placeholder for FSDP optimizer offloading functionality.
+:param optimizer: The optimizer to potentially offload
+:type optimizer: torch.optim.Optimizer</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.strategy_base.StrategyBase.maybe_sleep_inference_engine">
+<span class="sig-name descname"><span class="pre">maybe_sleep_inference_engine</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/strategy/strategy_base.html#StrategyBase.maybe_sleep_inference_engine"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.strategy_base.StrategyBase.maybe_sleep_inference_engine" title="Permalink to this definition">¶</a></dt>
+<dd><p>Put the inference engine to sleep if enabled and available.</p>
+<p>Sleeps the engine to conserve memory when not in use. Only supports vLLM and SGLang engines.
+After sleeping, synchronizes and clears the cache.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ValueError</strong> – If the inference engine type is not supported</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.strategy_base.StrategyBase.optimizer_step">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">optimizer_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">optimizer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.optim.Optimizer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.nn.Module</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scheduler</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'model'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/lightrft/strategy/strategy_base.html#StrategyBase.optimizer_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.strategy_base.StrategyBase.optimizer_step" title="Permalink to this definition">¶</a></dt>
+<dd><p>Take optimizer step.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>optimizer</strong> (<em>optim.Optimizer</em>) – The optimizer</p></li>
+<li><p><strong>model</strong> (<em>nn.Module</em>) – The model</p></li>
+<li><p><strong>scheduler</strong> – The learning rate scheduler</p></li>
+<li><p><strong>name</strong> (<em>str</em>) – Name for logging purposes</p></li>
+<li><p><strong>kwargs</strong> – Additional arguments</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.strategy_base.StrategyBase.prepare">
+<span class="sig-name descname"><span class="pre">prepare</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">models_or_model_optim_pairs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.nn.Module</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">torch.nn.Module</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">torch.optim.Optimizer</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_rlhf</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">torch.nn.Module</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">torch.nn.Module</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">torch.optim.Optimizer</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">torch.nn.Module</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">torch.nn.Module</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">torch.optim.Optimizer</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/lightrft/strategy/strategy_base.html#StrategyBase.prepare"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.strategy_base.StrategyBase.prepare" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prepare models and optimizers for training.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>models_or_model_optim_pairs</strong> – Models or (model, optimizer) pairs to prepare</p></li>
+<li><p><strong>is_rlhf</strong> (<em>bool</em>) – Whether preparing for RLHF training</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Prepared models/optimizers</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Union[List[ModelOrModelOptimPair], ModelOrModelOptimPair]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.strategy_base.StrategyBase.prepare_models_and_optimizers">
+<span class="sig-name descname"><span class="pre">prepare_models_and_optimizers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">actor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">critic</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reward_models</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_steps</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/strategy/strategy_base.html#StrategyBase.prepare_models_and_optimizers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.strategy_base.StrategyBase.prepare_models_and_optimizers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prepare models, optimizers and schedulers for training.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>actor</strong> (<em>nn.Module</em>) – Actor model</p></li>
+<li><p><strong>critic</strong> (<em>nn.Module</em>) – Critic model</p></li>
+<li><p><strong>reward_models</strong> (<em>nn.Module</em>) – Reward models</p></li>
+<li><p><strong>initial_model</strong> (<em>nn.Module</em>) – Initial model for reference</p></li>
+<li><p><strong>args</strong> (<em>argparse.Namespace</em>) – Training arguments</p></li>
+<li><p><strong>max_steps</strong> (<em>int</em>) – Maximum training steps</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Tuple of prepared models, optimizers, and schedulers</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.strategy_base.StrategyBase.print">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">print</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">msg</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/strategy/strategy_base.html#StrategyBase.print"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.strategy_base.StrategyBase.print" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print messages with timestamp, but only on rank 0.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>msg</strong> (<em>tuple</em>) – Messages to print</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.strategy_base.StrategyBase.report_memory">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">report_memory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/strategy/strategy_base.html#StrategyBase.report_memory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.strategy_base.StrategyBase.report_memory" title="Permalink to this definition">¶</a></dt>
+<dd><p>Report GPU memory usage statistics.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>prefix</strong> (<em>str</em>) – Prefix string for the memory report</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.strategy_base.StrategyBase.save_ckpt">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">save_ckpt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tag</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_num</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_mem</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">client_state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_latest</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/lightrft/strategy/strategy_base.html#StrategyBase.save_ckpt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.strategy_base.StrategyBase.save_ckpt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save training checkpoint with additional metadata.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> – The model to save</p></li>
+<li><p><strong>save_dir</strong> (<em>str</em>) – Directory to save the checkpoint</p></li>
+<li><p><strong>tag</strong> – Optional tag for the checkpoint</p></li>
+<li><p><strong>max_num</strong> (<em>int</em>) – Maximum number of checkpoints to keep, defaults to 3</p></li>
+<li><p><strong>max_mem</strong> (<em>int</em>) – Maximum memory in MB for checkpoints, defaults to 1000</p></li>
+<li><p><strong>client_state</strong> (<em>dict</em>) – Additional state to save, defaults to {}</p></li>
+<li><p><strong>save_latest</strong> (<em>bool</em>) – Whether to save as latest checkpoint, defaults to True</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.strategy_base.StrategyBase.set_seed">
+<span class="sig-name descname"><span class="pre">set_seed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/lightrft/strategy/strategy_base.html#StrategyBase.set_seed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.strategy_base.StrategyBase.set_seed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set random seeds for reproducibility.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>seed</strong> (<em>int</em>) – The random seed to use</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.strategy_base.StrategyBase.setup_dataloader">
+<span class="sig-name descname"><span class="pre">setup_dataloader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">replay_buffer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pin_memory</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shuffle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">collate_fn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drop_last</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sampler</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">consumed_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/strategy/strategy_base.html#StrategyBase.setup_dataloader"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.strategy_base.StrategyBase.setup_dataloader" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set up data loader for training.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>replay_buffer</strong> – Dataset/replay buffer</p></li>
+<li><p><strong>batch_size</strong> (<em>int</em>) – Batch size</p></li>
+<li><p><strong>pin_memory</strong> (<em>bool</em>) – Whether to pin memory</p></li>
+<li><p><strong>shuffle</strong> (<em>bool</em>) – Whether to shuffle data</p></li>
+<li><p><strong>collate_fn</strong> – Function to collate samples</p></li>
+<li><p><strong>drop_last</strong> (<em>bool</em>) – Whether to drop last incomplete batch</p></li>
+<li><p><strong>sampler</strong> – Custom sampler</p></li>
+<li><p><strong>consumed_samples</strong> (<em>int</em>) – Number of samples already consumed</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Configured DataLoader</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>DataLoader</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.strategy_base.StrategyBase.setup_distributed">
+<span class="sig-name descname"><span class="pre">setup_distributed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_gpu_per_node</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/lightrft/strategy/strategy_base.html#StrategyBase.setup_distributed"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.strategy_base.StrategyBase.setup_distributed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize distributed training environment.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>timeout</strong> (<em>timedelta</em><em>, </em><em>optional</em>) – Maximum time to wait for initialization</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>RuntimeError</strong> – If required environment variables are missing</p></li>
+<li><p><strong>ValueError</strong> – If unsupported engine type is specified</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.strategy_base.StrategyBase.setup_inference_engine">
+<span class="sig-name descname"><span class="pre">setup_inference_engine</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">engine_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'vllm'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">actor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/strategy/strategy_base.html#StrategyBase.setup_inference_engine"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.strategy_base.StrategyBase.setup_inference_engine" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize and setup the inference engine.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>args</strong> (<em>argparse.Namespace</em>) – Configuration arguments</p></li>
+<li><p><strong>engine_type</strong> (<em>str</em>) – Type of inference engine (‘vllm’ or ‘sglang’)</p></li>
+<li><p><strong>actor</strong> (<em>torch.nn.Module</em>) – The actor module, if passed, will be used to update engine weights</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Initialized inference engine</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>object</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If engine_type is not supported</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.strategy_base.StrategyBase.sync_and_clear_cache">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">sync_and_clear_cache</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/strategy/strategy_base.html#StrategyBase.sync_and_clear_cache"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.strategy_base.StrategyBase.sync_and_clear_cache" title="Permalink to this definition">¶</a></dt>
+<dd><p>Synchronize CUDA operations and clear the cache.</p>
+<p>Performs three operations:
+1. CUDA synchronization
+2. Distributed barrier
+3. CUDA cache clearing</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.strategy_base.StrategyBase.unwrap_model">
+<span class="sig-name descname"><span class="pre">unwrap_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">torch.nn.Module</span></span></span><a class="reference internal" href="../../_modules/lightrft/strategy/strategy_base.html#StrategyBase.unwrap_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.strategy_base.StrategyBase.unwrap_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Unwrap model from strategy-specific wrappers.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>model</strong> (<em>nn.Module</em>) – Model to unwrap</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Unwrapped model</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>nn.Module</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.strategy_base.StrategyBase.update_engine_weights">
+<span class="sig-name descname"><span class="pre">update_engine_weights</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">actor</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/strategy/strategy_base.html#StrategyBase.update_engine_weights"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.strategy_base.StrategyBase.update_engine_weights" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the weights of the inference engine from the actor model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>actor</strong> – The actor model whose weights will be copied</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.strategy_base.StrategyBase.wakeup_inference_engine">
+<span class="sig-name descname"><span class="pre">wakeup_inference_engine</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/strategy/strategy_base.html#StrategyBase.wakeup_inference_engine"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.strategy_base.StrategyBase.wakeup_inference_engine" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wake up the inference engine from sleep state.</p>
+<dl class="simple">
+<dt>To avoid OOM, we:</dt><dd><ol class="arabic simple">
+<li><p>sync and clear cache</p></li>
+<li><p>wakeup engine</p></li>
+</ol>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ValueError</strong> – If the inference engine type is not supported</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 <section id="is-actor">
 <h2>is_actor<a class="headerlink" href="#is-actor" title="Permalink to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="lightrft.strategy.strategy_base.is_actor">
+<span class="sig-prename descclassname"><span class="pre">lightrft.strategy.strategy_base.</span></span><span class="sig-name descname"><span class="pre">is_actor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/strategy/strategy_base.html#is_actor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.strategy_base.is_actor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if a model is an actor model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>model</strong> – The model to check</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if the model is an actor, False otherwise</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 </section>
 
@@ -363,9 +900,53 @@
             <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
               <ul>
 <li><a class="reference internal" href="#">lightrft.strategy.strategy_base</a><ul>
-<li><a class="reference internal" href="#enginestatus">EngineStatus</a></li>
-<li><a class="reference internal" href="#strategybase">StrategyBase</a></li>
-<li><a class="reference internal" href="#is-actor">is_actor</a></li>
+<li><a class="reference internal" href="#enginestatus">EngineStatus</a><ul>
+<li><a class="reference internal" href="#lightrft.strategy.strategy_base.EngineStatus"><code class="docutils literal notranslate"><span class="pre">EngineStatus</span></code></a><ul>
+<li><a class="reference internal" href="#lightrft.strategy.strategy_base.EngineStatus.SLEEPED"><code class="docutils literal notranslate"><span class="pre">EngineStatus.SLEEPED</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.strategy_base.EngineStatus.WAKEUP"><code class="docutils literal notranslate"><span class="pre">EngineStatus.WAKEUP</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#strategybase">StrategyBase</a><ul>
+<li><a class="reference internal" href="#lightrft.strategy.strategy_base.StrategyBase"><code class="docutils literal notranslate"><span class="pre">StrategyBase</span></code></a><ul>
+<li><a class="reference internal" href="#lightrft.strategy.strategy_base.StrategyBase.__init__"><code class="docutils literal notranslate"><span class="pre">StrategyBase.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.strategy_base.StrategyBase._build_multimodal_inputs"><code class="docutils literal notranslate"><span class="pre">StrategyBase._build_multimodal_inputs()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.strategy_base.StrategyBase.all_gather"><code class="docutils literal notranslate"><span class="pre">StrategyBase.all_gather()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.strategy_base.StrategyBase.all_reduce"><code class="docutils literal notranslate"><span class="pre">StrategyBase.all_reduce()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.strategy_base.StrategyBase.backward"><code class="docutils literal notranslate"><span class="pre">StrategyBase.backward()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.strategy_base.StrategyBase.create_optimizer"><code class="docutils literal notranslate"><span class="pre">StrategyBase.create_optimizer()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.strategy_base.StrategyBase.engine_generate_local"><code class="docutils literal notranslate"><span class="pre">StrategyBase.engine_generate_local()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.strategy_base.StrategyBase.gather_and_generate"><code class="docutils literal notranslate"><span class="pre">StrategyBase.gather_and_generate()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.strategy_base.StrategyBase.get_rank"><code class="docutils literal notranslate"><span class="pre">StrategyBase.get_rank()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.strategy_base.StrategyBase.init_model_context"><code class="docutils literal notranslate"><span class="pre">StrategyBase.init_model_context()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.strategy_base.StrategyBase.is_rank_0"><code class="docutils literal notranslate"><span class="pre">StrategyBase.is_rank_0()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.strategy_base.StrategyBase.load_ckpt"><code class="docutils literal notranslate"><span class="pre">StrategyBase.load_ckpt()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.strategy_base.StrategyBase.maybe_load_optimizer"><code class="docutils literal notranslate"><span class="pre">StrategyBase.maybe_load_optimizer()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.strategy_base.StrategyBase.maybe_offload_optimizer"><code class="docutils literal notranslate"><span class="pre">StrategyBase.maybe_offload_optimizer()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.strategy_base.StrategyBase.maybe_sleep_inference_engine"><code class="docutils literal notranslate"><span class="pre">StrategyBase.maybe_sleep_inference_engine()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.strategy_base.StrategyBase.optimizer_step"><code class="docutils literal notranslate"><span class="pre">StrategyBase.optimizer_step()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.strategy_base.StrategyBase.prepare"><code class="docutils literal notranslate"><span class="pre">StrategyBase.prepare()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.strategy_base.StrategyBase.prepare_models_and_optimizers"><code class="docutils literal notranslate"><span class="pre">StrategyBase.prepare_models_and_optimizers()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.strategy_base.StrategyBase.print"><code class="docutils literal notranslate"><span class="pre">StrategyBase.print()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.strategy_base.StrategyBase.report_memory"><code class="docutils literal notranslate"><span class="pre">StrategyBase.report_memory()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.strategy_base.StrategyBase.save_ckpt"><code class="docutils literal notranslate"><span class="pre">StrategyBase.save_ckpt()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.strategy_base.StrategyBase.set_seed"><code class="docutils literal notranslate"><span class="pre">StrategyBase.set_seed()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.strategy_base.StrategyBase.setup_dataloader"><code class="docutils literal notranslate"><span class="pre">StrategyBase.setup_dataloader()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.strategy_base.StrategyBase.setup_distributed"><code class="docutils literal notranslate"><span class="pre">StrategyBase.setup_distributed()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.strategy_base.StrategyBase.setup_inference_engine"><code class="docutils literal notranslate"><span class="pre">StrategyBase.setup_inference_engine()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.strategy_base.StrategyBase.sync_and_clear_cache"><code class="docutils literal notranslate"><span class="pre">StrategyBase.sync_and_clear_cache()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.strategy_base.StrategyBase.unwrap_model"><code class="docutils literal notranslate"><span class="pre">StrategyBase.unwrap_model()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.strategy_base.StrategyBase.update_engine_weights"><code class="docutils literal notranslate"><span class="pre">StrategyBase.update_engine_weights()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.strategy_base.StrategyBase.wakeup_inference_engine"><code class="docutils literal notranslate"><span class="pre">StrategyBase.wakeup_inference_engine()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#is-actor">is_actor</a><ul>
+<li><a class="reference internal" href="#lightrft.strategy.strategy_base.is_actor"><code class="docutils literal notranslate"><span class="pre">is_actor()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

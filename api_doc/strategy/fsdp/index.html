@@ -306,37 +306,97 @@
             <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
               <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
                 
-  <section id="lightrft-strategy-fsdp">
-<h1>lightrft.strategy.fsdp<a class="headerlink" href="#lightrft-strategy-fsdp" title="Permalink to this heading">¶</a></h1>
+  <section id="module-lightrft.strategy.fsdp">
+<span id="lightrft-strategy-fsdp"></span><h1>lightrft.strategy.fsdp<a class="headerlink" href="#module-lightrft.strategy.fsdp" title="Permalink to this heading">¶</a></h1>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="fsdp_optimizer.html">lightrft.strategy.fsdp.fsdp_optimizer</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="fsdp_optimizer.html#dtensor-supported">DTENSOR_SUPPORTED</a></li>
-<li class="toctree-l2"><a class="reference internal" href="fsdp_optimizer.html#fsdpadaptoptimizer">FSDPadaptOptimizer</a></li>
-<li class="toctree-l2"><a class="reference internal" href="fsdp_optimizer.html#offload-fsdp-optimizer">offload_fsdp_optimizer</a></li>
-<li class="toctree-l2"><a class="reference internal" href="fsdp_optimizer.html#load-fsdp-optimizer">load_fsdp_optimizer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fsdp_optimizer.html#dtensor-supported">DTENSOR_SUPPORTED</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="fsdp_optimizer.html#lightrft.strategy.fsdp.fsdp_optimizer.DTENSOR_SUPPORTED"><code class="docutils literal notranslate"><span class="pre">DTENSOR_SUPPORTED</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="fsdp_optimizer.html#fsdpadaptoptimizer">FSDPadaptOptimizer</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="fsdp_optimizer.html#lightrft.strategy.fsdp.fsdp_optimizer.FSDPadaptOptimizer"><code class="docutils literal notranslate"><span class="pre">FSDPadaptOptimizer</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="fsdp_optimizer.html#offload-fsdp-optimizer">offload_fsdp_optimizer</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="fsdp_optimizer.html#lightrft.strategy.fsdp.fsdp_optimizer.offload_fsdp_optimizer"><code class="docutils literal notranslate"><span class="pre">offload_fsdp_optimizer()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="fsdp_optimizer.html#load-fsdp-optimizer">load_fsdp_optimizer</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="fsdp_optimizer.html#lightrft.strategy.fsdp.fsdp_optimizer.load_fsdp_optimizer"><code class="docutils literal notranslate"><span class="pre">load_fsdp_optimizer()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="fsdp_utils.html">lightrft.strategy.fsdp.fsdp_utils</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="fsdp_utils.html#is-meta-initialized">is_meta_initialized</a></li>
-<li class="toctree-l2"><a class="reference internal" href="fsdp_utils.html#multi-tensor-l2norm-torch">multi_tensor_l2norm_torch</a></li>
-<li class="toctree-l2"><a class="reference internal" href="fsdp_utils.html#calc-l2-norm">calc_l2_norm</a></li>
-<li class="toctree-l2"><a class="reference internal" href="fsdp_utils.html#calc-lp">calc_lp</a></li>
-<li class="toctree-l2"><a class="reference internal" href="fsdp_utils.html#get-norm">get_norm</a></li>
-<li class="toctree-l2"><a class="reference internal" href="fsdp_utils.html#reduce-grads">reduce_grads</a></li>
-<li class="toctree-l2"><a class="reference internal" href="fsdp_utils.html#get-tensor-norm">get_tensor_norm</a></li>
-<li class="toctree-l2"><a class="reference internal" href="fsdp_utils.html#compute-norm">compute_norm</a></li>
-<li class="toctree-l2"><a class="reference internal" href="fsdp_utils.html#basegradscaler">BaseGradScaler</a></li>
-<li class="toctree-l2"><a class="reference internal" href="fsdp_utils.html#dynamicgradscaler">DynamicGradScaler</a></li>
-<li class="toctree-l2"><a class="reference internal" href="fsdp_utils.html#baseoptimizer">BaseOptimizer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fsdp_utils.html#is-meta-initialized">is_meta_initialized</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="fsdp_utils.html#lightrft.strategy.fsdp.fsdp_utils.is_meta_initialized"><code class="docutils literal notranslate"><span class="pre">is_meta_initialized()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="fsdp_utils.html#multi-tensor-l2norm-torch">multi_tensor_l2norm_torch</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="fsdp_utils.html#lightrft.strategy.fsdp.fsdp_utils.multi_tensor_l2norm_torch"><code class="docutils literal notranslate"><span class="pre">multi_tensor_l2norm_torch()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="fsdp_utils.html#calc-l2-norm">calc_l2_norm</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="fsdp_utils.html#lightrft.strategy.fsdp.fsdp_utils.calc_l2_norm"><code class="docutils literal notranslate"><span class="pre">calc_l2_norm()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="fsdp_utils.html#calc-lp">calc_lp</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="fsdp_utils.html#lightrft.strategy.fsdp.fsdp_utils.calc_lp"><code class="docutils literal notranslate"><span class="pre">calc_lp()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="fsdp_utils.html#get-norm">get_norm</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="fsdp_utils.html#lightrft.strategy.fsdp.fsdp_utils.get_norm"><code class="docutils literal notranslate"><span class="pre">get_norm()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="fsdp_utils.html#reduce-grads">reduce_grads</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="fsdp_utils.html#lightrft.strategy.fsdp.fsdp_utils.reduce_grads"><code class="docutils literal notranslate"><span class="pre">reduce_grads()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="fsdp_utils.html#get-tensor-norm">get_tensor_norm</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="fsdp_utils.html#lightrft.strategy.fsdp.fsdp_utils.get_tensor_norm"><code class="docutils literal notranslate"><span class="pre">get_tensor_norm()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="fsdp_utils.html#compute-norm">compute_norm</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="fsdp_utils.html#lightrft.strategy.fsdp.fsdp_utils.compute_norm"><code class="docutils literal notranslate"><span class="pre">compute_norm()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="fsdp_utils.html#basegradscaler">BaseGradScaler</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="fsdp_utils.html#lightrft.strategy.fsdp.fsdp_utils.BaseGradScaler"><code class="docutils literal notranslate"><span class="pre">BaseGradScaler</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="fsdp_utils.html#dynamicgradscaler">DynamicGradScaler</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="fsdp_utils.html#lightrft.strategy.fsdp.fsdp_utils.DynamicGradScaler"><code class="docutils literal notranslate"><span class="pre">DynamicGradScaler</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="fsdp_utils.html#baseoptimizer">BaseOptimizer</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="fsdp_utils.html#lightrft.strategy.fsdp.fsdp_utils.BaseOptimizer"><code class="docutils literal notranslate"><span class="pre">BaseOptimizer</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="fsdpv2.html">lightrft.strategy.fsdp.fsdpv2</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="fsdpv2.html#fsdpv2strategy">FSDPV2Strategy</a></li>
-<li class="toctree-l2"><a class="reference internal" href="fsdpv2.html#is-mp-optimizer">is_mp_optimizer</a></li>
-<li class="toctree-l2"><a class="reference internal" href="fsdpv2.html#modeloptimpair">ModelOptimPair</a></li>
-<li class="toctree-l2"><a class="reference internal" href="fsdpv2.html#modelormodeloptimpair">ModelOrModelOptimPair</a></li>
-<li class="toctree-l2"><a class="reference internal" href="fsdpv2.html#manual-transformer-cls-names-to-wrap">manual_transformer_cls_names_to_wrap</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fsdpv2.html#fsdpv2strategy">FSDPV2Strategy</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="fsdpv2.html#lightrft.strategy.fsdp.fsdpv2.FSDPV2Strategy"><code class="docutils literal notranslate"><span class="pre">FSDPV2Strategy</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="fsdpv2.html#is-mp-optimizer">is_mp_optimizer</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="fsdpv2.html#lightrft.strategy.fsdp.fsdpv2.is_mp_optimizer"><code class="docutils literal notranslate"><span class="pre">is_mp_optimizer()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="fsdpv2.html#modeloptimpair">ModelOptimPair</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="fsdpv2.html#lightrft.strategy.fsdp.fsdpv2.ModelOptimPair"><code class="docutils literal notranslate"><span class="pre">ModelOptimPair</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="fsdpv2.html#modelormodeloptimpair">ModelOrModelOptimPair</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="fsdpv2.html#lightrft.strategy.fsdp.fsdpv2.ModelOrModelOptimPair"><code class="docutils literal notranslate"><span class="pre">ModelOrModelOptimPair</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="fsdpv2.html#manual-transformer-cls-names-to-wrap">manual_transformer_cls_names_to_wrap</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="fsdpv2.html#lightrft.strategy.fsdp.fsdpv2.manual_transformer_cls_names_to_wrap"><code class="docutils literal notranslate"><span class="pre">manual_transformer_cls_names_to_wrap</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

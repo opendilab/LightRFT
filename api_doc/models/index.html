@@ -304,26 +304,150 @@
             <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
               <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
                 
-  <section id="lightrft-models">
-<h1>lightrft.models<a class="headerlink" href="#lightrft-models" title="Permalink to this heading">¶</a></h1>
+  <section id="module-lightrft.models">
+<span id="lightrft-models"></span><h1>lightrft.models<a class="headerlink" href="#module-lightrft.models" title="Permalink to this heading">¶</a></h1>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="actor_al.html">lightrft.models.actor_al</a></li>
-<li class="toctree-l1"><a class="reference internal" href="actor_language.html">lightrft.models.actor_language</a></li>
-<li class="toctree-l1"><a class="reference internal" href="actor_vl.html">lightrft.models.actor_vl</a></li>
-<li class="toctree-l1"><a class="reference internal" href="grm_vl.html">lightrft.models.grm_vl</a></li>
-<li class="toctree-l1"><a class="reference internal" href="loss.html">lightrft.models.loss</a></li>
-<li class="toctree-l1"><a class="reference internal" href="monkey_patch/index.html">lightrft.models.monkey_patch</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="monkey_patch/apply.html">lightrft.models.monkey_patch.apply</a></li>
-<li class="toctree-l2"><a class="reference internal" href="monkey_patch/hf_generate_patch.html">lightrft.models.monkey_patch.hf_generate_patch</a></li>
-<li class="toctree-l2"><a class="reference internal" href="monkey_patch/llama.html">lightrft.models.monkey_patch.llama</a></li>
-<li class="toctree-l2"><a class="reference internal" href="monkey_patch/qwen.html">lightrft.models.monkey_patch.qwen</a></li>
+<li class="toctree-l1"><a class="reference internal" href="actor_al.html">lightrft.models.actor_al</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="actor_al.html#lightrft.models.actor_al.ActorAL"><code class="docutils literal notranslate"><span class="pre">ActorAL</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="actor_al.html#lightrft.models.actor_al.ActorAL.forward"><code class="docutils literal notranslate"><span class="pre">ActorAL.forward()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="actor_al.html#lightrft.models.actor_al.ActorAL.generate"><code class="docutils literal notranslate"><span class="pre">ActorAL.generate()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="actor_al.html#lightrft.models.actor_al.ActorAL.gradient_checkpointing_disable"><code class="docutils literal notranslate"><span class="pre">ActorAL.gradient_checkpointing_disable()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="actor_al.html#lightrft.models.actor_al.ActorAL.gradient_checkpointing_enable"><code class="docutils literal notranslate"><span class="pre">ActorAL.gradient_checkpointing_enable()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="actor_al.html#lightrft.models.actor_al.ActorAL.print_trainable_parameters"><code class="docutils literal notranslate"><span class="pre">ActorAL.print_trainable_parameters()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="actor_al.html#lightrft.models.actor_al.ActorAL.process_sequences"><code class="docutils literal notranslate"><span class="pre">ActorAL.process_sequences()</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="srm_al.html">lightrft.models.srm_al</a></li>
-<li class="toctree-l1"><a class="reference internal" href="srm_vl.html">lightrft.models.srm_vl</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="actor_language.html">lightrft.models.actor_language</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="actor_language.html#lightrft.models.actor_language.ActorLanguage"><code class="docutils literal notranslate"><span class="pre">ActorLanguage</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="actor_language.html#lightrft.models.actor_language.ActorLanguage.forward"><code class="docutils literal notranslate"><span class="pre">ActorLanguage.forward()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="actor_language.html#lightrft.models.actor_language.ActorLanguage.generate"><code class="docutils literal notranslate"><span class="pre">ActorLanguage.generate()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="actor_language.html#lightrft.models.actor_language.ActorLanguage.gradient_checkpointing_disable"><code class="docutils literal notranslate"><span class="pre">ActorLanguage.gradient_checkpointing_disable()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="actor_language.html#lightrft.models.actor_language.ActorLanguage.gradient_checkpointing_enable"><code class="docutils literal notranslate"><span class="pre">ActorLanguage.gradient_checkpointing_enable()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="actor_language.html#lightrft.models.actor_language.ActorLanguage.print_trainable_parameters"><code class="docutils literal notranslate"><span class="pre">ActorLanguage.print_trainable_parameters()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="actor_language.html#lightrft.models.actor_language.ActorLanguage.process_sequences"><code class="docutils literal notranslate"><span class="pre">ActorLanguage.process_sequences()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="actor_vl.html">lightrft.models.actor_vl</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="actor_vl.html#lightrft.models.actor_vl.ActorVL"><code class="docutils literal notranslate"><span class="pre">ActorVL</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="actor_vl.html#lightrft.models.actor_vl.ActorVL.forward"><code class="docutils literal notranslate"><span class="pre">ActorVL.forward()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="actor_vl.html#lightrft.models.actor_vl.ActorVL.generate"><code class="docutils literal notranslate"><span class="pre">ActorVL.generate()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="actor_vl.html#lightrft.models.actor_vl.ActorVL.gradient_checkpointing_disable"><code class="docutils literal notranslate"><span class="pre">ActorVL.gradient_checkpointing_disable()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="actor_vl.html#lightrft.models.actor_vl.ActorVL.gradient_checkpointing_enable"><code class="docutils literal notranslate"><span class="pre">ActorVL.gradient_checkpointing_enable()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="actor_vl.html#lightrft.models.actor_vl.ActorVL.print_trainable_parameters"><code class="docutils literal notranslate"><span class="pre">ActorVL.print_trainable_parameters()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="actor_vl.html#lightrft.models.actor_vl.ActorVL.process_sequences"><code class="docutils literal notranslate"><span class="pre">ActorVL.process_sequences()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="grm_vl.html">lightrft.models.grm_vl</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="grm_vl.html#lightrft.models.grm_vl.GenerativeRewardModelVL"><code class="docutils literal notranslate"><span class="pre">GenerativeRewardModelVL</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="grm_vl.html#lightrft.models.grm_vl.GenerativeRewardModelVL.forward"><code class="docutils literal notranslate"><span class="pre">GenerativeRewardModelVL.forward()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="grm_vl.html#lightrft.models.grm_vl.GenerativeRewardModelVL.generate"><code class="docutils literal notranslate"><span class="pre">GenerativeRewardModelVL.generate()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="grm_vl.html#lightrft.models.grm_vl.GenerativeRewardModelVL.gradient_checkpointing_disable"><code class="docutils literal notranslate"><span class="pre">GenerativeRewardModelVL.gradient_checkpointing_disable()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="grm_vl.html#lightrft.models.grm_vl.GenerativeRewardModelVL.gradient_checkpointing_enable"><code class="docutils literal notranslate"><span class="pre">GenerativeRewardModelVL.gradient_checkpointing_enable()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="grm_vl.html#lightrft.models.grm_vl.GenerativeRewardModelVL.print_trainable_parameters"><code class="docutils literal notranslate"><span class="pre">GenerativeRewardModelVL.print_trainable_parameters()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="loss.html">lightrft.models.loss</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="loss.html#lightrft.models.loss.DPOLoss"><code class="docutils literal notranslate"><span class="pre">DPOLoss</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="loss.html#lightrft.models.loss.DPOLoss.forward"><code class="docutils literal notranslate"><span class="pre">DPOLoss.forward()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="loss.html#lightrft.models.loss.GPTLMLoss"><code class="docutils literal notranslate"><span class="pre">GPTLMLoss</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="loss.html#lightrft.models.loss.GPTLMLoss.forward"><code class="docutils literal notranslate"><span class="pre">GPTLMLoss.forward()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="loss.html#lightrft.models.loss.HPSLoss"><code class="docutils literal notranslate"><span class="pre">HPSLoss</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="loss.html#lightrft.models.loss.HPSLoss.forward"><code class="docutils literal notranslate"><span class="pre">HPSLoss.forward()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="loss.html#lightrft.models.loss.KDLoss"><code class="docutils literal notranslate"><span class="pre">KDLoss</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="loss.html#lightrft.models.loss.KDLoss.forward"><code class="docutils literal notranslate"><span class="pre">KDLoss.forward()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="loss.html#lightrft.models.loss.KTOLoss"><code class="docutils literal notranslate"><span class="pre">KTOLoss</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="loss.html#lightrft.models.loss.KTOLoss.forward"><code class="docutils literal notranslate"><span class="pre">KTOLoss.forward()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="loss.html#lightrft.models.loss.LogExpLoss"><code class="docutils literal notranslate"><span class="pre">LogExpLoss</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="loss.html#lightrft.models.loss.LogExpLoss.forward"><code class="docutils literal notranslate"><span class="pre">LogExpLoss.forward()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="loss.html#lightrft.models.loss.LogSigmoidLoss"><code class="docutils literal notranslate"><span class="pre">LogSigmoidLoss</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="loss.html#lightrft.models.loss.LogSigmoidLoss.forward"><code class="docutils literal notranslate"><span class="pre">LogSigmoidLoss.forward()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="loss.html#lightrft.models.loss.PRMLoss"><code class="docutils literal notranslate"><span class="pre">PRMLoss</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="loss.html#lightrft.models.loss.PRMLoss.forward"><code class="docutils literal notranslate"><span class="pre">PRMLoss.forward()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="loss.html#lightrft.models.loss.PairWiseLoss"><code class="docutils literal notranslate"><span class="pre">PairWiseLoss</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="loss.html#lightrft.models.loss.PairWiseLoss.forward"><code class="docutils literal notranslate"><span class="pre">PairWiseLoss.forward()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="loss.html#lightrft.models.loss.PolicyLoss"><code class="docutils literal notranslate"><span class="pre">PolicyLoss</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="loss.html#lightrft.models.loss.PolicyLoss.forward"><code class="docutils literal notranslate"><span class="pre">PolicyLoss.forward()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="loss.html#lightrft.models.loss.ValueLoss"><code class="docutils literal notranslate"><span class="pre">ValueLoss</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="loss.html#lightrft.models.loss.ValueLoss.forward"><code class="docutils literal notranslate"><span class="pre">ValueLoss.forward()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="loss.html#lightrft.models.loss.VanillaKTOLoss"><code class="docutils literal notranslate"><span class="pre">VanillaKTOLoss</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="loss.html#lightrft.models.loss.VanillaKTOLoss.forward"><code class="docutils literal notranslate"><span class="pre">VanillaKTOLoss.forward()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="monkey_patch/index.html">lightrft.models.monkey_patch</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="monkey_patch/apply.html">lightrft.models.monkey_patch.apply</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="monkey_patch/apply.html#lightrft.models.monkey_patch.apply.apply_monkey_patch_to_llama"><code class="docutils literal notranslate"><span class="pre">apply_monkey_patch_to_llama()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="monkey_patch/apply.html#lightrft.models.monkey_patch.apply.apply_monkey_patch_to_qwen2"><code class="docutils literal notranslate"><span class="pre">apply_monkey_patch_to_qwen2()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="monkey_patch/hf_generate_patch.html">lightrft.models.monkey_patch.hf_generate_patch</a></li>
+<li class="toctree-l2"><a class="reference internal" href="monkey_patch/llama.html">lightrft.models.monkey_patch.llama</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="monkey_patch/llama.html#lightrft.models.monkey_patch.llama.llama_attn_forward"><code class="docutils literal notranslate"><span class="pre">llama_attn_forward()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="monkey_patch/qwen.html">lightrft.models.monkey_patch.qwen</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="monkey_patch/qwen.html#lightrft.models.monkey_patch.qwen.qwen2_attn_forward"><code class="docutils literal notranslate"><span class="pre">qwen2_attn_forward()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="srm_al.html">lightrft.models.srm_al</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="srm_al.html#lightrft.models.srm_al.ScalarRewardModelAL"><code class="docutils literal notranslate"><span class="pre">ScalarRewardModelAL</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="srm_al.html#lightrft.models.srm_al.ScalarRewardModelAL.forward"><code class="docutils literal notranslate"><span class="pre">ScalarRewardModelAL.forward()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="srm_al.html#lightrft.models.srm_al.ScalarRewardModelAL.gradient_checkpointing_disable"><code class="docutils literal notranslate"><span class="pre">ScalarRewardModelAL.gradient_checkpointing_disable()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="srm_al.html#lightrft.models.srm_al.ScalarRewardModelAL.gradient_checkpointing_enable"><code class="docutils literal notranslate"><span class="pre">ScalarRewardModelAL.gradient_checkpointing_enable()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="srm_al.html#lightrft.models.srm_al.ScalarRewardModelAL.print_trainable_parameters"><code class="docutils literal notranslate"><span class="pre">ScalarRewardModelAL.print_trainable_parameters()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="srm_vl.html">lightrft.models.srm_vl</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="srm_vl.html#lightrft.models.srm_vl.ScalarRewardModelVL"><code class="docutils literal notranslate"><span class="pre">ScalarRewardModelVL</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="srm_vl.html#lightrft.models.srm_vl.ScalarRewardModelVL.forward"><code class="docutils literal notranslate"><span class="pre">ScalarRewardModelVL.forward()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="srm_vl.html#lightrft.models.srm_vl.ScalarRewardModelVL.gradient_checkpointing_disable"><code class="docutils literal notranslate"><span class="pre">ScalarRewardModelVL.gradient_checkpointing_disable()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="srm_vl.html#lightrft.models.srm_vl.ScalarRewardModelVL.gradient_checkpointing_enable"><code class="docutils literal notranslate"><span class="pre">ScalarRewardModelVL.gradient_checkpointing_enable()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="srm_vl.html#lightrft.models.srm_vl.ScalarRewardModelVL.print_trainable_parameters"><code class="docutils literal notranslate"><span class="pre">ScalarRewardModelVL.print_trainable_parameters()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="utils.html">lightrft.models.utils</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="utils.html#log-probs-from-logits">log_probs_from_logits</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utils.html#log-probs-from-logits">log_probs_from_logits</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="utils.html#lightrft.models.utils.log_probs_from_logits"><code class="docutils literal notranslate"><span class="pre">log_probs_from_logits()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

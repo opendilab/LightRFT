@@ -308,22 +308,226 @@
             <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
               <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
                 
-  <section id="lightrft-strategy-utils-statistic">
-<h1>lightrft.strategy.utils.statistic<a class="headerlink" href="#lightrft-strategy-utils-statistic" title="Permalink to this heading">¶</a></h1>
+  <section id="module-lightrft.strategy.utils.statistic">
+<span id="lightrft-strategy-utils-statistic"></span><h1>lightrft.strategy.utils.statistic<a class="headerlink" href="#module-lightrft.strategy.utils.statistic" title="Permalink to this heading">¶</a></h1>
+<p>Utilities for analyzing and visualizing the length distribution of generated outputs.</p>
+<p>This module provides functionality for collecting, analyzing, and visualizing the length
+distribution of generated outputs from language models. It includes tools for gathering
+output lengths across distributed processes, computing statistics like percentiles,
+and creating visualizations using matplotlib and TensorBoard.</p>
+<p>The main components are:
+- GenLenAnalyser: A class for continuous monitoring and visualization of generation lengths
+- Helper functions for collecting and analyzing output lengths in distributed environments</p>
 <section id="genlenanalyser">
 <h2>GenLenAnalyser<a class="headerlink" href="#genlenanalyser" title="Permalink to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="lightrft.strategy.utils.statistic.GenLenAnalyser">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">lightrft.strategy.utils.statistic.</span></span><span class="sig-name descname"><span class="pre">GenLenAnalyser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">engine_dp_group</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_every</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">percentiles</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[50,</span> <span class="pre">80]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_out_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/lightrft/strategy/utils/statistic.html#GenLenAnalyser"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.utils.statistic.GenLenAnalyser" title="Permalink to this definition">¶</a></dt>
+<dd><p>Analyzer for tracking and visualizing the length distribution of generated outputs.</p>
+<p>This class collects length statistics of generated outputs over time, computes
+various metrics, and can visualize the distributions using matplotlib and TensorBoard.
+It is designed to work in distributed training environments and provides continuous
+monitoring capabilities with configurable plotting intervals.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>engine_dp_group</strong> (<em>torch.distributed.ProcessGroup</em>) – The distributed process group for communication</p></li>
+<li><p><strong>plot_every</strong> (<em>int</em>) – How often to plot the distribution (in steps), set to 0 to disable plotting</p></li>
+<li><p><strong>percentiles</strong> (<em>list</em>) – List of percentiles to compute for the length distribution</p></li>
+<li><p><strong>plot_out_dir</strong> (<em>str</em><em> or </em><em>None</em>) – Directory to save plots and TensorBoard logs, if None no plots are saved</p></li>
+</ul>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">torch.distributed</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">dist</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Initialize distributed process group</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">analyzer</span> <span class="o">=</span> <span class="n">GenLenAnalyser</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">engine_dp_group</span><span class="o">=</span><span class="n">dist</span><span class="o">.</span><span class="n">group</span><span class="o">.</span><span class="n">WORLD</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">plot_every</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">percentiles</span><span class="o">=</span><span class="p">[</span><span class="mi">25</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">75</span><span class="p">,</span> <span class="mi">90</span><span class="p">],</span>
+<span class="gp">... </span>    <span class="n">plot_out_dir</span><span class="o">=</span><span class="s2">&quot;./output_analysis&quot;</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># Use during training loop</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">stats</span> <span class="o">=</span> <span class="n">analyzer</span><span class="o">.</span><span class="n">collect</span><span class="p">(</span><span class="n">generation_outputs</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">is_rank_0</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.utils.statistic.GenLenAnalyser.collect">
+<span class="sig-name descname"><span class="pre">collect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gen_outputs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cur_step</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_rank_0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/lightrft/strategy/utils/statistic.html#GenLenAnalyser.collect"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.utils.statistic.GenLenAnalyser.collect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Collect and analyze generation length data at the current step.</p>
+<p>This method gathers output lengths from all processes, computes statistics,
+and optionally creates visualizations if conditions are met. The collection
+happens at intervals specified by plot_every parameter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>gen_outputs</strong> (<em>list</em>) – List of generation outputs to analyze, each containing ‘output_token_ids’</p></li>
+<li><p><strong>cur_step</strong> (<em>int</em>) – Current training/generation step</p></li>
+<li><p><strong>is_rank_0</strong> (<em>bool</em>) – Whether the current process is the main process (rank 0)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dictionary containing length statistics or None if collection is skipped</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict or None</p>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">gen_outputs</span> <span class="o">=</span> <span class="p">[</span>
+<span class="gp">... </span>    <span class="p">{</span><span class="s2">&quot;output_token_ids&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">]},</span>
+<span class="gp">... </span>    <span class="p">{</span><span class="s2">&quot;output_token_ids&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]}</span>
+<span class="gp">... </span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">stats</span> <span class="o">=</span> <span class="n">analyzer</span><span class="o">.</span><span class="n">collect</span><span class="p">(</span><span class="n">gen_outputs</span><span class="p">,</span> <span class="n">cur_step</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">is_rank_0</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">if</span> <span class="n">stats</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Mean length: </span><span class="si">{</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;mean_length&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 <section id="analyse-output-lengths">
 <h2>analyse_output_lengths<a class="headerlink" href="#analyse-output-lengths" title="Permalink to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="lightrft.strategy.utils.statistic.analyse_output_lengths">
+<span class="sig-prename descclassname"><span class="pre">lightrft.strategy.utils.statistic.</span></span><span class="sig-name descname"><span class="pre">analyse_output_lengths</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gen_outputs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">engine_dp_group</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">percentiles</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[50,</span> <span class="pre">80]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_out_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/lightrft/strategy/utils/statistic.html#analyse_output_lengths"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.utils.statistic.analyse_output_lengths" title="Permalink to this definition">¶</a></dt>
+<dd><p>Analyze the length distribution of generated outputs.</p>
+<p>This is a convenience function that collects local output lengths, gathers them
+across all processes, and computes statistics. It provides a one-time analysis
+without the continuous monitoring capabilities of GenLenAnalyser.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>gen_outputs</strong> (<em>list</em>) – List of generation outputs to analyze, each containing ‘output_token_ids’</p></li>
+<li><p><strong>engine_dp_group</strong> (<em>torch.distributed.ProcessGroup</em>) – The distributed process group for communication</p></li>
+<li><p><strong>percentiles</strong> (<em>list</em>) – List of percentiles to compute for the length distribution</p></li>
+<li><p><strong>plot_out_dir</strong> (<em>str</em><em> or </em><em>None</em>) – Directory to save plots, if None no plots are saved</p></li>
+<li><p><strong>prefix</strong> (<em>str</em>) – Prefix for plot filenames</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dictionary containing length statistics</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">gen_outputs</span> <span class="o">=</span> <span class="p">[</span>
+<span class="gp">... </span>    <span class="p">{</span><span class="s2">&quot;output_token_ids&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">]},</span>
+<span class="gp">... </span>    <span class="p">{</span><span class="s2">&quot;output_token_ids&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]}</span>
+<span class="gp">... </span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">stats</span> <span class="o">=</span> <span class="n">analyse_output_lengths</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">gen_outputs</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">engine_dp_group</span><span class="o">=</span><span class="n">dist</span><span class="o">.</span><span class="n">group</span><span class="o">.</span><span class="n">WORLD</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">percentiles</span><span class="o">=</span><span class="p">[</span><span class="mi">25</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">75</span><span class="p">]</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Median length: </span><span class="si">{</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;median_length&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
 </section>
 <section id="collect-local-output-lengths">
 <h2>collect_local_output_lengths<a class="headerlink" href="#collect-local-output-lengths" title="Permalink to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="lightrft.strategy.utils.statistic.collect_local_output_lengths">
+<span class="sig-prename descclassname"><span class="pre">lightrft.strategy.utils.statistic.</span></span><span class="sig-name descname"><span class="pre">collect_local_output_lengths</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">outputs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/lightrft/strategy/utils/statistic.html#collect_local_output_lengths"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.utils.statistic.collect_local_output_lengths" title="Permalink to this definition">¶</a></dt>
+<dd><p>Collect the lengths of generated outputs from the local process.</p>
+<p>This function extracts the length of each output by counting the tokens
+in the ‘output_token_ids’ field of each output dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>outputs</strong> (<em>list</em>) – List of generation outputs, each containing ‘output_token_ids’</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>List of output lengths corresponding to each input output</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">outputs</span> <span class="o">=</span> <span class="p">[</span>
+<span class="gp">... </span>    <span class="p">{</span><span class="s2">&quot;output_token_ids&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">]},</span>
+<span class="gp">... </span>    <span class="p">{</span><span class="s2">&quot;output_token_ids&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">]},</span>
+<span class="gp">... </span>    <span class="p">{</span><span class="s2">&quot;output_token_ids&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">100</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">300</span><span class="p">]}</span>
+<span class="gp">... </span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lengths</span> <span class="o">=</span> <span class="n">collect_local_output_lengths</span><span class="p">(</span><span class="n">outputs</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">lengths</span><span class="p">)</span>  <span class="c1"># [5, 2, 3]</span>
+</pre></div>
+</div>
+</dd></dl>
+
 </section>
 <section id="gather-all-lengths">
 <h2>gather_all_lengths<a class="headerlink" href="#gather-all-lengths" title="Permalink to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="lightrft.strategy.utils.statistic.gather_all_lengths">
+<span class="sig-prename descclassname"><span class="pre">lightrft.strategy.utils.statistic.</span></span><span class="sig-name descname"><span class="pre">gather_all_lengths</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">local_lengths</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/lightrft/strategy/utils/statistic.html#gather_all_lengths"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.utils.statistic.gather_all_lengths" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gather output lengths from all processes in the distributed group.</p>
+<p>This function uses PyTorch’s distributed communication to collect length
+data from all processes in the specified group, enabling global analysis
+of generation length distributions across the entire distributed system.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>local_lengths</strong> (<em>list</em>) – List of output lengths from the local process</p></li>
+<li><p><strong>group</strong> (<em>torch.distributed.ProcessGroup</em>) – The distributed process group for communication</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Combined list of output lengths from all processes</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Assuming distributed environment is set up</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">local_lengths</span> <span class="o">=</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">7</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">all_lengths</span> <span class="o">=</span> <span class="n">gather_all_lengths</span><span class="p">(</span><span class="n">local_lengths</span><span class="p">,</span> <span class="n">dist</span><span class="o">.</span><span class="n">group</span><span class="o">.</span><span class="n">WORLD</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># all_lengths now contains lengths from all processes</span>
+</pre></div>
+</div>
+</dd></dl>
+
 </section>
 <section id="analyze-output-lengths">
 <h2>analyze_output_lengths<a class="headerlink" href="#analyze-output-lengths" title="Permalink to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="lightrft.strategy.utils.statistic.analyze_output_lengths">
+<span class="sig-prename descclassname"><span class="pre">lightrft.strategy.utils.statistic.</span></span><span class="sig-name descname"><span class="pre">analyze_output_lengths</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">all_lengths</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">percentiles</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/lightrft/strategy/utils/statistic.html#analyze_output_lengths"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.utils.statistic.analyze_output_lengths" title="Permalink to this definition">¶</a></dt>
+<dd><p>Analyze the distribution of output lengths and compute statistics.</p>
+<p>This function computes comprehensive statistics about the length distribution,
+including basic statistics (min, max, mean, median) and user-specified percentiles.
+The results provide insights into the generation behavior and can help with
+optimization and monitoring.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>all_lengths</strong> (<em>list</em>) – List of output lengths from all processes</p></li>
+<li><p><strong>percentiles</strong> (<em>list</em>) – List of percentiles to compute (e.g., [25, 50, 75, 90])</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dictionary containing statistics about the length distribution</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">lengths</span> <span class="o">=</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">25</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">35</span><span class="p">,</span> <span class="mi">40</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">stats</span> <span class="o">=</span> <span class="n">analyze_output_lengths</span><span class="p">(</span><span class="n">lengths</span><span class="p">,</span> <span class="n">percentiles</span><span class="o">=</span><span class="p">[</span><span class="mi">25</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">75</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Mean: </span><span class="si">{</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;mean_length&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;75th percentile: </span><span class="si">{</span><span class="n">stats</span><span class="p">[</span><span class="s1">&#39;percentiles&#39;</span><span class="p">][</span><span class="mi">75</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
 </section>
 </section>
 
@@ -371,11 +575,29 @@
             <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
               <ul>
 <li><a class="reference internal" href="#">lightrft.strategy.utils.statistic</a><ul>
-<li><a class="reference internal" href="#genlenanalyser">GenLenAnalyser</a></li>
-<li><a class="reference internal" href="#analyse-output-lengths">analyse_output_lengths</a></li>
-<li><a class="reference internal" href="#collect-local-output-lengths">collect_local_output_lengths</a></li>
-<li><a class="reference internal" href="#gather-all-lengths">gather_all_lengths</a></li>
-<li><a class="reference internal" href="#analyze-output-lengths">analyze_output_lengths</a></li>
+<li><a class="reference internal" href="#genlenanalyser">GenLenAnalyser</a><ul>
+<li><a class="reference internal" href="#lightrft.strategy.utils.statistic.GenLenAnalyser"><code class="docutils literal notranslate"><span class="pre">GenLenAnalyser</span></code></a><ul>
+<li><a class="reference internal" href="#lightrft.strategy.utils.statistic.GenLenAnalyser.collect"><code class="docutils literal notranslate"><span class="pre">GenLenAnalyser.collect()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#analyse-output-lengths">analyse_output_lengths</a><ul>
+<li><a class="reference internal" href="#lightrft.strategy.utils.statistic.analyse_output_lengths"><code class="docutils literal notranslate"><span class="pre">analyse_output_lengths()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#collect-local-output-lengths">collect_local_output_lengths</a><ul>
+<li><a class="reference internal" href="#lightrft.strategy.utils.statistic.collect_local_output_lengths"><code class="docutils literal notranslate"><span class="pre">collect_local_output_lengths()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#gather-all-lengths">gather_all_lengths</a><ul>
+<li><a class="reference internal" href="#lightrft.strategy.utils.statistic.gather_all_lengths"><code class="docutils literal notranslate"><span class="pre">gather_all_lengths()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#analyze-output-lengths">analyze_output_lengths</a><ul>
+<li><a class="reference internal" href="#lightrft.strategy.utils.statistic.analyze_output_lengths"><code class="docutils literal notranslate"><span class="pre">analyze_output_lengths()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

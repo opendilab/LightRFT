@@ -1,0 +1,1097 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js" lang="en">
+<!--<![endif]-->
+
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>lightrft.trainer.experience_maker &mdash; LightRFT v0.1.1 documentation</title>
+  
+
+  <link rel="shortcut icon" href="../../../_static/images/favicon.ico" />
+  
+  
+
+  
+
+  
+  
+  
+
+  
+
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <!-- <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" /> -->
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/readthedocs.css" type="text/css" />
+  <link rel="index" title="Index" href="../../../genindex.html" />
+  <link rel="search" title="Search" href="../../../search.html" />
+  <!-- Google Analytics -->
+  <script type="text/javascript">
+    var collapsedSections = [];
+  </script>
+  
+  <!-- End Google Analytics -->
+  
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+  <script>
+    MathJax = {
+        chtml: {
+            scale: 1,
+            minScale: 1,
+        },
+        svg: {
+            scale: 1,
+            minScale: 1,
+        }
+    }
+</script>
+
+  <!-- Preload the theme fonts -->
+
+<link rel="preload" href="../../../_static/fonts/FreightSans/freight-sans-book.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../_static/fonts/FreightSans/freight-sans-medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../_static/fonts/IBMPlexMono/IBMPlexMono-Medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../_static/fonts/FreightSans/freight-sans-bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../_static/fonts/FreightSans/freight-sans-medium-italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../_static/fonts/IBMPlexMono/IBMPlexMono-SemiBold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+
+<!-- Preload the katex fonts -->
+
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Math-Italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size1-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size4-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size2-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size3-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Caligraphic-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.2/css/all.css"
+    integrity="sha384-vSIIfh2YWi9wW0r9iZe7RJPrKwp6bG+s9QZMoITbCckVJqGCCRhc+ccxNcdpHuYu" crossorigin="anonymous">
+</head>
+
+<div class="container-fluid header-holder tutorials-header" id="header-holder">
+  <div class="container">
+    <div class="header-container">
+      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+        aria-label="OpenMMLab"></a>
+
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://github.com/opendilab/LightRFT" target="_blank">GitHub</a>
+          </li>
+          <li >
+            <div id="resourcesDropdownButton" data-toggle="resources-dropdown" class="resources-dropdown">
+              <a
+                class="resource-option with-down-arrow">
+                OpenDILab
+              </a>
+              <div class="resources-dropdown-menu">
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-engine" target="_blank">
+                  <span class="dropdown-title">DI-engine </span>
+                  <p>OpenDILab Decision AI Engine</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/LightZero" target="_blank">
+                  <span class="dropdown-title">LightZero </span>
+                  <p>OpenDILab Decision Monte Carlo Tree Search Framework</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/GenerativeRL" target="_blank">
+                  <span class="dropdown-title">GenerativeRL </span>
+                  <p>OpenDILab Generative AI Framework</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-star" target="_blank">
+                  <span class="dropdown-title">DI-star </span>
+                  <p>OpenDILab Decision AI in StarCraftII</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-drive" target="_blank">
+                  <span class="dropdown-title">DI-drive </span>
+                  <p>OpenDILab Auto-driving platform</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/GoBigger" target="_blank">
+                  <span class="dropdown-title">GoBigger </span>
+                  <p>OpenDILab Multi-Agent Environment</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-smartcross" target="_blank">
+                  <span class="dropdown-title">DI-smartcross </span>
+                  <p>Decision Intelligence Platform for Traffic Crossing Signal Control</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-treetensor" target="_blank">
+                  <span class="dropdown-title">DI-treetensor </span>
+                  <p>Tree Nested PyTorch Tensor Lib</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-sheep" target="_blank">
+                  <span class="dropdown-title">DI-sheep </span>
+                  <p>Deep Reinforcement Learning + 3 Tiles Game</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-model-based-RL" target="_blank">
+                  <span class="dropdown-title">awesome-model-based-RL </span>
+                  <p>A curated list of awesome model based RL resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-decision-transformer" target="_blank">
+                  <span class="dropdown-title">awesome-decision-transformer </span>
+                  <p>A curated list of Decision Transformer resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-exploration-rl" target="_blank">
+                  <span class="dropdown-title">awesome-exploration-rl </span>
+                  <p>A curated list of awesome exploration RL resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-multi-modal-reinforcement-learning" target="_blank">
+                  <span class="dropdown-title">awesome-multi-modal-reinforcement-learning </span>
+                  <p>A curated list of Multi-Modal Reinforcement Learning resources (continually updated)</p>
+                </a>
+              </div>
+          </li>
+        </ul>
+      </div>
+
+      <a class="main-menu-open-button" href="#" data-behavior="open-mobile-menu"></a>
+    </div>
+  </div>
+</div>
+
+<body class="pytorch-body">
+
+   
+
+  
+
+  <div class="table-of-contents-link-wrapper">
+    <span>Table of Contents</span>
+    <a href="#" class="toggle-table-of-contents" data-behavior="toggle-table-of-contents"></a>
+  </div>
+
+  <nav data-toggle="wy-nav-shift" class="pytorch-left-menu" id="pytorch-left-menu">
+    <div class="pytorch-side-scroll">
+      <div class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        <div class="pytorch-left-menu-search">
+          
+
+          
+          
+          
+          
+
+          
+
+
+
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search Docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        
+        
+        
+        
+        
+        <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../quick_start/index.html">Quick Start</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide &amp; Best Practices</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../best_practice/index.html">Best Practices</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_doc/utils/index.html">lightrft.utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_doc/datasets/index.html">lightrft.datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_doc/models/index.html">lightrft.models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_doc/strategy/index.html">lightrft.strategy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_doc/trainer/index.html">lightrft.trainer</a></li>
+</ul>
+
+        
+        
+      </div>
+    </div>
+  </nav>
+
+  <div class="pytorch-container">
+    <div class="pytorch-page-level-bar" id="pytorch-page-level-bar">
+      <div class="pytorch-breadcrumbs-wrapper">
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="pytorch-breadcrumbs">
+    
+      <li>
+        <a href="../../../index.html">
+            Docs
+        </a> &gt;
+      </li>
+
+        
+          <li><a href="../../index.html">Module code</a> &gt;</li>
+        
+      <li>lightrft.trainer.experience_maker</li>
+    
+    
+      <li class="pytorch-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+</div>
+      </div>
+
+      <div class="pytorch-shortcuts-wrapper" id="pytorch-shortcuts-wrapper">
+        Shortcuts
+      </div>
+    </div>
+
+    <section data-toggle="wy-nav-shift" id="pytorch-content-wrap" class="pytorch-content-wrap">
+      <div class="pytorch-content-left">
+        
+          <div class="rst-content">
+            
+            <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
+              <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
+                
+  <h1>Source code for lightrft.trainer.experience_maker</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABC</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">copy</span><span class="w"> </span><span class="kn">import</span> <span class="n">deepcopy</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch.nn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nn</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tqdm</span><span class="w"> </span><span class="kn">import</span> <span class="n">tqdm</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">lightrft.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">ActorLanguage</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">lightrft.models.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">compute_approx_kl</span><span class="p">,</span> <span class="n">compute_reward</span><span class="p">,</span> <span class="n">masked_mean</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">lightrft.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">init_logger</span><span class="p">,</span> <span class="n">remote_rm_fn</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">init_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="to"><a class="viewcode-back" href="../../../api_doc/trainer/experience_maker.html#lightrft.trainer.experience_maker.to">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">to</span><span class="p">(</span><span class="n">tensor</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]],</span> <span class="n">device</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Move tensor(s) to the specified device.</span>
+
+<span class="sd">    :param tensor: Tensor or list of tensors to move.</span>
+<span class="sd">    :type tensor: Union[torch.Tensor, list[torch.Tensor]]</span>
+<span class="sd">    :param device: Target device.</span>
+<span class="sd">    :type device: torch.device or str</span>
+<span class="sd">    :return: Tensor(s) on the target device.</span>
+<span class="sd">    :rtype: Union[torch.Tensor, list[torch.Tensor]]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">tensor</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">to</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">device</span><span class="p">)</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">tensor</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">tensor</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="pin_memory"><a class="viewcode-back" href="../../../api_doc/trainer/experience_maker.html#lightrft.trainer.experience_maker.pin_memory">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">pin_memory</span><span class="p">(</span><span class="n">tensor</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Pin tensor(s) in memory for faster GPU transfer.</span>
+
+<span class="sd">    :param tensor: Tensor or list of tensors to pin.</span>
+<span class="sd">    :type tensor: Union[torch.Tensor, list[torch.Tensor]]</span>
+<span class="sd">    :return: Pinned tensor(s).</span>
+<span class="sd">    :rtype: Union[torch.Tensor, list[torch.Tensor]]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">tensor</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">pin_memory</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">tensor</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">tensor</span><span class="o">.</span><span class="n">pin_memory</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="clip_filter_like_weight_func"><a class="viewcode-back" href="../../../api_doc/trainer/experience_maker.html#lightrft.trainer.experience_maker.clip_filter_like_weight_func">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">clip_filter_like_weight_func</span><span class="p">(</span><span class="n">rewards</span><span class="p">,</span> <span class="n">clip_filter_like_weight_clip_eps</span><span class="o">=</span><span class="mf">3.0</span><span class="p">,</span> <span class="n">lamda</span><span class="o">=</span><span class="mf">1.0</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute clip-filter-like weights for rewards.</span>
+
+<span class="sd">    This function applies a weighting scheme similar to the clip-filter method used in</span>
+<span class="sd">    early RLHF implementations, where samples with zero variance are given special weights.</span>
+
+<span class="sd">    :param rewards: Reward tensor of shape [batch_size, n_samples].</span>
+<span class="sd">    :type rewards: torch.Tensor</span>
+<span class="sd">    :param clip_filter_like_weight_clip_eps: Maximum clipping value for weights, defaults to 3.0.</span>
+<span class="sd">    :type clip_filter_like_weight_clip_eps: float</span>
+<span class="sd">    :param lamda: Weight value for samples with zero variance, defaults to 1.0.</span>
+<span class="sd">    :type lamda: float</span>
+<span class="sd">    :return: Weight tensor of the same shape as rewards.</span>
+<span class="sd">    :rtype: torch.Tensor</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">online_filter_mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">rewards</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">online_filter_mask</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">==</span> <span class="n">rewards</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">rewards</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">rewards</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+    <span class="n">weights</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">rewards</span><span class="p">,</span>
+                              <span class="n">device</span><span class="o">=</span><span class="n">rewards</span><span class="o">.</span><span class="n">device</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">rewards</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">rewards</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">-</span> <span class="n">online_filter_mask</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
+                                                        <span class="p">)</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="nb">max</span><span class="o">=</span><span class="n">clip_filter_like_weight_clip_eps</span><span class="p">)</span>
+    <span class="n">weights</span><span class="p">[</span><span class="n">online_filter_mask</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">rewards</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">))]</span> <span class="o">=</span> <span class="n">lamda</span>
+
+    <span class="k">return</span> <span class="n">weights</span></div>
+
+
+<div class="viewcode-block" id="Experience"><a class="viewcode-back" href="../../../api_doc/trainer/experience_maker.html#lightrft.trainer.experience_maker.Experience">[docs]</a><span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Experience</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Experience is a batch of data containing sequences and associated RL training information.</span>
+
+<span class="sd">    These data should have the same sequence length and number of actions.</span>
+<span class="sd">    Left padding for sequences is applied.</span>
+
+<span class="sd">    Tensor shapes:</span>
+<span class="sd">        - sequences: (B, S) where B is batch size, S is sequence length</span>
+<span class="sd">        - action_log_probs: (B, A) where A is number of actions</span>
+<span class="sd">        - values: (B, A)</span>
+<span class="sd">        - returns: (B, A)</span>
+<span class="sd">        - advantages: (B, A)</span>
+<span class="sd">        - attention_mask: (B, S)</span>
+<span class="sd">        - action_mask: (B, A)</span>
+<span class="sd">        - kl: (B, A)</span>
+
+<span class="sd">    :param sequences: Token sequences including both prompt and response.</span>
+<span class="sd">    :type sequences: torch.Tensor</span>
+<span class="sd">    :param action_log_probs: Log probabilities of actions from the current policy.</span>
+<span class="sd">    :type action_log_probs: torch.Tensor</span>
+<span class="sd">    :param base_action_log_probs: Log probabilities from the reference (initial) policy.</span>
+<span class="sd">    :type base_action_log_probs: torch.Tensor</span>
+<span class="sd">    :param values: Value estimates from the critic.</span>
+<span class="sd">    :type values: torch.Tensor</span>
+<span class="sd">    :param returns: Discounted returns for each action.</span>
+<span class="sd">    :type returns: Optional[torch.Tensor]</span>
+<span class="sd">    :param advantages: Advantage estimates for each action.</span>
+<span class="sd">    :type advantages: Optional[torch.Tensor]</span>
+<span class="sd">    :param attention_mask: Mask indicating valid tokens in sequences.</span>
+<span class="sd">    :type attention_mask: Optional[torch.LongTensor]</span>
+<span class="sd">    :param action_mask: Mask indicating action (response) tokens.</span>
+<span class="sd">    :type action_mask: Optional[torch.BoolTensor]</span>
+<span class="sd">    :param info: Dictionary containing additional information (rewards, lengths, etc.).</span>
+<span class="sd">    :type info: Optional[dict]</span>
+<span class="sd">    :param kl: KL divergence between current and reference policy.</span>
+<span class="sd">    :type kl: Optional[torch.Tensor]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">sequences</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
+    <span class="n">action_log_probs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
+    <span class="n">base_action_log_probs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
+    <span class="n">values</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
+    <span class="n">returns</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span>
+    <span class="n">advantages</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span>
+    <span class="n">attention_mask</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">LongTensor</span><span class="p">]</span>
+    <span class="n">action_mask</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">BoolTensor</span><span class="p">]</span>
+    <span class="n">info</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span>
+    <span class="n">kl</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="nd">@torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">()</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_device</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Move all tensors in the experience to the specified device.</span>
+
+<span class="sd">        :param device: Target device.</span>
+<span class="sd">        :type device: torch.device</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sequences</span> <span class="o">=</span> <span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sequences</span><span class="p">,</span> <span class="n">device</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">action_log_probs</span> <span class="o">=</span> <span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">action_log_probs</span><span class="p">,</span> <span class="n">device</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">returns</span> <span class="o">=</span> <span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">returns</span><span class="p">,</span> <span class="n">device</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">advantages</span> <span class="o">=</span> <span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">advantages</span><span class="p">,</span> <span class="n">device</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">values</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">values</span> <span class="o">=</span> <span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">device</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">attention_mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">attention_mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">attention_mask</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">action_mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">action_mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">action_mask</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Experience.pin_memory"><a class="viewcode-back" href="../../../api_doc/trainer/experience_maker.html#lightrft.trainer.experience_maker.Experience.pin_memory">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">pin_memory</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Pin all tensors in memory for faster GPU transfer.</span>
+
+<span class="sd">        :return: Self with pinned tensors.</span>
+<span class="sd">        :rtype: Experience</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sequences</span> <span class="o">=</span> <span class="n">pin_memory</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sequences</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">action_log_probs</span> <span class="o">=</span> <span class="n">pin_memory</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">action_log_probs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">returns</span> <span class="o">=</span> <span class="n">pin_memory</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">returns</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">advantages</span> <span class="o">=</span> <span class="n">pin_memory</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">advantages</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">values</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">values</span> <span class="o">=</span> <span class="n">pin_memory</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">attention_mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">attention_mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">attention_mask</span><span class="o">.</span><span class="n">pin_memory</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">action_mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">action_mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">action_mask</span><span class="o">.</span><span class="n">pin_memory</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span></div></div>
+
+
+<div class="viewcode-block" id="Samples"><a class="viewcode-back" href="../../../api_doc/trainer/experience_maker.html#lightrft.trainer.experience_maker.Samples">[docs]</a><span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Samples</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Samples is a batch of data that can be in batched or packed format.</span>
+
+<span class="sd">    The batched format applies padding to sequences, while the packed format</span>
+<span class="sd">    concatenates prompt and response without padding.</span>
+
+<span class="sd">    Tensor shapes (batched / packed):</span>
+<span class="sd">        - sequences: (B, S) or (1, total_length) - tokens of both prompt and response</span>
+<span class="sd">        - attention_mask: (B, S) or (1, total_length) - attention mask for sequences</span>
+<span class="sd">        - action_mask: (B, A) or None - response mask showing which part is the response</span>
+<span class="sd">        - num_actions: int or (B,) - number of actions (tokens) in the response</span>
+<span class="sd">        - packed_seq_lens: None or (B,) - length of each sample in packed format</span>
+<span class="sd">        - response_length: (B,) - number of tokens in the response</span>
+<span class="sd">        - total_length: (B,) - total number of tokens in sequences</span>
+<span class="sd">        - prompts: list[str] - the prompts used to generate responses</span>
+<span class="sd">        - labels: list[str] - ground truth labels (if available)</span>
+
+<span class="sd">    :param sequences: Token sequences including both prompt and response.</span>
+<span class="sd">    :type sequences: torch.Tensor</span>
+<span class="sd">    :param attention_mask: Attention mask for sequences.</span>
+<span class="sd">    :type attention_mask: Optional[torch.LongTensor]</span>
+<span class="sd">    :param action_mask: Mask indicating action (response) tokens.</span>
+<span class="sd">    :type action_mask: Optional[torch.BoolTensor]</span>
+<span class="sd">    :param num_actions: Number of actions per sample.</span>
+<span class="sd">    :type num_actions: Union[int, torch.Tensor]</span>
+<span class="sd">    :param packed_seq_lens: Sequence lengths for packed format.</span>
+<span class="sd">    :type packed_seq_lens: Optional[torch.Tensor]</span>
+<span class="sd">    :param response_length: Length of each response.</span>
+<span class="sd">    :type response_length: torch.Tensor</span>
+<span class="sd">    :param total_length: Total length of each sequence.</span>
+<span class="sd">    :type total_length: torch.Tensor</span>
+<span class="sd">    :param prompts: List of prompt strings.</span>
+<span class="sd">    :type prompts: list[str]</span>
+<span class="sd">    :param labels: List of label strings.</span>
+<span class="sd">    :type labels: list[str]</span>
+<span class="sd">    :param pad_len: Padding length applied.</span>
+<span class="sd">    :type pad_len: Optional[int]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">sequences</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
+    <span class="n">attention_mask</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">LongTensor</span><span class="p">]</span>
+    <span class="n">action_mask</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">BoolTensor</span><span class="p">]</span>
+    <span class="n">num_actions</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span>
+    <span class="n">packed_seq_lens</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span>
+    <span class="n">response_length</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
+    <span class="n">total_length</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
+    <span class="n">prompts</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">labels</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="n">pad_len</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="NaiveExperienceMaker"><a class="viewcode-back" href="../../../api_doc/trainer/experience_maker.html#lightrft.trainer.experience_maker.NaiveExperienceMaker">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">NaiveExperienceMaker</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A naive experience maker for reinforcement learning.</span>
+
+<span class="sd">    This class is responsible for generating experiences (sequences of prompts, actions, rewards, etc.)</span>
+<span class="sd">    which are then used to train the actor and critic models. It orchestrates the interaction between</span>
+<span class="sd">    the actor, critic, reward model, and the initial reference model to produce the data needed for</span>
+<span class="sd">    a single step of PPO (or a similar RL algorithm).</span>
+
+<span class="sd">    :param actor: The policy model to be trained.</span>
+<span class="sd">    :type actor: ActorLanguage</span>
+<span class="sd">    :param critic: The value model to be trained.</span>
+<span class="sd">    :type critic: nn.Module</span>
+<span class="sd">    :param reward_model: The reward model used to score generated responses.</span>
+<span class="sd">    :type reward_model: nn.Module</span>
+<span class="sd">    :param initial_model: The reference model for KL divergence calculation (typically a frozen copy of the SFT model).</span>
+<span class="sd">    :type initial_model: ActorLanguage</span>
+<span class="sd">    :param tokenizer: The tokenizer for encoding and decoding text.</span>
+<span class="sd">    :type tokenizer: Tokenizer</span>
+<span class="sd">    :param prompt_max_len: The maximum length of input prompts after tokenization.</span>
+<span class="sd">    :type prompt_max_len: int</span>
+<span class="sd">    :param kl_controller: The controller for managing the KL penalty coefficient.</span>
+<span class="sd">    :type kl_controller: KLController</span>
+<span class="sd">    :param strategy: The training strategy containing configurations and distributed training logic, defaults to None.</span>
+<span class="sd">    :type strategy: Strategy, optional</span>
+<span class="sd">    :param remote_rm_url: A list of URLs for remote reward models, defaults to None.</span>
+<span class="sd">    :type remote_rm_url: List[str], optional</span>
+<span class="sd">    :param reward_fn: A custom reward function, defaults to None.</span>
+<span class="sd">    :type reward_fn: Callable, optional</span>
+<span class="sd">    :param reward_fn_label_map: A map for reward function labels, defaults to None.</span>
+<span class="sd">    :type reward_fn_label_map: Dict, optional</span>
+<span class="sd">    :param reward_recipe: A dictionary defining how to combine different reward sources, defaults to None.</span>
+<span class="sd">    :type reward_recipe: Dict, optional</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">actor</span><span class="p">:</span> <span class="s1">&#39;ActorLanguage&#39;</span><span class="p">,</span>
+        <span class="n">critic</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span>
+        <span class="n">reward_model</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span>
+        <span class="n">initial_model</span><span class="p">:</span> <span class="s1">&#39;ActorLanguage&#39;</span><span class="p">,</span>
+        <span class="n">tokenizer</span><span class="p">,</span>
+        <span class="n">prompt_max_len</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">kl_controller</span><span class="p">,</span>
+        <span class="n">strategy</span><span class="p">,</span>
+        <span class="n">remote_rm_url</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">reward_fn</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">reward_fn_label_map</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">reward_recipe</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">actor</span> <span class="o">=</span> <span class="n">actor</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">critic</span> <span class="o">=</span> <span class="n">critic</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reward_model</span> <span class="o">=</span> <span class="n">reward_model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">remote_rm_url</span> <span class="o">=</span> <span class="n">remote_rm_url</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">initial_model</span> <span class="o">=</span> <span class="n">initial_model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tokenizer</span> <span class="o">=</span> <span class="n">tokenizer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prompt_max_len</span> <span class="o">=</span> <span class="n">prompt_max_len</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kl_ctl</span> <span class="o">=</span> <span class="n">kl_controller</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span> <span class="o">=</span> <span class="n">strategy</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reward_fn</span> <span class="o">=</span> <span class="n">reward_fn</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reward_fn_label_map</span> <span class="o">=</span> <span class="n">reward_fn_label_map</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reward_recipe</span> <span class="o">=</span> <span class="n">reward_recipe</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">perf_stats</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">advantage_estimator</span> <span class="o">=</span> <span class="n">strategy</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">advantage_estimator</span>
+
+        <span class="c1"># Custom reward function for reinforced fine-tuning</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">custom_reward_func</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">remote_rm_url</span> <span class="ow">and</span> <span class="n">remote_rm_url</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.py&quot;</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Loading custom `reward_func(queries, prompts)` from </span><span class="si">{</span><span class="n">remote_rm_url</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="kn">import</span><span class="w"> </span><span class="nn">importlib.util</span>
+
+            <span class="n">spec</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">spec_from_file_location</span><span class="p">(</span><span class="s2">&quot;reward_func&quot;</span><span class="p">,</span> <span class="n">remote_rm_url</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">reward_module</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">module_from_spec</span><span class="p">(</span><span class="n">spec</span><span class="p">)</span>
+            <span class="n">spec</span><span class="o">.</span><span class="n">loader</span><span class="o">.</span><span class="n">exec_module</span><span class="p">(</span><span class="n">reward_module</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">custom_reward_func</span> <span class="o">=</span> <span class="n">reward_module</span><span class="o">.</span><span class="n">reward_func</span>
+
+<div class="viewcode-block" id="NaiveExperienceMaker.tokenize_fn"><a class="viewcode-back" href="../../../api_doc/trainer/experience_maker.html#lightrft.trainer.experience_maker.NaiveExperienceMaker.tokenize_fn">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">tokenize_fn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">texts</span><span class="p">,</span> <span class="n">max_length</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Tokenize input texts.</span>
+
+<span class="sd">        :param texts: List of text strings to tokenize.</span>
+<span class="sd">        :type texts: List[str]</span>
+<span class="sd">        :param max_length: Maximum sequence length.</span>
+<span class="sd">        :type max_length: int</span>
+<span class="sd">        :param padding: Whether to apply padding, defaults to True.</span>
+<span class="sd">        :type padding: bool</span>
+<span class="sd">        :param device: Target device for tensors, defaults to None.</span>
+<span class="sd">        :type device: torch.device or str, optional</span>
+<span class="sd">        :return: Tokenized batch (as dict if padding=True, otherwise as list).</span>
+<span class="sd">        :rtype: dict or list</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">padding</span><span class="p">:</span>
+            <span class="c1"># When padding is False, return tokenized texts as list</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">tokenizer</span><span class="p">(</span>
+                <span class="n">texts</span><span class="p">,</span>
+                <span class="n">add_special_tokens</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">max_length</span><span class="o">=</span><span class="n">max_length</span><span class="p">,</span>
+                <span class="n">truncation</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="n">batch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tokenizer</span><span class="p">(</span>
+            <span class="n">texts</span><span class="p">,</span>
+            <span class="n">return_tensors</span><span class="o">=</span><span class="s2">&quot;pt&quot;</span><span class="p">,</span>
+            <span class="n">add_special_tokens</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">max_length</span><span class="o">=</span><span class="n">max_length</span><span class="p">,</span>
+            <span class="n">padding</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">truncation</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">batch</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span></div>
+
+    <span class="nd">@torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">()</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">make_experience_list</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">all_prompts</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]],</span> <span class="o">**</span><span class="n">generate_kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Experience</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Make a list of experiences with the micro_rollout_batch_size.</span>
+
+<span class="sd">        This method first calculates the response sequences and rewards for the given prompts.</span>
+<span class="sd">        Then, if we need certain processing for the rewards or filtering, we process the rollout as a whole.</span>
+<span class="sd">        After that, we calculate the advantages and returns for each experience.</span>
+
+<span class="sd">        :param all_prompts: Prompts to generate responses for.</span>
+<span class="sd">        :type all_prompts: Union[str, List[str]]</span>
+<span class="sd">        :param generate_kwargs: Additional generation parameters (gamma, lambd, etc.).</span>
+<span class="sd">        :type generate_kwargs: dict</span>
+<span class="sd">        :return: List of Experience objects.</span>
+<span class="sd">        :rtype: List[Experience]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">args</span>
+        <span class="n">experiences</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">samples</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">generate_samples</span><span class="p">(</span><span class="n">all_prompts</span><span class="p">,</span> <span class="o">**</span><span class="n">generate_kwargs</span><span class="p">),</span>
+            <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;make_experience&quot;</span><span class="p">,</span>
+            <span class="n">disable</span><span class="o">=</span><span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">is_rank_0</span><span class="p">(),</span>
+        <span class="p">):</span>
+            <span class="n">experiences</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">make_experience</span><span class="p">(</span><span class="n">samples</span><span class="p">))</span>
+
+        <span class="n">experiences</span><span class="p">,</span> <span class="n">rewards</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">process_experiences</span><span class="p">(</span><span class="n">experiences</span><span class="p">)</span>
+
+        <span class="c1"># Calculate return and advantages</span>
+        <span class="k">for</span> <span class="n">experience</span><span class="p">,</span> <span class="n">reward</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">experiences</span><span class="p">,</span> <span class="n">rewards</span><span class="p">):</span>
+            <span class="n">num_actions</span> <span class="o">=</span> <span class="n">experience</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;num_actions&quot;</span><span class="p">]</span>
+            <span class="n">reward</span> <span class="o">=</span> <span class="n">compute_reward</span><span class="p">(</span>
+                <span class="n">reward</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">kl_ctl</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
+                <span class="n">experience</span><span class="o">.</span><span class="n">kl</span><span class="p">,</span>
+                <span class="n">action_mask</span><span class="o">=</span><span class="n">experience</span><span class="o">.</span><span class="n">action_mask</span><span class="p">,</span>
+                <span class="n">num_actions</span><span class="o">=</span><span class="n">num_actions</span><span class="p">,</span>
+                <span class="n">reward_clip_range</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">reward_clip_range</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">advantage_estimator</span> <span class="o">==</span> <span class="s2">&quot;gae&quot;</span><span class="p">:</span>
+                <span class="n">experience</span><span class="o">.</span><span class="n">advantages</span><span class="p">,</span> <span class="n">experience</span><span class="o">.</span><span class="n">returns</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_advantages_and_returns</span><span class="p">(</span>
+                    <span class="n">experience</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+                    <span class="n">reward</span><span class="p">,</span>
+                    <span class="n">experience</span><span class="o">.</span><span class="n">action_mask</span><span class="p">,</span>
+                    <span class="n">generate_kwargs</span><span class="p">[</span><span class="s2">&quot;gamma&quot;</span><span class="p">],</span>
+                    <span class="n">generate_kwargs</span><span class="p">[</span><span class="s2">&quot;lambd&quot;</span><span class="p">],</span>
+                <span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">advantage_estimator</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;reinforce&quot;</span><span class="p">,</span> <span class="s2">&quot;rloo&quot;</span><span class="p">,</span> <span class="s2">&quot;reinforce_baseline&quot;</span><span class="p">,</span> <span class="s2">&quot;group_norm&quot;</span><span class="p">]:</span>
+                <span class="n">experience</span><span class="o">.</span><span class="n">returns</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_cumulative_returns</span><span class="p">(</span>
+                    <span class="n">reward</span><span class="p">,</span>
+                    <span class="n">experience</span><span class="o">.</span><span class="n">action_mask</span><span class="p">,</span>
+                    <span class="n">generate_kwargs</span><span class="p">[</span><span class="s2">&quot;gamma&quot;</span><span class="p">],</span>
+                <span class="p">)</span>
+                <span class="n">experience</span><span class="o">.</span><span class="n">advantages</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">experience</span><span class="o">.</span><span class="n">returns</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown advantage_estimator </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">advantage_estimator</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="c1"># Calculate the return info</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;packing_samples&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+                <span class="n">return_sums</span> <span class="o">=</span> <span class="n">reward</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">return_sums</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="n">each_reward</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="k">for</span> <span class="n">each_reward</span> <span class="ow">in</span> <span class="n">reward</span><span class="p">],</span>
+                                           <span class="n">device</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">current_device</span><span class="p">())</span>
+            <span class="n">experience</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;return&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">return_sums</span>
+            <span class="c1"># Remove unnecessary info</span>
+            <span class="n">experience</span><span class="o">.</span><span class="n">kl</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">del</span> <span class="n">experience</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;num_actions&quot;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">experiences</span>
+
+    <span class="nd">@torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">()</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">generate_samples</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">all_prompts</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="o">**</span><span class="n">generate_kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Samples</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generate samples and return in batches.</span>
+
+<span class="sd">        :param all_prompts: List of prompt strings.</span>
+<span class="sd">        :type all_prompts: List[str]</span>
+<span class="sd">        :param generate_kwargs: Additional generation parameters.</span>
+<span class="sd">        :type generate_kwargs: dict</span>
+<span class="sd">        :return: List of Samples objects.</span>
+<span class="sd">        :rtype: List[Samples]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="ow">not</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;packing_samples&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">args</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">actor</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+        <span class="c1"># Sample multiple responses per prompt</span>
+        <span class="n">all_prompts</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">([[</span><span class="n">prompt</span><span class="p">]</span> <span class="o">*</span> <span class="n">args</span><span class="o">.</span><span class="n">n_samples_per_prompt</span> <span class="k">for</span> <span class="n">prompt</span> <span class="ow">in</span> <span class="n">all_prompts</span><span class="p">],</span> <span class="p">[])</span>
+        <span class="n">samples_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">all_prompts</span><span class="p">),</span> <span class="n">args</span><span class="o">.</span><span class="n">micro_rollout_batch_size</span><span class="p">):</span>
+            <span class="n">prompts</span> <span class="o">=</span> <span class="n">all_prompts</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">i</span> <span class="o">+</span> <span class="n">args</span><span class="o">.</span><span class="n">micro_rollout_batch_size</span><span class="p">]</span>
+            <span class="n">inputs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tokenize_fn</span><span class="p">(</span><span class="n">prompts</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">prompt_max_len</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cuda&quot;</span><span class="p">)</span>
+            <span class="n">sequences</span><span class="p">,</span> <span class="n">attention_mask</span><span class="p">,</span> <span class="n">action_mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">actor</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="o">**</span><span class="n">inputs</span><span class="p">,</span> <span class="o">**</span><span class="n">generate_kwargs</span><span class="p">)</span>
+            <span class="n">samples</span> <span class="o">=</span> <span class="n">Samples</span><span class="p">(</span>
+                <span class="n">sequences</span><span class="o">=</span><span class="n">sequences</span><span class="p">,</span>
+                <span class="n">attention_mask</span><span class="o">=</span><span class="n">attention_mask</span><span class="p">,</span>
+                <span class="n">action_mask</span><span class="o">=</span><span class="n">action_mask</span><span class="p">,</span>
+                <span class="n">num_actions</span><span class="o">=</span><span class="n">action_mask</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span>
+                <span class="n">packed_seq_lens</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">response_length</span><span class="o">=</span><span class="n">action_mask</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">),</span>
+                <span class="n">total_length</span><span class="o">=</span><span class="n">attention_mask</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">),</span>
+                <span class="n">prompts</span><span class="o">=</span><span class="n">prompts</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">samples_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">samples</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">samples_list</span>
+
+    <span class="nd">@torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">()</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">make_experience</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">samples</span><span class="p">:</span> <span class="n">Samples</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Experience</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Turn samples into experience by calculating log probs, values, rewards, and KL divergence.</span>
+
+<span class="sd">        :param samples: Samples object containing sequences and metadata.</span>
+<span class="sd">        :type samples: Samples</span>
+<span class="sd">        :return: Experience object with all computed values.</span>
+<span class="sd">        :rtype: Experience</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">actor</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial_model</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">initial_model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">reward_model</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">reward_model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">critic</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">critic</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+
+        <span class="c1"># Extract values from samples</span>
+        <span class="n">sequences</span> <span class="o">=</span> <span class="n">samples</span><span class="o">.</span><span class="n">sequences</span>
+        <span class="n">attention_mask</span> <span class="o">=</span> <span class="n">samples</span><span class="o">.</span><span class="n">attention_mask</span>
+        <span class="n">action_mask</span> <span class="o">=</span> <span class="n">samples</span><span class="o">.</span><span class="n">action_mask</span>
+        <span class="n">num_actions</span> <span class="o">=</span> <span class="n">samples</span><span class="o">.</span><span class="n">num_actions</span>
+
+        <span class="c1"># Log probabilities from current policy</span>
+        <span class="n">action_log_probs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">actor</span><span class="p">(</span><span class="n">sequences</span><span class="p">,</span> <span class="n">num_actions</span><span class="p">,</span> <span class="n">attention_mask</span><span class="p">)</span>
+
+        <span class="c1"># Log probabilities from initial/reference policy</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial_model</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">base_action_log_probs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial_model</span><span class="p">(</span><span class="n">sequences</span><span class="p">,</span> <span class="n">num_actions</span><span class="p">,</span> <span class="n">attention_mask</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">base_action_log_probs</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># Values from critic</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">critic</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">critic</span><span class="p">(</span><span class="n">sequences</span><span class="p">,</span> <span class="n">num_actions</span><span class="p">,</span> <span class="n">attention_mask</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># Rewards</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">remote_rm_url</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># Remote reward model</span>
+            <span class="n">queries</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tokenizer</span><span class="o">.</span><span class="n">batch_decode</span><span class="p">(</span><span class="n">sequences</span><span class="o">.</span><span class="n">cpu</span><span class="p">(),</span> <span class="n">skip_special_tokens</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">custom_reward_func</span><span class="p">:</span>
+                <span class="n">r</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">custom_reward_func</span><span class="p">(</span><span class="n">queries</span><span class="p">,</span> <span class="n">samples</span><span class="o">.</span><span class="n">prompts</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="o">=</span><span class="n">action_log_probs</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">r</span> <span class="o">=</span> <span class="n">remote_rm_fn</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">remote_rm_url</span><span class="p">,</span> <span class="n">queries</span><span class="o">=</span><span class="n">queries</span><span class="p">,</span>
+                                 <span class="n">prompts</span><span class="o">=</span><span class="n">samples</span><span class="o">.</span><span class="n">prompts</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="o">=</span><span class="n">action_log_probs</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Local reward model</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reward_model</span><span class="p">(</span><span class="n">sequences</span><span class="p">,</span> <span class="n">attention_mask</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial_model</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">kl</span> <span class="o">=</span> <span class="n">compute_approx_kl</span><span class="p">(</span>
+                <span class="n">action_log_probs</span><span class="p">,</span>
+                <span class="n">base_action_log_probs</span><span class="p">,</span>
+                <span class="n">action_mask</span><span class="o">=</span><span class="n">action_mask</span><span class="p">,</span>
+                <span class="n">use_kl_estimator_k3</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">use_kl_estimator_k3</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">kl</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">action_log_probs</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">action_log_probs</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">action_log_probs</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+
+        <span class="n">info</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;kl&quot;</span><span class="p">:</span> <span class="n">masked_mean</span><span class="p">(</span><span class="n">kl</span><span class="p">,</span> <span class="n">action_mask</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">),</span>
+            <span class="s2">&quot;reward&quot;</span><span class="p">:</span> <span class="n">r</span><span class="p">,</span>
+            <span class="s2">&quot;response_length&quot;</span><span class="p">:</span> <span class="n">samples</span><span class="o">.</span><span class="n">response_length</span><span class="p">,</span>
+            <span class="s2">&quot;total_length&quot;</span><span class="p">:</span> <span class="n">samples</span><span class="o">.</span><span class="n">total_length</span><span class="p">,</span>
+            <span class="s2">&quot;num_actions&quot;</span><span class="p">:</span> <span class="n">num_actions</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="c1"># Reset model state</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">actor</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">critic</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">critic</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">Experience</span><span class="p">(</span>
+            <span class="n">sequences</span><span class="p">,</span>
+            <span class="n">action_log_probs</span><span class="p">,</span>
+            <span class="n">value</span><span class="p">,</span>
+            <span class="kc">None</span><span class="p">,</span>
+            <span class="kc">None</span><span class="p">,</span>
+            <span class="n">attention_mask</span><span class="p">,</span>
+            <span class="n">action_mask</span><span class="p">,</span>
+            <span class="n">info</span><span class="p">,</span>
+            <span class="n">kl</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="nd">@torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">()</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">process_experiences</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">experiences</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Experience</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Experience</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Process experiences for reward shaping and filtering.</span>
+
+<span class="sd">        This can be used to filter out some experiences or do some processing on the rewards.</span>
+
+<span class="sd">        :param experiences: List of Experience objects.</span>
+<span class="sd">        :type experiences: List[Experience]</span>
+<span class="sd">        :return: Tuple of (processed experiences, processed rewards).</span>
+<span class="sd">        :rtype: Tuple[List[Experience], List[torch.Tensor]]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">args</span>
+
+        <span class="c1"># Reward shaping for RLOO</span>
+        <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">advantage_estimator</span> <span class="o">==</span> <span class="s2">&quot;rloo&quot;</span><span class="p">:</span>
+            <span class="n">rewards</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">experience</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;reward&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">experience</span> <span class="ow">in</span> <span class="n">experiences</span><span class="p">])</span>
+            <span class="n">rewards</span> <span class="o">=</span> <span class="n">rewards</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">n_samples_per_prompt</span><span class="p">)</span>
+            <span class="n">baseline</span> <span class="o">=</span> <span class="p">(</span><span class="n">rewards</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">-</span> <span class="n">rewards</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">n_samples_per_prompt</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">rewards</span> <span class="o">=</span> <span class="n">rewards</span> <span class="o">-</span> <span class="n">baseline</span>
+            <span class="n">rewards</span> <span class="o">=</span> <span class="n">rewards</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span><span class="o">.</span><span class="n">chunk</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">experiences</span><span class="p">))</span>
+            <span class="k">return</span> <span class="n">experiences</span><span class="p">,</span> <span class="n">rewards</span>
+        <span class="c1"># Reward shaping for GRPO</span>
+        <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">advantage_estimator</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;grpo&quot;</span><span class="p">,</span> <span class="s2">&quot;group_norm&quot;</span><span class="p">]:</span>
+            <span class="n">rewards</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">experience</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;reward&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">experience</span> <span class="ow">in</span> <span class="n">experiences</span><span class="p">])</span>
+            <span class="n">rewards</span> <span class="o">=</span> <span class="n">rewards</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">n_samples_per_prompt</span><span class="p">)</span>
+
+            <span class="n">baseline</span> <span class="o">=</span> <span class="n">rewards</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">rewards</span> <span class="o">=</span> <span class="p">(</span><span class="n">rewards</span> <span class="o">-</span> <span class="n">baseline</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">rewards</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">+</span> <span class="mf">1e-8</span><span class="p">)</span>
+
+            <span class="n">rewards</span> <span class="o">=</span> <span class="n">rewards</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span><span class="o">.</span><span class="n">chunk</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">experiences</span><span class="p">))</span>
+            <span class="k">return</span> <span class="n">experiences</span><span class="p">,</span> <span class="n">rewards</span>
+        <span class="k">elif</span> <span class="n">args</span><span class="o">.</span><span class="n">advantage_estimator</span> <span class="o">==</span> <span class="s2">&quot;reinforce_baseline&quot;</span><span class="p">:</span>
+            <span class="c1"># REINFORCE++ baseline removed the / std and K3 KL loss in GRPO</span>
+            <span class="c1"># `/ std` is not needed in RL variance reduction theory, and `K3 KL` has a larger variance</span>
+            <span class="c1"># than `K1 KL` under a categorical distribution</span>
+            <span class="n">rewards</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">experience</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;reward&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">experience</span> <span class="ow">in</span> <span class="n">experiences</span><span class="p">])</span>
+            <span class="n">rewards</span> <span class="o">=</span> <span class="n">rewards</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">n_samples_per_prompt</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="o">=</span><span class="s2">&quot;cuda&quot;</span><span class="p">)</span>
+            <span class="n">rewards</span> <span class="o">=</span> <span class="n">rewards</span> <span class="o">-</span> <span class="n">rewards</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">rewards</span> <span class="o">=</span> <span class="n">rewards</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="o">=</span><span class="s2">&quot;cpu&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">chunk</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">experiences</span><span class="p">))</span>
+            <span class="k">return</span> <span class="n">experiences</span><span class="p">,</span> <span class="n">rewards</span>
+
+        <span class="k">elif</span> <span class="n">args</span><span class="o">.</span><span class="n">advantage_estimator</span> <span class="o">==</span> <span class="s2">&quot;cpgd&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">experiences</span><span class="p">,</span> <span class="p">[</span><span class="n">experience</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;reward&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">experience</span> <span class="ow">in</span> <span class="n">experiences</span><span class="p">]</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unhandled advantage_estimator: </span><span class="si">{</span><span class="n">args</span><span class="o">.</span><span class="n">advantage_estimator</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Default rewards</span>
+        <span class="k">return</span> <span class="n">experiences</span><span class="p">,</span> <span class="p">[</span><span class="n">experience</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;reward&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">experience</span> <span class="ow">in</span> <span class="n">experiences</span><span class="p">]</span>
+
+    <span class="nd">@torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">()</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_advantages_and_returns</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">values</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">rewards</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">action_mask</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">gamma</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">lambd</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute advantages and returns from rewards and values using GAE.</span>
+
+<span class="sd">        Calculated as in the original PPO paper: https://arxiv.org/abs/1707.06347</span>
+<span class="sd">        Note that rewards may include a KL divergence loss term.</span>
+
+<span class="sd">        Advantages formula:</span>
+<span class="sd">            Adv1 =  R1 + γ * λ * R2     + γ^2 * λ^2 * R3       + ...</span>
+<span class="sd">                  - V1 + γ * (1 - λ) V2 + γ^2 * λ * (1 - λ) V3 + ...</span>
+
+<span class="sd">        Returns formula:</span>
+<span class="sd">            Ret1 =  R1 + γ * λ * R2     + γ^2 * λ^2 * R3       + ...</span>
+<span class="sd">                       + γ * (1 - λ) V2 + γ^2 * λ * (1 - λ) V3 + ...</span>
+
+<span class="sd">        :param values: Tensor of shape (batch_size, response_size).</span>
+<span class="sd">        :type values: torch.Tensor</span>
+<span class="sd">        :param rewards: Tensor of shape (batch_size, response_size).</span>
+<span class="sd">        :type rewards: torch.Tensor</span>
+<span class="sd">        :param action_mask: Tensor of shape (batch_size, response_size).</span>
+<span class="sd">        :type action_mask: torch.Tensor</span>
+<span class="sd">        :param gamma: Discount factor.</span>
+<span class="sd">        :type gamma: float</span>
+<span class="sd">        :param lambd: GAE lambda parameter.</span>
+<span class="sd">        :type lambd: float</span>
+<span class="sd">        :return: Tuple of (advantages, returns), both of shape (batch_size, response_size).</span>
+<span class="sd">        :rtype: Tuple[torch.Tensor, torch.Tensor]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="c1"># Packing samples</span>
+            <span class="c1"># TODO: This is slow...</span>
+            <span class="n">advantages</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">returns</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">v</span><span class="p">,</span> <span class="n">r</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">rewards</span><span class="p">):</span>
+                <span class="n">adv</span><span class="p">,</span> <span class="n">ret</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_advantages_and_returns</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">r</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">action_mask</span><span class="p">,</span> <span class="n">gamma</span><span class="p">,</span> <span class="n">lambd</span><span class="p">)</span>
+                <span class="n">advantages</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">adv</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+                <span class="n">returns</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ret</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+            <span class="k">return</span> <span class="n">advantages</span><span class="p">,</span> <span class="n">returns</span>
+
+        <span class="n">lastgaelam</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">advantages_reversed</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">response_length</span> <span class="o">=</span> <span class="n">rewards</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># Mask invalid responses</span>
+        <span class="k">if</span> <span class="n">action_mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">values</span> <span class="o">=</span> <span class="n">action_mask</span> <span class="o">*</span> <span class="n">values</span>
+            <span class="n">rewards</span> <span class="o">=</span> <span class="n">action_mask</span> <span class="o">*</span> <span class="n">rewards</span>
+
+        <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">response_length</span><span class="p">)):</span>
+            <span class="n">nextvalues</span> <span class="o">=</span> <span class="n">values</span><span class="p">[:,</span> <span class="n">t</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="n">t</span> <span class="o">&lt;</span> <span class="n">response_length</span> <span class="o">-</span> <span class="mi">1</span> <span class="k">else</span> <span class="mf">0.0</span>
+            <span class="n">delta</span> <span class="o">=</span> <span class="n">rewards</span><span class="p">[:,</span> <span class="n">t</span><span class="p">]</span> <span class="o">+</span> <span class="n">gamma</span> <span class="o">*</span> <span class="n">nextvalues</span> <span class="o">-</span> <span class="n">values</span><span class="p">[:,</span> <span class="n">t</span><span class="p">]</span>
+            <span class="n">lastgaelam</span> <span class="o">=</span> <span class="n">delta</span> <span class="o">+</span> <span class="n">gamma</span> <span class="o">*</span> <span class="n">lambd</span> <span class="o">*</span> <span class="n">lastgaelam</span>
+            <span class="n">advantages_reversed</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lastgaelam</span><span class="p">)</span>
+        <span class="n">advantages</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">advantages_reversed</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">returns</span> <span class="o">=</span> <span class="n">advantages</span> <span class="o">+</span> <span class="n">values</span>
+        <span class="k">return</span> <span class="n">advantages</span><span class="o">.</span><span class="n">detach</span><span class="p">(),</span> <span class="n">returns</span>
+
+    <span class="nd">@torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">()</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_cumulative_returns</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">rewards</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">action_mask</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">gamma</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute cumulative returns from rewards using REINFORCE.</span>
+
+<span class="sd">        REINFORCE uses cumulative returns without GAE (Generalized Advantage Estimation).</span>
+
+<span class="sd">        :param rewards: Tensor of shape (batch_size, response_size).</span>
+<span class="sd">        :type rewards: torch.Tensor</span>
+<span class="sd">        :param action_mask: Binary mask tensor of shape (batch_size, response_size).</span>
+<span class="sd">        :type action_mask: torch.Tensor</span>
+<span class="sd">        :param gamma: Discount factor.</span>
+<span class="sd">        :type gamma: float</span>
+<span class="sd">        :return: Returns tensor of shape (batch_size, response_size).</span>
+<span class="sd">        :rtype: torch.Tensor</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rewards</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="c1"># Packing samples</span>
+            <span class="c1"># TODO: This is slow...</span>
+            <span class="n">returns</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rewards</span><span class="p">:</span>
+                <span class="n">ret</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_cumulative_returns</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">action_mask</span><span class="p">,</span> <span class="n">gamma</span><span class="p">)</span>
+                <span class="n">returns</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ret</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+            <span class="k">return</span> <span class="n">returns</span>
+
+        <span class="n">response_length</span> <span class="o">=</span> <span class="n">rewards</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">returns</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">rewards</span><span class="p">)</span>
+        <span class="n">cumulative_return</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">rewards</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">device</span><span class="o">=</span><span class="n">rewards</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+
+        <span class="c1"># Mask invalid responses if action_mask is provided</span>
+        <span class="k">if</span> <span class="n">action_mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">rewards</span> <span class="o">=</span> <span class="n">action_mask</span> <span class="o">*</span> <span class="n">rewards</span>
+
+        <span class="c1"># Calculate returns by accumulating discounted rewards</span>
+        <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">response_length</span><span class="p">)):</span>
+            <span class="n">cumulative_return</span> <span class="o">=</span> <span class="n">rewards</span><span class="p">[:,</span> <span class="n">t</span><span class="p">]</span> <span class="o">+</span> <span class="n">gamma</span> <span class="o">*</span> <span class="n">cumulative_return</span>
+            <span class="n">returns</span><span class="p">[:,</span> <span class="n">t</span><span class="p">]</span> <span class="o">=</span> <span class="n">cumulative_return</span>
+
+        <span class="k">return</span> <span class="n">returns</span></div>
+</pre></div>
+
+              </article>
+              
+            </div>
+            <footer>
+  
+
+  <hr>
+
+  <div role="contentinfo">
+    <p>
+      &copy; Copyright 2025, OpenDILab.
+
+    </p>
+  </div>
+  
+  <div>
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a
+      href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the
+      Docs</a>.
+  </div>
+   
+
+</footer>
+          </div>
+        </div>
+
+        <div class="pytorch-content-right" id="pytorch-content-right">
+          <div class="pytorch-right-menu" id="pytorch-right-menu">
+            <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
+              
+            </div>
+          </div>
+        </div>
+    </section>
+  </div>
+
+  
+
+
+  
+
+  
+  <script type="text/javascript" id="documentation_options" data-url_root="../../../"
+    src="../../../_static/documentation_options.js"></script>
+  <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+  <script src="../../../_static/doctools.js"></script>
+  <script src="../../../_static/sphinx_highlight.js"></script>
+  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+  
+
+  
+
+  <script type="text/javascript" src="../../../_static/js/vendor/popper.min.js"></script>
+  <script type="text/javascript" src="../../../_static/js/vendor/bootstrap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
+  <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+    jQuery(function () {
+      SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+  <!-- Begin Footer -->
+
+  <div class="container-fluid docs-tutorials-resources" id="docs-tutorials-resources">
+  </div>
+
+  <!-- End Footer -->
+
+  <!-- Begin Mobile Menu -->
+
+  <div class="mobile-main-menu">
+    <div class="container-fluid">
+      <div class="container">
+        <div class="mobile-main-menu-header-container">
+          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
+        </div>
+      </div>
+    </div>
+
+    <div class="mobile-main-menu-links-container">
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://github.com/opendilab/LightRFT" target="_blank">GitHub</a>
+          </li>
+      </div>
+    </div>
+  </div>
+
+  <!-- End Mobile Menu -->
+
+  <script type="text/javascript" src="../../../_static/js/vendor/anchor.min.js"></script>
+
+  <script type="text/javascript">
+    $(document).ready(function () {
+      mobileMenu.bind();
+      mobileTOC.bind();
+      pytorchAnchors.bind();
+      sideMenus.bind();
+      scrollToAnchor.bind();
+      highlightNavigation.bind();
+      mainMenuDropdown.bind();
+      filterTags.bind();
+
+      // Add class to links that have code blocks, since we cannot create links in code blocks
+      $("article.pytorch-article a span.pre").each(function (e) {
+        $(this).closest("a").addClass("has-code");
+      });
+    })
+  </script>
+</body>
+
+</html>

@@ -308,13 +308,59 @@
             <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
               <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
                 
-  <section id="lightrft-strategy-utils-optimizer-utils">
-<h1>lightrft.strategy.utils.optimizer_utils<a class="headerlink" href="#lightrft-strategy-utils-optimizer-utils" title="Permalink to this heading">¶</a></h1>
+  <section id="module-lightrft.strategy.utils.optimizer_utils">
+<span id="lightrft-strategy-utils-optimizer-utils"></span><h1>lightrft.strategy.utils.optimizer_utils<a class="headerlink" href="#module-lightrft.strategy.utils.optimizer_utils" title="Permalink to this heading">¶</a></h1>
+<p>PyTorch Optimization Utilities Module</p>
+<p>This module provides utility functions for optimizing PyTorch models,
+particularly focused on parameter grouping for optimizers with
+customized weight decay settings. It includes support for both regular
+tensors and distributed tensors (DTensor) with specialized grouping
+strategies for optimal performance in distributed training scenarios.</p>
 <section id="default-no-decay-name-list">
 <h2>_DEFAULT_NO_DECAY_NAME_LIST<a class="headerlink" href="#default-no-decay-name-list" title="Permalink to this heading">¶</a></h2>
+<dl class="py data">
+<dt class="sig sig-object py" id="lightrft.strategy.utils.optimizer_utils._DEFAULT_NO_DECAY_NAME_LIST">
+<span class="sig-prename descclassname"><span class="pre">lightrft.strategy.utils.optimizer_utils.</span></span><span class="sig-name descname"><span class="pre">_DEFAULT_NO_DECAY_NAME_LIST</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['bias',</span> <span class="pre">'layer_norm.weight',</span> <span class="pre">'layernorm.weight',</span> <span class="pre">'norm.weight',</span> <span class="pre">'ln_f.weight']</span></em><a class="headerlink" href="#lightrft.strategy.utils.optimizer_utils._DEFAULT_NO_DECAY_NAME_LIST" title="Permalink to this definition">¶</a></dt>
+<dd><p>Built-in mutable sequence.</p>
+<p>If no argument is given, the constructor creates a new empty list.
+The argument must be an iterable if specified.</p>
+</dd></dl>
+
 </section>
 <section id="get-optimizer-grouped-parameters">
 <h2>get_optimizer_grouped_parameters<a class="headerlink" href="#get-optimizer-grouped-parameters" title="Permalink to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="lightrft.strategy.utils.optimizer_utils.get_optimizer_grouped_parameters">
+<span class="sig-prename descclassname"><span class="pre">lightrft.strategy.utils.optimizer_utils.</span></span><span class="sig-name descname"><span class="pre">get_optimizer_grouped_parameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight_decay</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">no_decay_name_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/lightrft/strategy/utils/optimizer_utils.html#get_optimizer_grouped_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.utils.optimizer_utils.get_optimizer_grouped_parameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prepare parameter groups for optimizer with weight decay control.</p>
+<p>Groups parameters into two groups:
+- Parameters that should have weight decay applied
+- Parameters that should not have weight decay applied (typically normalization layers and biases)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> (<em>torch.nn.Module</em>) – The model whose parameters will be organized.</p></li>
+<li><p><strong>weight_decay</strong> (<em>float</em>) – Weight decay value to apply to applicable parameters.</p></li>
+<li><p><strong>no_decay_name_list</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><em>str</em><em>]</em><em>]</em>) – List of parameter name patterns that should not have weight decay.
+If None, defaults to _DEFAULT_NO_DECAY_NAME_LIST.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>List of parameter groups for the optimizer.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">torch.nn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nn</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span> <span class="n">nn</span><span class="o">.</span><span class="n">LayerNorm</span><span class="p">(</span><span class="mi">10</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">grouped_params</span> <span class="o">=</span> <span class="n">get_optimizer_grouped_parameters</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">weight_decay</span><span class="o">=</span><span class="mf">0.01</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">optimizer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">AdamW</span><span class="p">(</span><span class="n">grouped_params</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
 </section>
 </section>
 
@@ -362,8 +408,14 @@
             <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
               <ul>
 <li><a class="reference internal" href="#">lightrft.strategy.utils.optimizer_utils</a><ul>
-<li><a class="reference internal" href="#default-no-decay-name-list">_DEFAULT_NO_DECAY_NAME_LIST</a></li>
-<li><a class="reference internal" href="#get-optimizer-grouped-parameters">get_optimizer_grouped_parameters</a></li>
+<li><a class="reference internal" href="#default-no-decay-name-list">_DEFAULT_NO_DECAY_NAME_LIST</a><ul>
+<li><a class="reference internal" href="#lightrft.strategy.utils.optimizer_utils._DEFAULT_NO_DECAY_NAME_LIST"><code class="docutils literal notranslate"><span class="pre">_DEFAULT_NO_DECAY_NAME_LIST</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#get-optimizer-grouped-parameters">get_optimizer_grouped_parameters</a><ul>
+<li><a class="reference internal" href="#lightrft.strategy.utils.optimizer_utils.get_optimizer_grouped_parameters"><code class="docutils literal notranslate"><span class="pre">get_optimizer_grouped_parameters()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

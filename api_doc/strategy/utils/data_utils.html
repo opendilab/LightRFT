@@ -308,10 +308,114 @@
             <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
               <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
                 
-  <section id="lightrft-strategy-utils-data-utils">
-<h1>lightrft.strategy.utils.data_utils<a class="headerlink" href="#lightrft-strategy-utils-data-utils" title="Permalink to this heading">¶</a></h1>
+  <section id="module-lightrft.strategy.utils.data_utils">
+<span id="lightrft-strategy-utils-data-utils"></span><h1>lightrft.strategy.utils.data_utils<a class="headerlink" href="#module-lightrft.strategy.utils.data_utils" title="Permalink to this heading">¶</a></h1>
+<p>Distributed Sampling Module for PyTorch</p>
+<p>This module provides utilities for distributed data sampling in PyTorch, particularly
+useful for distributed training scenarios. It includes a customized DistributedSampler
+that extends PyTorch’s sampling capabilities with additional features like handling
+consumed samples for resuming training.</p>
+<p>The module is designed to work seamlessly with PyTorch’s distributed training
+infrastructure and provides proper data partitioning across multiple processes.</p>
 <section id="distributedsampler">
 <h2>DistributedSampler<a class="headerlink" href="#distributedsampler" title="Permalink to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="lightrft.strategy.utils.data_utils.DistributedSampler">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">lightrft.strategy.utils.data_utils.</span></span><span class="sig-name descname"><span class="pre">DistributedSampler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/lightrft/strategy/utils/data_utils.html#DistributedSampler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.utils.data_utils.DistributedSampler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sampler that restricts data loading to a subset of the dataset.</p>
+<p>It is especially useful in conjunction with
+<code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.parallel.DistributedDataParallel</span></code>. In such a case, each
+process can pass a <code class="xref py py-class docutils literal notranslate"><span class="pre">DistributedSampler</span></code> instance as a
+<code class="xref py py-class docutils literal notranslate"><span class="pre">DataLoader</span></code> sampler, and load a subset of the
+original dataset that is exclusive to it.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Dataset is assumed to be of constant size and that any instance of it always
+returns the same elements in the same order.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dataset</strong> (<em>Dataset</em>) – Dataset used for sampling.</p></li>
+<li><p><strong>num_replicas</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – Number of processes participating in distributed training.
+By default, world_size is retrieved from the current distributed group.</p></li>
+<li><p><strong>rank</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – Rank of the current process within num_replicas.
+By default, rank is retrieved from the current distributed group.</p></li>
+<li><p><strong>shuffle</strong> (<em>bool</em>) – If True (default), sampler will shuffle the indices.</p></li>
+<li><p><strong>seed</strong> (<em>int</em>) – Random seed used to shuffle the sampler if shuffle=True.
+This number should be identical across all processes in the distributed group.</p></li>
+<li><p><strong>drop_last</strong> (<em>bool</em>) – If True, then the sampler will drop the tail of the data to make it evenly
+divisible across the number of replicas. If False, the sampler will add
+extra indices to make the data evenly divisible across the replicas.</p></li>
+<li><p><strong>consumed_samples</strong> (<em>int</em>) – Number of samples that have been consumed already, useful for resuming training.</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>In distributed mode, calling the <a class="reference internal" href="#lightrft.strategy.utils.data_utils.DistributedSampler.set_epoch" title="lightrft.strategy.utils.data_utils.DistributedSampler.set_epoch"><code class="xref py py-meth docutils literal notranslate"><span class="pre">set_epoch()</span></code></a> method at
+the beginning of each epoch <strong>before</strong> creating the <code class="xref py py-class docutils literal notranslate"><span class="pre">DataLoader</span></code> iterator
+is necessary to make shuffling work properly across multiple epochs. Otherwise,
+the same ordering will be always used.</p>
+</div>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># xdoctest: +SKIP</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sampler</span> <span class="o">=</span> <span class="n">DistributedSampler</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span> <span class="k">if</span> <span class="n">is_distributed</span> <span class="k">else</span> <span class="kc">None</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">loader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="p">(</span><span class="n">sampler</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">),</span>
+<span class="gp">... </span>                    <span class="n">sampler</span><span class="o">=</span><span class="n">sampler</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">start_epoch</span><span class="p">,</span> <span class="n">n_epochs</span><span class="p">):</span>
+<span class="gp">... </span>    <span class="k">if</span> <span class="n">is_distributed</span><span class="p">:</span>
+<span class="gp">... </span>        <span class="n">sampler</span><span class="o">.</span><span class="n">set_epoch</span><span class="p">(</span><span class="n">epoch</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">train</span><span class="p">(</span><span class="n">loader</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.utils.data_utils.DistributedSampler.__iter__">
+<span class="sig-name descname"><span class="pre">__iter__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><span class="pre">_T_co</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/lightrft/strategy/utils/data_utils.html#DistributedSampler.__iter__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.utils.data_utils.DistributedSampler.__iter__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterate over the indices of the dataset.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>An iterator over the indices of the dataset.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>Iterator[_T_co]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.utils.data_utils.DistributedSampler.__len__">
+<span class="sig-name descname"><span class="pre">__len__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="reference internal" href="../../../_modules/lightrft/strategy/utils/data_utils.html#DistributedSampler.__len__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.utils.data_utils.DistributedSampler.__len__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the length of the sampler.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The number of samples in this sampler.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.utils.data_utils.DistributedSampler.set_epoch">
+<span class="sig-name descname"><span class="pre">set_epoch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">epoch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">consumed_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../../_modules/lightrft/strategy/utils/data_utils.html#DistributedSampler.set_epoch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.utils.data_utils.DistributedSampler.set_epoch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the epoch for this sampler.</p>
+<p>When shuffle=True, this ensures all replicas use a different random ordering
+for each epoch. Otherwise, the next iteration of this sampler will yield
+the same ordering.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>epoch</strong> (<em>int</em>) – Epoch number.</p></li>
+<li><p><strong>consumed_samples</strong> (<em>int</em>) – Number of samples already consumed in this epoch.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 </section>
 
@@ -359,7 +463,15 @@
             <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
               <ul>
 <li><a class="reference internal" href="#">lightrft.strategy.utils.data_utils</a><ul>
-<li><a class="reference internal" href="#distributedsampler">DistributedSampler</a></li>
+<li><a class="reference internal" href="#distributedsampler">DistributedSampler</a><ul>
+<li><a class="reference internal" href="#lightrft.strategy.utils.data_utils.DistributedSampler"><code class="docutils literal notranslate"><span class="pre">DistributedSampler</span></code></a><ul>
+<li><a class="reference internal" href="#lightrft.strategy.utils.data_utils.DistributedSampler.__iter__"><code class="docutils literal notranslate"><span class="pre">DistributedSampler.__iter__()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.utils.data_utils.DistributedSampler.__len__"><code class="docutils literal notranslate"><span class="pre">DistributedSampler.__len__()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.utils.data_utils.DistributedSampler.set_epoch"><code class="docutils literal notranslate"><span class="pre">DistributedSampler.set_epoch()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
