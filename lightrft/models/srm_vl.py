@@ -186,7 +186,13 @@ class ScalarRewardModelVL(nn.Module):
         :return: A dictionary containing reward scores from different heads
         :rtype: Dict
 
-        Example::
+        **Example:**
+
+
+
+        .. code-block:: python
+
+
             # Compute reward scores from sequences and visual inputs
             # Suppose `reward_model` has two heads: "preference" and "alignment"
             scores = reward_model(
@@ -246,7 +252,12 @@ class ScalarRewardModelVL(nn.Module):
         :param gradient_checkpointing_kwargs: Additional arguments for gradient checkpointing
         :type gradient_checkpointing_kwargs: dict
 
-        Example::
+        **Example:**
+
+
+
+        .. code-block:: python
+
 
             # Enable gradient checkpointing with default settings
             actor.gradient_checkpointing_enable()
@@ -264,7 +275,12 @@ class ScalarRewardModelVL(nn.Module):
         are stored during the forward pass for use in the backward pass. This increases
         memory usage but reduces computation time.
 
-        Example::
+        **Example:**
+
+
+
+        .. code-block:: python
+
 
             # Disable gradient checkpointing
             actor.gradient_checkpointing_disable()
@@ -279,7 +295,12 @@ class ScalarRewardModelVL(nn.Module):
         which is particularly useful when using parameter-efficient methods like LoRA.
         It helps monitor the efficiency of the fine-tuning approach.
 
-        Example::
+        **Example:**
+
+
+
+        .. code-block:: python
+
 
             # Print trainable parameter statistics
             actor.print_trainable_parameters()

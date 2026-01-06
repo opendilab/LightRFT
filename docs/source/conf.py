@@ -22,6 +22,34 @@ modnames = [mname for mname in sys.modules if mname.startswith('lightrft')]
 for modname in modnames:
     del sys.modules[modname]
 
+# Mock imports for modules that require heavy dependencies
+autodoc_mock_imports = [
+    'torch',
+    'transformers',
+    'deepspeed',
+    'loguru',
+    'vllm',
+    'sglang',
+    'datasets',
+    'peft',
+    'accelerate',
+    'safetensors',
+    'PIL',
+    'tqdm',
+    'wandb',
+    'tensorboard',
+    'scipy',
+    'omegaconf',
+    'hydra',
+    'cv2',
+    'soundfile',
+    'librosa',
+    'torchaudio',
+    'torchvision',
+    'sentencepiece',
+    'tokenizers',
+]
+
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
