@@ -449,6 +449,21 @@ if __name__ == "__main__":
             "max_pixels": 768*480,
         },
         {
+            "name": "OmniRewardBench-T2I", 
+            "evaluator": OmniRewardBenchEvaluator(media_type="Image"), 
+            "data_path": ["omnirewardbench-t2i:/path/to/OmniRewardBench/text_to_image/test.parquet"], 
+            "task_instruction": TASK_INSTRUCTION_COT_T2I,
+            "max_pixels": 768*480,
+        },
+        {
+            "name": "OmniRewardBench-T2V", 
+            "evaluator": OmniRewardBenchEvaluator(media_type="Video"), 
+            "data_path": ["omnirewardbench-t2v:/path/to/OmniRewardBench/text_to_video/test.parquet"], 
+            "task_instruction": TASK_INSTRUCTION_COT_T2V,
+            "video_fps": 2.0,
+            "max_pixels": 768*480,
+        },
+        {
             "name": "ImageGen-CoT-Reward-5K",
             "evaluator": ImageGenCoTEvaluator(),
             "data_path": ["imagegen-cot-reward-5k:/path/to/ImageGen-CoT-Reward-5K/train_data.json"],
