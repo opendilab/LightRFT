@@ -13,8 +13,6 @@ Main Features:
 Classes:
     SingleRewardModel: Wrapper for single reward model
     MultiRewardModel: Ensemble of multiple reward models with aggregation
-
-Author: lightrft Team
 """
 
 from typing import Dict, Sequence, Optional, List, Tuple, Any

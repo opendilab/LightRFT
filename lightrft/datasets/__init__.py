@@ -1,5 +1,5 @@
 """
-Dataset Module for LightRLHF
+Dataset Module for LightRFT
 
 This module provides unified interfaces for loading datasets for training,
 evaluation, and pretraining in RLHF workflows.
