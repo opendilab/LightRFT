@@ -18,6 +18,8 @@ from lightrft.datasets import (
     OmniRewardBenchT2IPairHandler,
     OmniRewardBenchT2VPairHandler,
     VideoDPOPairHandler,
+    GenAIBenchPairHandler,
+    GenAIBenchVideoPairHandler,
 )
 
 
@@ -88,6 +90,8 @@ class RFTDatasetVL(Dataset):
             "omnirewardbench-t2i": OmniRewardBenchT2IPairHandler(),
             "omnirewardbench-t2v": OmniRewardBenchT2VPairHandler(),
             "videodpo": VideoDPOPairHandler(),
+            "genai_bench": GenAIBenchPairHandler(),
+            "genai_bench_video": GenAIBenchVideoPairHandler(),
         }
 
         # Load data from all specified dataset paths
@@ -152,15 +156,14 @@ class RFTDatasetVL(Dataset):
         input_text, image_inputs, video_inputs = self._prepare_inputs(messages)
 
         # Configure label, by default "general"
-        label = "general"
+        label = config.get("label", "general")
 
         return input_text, image_inputs, video_inputs, reference, label
 
     def _prepare_inputs(self, messages):
-        if not self.is_train:
-            # For evaluation, we only need the input text without generation prompt
-            # Remove messages with role "assistant"
-            messages = [msg for msg in messages if msg["role"] != "assistant"]
+        # In RL training, no need to keep assistant responses, since it can lead to data leakage
+        # Here we remove messages with role "assistant"
+        messages = [msg for msg in messages if msg["role"] != "assistant"]
 
         input_text = self.processor.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
         

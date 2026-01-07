@@ -7,6 +7,7 @@ from .image_reward_db import *
 from .hpdv3 import *
 from .videodpo import *
 from .videogen_rewardbench import *
+from .genai_bench import *
 from .utils import (
     extract_answer,
     zero_pad_sequences,

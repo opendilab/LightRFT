@@ -12,6 +12,45 @@ from vllm import LLM, SamplingParams
 
 from lightrft.datasets import RFTDatasetVL, extract_answer
 
+
+def extract_response(text: str, media_type: str = "Image") -> str:
+    """
+    Extract the preference from the generated text.
+    First tries to extract from <answer> tags.
+    If not found, searches for key phrases at the end of the text.
+    """
+    # 1. Try extracting from <answer> tags
+    ans = extract_answer(text)
+    if ans:
+        return ans
+
+    # 2. Heuristic search if no tags found
+    text_lower = text.lower()
+    media_lower = media_type.lower()
+    
+    key_1 = f"{media_lower} 1 is better"
+    key_2 = f"{media_lower} 2 is better"
+    key_equal = f"both {media_lower}s are equally good"
+    
+    idx_1 = text_lower.rfind(key_1)
+    idx_2 = text_lower.rfind(key_2)
+    idx_equal = text_lower.rfind(key_equal)
+    
+    candidates = {}
+    if idx_1 != -1: 
+        candidates[f"{media_type} 1 is better"] = idx_1
+    if idx_2 != -1: 
+        candidates[f"{media_type} 2 is better"] = idx_2
+    if idx_equal != -1: 
+        candidates[f"Both {media_lower}s are equally good"] = idx_equal
+    
+    if not candidates:
+        return None
+        
+    # Return the one that appears last in the text
+    return max(candidates, key=candidates.get)
+
+
 # Example Task Instruction for GRM Evaluation
 TASK_INSTRUCTION_COT_T2I = """Given a caption and two images generated based on this caption, please analyze in detail the two provided images. 
 Evaluate them on various dimensions such as semantic consistency (how closely the image content aligns with the caption), 
@@ -94,17 +133,19 @@ class BaseEvaluator(ABC):
 class ImageGenCoTEvaluator(BaseEvaluator):
     def evaluate_batch(self, gen_texts: List[str], extras: List[Dict]) -> None:
         for i, (gen_text, other) in enumerate(zip(gen_texts, extras)):
-            predicted_answer = extract_answer(gen_text)
-            gt_answer = extract_answer(other["response"])   # 'Image1 is better' or 'Image 2 is better'
+            predicted_answer = extract_response(gen_text, media_type="Image")
+            gt_answer = extract_answer(other["response"])   # 'Image 1 is better' or 'Image 2 is better'
             
+            is_correct = False
             if gt_answer == predicted_answer:
                 self.correct += 1
+                is_correct = True
             elif predicted_answer is None:
                 self.parse_failures += 1
                 print(f"Could not extract answer from generated text: {gen_text}")
             self.total += 1
                         
-            print(f"Batch Sample {i} | Pred: {predicted_answer} | GT: {gt_answer}")
+            print(f"Batch Sample {i} | Pred: {predicted_answer} | GT: {gt_answer} | Correct: {is_correct}")
 
             self.results.append({
                 "ground_truth": gt_answer,
@@ -122,7 +163,7 @@ class OmniRewardBenchEvaluator(BaseEvaluator):
 
     def evaluate_batch(self, gen_texts: List[str], extras: List[Dict]) -> None:
         for i, (gen_text, other) in enumerate(zip(gen_texts, extras)):
-            predicted_answer = extract_answer(gen_text)
+            predicted_answer = extract_response(gen_text, media_type=self.media_type)
             gt_preference = other['preference'] # A, B, or C
             
             better_1 = f"{self.media_type} 1 is better"
@@ -162,7 +203,7 @@ class HPDv3GRMEvaluator(BaseEvaluator):
     """Evaluator for HPDv3 Test set."""
     def evaluate_batch(self, gen_texts: List[str], extras: List[Dict]) -> None:
         for i, (gen_text, other) in enumerate(zip(gen_texts, extras)):
-            predicted_answer = extract_answer(gen_text)
+            predicted_answer = extract_response(gen_text, media_type="Image")
             gt_preference = other['preference'] # A, B, or C
             
             # Mapping logic: A -> Image 1, B -> Image 2
@@ -179,7 +220,7 @@ class HPDv3GRMEvaluator(BaseEvaluator):
                 print(f"Could not extract answer from generated text: {gen_text}")
             self.total += 1
 
-            print(f"Sample {i} | Pred: {predicted_answer} | GT: {gt_preference}")
+            print(f"Sample {i} | Pred: {predicted_answer} | GT: {gt_preference} | Correct: {is_correct}")
 
             self.results.append({
                 "prompt": other['prompt'],
@@ -192,6 +233,90 @@ class HPDv3GRMEvaluator(BaseEvaluator):
                 "preferred_path": other['preferred_path'],
                 "rejected_path": other['rejected_path'],
             })
+
+
+class GenAIBenchEvaluator(BaseEvaluator):
+    """Evaluator for GenAI-Bench dataset."""
+    def __init__(self, media_type: str = "Image"):
+        super().__init__()
+        self.media_type = media_type  # "Image" or "Video"
+
+    def evaluate_batch(self, gen_texts: List[str], extras: List[Dict]) -> None:
+        for i, (gen_text, other) in enumerate(zip(gen_texts, extras)):
+            predicted_answer = extract_response(gen_text, media_type=self.media_type)
+            gt_preference = other['preference']  # 'A', 'B', or 'C' (Tie)
+            
+            better_1 = f"{self.media_type} 1 is better"
+            better_2 = f"{self.media_type} 2 is better"
+            equal = f"Both {self.media_type.lower()}s are equally good"
+
+            is_correct = False
+            if gt_preference == "A" and predicted_answer == better_1:
+                is_correct = True
+            elif gt_preference == "B" and predicted_answer == better_2:
+                is_correct = True
+            elif gt_preference == "C" and predicted_answer == equal:
+                is_correct = True
+            
+            if is_correct:
+                self.correct += 1
+            elif predicted_answer is None:
+                self.parse_failures += 1
+                print(f"Could not extract answer from generated text: {gen_text}")
+            self.total += 1
+
+            print(f"Sample {i} | Pred: {predicted_answer} | GT: {gt_preference} | Correct: {is_correct}")
+
+            self.results.append({
+                "index": other.get("index", ""),
+                "prompt": other.get('prompt', ""),
+                "ground_truth": gt_preference,
+                "predicted_answer": predicted_answer,
+                "is_correct": is_correct,
+                "model1": other.get("model1", ""),
+                "model2": other.get("model2", ""),
+                "generated_text": gen_text,
+            })
+
+
+class VideoGenRewardBenchEvaluator(BaseEvaluator):
+    """Evaluator for VideoGen-RewardBench dataset."""
+    def evaluate_batch(self, gen_texts: List[str], extras: List[Dict]) -> None:
+        for i, (gen_text, other) in enumerate(zip(gen_texts, extras)):
+            predicted_answer = extract_response(gen_text, media_type="Video")
+            gt_preference = other['preference']  # 'A', 'B', or 'C' (Tie)
+            
+            better_1 = "Video 1 is better"
+            better_2 = "Video 2 is better"
+            equal = "Both videos are equally good"
+
+            is_correct = False
+            if gt_preference == "A" and predicted_answer == better_1:
+                is_correct = True
+            elif gt_preference == "B" and predicted_answer == better_2:
+                is_correct = True
+            elif gt_preference == "C" and predicted_answer == equal:
+                is_correct = True
+            
+            if is_correct:
+                self.correct += 1
+            elif predicted_answer is None:
+                self.parse_failures += 1
+                print(f"Could not extract answer from generated text: {gen_text}")
+            self.total += 1
+
+            print(f"Sample {i} | Pred: {predicted_answer} | GT: {gt_preference} | Correct: {is_correct}")
+
+            self.results.append({
+                "prompt": other.get('prompt', ""),
+                "ground_truth": gt_preference,
+                "predicted_answer": predicted_answer,
+                "is_correct": is_correct,
+                "A_model": other.get("A_model", ""),
+                "B_model": other.get("B_model", ""),
+                "generated_text": gen_text,
+            })
+
 
 @torch.no_grad()
 def test_grm_vllm(
@@ -301,16 +426,24 @@ if __name__ == "__main__":
             "max_pixels": 768*480,
         },
         {
-            "name": "OmniRewardBench-T2I", 
-            "evaluator": OmniRewardBenchEvaluator(media_type="Image"), 
-            "data_path": ["omnirewardbench-t2i:/path/to/OmniRewardBench/text_to_image/test.parquet"], 
+            "name": "GenAI-Bench",
+            "evaluator": GenAIBenchEvaluator(),
+            "data_path": ["genai_bench:/path/to/GenAI-Bench/data"], 
             "task_instruction": TASK_INSTRUCTION_COT_T2I,
             "max_pixels": 768*480,
         },
         {
-            "name": "OmniRewardBench-T2V", 
-            "evaluator": OmniRewardBenchEvaluator(media_type="Video"), 
-            "data_path": ["omnirewardbench-t2v:/path/to/OmniRewardBench/text_to_video/test.parquet"], 
+            "name": "GenAI-Bench-Video",
+            "evaluator": GenAIBenchEvaluator(media_type="Video"),
+            "data_path": ["genai_bench_video:/path/to/GenAI-Bench-Video"],
+            "task_instruction": TASK_INSTRUCTION_COT_T2V,
+            "video_fps": 2.0,
+            "max_pixels": 768*480,
+        },
+        {
+            "name": "VideoGen-RewardBench",
+            "evaluator": VideoGenRewardBenchEvaluator(),
+            "data_path": ["videogen-rewardbench:/path/to/VideoGen-RewardBench/test.csv"],
             "task_instruction": TASK_INSTRUCTION_COT_T2V,
             "video_fps": 2.0,
             "max_pixels": 768*480,
@@ -324,7 +457,7 @@ if __name__ == "__main__":
     ]
 
     # Initialize vLLM
-    tensor_parallel_size = 2
+    tensor_parallel_size = 1    # Adjust based on your gpu hardware
     llm = LLM(
         model=model_path,
         tensor_parallel_size=tensor_parallel_size,
