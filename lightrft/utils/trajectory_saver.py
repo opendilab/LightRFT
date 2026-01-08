@@ -147,9 +147,15 @@ class TrajectorySaver:
             return []
         elif len(sequences.shape) == 1:
             # 1D tensor - reshape to (1, seq_len)
+            print(
+                f"[TrajectorySaver] Warning: sequences is 1D tensor with shape {sequences.shape} at step {step}, exp_idx {exp_idx}. Reshaping to 2D."  # noqa: E501
+            )
             sequences = sequences.unsqueeze(0)
         elif len(sequences.shape) != 2:
             # Unexpected shape
+            print(
+                f"[TrajectorySaver] Error: sequences has unexpected shape {sequences.shape} at step {step}, exp_idx {exp_idx}. Expected 2D tensor (B, S). Skipping."  # noqa: E501
+            )
             return []
 
         batch_size = sequences.shape[0]
@@ -160,6 +166,9 @@ class TrajectorySaver:
             if len(action_mask.shape) == 1:
                 action_mask = action_mask.unsqueeze(0)
             elif len(action_mask.shape) != 2:
+                print(
+                    f"[TrajectorySaver] Warning: action_mask has unexpected shape {action_mask.shape}. Creating default mask."  # noqa: E501
+                )
                 action_mask = torch.zeros_like(sequences, dtype=torch.bool)
         else:
             action_mask = torch.zeros_like(sequences, dtype=torch.bool)
@@ -187,6 +196,9 @@ class TrajectorySaver:
                 if len(gen_indices) > 0:
                     # Verify sequences[i] is indexable
                     if len(sequences[i].shape) == 0:
+                        print(
+                            f"[TrajectorySaver] Warning: sequences[{i}] is scalar at step {step}, exp_idx {exp_idx}. Skipping generation."  # noqa: E501
+                        )
                         generated_text = ""
                         pure_generated_text = ""
                     else:
@@ -244,6 +256,9 @@ class TrajectorySaver:
                     generated_tokens = None
                     pure_generated_tokens = None
             except (IndexError, RuntimeError) as e:
+                print(
+                    f"[TrajectorySaver] Error extracting generated text for sample {i} at step {step}, exp_idx {exp_idx}: {e}"  # noqa: E501
+                )
                 generated_text = ""
                 pure_generated_text = ""
                 generated_tokens = None
@@ -284,9 +299,9 @@ class TrajectorySaver:
                     elif key == 'reward_metrics':
                         metrics = {}
                         for metric_name, metric_tensor in value.items():
-                            if isinstance(metric_tensor,
-                                          torch.Tensor) and len(metric_tensor.shape
-                                                                ) > 0 and len(metric_tensor) == batch_size:
+                            if isinstance(metric_tensor, torch.Tensor) and len(
+                                metric_tensor.shape
+                            ) > 0 and len(metric_tensor) == batch_size:
                                 metrics[metric_name] = self._tensor_to_list(metric_tensor[i])
                             else:  # scalar metric, applies to all
                                 metrics[metric_name] = self._tensor_to_list(metric_tensor) if isinstance(
@@ -312,6 +327,9 @@ class TrajectorySaver:
                     try:
                         sample_images = list(sample_images)
                     except (TypeError, ValueError):
+                        print(
+                            f"[TrajectorySaver] Warning: Unexpected image type {type(sample_images)} at step {step}, exp_idx {exp_idx}, sample {i}. Skipping images."  # noqa: E501
+                        )
                         sample_images = None
 
             if sample_images:
@@ -377,6 +395,9 @@ class TrajectorySaver:
             if tensor.shape[0] == expected_batch_size:
                 return tensor
             else:
+                print(
+                    f"[TrajectorySaver] Warning: {attr_name} has mismatched batch size {tensor.shape[0]}, expected {expected_batch_size}. Padding/truncating."  # noqa: E501
+                )
                 # Pad or truncate
                 if tensor.shape[0] < expected_batch_size:
                     padding = [None] * (expected_batch_size - tensor.shape[0])
@@ -388,6 +409,9 @@ class TrajectorySaver:
         if tensor.shape[0] == expected_batch_size:
             return tensor
         else:
+            print(
+                f"[TrajectorySaver] Warning: {attr_name} has mismatched batch size {tensor.shape[0]}, expected {expected_batch_size}. Using defaults."  # noqa: E501
+            )
             return [None] * expected_batch_size
 
     def _save_images(self, imgs: List[Image.Image], step: int, exp_idx: int, sample_idx: int) -> List[Optional[str]]:

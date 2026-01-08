@@ -1,6 +1,6 @@
 import io
 import random
-from typing import List, Dict, Any, Tuple, Union
+from typing import List, Dict, Any
 
 import librosa
 from loguru import logger
@@ -21,8 +21,8 @@ class RankDatasetVL(Dataset):
     """
     Preference ranking dataset used for vision-language scalar reward model (RM) training.
 
-    RMRankDatasetVL dataset supports multiple data sources through pluggable 
-    Data Handlers and covers both understanding tasks (image-to-text, video-to-text) 
+    RMRankDatasetVL dataset supports multiple data sources through pluggable
+    Data Handlers and covers both understanding tasks (image-to-text, video-to-text)
     and generation tasks (text-to-image, text-to-video).
 
     Each example contains two inputs to be compared. Labels use "A", "B",
@@ -115,7 +115,7 @@ class RankDatasetVL(Dataset):
             except Exception as e:
                 logger.error(f"Failed to load data {path} (source: {source}): {e}")
 
-        logger.info(f"Loaded {len(self.data)} items in total, sources: {[s for s in dataset_paths]}")
+        logger.info(f"Loaded {len(self.data)} items in total, sources: {list(dataset_paths)}")
         random.shuffle(self.data)
 
     def __len__(self):
@@ -252,7 +252,7 @@ class RankDatasetAL(Dataset):
     """
     Preference ranking dataset used for audio-language scalar reward model (RM) training.
 
-    RMRankDatasetAL dataset supports multiple audio-language data sources through pluggable 
+    RMRankDatasetAL dataset supports multiple audio-language data sources through pluggable
     Data Handlers and support training reward model for text-to-audio task.
 
     :param dataset_paths: List of dataset file paths or directories. The
@@ -320,7 +320,7 @@ class RankDatasetAL(Dataset):
             except Exception as e:
                 logger.error(f"Failed to load data {path} (source: {source}): {e}")
 
-        logger.info(f"Loaded {len(self.data)} items in total, sources: {[s for s in dataset_paths]}")
+        logger.info(f"Loaded {len(self.data)} items in total, sources: {list(dataset_paths)}")
         random.shuffle(self.data)
 
     def __len__(self):
@@ -350,6 +350,7 @@ class RankDatasetAL(Dataset):
 
     def _tokenize_pair(self, messages0, messages1):
         # Get audio data from messages
+        audio0, audio1 = None, None
         for msg in messages0:
             if isinstance(msg["content"], list):
                 for ele in msg["content"]:

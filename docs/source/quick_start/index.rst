@@ -1,9 +1,9 @@
-.. quick_start:
+.. _quick_start:
 
-Quick Start Guide
+Quick Start
 =================
 
-This guide helps you get started with LightRFT quickly, from basic concepts to running your first experiments.
+This guide helps you get started with LightRFT quickly, from basic concepts, user guide (algorithm and configuration), to running your first training experiment.
 
 .. toctree::
    :maxdepth: 2
@@ -16,11 +16,4 @@ This guide helps you get started with LightRFT quickly, from basic concepts to r
    :caption: User Guide
 
    algorithms
-   algorithms_cn
    configuration
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Training Examples
-
-   experiments

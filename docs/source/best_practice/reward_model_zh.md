@@ -792,12 +792,13 @@ def validate_dataset(json_path):
 
 | 模型变体 | 训练数据 | HPDv3 Test (Acc) | OmniReward-Bench-T2I (Acc) |
 | :--- | :--- | :--- | :--- |
-| **GRM (w/o reasoning)** (step 8000) | HPDv3 Subset (~56K) | 40.99% | 32.61% |
-| **GRM (w/ reasoning)** (step 3000) | ImageGen-CoT-Reward-5K | 53.90% | 54.42% |
+| **GRM (w/o reasoning)** (step 8000) | HPDv3 Train Subset (~56K) | **71.88%** | **59.33%** |
+| **GRM (w/ reasoning)** (step 3000) | ImageGen-CoT-Reward-5K | 63.02% | 58.35% |
 
 **结论与分析**:
-1.  **可解释性奖励**: 与直接输出偏好结果的 `GRM (w/o reasoning)` 相比，`GRM (w/ reasoning)` 能够通过输出显式的推理过程，以进行更为准确的偏好判断。在 `HPDv3 Test` 上，`GRM (w/ reasoning)` 达到了 53.90% 的准确率，显著优于不带推理过程的 `GRM (w/o reasoning)`(40.99%)。
-2.  **泛化能力挑战**: 虽然 `GRM (w/ reasoning)` 相较于不带推理的 `GRM (w/o reasoning)` 在各测试集上表现更好，但总体准确率都在 50% 上下（接近随机猜测）。这表明要进一步提升 `GRM (w/ reasoning)` 的性能，仍需在数据多样性和模型能力方面进行改进。进一步的探索可以通过引入更多样化的训练数据和更大尺寸的基础模型来提升其泛化能力。
+1.  **数据规模的影响**: 从结果上看，`GRM (w/o reasoning)` 在两个测试集上均取得了更高的准确率（HPDv3 Test: 71.88% vs 63.02%）。但这很大程度上归因于训练数据的差异：`GRM (w/o reasoning)` 使用了约 56K 的 HPDv3 训练数据，而 `GRM (w/ reasoning)` 仅使用了 5K 的 ImageGen-CoT 数据。特别是在同源的 HPDv3 Test 上，数据量的优势使得 `GRM (w/o reasoning)` 表现更为突出。
+2.  **推理能力的潜力**: 尽管训练数据量仅为前者的 1/10，`GRM (w/ reasoning)` 依然展现出了具有竞争力的性能（HPDv3 Test 63.02%）。这表明引入思维链（CoT）推理过程能够帮助模型在小样本下更有效地学习偏好判断。
+3.  **未来改进方向**: 目前 `GRM (w/ reasoning)` 的性能受限于高质量 CoT 数据的稀缺。未来的工作可以集中在构建更大规模、更多样化的 CoT 偏好数据集上，或者通过强化微调来进一步释放推理型奖励模型的潜力。
 ---
 
 ## 8. 进阶话题

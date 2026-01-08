@@ -2,99 +2,55 @@
 LightRFT Project Overview
 ======================================================================================
 
-LightRFT is a framework designed for Reinforcement Learning from Human Feedback (RLHF) that enables efficient fine-tuning of large language models and vision-language models. The project is structured to support distributed training across multiple GPUs and nodes while maintaining a clean, modular architecture.
+LightRFT is a framework designed for RLHF and RLVR that enables efficient fine-tuning of large language models and vision-language models. The project is structured to support distributed training across multiple GPUs and nodes while maintaining a clean, modular architecture.
 
 High-Level Architecture
 ======================================================================================
 
-The framework is organized into five main modules, each serving a distinct purpose in the RLHF pipeline:
+.. image:: ./lightrft_system.png
+   :alt: LightRFT System
+   :width: 100%
+   :align: center
 
-.. code-block:: text
+The LightRFT framework follows a layered architecture designed to apply reasoning large models into different domains. 
+The system is structured in four main layers, progressing from foundational hardware infrastructure to advanced reasoning applications:
 
-    lightrft/
-    ├── datasets/                  # Dataset implementations
-    │   ├── __init__.py
-    │   ├── audio_alpaca.py        # Audio dataset
-    │   ├── grm_dataset.py         # General reward model dataset
-    │   ├── prompts_dataset.py     # Prompts dataset
-    │   ├── prompts_dataset_vl.py  # Vision-language prompts dataset
-    │   ├── sft_dataset.py         # SFT dataset
-    │   ├── sft_dataset_vl.py      # Vision-language SFT dataset
-    │   ├── srm_dataset.py         # Safe reward model dataset
-    │   └── utils.py               # Dataset utilities
-    ├── models/                    # Model definitions and architecture adaptations
-    │   ├── __init__.py
-    │   ├── actor_al.py            # Audio-language actor model
-    │   ├── actor_language.py      # Language actor model
-    │   ├── actor_vl.py            # Vision-language actor model
-    │   ├── grm_vl.py              # General reward model (VL)
-    │   ├── srm_al.py              # Safe reward model (AL)
-    │   ├── srm_vl.py              # Safe reward model (VL)
-    │   ├── loss.py                # Loss functions
-    │   ├── utils.py               # Model utilities
-    │   └── monkey_patch/          # Non-invasive model modifications
-    │       ├── __init__.py
-    │       ├── apply.py           # Entry point for patches
-    │       ├── hf_generate_patch.py  # HuggingFace generation patches
-    │       ├── llama.py           # LLaMA-specific adaptations
-    │       └── qwen.py            # Qwen-specific adaptations
-    ├── strategy/                  # Distributed training strategies
-    │   ├── __init__.py
-    │   ├── config.py              # Strategy configuration
-    │   ├── fake_strategy.py       # Fake strategy for testing
-    │   ├── strategy.py            # Main strategy implementation
-    │   ├── strategy_base.py       # Strategy base class
-    │   ├── deepspeed/             # DeepSpeed integration
-    │   │   ├── __init__.py
-    │   │   ├── deepspeed.py       # DeepSpeed strategy
-    │   │   └── deepspeed_utils.py # DeepSpeed utilities
-    │   ├── fsdp/                  # Fully Sharded Data Parallel
-    │   │   ├── __init__.py
-    │   │   ├── fsdp_optimizer.py  # FSDP optimizer
-    │   │   ├── fsdp_utils.py      # FSDP utilities
-    │   │   └── fsdpv2.py          # FSDP v2 implementation
-    │   ├── sglang_utils/          # SGLang integration
-    │   │   ├── __init__.py
-    │   │   ├── sglang_engine.py   # SGLang engine
-    │   │   └── sgl_model_saver.py # SGLang model saver
-    │   ├── vllm_utils/            # vLLM integration
-    │   │   ├── __init__.py
-    │   │   └── vllm_worker_wrap_no_ray.py  # vLLM worker wrapper
-    │   └── utils/                 # Strategy utilities
-    │       ├── __init__.py
-    │       ├── broadcast_utils.py # Broadcast utilities
-    │       ├── ckpt_utils.py      # Checkpoint utilities
-    │       ├── data_utils.py      # Data utilities
-    │       ├── distributed_util.py  # Distributed utilities
-    │       ├── optimizer_utils.py # Optimizer utilities
-    │       ├── parallel_utils.py  # Parallel utilities
-    │       └── statistic.py       # Statistics utilities
-    ├── trainer/                   # Training implementations
-    │   ├── __init__.py
-    │   ├── experience_maker.py    # Experience generator
-    │   ├── experience_maker_vl.py # VLM experience generator
-    │   ├── fast_exp_maker.py      # Fast experience maker
-    │   ├── grm_trainer_vl.py      # General reward model trainer (VL)
-    │   ├── kl_controller.py       # KL divergence controller
-    │   ├── ppo_trainer.py         # PPO trainer
-    │   ├── ppo_trainer_vl.py      # Vision-language PPO trainer
-    │   ├── replay_buffer.py       # Replay buffer
-    │   ├── replay_buffer_utils.py # Replay buffer utilities
-    │   ├── replay_buffer_vl.py    # Vision-language replay buffer
-    │   ├── spmd_ppo_trainer.py    # SPMD PPO trainer
-    │   ├── srm_trainer_al.py      # Safe reward model trainer (AL)
-    │   ├── srm_trainer_vl.py      # Safe reward model trainer (VL)
-    │   └── utils.py               # Trainer utilities
-    └── utils/                     # Utility functions
-        ├── __init__.py
-        ├── cli_args.py            # CLI argument parsing
-        ├── distributed_sampler.py # Distributed sampler
-        ├── logging_utils.py       # Logging utilities
-        ├── processor.py           # Data processors
-        ├── remote_rm_utils.py     # Remote reward model utilities
-        ├── timer.py               # Timer utilities
-        ├── trajectory_saver.py    # Trajectory saving utilities
-        └── utils.py               # General utilities
+**Heterogeneous Hardware Layer**: The foundation supports diverse GPU architectures including NVIDIA GPUs (A100/A800/H100), Huawei GPUs, and other hardware platforms, enabling flexible deployment across different computing environments.
+
+**Distributed Execution Layer**: This layer provides distributed execution capabilities through multiple training engines (DeepSpeed ZeRO, PyTorch FSDP) and high-performance inference engines (vLLM, SGLang), ensuring efficient resource utilization and scalability.
+
+**RLVR Framework Layer**: At the core of the system, this layer integrates various model components—Actor Models, Critic Models, Reference Models, Verifiable Rules, and Reward Models—with advanced optimization algorithms including GRPO, DAPO, TTRL, CPGD. The models and algorithms interact through a colocate mechanism that enables seamless optimization and co-location of different components within the same computing resources.
+
+**Reasoning Large Models Application Layer**: The topmost layer focuses on delivering reasoning capabilities across multiple domains, including formal math reasoning (AIME/GSM8K), code generation (LiveCodeBench/SWE), efficient reasoning with search, and multi-modal reasoning (image/video/audio/music).
+
+The architecture operates within a distributed execution framework and an RLVR framework, orchestrating all components to deliver scalable, efficient, and trustworthy reasoning applications for large language models, vision-language models, audio-language models, and diffusion models.
+
+
+
+
+Training Flowchart
+======================================================================================
+
+.. image:: ./lightrft_pipeline.png
+   :alt: LightRFT Pipeline
+   :width: 100%
+   :align: center
+
+
+Unlike traditional reinforcement learning tasks—such as gaming or robotics—which rely heavily on CPU-intensive environments, 
+large language models generate data online primarily through neural network inference, producing vast token sequences. 
+This makes decoupled system architectures with separate roles (e.g., producers and consumers) across different computing resources less suitable.
+In this “model-as-environment” setting, a **colocate** architecture integrates all stages of the training pipeline within the same computing resources. 
+Every machine assumes the same role through data parallelism, with different phases switching via underlying engine transitions. 
+This design enables clean scalability and ensures high utilization of computational resources.
+In LightRFT, we extend this concept across all models used in training, establishing our **Universal Colocate Mechanism**.
+
+- **Multi-Mode Colocate**: Multi-response generation (rollout), reward judge (assistant computation), and optimization (training) operate within a unified hardware system—like chefs, riders, and inspectors seamlessly collaborating in a single dispatch hub. This eliminates handover delays and boosts end-to-end efficiency.
+
+- **Plug-and-Play Modules**: Add new mechanisms—such as rewards, constraints, or teachers—without rebuilding the system. It’s like swapping LEGO wheels or steering modules on the fly, allowing swift adaptation to evolving requirements.
+
+- **Efficient Mode Switching**: Switch seamlessly between training, rollout, and verification scoring modes with negligible overhead, analogous to a hot pit stop in Formula 1. Combined with flexible data routing and model-sharing, this minimizes redundant resource allocation and switching overhead. The system maintains peak efficiency while reducing total training time.
+
 
 Core Modules
 ======================================================================================
@@ -188,6 +144,7 @@ The LightRFT framework operates through a coordinated workflow:
 6. **Inference Optimization**: During generation, specialized inference engines (vLLM/SGLang) may be employed for efficiency.
 
 7. **Checkpointing and Evaluation**: The system regularly saves model states and evaluates performance.
+
 
 Extension Points
 ======================================================================================

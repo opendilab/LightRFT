@@ -46,8 +46,6 @@ class StrategyConfig:
     grad_accum_dtype: Optional[str] = None
     # (bool): Overlap communication and computation, defaults to False
     overlap_comm: bool = False
-    # (int): Ring attention size, defaults to 1
-    ring_attn_size: int = 1
 
     # Engine and inference parameters
     # (str): Inference engine type, defaults to "vllm"
@@ -223,8 +221,7 @@ class StrategyConfig:
         # Distributed Training Parameters
         print("\nDistributed Training Parameters:")
         for attr in [
-            'zero_stage', 'fsdp', 'fsdp_cpu_offload', 'adam_offload', 'zpg', 'grad_accum_dtype', 'overlap_comm',
-            'ring_attn_size'
+            'zero_stage', 'fsdp', 'fsdp_cpu_offload', 'adam_offload', 'zpg', 'grad_accum_dtype', 'overlap_comm'
         ]:
             current = getattr(self, attr)
             default = getattr(default_config, attr)

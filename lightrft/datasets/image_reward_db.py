@@ -3,10 +3,9 @@ import copy
 import json
 import random
 import glob
-from typing import List, Dict, Any, Tuple, Union
+from typing import List, Dict, Any, Tuple
 from itertools import combinations
 from collections import defaultdict
-from tqdm import tqdm
 from loguru import logger
 
 from .utils import BaseDataHandler
@@ -15,7 +14,7 @@ from .utils import BaseDataHandler
 class ImageRewardDBHandler(BaseDataHandler):
     """
     Data Handler for ImageRewardDB dataset.
-    
+
     Paper: https://arxiv.org/abs/2304.05977
     Dataset Repo: https://huggingface.co/datasets/zai-org/ImageRewardDB
     """
@@ -29,7 +28,7 @@ class ImageRewardDBHandler(BaseDataHandler):
 
         :param path: Path to the dataset root directory of ImageRewardDB.
         :type path: str
-        
+
         :return: List of preference pair dictionaries.
         :rtype: List[Dict[str, Any]]
             - ``prompt_id`` (str): Unique identifier for the prompt group.
@@ -160,7 +159,7 @@ class ImageRewardDBHandler(BaseDataHandler):
         rejected_image = media_content['rejected_image']
 
         if not all([preferred_image, rejected_image]):
-            raise ValueError(f"Missing visual content for 'preferred_image' or 'rejected_image'.")
+            raise ValueError("Missing visual content for 'preferred_image' or 'rejected_image'.")
 
         # Get generation prompt from data item
         prompt_text = item["prompt"]
@@ -179,21 +178,17 @@ class ImageRewardDBHandler(BaseDataHandler):
             image0, image1 = rejected_image, preferred_image
 
         # Build messages
-        messages0 = [
-            {
-                "role": "system",
-                "content": copy.deepcopy(task_instruction)
-            },
-            {
-                "role": "user",
-                "content": [{
-                    "type": "image",
-                    "image": image0,
-                    "max_pixels": 1280 * 720
-                }  # to save memory
-                            ]
-            }
-        ]
+        messages0 = [{
+            "role": "system",
+            "content": copy.deepcopy(task_instruction)
+        }, {
+            "role": "user",
+            "content": [{
+                "type": "image",
+                "image": image0,
+                "max_pixels": 1280 * 720
+            }]
+        }]
 
         messages1 = [{
             "role": "system",

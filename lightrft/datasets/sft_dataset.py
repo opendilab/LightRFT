@@ -205,7 +205,7 @@ class SFTDataset(Dataset):
         prompt_ids_lens = []
         infos = {"input_length": [], "response_ranges": [] if self.multiturn else None}
         index = 1
-        for prompt_ids_len, input_id, attention_mask, info in item_list:
+        for prompt_ids_len, input_id, _, info in item_list:
             packed_input_ids.append(input_id.flatten())
             packed_attention_masks.append(torch.full_like(input_id.flatten(), index))
             prompt_ids_lens.append(prompt_ids_len)

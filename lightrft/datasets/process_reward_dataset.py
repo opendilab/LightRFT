@@ -103,7 +103,7 @@ class ProcessRewardDataset(Dataset):
         input_seq_lens = []
         label_ids = []
         index = 1
-        for input_id, input_mask, label_id in item_list:
+        for input_id, _, label_id in item_list:
             input_ids.append(input_id.flatten())
             input_att_masks.append(torch.full_like(input_id.flatten(), index))
             input_seq_lens.append(len(input_id.flatten()))
