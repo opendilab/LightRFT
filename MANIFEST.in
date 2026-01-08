@@ -1,0 +1,43 @@
+# Include documentation files
+include README.md
+include README_zh.md
+include LICENSE
+include CHANGELOG.md
+
+# Include requirements files
+include requirements.txt
+include requirements-dev.txt
+include requirements-doc.txt
+
+# Include configuration files
+include Makefile
+include .pylintrc
+include .style.yapf
+
+# Include documentation
+recursive-include docs *.rst *.md *.py *.txt
+
+# Include assets
+recursive-include assets *.png *.jpg *.svg
+
+# Include examples
+recursive-include examples *.py *.sh *.json *.yaml *.md
+
+# Exclude unwanted files
+global-exclude __pycache__
+global-exclude *.py[cod]
+global-exclude *~
+global-exclude *.so
+global-exclude .DS_Store
+global-exclude .git*
+
+# Exclude build and cache directories
+prune .git
+prune build
+prune dist
+prune *.egg-info
+prune __pycache__
+prune results
+prune rft_logs
+prune log
+prune wandb
