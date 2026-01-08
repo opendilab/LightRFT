@@ -534,8 +534,10 @@ class DeepspeedStrategy(StrategyBase):
                     key=lambda x: x[1],
                 )
                 total_size = sum(
-                    os.path.getsize(os.path.join(dirpath, f)) for subdir, _ in subdirs
-                    for dirpath, _, filenames in os.walk(subdir) for f in filenames
+                    os.path.getsize(os.path.join(dirpath, f))
+                    for subdir, _ in subdirs
+                    for dirpath, _, filenames in os.walk(subdir)
+                    for f in filenames
                 )
 
                 if len(subdirs) >= max_num or total_size > MAX_SIZE:

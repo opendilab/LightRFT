@@ -29,10 +29,10 @@ import warnings
 
 from .utils import RunningMoments, compute_clip_fraction
 
-
 # ============================================================================
 # Abstract Base Class
 # ============================================================================
+
 
 class AdvantageCalculator(ABC):
     """
@@ -50,7 +50,6 @@ class AdvantageCalculator(ABC):
         strategy: Training strategy object containing configuration and models
         reward_running_moments: Optional RunningMoments for reward normalization
     """
-
     def __init__(self, strategy):
         """
         Initialize the advantage calculator.
@@ -175,13 +174,13 @@ class AdvantageCalculator(ABC):
 # Concrete Implementations
 # ============================================================================
 
+
 class DefaultAdvantageCalculator(AdvantageCalculator):
     """
     Default calculator with no reward preprocessing.
 
     Used by methods like GAE and CPGD that don't require reward preprocessing.
     """
-
     def preprocess_rewards(
         self,
         rewards: torch.Tensor,
@@ -214,7 +213,6 @@ class GAECalculator(DefaultAdvantageCalculator):
 
     Reference: GAE: https://arxiv.org/pdf/1506.02438
     """
-
     def get_advantages_and_returns(
         self,
         values: torch.Tensor,
@@ -297,7 +295,9 @@ class GAECalculator(DefaultAdvantageCalculator):
         advantage_clip_frac = 0.0
         if self.config.advantage_clip > 0:
             advantages = torch.clamp(advantages, -self.config.advantage_clip, self.config.advantage_clip)
-            advantage_clip_frac = compute_clip_fraction(advantages, self.config.advantage_clip, -self.config.advantage_clip)
+            advantage_clip_frac = compute_clip_fraction(
+                advantages, self.config.advantage_clip, -self.config.advantage_clip
+            )
 
         return advantages, returns, advantage_clip_frac
 
@@ -347,7 +347,6 @@ class CPGDCalculator(DefaultAdvantageCalculator):
 
     Reference: CPGD: https://arxiv.org/abs/2505.12504
     """
-
     def _get_cpgd_advantages_returns(
         self,
         reward: torch.Tensor,
@@ -465,9 +464,7 @@ class CPGDCalculator(DefaultAdvantageCalculator):
         """
         # CPGD uses original reward from experience, not final_reward
         original_reward = experience.info["reward"].to(final_reward.device)
-        advantages, returns = self._get_cpgd_advantages_returns(
-            original_reward, experience.action_mask
-        )
+        advantages, returns = self._get_cpgd_advantages_returns(original_reward, experience.action_mask)
         return advantages, returns, {}
 
 
@@ -481,7 +478,6 @@ class REINFORCECalculator(DefaultAdvantageCalculator):
     Reference: REINFORCE: Williams, R. J. (1992). Simple statistical gradient-following
     algorithms for connectionist reinforcement learning. Machine learning, 8(3-4), 229-256.
     """
-
     def __init__(self, strategy):
         """Initialize REINFORCE calculator."""
         super().__init__(strategy)
@@ -516,9 +512,7 @@ class REINFORCECalculator(DefaultAdvantageCalculator):
         :rtype: Tuple[torch.Tensor, torch.Tensor, Dict]
         """
         # Compute cumulative returns
-        returns = self.get_cumulative_returns(
-            final_reward, experience.action_mask, generate_kwargs["gamma"]
-        )
+        returns = self.get_cumulative_returns(final_reward, experience.action_mask, generate_kwargs["gamma"])
         advantages = deepcopy(returns)
 
         # Advantage whitening
@@ -532,9 +526,7 @@ class REINFORCECalculator(DefaultAdvantageCalculator):
         # Advantage clipping
         if self.config.advantage_clip > 0:
             clip_val = self.config.advantage_clip
-            info_dict["advantage_clip_frac"] = compute_clip_fraction(
-                advantages, clip_val, -clip_val
-            )
+            info_dict["advantage_clip_frac"] = compute_clip_fraction(advantages, clip_val, -clip_val)
             advantages = torch.clamp(advantages, -clip_val, clip_val)
 
         return advantages, returns, info_dict
@@ -549,7 +541,6 @@ class RLOOCalculator(AdvantageCalculator):
 
     Reference: RLOO: https://arxiv.org/abs/2402.14740
     """
-
     def preprocess_rewards(
         self,
         rewards: torch.Tensor,
@@ -613,9 +604,7 @@ class RLOOCalculator(AdvantageCalculator):
         :rtype: Tuple[torch.Tensor, torch.Tensor, Dict]
         """
         # Compute cumulative returns
-        returns = self.get_cumulative_returns(
-            final_reward, experience.action_mask, generate_kwargs["gamma"]
-        )
+        returns = self.get_cumulative_returns(final_reward, experience.action_mask, generate_kwargs["gamma"])
         advantages = deepcopy(returns)
 
         # Advantage whitening
@@ -629,9 +618,7 @@ class RLOOCalculator(AdvantageCalculator):
         # Advantage clipping
         if self.config.advantage_clip > 0:
             clip_val = self.config.advantage_clip
-            info_dict["advantage_clip_frac"] = compute_clip_fraction(
-                advantages, clip_val, -clip_val
-            )
+            info_dict["advantage_clip_frac"] = compute_clip_fraction(advantages, clip_val, -clip_val)
             advantages = torch.clamp(advantages, -clip_val, clip_val)
 
         return advantages, returns, info_dict
@@ -646,7 +633,6 @@ class REINFORCEBaselineCalculator(AdvantageCalculator):
     Reference: REINFORCE: Williams, R. J. (1992). Simple statistical gradient-following
     algorithms for connectionist reinforcement learning. Machine learning, 8(3-4), 229-256.
     """
-
     def preprocess_rewards(
         self,
         rewards: torch.Tensor,
@@ -706,9 +692,7 @@ class REINFORCEBaselineCalculator(AdvantageCalculator):
         :rtype: Tuple[torch.Tensor, torch.Tensor, Dict]
         """
         # Compute cumulative returns
-        returns = self.get_cumulative_returns(
-            final_reward, experience.action_mask, generate_kwargs["gamma"]
-        )
+        returns = self.get_cumulative_returns(final_reward, experience.action_mask, generate_kwargs["gamma"])
         advantages = deepcopy(returns)
 
         # Advantage whitening
@@ -722,9 +706,7 @@ class REINFORCEBaselineCalculator(AdvantageCalculator):
         # Advantage clipping
         if self.config.advantage_clip > 0:
             clip_val = self.config.advantage_clip
-            info_dict["advantage_clip_frac"] = compute_clip_fraction(
-                advantages, clip_val, -clip_val
-            )
+            info_dict["advantage_clip_frac"] = compute_clip_fraction(advantages, clip_val, -clip_val)
             advantages = torch.clamp(advantages, -clip_val, clip_val)
 
         return advantages, returns, info_dict
@@ -738,7 +720,6 @@ class GroupNormCalculator(AdvantageCalculator):
 
     Reference: GRPO: https://arxiv.org/pdf/2402.03300
     """
-
     def preprocess_rewards(
         self,
         rewards: torch.Tensor,
@@ -764,21 +745,17 @@ class GroupNormCalculator(AdvantageCalculator):
         if config.dynamic_sampling:
             step_size = n_samples // config.micro_train_batch_size
             for i in range(0, len(experiences), step_size):
-                chunk = experiences[i : i + step_size]
+                chunk = experiences[i:i + step_size]
                 chunk_rewards = torch.cat([exp.info["reward"] for exp in chunk])
 
                 # Filter out degenerate cases (all 0s or all 1s)
                 if torch.all(chunk_rewards == 0) or torch.all(chunk_rewards == 1):
                     for exp in chunk:
-                        exp.action_mask = torch.zeros_like(
-                            exp.action_mask, dtype=torch.bool
-                        )
+                        exp.action_mask = torch.zeros_like(exp.action_mask, dtype=torch.bool)
 
         # Group normalization
         rewards = rewards.reshape(-1, n_samples).to("cuda")
-        rewards = (rewards - rewards.mean(-1, keepdim=True)) / (
-            rewards.std(-1, keepdim=True) + 1e-9
-        )
+        rewards = (rewards - rewards.mean(-1, keepdim=True)) / (rewards.std(-1, keepdim=True) + 1e-9)
 
         # Flatten and chunk back
         rewards = rewards.flatten().to("cpu").chunk(len(experiences))
@@ -812,9 +789,7 @@ class GroupNormCalculator(AdvantageCalculator):
         :rtype: Tuple[torch.Tensor, torch.Tensor, Dict]
         """
         # Compute cumulative returns
-        returns = self.get_cumulative_returns(
-            final_reward, experience.action_mask, generate_kwargs["gamma"]
-        )
+        returns = self.get_cumulative_returns(final_reward, experience.action_mask, generate_kwargs["gamma"])
         advantages = deepcopy(returns)
 
         # Advantage whitening
@@ -828,9 +803,7 @@ class GroupNormCalculator(AdvantageCalculator):
         # Advantage clipping
         if self.config.advantage_clip > 0:
             clip_val = self.config.advantage_clip
-            info_dict["advantage_clip_frac"] = compute_clip_fraction(
-                advantages, clip_val, -clip_val
-            )
+            info_dict["advantage_clip_frac"] = compute_clip_fraction(advantages, clip_val, -clip_val)
             advantages = torch.clamp(advantages, -clip_val, clip_val)
 
         return advantages, returns, info_dict
@@ -839,6 +812,7 @@ class GroupNormCalculator(AdvantageCalculator):
 # ============================================================================
 # Factory Function
 # ============================================================================
+
 
 def get_advantage_calculator(estimator_name: str, strategy) -> AdvantageCalculator:
     """
@@ -872,4 +846,3 @@ def get_advantage_calculator(estimator_name: str, strategy) -> AdvantageCalculat
         )
 
     return calculator_class(strategy)
-
