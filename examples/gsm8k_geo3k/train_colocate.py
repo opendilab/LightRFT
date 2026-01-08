@@ -45,8 +45,8 @@ import torch.nn.functional as F
 from lightrft.utils import add_arguments, ensure_video_input_available
 ensure_video_input_available()
 
-from lightrft.datasets import PromptDatasetVL, SFTDatasetVL
-from lightrft.utils import blending_datasets, get_tokenizer_processor_vl
+from lightrft.datasets import DatasetConfig, DatasetLoader
+from lightrft.utils import get_tokenizer_processor_vl
 from lightrft.models.actor_language import ActorLanguage
 from lightrft.models.actor_vl import ActorVL
 
@@ -54,7 +54,8 @@ from lightrft.strategy import get_strategy
 from lightrft.trainer.spmd_ppo_trainer import SPMDPPOTrainerVL
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-from reward_models_utils import load_reward_models, reward_fn, RECIPE
+from reward_models_utils import RECIPE
+from lightrft.reward import RewardManager
 
 
 def train(args):
@@ -155,16 +156,6 @@ def train(args):
     else:
         critic = None
 
-    # Load reward models (multiple types: value, safety, knowledge, etc.)
-    strategy.report_memory(f"before loaded reward models in main entry")
-    reward_models, reward_tokenizers, label_map = load_reward_models(
-        raw_reward_pretrain=args.reward_pretrain,
-        strategy=strategy,
-        use_engine=args.rm_use_engine,
-    )
-    strategy.print(f"label_map: {label_map}")
-    strategy.report_memory(f"after loaded reward models in main entry")
-
     strategy.print(actor)
     strategy.print(critic)
 
@@ -203,70 +194,129 @@ def train(args):
     )
     assert processor is not None, "processor is None"
 
-   # ==================== Data Loading Optimization ====================
-    # The following sections now rely on the robust `blending_datasets` function.
-    # We add more logging for clarity.
+    # Initialize reward manager (using rule-based rewards for gsm8k/geo3k)
+    strategy.report_memory(f"before loaded reward models in main entry")
+    
+    # For gsm8k/geo3k, we use rule-based rewards, so no neural models are needed
+    # Create a wrapper function for compatibility with trainer
+    def reward_fn(
+        model_reward_list,
+        labels,
+        queries,
+        refs,
+        label_map,
+    ):
+        """
+        Wrapper function for RewardManager to match trainer's expected interface.
+        
+        For rule-based rewards, model_reward_list will be empty.
+        The reward manager will compute rewards based on labels and queries.
+        """
+        # Determine rule type from labels (geo3k or gsm8k)
+        # Use the first label to determine rule type, or default to geo3k_combined
+        if labels:
+            first_label = labels[0]
+            if "gsm8k" in first_label.lower():
+                rule_type = "gsm8k_combined"
+            elif "geo3k" in first_label.lower():
+                rule_type = "geo3k_combined"
+            else:
+                rule_type = "geo3k_combined"  # Default
+        else:
+            rule_type = "geo3k_combined"
+        
+        # Create a temporary reward manager with the correct rule type
+        # Note: We could optimize this by caching managers per rule type
+        # For rule-based rewards, tokenizer and strategy are not required
+        temp_reward_manager = RewardManager(
+            reward_type="rule",
+            rule_type=rule_type,
+        )
+        
+        # Compute rewards using the reward manager
+        rewards, metrics = temp_reward_manager.compute(
+            queries=queries,
+            references=refs,
+            labels=labels,
+        )
+        
+        return rewards, metrics
+    
+    label_map = {}  # Empty for rule-based rewards
+    reward_models = []  # Empty for rule-based rewards
+    reward_tokenizers = []  # Empty for rule-based rewards
+    
+    strategy.print(f"Initialized rule-based reward manager for gsm8k/geo3k")
+    strategy.report_memory(f"after loaded reward models in main entry")
 
-    # Prepare prompts dataset
-    strategy.print(f"Loading prompts dataset from: {args.prompt_data} with split: {args.prompt_split}")
-    prompts_data = blending_datasets(
-        args.prompt_data,
-        args.prompt_data_probs,
-        strategy,
-        args.seed,
-        return_eval=False,
-        train_split=args.prompt_split,
+    # ==================== Data Loading with New API ====================
+    # Use DatasetConfig and DatasetLoader for unified dataset loading
+    
+    # Initialize dataset loader
+    dataset_loader = DatasetLoader(
+        tokenizer=tokenizer,
+        processor=processor,
+        strategy=strategy,
     )
     
-    prompts_data = prompts_data.select(range(min(args.max_samples, len(prompts_data))))
-    prompts_dataset = PromptDatasetVL(prompts_data, tokenizer, processor, args.prompt_max_len, strategy, input_template=args.input_template)
-    strategy.print(f"Loaded {len(prompts_dataset)} samples for prompts.")
-
+    # Prepare prompts dataset
+    train_config = DatasetConfig.for_train(
+        data_path=args.prompt_data,
+        data_probs=args.prompt_data_probs,
+        split=args.prompt_split,
+        max_samples=args.max_samples,
+        seed=args.seed,
+    )
+    prompts_dataset = dataset_loader.load_train_dataset(
+        config=train_config,
+        prompt_max_len=args.prompt_max_len,
+        input_template=args.input_template,
+    )
+    
     # Prepare evaluation dataset
     eval_dataloader = None
     if args.eval_data or args.eval_split:
         eval_data_path = args.eval_data if args.eval_data else args.prompt_data
         if eval_data_path:
-            strategy.print(f"Loading evaluation dataset from {eval_data_path}, split='{args.eval_split}'")
-            eval_data = blending_datasets(
-                eval_data_path, "1.0", strategy, args.seed, return_eval=False,
-                # Note: `train_split` parameter is used to specify the desired split name for evaluation data.
-                train_split=args.eval_split,
+            eval_config = DatasetConfig.for_eval(
+                data_path=eval_data_path,
+                data_probs="1.0",
+                split=args.eval_split,
+                max_samples=args.max_eval_samples,
+                seed=args.seed,
             )
-            if len(eval_data) == 0:
-                 strategy.print(f"Warning: Evaluation dataset at {eval_data_path} with split '{args.eval_split}' is empty. Skipping evaluation.")
-            else:
-                eval_data = eval_data.select(range(min(args.max_eval_samples, len(eval_data))))
-                
-                eval_dataset = PromptDatasetVL(eval_data, tokenizer, processor, args.prompt_max_len, strategy, input_template=args.input_template)
+            eval_dataset = dataset_loader.load_eval_dataset(
+                config=eval_config,
+                prompt_max_len=args.prompt_max_len,
+                input_template=args.input_template,
+            )
+            if eval_dataset is not None:
                 eval_dataloader = strategy.setup_dataloader(
                     eval_dataset, args.rollout_batch_size // strategy.world_size, False, False, collate_fn=eval_dataset.collate_fn
                 )
-                strategy.print(f"Evaluation dataset loaded: {len(eval_dataset)} samples")
         else:
             strategy.print("Warning: eval_split specified but no data path available for evaluation.")
 
     # Prepare pretrain dataset
     pretrain_dataloader = None
     if args.pretrain_data:
-        strategy.print(f"Loading pretrain dataset from: {args.pretrain_data} with split: {args.pretrain_split}")
-        pretrain_data = blending_datasets(
-            args.pretrain_data, args.pretrain_data_probs, strategy, args.seed,
-            return_eval=False, train_split=args.pretrain_split,
+        pretrain_max_len = args.max_len if args.max_len else args.prompt_max_len + args.generate_max_len
+        # Calculate total samples needed for pretraining
+        total_pretrain_samples = args.max_epochs * len(prompts_dataset) * args.n_samples_per_prompt
+        
+        pretrain_config = DatasetConfig.for_pretrain(
+            data_path=args.pretrain_data,
+            data_probs=args.pretrain_data_probs,
+            split=args.pretrain_split,
+            max_samples=total_pretrain_samples,
+            seed=args.seed,
         )
-        if len(pretrain_data) == 0:
-            strategy.print(f"Warning: Pretrain dataset at {args.pretrain_data} is empty. PTX loss will not be applied.")
-            pretrain_dataloader = None
-        else:
-            pretrain_max_len = args.max_len if args.max_len else args.prompt_max_len + args.generate_max_len
-            # Calculate total samples needed for pretraining
-            total_pretrain_samples = args.max_epochs * len(prompts_dataset) * args.n_samples_per_prompt
-            pretrain_data_subset = pretrain_data.select(range(min(len(pretrain_data), total_pretrain_samples)))
-            
-            pretrain_dataset = SFTDatasetVL(
-                pretrain_data_subset, tokenizer, pretrain_max_len, strategy, pretrain_mode=True,
-            )
-            strategy.print(f"Loaded {len(pretrain_dataset)} samples for pretraining.")
+        pretrain_dataset = dataset_loader.load_pretrain_dataset(
+            config=pretrain_config,
+            pretrain_max_len=pretrain_max_len,
+        )
+        
+        if pretrain_dataset is not None:
             pretrain_dataloader = itertools.cycle(
                 iter(
                     strategy.setup_dataloader(
@@ -281,21 +331,6 @@ def train(args):
     prompts_dataloader = strategy.setup_dataloader(
         prompts_dataset, args.rollout_batch_size // strategy.world_size, True, True, collate_fn=prompts_dataset.collate_fn
     )
-
-    if args.pretrain_data:
-        pretrain_dataloader = itertools.cycle(
-            iter(
-                strategy.setup_dataloader(
-                    pretrain_dataset,
-                    args.micro_train_batch_size,
-                    True,
-                    True,
-                    pretrain_dataset.collate_fn,
-                )
-            )
-        )
-    else:
-        pretrain_dataloader = None
 
     # for scheduler
     num_update_steps_per_episodes = (
