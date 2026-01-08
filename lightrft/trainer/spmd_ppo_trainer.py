@@ -29,6 +29,7 @@ from lightrft.utils.trajectory_saver import create_trajectory_saver
 
 from lightrft.trainer.replay_buffer import make_experience_batch
 from lightrft.trainer.replay_buffer_vl import make_experience_batch as make_experience_batch_vl
+from lightrft.models.utils import create_high_entropy_mask
 from lightrft.utils import init_logger
 
 logger = init_logger(__name__)
@@ -216,8 +217,7 @@ class SPMDPPOTrainerBase:
                 # Create entropy_mask if high_entropy_token_ratio > 0 and action_entropy is available
                 entropy_mask = None
                 if hasattr(experience, 'action_entropy') and experience.action_entropy is not None:
-                    if hasattr(self.actor, 'high_entropy_token_ratio') and self.actor.high_entropy_token_ratio > 0.0:
-                        from lightrft.models.utils import create_high_entropy_mask
+                    if self.high_entropy_token_ratio > 0.0:
                         # Validate and align shapes before calling
                         action_entropy = experience.action_entropy
                         action_mask = experience.action_mask
@@ -258,20 +258,20 @@ class SPMDPPOTrainerBase:
                                         entropy_mask = create_high_entropy_mask(
                                             action_entropy,
                                             action_mask,
-                                            self.actor.high_entropy_token_ratio
+                                            self.high_entropy_token_ratio
                                         )
                                 else:
                                     entropy_mask = create_high_entropy_mask(
                                         action_entropy,
                                         action_mask,
-                                        self.actor.high_entropy_token_ratio
+                                        self.high_entropy_token_ratio
                                     )
                             else:
                                 # If no action_mask, create mask without it
                                 entropy_mask = create_high_entropy_mask(
                                     action_entropy,
                                     None,
-                                    self.actor.high_entropy_token_ratio
+                                    self.high_entropy_token_ratio
                                 )
 
                 # Call training_step which will handle both GSPO and standard modes

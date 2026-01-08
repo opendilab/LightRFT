@@ -103,9 +103,9 @@ class PolicyLoss(nn.Module):
       stability for constrained policy optimization. See: https://arxiv.org/abs/2505.12504
 
     - **High-Entropy Token Filtering**: Enabled via ``high_entropy_token_ratio > 0`` or by
-      providing an ``entropy_mask``. This feature allows training only on high-entropy tokens
-      (forking tokens that determine reasoning directions), significantly improving training
-      efficiency. Based on: https://arxiv.org/abs/2506.01939
+      providing an ``entropy_mask`` in the forward pass. This feature allows training only on
+      high-entropy tokens (forking tokens that determine reasoning directions), significantly
+      improving training efficiency. Based on: https://arxiv.org/abs/2506.01939
 
     :param clip_eps: Clipping epsilon for PPO-style policy updates. Determines the maximum
         allowed ratio between new and old policy probabilities. Typical values range from
@@ -121,10 +121,6 @@ class PolicyLoss(nn.Module):
         (e.g., 0.2 means top 20% highest entropy tokens). When > 0, enables high-entropy
         token filtering. Set to 0.0 to disable. Default: 0.0
     :type high_entropy_token_ratio: float
-    :param entropy_mask: Pre-computed binary mask for high-entropy tokens. Shape should be
-        ``(batch_size, num_actions)``. If provided, this mask will be used instead of
-        computing one from ``high_entropy_token_ratio``. Default: None
-    :type entropy_mask: Optional[torch.Tensor]
 
     **Loss Computation:**
 
@@ -174,14 +170,12 @@ class PolicyLoss(nn.Module):
         use_dapo: bool = False, 
         use_cpg_loss: bool = False,
         high_entropy_token_ratio: float = 0.0,
-        entropy_mask: Optional[torch.Tensor] = None,
     ) -> None:
         super().__init__()
         self.clip_eps = clip_eps
         self.use_dapo = use_dapo
         self.use_cpg_loss = use_cpg_loss
         self.high_entropy_token_ratio = high_entropy_token_ratio
-        self.entropy_mask = entropy_mask
 
     def forward(
         self,
@@ -219,8 +213,9 @@ class PolicyLoss(nn.Module):
         **Masking Strategy:**
 
         The final mask is computed as:
-        - If ``entropy_mask`` is provided: ``final_mask = action_mask * entropy_mask``
-        - Else if ``self.entropy_mask`` exists: ``final_mask = action_mask * self.entropy_mask``
+        - If ``entropy_mask`` is provided: ``final_mask = entropy_mask``
+          (Note: ``entropy_mask`` is already created considering ``action_mask`` in
+          ``create_high_entropy_mask``, so padding positions are already excluded)
         - Else: ``final_mask = action_mask``
 
         Only tokens where ``final_mask == 1`` contribute to the loss computation.
@@ -233,14 +228,13 @@ class PolicyLoss(nn.Module):
         # Apply entropy mask if provided (for high-entropy token filtering)
         # action_mask shape: (batch_size, num_actions) - binary mask indicating valid tokens
         # entropy_mask shape: (batch_size, num_actions) - binary mask for high-entropy tokens
+        # Note: entropy_mask is already created considering action_mask in create_high_entropy_mask,
+        # so it already excludes padding positions. No need to multiply with action_mask again.
         if entropy_mask is not None:
-            # Use provided entropy mask
-            final_mask = action_mask * entropy_mask if action_mask is not None else entropy_mask
-        elif self.entropy_mask is not None:
-            # Use pre-computed entropy mask
-            final_mask = action_mask * self.entropy_mask if action_mask is not None else self.entropy_mask
+            # entropy_mask already respects action_mask boundaries (padding positions are 0)
+            final_mask = entropy_mask
         else:
-            # No entropy masking
+            # No entropy masking, use action_mask only
             final_mask = action_mask
 
         if self.use_cpg_loss:

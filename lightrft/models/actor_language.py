@@ -321,7 +321,10 @@ class ActorLanguage(nn.Module):
         if return_output:
             # Include action_entropy in output if computed
             if action_entropy is not None:
-                output_dict = dict(output)
+                # Convert ModelOutput (dataclass) to dict to allow adding new fields
+                # output type: ModelOutput (e.g., CausalLMOutputWithPast) - supports dict-like access
+                # but cannot directly add new keys. Converting to dict enables adding action_entropy.
+                output_dict = dict(output)  # Type: dict[str, torch.Tensor]
                 output_dict["action_entropy"] = action_entropy
                 return (action_log_probs, output_dict)
             return (action_log_probs, output)

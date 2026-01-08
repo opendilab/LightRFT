@@ -1811,8 +1811,8 @@ class FastExperienceMaker(NaiveExperienceMaker):
                 output.action_mask,
                 info,
                 kl,
+                action_entropy=output.action_entropy,
             )
-            exp.action_entropy = output.action_entropy
             return exp
         else:
             exp = Experience(
@@ -1826,8 +1826,8 @@ class FastExperienceMaker(NaiveExperienceMaker):
                 output.action_mask,
                 info,
                 kl,
+                action_entropy=output.action_entropy,
             )
-            exp.action_entropy = output.action_entropy
             return exp
 
     def _build_unpacked_sample(
