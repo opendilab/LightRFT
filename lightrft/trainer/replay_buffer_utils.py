@@ -679,6 +679,9 @@ def _remove_padding_in_sequences(items: List) -> List:
             item.attention_mask,
             item.action_mask,
         )
+        # Get action_entropy if it exists
+        action_entropy = getattr(item, 'action_entropy', None)
+        
         right_pad = (1 - act_mask.long()).sum()
         right_pad = None if right_pad == 0 else -right_pad
 
@@ -703,6 +706,9 @@ def _remove_padding_in_sequences(items: List) -> List:
             att_mask[left_pad:right_pad],
             act_mask[:right_pad],
         )
+        # Remove padding from action_entropy if it exists
+        if action_entropy is not None:
+            item.action_entropy = action_entropy[:right_pad]
     return items
 
 
@@ -745,6 +751,9 @@ def _remove_padding_in_sequences_vl(items: List) -> List:
             item.attention_mask,
             item.action_mask,
         )
+        # Get action_entropy if it exists
+        action_entropy = getattr(item, 'action_entropy', None)
+        
         right_pad = (1 - act_mask.long()).sum()
         right_pad = None if right_pad == 0 else -right_pad
 
@@ -769,4 +778,7 @@ def _remove_padding_in_sequences_vl(items: List) -> List:
             att_mask[left_pad:right_pad],
             act_mask[:right_pad],
         )
+        # Remove padding from action_entropy if it exists
+        if action_entropy is not None:
+            item.action_entropy = action_entropy[:right_pad]
     return items
