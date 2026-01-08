@@ -3,8 +3,6 @@ Metrics Computation Module
 
 Provides unified interface for computing various sample-level metrics
 used in filtering and weighting.
-
-Author: LightRLHF Team
 """
 
 from dataclasses import dataclass
@@ -53,16 +51,16 @@ class MetricsComputer:
     This class provides methods to compute sample-level metrics that can be used
     for filtering and weighting during experience generation.
 
-    Args:
-        packing_samples: Whether samples are packed (affects unpacking logic)
+    :param packing_samples: Whether samples are packed (affects unpacking logic)
+    :type packing_samples: bool
     """
 
     def __init__(self, packing_samples: bool = False):
         """
         Initialize metrics computer.
 
-        Args:
-            packing_samples: Whether samples are packed into single sequences
+        :param packing_samples: Whether samples are packed into single sequences
+        :type packing_samples: bool
         """
         self.packing_samples = packing_samples
 
@@ -78,13 +76,14 @@ class MetricsComputer:
         Entropy = -sum(p * log(p)) where p = exp(log_prob)
         Higher entropy indicates more uncertain/exploratory policy.
 
-        Args:
-            action_log_probs: Log probabilities (batch_size, seq_len) or (1, total_len) for packed
-            action_mask: Action mask (batch_size, seq_len) or (1, total_len) for packed
-            num_actions: Number of actions per sample (for packed samples)
-
-        Returns:
-            entropy: Per-sample entropy (batch_size,)
+        :param action_log_probs: Log probabilities (batch_size, seq_len) or (1, total_len) for packed
+        :type action_log_probs: torch.Tensor
+        :param action_mask: Action mask (batch_size, seq_len) or (1, total_len) for packed
+        :type action_mask: torch.Tensor
+        :param num_actions: Number of actions per sample (for packed samples)
+        :type num_actions: Optional[torch.Tensor]
+        :return: Per-sample entropy (batch_size,)
+        :rtype: torch.Tensor
         """
         # Convert log probs to probs
         probs = torch.exp(action_log_probs)
@@ -116,14 +115,16 @@ class MetricsComputer:
 
         KL(current || reference) = sum(p_curr * (log p_curr - log p_ref))
 
-        Args:
-            current_logits: Logits from current policy (batch, seq, vocab)
-            reference_logits: Logits from reference policy (batch, seq, vocab)
-            action_mask: Action mask (batch, seq)
-            num_actions: Number of actions per sample (for packed samples)
-
-        Returns:
-            kl: Per-sample KL divergence (batch_size,)
+        :param current_logits: Logits from current policy (batch, seq, vocab)
+        :type current_logits: torch.Tensor
+        :param reference_logits: Logits from reference policy (batch, seq, vocab)
+        :type reference_logits: torch.Tensor
+        :param action_mask: Action mask (batch, seq)
+        :type action_mask: torch.Tensor
+        :param num_actions: Number of actions per sample (for packed samples)
+        :type num_actions: Optional[torch.Tensor]
+        :return: Per-sample KL divergence (batch_size,)
+        :rtype: torch.Tensor
         """
         # Convert to log probabilities
         current_log_probs = torch.log_softmax(current_logits, dim=-1)
@@ -157,13 +158,14 @@ class MetricsComputer:
         - "high_variance": Variance of reward within group (placeholder)
         - "abs_reward": Absolute reward magnitude
 
-        Args:
-            rewards: Per-sample rewards (total_samples,)
-            values: Per-sample value estimates (total_samples,) - required for "td_error"
-            mode: Difficulty computation mode
-
-        Returns:
-            difficulty: Per-sample difficulty scores (total_samples,)
+        :param rewards: Per-sample rewards (total_samples,)
+        :type rewards: torch.Tensor
+        :param values: Per-sample value estimates (total_samples,) - required for "td_error"
+        :type values: Optional[torch.Tensor]
+        :param mode: Difficulty computation mode
+        :type mode: str
+        :return: Per-sample difficulty scores (total_samples,)
+        :rtype: torch.Tensor
         """
         if mode == "td_error":
             if values is None:
@@ -203,15 +205,14 @@ class MetricsComputer:
         Staleness measures how old a sample is relative to current training step.
         Older samples may be less relevant due to policy shift.
 
-        Args:
-            generation_steps: Step when each sample was generated (total_samples,)
-            current_step: Current training step
-            mode: Staleness computation mode
-                - "linear": age normalized to [0, 1]
-                - "exponential": 1 - exp(-age / tau)
-
-        Returns:
-            staleness: Per-sample staleness scores (total_samples,)
+        :param generation_steps: Step when each sample was generated (total_samples,)
+        :type generation_steps: torch.Tensor
+        :param current_step: Current training step
+        :type current_step: int
+        :param mode: Staleness computation mode ("linear" or "exponential")
+        :type mode: str
+        :return: Per-sample staleness scores (total_samples,)
+        :rtype: torch.Tensor
         """
         age = current_step - generation_steps
 
@@ -242,19 +243,14 @@ class MetricsComputer:
         This is the main entry point for computing metrics. It checks enable_flags
         to determine which metrics to compute and returns a SampleMetrics object.
 
-        Args:
-            outputs: List of _SamplesOutput objects from model inference
-            enable_flags: Dict indicating which metrics to compute
-                - "entropy": bool
-                - "logit_kl": bool
-                - "difficulty": bool
-                - "difficulty_mode": str
-                - "staleness": bool
-                - "staleness_mode": str
-            current_step: Current training step (required for staleness)
-
-        Returns:
-            SampleMetrics with all enabled metrics computed
+        :param outputs: List of _SamplesOutput objects from model inference
+        :type outputs: List
+        :param enable_flags: Dict indicating which metrics to compute
+        :type enable_flags: Dict[str, bool]
+        :param current_step: Current training step (required for staleness)
+        :type current_step: Optional[int]
+        :return: SampleMetrics with all enabled metrics computed
+        :rtype: SampleMetrics
         """
         # Collect core metrics (always available)
         response_lengths = torch.cat([out.response_length for out in outputs])

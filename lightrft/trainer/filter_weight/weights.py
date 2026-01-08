@@ -2,8 +2,6 @@
 Loss Weighting Module
 
 Provides unified interface for computing sample-level loss weights.
-
-Author: LightRLHF Team
 """
 
 from abc import ABC, abstractmethod
@@ -29,12 +27,12 @@ class LossWeighting(ABC):
         """
         Compute per-sample weights.
 
-        Args:
-            metrics: SampleMetrics containing computed metrics
-            experiences: List of Experience/ExperienceVL objects
-
-        Returns:
-            weights: FloatTensor (total_samples,) with loss weights
+        :param metrics: SampleMetrics containing computed metrics
+        :type metrics: SampleMetrics
+        :param experiences: List of Experience/ExperienceVL objects
+        :type experiences: List
+        :return: FloatTensor (total_samples,) with loss weights
+        :rtype: torch.Tensor
         """
         pass
 
@@ -60,16 +58,16 @@ class ResponseLengthWeighting(LossWeighting):
         """
         Initialize response length weighting.
 
-        Args:
-            mode: Weighting mode
-                - "linear": weight = length
-                - "inverse": weight = 1/length
-                - "sqrt": weight = sqrt(length)
-                - "log": weight = log(1 + length)
-            normalize: Whether to normalize weights to mean=1
-            clip_min: Minimum weight value
-            clip_max: Maximum weight value
-            epsilon: Small constant to avoid division by zero
+        :param mode: Weighting mode ("linear", "inverse", "sqrt", or "log")
+        :type mode: str
+        :param normalize: Whether to normalize weights to mean=1
+        :type normalize: bool
+        :param clip_min: Minimum weight value
+        :type clip_min: Optional[float]
+        :param clip_max: Maximum weight value
+        :type clip_max: Optional[float]
+        :param epsilon: Small constant to avoid division by zero
+        :type epsilon: float
         """
         self.mode = mode
         self.normalize = normalize
@@ -85,12 +83,12 @@ class ResponseLengthWeighting(LossWeighting):
         """
         Compute length-based weights.
 
-        Args:
-            metrics: SampleMetrics with response_length
-            experiences: List of experiences (unused)
-
-        Returns:
-            weights: FloatTensor of per-sample weights
+        :param metrics: SampleMetrics with response_length
+        :type metrics: SampleMetrics
+        :param experiences: List of experiences (unused)
+        :type experiences: List
+        :return: FloatTensor of per-sample weights
+        :rtype: torch.Tensor
         """
         lengths = metrics.response_length.float()
 
@@ -136,15 +134,14 @@ class EntropyWeighting(LossWeighting):
         """
         Initialize entropy weighting.
 
-        Args:
-            mode: Weighting mode
-                - "favor_high": Higher entropy → higher weight (encourage exploration)
-                - "favor_low": Lower entropy → higher weight (encourage exploitation)
-                - "linear": weight = entropy (linear scaling)
-                - "inverse": weight = 1/entropy (inverse scaling)
-            temperature: Temperature for softmax weighting (used in favor_high/favor_low modes)
-            normalize: Normalize to mean=1
-            epsilon: Small constant to avoid numerical issues
+        :param mode: Weighting mode ("favor_high", "favor_low", "linear", or "inverse")
+        :type mode: str
+        :param temperature: Temperature for softmax weighting (used in favor_high/favor_low modes)
+        :type temperature: float
+        :param normalize: Normalize to mean=1
+        :type normalize: bool
+        :param epsilon: Small constant to avoid numerical issues
+        :type epsilon: float
         """
         self.mode = mode
         self.temperature = temperature
@@ -159,12 +156,12 @@ class EntropyWeighting(LossWeighting):
         """
         Compute entropy-based weights.
 
-        Args:
-            metrics: SampleMetrics with entropy
-            experiences: List of experiences
-
-        Returns:
-            weights: FloatTensor of per-sample weights
+        :param metrics: SampleMetrics with entropy
+        :type metrics: SampleMetrics
+        :param experiences: List of experiences
+        :type experiences: List
+        :return: FloatTensor of per-sample weights
+        :rtype: torch.Tensor
         """
         if metrics.entropy is None:
             # Entropy not available, return uniform weights
@@ -213,15 +210,14 @@ class DifficultyWeighting(LossWeighting):
         """
         Initialize difficulty weighting.
 
-        Args:
-            mode: Weighting mode
-                - "prioritized": Prioritized experience replay (difficulty^alpha)
-                - "curriculum": Curriculum learning (favor easier samples)
-                - "linear": weight = difficulty
-                - "inverse": weight = 1/difficulty
-            alpha: Exponent for prioritization (typical range: 0.4-0.8)
-            normalize: Normalize to mean=1
-            epsilon: Small constant to avoid numerical issues
+        :param mode: Weighting mode ("prioritized", "curriculum", "linear", or "inverse")
+        :type mode: str
+        :param alpha: Exponent for prioritization (typical range: 0.4-0.8)
+        :type alpha: float
+        :param normalize: Normalize to mean=1
+        :type normalize: bool
+        :param epsilon: Small constant to avoid numerical issues
+        :type epsilon: float
         """
         self.mode = mode
         self.alpha = alpha
@@ -236,12 +232,12 @@ class DifficultyWeighting(LossWeighting):
         """
         Compute difficulty-based weights.
 
-        Args:
-            metrics: SampleMetrics with difficulty
-            experiences: List of experiences
-
-        Returns:
-            weights: FloatTensor of per-sample weights
+        :param metrics: SampleMetrics with difficulty
+        :type metrics: SampleMetrics
+        :param experiences: List of experiences
+        :type experiences: List
+        :return: FloatTensor of per-sample weights
+        :rtype: torch.Tensor
         """
         if metrics.difficulty is None:
             # Difficulty not available, return uniform weights
@@ -290,12 +286,12 @@ class StalenessWeighting(LossWeighting):
         """
         Initialize staleness weighting.
 
-        Args:
-            decay_factor: Exponential decay factor (0 < decay_factor < 1)
-                - decay_factor close to 1: slow decay
-                - decay_factor close to 0: fast decay
-            normalize: Normalize to mean=1
-            epsilon: Small constant
+        :param decay_factor: Exponential decay factor (0 < decay_factor < 1)
+        :type decay_factor: float
+        :param normalize: Normalize to mean=1
+        :type normalize: bool
+        :param epsilon: Small constant
+        :type epsilon: float
         """
         self.decay_factor = decay_factor
         self.normalize = normalize
@@ -308,12 +304,12 @@ class StalenessWeighting(LossWeighting):
         """
         Compute staleness-based weights.
 
-        Args:
-            metrics: SampleMetrics with staleness
-            experiences: List of experiences
-
-        Returns:
-            weights: FloatTensor of per-sample weights
+        :param metrics: SampleMetrics with staleness
+        :type metrics: SampleMetrics
+        :param experiences: List of experiences
+        :type experiences: List
+        :return: FloatTensor of per-sample weights
+        :rtype: torch.Tensor
         """
         if metrics.staleness is None:
             # Staleness not available, return uniform weights
@@ -350,14 +346,14 @@ class RewardMagnitudeWeighting(LossWeighting):
         """
         Initialize reward magnitude weighting.
 
-        Args:
-            mode: Weighting mode
-                - "favor_high": Higher reward → higher weight
-                - "favor_low": Lower reward → higher weight
-                - "absolute": weight = |reward|
-            temperature: Temperature for softmax (used in favor_high/favor_low)
-            normalize: Normalize to mean=1
-            epsilon: Small constant
+        :param mode: Weighting mode ("favor_high", "favor_low", or "absolute")
+        :type mode: str
+        :param temperature: Temperature for softmax (used in favor_high/favor_low)
+        :type temperature: float
+        :param normalize: Normalize to mean=1
+        :type normalize: bool
+        :param epsilon: Small constant
+        :type epsilon: float
         """
         self.mode = mode
         self.temperature = temperature
@@ -368,12 +364,12 @@ class RewardMagnitudeWeighting(LossWeighting):
         """
         Compute reward-based weights.
 
-        Args:
-            metrics: SampleMetrics with reward_value
-            experiences: List of experiences
-
-        Returns:
-            weights: FloatTensor of per-sample weights
+        :param metrics: SampleMetrics with reward_value
+        :type metrics: SampleMetrics
+        :param experiences: List of experiences
+        :type experiences: List
+        :return: FloatTensor of per-sample weights
+        :rtype: torch.Tensor
         """
         if metrics.reward_value is None:
             # Reward not available, return uniform weights
@@ -417,15 +413,14 @@ class CompositeWeighting(LossWeighting):
         """
         Initialize composite weighting.
 
-        Args:
-            weightings: List of (weighting, coefficient) pairs
-            mode: Combination mode
-                - "product": Multiply all weights
-                - "sum": Sum all weights
-                - "weighted_sum": Weighted sum using coefficients
-                - "weighted_product": Product of (weight^coefficient)
-            normalize: Normalize final weights to mean=1
-            epsilon: Small constant
+        :param weightings: List of (weighting, coefficient) pairs
+        :type weightings: List[Tuple[LossWeighting, float]]
+        :param mode: Combination mode ("product", "sum", "weighted_sum", or "weighted_product")
+        :type mode: str
+        :param normalize: Normalize final weights to mean=1
+        :type normalize: bool
+        :param epsilon: Small constant
+        :type epsilon: float
         """
         self.weightings = weightings
         self.mode = mode
@@ -443,12 +438,12 @@ class CompositeWeighting(LossWeighting):
         """
         Combine multiple weights.
 
-        Args:
-            metrics: SampleMetrics
-            experiences: List of experiences
-
-        Returns:
-            weights: Combined FloatTensor of per-sample weights
+        :param metrics: SampleMetrics
+        :type metrics: SampleMetrics
+        :param experiences: List of experiences
+        :type experiences: List
+        :return: Combined FloatTensor of per-sample weights
+        :rtype: torch.Tensor
         """
         if not self.weightings:
             # No weightings, return uniform weights
@@ -512,12 +507,12 @@ class UniformWeighting(LossWeighting):
         """
         Return uniform weights.
 
-        Args:
-            metrics: SampleMetrics (unused)
-            experiences: List of experiences
-
-        Returns:
-            weights: FloatTensor of ones
+        :param metrics: SampleMetrics (unused)
+        :type metrics: SampleMetrics
+        :param experiences: List of experiences
+        :type experiences: List
+        :return: FloatTensor of ones
+        :rtype: torch.Tensor
         """
         total_samples = sum(len(exp.sequences) for exp in experiences)
         device = experiences[0].sequences.device if experiences else 'cuda'

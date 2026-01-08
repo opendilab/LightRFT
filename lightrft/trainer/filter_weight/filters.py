@@ -2,8 +2,6 @@
 Sample Filtering Module
 
 Provides unified interface for filtering samples based on various criteria.
-
-Author: LightRLHF Team
 """
 
 from abc import ABC, abstractmethod
@@ -29,12 +27,12 @@ class SampleFilter(ABC):
         """
         Compute filter mask.
 
-        Args:
-            metrics: SampleMetrics containing computed metrics
-            experiences: List of Experience/ExperienceVL objects
-
-        Returns:
-            mask: BoolTensor (total_samples,) where True = keep, False = filter out
+        :param metrics: SampleMetrics containing computed metrics
+        :type metrics: SampleMetrics
+        :param experiences: List of Experience/ExperienceVL objects
+        :type experiences: List
+        :return: BoolTensor (total_samples,) where True = keep, False = filter out
+        :rtype: torch.Tensor
         """
         pass
 
@@ -57,11 +55,14 @@ class ResponseLengthFilter(SampleFilter):
         """
         Initialize response length filter.
 
-        Args:
-            min_length: Minimum allowed response length (inclusive)
-            max_length: Maximum allowed response length (inclusive)
-            expected_length: Expected response length (for buffer-based filtering)
-            buffer_length: Buffer around expected length (filters if length > expected + buffer)
+        :param min_length: Minimum allowed response length (inclusive)
+        :type min_length: Optional[int]
+        :param max_length: Maximum allowed response length (inclusive)
+        :type max_length: Optional[int]
+        :param expected_length: Expected response length (for buffer-based filtering)
+        :type expected_length: Optional[int]
+        :param buffer_length: Buffer around expected length (filters if length > expected + buffer)
+        :type buffer_length: Optional[int]
         """
         self.min_length = min_length
         self.max_length = max_length
@@ -79,12 +80,12 @@ class ResponseLengthFilter(SampleFilter):
         """
         Filter based on length constraints.
 
-        Args:
-            metrics: SampleMetrics with response_length
-            experiences: List of experiences (unused but kept for interface consistency)
-
-        Returns:
-            mask: BoolTensor indicating which samples to keep
+        :param metrics: SampleMetrics with response_length
+        :type metrics: SampleMetrics
+        :param experiences: List of experiences (unused but kept for interface consistency)
+        :type experiences: List
+        :return: BoolTensor indicating which samples to keep
+        :rtype: torch.Tensor
         """
         lengths = metrics.response_length
         mask = torch.ones(len(lengths), dtype=torch.bool, device=lengths.device)
@@ -124,12 +125,16 @@ class RewardValueFilter(SampleFilter):
         """
         Initialize reward value filter.
 
-        Args:
-            filter_all_zeros: Filter groups where all rewards are 0
-            filter_all_ones: Filter groups where all rewards are 1
-            n_samples_per_prompt: Number of samples per prompt (for grouping)
-            group_size: Custom group size (if None, uses n_samples_per_prompt)
-            tolerance: Tolerance for comparing reward values
+        :param filter_all_zeros: Filter groups where all rewards are 0
+        :type filter_all_zeros: bool
+        :param filter_all_ones: Filter groups where all rewards are 1
+        :type filter_all_ones: bool
+        :param n_samples_per_prompt: Number of samples per prompt (for grouping)
+        :type n_samples_per_prompt: int
+        :param group_size: Custom group size (if None, uses n_samples_per_prompt)
+        :type group_size: Optional[int]
+        :param tolerance: Tolerance for comparing reward values
+        :type tolerance: float
         """
         self.filter_all_zeros = filter_all_zeros
         self.filter_all_ones = filter_all_ones
@@ -140,12 +145,12 @@ class RewardValueFilter(SampleFilter):
         """
         Filter groups with degenerate rewards.
 
-        Args:
-            metrics: SampleMetrics with reward_value
-            experiences: List of experiences (unused)
-
-        Returns:
-            mask: BoolTensor indicating which samples to keep
+        :param metrics: SampleMetrics with reward_value
+        :type metrics: SampleMetrics
+        :param experiences: List of experiences (unused)
+        :type experiences: List
+        :return: BoolTensor indicating which samples to keep
+        :rtype: torch.Tensor
         """
         if metrics.reward_value is None:
             # No rewards available, keep all samples
@@ -199,9 +204,10 @@ class EntropyFilter(SampleFilter):
         """
         Initialize entropy filter.
 
-        Args:
-            min_entropy: Minimum entropy threshold (filter out low entropy)
-            max_entropy: Maximum entropy threshold (filter out high entropy)
+        :param min_entropy: Minimum entropy threshold (filter out low entropy)
+        :type min_entropy: Optional[float]
+        :param max_entropy: Maximum entropy threshold (filter out high entropy)
+        :type max_entropy: Optional[float]
         """
         self.min_entropy = min_entropy
         self.max_entropy = max_entropy
@@ -210,12 +216,12 @@ class EntropyFilter(SampleFilter):
         """
         Filter based on entropy.
 
-        Args:
-            metrics: SampleMetrics with entropy
-            experiences: List of experiences
-
-        Returns:
-            mask: BoolTensor indicating which samples to keep
+        :param metrics: SampleMetrics with entropy
+        :type metrics: SampleMetrics
+        :param experiences: List of experiences
+        :type experiences: List
+        :return: BoolTensor indicating which samples to keep
+        :rtype: torch.Tensor
         """
         if metrics.entropy is None:
             # Entropy not computed, keep all samples
@@ -254,12 +260,12 @@ class DifficultyFilter(SampleFilter):
         """
         Initialize difficulty filter.
 
-        Args:
-            min_difficulty: Minimum difficulty threshold
-            max_difficulty: Maximum difficulty threshold
-            mode: Filtering mode
-                - "absolute": Use absolute threshold values
-                - "percentile": Interpret thresholds as percentiles (0-100)
+        :param min_difficulty: Minimum difficulty threshold
+        :type min_difficulty: Optional[float]
+        :param max_difficulty: Maximum difficulty threshold
+        :type max_difficulty: Optional[float]
+        :param mode: Filtering mode ("absolute" or "percentile")
+        :type mode: str
         """
         self.min_difficulty = min_difficulty
         self.max_difficulty = max_difficulty
@@ -269,12 +275,12 @@ class DifficultyFilter(SampleFilter):
         """
         Filter based on difficulty.
 
-        Args:
-            metrics: SampleMetrics with difficulty
-            experiences: List of experiences
-
-        Returns:
-            mask: BoolTensor indicating which samples to keep
+        :param metrics: SampleMetrics with difficulty
+        :type metrics: SampleMetrics
+        :param experiences: List of experiences
+        :type experiences: List
+        :return: BoolTensor indicating which samples to keep
+        :rtype: torch.Tensor
         """
         if metrics.difficulty is None:
             # Difficulty not computed, keep all samples
@@ -316,11 +322,10 @@ class CompositeFilter(SampleFilter):
         """
         Initialize composite filter.
 
-        Args:
-            filters: List of filters to combine
-            logic: Combination logic
-                - "AND": All filters must pass (intersection)
-                - "OR": Any filter must pass (union)
+        :param filters: List of filters to combine
+        :type filters: List[SampleFilter]
+        :param logic: Combination logic ("AND" or "OR")
+        :type logic: str
         """
         self.filters = filters
         self.logic = logic.upper()
@@ -332,12 +337,12 @@ class CompositeFilter(SampleFilter):
         """
         Combine filters according to logic.
 
-        Args:
-            metrics: SampleMetrics
-            experiences: List of experiences
-
-        Returns:
-            mask: Combined BoolTensor
+        :param metrics: SampleMetrics
+        :type metrics: SampleMetrics
+        :param experiences: List of experiences
+        :type experiences: List
+        :return: Combined BoolTensor
+        :rtype: torch.Tensor
         """
         if not self.filters:
             # No filters, keep all samples
@@ -376,10 +381,12 @@ class PercentileFilter(SampleFilter):
         """
         Initialize percentile filter.
 
-        Args:
-            metric_name: Name of metric in SampleMetrics (e.g., "entropy", "difficulty")
-            top_percentile: Keep top X% (e.g., 20 = keep top 20%)
-            bottom_percentile: Keep bottom X% (e.g., 20 = keep bottom 20%)
+        :param metric_name: Name of metric in SampleMetrics (e.g., "entropy", "difficulty")
+        :type metric_name: str
+        :param top_percentile: Keep top X% (e.g., 20 = keep top 20%)
+        :type top_percentile: Optional[float]
+        :param bottom_percentile: Keep bottom X% (e.g., 20 = keep bottom 20%)
+        :type bottom_percentile: Optional[float]
         """
         self.metric_name = metric_name
         self.top_percentile = top_percentile
@@ -392,12 +399,12 @@ class PercentileFilter(SampleFilter):
         """
         Filter based on percentile ranking.
 
-        Args:
-            metrics: SampleMetrics
-            experiences: List of experiences
-
-        Returns:
-            mask: BoolTensor indicating which samples to keep
+        :param metrics: SampleMetrics
+        :type metrics: SampleMetrics
+        :param experiences: List of experiences
+        :type experiences: List
+        :return: BoolTensor indicating which samples to keep
+        :rtype: torch.Tensor
         """
         # Get metric value
         metric_value = getattr(metrics, self.metric_name, None)

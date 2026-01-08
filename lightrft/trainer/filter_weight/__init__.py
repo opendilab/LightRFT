@@ -33,8 +33,6 @@ Example usage:
     # Apply to experiences
     experiences, weights = manager.apply_to_experiences(experiences, metrics)
     ```
-
-Author: LightRLHF Team
 """
 
 # Metrics
@@ -103,13 +101,13 @@ __all__ = [
 ]
 
 
-# Version info
-__version__ = "1.0.0"
-__author__ = "LightRLHF Team"
-
-
 def get_version():
-    """Get the version of the filter_weight module."""
+    """
+    Get the version of the filter_weight module.
+
+    :return: Version string
+    :rtype: str
+    """
     return __version__
 
 
@@ -118,12 +116,12 @@ def create_length_filter(max_length: int = 1024, **kwargs):
     """
     Quick function to create a response length filter.
 
-    Args:
-        max_length: Maximum response length
-        **kwargs: Additional arguments for ResponseLengthFilter
-
-    Returns:
-        ResponseLengthFilter instance
+    :param max_length: Maximum response length
+    :type max_length: int
+    :param kwargs: Additional arguments for ResponseLengthFilter
+    :type kwargs: dict
+    :return: ResponseLengthFilter instance
+    :rtype: ResponseLengthFilter
     """
     return ResponseLengthFilter(max_length=max_length, **kwargs)
 
@@ -132,13 +130,14 @@ def create_difficulty_weighting(mode: str = "prioritized", alpha: float = 0.6, *
     """
     Quick function to create difficulty weighting.
 
-    Args:
-        mode: Weighting mode ("prioritized" or "curriculum")
-        alpha: Prioritization exponent
-        **kwargs: Additional arguments for DifficultyWeighting
-
-    Returns:
-        DifficultyWeighting instance
+    :param mode: Weighting mode ("prioritized" or "curriculum")
+    :type mode: str
+    :param alpha: Prioritization exponent
+    :type alpha: float
+    :param kwargs: Additional arguments for DifficultyWeighting
+    :type kwargs: dict
+    :return: DifficultyWeighting instance
+    :rtype: DifficultyWeighting
     """
     return DifficultyWeighting(mode=mode, alpha=alpha, **kwargs)
 
@@ -147,12 +146,12 @@ def create_manager_from_args(args, packing_samples: bool = False):
     """
     Quick function to create FilterWeightManager from training arguments.
 
-    Args:
-        args: Training arguments
-        packing_samples: Whether samples are packed
-
-    Returns:
-        FilterWeightManager instance
+    :param args: Training arguments
+    :type args: Any
+    :param packing_samples: Whether samples are packed
+    :type packing_samples: bool
+    :return: FilterWeightManager instance
+    :rtype: FilterWeightManager
     """
     return FilterWeightManagerBuilder.from_args(args, packing_samples)
 

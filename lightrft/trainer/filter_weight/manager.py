@@ -2,8 +2,6 @@
 Unified Filter-Weight Manager
 
 Provides high-level API for managing sample filtering and loss weighting.
-
-Author: LightRLHF Team
 """
 
 from typing import List, Optional, Dict, Tuple
@@ -48,12 +46,16 @@ class FilterWeightManager:
         experiences, weights = manager.apply_to_experiences(experiences, metrics)
         ```
 
-    Args:
-        metrics_computer: Custom metrics computer (if None, creates default)
-        filters: List of filters to apply
-        weights: List of (weighting, coefficient) pairs
-        enable_metrics: Dict of metric names to enable
-        packing_samples: Whether samples are packed
+    :param metrics_computer: Custom metrics computer (if None, creates default)
+    :type metrics_computer: Optional[MetricsComputer]
+    :param filters: List of filters to apply
+    :type filters: Optional[List[SampleFilter]]
+    :param weights: List of (weighting, coefficient) pairs
+    :type weights: Optional[List[Tuple[LossWeighting, float]]]
+    :param enable_metrics: Dict of metric names to enable
+    :type enable_metrics: Optional[Dict[str, bool]]
+    :param packing_samples: Whether samples are packed
+    :type packing_samples: bool
     """
 
     def __init__(
@@ -67,12 +69,16 @@ class FilterWeightManager:
         """
         Initialize filter-weight manager.
 
-        Args:
-            metrics_computer: Custom metrics computer (default: MetricsComputer())
-            filters: List of filters to apply (default: [])
-            weights: List of (weighting, coefficient) tuples (default: [])
-            enable_metrics: Dict specifying which metrics to compute (default: {})
-            packing_samples: Whether samples are packed (affects metric computation)
+        :param metrics_computer: Custom metrics computer (default: MetricsComputer())
+        :type metrics_computer: Optional[MetricsComputer]
+        :param filters: List of filters to apply (default: [])
+        :type filters: Optional[List[SampleFilter]]
+        :param weights: List of (weighting, coefficient) tuples (default: [])
+        :type weights: Optional[List[Tuple[LossWeighting, float]]]
+        :param enable_metrics: Dict specifying which metrics to compute (default: {})
+        :type enable_metrics: Optional[Dict[str, bool]]
+        :param packing_samples: Whether samples are packed (affects metric computation)
+        :type packing_samples: bool
         """
         self.metrics_computer = metrics_computer or MetricsComputer(packing_samples)
         self.filters = filters or []
@@ -131,12 +137,12 @@ class FilterWeightManager:
         """
         Compute all enabled metrics.
 
-        Args:
-            outputs: List of sample outputs from model inference (_SamplesOutput objects)
-            current_step: Current training step (required for staleness computation)
-
-        Returns:
-            SampleMetrics with computed metrics
+        :param outputs: List of sample outputs from model inference (_SamplesOutput objects)
+        :type outputs: List
+        :param current_step: Current training step (required for staleness computation)
+        :type current_step: Optional[int]
+        :return: SampleMetrics with computed metrics
+        :rtype: SampleMetrics
         """
         return self.metrics_computer.compute_all_metrics(
             outputs,
@@ -152,13 +158,12 @@ class FilterWeightManager:
         """
         Apply all configured filters.
 
-        Args:
-            metrics: Computed sample metrics
-            experiences: List of Experience/ExperienceVL objects
-
-        Returns:
-            mask: BoolTensor (total_samples,) indicating which samples to keep
-                  True = keep, False = filter out
+        :param metrics: Computed sample metrics
+        :type metrics: SampleMetrics
+        :param experiences: List of Experience/ExperienceVL objects
+        :type experiences: List
+        :return: BoolTensor (total_samples,) indicating which samples to keep (True = keep, False = filter out)
+        :rtype: torch.Tensor
         """
         if not self.filters:
             # No filters, keep all samples
@@ -178,12 +183,12 @@ class FilterWeightManager:
         """
         Compute combined sample weights.
 
-        Args:
-            metrics: Computed sample metrics
-            experiences: List of Experience/ExperienceVL objects
-
-        Returns:
-            weights: FloatTensor (total_samples,) with loss weights
+        :param metrics: Computed sample metrics
+        :type metrics: SampleMetrics
+        :param experiences: List of Experience/ExperienceVL objects
+        :type experiences: List
+        :return: FloatTensor (total_samples,) with loss weights
+        :rtype: torch.Tensor
         """
         if not self.weights:
             # No weighting, return uniform weights
@@ -211,14 +216,16 @@ class FilterWeightManager:
         3. Computes loss weights
         4. Zeros out weights for filtered samples (if apply_filter_to_weights=True)
 
-        Args:
-            experiences: List of Experience/ExperienceVL objects to process
-            metrics: Computed sample metrics
-            apply_filter_to_mask: If True, update action_mask to exclude filtered samples
-            apply_filter_to_weights: If True, zero out weights for filtered samples
-
-        Returns:
-            (experiences, weights): Modified experiences and per-sample weights
+        :param experiences: List of Experience/ExperienceVL objects to process
+        :type experiences: List
+        :param metrics: Computed sample metrics
+        :type metrics: SampleMetrics
+        :param apply_filter_to_mask: If True, update action_mask to exclude filtered samples
+        :type apply_filter_to_mask: bool
+        :param apply_filter_to_weights: If True, zero out weights for filtered samples
+        :type apply_filter_to_weights: bool
+        :return: Modified experiences and per-sample weights
+        :rtype: Tuple[List, torch.Tensor]
         """
         # Apply filters
         keep_mask = self.apply_filters(metrics, experiences)
@@ -254,16 +261,12 @@ class FilterWeightManager:
         """
         Get statistics about filtering.
 
-        Args:
-            metrics: Computed sample metrics
-            experiences: List of experiences
-
-        Returns:
-            Dict with statistics:
-                - "total_samples": Total number of samples
-                - "filtered_samples": Number of filtered samples
-                - "filter_rate": Fraction of samples filtered
-                - "kept_samples": Number of kept samples
+        :param metrics: Computed sample metrics
+        :type metrics: SampleMetrics
+        :param experiences: List of experiences
+        :type experiences: List
+        :return: Dict with statistics (total_samples, filtered_samples, filter_rate, kept_samples)
+        :rtype: Dict[str, float]
         """
         total_samples = sum(len(exp.sequences) for exp in experiences)
         keep_mask = self.apply_filters(metrics, experiences)
@@ -286,16 +289,12 @@ class FilterWeightManager:
         """
         Get statistics about weighting.
 
-        Args:
-            metrics: Computed sample metrics
-            experiences: List of experiences
-
-        Returns:
-            Dict with statistics:
-                - "weight_mean": Mean weight
-                - "weight_std": Standard deviation of weights
-                - "weight_min": Minimum weight
-                - "weight_max": Maximum weight
+        :param metrics: Computed sample metrics
+        :type metrics: SampleMetrics
+        :param experiences: List of experiences
+        :type experiences: List
+        :return: Dict with statistics (weight_mean, weight_std, weight_min, weight_max)
+        :rtype: Dict[str, float]
         """
         weights = self.compute_weights(metrics, experiences)
 
@@ -315,10 +314,12 @@ class FilterWeightManager:
         """
         Log filtering and weighting statistics.
 
-        Args:
-            metrics: Computed sample metrics
-            experiences: List of experiences
-            logger: Logger object (if None, uses print)
+        :param metrics: Computed sample metrics
+        :type metrics: SampleMetrics
+        :param experiences: List of experiences
+        :type experiences: List
+        :param logger: Logger object (if None, uses print)
+        :type logger: Optional[Any]
         """
         filter_stats = self.get_filter_stats(metrics, experiences)
         weight_stats = self.get_weight_stats(metrics, experiences)
@@ -362,12 +363,12 @@ class FilterWeightManagerBuilder:
         """
         Build FilterWeightManager from training arguments.
 
-        Args:
-            args: Training arguments object
-            packing_samples: Whether samples are packed
-
-        Returns:
-            FilterWeightManager configured according to args
+        :param args: Training arguments object
+        :type args: Any
+        :param packing_samples: Whether samples are packed
+        :type packing_samples: bool
+        :return: FilterWeightManager configured according to args
+        :rtype: FilterWeightManager
         """
         from .filters import ResponseLengthFilter, RewardValueFilter, EntropyFilter
         from .weights import (
