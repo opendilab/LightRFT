@@ -180,9 +180,11 @@ def _split_experience_batch(experience: Experience) -> List:
         "advantages",
         "attention_mask",
         "action_mask",
+        "action_entropy",
     )
     for key in keys:
-        value = getattr(experience, key)
+        # Use getattr with default None to handle optional attributes like action_entropy
+        value = getattr(experience, key, None)
         if value is None:
             for i in range(batch_size):
                 batch_kwargs[i][key] = None
@@ -193,18 +195,6 @@ def _split_experience_batch(experience: Experience) -> List:
         assert batch_size == len(vals)
         for i, v in enumerate(vals):
             batch_kwargs[i][key] = v
-
-    # Handle action_entropy separately
-    if hasattr(experience, 'action_entropy') and experience.action_entropy is not None:
-        entropy_vals = experience.action_entropy
-        if isinstance(entropy_vals, torch.Tensor):
-            entropy_vals = torch.unbind(entropy_vals)
-        assert batch_size == len(entropy_vals)
-        for i, v in enumerate(entropy_vals):
-            batch_kwargs[i]["action_entropy"] = v
-    else:
-        for i in range(batch_size):
-            batch_kwargs[i]["action_entropy"] = None
 
     for i in range(batch_size):
         batch_kwargs[i]["info"] = {}
@@ -275,9 +265,11 @@ def _split_experience_batch_vl(experience: ExperienceVL) -> List:
         "advantages",
         "attention_mask",
         "action_mask",
+        "action_entropy",
     )
     for key in keys:
-        value = getattr(experience, key)
+        # Use getattr with default None to handle optional attributes like action_entropy
+        value = getattr(experience, key, None)
         if value is None:
             for i in range(batch_size):
                 batch_kwargs[i][key] = None
@@ -304,18 +296,6 @@ def _split_experience_batch_vl(experience: ExperienceVL) -> List:
     if experience.raw_images is not None:
         for i in range(len(batch_kwargs)):
             batch_kwargs[i]["raw_images"] = experience.raw_images[i]
-
-    # Handle action_entropy separately
-    if hasattr(experience, 'action_entropy') and experience.action_entropy is not None:
-        entropy_vals = experience.action_entropy
-        if isinstance(entropy_vals, torch.Tensor):
-            entropy_vals = torch.unbind(entropy_vals)
-        assert batch_size == len(entropy_vals)
-        for i, v in enumerate(entropy_vals):
-            batch_kwargs[i]["action_entropy"] = v
-    else:
-        for i in range(batch_size):
-            batch_kwargs[i]["action_entropy"] = None
 
     for i in range(batch_size):
         batch_kwargs[i]["info"] = {}
