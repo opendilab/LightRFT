@@ -120,6 +120,7 @@ class _SamplesOutput:
     rewards: Optional[torch.Tensor] = None
     reward_metrics: Optional[Dict[str, torch.Tensor]] = None  # Detailed reward metrics
     kl: Optional[torch.Tensor] = None
+    action_entropy: Optional[torch.Tensor] = None  # Entropy for high-entropy token filtering
     inputs_extra_kwargs: Optional[dict] = None
     prompt_and_output: Optional[List[str]] = None
 
@@ -1543,14 +1544,31 @@ class FastExperienceMaker(NaiveExperienceMaker):
 
         # ========== Stage 1: Actor Forward ==========
         Timer.start('    actor_logprob')
+        # Check if we need to compute entropy for high-entropy token filtering
+        need_entropy = hasattr(self.actor, 'high_entropy_token_ratio') and self.actor.high_entropy_token_ratio > 0.0
         for output in outputs:
-            output.action_log_probs = self.actor(
-                output.sequences,
-                output.num_actions,
-                output.attention_mask,
-                packed_seq_lens=output.packed_seq_lens,
-                **output.inputs_extra_kwargs
-            )
+            if need_entropy:
+                # Request full output to get action_entropy
+                action_log_probs, model_output = self.actor(
+                    output.sequences,
+                    output.num_actions,
+                    output.attention_mask,
+                    packed_seq_lens=output.packed_seq_lens,
+                    return_output=True,
+                    **output.inputs_extra_kwargs
+                )
+                output.action_log_probs = action_log_probs
+                # Extract action_entropy if available
+                if "action_entropy" in model_output:
+                    output.action_entropy = model_output["action_entropy"]
+            else:
+                output.action_log_probs = self.actor(
+                    output.sequences,
+                    output.num_actions,
+                    output.attention_mask,
+                    packed_seq_lens=output.packed_seq_lens,
+                    **output.inputs_extra_kwargs
+                )
         Timer.stop('    actor_logprob')
 
         # ========== Stage 2: Initial Model ==========
@@ -1736,7 +1754,7 @@ class FastExperienceMaker(NaiveExperienceMaker):
 
         # Create Experience object
         if vlm:
-            return ExperienceVL(
+            exp = ExperienceVL(
                 output.sequences,
                 output.pixel_values,
                 output.image_grid_thw,
@@ -1750,9 +1768,11 @@ class FastExperienceMaker(NaiveExperienceMaker):
                 output.action_mask,
                 info,
                 kl,
+                action_entropy=output.action_entropy,
             )
+            return exp
         else:
-            return Experience(
+            exp = Experience(
                 output.sequences,
                 output.action_log_probs,
                 output.base_action_log_probs,
@@ -1763,7 +1783,9 @@ class FastExperienceMaker(NaiveExperienceMaker):
                 output.action_mask,
                 info,
                 kl,
+                action_entropy=output.action_entropy,
             )
+            return exp
 
     def _build_unpacked_sample(
         self,
