@@ -48,10 +48,10 @@ class RuleReward(BaseReward):
     :param device: Device to place reward tensors on
     :type device: Optional[torch.device]
     """
-    
+
     # Registry for rule reward functions
     _RULE_FUNCTIONS: Dict[str, Callable] = {}
-    
+
     @classmethod
     def register_rule(cls, name: str):
         """
@@ -71,8 +71,9 @@ class RuleReward(BaseReward):
         def decorator(func: Callable):
             cls._RULE_FUNCTIONS[name] = func
             return func
+
         return decorator
-    
+
     def __init__(
         self,
         rule_type: str = "default",
@@ -94,7 +95,7 @@ class RuleReward(BaseReward):
         self.rule_type = rule_type
         self.format_weight = format_weight
         self.device = device or torch.cuda.current_device() if torch.cuda.is_available() else torch.device("cpu")
-        
+
         # Get the rule function
         if rule_type not in self._RULE_FUNCTIONS:
             raise ValueError(
@@ -102,7 +103,7 @@ class RuleReward(BaseReward):
                 f"Available types: {list(self._RULE_FUNCTIONS.keys())}"
             )
         self.rule_func = self._RULE_FUNCTIONS[rule_type]
-    
+
     def compute(
         self,
         queries: Sequence[str],
@@ -126,25 +127,25 @@ class RuleReward(BaseReward):
         """
         if references is None:
             references = [""] * len(queries)
-        
+
         B = len(queries)
         device = self.device
-        
+
         # Initialize metrics
         metrics = {
             'format_reward': torch.zeros(B, dtype=torch.float32, device=device),
             'accuracy_reward': torch.zeros(B, dtype=torch.float32, device=device),
             'rule_reward': torch.zeros(B, dtype=torch.float32, device=device),
         }
-        
+
         rewards = torch.zeros(B, dtype=torch.float32, device=device)
-        
+
         # Compute rewards for each query
         for i, (sol, gt) in enumerate(zip(queries, references)):
             reward_value = self.rule_func(sol, gt)
             rewards[i] = reward_value
             metrics['rule_reward'][i] = reward_value
-            
+
             # For combined rules (geo3k, gsm8k), extract individual components
             if self.rule_type in ["geo3k_combined", "gsm8k_combined"]:
                 # These rule functions return combined reward, but we can extract components
@@ -153,13 +154,14 @@ class RuleReward(BaseReward):
                     fmt_r, acc_r = self._extract_components(sol, gt)
                     metrics['format_reward'][i] = fmt_r
                     metrics['accuracy_reward'][i] = acc_r
-        
+
         return rewards, metrics
 
 
 # ============================================================================
 # Default Rule Reward Functions
 # ============================================================================
+
 
 def _default_rule_reward_fn(sol: str, gt: str) -> float:
     """
@@ -180,10 +182,10 @@ def _default_rule_reward_fn(sol: str, gt: str) -> float:
 
 RuleReward.register_rule("default")(_default_rule_reward_fn)
 
-
 # ============================================================================
 # Geo3K Rule Reward Functions
 # ============================================================================
+
 
 def _geo3k_accuracy_reward_fn(sol: str, gt: str) -> float:
     """
@@ -224,10 +226,10 @@ def _geo3k_format_reward_fn(sol: str, gt: str) -> float:
     :rtype: float
     """
     sol_stripped = sol.strip()
-    
+
     think_match = re.search(r'<think>.*?</think>', sol_stripped, re.DOTALL)
     boxed_match = re.search(r'\\boxed\{.*?\}', sol_stripped, re.DOTALL)
-    
+
     if think_match and boxed_match:
         think_end = think_match.end()
         boxed_start = boxed_match.start()
@@ -259,10 +261,10 @@ RuleReward.register_rule("geo3k_accuracy")(_geo3k_accuracy_reward_fn)
 RuleReward.register_rule("geo3k_format")(_geo3k_format_reward_fn)
 RuleReward.register_rule("geo3k_combined")(_geo3k_combined_reward_fn)
 
-
 # ============================================================================
 # GSM8K Rule Reward Functions
 # ============================================================================
+
 
 def _gsm8k_accuracy_reward_fn(sol: str, gt: str) -> float:
     """
@@ -302,10 +304,10 @@ def _gsm8k_format_reward_fn(sol: str, gt: str) -> float:
     :rtype: float
     """
     sol_stripped = sol.strip()
-    
+
     think_match = re.search(r'<think>.*?</think>', sol_stripped, re.DOTALL)
     boxed_match = re.search(r'\\boxed\{.*?\}', sol_stripped, re.DOTALL)
-    
+
     if think_match and boxed_match:
         think_end = think_match.end()
         boxed_start = boxed_match.start()
@@ -336,4 +338,3 @@ def _gsm8k_combined_reward_fn(sol: str, gt: str) -> float:
 RuleReward.register_rule("gsm8k_accuracy")(_gsm8k_accuracy_reward_fn)
 RuleReward.register_rule("gsm8k_format")(_gsm8k_format_reward_fn)
 RuleReward.register_rule("gsm8k_combined")(_gsm8k_combined_reward_fn)
-

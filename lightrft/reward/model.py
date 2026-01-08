@@ -42,7 +42,6 @@ class SingleRewardModel(BaseReward):
     :param device: Device to place reward tensors on
     :type device: Optional[torch.device]
     """
-    
     def __init__(
         self,
         reward_model: nn.Module,
@@ -71,7 +70,7 @@ class SingleRewardModel(BaseReward):
         self.strategy = strategy
         self.packing_samples = packing_samples
         self.device = device or torch.cuda.current_device() if torch.cuda.is_available() else torch.device("cpu")
-    
+
     def compute(
         self,
         queries: Sequence[str],
@@ -111,7 +110,7 @@ class SingleRewardModel(BaseReward):
         # Load model to GPU if needed
         if isinstance(self.reward_model, torch.nn.Module):
             self.strategy.reload_model(self.reward_model)
-        
+
         # Prepare inputs
         if sequences is not None:
             # Standard PyTorch model path
@@ -126,7 +125,8 @@ class SingleRewardModel(BaseReward):
         else:
             # Custom engine model path
             rm_output = self.reward_model(
-                None, None,
+                None,
+                None,
                 prompt_and_outputs=prompt_and_output if prompt_and_output else queries,
                 raw_images=raw_images,
                 img_num=img_num,
@@ -134,28 +134,28 @@ class SingleRewardModel(BaseReward):
                 labels=labels,
                 **kwargs
             )
-        
+
         # Extract scores
         if isinstance(rm_output, dict):
             scores = rm_output["score"]
         else:
             scores = rm_output
-        
+
         # Ensure tensor format
         if not isinstance(scores, torch.Tensor):
             scores = torch.as_tensor(scores, dtype=torch.float32, device=self.device)
         else:
             scores = scores.to(self.device)
-        
+
         # Offload model after use
         if isinstance(self.reward_model, torch.nn.Module):
             self.strategy.offload_model(self.reward_model)
-        
+
         # Create metrics
         metrics = {
             'model_reward': scores.clone(),
         }
-        
+
         return scores, metrics
 
 
@@ -185,7 +185,6 @@ class MultiRewardModel(BaseReward):
     :param device: Device to place reward tensors on
     :type device: Optional[torch.device]
     """
-    
     def __init__(
         self,
         reward_models: List[nn.Module],
@@ -230,7 +229,7 @@ class MultiRewardModel(BaseReward):
         self.strategy = strategy
         self.packing_samples = packing_samples
         self.device = device or torch.cuda.current_device() if torch.cuda.is_available() else torch.device("cpu")
-    
+
     def compute(
         self,
         queries: Sequence[str],
@@ -270,29 +269,29 @@ class MultiRewardModel(BaseReward):
         """
         if labels is None:
             raise ValueError("labels are required for MultiRewardModel")
-        
+
         B = len(queries)
-        
+
         # Load all models to GPU
         for rm in self.reward_models:
             if isinstance(rm, torch.nn.Module):
                 self.strategy.reload_model(rm)
-        
+
         # Compute rewards for each RM
         model_reward_list = []
-        
+
         for rm_idx, rm in enumerate(self.reward_models):
             # Check if this is a custom engine model
             is_custom_engine = (
-                isinstance(rm, torch.nn.Module) and
-                hasattr(rm, "base_model") and
-                not isinstance(rm.base_model, torch.nn.Module)
+                isinstance(rm, torch.nn.Module) and hasattr(rm, "base_model")
+                and not isinstance(rm.base_model, torch.nn.Module)
             )
-            
+
             if is_custom_engine:
                 # Custom engine model path
                 rm_output = rm(
-                    None, None,
+                    None,
+                    None,
                     prompt_and_outputs=prompt_and_output if prompt_and_output else queries,
                     raw_images=raw_images,
                     img_num=img_num,
@@ -310,25 +309,25 @@ class MultiRewardModel(BaseReward):
                     img_num=img_num,
                     **kwargs
                 )
-            
+
             # Extract scores
             if isinstance(rm_output, dict):
                 scores = rm_output["score"]
             else:
                 scores = rm_output
-            
+
             # Ensure tensor format
             if not isinstance(scores, torch.Tensor):
                 scores = torch.as_tensor(scores, dtype=torch.float32, device=self.device)
             else:
                 scores = scores.to(self.device)
-            
+
             model_reward_list.append(scores)
-            
+
             # Offload model after use
             if isinstance(rm, torch.nn.Module):
                 self.strategy.offload_model(rm)
-        
+
         # Aggregate rewards using reward_fn
         rewards, reward_metrics = self.reward_fn(
             model_reward_list=model_reward_list,
@@ -337,13 +336,13 @@ class MultiRewardModel(BaseReward):
             refs=references if references else [""] * B,
             label_map=self.reward_fn_label_map,
         )
-        
+
         # Ensure rewards are on correct device
         if not isinstance(rewards, torch.Tensor):
             rewards = torch.as_tensor(rewards, dtype=torch.float32, device=self.device)
         else:
             rewards = rewards.to(self.device)
-        
+
         # Ensure metrics are tensors
         if reward_metrics is not None:
             for key, value in reward_metrics.items():
@@ -353,6 +352,5 @@ class MultiRewardModel(BaseReward):
                     reward_metrics[key] = value.to(self.device)
         else:
             reward_metrics = {}
-        
-        return rewards, reward_metrics
 
+        return rewards, reward_metrics

@@ -43,22 +43,22 @@ class DatasetConfig:
     :param return_eval: Whether to return evaluation data. Default to False
     :type return_eval: bool
     """
-    
+
     # Data source
     data_path: Optional[Union[str, list]] = None
     data_probs: Optional[Union[str, list]] = "1.0"
-    
+
     # Split configuration
     split: str = "train"
-    
+
     # Data filtering
     max_samples: Optional[int] = None
     max_len: Optional[int] = None
-    
+
     # Additional parameters
     seed: int = 42
     return_eval: bool = False
-    
+
     def __post_init__(self):
         """
         Validate configuration after initialization.
@@ -67,18 +67,18 @@ class DatasetConfig:
         """
         if self.data_path is None:
             raise ValueError("data_path must be specified")
-        
+
         # Normalize data_probs
         if isinstance(self.data_probs, str):
             # Parse comma-separated string
             self.data_probs = [float(p.strip()) for p in self.data_probs.split(",")]
         elif isinstance(self.data_probs, (int, float)):
             self.data_probs = [float(self.data_probs)]
-        
+
         # Normalize data_path
         if isinstance(self.data_path, str):
             self.data_path = [self.data_path]
-        
+
         # Ensure data_path and data_probs have same length
         if len(self.data_probs) == 1 and len(self.data_path) > 1:
             # Repeat single prob for all paths
@@ -88,7 +88,7 @@ class DatasetConfig:
                 f"data_path and data_probs must have the same length, "
                 f"got {len(self.data_path)} and {len(self.data_probs)}"
             )
-    
+
     @classmethod
     def for_train(
         cls,
@@ -126,7 +126,7 @@ class DatasetConfig:
             seed=seed,
             return_eval=False,
         )
-    
+
     @classmethod
     def for_eval(
         cls,
@@ -164,7 +164,7 @@ class DatasetConfig:
             seed=seed,
             return_eval=False,
         )
-    
+
     @classmethod
     def for_pretrain(
         cls,
@@ -202,4 +202,3 @@ class DatasetConfig:
             seed=seed,
             return_eval=False,
         )
-

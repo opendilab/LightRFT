@@ -59,7 +59,6 @@ class RewardManager(BaseReward):
     :param device: Device to place reward tensors on
     :type device: Optional[torch.device]
     """
-    
     def __init__(
         self,
         reward_type: str = "multi",  # "rule", "single", "multi"
@@ -104,7 +103,7 @@ class RewardManager(BaseReward):
         super().__init__()
         self.reward_type = reward_type
         self.device = device or torch.cuda.current_device() if torch.cuda.is_available() else torch.device("cpu")
-        
+
         # Initialize the appropriate reward implementation
         if reward_type == "rule":
             if rule_type is None:
@@ -120,13 +119,13 @@ class RewardManager(BaseReward):
                 raise ValueError("tokenizer must be specified for single reward model")
             if strategy is None:
                 raise ValueError("strategy must be specified for single reward model")
-            
+
             # Ensure reward_model is a single model, not a list
             if isinstance(reward_model, (list, tuple)):
                 if len(reward_model) != 1:
                     raise ValueError("reward_model must be a single model for reward_type='single'")
                 reward_model = reward_model[0]
-            
+
             self.reward_impl = SingleRewardModel(
                 reward_model=reward_model,
                 tokenizer=tokenizer,
@@ -143,11 +142,11 @@ class RewardManager(BaseReward):
                 raise ValueError("tokenizer must be specified for multiple reward models")
             if strategy is None:
                 raise ValueError("strategy must be specified for multiple reward models")
-            
+
             # Ensure reward_model is a list
             if not isinstance(reward_model, (list, tuple)):
                 reward_model = [reward_model]
-            
+
             self.reward_impl = MultiRewardModel(
                 reward_models=reward_model,
                 reward_tokenizers=reward_tokenizers or [],
@@ -161,7 +160,7 @@ class RewardManager(BaseReward):
             )
         else:
             raise ValueError(f"Unknown reward_type: {reward_type}. Must be 'rule', 'single', or 'multi'")
-    
+
     def compute(
         self,
         queries: Sequence[str],
@@ -184,7 +183,7 @@ class RewardManager(BaseReward):
         :rtype: Tuple[torch.Tensor, Dict[str, torch.Tensor]]
         """
         return self.reward_impl.compute(queries, references, labels, **kwargs)
-    
+
     @classmethod
     def from_config(
         cls,
@@ -230,4 +229,3 @@ class RewardManager(BaseReward):
             packing_samples=config.get("packing_samples", False),
             device=config.get("device"),
         )
-

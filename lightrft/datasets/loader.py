@@ -40,7 +40,6 @@ class DatasetLoader:
     :param strategy: Training strategy (optional, for logging)
     :type strategy: Optional[Any]
     """
-    
     def __init__(
         self,
         tokenizer: Any,
@@ -60,7 +59,7 @@ class DatasetLoader:
         self.tokenizer = tokenizer
         self.processor = processor
         self.strategy = strategy
-    
+
     def _log(self, message: str):
         """
         Log message if strategy is available.
@@ -72,7 +71,7 @@ class DatasetLoader:
             self.strategy.print(message)
         else:
             print(message)
-    
+
     def load_train_dataset(
         self,
         config: DatasetConfig,
@@ -94,7 +93,7 @@ class DatasetLoader:
         # Convert data_path list to comma-separated string for blending_datasets
         data_path_str = config.data_path if isinstance(config.data_path, str) else ",".join(config.data_path)
         self._log(f"Loading training dataset from: {data_path_str} with split: {config.split}")
-        
+
         # Load and blend datasets
         data = blending_datasets(
             data_path_str,
@@ -104,13 +103,13 @@ class DatasetLoader:
             return_eval=config.return_eval,
             train_split=config.split,
         )
-        
+
         # Limit samples if specified
         if config.max_samples is not None:
             data = data.select(range(min(config.max_samples, len(data))))
-        
+
         self._log(f"Loaded {len(data)} samples for training.")
-        
+
         # Create dataset
         dataset = PromptDatasetVL(
             data,
@@ -120,9 +119,9 @@ class DatasetLoader:
             self.strategy,
             input_template=input_template,
         )
-        
+
         return dataset
-    
+
     def load_eval_dataset(
         self,
         config: DatasetConfig,
@@ -143,11 +142,11 @@ class DatasetLoader:
         """
         if config.data_path is None:
             return None
-        
+
         # Convert data_path list to comma-separated string for blending_datasets
         data_path_str = config.data_path if isinstance(config.data_path, str) else ",".join(config.data_path)
         self._log(f"Loading evaluation dataset from {data_path_str}, split='{config.split}'")
-        
+
         # Load and blend datasets
         data = blending_datasets(
             data_path_str,
@@ -157,20 +156,20 @@ class DatasetLoader:
             return_eval=config.return_eval,
             train_split=config.split,
         )
-        
+
         if len(data) == 0:
             self._log(
                 f"Warning: Evaluation dataset at {data_path_str} with split '{config.split}' "
                 "is empty. Skipping evaluation."
             )
             return None
-        
+
         # Limit samples if specified
         if config.max_samples is not None:
             data = data.select(range(min(config.max_samples, len(data))))
-        
+
         self._log(f"Evaluation dataset loaded: {len(data)} samples")
-        
+
         # Create dataset
         dataset = PromptDatasetVL(
             data,
@@ -180,9 +179,9 @@ class DatasetLoader:
             self.strategy,
             input_template=input_template,
         )
-        
+
         return dataset
-    
+
     def load_pretrain_dataset(
         self,
         config: DatasetConfig,
@@ -200,11 +199,11 @@ class DatasetLoader:
         """
         if config.data_path is None:
             return None
-        
+
         # Convert data_path list to comma-separated string for blending_datasets
         data_path_str = config.data_path if isinstance(config.data_path, str) else ",".join(config.data_path)
         self._log(f"Loading pretrain dataset from: {data_path_str} with split: {config.split}")
-        
+
         # Load and blend datasets
         data = blending_datasets(
             data_path_str,
@@ -214,20 +213,18 @@ class DatasetLoader:
             return_eval=config.return_eval,
             train_split=config.split,
         )
-        
+
         if len(data) == 0:
-            self._log(
-                f"Warning: Pretrain dataset at {data_path_str} is empty. "
-                "PTX loss will not be applied."
-            )
+            self._log(f"Warning: Pretrain dataset at {data_path_str} is empty. "
+                      "PTX loss will not be applied.")
             return None
-        
+
         # Limit samples if specified
         if config.max_samples is not None:
             data = data.select(range(min(config.max_samples, len(data))))
-        
+
         self._log(f"Loaded {len(data)} samples for pretraining.")
-        
+
         # Create dataset
         dataset = SFTDatasetVL(
             data,
@@ -236,6 +233,5 @@ class DatasetLoader:
             self.strategy,
             pretrain_mode=True,
         )
-        
-        return dataset
 
+        return dataset

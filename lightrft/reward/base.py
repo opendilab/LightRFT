@@ -34,7 +34,6 @@ class BaseReward(ABC):
         - rewards: torch.Tensor of shape (batch_size,) containing reward values
         - metrics: Dict[str, torch.Tensor] containing detailed reward metrics
     """
-    
     @abstractmethod
     def compute(
         self,
@@ -59,7 +58,7 @@ class BaseReward(ABC):
         :rtype: Tuple[torch.Tensor, Dict[str, torch.Tensor]]
         """
         pass
-    
+
     def __call__(
         self,
         queries: Sequence[str],
@@ -81,4 +80,3 @@ class BaseReward(ABC):
         :rtype: Tuple[torch.Tensor, Dict[str, torch.Tensor]]
         """
         return self.compute(queries, references, labels, **kwargs)
-
