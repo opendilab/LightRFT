@@ -128,6 +128,7 @@ class PolicyLoss(nn.Module):
         # GSPO mode: sequence-level optimization
         if self.use_gspo:
             # Compute sequence-level log probabilities
+            # Sum log probs over the entire sequence to get sequence-level log probability
             if action_mask is not None:
                 seq_log_probs = torch.sum(log_probs * action_mask, dim=-1)  # [batch_size]
                 seq_old_log_probs = torch.sum(old_log_probs * action_mask, dim=-1)  # [batch_size]
@@ -135,23 +136,34 @@ class PolicyLoss(nn.Module):
                 seq_log_probs = torch.sum(log_probs, dim=-1)  # [batch_size]
                 seq_old_log_probs = torch.sum(old_log_probs, dim=-1)  # [batch_size]
             
-            # Compute sequence-level importance ratio
+            # Compute sequence-level importance ratio (GSPO key: sequence-level ratio)
+            # This is exp(sum(new_log_probs) - sum(old_log_probs)) = exp(sum(diff))
+            # which equals the product of token-level ratios
             seq_ratio = (seq_log_probs - seq_old_log_probs).exp()  # [batch_size]
             
-            # Handle advantages
-            if advantages.dim() == 2:  # Token-level advantages
-                if action_mask is not None:
-                    seq_advantages = torch.sum(advantages * action_mask, dim=-1) / torch.sum(action_mask, dim=-1).clamp(min=1e-6)
-                else:
-                    seq_advantages = torch.mean(advantages, dim=-1)
-            else:  # Already sequence-level advantages
+            # Extract sequence-level advantages from token-level advantages
+            # For GSPO, advantages should be sequence-level (same value for all tokens in a sequence)
+            # If advantages is 2D [batch_size, seq_len], extract the sequence-level value
+            if advantages.dim() == 2:  # Token-level advantages [batch_size, seq_len]
+                # For GSPO, if advantages are token-level but should be sequence-level,
+                # we take the mean or first value (since all tokens should have the same value)
+                # We use the first token's value as it's most efficient
+                seq_advantages = advantages[:, 0]  # [batch_size] - use first token
+                # Alternative: use mean over masked tokens (commented out for efficiency)
+                # if action_mask is not None:
+                #     seq_advantages = torch.sum(advantages * action_mask, dim=-1) / torch.sum(action_mask, dim=-1).clamp(min=1e-6)
+                # else:
+                #     seq_advantages = torch.mean(advantages, dim=-1)
+            elif advantages.dim() == 1:  # Already sequence-level advantages [batch_size]
                 seq_advantages = advantages
+            else:
+                raise ValueError(f"Unexpected advantages shape for GSPO: {advantages.shape}")
             
-            # Use sequence rewards if provided and enabled
+            # Use sequence rewards if provided and enabled (override advantages)
             if self.use_sequence_rewards and sequence_rewards is not None:
                 seq_advantages = sequence_rewards
             
-            # Normalize advantages if enabled
+            # Normalize advantages if enabled (GSPO paper recommends normalization)
             if self.normalize_advantages:
                 seq_mean = seq_advantages.mean()
                 seq_std = seq_advantages.std()
@@ -162,10 +174,11 @@ class PolicyLoss(nn.Module):
                     seq_advantages = seq_advantages - seq_mean
             
             # Apply sequence-level clipping (GSPO's key innovation)
+            # Clipping is applied to the sequence-level ratio, not token-level
             surr1 = seq_ratio * seq_advantages
             surr2 = seq_ratio.clamp(1 - self.clip_eps, 1 + self.clip_eps) * seq_advantages
             
-            # Compute sequence-level losses
+            # Compute sequence-level losses (negative for gradient ascent)
             seq_losses = -torch.min(surr1, surr2)  # [batch_size]
             
             # Aggregate based on loss_agg_mode

@@ -1391,7 +1391,32 @@ class FastExperienceMaker(NaiveExperienceMaker):
             rewards = rewards.flatten().to("cpu").chunk(len(experiences))
             return experiences, rewards
 
-        elif config.advantage_estimator in ["group_norm", "grpo", "gspo"]:
+        elif config.advantage_estimator == "gspo":
+            # GSPO (Group Sequence Policy Optimization): Use sequence-level rewards directly
+            # GSPO works with sequence-level importance ratios, so we need to preserve
+            # the original sequence-level rewards without group normalization.
+            # The normalization will be handled in the loss function if needed.
+            rewards = rewards.reshape(-1, config.n_samples_per_prompt).to("cuda")
+            
+            # Store sequence-level rewards in experience info for GSPO loss computation
+            # For GSPO, we use the raw sequence rewards (may be normalized later in loss function)
+            # but we don't do group normalization here - that's different from group_norm
+            # The rewards tensor shape is [num_groups, n_samples_per_prompt]
+            for i, exp in enumerate(experiences):
+                group_idx = i // config.n_samples_per_prompt
+                sample_idx = i % config.n_samples_per_prompt
+                # Store the sequence-level reward (scalar value) for this experience
+                # This will be used later in _compute_advantages_and_returns to set advantages
+                exp.info["sequence_reward"] = rewards[group_idx, sample_idx].item()
+            
+            # For GSPO, we return the rewards as-is without group normalization
+            # The rewards are already sequence-level (scalar per experience)
+            # Convert back to list format
+            rewards_list = rewards.flatten().to("cpu").chunk(len(experiences))
+            
+            return experiences, rewards_list
+            
+        elif config.advantage_estimator in ["group_norm", "grpo"]:
             # Group normalization with optional dynamic filtering
             if config.dynamic_sampling:
                 step_size = config.n_samples_per_prompt // config.micro_train_batch_size
@@ -1403,19 +1428,6 @@ class FastExperienceMaker(NaiveExperienceMaker):
                     if torch.all(chunk_rewards == 0) or torch.all(chunk_rewards == 1):
                         for exp in chunk:
                             exp.action_mask = torch.zeros_like(exp.action_mask, dtype=torch.bool)
-
-            # # Normalize within groups
-            # rewards = rewards.reshape(-1, config.n_samples_per_prompt).to("cuda")
-            # rewards = (rewards - rewards.mean(-1, keepdim=True)) / (rewards.std(-1, keepdim=True) + 1e-9)
-            # # rewards = rewards.flatten().to("cpu").chunk(len(experiences))
-            # rewards = rewards.reshape(-1).to(device="cpu").chunk(len(experiences))
-
-            # import torch.distributed as dist
-            # if dist.get_rank() == 0 and DEBUG_ENABLED:
-            #     print(f"rank {dist.get_rank()} Entering debug mode, input 'interact' to enter full Python debugging. Set DEBUG_ENABLED = False to skip debug mode")  # noqa
-            #     import ipdb; ipdb.set_trace()
-            # # Synchronization point to prevent other processes from running ahead
-            # dist.barrier()
 
             # Ensure rewards are float32. If rewards are float16 or bfloat16, 1e-9 may
             # underflow to 0, causing division by zero (NaN).
@@ -1502,7 +1514,41 @@ class FastExperienceMaker(NaiveExperienceMaker):
                     )
                 )
 
-            elif self.advantage_estimator in ["reinforce", "rloo", "reinforce_baseline", "group_norm", "gspo"]:
+            elif self.advantage_estimator == "gspo":
+                # GSPO: Use sequence-level rewards directly as advantages
+                # GSPO works at the sequence level, so we use the scalar sequence reward
+                # as the advantage for the entire sequence
+                if "sequence_reward" in experience.info:
+                    # Use the stored sequence-level reward from reward shaping phase
+                    seq_reward_value = experience.info["sequence_reward"]
+                    # Convert scalar to tensor on the same device as final_reward
+                    seq_reward_tensor = torch.tensor(
+                        seq_reward_value, 
+                        dtype=final_reward.dtype, 
+                        device=final_reward.device
+                    )
+                    # Create a sequence-level advantage tensor (same value for all tokens in sequence)
+                    # Shape: [batch_size, seq_len] - all tokens in a sequence have the same advantage
+                    experience.advantages = torch.full_like(final_reward, seq_reward_tensor)
+                else:
+                    # Fallback: compute sequence reward from final_reward
+                    # This should not happen if reward shaping is done correctly, but provide fallback
+                    if experience.action_mask is not None:
+                        # Sum over sequence to get sequence-level reward
+                        seq_reward = (final_reward * experience.action_mask).sum(dim=-1, keepdim=True)
+                    else:
+                        seq_reward = final_reward.sum(dim=-1, keepdim=True)
+                    # Expand to all tokens (same value for all tokens in sequence)
+                    experience.advantages = seq_reward.expand_as(final_reward)
+                
+                # For GSPO, returns are the same as advantages (sequence-level)
+                experience.returns = experience.advantages.clone()
+                
+                # Note: GSPO normalization is handled in the loss function, not here
+                # The loss function will normalize sequence-level advantages if normalize_advantages is enabled
+                # according to the GSPO paper specifications
+                
+            elif self.advantage_estimator in ["reinforce", "rloo", "reinforce_baseline", "group_norm"]:
                 # Compute cumulative returns
                 experience.returns = self.get_cumulative_returns(
                     final_reward, experience.action_mask, generate_kwargs["gamma"]
