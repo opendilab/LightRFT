@@ -133,14 +133,11 @@ class SPMDPPOTrainerBase:
         )
 
         # Initialize loss function based on mode
-        policy_loss_kwargs = {"loss_agg_mode": loss_agg_mode, "use_gspo": use_gspo}
-        if use_gspo:
-            policy_loss_kwargs.update({
-                "normalize_advantages": kwargs.get("normalize_advantages", True),
-                "use_sequence_rewards": kwargs.get("use_sequence_rewards", True)
-            })
-
+        # Note: PolicyLoss is initialized in parent class (PPOTrainer/PPOTrainerVL)
+        # We store GSPO parameters here for potential use in training_step
         self.use_gspo = use_gspo
+        self.normalize_advantages = kwargs.get("normalize_advantages", True) if use_gspo else False
+        self.use_sequence_rewards = kwargs.get("use_sequence_rewards", True) if use_gspo else False
 
         # Initialize trajectory saver if enabled
         self.trajectory_saver = create_trajectory_saver(self.args, self.tokenizer)
