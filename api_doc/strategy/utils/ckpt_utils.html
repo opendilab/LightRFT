@@ -308,10 +308,56 @@
             <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
               <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
                 
-  <section id="lightrft-strategy-utils-ckpt-utils">
-<h1>lightrft.strategy.utils.ckpt_utils<a class="headerlink" href="#lightrft-strategy-utils-ckpt-utils" title="Permalink to this heading">¶</a></h1>
+  <section id="module-lightrft.strategy.utils.ckpt_utils">
+<span id="lightrft-strategy-utils-ckpt-utils"></span><h1>lightrft.strategy.utils.ckpt_utils<a class="headerlink" href="#module-lightrft.strategy.utils.ckpt_utils" title="Permalink to this heading">¶</a></h1>
+<p>Utility module for finding the latest checkpoint directory in machine learning training workflows.</p>
+<p>This module provides functionality to locate the most recent checkpoint directory based on
+a naming pattern that includes a step number. It’s commonly used in deep learning training
+scenarios where checkpoints are saved periodically with incremental step numbers.</p>
 <section id="find-latest-checkpoint-dir">
 <h2>find_latest_checkpoint_dir<a class="headerlink" href="#find-latest-checkpoint-dir" title="Permalink to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="lightrft.strategy.utils.ckpt_utils.find_latest_checkpoint_dir">
+<span class="sig-prename descclassname"><span class="pre">lightrft.strategy.utils.ckpt_utils.</span></span><span class="sig-name descname"><span class="pre">find_latest_checkpoint_dir</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">load_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prefix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'global_step'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/lightrft/strategy/utils/ckpt_utils.html#find_latest_checkpoint_dir"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.utils.ckpt_utils.find_latest_checkpoint_dir" title="Permalink to this definition">¶</a></dt>
+<dd><p>Finds the latest subdirectory within the specified directory whose name
+matches the ‘&lt;prefix&gt;&lt;number&gt;’ format.</p>
+<p>This function is particularly useful in machine learning training scenarios where
+checkpoints are saved with incremental step numbers. It searches through all
+subdirectories in the given path and returns the one with the highest step number
+that matches the specified prefix pattern.</p>
+<p>If no matching subdirectory is found, returns the original <cite>load_dir</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>load_dir</strong> (<em>str</em>) – The path to the parent directory containing checkpoint subdirectories.</p></li>
+<li><p><strong>prefix</strong> (<em>str</em><em>, </em><em>optional</em>) – The expected prefix string at the beginning of checkpoint directory names. Defaults to “global_step”.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The full path to the latest checkpoint subdirectory.
+Returns <cite>load_dir</cite> if no matching subdirectory is found.
+Returns <cite>None</cite> if <cite>load_dir</cite> is invalid (does not exist or is not a directory).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str or None</p>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Find latest checkpoint with default prefix &quot;global_step&quot;</span>
+<span class="n">latest_dir</span> <span class="o">=</span> <span class="n">find_latest_checkpoint_dir</span><span class="p">(</span><span class="s2">&quot;/path/to/checkpoints&quot;</span><span class="p">)</span>
+<span class="c1"># Returns: &quot;/path/to/checkpoints/global_step1000&quot; (if it&#39;s the highest numbered)</span>
+
+<span class="c1"># Find latest checkpoint with custom prefix</span>
+<span class="n">latest_dir</span> <span class="o">=</span> <span class="n">find_latest_checkpoint_dir</span><span class="p">(</span><span class="s2">&quot;/path/to/models&quot;</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s2">&quot;step_&quot;</span><span class="p">)</span>
+<span class="c1"># Returns: &quot;/path/to/models/step_500&quot; (if it&#39;s the highest numbered)</span>
+
+<span class="c1"># Handle case where directory doesn&#39;t exist</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">find_latest_checkpoint_dir</span><span class="p">(</span><span class="s2">&quot;/nonexistent/path&quot;</span><span class="p">)</span>
+<span class="c1"># Returns: None</span>
+</pre></div>
+</div>
+</dd></dl>
+
 </section>
 </section>
 
@@ -359,7 +405,10 @@
             <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
               <ul>
 <li><a class="reference internal" href="#">lightrft.strategy.utils.ckpt_utils</a><ul>
-<li><a class="reference internal" href="#find-latest-checkpoint-dir">find_latest_checkpoint_dir</a></li>
+<li><a class="reference internal" href="#find-latest-checkpoint-dir">find_latest_checkpoint_dir</a><ul>
+<li><a class="reference internal" href="#lightrft.strategy.utils.ckpt_utils.find_latest_checkpoint_dir"><code class="docutils literal notranslate"><span class="pre">find_latest_checkpoint_dir()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

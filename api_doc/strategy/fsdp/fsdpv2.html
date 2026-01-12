@@ -308,22 +308,341 @@
             <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
               <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
                 
-  <section id="lightrft-strategy-fsdp-fsdpv2">
-<h1>lightrft.strategy.fsdp.fsdpv2<a class="headerlink" href="#lightrft-strategy-fsdp-fsdpv2" title="Permalink to this heading">¶</a></h1>
+  <section id="module-lightrft.strategy.fsdp.fsdpv2">
+<span id="lightrft-strategy-fsdp-fsdpv2"></span><h1>lightrft.strategy.fsdp.fsdpv2<a class="headerlink" href="#module-lightrft.strategy.fsdp.fsdpv2" title="Permalink to this heading">¶</a></h1>
+<p>Hugging Face FSDP (Fully Sharded Data Parallel) Strategy Module.</p>
+<p>This module provides implementations for distributed training using PyTorch’s FSDP.
+It includes utilities for model wrapping, optimization, checkpointing, and state management
+in a distributed training environment. The module supports FSDP v2 strategy,
+with special handling for model sharding, mixed precision training, and optimizer state
+management.</p>
 <section id="fsdpv2strategy">
 <h2>FSDPV2Strategy<a class="headerlink" href="#fsdpv2strategy" title="Permalink to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="lightrft.strategy.fsdp.fsdpv2.FSDPV2Strategy">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">lightrft.strategy.fsdp.fsdpv2.</span></span><span class="sig-name descname"><span class="pre">FSDPV2Strategy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">42</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_norm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">micro_train_batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bf16</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/lightrft/strategy/fsdp/fsdpv2.html#FSDPV2Strategy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.fsdp.fsdpv2.FSDPV2Strategy" title="Permalink to this definition">¶</a></dt>
+<dd><p>The strategy for training with PyTorch’s Fully Sharded Data Parallel V2.</p>
+<p>This strategy implements model sharding using PyTorch’s FSDP to enable training
+of large models across multiple GPUs with memory efficiency.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>seed</strong> (<em>int</em>) – Random seed for reproducibility.</p></li>
+<li><p><strong>max_norm</strong> (<em>float</em>) – Maximum gradient norm for gradient clipping. If 0.0, no clipping is performed.</p></li>
+<li><p><strong>micro_train_batch_size</strong> (<em>int</em>) – Batch size for a single training step.</p></li>
+<li><p><strong>train_batch_size</strong> (<em>int</em>) – Total batch size for training.</p></li>
+<li><p><strong>bf16</strong> (<em>bool</em>) – Whether to use bfloat16 precision.</p></li>
+<li><p><strong>args</strong> (<em>object</em>) – Additional arguments for the strategy.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.fsdp.fsdpv2.FSDPV2Strategy.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">42</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_norm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">micro_train_batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bf16</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../../_modules/lightrft/strategy/fsdp/fsdpv2.html#FSDPV2Strategy.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.fsdp.fsdpv2.FSDPV2Strategy.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize the FSDP V2 strategy.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>seed</strong> (<em>int</em>) – Random seed for reproducibility</p></li>
+<li><p><strong>max_norm</strong> (<em>float</em>) – Maximum gradient norm for gradient clipping. If 0.0, no clipping is performed</p></li>
+<li><p><strong>micro_train_batch_size</strong> (<em>int</em>) – Batch size for a single training step</p></li>
+<li><p><strong>train_batch_size</strong> (<em>int</em>) – Total batch size for training</p></li>
+<li><p><strong>bf16</strong> (<em>bool</em>) – Whether to use bfloat16 precision</p></li>
+<li><p><strong>args</strong> (<em>object</em>) – Additional arguments for the strategy</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.fsdp.fsdpv2.FSDPV2Strategy.backward">
+<span class="sig-name descname"><span class="pre">backward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">loss</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.nn.Module</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.optim.Optimizer</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../../_modules/lightrft/strategy/fsdp/fsdpv2.html#FSDPV2Strategy.backward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.fsdp.fsdpv2.FSDPV2Strategy.backward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform backward pass for the loss.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>loss</strong> (<em>torch.Tensor</em>) – The loss tensor</p></li>
+<li><p><strong>model</strong> (<em>torch.nn.Module</em>) – The model</p></li>
+<li><p><strong>optimizer</strong> (<em>torch.optim.Optimizer</em>) – The optimizer</p></li>
+<li><p><strong>kwargs</strong> – Additional arguments</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.fsdp.fsdpv2.FSDPV2Strategy.create_optimizer">
+<span class="sig-name descname"><span class="pre">create_optimizer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">torch.optim.Optimizer</span></span></span><a class="reference internal" href="../../../_modules/lightrft/strategy/fsdp/fsdpv2.html#FSDPV2Strategy.create_optimizer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.fsdp.fsdpv2.FSDPV2Strategy.create_optimizer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create an optimizer for the model with proper parameter grouping.</p>
+<p>Groups parameters by dtype, dtensor shard size, and weight decay to avoid errors
+during gradient clipping and optimization steps.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> (<em>torch.nn.Module</em>) – The model for which to create the optimizer</p></li>
+<li><p><strong>kwargs</strong> – Additional arguments for the optimizer, including weight_decay</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The created optimizer</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.optim.Optimizer</p>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">optimizer</span> <span class="o">=</span> <span class="n">strategy</span><span class="o">.</span><span class="n">create_optimizer</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">lr</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">,</span> <span class="n">weight_decay</span><span class="o">=</span><span class="mf">0.01</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.fsdp.fsdpv2.FSDPV2Strategy.init_model_context">
+<span class="sig-name descname"><span class="pre">init_model_context</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">meta_init</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/lightrft/strategy/fsdp/fsdpv2.html#FSDPV2Strategy.init_model_context"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.fsdp.fsdpv2.FSDPV2Strategy.init_model_context" title="Permalink to this definition">¶</a></dt>
+<dd><p>Context manager for model initialization, for large models it can be initialized on Meta device.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>meta_init</strong> (<em>bool</em>) – if init on meta device</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.fsdp.fsdpv2.FSDPV2Strategy.load_ckpt">
+<span class="sig-name descname"><span class="pre">load_ckpt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">load_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scheduler</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">load_module_strict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">load_optimizer_states</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">load_lr_scheduler_states</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/lightrft/strategy/fsdp/fsdpv2.html#FSDPV2Strategy.load_ckpt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.fsdp.fsdpv2.FSDPV2Strategy.load_ckpt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load model checkpoints in a distributed environment.</p>
+<p>This method loads sharded model weights from disk for each distributed process.
+It handles the proper loading of FSDP-sharded state dictionaries.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> (<em>torch.nn.Module</em>) – The model to load weights into, typically an FSDP-wrapped model</p></li>
+<li><p><strong>optimizer</strong> (<em>torch.optim</em><em>, </em><em>optional</em>) – The optimizer to load weights into</p></li>
+<li><p><strong>scheduler</strong> (<em>torch.lr_scheduler</em><em>, </em><em>optional</em>) – The scheduler to load weights into</p></li>
+<li><p><strong>load_dir</strong> (<em>str</em>) – Directory containing the checkpoints</p></li>
+<li><p><strong>load_module_strict</strong> (<em>bool</em><em>, </em><em>default=True</em>) – Whether to strictly enforce that the keys in the model state dict match</p></li>
+<li><p><strong>load_optimizer_states</strong> (<em>bool</em><em>, </em><em>default=True</em>) – Whether to load optimizer states</p></li>
+<li><p><strong>load_lr_scheduler_states</strong> (<em>bool</em><em>, </em><em>default=True</em>) – Whether to load learning rate scheduler states</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A tuple of (load_dir, client_states) where load_dir is the directory from which the
+checkpoint was loaded and client_states contains additional saved state</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple</p>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">load_dir</span><span class="p">,</span> <span class="n">client_states</span> <span class="o">=</span> <span class="n">trainer</span><span class="o">.</span><span class="n">load_ckpt</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="s2">&quot;checkpoints/step_1000&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.fsdp.fsdpv2.FSDPV2Strategy.maybe_load_optimizer">
+<span class="sig-name descname"><span class="pre">maybe_load_optimizer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">optimizer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">torch.cuda.current_device</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/lightrft/strategy/fsdp/fsdpv2.html#FSDPV2Strategy.maybe_load_optimizer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.fsdp.fsdpv2.FSDPV2Strategy.maybe_load_optimizer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load FSDP optimizer states back to GPU if adam_offload is enabled.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>optimizer</strong> (<em>torch.optim.Optimizer</em>) – The optimizer to potentially load</p></li>
+<li><p><strong>device</strong> (<em>torch.device</em>) – The device to load the optimizer to</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The loaded optimizer if adam_offload is enabled, otherwise the original optimizer</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.optim.Optimizer</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.fsdp.fsdpv2.FSDPV2Strategy.maybe_offload_optimizer">
+<span class="sig-name descname"><span class="pre">maybe_offload_optimizer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">optimizer</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/lightrft/strategy/fsdp/fsdpv2.html#FSDPV2Strategy.maybe_offload_optimizer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.fsdp.fsdpv2.FSDPV2Strategy.maybe_offload_optimizer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Offload FSDP optimizer states to CPU if adam_offload is enabled.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>optimizer</strong> (<em>torch.optim.Optimizer</em>) – The optimizer to potentially offload</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The offloaded optimizer if adam_offload is enabled, otherwise the original optimizer</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.optim.Optimizer</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.fsdp.fsdpv2.FSDPV2Strategy.optimizer_step">
+<span class="sig-name descname"><span class="pre">optimizer_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">optimizer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.optim.Optimizer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.nn.Module</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scheduler</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'model'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../../_modules/lightrft/strategy/fsdp/fsdpv2.html#FSDPV2Strategy.optimizer_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.fsdp.fsdpv2.FSDPV2Strategy.optimizer_step" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform an optimization step.</p>
+<p>Handles gradient accumulation by only stepping the optimizer and scheduler
+after the specified number of accumulation steps.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>optimizer</strong> (<em>torch.optim.Optimizer</em>) – The optimizer</p></li>
+<li><p><strong>model</strong> (<em>torch.nn.Module</em>) – The model</p></li>
+<li><p><strong>scheduler</strong> – The learning rate scheduler</p></li>
+<li><p><strong>name</strong> (<em>str</em>) – Name identifier for the model</p></li>
+<li><p><strong>kwargs</strong> – Additional arguments</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.fsdp.fsdpv2.FSDPV2Strategy.prepare_model">
+<span class="sig-name descname"><span class="pre">prepare_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_training</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shard_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reshard_after_forward</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">torch.nn.Module</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">torch.nn.Module</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">torch.optim.Optimizer</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">torch.nn.Module</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">torch.nn.Module</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">torch.optim.Optimizer</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/lightrft/strategy/fsdp/fsdpv2.html#FSDPV2Strategy.prepare_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.fsdp.fsdpv2.FSDPV2Strategy.prepare_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prepares a model for FSDP training.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>model</strong> (<em>torch.nn.Module</em><em> or </em><em>None</em>) – The model to prepare.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The prepared model wrapped with FSDP.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.nn.Module</p>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">prepared_model</span> <span class="o">=</span> <span class="n">strategy</span><span class="o">.</span><span class="n">prepare_model</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.fsdp.fsdpv2.FSDPV2Strategy.save_ckpt">
+<span class="sig-name descname"><span class="pre">save_ckpt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tag</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_num</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_mem</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">client_state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_latest</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scheduler</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/lightrft/strategy/fsdp/fsdpv2.html#FSDPV2Strategy.save_ckpt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.fsdp.fsdpv2.FSDPV2Strategy.save_ckpt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save model checkpoints in a distributed environment with automatic rotation.</p>
+<p>This method saves the sharded model weights to disk and manages the number and total size
+of checkpoints by removing older ones when necessary. It ensures proper synchronization
+between distributed processes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> (<em>torch.nn.Module</em>) – The model to save, typically an FSDP-wrapped model</p></li>
+<li><p><strong>save_dir</strong> (<em>str</em>) – Directory where checkpoints will be saved</p></li>
+<li><p><strong>optimizer</strong> (<em>torch.optim</em><em>, </em><em>optional</em>) – The optimizer to save</p></li>
+<li><p><strong>scheduler</strong> (<em>torch.lr_scheduler</em><em>, </em><em>optional</em>) – The scheduler to save</p></li>
+<li><p><strong>tag</strong> (<em>str</em><em>, </em><em>optional</em>) – Subdirectory name for this specific checkpoint</p></li>
+<li><p><strong>max_num</strong> (<em>int</em><em>, </em><em>default=3</em>) – Maximum number of checkpoints to keep</p></li>
+<li><p><strong>max_mem</strong> (<em>int</em><em>, </em><em>default=1000</em>) – Maximum disk space in GB for all checkpoints</p></li>
+<li><p><strong>client_state</strong> (<em>dict</em><em>, </em><em>default={}</em>) – Additional state to save (not currently used)</p></li>
+<li><p><strong>save_latest</strong> (<em>bool</em><em>, </em><em>default=True</em>) – Whether to save a copy as the latest checkpoint (not used)</p></li>
+</ul>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">trainer</span><span class="o">.</span><span class="n">save_ckpt</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="s2">&quot;checkpoints&quot;</span><span class="p">,</span> <span class="n">tag</span><span class="o">=</span><span class="s2">&quot;step_1000&quot;</span><span class="p">,</span> <span class="n">max_num</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.fsdp.fsdpv2.FSDPV2Strategy.save_model">
+<span class="sig-name descname"><span class="pre">save_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../../_modules/lightrft/strategy/fsdp/fsdpv2.html#FSDPV2Strategy.save_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.fsdp.fsdpv2.FSDPV2Strategy.save_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the model, its configuration, and tokenizer.</p>
+<p>This method handles gathering and saving the full model parameters in a distributed setting.
+Only rank 0 process saves the model to disk.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> (<em>torch.nn.Module</em>) – The model to save</p></li>
+<li><p><strong>tokenizer</strong> – The tokenizer to save</p></li>
+<li><p><strong>output_dir</strong> (<em>str</em>) – Directory to save the model to</p></li>
+<li><p><strong>kwargs</strong> – Additional arguments to pass to model.save_pretrained</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.fsdp.fsdpv2.FSDPV2Strategy.unwrap_model">
+<span class="sig-name descname"><span class="pre">unwrap_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">torch.nn.Module</span></span></span><a class="reference internal" href="../../../_modules/lightrft/strategy/fsdp/fsdpv2.html#FSDPV2Strategy.unwrap_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.fsdp.fsdpv2.FSDPV2Strategy.unwrap_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Unwraps the model from any wrapper modules.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>model</strong> (<em>torch.nn.Module</em>) – The model to unwrap.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The unwrapped model.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.nn.Module</p>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">unwrapped_model</span> <span class="o">=</span> <span class="n">strategy</span><span class="o">.</span><span class="n">unwrap_model</span><span class="p">(</span><span class="n">wrapped_model</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 <section id="is-mp-optimizer">
 <h2>is_mp_optimizer<a class="headerlink" href="#is-mp-optimizer" title="Permalink to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="lightrft.strategy.fsdp.fsdpv2.is_mp_optimizer">
+<span class="sig-prename descclassname"><span class="pre">lightrft.strategy.fsdp.fsdpv2.</span></span><span class="sig-name descname"><span class="pre">is_mp_optimizer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">optim</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/lightrft/strategy/fsdp/fsdpv2.html#is_mp_optimizer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.fsdp.fsdpv2.is_mp_optimizer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if an optimizer is an instance of FSDPadaptOptimizer.</p>
+<p>This function determines whether the provided optimizer is a model parallel
+optimizer specifically designed for FSDP (Fully Sharded Data Parallel).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>optim</strong> (<em>torch.optim.Optimizer</em><em> or </em><em>similar</em>) – The optimizer to check</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if the optimizer is an instance of FSDPadaptOptimizer, False otherwise</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">optimizer</span> <span class="o">=</span> <span class="n">FSDPadaptOptimizer</span><span class="p">(</span><span class="n">model_parameters</span><span class="p">,</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.01</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">is_mp</span> <span class="o">=</span> <span class="n">is_mp_optimizer</span><span class="p">(</span><span class="n">optimizer</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">is_mp</span><span class="p">)</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
 </section>
 <section id="modeloptimpair">
 <h2>ModelOptimPair<a class="headerlink" href="#modeloptimpair" title="Permalink to this heading">¶</a></h2>
+<dl class="py data">
+<dt class="sig sig-object py" id="lightrft.strategy.fsdp.fsdpv2.ModelOptimPair">
+<span class="sig-prename descclassname"><span class="pre">lightrft.strategy.fsdp.fsdpv2.</span></span><span class="sig-name descname"><span class="pre">ModelOptimPair</span></span><a class="headerlink" href="#lightrft.strategy.fsdp.fsdpv2.ModelOptimPair" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Optimizer</span></code>]</p>
+</dd></dl>
+
 </section>
 <section id="modelormodeloptimpair">
 <h2>ModelOrModelOptimPair<a class="headerlink" href="#modelormodeloptimpair" title="Permalink to this heading">¶</a></h2>
+<dl class="py data">
+<dt class="sig sig-object py" id="lightrft.strategy.fsdp.fsdpv2.ModelOrModelOptimPair">
+<span class="sig-prename descclassname"><span class="pre">lightrft.strategy.fsdp.fsdpv2.</span></span><span class="sig-name descname"><span class="pre">ModelOrModelOptimPair</span></span><a class="headerlink" href="#lightrft.strategy.fsdp.fsdpv2.ModelOrModelOptimPair" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <code class="xref py py-obj docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Optimizer</span></code>]]</p>
+</dd></dl>
+
 </section>
 <section id="manual-transformer-cls-names-to-wrap">
 <h2>manual_transformer_cls_names_to_wrap<a class="headerlink" href="#manual-transformer-cls-names-to-wrap" title="Permalink to this heading">¶</a></h2>
+<dl class="py data">
+<dt class="sig sig-object py" id="lightrft.strategy.fsdp.fsdpv2.manual_transformer_cls_names_to_wrap">
+<span class="sig-prename descclassname"><span class="pre">lightrft.strategy.fsdp.fsdpv2.</span></span><span class="sig-name descname"><span class="pre">manual_transformer_cls_names_to_wrap</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['Embedding',</span> <span class="pre">'Qwen2VLDecoderLayer',</span> <span class="pre">'Qwen2VLVisionBlock',</span> <span class="pre">'Qwen2_5_VLVisionBlock',</span> <span class="pre">'Qwen2_5_VLDecoderLayer',</span> <span class="pre">'Qwen2DecoderLayer',</span> <span class="pre">'LlamaDecoderLayer',</span> <span class="pre">'DeepseekDecoderLayer']</span></em><a class="headerlink" href="#lightrft.strategy.fsdp.fsdpv2.manual_transformer_cls_names_to_wrap" title="Permalink to this definition">¶</a></dt>
+<dd><p>Built-in mutable sequence.</p>
+<p>If no argument is given, the constructor creates a new empty list.
+The argument must be an iterable if specified.</p>
+</dd></dl>
+
 </section>
 </section>
 
@@ -371,11 +690,40 @@
             <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
               <ul>
 <li><a class="reference internal" href="#">lightrft.strategy.fsdp.fsdpv2</a><ul>
-<li><a class="reference internal" href="#fsdpv2strategy">FSDPV2Strategy</a></li>
-<li><a class="reference internal" href="#is-mp-optimizer">is_mp_optimizer</a></li>
-<li><a class="reference internal" href="#modeloptimpair">ModelOptimPair</a></li>
-<li><a class="reference internal" href="#modelormodeloptimpair">ModelOrModelOptimPair</a></li>
-<li><a class="reference internal" href="#manual-transformer-cls-names-to-wrap">manual_transformer_cls_names_to_wrap</a></li>
+<li><a class="reference internal" href="#fsdpv2strategy">FSDPV2Strategy</a><ul>
+<li><a class="reference internal" href="#lightrft.strategy.fsdp.fsdpv2.FSDPV2Strategy"><code class="docutils literal notranslate"><span class="pre">FSDPV2Strategy</span></code></a><ul>
+<li><a class="reference internal" href="#lightrft.strategy.fsdp.fsdpv2.FSDPV2Strategy.__init__"><code class="docutils literal notranslate"><span class="pre">FSDPV2Strategy.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.fsdp.fsdpv2.FSDPV2Strategy.backward"><code class="docutils literal notranslate"><span class="pre">FSDPV2Strategy.backward()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.fsdp.fsdpv2.FSDPV2Strategy.create_optimizer"><code class="docutils literal notranslate"><span class="pre">FSDPV2Strategy.create_optimizer()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.fsdp.fsdpv2.FSDPV2Strategy.init_model_context"><code class="docutils literal notranslate"><span class="pre">FSDPV2Strategy.init_model_context()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.fsdp.fsdpv2.FSDPV2Strategy.load_ckpt"><code class="docutils literal notranslate"><span class="pre">FSDPV2Strategy.load_ckpt()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.fsdp.fsdpv2.FSDPV2Strategy.maybe_load_optimizer"><code class="docutils literal notranslate"><span class="pre">FSDPV2Strategy.maybe_load_optimizer()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.fsdp.fsdpv2.FSDPV2Strategy.maybe_offload_optimizer"><code class="docutils literal notranslate"><span class="pre">FSDPV2Strategy.maybe_offload_optimizer()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.fsdp.fsdpv2.FSDPV2Strategy.optimizer_step"><code class="docutils literal notranslate"><span class="pre">FSDPV2Strategy.optimizer_step()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.fsdp.fsdpv2.FSDPV2Strategy.prepare_model"><code class="docutils literal notranslate"><span class="pre">FSDPV2Strategy.prepare_model()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.fsdp.fsdpv2.FSDPV2Strategy.save_ckpt"><code class="docutils literal notranslate"><span class="pre">FSDPV2Strategy.save_ckpt()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.fsdp.fsdpv2.FSDPV2Strategy.save_model"><code class="docutils literal notranslate"><span class="pre">FSDPV2Strategy.save_model()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.fsdp.fsdpv2.FSDPV2Strategy.unwrap_model"><code class="docutils literal notranslate"><span class="pre">FSDPV2Strategy.unwrap_model()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#is-mp-optimizer">is_mp_optimizer</a><ul>
+<li><a class="reference internal" href="#lightrft.strategy.fsdp.fsdpv2.is_mp_optimizer"><code class="docutils literal notranslate"><span class="pre">is_mp_optimizer()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#modeloptimpair">ModelOptimPair</a><ul>
+<li><a class="reference internal" href="#lightrft.strategy.fsdp.fsdpv2.ModelOptimPair"><code class="docutils literal notranslate"><span class="pre">ModelOptimPair</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#modelormodeloptimpair">ModelOrModelOptimPair</a><ul>
+<li><a class="reference internal" href="#lightrft.strategy.fsdp.fsdpv2.ModelOrModelOptimPair"><code class="docutils literal notranslate"><span class="pre">ModelOrModelOptimPair</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#manual-transformer-cls-names-to-wrap">manual_transformer_cls_names_to_wrap</a><ul>
+<li><a class="reference internal" href="#lightrft.strategy.fsdp.fsdpv2.manual_transformer_cls_names_to_wrap"><code class="docutils literal notranslate"><span class="pre">manual_transformer_cls_names_to_wrap</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

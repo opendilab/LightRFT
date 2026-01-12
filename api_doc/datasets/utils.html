@@ -306,8 +306,195 @@
             <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
               <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
                 
-  <section id="lightrft-datasets-utils">
-<h1>lightrft.datasets.utils<a class="headerlink" href="#lightrft-datasets-utils" title="Permalink to this heading">¶</a></h1>
+  <section id="module-lightrft.datasets.utils">
+<span id="lightrft-datasets-utils"></span><h1>lightrft.datasets.utils<a class="headerlink" href="#module-lightrft.datasets.utils" title="Permalink to this heading">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="lightrft.datasets.utils.BaseDataHandler">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">lightrft.datasets.utils.</span></span><span class="sig-name descname"><span class="pre">BaseDataHandler</span></span><a class="reference internal" href="../../_modules/lightrft/datasets/utils.html#BaseDataHandler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.datasets.utils.BaseDataHandler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></p>
+<p>Base class for data handlers.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.datasets.utils.BaseDataHandler.get_media_info">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_media_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/lightrft/datasets/utils.html#BaseDataHandler.get_media_info"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.datasets.utils.BaseDataHandler.get_media_info" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract path info for all media info from the raw item.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>item</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – The raw data item.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A dict where keys are logical names (e.g. ‘init_image’) and values are path dicts.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dict[str, Dict[str, str]]</p>
+</dd>
+</dl>
+<dl>
+<dt>Example::</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">item</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;init_image_path&#39;</span><span class="p">:</span> <span class="s1">&#39;/path/img.jpg&#39;</span><span class="p">,</span> <span class="s1">&#39;video_path&#39;</span><span class="p">:</span> <span class="s1">&#39;/path/vid.mp4&#39;</span><span class="p">}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">visual_info</span> <span class="o">=</span> <span class="n">get_media_info</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">visual_info</span><span class="p">)</span>
+<span class="go">{&#39;init_image&#39;: {&#39;image_local_path&#39;: &#39;/path/img.jpg&#39;}, &#39;video&#39;: {&#39;video_local_path&#39;: &#39;/path/vid.mp4&#39;}}</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.datasets.utils.BaseDataHandler.load_data">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">load_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/lightrft/datasets/utils.html#BaseDataHandler.load_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.datasets.utils.BaseDataHandler.load_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load all data items from a data config file, e.g. a json file, or a parquet file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>path</strong> (<em>str</em>) – The path to load data from.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A list of raw data items.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List[Dict[str, Any]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.datasets.utils.BaseDataHandler.parse_item">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">parse_item</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">media_content</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/lightrft/datasets/utils.html#BaseDataHandler.parse_item"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.datasets.utils.BaseDataHandler.parse_item" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse the raw item and the loaded media_content into the standard format.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>item</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – The raw data item.</p></li>
+<li><p><strong>media_content</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – A dict containing loaded content.</p></li>
+<li><p><strong>config</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – A dict of additional configuration options.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A tuple containing lists of dictionaries and one dictionary.
+For pointwise scoring data: (messages_chosen, messages_rejected, other)
+For pairwise ranking data: (messages, other)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Union[Tuple[List[Dict], List[Dict], Dict], Tuple[List[Dict], Dict]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="lightrft.datasets.utils.exist_and_not_none">
+<span class="sig-prename descclassname"><span class="pre">lightrft.datasets.utils.</span></span><span class="sig-name descname"><span class="pre">exist_and_not_none</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">d</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/datasets/utils.html#exist_and_not_none"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.datasets.utils.exist_and_not_none" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="lightrft.datasets.utils.extract_answer">
+<span class="sig-prename descclassname"><span class="pre">lightrft.datasets.utils.</span></span><span class="sig-name descname"><span class="pre">extract_answer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">text</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/lightrft/datasets/utils.html#extract_answer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.datasets.utils.extract_answer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract the content inside &lt;answer&gt;…&lt;/answer&gt; from a given text.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>text</strong> (<em>str</em>) – The input text containing the &lt;answer&gt; tags.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The extracted string inside the &lt;answer&gt; tags, or None if not found.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Union[str, None]</p>
+</dd>
+</dl>
+<dl>
+<dt>Example::</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">text</span> <span class="o">=</span> <span class="s2">&quot;The result is &lt;answer&gt;Image 1 is better&lt;/answer&gt; based on the evaluation.&quot;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">answer</span> <span class="o">=</span> <span class="n">extract_answer</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">answer</span><span class="p">)</span>  <span class="c1"># Output: Image 1 is better</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="lightrft.datasets.utils.find_subsequence">
+<span class="sig-prename descclassname"><span class="pre">lightrft.datasets.utils.</span></span><span class="sig-name descname"><span class="pre">find_subsequence</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lst</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sub</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="reference internal" href="../../_modules/lightrft/datasets/utils.html#find_subsequence"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.datasets.utils.find_subsequence" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find first index where <code class="docutils literal notranslate"><span class="pre">sub</span></code> appears in <code class="docutils literal notranslate"><span class="pre">lst</span></code>.
+This function is used to finda marker token sequence (e.g. assistant-start)
+in the token id list so prompt and response can be separated for label masking.</p>
+<p>Complexity: Implements the KMP algorithm: O(n + m) time, O(m) extra space.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lst</strong> (<em>List</em><em>[</em><em>int</em><em>]</em>) – Sequence to search (e.g., list of token ids).</p></li>
+<li><p><strong>sub</strong> (<em>List</em><em>[</em><em>int</em><em>]</em>) – Subsequence (pattern) to find.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Index of first occurrence or -1 if not found.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="lightrft.datasets.utils.load_multimodal_content">
+<span class="sig-prename descclassname"><span class="pre">lightrft.datasets.utils.</span></span><span class="sig-name descname"><span class="pre">load_multimodal_content</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">media_info</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span></span></span><a class="reference internal" href="../../_modules/lightrft/datasets/utils.html#load_multimodal_content"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.datasets.utils.load_multimodal_content" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load multimodal content (images, videos, audios, etc.) specified by <cite>media_info</cite>.</p>
+<dl class="simple">
+<dt>Keys in each entry can include:</dt><dd><ul class="simple">
+<li><p>‘image_local_path’ | ‘image_bytes’</p></li>
+<li><p>‘video_local_path’</p></li>
+<li><p>‘audio_local_path’</p></li>
+</ul>
+</dd>
+</dl>
+<p>Returns a dict mapping names to loaded objects or paths.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>media_info</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em><em>]</em>) – Example: {‘init_image’: {‘image_local_path’: ‘/path/img.jpg’},
+‘video’: {‘video_local_path’: ‘/path/vid.mp4’},
+‘audio’: {‘audio_local_path’: ‘/path/audio.wav’}}</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A dict mapping the same keys to loaded objects, for example:
+- images (from path or bytes) are returned as PIL.Image.Image
+- videos are returned as the original local path (str)
+- audios are returned as the original local path (str)
+If a key cannot be loaded it will be omitted from the result.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dict[str, Any]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="lightrft.datasets.utils.zero_pad_sequences">
+<span class="sig-prename descclassname"><span class="pre">lightrft.datasets.utils.</span></span><span class="sig-name descname"><span class="pre">zero_pad_sequences</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sequences</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">side</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'left'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">torch.Tensor</span></span></span><a class="reference internal" href="../../_modules/lightrft/datasets/utils.html#zero_pad_sequences"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.datasets.utils.zero_pad_sequences" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pad a list of 1D/2D tensors on the last dimension and stack them.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sequences</strong> (<em>Iterable</em><em>[</em><em>torch.Tensor</em><em>]</em>) – Iterable of torch.Tensor objects. Each tensor’s last dimension
+is treated as the sequence length to be padded.</p></li>
+<li><p><strong>side</strong> (<em>str</em>) – Side to apply padding, either “left” or “right”</p></li>
+<li><p><strong>value</strong> (<em>int</em><em> | </em><em>float</em>) – Padding value</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Stacked tensor with shape (N, …) where sequences are padded to equal length</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">seqs</span> <span class="o">=</span> <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">]),</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">])]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">zero_pad_sequences</span><span class="p">(</span><span class="n">seqs</span><span class="p">,</span> <span class="n">side</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="go">tensor([[1, 2, 3],</span>
+<span class="go">        [0, 4, 5]])</span>
+</pre></div>
+</div>
+</dd></dl>
+
 </section>
 
 
@@ -353,7 +540,20 @@
           <div class="pytorch-right-menu" id="pytorch-right-menu">
             <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
               <ul>
-<li><a class="reference internal" href="#">lightrft.datasets.utils</a></li>
+<li><a class="reference internal" href="#">lightrft.datasets.utils</a><ul>
+<li><a class="reference internal" href="#lightrft.datasets.utils.BaseDataHandler"><code class="docutils literal notranslate"><span class="pre">BaseDataHandler</span></code></a><ul>
+<li><a class="reference internal" href="#lightrft.datasets.utils.BaseDataHandler.get_media_info"><code class="docutils literal notranslate"><span class="pre">BaseDataHandler.get_media_info()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.datasets.utils.BaseDataHandler.load_data"><code class="docutils literal notranslate"><span class="pre">BaseDataHandler.load_data()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.datasets.utils.BaseDataHandler.parse_item"><code class="docutils literal notranslate"><span class="pre">BaseDataHandler.parse_item()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#lightrft.datasets.utils.exist_and_not_none"><code class="docutils literal notranslate"><span class="pre">exist_and_not_none()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.datasets.utils.extract_answer"><code class="docutils literal notranslate"><span class="pre">extract_answer()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.datasets.utils.find_subsequence"><code class="docutils literal notranslate"><span class="pre">find_subsequence()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.datasets.utils.load_multimodal_content"><code class="docutils literal notranslate"><span class="pre">load_multimodal_content()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.datasets.utils.zero_pad_sequences"><code class="docutils literal notranslate"><span class="pre">zero_pad_sequences()</span></code></a></li>
+</ul>
+</li>
 </ul>
 
             </div>

@@ -306,8 +306,462 @@
             <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
               <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
                 
-  <section id="lightrft-trainer-experience-maker">
-<h1>lightrft.trainer.experience_maker<a class="headerlink" href="#lightrft-trainer-experience-maker" title="Permalink to this heading">¶</a></h1>
+  <section id="module-lightrft.trainer.experience_maker">
+<span id="lightrft-trainer-experience-maker"></span><h1>lightrft.trainer.experience_maker<a class="headerlink" href="#module-lightrft.trainer.experience_maker" title="Permalink to this heading">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="lightrft.trainer.experience_maker.Experience">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">lightrft.trainer.experience_maker.</span></span><span class="sig-name descname"><span class="pre">Experience</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sequences</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">action_log_probs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_action_log_probs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">values</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">returns</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">advantages</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attention_mask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.LongTensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">action_mask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.BoolTensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">info</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kl</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/trainer/experience_maker.html#Experience"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.trainer.experience_maker.Experience" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Experience is a batch of data containing sequences and associated RL training information.</p>
+<p>These data should have the same sequence length and number of actions.
+Left padding for sequences is applied.</p>
+<dl class="simple">
+<dt>Tensor shapes:</dt><dd><ul class="simple">
+<li><p>sequences: (B, S) where B is batch size, S is sequence length</p></li>
+<li><p>action_log_probs: (B, A) where A is number of actions</p></li>
+<li><p>values: (B, A)</p></li>
+<li><p>returns: (B, A)</p></li>
+<li><p>advantages: (B, A)</p></li>
+<li><p>attention_mask: (B, S)</p></li>
+<li><p>action_mask: (B, A)</p></li>
+<li><p>kl: (B, A)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sequences</strong> (<em>torch.Tensor</em>) – Token sequences including both prompt and response.</p></li>
+<li><p><strong>action_log_probs</strong> (<em>torch.Tensor</em>) – Log probabilities of actions from the current policy.</p></li>
+<li><p><strong>base_action_log_probs</strong> (<em>torch.Tensor</em>) – Log probabilities from the reference (initial) policy.</p></li>
+<li><p><strong>values</strong> (<em>torch.Tensor</em>) – Value estimates from the critic.</p></li>
+<li><p><strong>returns</strong> (<em>Optional</em><em>[</em><em>torch.Tensor</em><em>]</em>) – Discounted returns for each action.</p></li>
+<li><p><strong>advantages</strong> (<em>Optional</em><em>[</em><em>torch.Tensor</em><em>]</em>) – Advantage estimates for each action.</p></li>
+<li><p><strong>attention_mask</strong> (<em>Optional</em><em>[</em><em>torch.LongTensor</em><em>]</em>) – Mask indicating valid tokens in sequences.</p></li>
+<li><p><strong>action_mask</strong> (<em>Optional</em><em>[</em><em>torch.BoolTensor</em><em>]</em>) – Mask indicating action (response) tokens.</p></li>
+<li><p><strong>info</strong> (<em>Optional</em><em>[</em><em>dict</em><em>]</em>) – Dictionary containing additional information (rewards, lengths, etc.).</p></li>
+<li><p><strong>kl</strong> (<em>Optional</em><em>[</em><em>torch.Tensor</em><em>]</em>) – KL divergence between current and reference policy.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lightrft.trainer.experience_maker.Experience.action_log_probs">
+<span class="sig-name descname"><span class="pre">action_log_probs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">torch.Tensor</span></em><a class="headerlink" href="#lightrft.trainer.experience_maker.Experience.action_log_probs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lightrft.trainer.experience_maker.Experience.action_mask">
+<span class="sig-name descname"><span class="pre">action_mask</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">torch.BoolTensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#lightrft.trainer.experience_maker.Experience.action_mask" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lightrft.trainer.experience_maker.Experience.advantages">
+<span class="sig-name descname"><span class="pre">advantages</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">torch.Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#lightrft.trainer.experience_maker.Experience.advantages" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lightrft.trainer.experience_maker.Experience.attention_mask">
+<span class="sig-name descname"><span class="pre">attention_mask</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">torch.LongTensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#lightrft.trainer.experience_maker.Experience.attention_mask" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lightrft.trainer.experience_maker.Experience.base_action_log_probs">
+<span class="sig-name descname"><span class="pre">base_action_log_probs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">torch.Tensor</span></em><a class="headerlink" href="#lightrft.trainer.experience_maker.Experience.base_action_log_probs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lightrft.trainer.experience_maker.Experience.info">
+<span class="sig-name descname"><span class="pre">info</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#lightrft.trainer.experience_maker.Experience.info" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lightrft.trainer.experience_maker.Experience.kl">
+<span class="sig-name descname"><span class="pre">kl</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">torch.Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#lightrft.trainer.experience_maker.Experience.kl" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.trainer.experience_maker.Experience.pin_memory">
+<span class="sig-name descname"><span class="pre">pin_memory</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/trainer/experience_maker.html#Experience.pin_memory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.trainer.experience_maker.Experience.pin_memory" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pin all tensors in memory for faster GPU transfer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Self with pinned tensors.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#lightrft.trainer.experience_maker.Experience" title="lightrft.trainer.experience_maker.Experience">Experience</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lightrft.trainer.experience_maker.Experience.returns">
+<span class="sig-name descname"><span class="pre">returns</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">torch.Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#lightrft.trainer.experience_maker.Experience.returns" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lightrft.trainer.experience_maker.Experience.sequences">
+<span class="sig-name descname"><span class="pre">sequences</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">torch.Tensor</span></em><a class="headerlink" href="#lightrft.trainer.experience_maker.Experience.sequences" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.trainer.experience_maker.Experience.to_device">
+<span class="sig-name descname"><span class="pre">to_device</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.device</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#lightrft.trainer.experience_maker.Experience.to_device" title="Permalink to this definition">¶</a></dt>
+<dd><p>Move all tensors in the experience to the specified device.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>device</strong> (<em>torch.device</em>) – Target device.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lightrft.trainer.experience_maker.Experience.values">
+<span class="sig-name descname"><span class="pre">values</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">torch.Tensor</span></em><a class="headerlink" href="#lightrft.trainer.experience_maker.Experience.values" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="lightrft.trainer.experience_maker.NaiveExperienceMaker">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">lightrft.trainer.experience_maker.</span></span><span class="sig-name descname"><span class="pre">NaiveExperienceMaker</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">actor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../models/actor_language.html#lightrft.models.actor_language.ActorLanguage" title="lightrft.models.actor_language.ActorLanguage"><span class="pre">ActorLanguage</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">critic</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.nn.Module</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reward_model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.nn.Module</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../models/actor_language.html#lightrft.models.actor_language.ActorLanguage" title="lightrft.models.actor_language.ActorLanguage"><span class="pre">ActorLanguage</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">tokenizer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prompt_max_len</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kl_controller</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strategy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remote_rm_url</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reward_fn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reward_fn_label_map</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reward_recipe</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/trainer/experience_maker.html#NaiveExperienceMaker"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.trainer.experience_maker.NaiveExperienceMaker" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></p>
+<p>A naive experience maker for reinforcement learning.</p>
+<p>This class is responsible for generating experiences (sequences of prompts, actions, rewards, etc.)
+which are then used to train the actor and critic models. It orchestrates the interaction between
+the actor, critic, reward model, and the initial reference model to produce the data needed for
+a single step of PPO (or a similar RL algorithm).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>actor</strong> (<a class="reference internal" href="../models/actor_language.html#lightrft.models.actor_language.ActorLanguage" title="lightrft.models.actor_language.ActorLanguage"><em>ActorLanguage</em></a>) – The policy model to be trained.</p></li>
+<li><p><strong>critic</strong> (<em>nn.Module</em>) – The value model to be trained.</p></li>
+<li><p><strong>reward_model</strong> (<em>nn.Module</em>) – The reward model used to score generated responses.</p></li>
+<li><p><strong>initial_model</strong> (<a class="reference internal" href="../models/actor_language.html#lightrft.models.actor_language.ActorLanguage" title="lightrft.models.actor_language.ActorLanguage"><em>ActorLanguage</em></a>) – The reference model for KL divergence calculation (typically a frozen copy of the SFT model).</p></li>
+<li><p><strong>tokenizer</strong> (<em>Tokenizer</em>) – The tokenizer for encoding and decoding text.</p></li>
+<li><p><strong>prompt_max_len</strong> (<em>int</em>) – The maximum length of input prompts after tokenization.</p></li>
+<li><p><strong>kl_controller</strong> (<em>KLController</em>) – The controller for managing the KL penalty coefficient.</p></li>
+<li><p><strong>strategy</strong> (<em>Strategy</em><em>, </em><em>optional</em>) – The training strategy containing configurations and distributed training logic, defaults to None.</p></li>
+<li><p><strong>remote_rm_url</strong> (<em>List</em><em>[</em><em>str</em><em>]</em><em>, </em><em>optional</em>) – A list of URLs for remote reward models, defaults to None.</p></li>
+<li><p><strong>reward_fn</strong> (<em>Callable</em><em>, </em><em>optional</em>) – A custom reward function, defaults to None.</p></li>
+<li><p><strong>reward_fn_label_map</strong> (<em>Dict</em><em>, </em><em>optional</em>) – A map for reward function labels, defaults to None.</p></li>
+<li><p><strong>reward_recipe</strong> (<em>Dict</em><em>, </em><em>optional</em>) – A dictionary defining how to combine different reward sources, defaults to None.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.trainer.experience_maker.NaiveExperienceMaker.generate_samples">
+<span class="sig-name descname"><span class="pre">generate_samples</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">all_prompts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">generate_kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#lightrft.trainer.experience_maker.Samples" title="lightrft.trainer.experience_maker.Samples"><span class="pre">Samples</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#lightrft.trainer.experience_maker.NaiveExperienceMaker.generate_samples" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate samples and return in batches.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>all_prompts</strong> (<em>List</em><em>[</em><em>str</em><em>]</em>) – List of prompt strings.</p></li>
+<li><p><strong>generate_kwargs</strong> (<em>dict</em>) – Additional generation parameters.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>List of Samples objects.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List[<a class="reference internal" href="#lightrft.trainer.experience_maker.Samples" title="lightrft.trainer.experience_maker.Samples">Samples</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.trainer.experience_maker.NaiveExperienceMaker.get_advantages_and_returns">
+<span class="sig-name descname"><span class="pre">get_advantages_and_returns</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">values</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rewards</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">action_mask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lambd</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">torch.Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">torch.Tensor</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#lightrft.trainer.experience_maker.NaiveExperienceMaker.get_advantages_and_returns" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute advantages and returns from rewards and values using GAE.</p>
+<p>Calculated as in the original PPO paper: <a class="reference external" href="https://arxiv.org/abs/1707.06347">https://arxiv.org/abs/1707.06347</a>
+Note that rewards may include a KL divergence loss term.</p>
+<dl class="simple">
+<dt>Advantages formula:</dt><dd><dl class="simple">
+<dt>Adv1 =  R1 + γ * λ * R2     + γ^2 * λ^2 * R3       + …</dt><dd><ul class="simple">
+<li><p>V1 + γ * (1 - λ) V2 + γ^2 * λ * (1 - λ) V3 + …</p></li>
+</ul>
+</dd>
+</dl>
+</dd>
+<dt>Returns formula:</dt><dd><dl class="simple">
+<dt>Ret1 =  R1 + γ * λ * R2     + γ^2 * λ^2 * R3       + …</dt><dd><ul class="simple">
+<li><p>γ * (1 - λ) V2 + γ^2 * λ * (1 - λ) V3 + …</p></li>
+</ul>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>values</strong> (<em>torch.Tensor</em>) – Tensor of shape (batch_size, response_size).</p></li>
+<li><p><strong>rewards</strong> (<em>torch.Tensor</em>) – Tensor of shape (batch_size, response_size).</p></li>
+<li><p><strong>action_mask</strong> (<em>torch.Tensor</em>) – Tensor of shape (batch_size, response_size).</p></li>
+<li><p><strong>gamma</strong> (<em>float</em>) – Discount factor.</p></li>
+<li><p><strong>lambd</strong> (<em>float</em>) – GAE lambda parameter.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Tuple of (advantages, returns), both of shape (batch_size, response_size).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tuple[torch.Tensor, torch.Tensor]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.trainer.experience_maker.NaiveExperienceMaker.get_cumulative_returns">
+<span class="sig-name descname"><span class="pre">get_cumulative_returns</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rewards</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">action_mask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">torch.Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">torch.Tensor</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#lightrft.trainer.experience_maker.NaiveExperienceMaker.get_cumulative_returns" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute cumulative returns from rewards using REINFORCE.</p>
+<p>REINFORCE uses cumulative returns without GAE (Generalized Advantage Estimation).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>rewards</strong> (<em>torch.Tensor</em>) – Tensor of shape (batch_size, response_size).</p></li>
+<li><p><strong>action_mask</strong> (<em>torch.Tensor</em>) – Binary mask tensor of shape (batch_size, response_size).</p></li>
+<li><p><strong>gamma</strong> (<em>float</em>) – Discount factor.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Returns tensor of shape (batch_size, response_size).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.trainer.experience_maker.NaiveExperienceMaker.make_experience">
+<span class="sig-name descname"><span class="pre">make_experience</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">samples</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#lightrft.trainer.experience_maker.Samples" title="lightrft.trainer.experience_maker.Samples"><span class="pre">Samples</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#lightrft.trainer.experience_maker.Experience" title="lightrft.trainer.experience_maker.Experience"><span class="pre">Experience</span></a></span></span><a class="headerlink" href="#lightrft.trainer.experience_maker.NaiveExperienceMaker.make_experience" title="Permalink to this definition">¶</a></dt>
+<dd><p>Turn samples into experience by calculating log probs, values, rewards, and KL divergence.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>samples</strong> (<a class="reference internal" href="#lightrft.trainer.experience_maker.Samples" title="lightrft.trainer.experience_maker.Samples"><em>Samples</em></a>) – Samples object containing sequences and metadata.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Experience object with all computed values.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#lightrft.trainer.experience_maker.Experience" title="lightrft.trainer.experience_maker.Experience">Experience</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.trainer.experience_maker.NaiveExperienceMaker.make_experience_list">
+<span class="sig-name descname"><span class="pre">make_experience_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">all_prompts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">generate_kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#lightrft.trainer.experience_maker.Experience" title="lightrft.trainer.experience_maker.Experience"><span class="pre">Experience</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#lightrft.trainer.experience_maker.NaiveExperienceMaker.make_experience_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make a list of experiences with the micro_rollout_batch_size.</p>
+<p>This method first calculates the response sequences and rewards for the given prompts.
+Then, if we need certain processing for the rewards or filtering, we process the rollout as a whole.
+After that, we calculate the advantages and returns for each experience.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>all_prompts</strong> (<em>Union</em><em>[</em><em>str</em><em>, </em><em>List</em><em>[</em><em>str</em><em>]</em><em>]</em>) – Prompts to generate responses for.</p></li>
+<li><p><strong>generate_kwargs</strong> (<em>dict</em>) – Additional generation parameters (gamma, lambd, etc.).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>List of Experience objects.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List[<a class="reference internal" href="#lightrft.trainer.experience_maker.Experience" title="lightrft.trainer.experience_maker.Experience">Experience</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.trainer.experience_maker.NaiveExperienceMaker.process_experiences">
+<span class="sig-name descname"><span class="pre">process_experiences</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">experiences</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#lightrft.trainer.experience_maker.Experience" title="lightrft.trainer.experience_maker.Experience"><span class="pre">Experience</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#lightrft.trainer.experience_maker.Experience" title="lightrft.trainer.experience_maker.Experience"><span class="pre">Experience</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">torch.Tensor</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#lightrft.trainer.experience_maker.NaiveExperienceMaker.process_experiences" title="Permalink to this definition">¶</a></dt>
+<dd><p>Process experiences for reward shaping and filtering.</p>
+<p>This can be used to filter out some experiences or do some processing on the rewards.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>experiences</strong> (<em>List</em><em>[</em><a class="reference internal" href="#lightrft.trainer.experience_maker.Experience" title="lightrft.trainer.experience_maker.Experience"><em>Experience</em></a><em>]</em>) – List of Experience objects.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Tuple of (processed experiences, processed rewards).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tuple[List[<a class="reference internal" href="#lightrft.trainer.experience_maker.Experience" title="lightrft.trainer.experience_maker.Experience">Experience</a>], List[torch.Tensor]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.trainer.experience_maker.NaiveExperienceMaker.tokenize_fn">
+<span class="sig-name descname"><span class="pre">tokenize_fn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">texts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_length</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">padding</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/trainer/experience_maker.html#NaiveExperienceMaker.tokenize_fn"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.trainer.experience_maker.NaiveExperienceMaker.tokenize_fn" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tokenize input texts.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>texts</strong> (<em>List</em><em>[</em><em>str</em><em>]</em>) – List of text strings to tokenize.</p></li>
+<li><p><strong>max_length</strong> (<em>int</em>) – Maximum sequence length.</p></li>
+<li><p><strong>padding</strong> (<em>bool</em>) – Whether to apply padding, defaults to True.</p></li>
+<li><p><strong>device</strong> (<em>torch.device</em><em> or </em><em>str</em><em>, </em><em>optional</em>) – Target device for tensors, defaults to None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Tokenized batch (as dict if padding=True, otherwise as list).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict or list</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="lightrft.trainer.experience_maker.Samples">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">lightrft.trainer.experience_maker.</span></span><span class="sig-name descname"><span class="pre">Samples</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sequences</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attention_mask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.LongTensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">action_mask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.BoolTensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_actions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">torch.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">packed_seq_lens</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">response_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">total_length</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prompts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pad_len</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/trainer/experience_maker.html#Samples"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.trainer.experience_maker.Samples" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Samples is a batch of data that can be in batched or packed format.</p>
+<p>The batched format applies padding to sequences, while the packed format
+concatenates prompt and response without padding.</p>
+<dl class="simple">
+<dt>Tensor shapes (batched / packed):</dt><dd><ul class="simple">
+<li><p>sequences: (B, S) or (1, total_length) - tokens of both prompt and response</p></li>
+<li><p>attention_mask: (B, S) or (1, total_length) - attention mask for sequences</p></li>
+<li><p>action_mask: (B, A) or None - response mask showing which part is the response</p></li>
+<li><p>num_actions: int or (B,) - number of actions (tokens) in the response</p></li>
+<li><p>packed_seq_lens: None or (B,) - length of each sample in packed format</p></li>
+<li><p>response_length: (B,) - number of tokens in the response</p></li>
+<li><p>total_length: (B,) - total number of tokens in sequences</p></li>
+<li><p>prompts: list[str] - the prompts used to generate responses</p></li>
+<li><p>labels: list[str] - ground truth labels (if available)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sequences</strong> (<em>torch.Tensor</em>) – Token sequences including both prompt and response.</p></li>
+<li><p><strong>attention_mask</strong> (<em>Optional</em><em>[</em><em>torch.LongTensor</em><em>]</em>) – Attention mask for sequences.</p></li>
+<li><p><strong>action_mask</strong> (<em>Optional</em><em>[</em><em>torch.BoolTensor</em><em>]</em>) – Mask indicating action (response) tokens.</p></li>
+<li><p><strong>num_actions</strong> (<em>Union</em><em>[</em><em>int</em><em>, </em><em>torch.Tensor</em><em>]</em>) – Number of actions per sample.</p></li>
+<li><p><strong>packed_seq_lens</strong> (<em>Optional</em><em>[</em><em>torch.Tensor</em><em>]</em>) – Sequence lengths for packed format.</p></li>
+<li><p><strong>response_length</strong> (<em>torch.Tensor</em>) – Length of each response.</p></li>
+<li><p><strong>total_length</strong> (<em>torch.Tensor</em>) – Total length of each sequence.</p></li>
+<li><p><strong>prompts</strong> (<em>list</em><em>[</em><em>str</em><em>]</em>) – List of prompt strings.</p></li>
+<li><p><strong>labels</strong> (<em>list</em><em>[</em><em>str</em><em>]</em>) – List of label strings.</p></li>
+<li><p><strong>pad_len</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – Padding length applied.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lightrft.trainer.experience_maker.Samples.action_mask">
+<span class="sig-name descname"><span class="pre">action_mask</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">torch.BoolTensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#lightrft.trainer.experience_maker.Samples.action_mask" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lightrft.trainer.experience_maker.Samples.attention_mask">
+<span class="sig-name descname"><span class="pre">attention_mask</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">torch.LongTensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#lightrft.trainer.experience_maker.Samples.attention_mask" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lightrft.trainer.experience_maker.Samples.labels">
+<span class="sig-name descname"><span class="pre">labels</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#lightrft.trainer.experience_maker.Samples.labels" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lightrft.trainer.experience_maker.Samples.num_actions">
+<span class="sig-name descname"><span class="pre">num_actions</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">torch.Tensor</span></em><a class="headerlink" href="#lightrft.trainer.experience_maker.Samples.num_actions" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lightrft.trainer.experience_maker.Samples.packed_seq_lens">
+<span class="sig-name descname"><span class="pre">packed_seq_lens</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">torch.Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#lightrft.trainer.experience_maker.Samples.packed_seq_lens" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lightrft.trainer.experience_maker.Samples.pad_len">
+<span class="sig-name descname"><span class="pre">pad_len</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#lightrft.trainer.experience_maker.Samples.pad_len" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lightrft.trainer.experience_maker.Samples.prompts">
+<span class="sig-name descname"><span class="pre">prompts</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#lightrft.trainer.experience_maker.Samples.prompts" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lightrft.trainer.experience_maker.Samples.response_length">
+<span class="sig-name descname"><span class="pre">response_length</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">torch.Tensor</span></em><a class="headerlink" href="#lightrft.trainer.experience_maker.Samples.response_length" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lightrft.trainer.experience_maker.Samples.sequences">
+<span class="sig-name descname"><span class="pre">sequences</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">torch.Tensor</span></em><a class="headerlink" href="#lightrft.trainer.experience_maker.Samples.sequences" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="lightrft.trainer.experience_maker.Samples.total_length">
+<span class="sig-name descname"><span class="pre">total_length</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">torch.Tensor</span></em><a class="headerlink" href="#lightrft.trainer.experience_maker.Samples.total_length" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="lightrft.trainer.experience_maker.clip_filter_like_weight_func">
+<span class="sig-prename descclassname"><span class="pre">lightrft.trainer.experience_maker.</span></span><span class="sig-name descname"><span class="pre">clip_filter_like_weight_func</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rewards</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clip_filter_like_weight_clip_eps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lamda</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/trainer/experience_maker.html#clip_filter_like_weight_func"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.trainer.experience_maker.clip_filter_like_weight_func" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute clip-filter-like weights for rewards.</p>
+<p>This function applies a weighting scheme similar to the clip-filter method used in
+early RLHF implementations, where samples with zero variance are given special weights.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>rewards</strong> (<em>torch.Tensor</em>) – Reward tensor of shape [batch_size, n_samples].</p></li>
+<li><p><strong>clip_filter_like_weight_clip_eps</strong> (<em>float</em>) – Maximum clipping value for weights, defaults to 3.0.</p></li>
+<li><p><strong>lamda</strong> (<em>float</em>) – Weight value for samples with zero variance, defaults to 1.0.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Weight tensor of the same shape as rewards.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="lightrft.trainer.experience_maker.pin_memory">
+<span class="sig-prename descclassname"><span class="pre">lightrft.trainer.experience_maker.</span></span><span class="sig-name descname"><span class="pre">pin_memory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tensor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">torch.Tensor</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/trainer/experience_maker.html#pin_memory"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.trainer.experience_maker.pin_memory" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pin tensor(s) in memory for faster GPU transfer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>tensor</strong> (<em>Union</em><em>[</em><em>torch.Tensor</em><em>, </em><em>list</em><em>[</em><em>torch.Tensor</em><em>]</em><em>]</em>) – Tensor or list of tensors to pin.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Pinned tensor(s).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Union[torch.Tensor, list[torch.Tensor]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="lightrft.trainer.experience_maker.to">
+<span class="sig-prename descclassname"><span class="pre">lightrft.trainer.experience_maker.</span></span><span class="sig-name descname"><span class="pre">to</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tensor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">torch.Tensor</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/trainer/experience_maker.html#to"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.trainer.experience_maker.to" title="Permalink to this definition">¶</a></dt>
+<dd><p>Move tensor(s) to the specified device.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tensor</strong> (<em>Union</em><em>[</em><em>torch.Tensor</em><em>, </em><em>list</em><em>[</em><em>torch.Tensor</em><em>]</em><em>]</em>) – Tensor or list of tensors to move.</p></li>
+<li><p><strong>device</strong> (<em>torch.device</em><em> or </em><em>str</em>) – Target device.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Tensor(s) on the target device.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Union[torch.Tensor, list[torch.Tensor]]</p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 
 
@@ -353,7 +807,50 @@
           <div class="pytorch-right-menu" id="pytorch-right-menu">
             <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
               <ul>
-<li><a class="reference internal" href="#">lightrft.trainer.experience_maker</a></li>
+<li><a class="reference internal" href="#">lightrft.trainer.experience_maker</a><ul>
+<li><a class="reference internal" href="#lightrft.trainer.experience_maker.Experience"><code class="docutils literal notranslate"><span class="pre">Experience</span></code></a><ul>
+<li><a class="reference internal" href="#lightrft.trainer.experience_maker.Experience.action_log_probs"><code class="docutils literal notranslate"><span class="pre">Experience.action_log_probs</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.trainer.experience_maker.Experience.action_mask"><code class="docutils literal notranslate"><span class="pre">Experience.action_mask</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.trainer.experience_maker.Experience.advantages"><code class="docutils literal notranslate"><span class="pre">Experience.advantages</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.trainer.experience_maker.Experience.attention_mask"><code class="docutils literal notranslate"><span class="pre">Experience.attention_mask</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.trainer.experience_maker.Experience.base_action_log_probs"><code class="docutils literal notranslate"><span class="pre">Experience.base_action_log_probs</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.trainer.experience_maker.Experience.info"><code class="docutils literal notranslate"><span class="pre">Experience.info</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.trainer.experience_maker.Experience.kl"><code class="docutils literal notranslate"><span class="pre">Experience.kl</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.trainer.experience_maker.Experience.pin_memory"><code class="docutils literal notranslate"><span class="pre">Experience.pin_memory()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.trainer.experience_maker.Experience.returns"><code class="docutils literal notranslate"><span class="pre">Experience.returns</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.trainer.experience_maker.Experience.sequences"><code class="docutils literal notranslate"><span class="pre">Experience.sequences</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.trainer.experience_maker.Experience.to_device"><code class="docutils literal notranslate"><span class="pre">Experience.to_device()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.trainer.experience_maker.Experience.values"><code class="docutils literal notranslate"><span class="pre">Experience.values</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#lightrft.trainer.experience_maker.NaiveExperienceMaker"><code class="docutils literal notranslate"><span class="pre">NaiveExperienceMaker</span></code></a><ul>
+<li><a class="reference internal" href="#lightrft.trainer.experience_maker.NaiveExperienceMaker.generate_samples"><code class="docutils literal notranslate"><span class="pre">NaiveExperienceMaker.generate_samples()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.trainer.experience_maker.NaiveExperienceMaker.get_advantages_and_returns"><code class="docutils literal notranslate"><span class="pre">NaiveExperienceMaker.get_advantages_and_returns()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.trainer.experience_maker.NaiveExperienceMaker.get_cumulative_returns"><code class="docutils literal notranslate"><span class="pre">NaiveExperienceMaker.get_cumulative_returns()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.trainer.experience_maker.NaiveExperienceMaker.make_experience"><code class="docutils literal notranslate"><span class="pre">NaiveExperienceMaker.make_experience()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.trainer.experience_maker.NaiveExperienceMaker.make_experience_list"><code class="docutils literal notranslate"><span class="pre">NaiveExperienceMaker.make_experience_list()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.trainer.experience_maker.NaiveExperienceMaker.process_experiences"><code class="docutils literal notranslate"><span class="pre">NaiveExperienceMaker.process_experiences()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.trainer.experience_maker.NaiveExperienceMaker.tokenize_fn"><code class="docutils literal notranslate"><span class="pre">NaiveExperienceMaker.tokenize_fn()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#lightrft.trainer.experience_maker.Samples"><code class="docutils literal notranslate"><span class="pre">Samples</span></code></a><ul>
+<li><a class="reference internal" href="#lightrft.trainer.experience_maker.Samples.action_mask"><code class="docutils literal notranslate"><span class="pre">Samples.action_mask</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.trainer.experience_maker.Samples.attention_mask"><code class="docutils literal notranslate"><span class="pre">Samples.attention_mask</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.trainer.experience_maker.Samples.labels"><code class="docutils literal notranslate"><span class="pre">Samples.labels</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.trainer.experience_maker.Samples.num_actions"><code class="docutils literal notranslate"><span class="pre">Samples.num_actions</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.trainer.experience_maker.Samples.packed_seq_lens"><code class="docutils literal notranslate"><span class="pre">Samples.packed_seq_lens</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.trainer.experience_maker.Samples.pad_len"><code class="docutils literal notranslate"><span class="pre">Samples.pad_len</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.trainer.experience_maker.Samples.prompts"><code class="docutils literal notranslate"><span class="pre">Samples.prompts</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.trainer.experience_maker.Samples.response_length"><code class="docutils literal notranslate"><span class="pre">Samples.response_length</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.trainer.experience_maker.Samples.sequences"><code class="docutils literal notranslate"><span class="pre">Samples.sequences</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.trainer.experience_maker.Samples.total_length"><code class="docutils literal notranslate"><span class="pre">Samples.total_length</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#lightrft.trainer.experience_maker.clip_filter_like_weight_func"><code class="docutils literal notranslate"><span class="pre">clip_filter_like_weight_func()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.trainer.experience_maker.pin_memory"><code class="docutils literal notranslate"><span class="pre">pin_memory()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.trainer.experience_maker.to"><code class="docutils literal notranslate"><span class="pre">to()</span></code></a></li>
+</ul>
+</li>
 </ul>
 
             </div>

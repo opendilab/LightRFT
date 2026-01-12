@@ -308,16 +308,343 @@
             <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
               <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
                 
-  <section id="lightrft-strategy-deepspeed-deepspeed">
-<h1>lightrft.strategy.deepspeed.deepspeed<a class="headerlink" href="#lightrft-strategy-deepspeed-deepspeed" title="Permalink to this heading">¶</a></h1>
+  <section id="module-lightrft.strategy.deepspeed.deepspeed">
+<span id="lightrft-strategy-deepspeed-deepspeed"></span><h1>lightrft.strategy.deepspeed.deepspeed<a class="headerlink" href="#module-lightrft.strategy.deepspeed.deepspeed" title="Permalink to this heading">¶</a></h1>
+<p>DeepSpeed Strategy Module for lightrft.</p>
+<p>This module provides a DeepSpeed-based strategy for training and inference in lightrft.
+It handles model initialization, optimization, parameter management, and checkpoint operations
+using DeepSpeed’s distributed training capabilities. The strategy supports various DeepSpeed
+features including ZeRO optimization stages, mixed precision training, and parameter offloading.</p>
 <section id="modeloptimpair">
 <h2>ModelOptimPair<a class="headerlink" href="#modeloptimpair" title="Permalink to this heading">¶</a></h2>
+<dl class="py data">
+<dt class="sig sig-object py" id="lightrft.strategy.deepspeed.deepspeed.ModelOptimPair">
+<span class="sig-prename descclassname"><span class="pre">lightrft.strategy.deepspeed.deepspeed.</span></span><span class="sig-name descname"><span class="pre">ModelOptimPair</span></span><a class="headerlink" href="#lightrft.strategy.deepspeed.deepspeed.ModelOptimPair" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Optimizer</span></code>]</p>
+</dd></dl>
+
 </section>
 <section id="modelormodeloptimpair">
 <h2>ModelOrModelOptimPair<a class="headerlink" href="#modelormodeloptimpair" title="Permalink to this heading">¶</a></h2>
+<dl class="py data">
+<dt class="sig sig-object py" id="lightrft.strategy.deepspeed.deepspeed.ModelOrModelOptimPair">
+<span class="sig-prename descclassname"><span class="pre">lightrft.strategy.deepspeed.deepspeed.</span></span><span class="sig-name descname"><span class="pre">ModelOrModelOptimPair</span></span><a class="headerlink" href="#lightrft.strategy.deepspeed.deepspeed.ModelOrModelOptimPair" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <code class="xref py py-obj docutils literal notranslate"><span class="pre">Union</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Tuple</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Optimizer</span></code>]]</p>
+</dd></dl>
+
 </section>
 <section id="deepspeedstrategy">
 <h2>DeepspeedStrategy<a class="headerlink" href="#deepspeedstrategy" title="Permalink to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="lightrft.strategy.deepspeed.deepspeed.DeepspeedStrategy">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">lightrft.strategy.deepspeed.deepspeed.</span></span><span class="sig-name descname"><span class="pre">DeepspeedStrategy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">42</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_norm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">micro_train_batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zero_stage</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bf16</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/lightrft/strategy/deepspeed/deepspeed.html#DeepspeedStrategy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.deepspeed.deepspeed.DeepspeedStrategy" title="Permalink to this definition">¶</a></dt>
+<dd><p>DeepSpeed implementation of the training strategy.</p>
+<p>Modified from <a class="reference external" href="https://github.com/OpenRLHF/OpenRLHF">https://github.com/OpenRLHF/OpenRLHF</a>, with these changes:
+1. inherits from StrategyBase, add some api
+2. removed ring-attn related code</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>seed</strong> (<em>int</em>) – Random seed for reproducibility</p></li>
+<li><p><strong>max_norm</strong> (<em>float</em>) – Maximum gradient norm for gradient clipping (0.0 means no clipping)</p></li>
+<li><p><strong>micro_train_batch_size</strong> (<em>int</em>) – Batch size for a single GPU/process</p></li>
+<li><p><strong>train_batch_size</strong> (<em>int</em>) – Global batch size across all GPUs/processes</p></li>
+<li><p><strong>zero_stage</strong> (<em>int</em>) – DeepSpeed ZeRO optimization stage (0, 1, 2, or 3)</p></li>
+<li><p><strong>bf16</strong> (<em>bool</em>) – Whether to use bfloat16 precision</p></li>
+<li><p><strong>args</strong> (<em>object</em>) – Additional arguments for configuration</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.deepspeed.deepspeed.DeepspeedStrategy.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">42</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_norm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">micro_train_batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zero_stage</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bf16</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../../_modules/lightrft/strategy/deepspeed/deepspeed.html#DeepspeedStrategy.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.deepspeed.deepspeed.DeepspeedStrategy.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize strategy with common parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>seed</strong> (<em>int</em>) – Random seed for reproducibility</p></li>
+<li><p><strong>max_norm</strong> (<em>float</em>) – Maximum gradient norm for clipping</p></li>
+<li><p><strong>micro_train_batch_size</strong> (<em>int</em>) – Batch size for each training step</p></li>
+<li><p><strong>train_batch_size</strong> (<em>int</em>) – Total batch size for training</p></li>
+<li><p><strong>args</strong> (<em>Any</em>) – Additional configuration arguments</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.deepspeed.deepspeed.DeepspeedStrategy.backward">
+<span class="sig-name descname"><span class="pre">backward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">loss</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.nn.Module</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.optim.Optimizer</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../../_modules/lightrft/strategy/deepspeed/deepspeed.html#DeepspeedStrategy.backward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.deepspeed.deepspeed.DeepspeedStrategy.backward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform backward pass to compute gradients.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>loss</strong> (<em>torch.Tensor</em>) – The loss tensor to backpropagate</p></li>
+<li><p><strong>model</strong> (<em>nn.Module</em>) – The model being trained</p></li>
+<li><p><strong>optimizer</strong> (<em>optim.Optimizer</em>) – The optimizer for the model</p></li>
+<li><p><strong>kwargs</strong> – Additional arguments</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.deepspeed.deepspeed.DeepspeedStrategy.create_optimizer">
+<span class="sig-name descname"><span class="pre">create_optimizer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">torch.optim.Optimizer</span></span></span><a class="reference internal" href="../../../_modules/lightrft/strategy/deepspeed/deepspeed.html#DeepspeedStrategy.create_optimizer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.deepspeed.deepspeed.DeepspeedStrategy.create_optimizer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create an optimizer for the given model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> (<em>nn.Module</em>) – The model to create an optimizer for</p></li>
+<li><p><strong>kwargs</strong> – Additional arguments for the optimizer</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The created optimizer</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Optimizer</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.deepspeed.deepspeed.DeepspeedStrategy.get_ds_eval_config">
+<span class="sig-name descname"><span class="pre">get_ds_eval_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">offload</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/lightrft/strategy/deepspeed/deepspeed.html#DeepspeedStrategy.get_ds_eval_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.deepspeed.deepspeed.DeepspeedStrategy.get_ds_eval_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the DeepSpeed configuration for evaluation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>offload</strong> (<em>bool</em>) – Whether to offload parameters to CPU</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>DeepSpeed configuration dictionary</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.deepspeed.deepspeed.DeepspeedStrategy.get_ds_train_config">
+<span class="sig-name descname"><span class="pre">get_ds_train_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">is_actor</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/lightrft/strategy/deepspeed/deepspeed.html#DeepspeedStrategy.get_ds_train_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.deepspeed.deepspeed.DeepspeedStrategy.get_ds_train_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the DeepSpeed configuration for training.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>is_actor</strong> (<em>bool</em>) – Whether the model is an actor model</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>DeepSpeed configuration dictionary</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.deepspeed.deepspeed.DeepspeedStrategy.init_model_context">
+<span class="sig-name descname"><span class="pre">init_model_context</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/lightrft/strategy/deepspeed/deepspeed.html#DeepspeedStrategy.init_model_context"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.deepspeed.deepspeed.DeepspeedStrategy.init_model_context" title="Permalink to this definition">¶</a></dt>
+<dd><p>Context manager for initializing a model with DeepSpeed configuration.</p>
+<p>This sets up the HfDeepSpeedConfig for use with Hugging Face models.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.deepspeed.deepspeed.DeepspeedStrategy.load_ckpt">
+<span class="sig-name descname"><span class="pre">load_ckpt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">load_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tag</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">load_module_strict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">load_optimizer_states</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">load_lr_scheduler_states</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">load_module_only</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">_kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/lightrft/strategy/deepspeed/deepspeed.html#DeepspeedStrategy.load_ckpt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.deepspeed.deepspeed.DeepspeedStrategy.load_ckpt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load a DeepSpeed model checkpoint from the specified directory.</p>
+<p>This function wraps DeepSpeed’s checkpoint loading functionality with error handling.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> (<em>deepspeed.DeepSpeedEngine</em>) – The DeepSpeed model to load the checkpoint into</p></li>
+<li><p><strong>load_dir</strong> (<em>str</em>) – Directory from which to load the checkpoint</p></li>
+<li><p><strong>tag</strong> (<em>str</em><em>, </em><em>optional</em>) – Optional tag to specify which checkpoint to load</p></li>
+<li><p><strong>load_module_strict</strong> (<em>bool</em><em>, </em><em>default=True</em>) – Whether to strictly enforce that the keys in the model
+state dict match the keys in the checkpoint</p></li>
+<li><p><strong>load_optimizer_states</strong> (<em>bool</em><em>, </em><em>default=True</em>) – Whether to load optimizer states from checkpoint</p></li>
+<li><p><strong>load_lr_scheduler_states</strong> (<em>bool</em><em>, </em><em>default=True</em>) – Whether to load learning rate scheduler states</p></li>
+<li><p><strong>load_module_only</strong> (<em>bool</em><em>, </em><em>default=False</em>) – Whether to load only the module weights and not optimizer or scheduler states</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A tuple containing the checkpoint path and loaded states</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple(str, dict)</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>AssertionError</strong> – If model is not a DeepSpeedEngine</p></li>
+<li><p><strong>Exception</strong> – If loading the checkpoint fails</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.deepspeed.deepspeed.DeepspeedStrategy.load_model">
+<span class="sig-name descname"><span class="pre">load_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.nn.Module</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">map_location</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cpu'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key_replace_fn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../../_modules/lightrft/strategy/deepspeed/deepspeed.html#DeepspeedStrategy.load_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.deepspeed.deepspeed.DeepspeedStrategy.load_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load model weights from a file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> (<em>nn.Module</em>) – The model to load weights into</p></li>
+<li><p><strong>path</strong> (<em>str</em>) – Path to the saved model weights</p></li>
+<li><p><strong>map_location</strong> (<em>str</em><em> or </em><em>torch.device</em>) – Device to load the weights to</p></li>
+<li><p><strong>strict</strong> (<em>bool</em>) – Whether to strictly enforce that the keys in state_dict match the model</p></li>
+<li><p><strong>key_replace_fn</strong> (<em>callable</em>) – Function to modify state dict keys</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.deepspeed.deepspeed.DeepspeedStrategy.moving_average">
+<span class="sig-name descname"><span class="pre">moving_average</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_ema</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.992</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cpu'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/lightrft/strategy/deepspeed/deepspeed.html#DeepspeedStrategy.moving_average"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.deepspeed.deepspeed.DeepspeedStrategy.moving_average" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update model_ema parameters with exponential moving average of model parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> (<em>nn.Module</em>) – Source model</p></li>
+<li><p><strong>model_ema</strong> (<em>nn.Module</em>) – Target model for EMA</p></li>
+<li><p><strong>beta</strong> (<em>float</em>) – EMA decay factor</p></li>
+<li><p><strong>device</strong> (<em>str</em>) – Device to perform operations on</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.deepspeed.deepspeed.DeepspeedStrategy.optimizer_step">
+<span class="sig-name descname"><span class="pre">optimizer_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">optimizer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.optim.Optimizer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.nn.Module</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scheduler</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'model'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../../_modules/lightrft/strategy/deepspeed/deepspeed.html#DeepspeedStrategy.optimizer_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.deepspeed.deepspeed.DeepspeedStrategy.optimizer_step" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform an optimization step.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>optimizer</strong> (<em>optim.Optimizer</em>) – The optimizer to step</p></li>
+<li><p><strong>model</strong> (<em>nn.Module</em>) – The model being trained</p></li>
+<li><p><strong>scheduler</strong> – The learning rate scheduler</p></li>
+<li><p><strong>name</strong> (<em>str</em>) – Name identifier for the model</p></li>
+<li><p><strong>kwargs</strong> – Additional arguments</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.deepspeed.deepspeed.DeepspeedStrategy.prepare">
+<span class="sig-name descname"><span class="pre">prepare</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">models_or_model_optim_pairs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.nn.Module</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">torch.nn.Module</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">torch.optim.Optimizer</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_rlhf</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">torch.nn.Module</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">torch.nn.Module</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">torch.optim.Optimizer</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">torch.nn.Module</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">torch.nn.Module</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">torch.optim.Optimizer</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/lightrft/strategy/deepspeed/deepspeed.html#DeepspeedStrategy.prepare"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.deepspeed.deepspeed.DeepspeedStrategy.prepare" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prepare models and optimizers for DeepSpeed training.</p>
+<p>Expected input format for RLHF:
+tuple: ((actor, actor_optim, actor_scheduler),</p>
+<blockquote>
+<div><p>(critic, critic_optim, critic_scheduler),
+reward_models,
+initial_model)</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>models_or_model_optim_pairs</strong> – Models or (model, optimizer, scheduler) tuples</p></li>
+<li><p><strong>is_rlhf</strong> (<em>bool</em>) – Whether this is for RLHF training</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Prepared models or model-optimizer pairs</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Union[List[ModelOrModelOptimPair], ModelOrModelOptimPair]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.deepspeed.deepspeed.DeepspeedStrategy.prepare_reward_models">
+<span class="sig-name descname"><span class="pre">prepare_reward_models</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reward_models</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/lightrft/strategy/deepspeed/deepspeed.html#DeepspeedStrategy.prepare_reward_models"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.deepspeed.deepspeed.DeepspeedStrategy.prepare_reward_models" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prepare reward models for DeepSpeed evaluation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>reward_models</strong> (<em>List</em><em>[</em><em>nn.Module</em><em>]</em>) – List of reward models to prepare</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>List of prepared reward models</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List[nn.Module]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.deepspeed.deepspeed.DeepspeedStrategy.save_ckpt">
+<span class="sig-name descname"><span class="pre">save_ckpt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tag</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_num</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_mem</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">client_state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_latest</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">_kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/lightrft/strategy/deepspeed/deepspeed.html#DeepspeedStrategy.save_ckpt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.deepspeed.deepspeed.DeepspeedStrategy.save_ckpt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save a DeepSpeed model checkpoint with automatic management of checkpoint storage.</p>
+<p>This function manages checkpoint storage by limiting the number of checkpoints and total
+storage size. It automatically removes the oldest checkpoints when limits are exceeded.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> (<em>deepspeed.DeepSpeedEngine</em>) – The DeepSpeed model to save</p></li>
+<li><p><strong>save_dir</strong> (<em>str</em>) – Directory where checkpoints will be saved</p></li>
+<li><p><strong>tag</strong> (<em>str</em><em>, </em><em>optional</em>) – Optional tag for the checkpoint (e.g., iteration number)</p></li>
+<li><p><strong>max_num</strong> (<em>int</em><em>, </em><em>default=3</em>) – Maximum number of checkpoints to keep</p></li>
+<li><p><strong>max_mem</strong> (<em>int</em><em>, </em><em>default=1000</em>) – Maximum storage size for checkpoints in GB</p></li>
+<li><p><strong>client_state</strong> (<em>dict</em><em>, </em><em>default={}</em>) – Additional client state to save with the checkpoint</p></li>
+<li><p><strong>save_latest</strong> (<em>bool</em><em>, </em><em>default=True</em>) – Whether to save a symbolic link to the latest checkpoint</p></li>
+<li><p><strong>_kwargs</strong> – dict, not used keys, e.g. optimizer, scheduler</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>AssertionError</strong> – If model is not a DeepSpeedEngine</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.deepspeed.deepspeed.DeepspeedStrategy.save_model">
+<span class="sig-name descname"><span class="pre">save_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.nn.Module</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tokenizer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_dir</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../../_modules/lightrft/strategy/deepspeed/deepspeed.html#DeepspeedStrategy.save_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.deepspeed.deepspeed.DeepspeedStrategy.save_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save a model, its configuration, and tokenizer to the specified output directory.</p>
+<p>Handles special cases for DeepSpeed ZeRO-2/3 parameters and PEFT models. For ZeRO parallelism,
+it gathers distributed parameters before saving. For PEFT models, it saves adapter weights
+appropriately based on the DeepSpeed stage.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> (<em>nn.Module</em>) – The model to save</p></li>
+<li><p><strong>tokenizer</strong> (<em>PreTrainedTokenizer</em><em> or </em><em>similar</em>) – The tokenizer to save</p></li>
+<li><p><strong>output_dir</strong> (<em>str</em>) – Directory where the model, config, and tokenizer will be saved</p></li>
+<li><p><strong>kwargs</strong> – Additional arguments to pass to the model’s save_pretrained method</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.deepspeed.deepspeed.DeepspeedStrategy.unwrap_model">
+<span class="sig-name descname"><span class="pre">unwrap_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">torch.nn.Module</span></span></span><a class="reference internal" href="../../../_modules/lightrft/strategy/deepspeed/deepspeed.html#DeepspeedStrategy.unwrap_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.deepspeed.deepspeed.DeepspeedStrategy.unwrap_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Unwrap the model from any wrappers to access the base model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>model</strong> (<em>nn.Module</em>) – The model to unwrap</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The unwrapped model</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>nn.Module</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 </section>
 
@@ -365,9 +692,35 @@
             <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
               <ul>
 <li><a class="reference internal" href="#">lightrft.strategy.deepspeed.deepspeed</a><ul>
-<li><a class="reference internal" href="#modeloptimpair">ModelOptimPair</a></li>
-<li><a class="reference internal" href="#modelormodeloptimpair">ModelOrModelOptimPair</a></li>
-<li><a class="reference internal" href="#deepspeedstrategy">DeepspeedStrategy</a></li>
+<li><a class="reference internal" href="#modeloptimpair">ModelOptimPair</a><ul>
+<li><a class="reference internal" href="#lightrft.strategy.deepspeed.deepspeed.ModelOptimPair"><code class="docutils literal notranslate"><span class="pre">ModelOptimPair</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#modelormodeloptimpair">ModelOrModelOptimPair</a><ul>
+<li><a class="reference internal" href="#lightrft.strategy.deepspeed.deepspeed.ModelOrModelOptimPair"><code class="docutils literal notranslate"><span class="pre">ModelOrModelOptimPair</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#deepspeedstrategy">DeepspeedStrategy</a><ul>
+<li><a class="reference internal" href="#lightrft.strategy.deepspeed.deepspeed.DeepspeedStrategy"><code class="docutils literal notranslate"><span class="pre">DeepspeedStrategy</span></code></a><ul>
+<li><a class="reference internal" href="#lightrft.strategy.deepspeed.deepspeed.DeepspeedStrategy.__init__"><code class="docutils literal notranslate"><span class="pre">DeepspeedStrategy.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.deepspeed.deepspeed.DeepspeedStrategy.backward"><code class="docutils literal notranslate"><span class="pre">DeepspeedStrategy.backward()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.deepspeed.deepspeed.DeepspeedStrategy.create_optimizer"><code class="docutils literal notranslate"><span class="pre">DeepspeedStrategy.create_optimizer()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.deepspeed.deepspeed.DeepspeedStrategy.get_ds_eval_config"><code class="docutils literal notranslate"><span class="pre">DeepspeedStrategy.get_ds_eval_config()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.deepspeed.deepspeed.DeepspeedStrategy.get_ds_train_config"><code class="docutils literal notranslate"><span class="pre">DeepspeedStrategy.get_ds_train_config()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.deepspeed.deepspeed.DeepspeedStrategy.init_model_context"><code class="docutils literal notranslate"><span class="pre">DeepspeedStrategy.init_model_context()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.deepspeed.deepspeed.DeepspeedStrategy.load_ckpt"><code class="docutils literal notranslate"><span class="pre">DeepspeedStrategy.load_ckpt()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.deepspeed.deepspeed.DeepspeedStrategy.load_model"><code class="docutils literal notranslate"><span class="pre">DeepspeedStrategy.load_model()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.deepspeed.deepspeed.DeepspeedStrategy.moving_average"><code class="docutils literal notranslate"><span class="pre">DeepspeedStrategy.moving_average()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.deepspeed.deepspeed.DeepspeedStrategy.optimizer_step"><code class="docutils literal notranslate"><span class="pre">DeepspeedStrategy.optimizer_step()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.deepspeed.deepspeed.DeepspeedStrategy.prepare"><code class="docutils literal notranslate"><span class="pre">DeepspeedStrategy.prepare()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.deepspeed.deepspeed.DeepspeedStrategy.prepare_reward_models"><code class="docutils literal notranslate"><span class="pre">DeepspeedStrategy.prepare_reward_models()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.deepspeed.deepspeed.DeepspeedStrategy.save_ckpt"><code class="docutils literal notranslate"><span class="pre">DeepspeedStrategy.save_ckpt()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.deepspeed.deepspeed.DeepspeedStrategy.save_model"><code class="docutils literal notranslate"><span class="pre">DeepspeedStrategy.save_model()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.deepspeed.deepspeed.DeepspeedStrategy.unwrap_model"><code class="docutils literal notranslate"><span class="pre">DeepspeedStrategy.unwrap_model()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

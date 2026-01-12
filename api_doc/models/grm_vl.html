@@ -306,8 +306,166 @@
             <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
               <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
                 
-  <section id="lightrft-models-grm-vl">
-<h1>lightrft.models.grm_vl<a class="headerlink" href="#lightrft-models-grm-vl" title="Permalink to this heading">¶</a></h1>
+  <section id="module-lightrft.models.grm_vl">
+<span id="lightrft-models-grm-vl"></span><h1>lightrft.models.grm_vl<a class="headerlink" href="#module-lightrft.models.grm_vl" title="Permalink to this heading">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="lightrft.models.grm_vl.GenerativeRewardModelVL">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">lightrft.models.grm_vl.</span></span><span class="sig-name descname"><span class="pre">GenerativeRewardModelVL</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/models/grm_vl.html#GenerativeRewardModelVL"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.models.grm_vl.GenerativeRewardModelVL" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>Generative reward model for reinforcement learning applications.</p>
+<p>This class wraps a pretrained vision-language model to serve as a generative reward model,
+which are capable of processing both textual and visual inputs, and generating textual outputs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pretrain_or_model</strong> (<em>Union</em><em>[</em><em>str</em><em>, </em><em>nn.Module</em><em>]</em>) – Either a string path to a pretrained model or a model instance</p></li>
+<li><p><strong>use_flash_attention_2</strong> (<em>bool</em>) – Whether to utilize Flash Attention 2.0 for improved performance</p></li>
+<li><p><strong>bf16</strong> (<em>bool</em>) – Enable bfloat16 precision for model computations</p></li>
+<li><p><strong>lora_rank</strong> (<em>int</em>) – Rank for LoRA adaptation (0 disables LoRA)</p></li>
+<li><p><strong>lora_alpha</strong> (<em>int</em>) – Alpha parameter for LoRA scaling</p></li>
+<li><p><strong>lora_dropout</strong> (<em>float</em>) – Dropout rate for LoRA layers</p></li>
+<li><p><strong>target_modules</strong> (<em>Optional</em><em>[</em><em>list</em><em>]</em>) – List of target modules for applying LoRA (auto-detected if None)</p></li>
+<li><p><strong>ds_config</strong> (<em>Optional</em><em>[</em><em>dict</em><em>]</em>) – Configuration for DeepSpeed distributed training</p></li>
+<li><p><strong>device_map</strong> (<em>Optional</em><em>[</em><em>dict</em><em>]</em>) – Device mapping for loading the model onto specific devices</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.models.grm_vl.GenerativeRewardModelVL.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sequences</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.LongTensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attention_mask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pixel_values</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">image_grid_thw</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pixel_values_videos</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">video_grid_thw</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_outputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">transformers.modeling_outputs.ModelOutput</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">torch.Tensor</span></span></span><a class="reference internal" href="../../_modules/lightrft/models/grm_vl.html#GenerativeRewardModelVL.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.models.grm_vl.GenerativeRewardModelVL.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>The forward pass takes sequences and visual content (if exists) as input and returns the model output.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sequences</strong> (<em>torch.LongTensor</em>) – Input token sequences</p></li>
+<li><p><strong>attention_mask</strong> (<em>Optional</em><em>[</em><em>torch.Tensor</em><em>]</em>) – Attention mask for the sequences</p></li>
+<li><p><strong>labels</strong> (<em>Optional</em><em>[</em><em>torch.Tensor</em><em>]</em>) – Target labels for computing loss</p></li>
+<li><p><strong>pixel_values</strong> (<em>torch.Tensor</em>) – Preprocessed pixel values of input images</p></li>
+<li><p><strong>image_grid_thw</strong> (<em>torch.Tensor</em>) – Image grid dimensions (time, height, width)</p></li>
+<li><p><strong>pixel_values_videos</strong> (<em>torch.Tensor</em>) – Preprocessed pixel values of input videos</p></li>
+<li><p><strong>video_grid_thw</strong> (<em>torch.Tensor</em>) – Video grid dimensions (time, height, width)</p></li>
+<li><p><strong>return_output</strong> (<em>bool</em>) – Whether to return the full model output along with log probs</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Model output or logits based on return_outputs flag</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Union[ModelOutput, torch.Tensor]</p>
+</dd>
+</dl>
+<p><strong>Example:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Coumpute logits from sequences and visual inputs</span>
+<span class="n">logits</span> <span class="o">=</span> <span class="n">reward_model</span><span class="p">(</span>
+    <span class="n">sequences</span><span class="o">=</span><span class="n">input_ids</span><span class="p">,</span>
+    <span class="n">attention_mask</span><span class="o">=</span><span class="n">attention_mask</span><span class="p">,</span>
+    <span class="n">pixel_values</span><span class="o">=</span><span class="n">pixel_values</span><span class="p">,</span>
+    <span class="n">image_grid_thw</span><span class="o">=</span><span class="n">image_grid_thw</span><span class="p">,</span>
+    <span class="n">pixel_values_videos</span><span class="o">=</span><span class="n">pixel_values_videos</span><span class="p">,</span>
+    <span class="n">video_grid_thw</span><span class="o">=</span><span class="n">video_grid_thw</span><span class="p">,</span>
+    <span class="n">return_outputs</span><span class="o">=</span><span class="kc">False</span>
+<span class="p">)</span>
+
+<span class="c1"># Get full model output including loss</span>
+<span class="n">outputs</span> <span class="o">=</span> <span class="n">reward_model</span><span class="p">(</span>
+    <span class="n">sequences</span><span class="o">=</span><span class="n">input_ids</span><span class="p">,</span>
+    <span class="n">attention_mask</span><span class="o">=</span><span class="n">attention_mask</span><span class="p">,</span>
+    <span class="n">labels</span><span class="o">=</span><span class="n">labels</span><span class="p">,</span>
+    <span class="n">pixel_values</span><span class="o">=</span><span class="n">pixel_values</span><span class="p">,</span>
+    <span class="n">image_grid_thw</span><span class="o">=</span><span class="n">image_grid_thw</span><span class="p">,</span>
+    <span class="n">pixel_values_videos</span><span class="o">=</span><span class="n">pixel_values_videos</span><span class="p">,</span>
+    <span class="n">video_grid_thw</span><span class="o">=</span><span class="n">video_grid_thw</span><span class="p">,</span>
+    <span class="n">return_outputs</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.models.grm_vl.GenerativeRewardModelVL.generate">
+<span class="sig-name descname"><span class="pre">generate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_ids</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attention_mask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pixel_values</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">image_grid_thw</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pixel_values_videos</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">video_grid_thw</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_new_tokens</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">do_sample</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">temperature</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">top_k</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">top_p</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_beams</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">transformers.modeling_outputs.ModelOutput</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">torch.LongTensor</span></span></span><a class="headerlink" href="#lightrft.models.grm_vl.GenerativeRewardModelVL.generate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate text sequences based on input text and visual information.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_ids</strong> (<em>torch.Tensor</em>) – Input token IDs representing the text prompt</p></li>
+<li><p><strong>attention_mask</strong> (<em>Optional</em><em>[</em><em>torch.Tensor</em><em>]</em>) – Attention mask for the sequences</p></li>
+<li><p><strong>pixel_values</strong> (<em>torch.Tensor</em>) – Preprocessed pixel values of input images</p></li>
+<li><p><strong>image_grid_thw</strong> (<em>torch.Tensor</em>) – Image grid dimensions (time, height, width)</p></li>
+<li><p><strong>pixel_values_videos</strong> (<em>torch.Tensor</em>) – Preprocessed pixel values of input videos</p></li>
+<li><p><strong>video_grid_thw</strong> (<em>torch.Tensor</em>) – Video grid dimensions (time, height, width)</p></li>
+<li><p><strong>max_new_tokens</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – Maximum number of new tokens to generate</p></li>
+<li><p><strong>do_sample</strong> (<em>bool</em>) – Whether to use sampling for generation</p></li>
+<li><p><strong>temperature</strong> (<em>float</em>) – The value used to module the next token probabilities</p></li>
+<li><p><strong>top_k</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – The number of highest probability vocabulary tokens to keep for top-k-filtering</p></li>
+<li><p><strong>top_p</strong> (<em>Optional</em><em>[</em><em>float</em><em>]</em>) – If set to float &lt; 1, only the smallest set of most probable tokens with probabilities
+that add up to top_p or higher are kept for generation</p></li>
+<li><p><strong>num_beams</strong> (<em>int</em>) – Number of beams for beam search</p></li>
+<li><p><strong>kwargs</strong> (<em>dict</em>) – Additional generation parameters</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Generated sequences</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Union[ModelOutput, torch.LongTensor]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.models.grm_vl.GenerativeRewardModelVL.gradient_checkpointing_disable">
+<span class="sig-name descname"><span class="pre">gradient_checkpointing_disable</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/models/grm_vl.html#GenerativeRewardModelVL.gradient_checkpointing_disable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.models.grm_vl.GenerativeRewardModelVL.gradient_checkpointing_disable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Disable gradient checkpointing to use normal forward/backward computation.</p>
+<p>This method restores the default behavior where all intermediate activations
+are stored during the forward pass for use in the backward pass. This increases
+memory usage but reduces computation time.</p>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Disable gradient checkpointing</span>
+<span class="n">actor</span><span class="o">.</span><span class="n">gradient_checkpointing_disable</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.models.grm_vl.GenerativeRewardModelVL.gradient_checkpointing_enable">
+<span class="sig-name descname"><span class="pre">gradient_checkpointing_enable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gradient_checkpointing_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{'use_reentrant':</span> <span class="pre">False}</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/models/grm_vl.html#GenerativeRewardModelVL.gradient_checkpointing_enable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.models.grm_vl.GenerativeRewardModelVL.gradient_checkpointing_enable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Enable gradient checkpointing to reduce memory usage during training.</p>
+<p>Gradient checkpointing trades compute for memory by recomputing intermediate
+activations during the backward pass instead of storing them. This is particularly
+useful for training large vision-language models with limited GPU memory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>gradient_checkpointing_kwargs</strong> (<em>dict</em>) – Additional arguments for gradient checkpointing</p>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Enable gradient checkpointing with default settings</span>
+<span class="n">actor</span><span class="o">.</span><span class="n">gradient_checkpointing_enable</span><span class="p">()</span>
+
+<span class="c1"># Enable with custom settings</span>
+<span class="n">actor</span><span class="o">.</span><span class="n">gradient_checkpointing_enable</span><span class="p">({</span><span class="s2">&quot;use_reentrant&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">})</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.models.grm_vl.GenerativeRewardModelVL.print_trainable_parameters">
+<span class="sig-name descname"><span class="pre">print_trainable_parameters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/models/grm_vl.html#GenerativeRewardModelVL.print_trainable_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.models.grm_vl.GenerativeRewardModelVL.print_trainable_parameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print information about trainable parameters in the model.</p>
+<p>This method displays the number and percentage of trainable parameters,
+which is particularly useful when using parameter-efficient methods like LoRA.
+It helps monitor the efficiency of the fine-tuning approach.</p>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Print trainable parameter statistics</span>
+<span class="n">actor</span><span class="o">.</span><span class="n">print_trainable_parameters</span><span class="p">()</span>
+<span class="c1"># Output: trainable params: 4,194,304 || all params: 7,241,732,096 || trainable%: 0.058</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 
 
@@ -353,7 +511,17 @@
           <div class="pytorch-right-menu" id="pytorch-right-menu">
             <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
               <ul>
-<li><a class="reference internal" href="#">lightrft.models.grm_vl</a></li>
+<li><a class="reference internal" href="#">lightrft.models.grm_vl</a><ul>
+<li><a class="reference internal" href="#lightrft.models.grm_vl.GenerativeRewardModelVL"><code class="docutils literal notranslate"><span class="pre">GenerativeRewardModelVL</span></code></a><ul>
+<li><a class="reference internal" href="#lightrft.models.grm_vl.GenerativeRewardModelVL.forward"><code class="docutils literal notranslate"><span class="pre">GenerativeRewardModelVL.forward()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.models.grm_vl.GenerativeRewardModelVL.generate"><code class="docutils literal notranslate"><span class="pre">GenerativeRewardModelVL.generate()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.models.grm_vl.GenerativeRewardModelVL.gradient_checkpointing_disable"><code class="docutils literal notranslate"><span class="pre">GenerativeRewardModelVL.gradient_checkpointing_disable()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.models.grm_vl.GenerativeRewardModelVL.gradient_checkpointing_enable"><code class="docutils literal notranslate"><span class="pre">GenerativeRewardModelVL.gradient_checkpointing_enable()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.models.grm_vl.GenerativeRewardModelVL.print_trainable_parameters"><code class="docutils literal notranslate"><span class="pre">GenerativeRewardModelVL.print_trainable_parameters()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 
             </div>

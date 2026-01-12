@@ -306,19 +306,176 @@
             <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
               <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
                 
-  <section id="lightrft-utils-utils">
-<h1>lightrft.utils.utils<a class="headerlink" href="#lightrft-utils-utils" title="Permalink to this heading">¶</a></h1>
+  <section id="module-lightrft.utils.utils">
+<span id="lightrft-utils-utils"></span><h1>lightrft.utils.utils<a class="headerlink" href="#module-lightrft.utils.utils" title="Permalink to this heading">¶</a></h1>
 <section id="get-current-device">
 <h2>get_current_device<a class="headerlink" href="#get-current-device" title="Permalink to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="lightrft.utils.utils.get_current_device">
+<span class="sig-prename descclassname"><span class="pre">lightrft.utils.utils.</span></span><span class="sig-name descname"><span class="pre">get_current_device</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_device_per_node</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">torch.device</span></span></span><a class="reference internal" href="../../_modules/lightrft/utils/utils.html#get_current_device"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.utils.utils.get_current_device" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the current CUDA device.</p>
+<p>This function provides a convenient way to get the current CUDA device
+being used by PyTorch.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>num_device_per_node</strong> (<em>int</em>) – Number of devices per node for distributed training</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Current CUDA device</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.device</p>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">device</span> <span class="o">=</span> <span class="n">get_current_device</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
 </section>
 <section id="print-rank-0">
 <h2>print_rank_0<a class="headerlink" href="#print-rank-0" title="Permalink to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="lightrft.utils.utils.print_rank_0">
+<span class="sig-prename descclassname"><span class="pre">lightrft.utils.utils.</span></span><span class="sig-name descname"><span class="pre">print_rank_0</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msg</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/utils/utils.html#print_rank_0"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.utils.utils.print_rank_0" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prints message only from rank 0 process in distributed training.</p>
+<p>This function helps avoid duplicate prints in multi-GPU training by
+only printing from the main process (rank 0).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>msg</strong> (<em>str</em>) – The message to print</p></li>
+<li><p><strong>args</strong> – Additional positional arguments to include in the message</p></li>
+<li><p><strong>kwargs</strong> – Additional keyword arguments to include in the message</p></li>
+</ul>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">print_rank_0</span><span class="p">(</span><span class="s2">&quot;Training started&quot;</span><span class="p">,</span> <span class="n">epoch</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
 </section>
 <section id="get-torch-profiler">
 <h2>get_torch_profiler<a class="headerlink" href="#get-torch-profiler" title="Permalink to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="lightrft.utils.utils.get_torch_profiler">
+<span class="sig-prename descclassname"><span class="pre">lightrft.utils.utils.</span></span><span class="sig-name descname"><span class="pre">get_torch_profiler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">warmup</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">active</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">repeat</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/utils/utils.html#get_torch_profiler"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.utils.utils.get_torch_profiler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates and returns a PyTorch profiler configured for distributed training.</p>
+<p>This function returns a properly configured PyTorch profiler for the current process.
+For rank 0 process, it returns a full-featured profiler that records CPU and CUDA activities.
+For other ranks, it returns a dummy profiler that does nothing.</p>
+<p>For more details on PyTorch Profiler, see: <a class="reference external" href="https://docs.pytorch.org/docs/stable/profiler.html">https://docs.pytorch.org/docs/stable/profiler.html</a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>output_file</strong> (<em>str</em>) – Path where profiling results will be saved (only for rank 0)</p></li>
+<li><p><strong>warmup</strong> (<em>int</em>) – Number of steps to wait before profiling starts</p></li>
+<li><p><strong>active</strong> (<em>int</em>) – Number of steps with active profiling</p></li>
+<li><p><strong>repeat</strong> (<em>int</em>) – Number of times to repeat the profiling cycle</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A PyTorch profiler object or a dummy profiler</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.profiler.profile or <a class="reference internal" href="#lightrft.utils.utils.DummyProfile" title="lightrft.utils.utils.DummyProfile">DummyProfile</a></p>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">get_torch_profiler</span><span class="p">(</span><span class="s2">&quot;./profiler_output&quot;</span><span class="p">,</span> <span class="n">warmup</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">active</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span> <span class="k">as</span> <span class="n">prof</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">):</span>
+<span class="gp">&gt;&gt;&gt; </span>        <span class="n">train_step</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span>        <span class="n">prof</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd></dl>
+
 </section>
 <section id="dummyprofile">
 <h2>DummyProfile<a class="headerlink" href="#dummyprofile" title="Permalink to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="lightrft.utils.utils.DummyProfile">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">lightrft.utils.utils.</span></span><span class="sig-name descname"><span class="pre">DummyProfile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/utils/utils.html#DummyProfile"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.utils.utils.DummyProfile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dummy Profile class that mimics the PyTorch profiler API but does nothing.</p>
+<p>This class is used as a placeholder for non-rank-0 processes where profiling
+is not needed, allowing the same code to be used across all processes without
+conditional branches.</p>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">prof</span> <span class="o">=</span> <span class="n">DummyProfile</span><span class="p">()</span> <span class="k">if</span> <span class="n">rank</span> <span class="o">!=</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">torch</span><span class="o">.</span><span class="n">profiler</span><span class="o">.</span><span class="n">profile</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">prof</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="c1"># code to be profiled</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.utils.utils.DummyProfile.__enter__">
+<span class="sig-name descname"><span class="pre">__enter__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/utils/utils.html#DummyProfile.__enter__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.utils.utils.DummyProfile.__enter__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Context manager entry method.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Self instance</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#lightrft.utils.utils.DummyProfile" title="lightrft.utils.utils.DummyProfile">DummyProfile</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.utils.utils.DummyProfile.__exit__">
+<span class="sig-name descname"><span class="pre">__exit__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">c</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/utils/utils.html#DummyProfile.__exit__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.utils.utils.DummyProfile.__exit__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Context manager exit method.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>a</strong> – Exception type</p></li>
+<li><p><strong>b</strong> – Exception value</p></li>
+<li><p><strong>c</strong> – Exception traceback</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.utils.utils.DummyProfile.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/lightrft/utils/utils.html#DummyProfile.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.utils.utils.DummyProfile.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize a dummy profiler instance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>args</strong> – Positional arguments (ignored)</p></li>
+<li><p><strong>kwargs</strong> – Keyword arguments (ignored)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.utils.utils.DummyProfile.start">
+<span class="sig-name descname"><span class="pre">start</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/utils/utils.html#DummyProfile.start"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.utils.utils.DummyProfile.start" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dummy implementation of the profiler start method.
+Does nothing.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.utils.utils.DummyProfile.step">
+<span class="sig-name descname"><span class="pre">step</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/utils/utils.html#DummyProfile.step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.utils.utils.DummyProfile.step" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dummy implementation of the profiler step method.
+Does nothing.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.utils.utils.DummyProfile.stop">
+<span class="sig-name descname"><span class="pre">stop</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/utils/utils.html#DummyProfile.stop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.utils.utils.DummyProfile.stop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dummy implementation of the profiler stop method.
+Does nothing.</p>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 </section>
 
@@ -366,10 +523,30 @@
             <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
               <ul>
 <li><a class="reference internal" href="#">lightrft.utils.utils</a><ul>
-<li><a class="reference internal" href="#get-current-device">get_current_device</a></li>
-<li><a class="reference internal" href="#print-rank-0">print_rank_0</a></li>
-<li><a class="reference internal" href="#get-torch-profiler">get_torch_profiler</a></li>
-<li><a class="reference internal" href="#dummyprofile">DummyProfile</a></li>
+<li><a class="reference internal" href="#get-current-device">get_current_device</a><ul>
+<li><a class="reference internal" href="#lightrft.utils.utils.get_current_device"><code class="docutils literal notranslate"><span class="pre">get_current_device()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#print-rank-0">print_rank_0</a><ul>
+<li><a class="reference internal" href="#lightrft.utils.utils.print_rank_0"><code class="docutils literal notranslate"><span class="pre">print_rank_0()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#get-torch-profiler">get_torch_profiler</a><ul>
+<li><a class="reference internal" href="#lightrft.utils.utils.get_torch_profiler"><code class="docutils literal notranslate"><span class="pre">get_torch_profiler()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#dummyprofile">DummyProfile</a><ul>
+<li><a class="reference internal" href="#lightrft.utils.utils.DummyProfile"><code class="docutils literal notranslate"><span class="pre">DummyProfile</span></code></a><ul>
+<li><a class="reference internal" href="#lightrft.utils.utils.DummyProfile.__enter__"><code class="docutils literal notranslate"><span class="pre">DummyProfile.__enter__()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.utils.utils.DummyProfile.__exit__"><code class="docutils literal notranslate"><span class="pre">DummyProfile.__exit__()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.utils.utils.DummyProfile.__init__"><code class="docutils literal notranslate"><span class="pre">DummyProfile.__init__()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.utils.utils.DummyProfile.start"><code class="docutils literal notranslate"><span class="pre">DummyProfile.start()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.utils.utils.DummyProfile.step"><code class="docutils literal notranslate"><span class="pre">DummyProfile.step()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.utils.utils.DummyProfile.stop"><code class="docutils literal notranslate"><span class="pre">DummyProfile.stop()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

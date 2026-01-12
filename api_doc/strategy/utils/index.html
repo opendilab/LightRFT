@@ -306,44 +306,101 @@
             <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
               <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
                 
-  <section id="lightrft-strategy-utils">
-<h1>lightrft.strategy.utils<a class="headerlink" href="#lightrft-strategy-utils" title="Permalink to this heading">¶</a></h1>
+  <section id="module-lightrft.strategy.utils">
+<span id="lightrft-strategy-utils"></span><h1>lightrft.strategy.utils<a class="headerlink" href="#module-lightrft.strategy.utils" title="Permalink to this heading">¶</a></h1>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="broadcast_utils.html">lightrft.strategy.utils.broadcast_utils</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="broadcast_utils.html#broadcastmanager">BroadcastManager</a></li>
+<li class="toctree-l2"><a class="reference internal" href="broadcast_utils.html#broadcastmanager">BroadcastManager</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="broadcast_utils.html#lightrft.strategy.utils.broadcast_utils.BroadcastManager"><code class="docutils literal notranslate"><span class="pre">BroadcastManager</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="ckpt_utils.html">lightrft.strategy.utils.ckpt_utils</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="ckpt_utils.html#find-latest-checkpoint-dir">find_latest_checkpoint_dir</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ckpt_utils.html#find-latest-checkpoint-dir">find_latest_checkpoint_dir</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="ckpt_utils.html#lightrft.strategy.utils.ckpt_utils.find_latest_checkpoint_dir"><code class="docutils literal notranslate"><span class="pre">find_latest_checkpoint_dir()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="data_utils.html">lightrft.strategy.utils.data_utils</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="data_utils.html#distributedsampler">DistributedSampler</a></li>
+<li class="toctree-l2"><a class="reference internal" href="data_utils.html#distributedsampler">DistributedSampler</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="data_utils.html#lightrft.strategy.utils.data_utils.DistributedSampler"><code class="docutils literal notranslate"><span class="pre">DistributedSampler</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="distributed_util.html">lightrft.strategy.utils.distributed_util</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="distributed_util.html">lightrft.strategy.utils.distributed_util</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="distributed_util.html#lightrft.strategy.utils.distributed_util.all_gather_all_prompt_token_ids"><code class="docutils literal notranslate"><span class="pre">all_gather_all_prompt_token_ids()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="distributed_util.html#lightrft.strategy.utils.distributed_util.create_sub_group"><code class="docutils literal notranslate"><span class="pre">create_sub_group()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="distributed_util.html#lightrft.strategy.utils.distributed_util.gather_inputs_object_for_inference"><code class="docutils literal notranslate"><span class="pre">gather_inputs_object_for_inference()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="distributed_util.html#lightrft.strategy.utils.distributed_util.init_process_group"><code class="docutils literal notranslate"><span class="pre">init_process_group()</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="optimizer_utils.html">lightrft.strategy.utils.optimizer_utils</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="optimizer_utils.html#default-no-decay-name-list">_DEFAULT_NO_DECAY_NAME_LIST</a></li>
-<li class="toctree-l2"><a class="reference internal" href="optimizer_utils.html#get-optimizer-grouped-parameters">get_optimizer_grouped_parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="optimizer_utils.html#default-no-decay-name-list">_DEFAULT_NO_DECAY_NAME_LIST</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="optimizer_utils.html#lightrft.strategy.utils.optimizer_utils._DEFAULT_NO_DECAY_NAME_LIST"><code class="docutils literal notranslate"><span class="pre">_DEFAULT_NO_DECAY_NAME_LIST</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="optimizer_utils.html#get-optimizer-grouped-parameters">get_optimizer_grouped_parameters</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="optimizer_utils.html#lightrft.strategy.utils.optimizer_utils.get_optimizer_grouped_parameters"><code class="docutils literal notranslate"><span class="pre">get_optimizer_grouped_parameters()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="parallel_utils.html">lightrft.strategy.utils.parallel_utils</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="parallel_utils.html#set-sequence-parallel-group">set_sequence_parallel_group</a></li>
-<li class="toctree-l2"><a class="reference internal" href="parallel_utils.html#get-sequence-parallel-group">get_sequence_parallel_group</a></li>
-<li class="toctree-l2"><a class="reference internal" href="parallel_utils.html#get-sequence-parallel-world-size">get_sequence_parallel_world_size</a></li>
-<li class="toctree-l2"><a class="reference internal" href="parallel_utils.html#get-sequence-parallel-rank">get_sequence_parallel_rank</a></li>
-<li class="toctree-l2"><a class="reference internal" href="parallel_utils.html#spdataprocessor">SPDataProcessor</a></li>
-<li class="toctree-l2"><a class="reference internal" href="parallel_utils.html#sp-slice-and-pad-input">sp_slice_and_pad_input</a></li>
-<li class="toctree-l2"><a class="reference internal" href="parallel_utils.html#gather-forward-split-backward-and-unpad">gather_forward_split_backward_and_unpad</a></li>
+<li class="toctree-l2"><a class="reference internal" href="parallel_utils.html#set-sequence-parallel-group">set_sequence_parallel_group</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="parallel_utils.html#lightrft.strategy.utils.parallel_utils.set_sequence_parallel_group"><code class="docutils literal notranslate"><span class="pre">set_sequence_parallel_group()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="parallel_utils.html#get-sequence-parallel-group">get_sequence_parallel_group</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="parallel_utils.html#lightrft.strategy.utils.parallel_utils.get_sequence_parallel_group"><code class="docutils literal notranslate"><span class="pre">get_sequence_parallel_group()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="parallel_utils.html#get-sequence-parallel-world-size">get_sequence_parallel_world_size</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="parallel_utils.html#lightrft.strategy.utils.parallel_utils.get_sequence_parallel_world_size"><code class="docutils literal notranslate"><span class="pre">get_sequence_parallel_world_size()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="parallel_utils.html#get-sequence-parallel-rank">get_sequence_parallel_rank</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="parallel_utils.html#lightrft.strategy.utils.parallel_utils.get_sequence_parallel_rank"><code class="docutils literal notranslate"><span class="pre">get_sequence_parallel_rank()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="parallel_utils.html#spdataprocessor">SPDataProcessor</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="parallel_utils.html#lightrft.strategy.utils.parallel_utils.SPDataProcessor"><code class="docutils literal notranslate"><span class="pre">SPDataProcessor</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="parallel_utils.html#sp-slice-and-pad-input">sp_slice_and_pad_input</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="parallel_utils.html#lightrft.strategy.utils.parallel_utils.sp_slice_and_pad_input"><code class="docutils literal notranslate"><span class="pre">sp_slice_and_pad_input()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="parallel_utils.html#gather-forward-split-backward-and-unpad">gather_forward_split_backward_and_unpad</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="parallel_utils.html#lightrft.strategy.utils.parallel_utils.gather_forward_split_backward_and_unpad"><code class="docutils literal notranslate"><span class="pre">gather_forward_split_backward_and_unpad()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="statistic.html">lightrft.strategy.utils.statistic</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="statistic.html#genlenanalyser">GenLenAnalyser</a></li>
-<li class="toctree-l2"><a class="reference internal" href="statistic.html#analyse-output-lengths">analyse_output_lengths</a></li>
-<li class="toctree-l2"><a class="reference internal" href="statistic.html#collect-local-output-lengths">collect_local_output_lengths</a></li>
-<li class="toctree-l2"><a class="reference internal" href="statistic.html#gather-all-lengths">gather_all_lengths</a></li>
-<li class="toctree-l2"><a class="reference internal" href="statistic.html#analyze-output-lengths">analyze_output_lengths</a></li>
+<li class="toctree-l2"><a class="reference internal" href="statistic.html#genlenanalyser">GenLenAnalyser</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="statistic.html#lightrft.strategy.utils.statistic.GenLenAnalyser"><code class="docutils literal notranslate"><span class="pre">GenLenAnalyser</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="statistic.html#analyse-output-lengths">analyse_output_lengths</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="statistic.html#lightrft.strategy.utils.statistic.analyse_output_lengths"><code class="docutils literal notranslate"><span class="pre">analyse_output_lengths()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="statistic.html#collect-local-output-lengths">collect_local_output_lengths</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="statistic.html#lightrft.strategy.utils.statistic.collect_local_output_lengths"><code class="docutils literal notranslate"><span class="pre">collect_local_output_lengths()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="statistic.html#gather-all-lengths">gather_all_lengths</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="statistic.html#lightrft.strategy.utils.statistic.gather_all_lengths"><code class="docutils literal notranslate"><span class="pre">gather_all_lengths()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="statistic.html#analyze-output-lengths">analyze_output_lengths</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="statistic.html#lightrft.strategy.utils.statistic.analyze_output_lengths"><code class="docutils literal notranslate"><span class="pre">analyze_output_lengths()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

@@ -308,8 +308,49 @@
             <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
               <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
                 
-  <section id="lightrft-models-monkey-patch-llama">
-<h1>lightrft.models.monkey_patch.llama<a class="headerlink" href="#lightrft-models-monkey-patch-llama" title="Permalink to this heading">¶</a></h1>
+  <section id="module-lightrft.models.monkey_patch.llama">
+<span id="lightrft-models-monkey-patch-llama"></span><h1>lightrft.models.monkey_patch.llama<a class="headerlink" href="#module-lightrft.models.monkey_patch.llama" title="Permalink to this heading">¶</a></h1>
+<p>This module implements a modified version of the LLaMA attention mechanism with support for Ulysses
+sequence parallelism. It adapts the original transformers implementation to work with sequence
+parallelism for improved performance on distributed systems.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="lightrft.models.monkey_patch.llama.llama_attn_forward">
+<span class="sig-prename descclassname"><span class="pre">lightrft.models.monkey_patch.llama.</span></span><span class="sig-name descname"><span class="pre">llama_attn_forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hidden_states</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">position_embeddings</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">torch.Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">torch.Tensor</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attention_mask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">past_key_value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">transformers.cache_utils.Cache</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache_position</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.LongTensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">torch.Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">torch.Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../../_modules/lightrft/models/monkey_patch/llama.html#llama_attn_forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.models.monkey_patch.llama.llama_attn_forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Modified LLaMA attention forward pass with Ulysses sequence parallelism support.</p>
+<p>This function implements the attention mechanism for LLaMA models with added support for
+sequence parallelism. It handles the projection of input states to query/key/value,
+applies rotary position embeddings, and performs the attention computation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>self</strong> (<em>LlamaAttention</em>) – The attention module instance</p></li>
+<li><p><strong>hidden_states</strong> (<em>torch.Tensor</em>) – Input tensor to compute attention on</p></li>
+<li><p><strong>position_embeddings</strong> (<em>Tuple</em><em>[</em><em>torch.Tensor</em><em>, </em><em>torch.Tensor</em><em>]</em>) – Tuple of (cos, sin) tensors for rotary position embeddings</p></li>
+<li><p><strong>attention_mask</strong> (<em>Optional</em><em>[</em><em>torch.Tensor</em><em>]</em>) – Optional mask to prevent attention to certain positions</p></li>
+<li><p><strong>past_key_value</strong> (<em>Optional</em><em>[</em><em>Cache</em><em>]</em>) – Optional cached key and value tensors for incremental decoding</p></li>
+<li><p><strong>cache_position</strong> (<em>Optional</em><em>[</em><em>torch.LongTensor</em><em>]</em>) – Optional tensor indicating positions in the cache</p></li>
+<li><p><strong>kwargs</strong> (<em>dict</em>) – Additional keyword arguments passed to the attention implementation</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Tuple containing:
+- attention output tensor
+- attention weights (optional)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tuple[torch.Tensor, Optional[torch.Tensor]]</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>Warning</strong> – When using SDPA with output_attentions=True</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Adapted from transformers 4.49.0 to support Ulysses sequence parallelism for transformers &gt;= 4.48.0.</p>
+<p>This function has been tested only on transformers versions between 4.48.0 and 4.49.0.</p>
+</div>
+</dd></dl>
+
 </section>
 
 
@@ -355,7 +396,10 @@
           <div class="pytorch-right-menu" id="pytorch-right-menu">
             <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
               <ul>
-<li><a class="reference internal" href="#">lightrft.models.monkey_patch.llama</a></li>
+<li><a class="reference internal" href="#">lightrft.models.monkey_patch.llama</a><ul>
+<li><a class="reference internal" href="#lightrft.models.monkey_patch.llama.llama_attn_forward"><code class="docutils literal notranslate"><span class="pre">llama_attn_forward()</span></code></a></li>
+</ul>
+</li>
 </ul>
 
             </div>

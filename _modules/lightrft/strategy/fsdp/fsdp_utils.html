@@ -1,0 +1,1270 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js" lang="en">
+<!--<![endif]-->
+
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>lightrft.strategy.fsdp.fsdp_utils &mdash; LightRFT v0.1.1 documentation</title>
+  
+
+  <link rel="shortcut icon" href="../../../../_static/images/favicon.ico" />
+  
+  
+
+  
+
+  
+  
+  
+
+  
+
+  <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  <!-- <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" /> -->
+  <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/css/readthedocs.css" type="text/css" />
+  <link rel="index" title="Index" href="../../../../genindex.html" />
+  <link rel="search" title="Search" href="../../../../search.html" />
+  <!-- Google Analytics -->
+  <script type="text/javascript">
+    var collapsedSections = [];
+  </script>
+  
+  <!-- End Google Analytics -->
+  
+
+  
+  <script src="../../../../_static/js/modernizr.min.js"></script>
+  <script>
+    MathJax = {
+        chtml: {
+            scale: 1,
+            minScale: 1,
+        },
+        svg: {
+            scale: 1,
+            minScale: 1,
+        }
+    }
+</script>
+
+  <!-- Preload the theme fonts -->
+
+<link rel="preload" href="../../../../_static/fonts/FreightSans/freight-sans-book.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../../_static/fonts/FreightSans/freight-sans-medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../../_static/fonts/IBMPlexMono/IBMPlexMono-Medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../../_static/fonts/FreightSans/freight-sans-bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../../_static/fonts/FreightSans/freight-sans-medium-italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../../_static/fonts/IBMPlexMono/IBMPlexMono-SemiBold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+
+<!-- Preload the katex fonts -->
+
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Math-Italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size1-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size4-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size2-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size3-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Caligraphic-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.2/css/all.css"
+    integrity="sha384-vSIIfh2YWi9wW0r9iZe7RJPrKwp6bG+s9QZMoITbCckVJqGCCRhc+ccxNcdpHuYu" crossorigin="anonymous">
+</head>
+
+<div class="container-fluid header-holder tutorials-header" id="header-holder">
+  <div class="container">
+    <div class="header-container">
+      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+        aria-label="OpenMMLab"></a>
+
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://github.com/opendilab/LightRFT" target="_blank">GitHub</a>
+          </li>
+          <li >
+            <div id="resourcesDropdownButton" data-toggle="resources-dropdown" class="resources-dropdown">
+              <a
+                class="resource-option with-down-arrow">
+                OpenDILab
+              </a>
+              <div class="resources-dropdown-menu">
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-engine" target="_blank">
+                  <span class="dropdown-title">DI-engine </span>
+                  <p>OpenDILab Decision AI Engine</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/LightZero" target="_blank">
+                  <span class="dropdown-title">LightZero </span>
+                  <p>OpenDILab Decision Monte Carlo Tree Search Framework</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/GenerativeRL" target="_blank">
+                  <span class="dropdown-title">GenerativeRL </span>
+                  <p>OpenDILab Generative AI Framework</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-star" target="_blank">
+                  <span class="dropdown-title">DI-star </span>
+                  <p>OpenDILab Decision AI in StarCraftII</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-drive" target="_blank">
+                  <span class="dropdown-title">DI-drive </span>
+                  <p>OpenDILab Auto-driving platform</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/GoBigger" target="_blank">
+                  <span class="dropdown-title">GoBigger </span>
+                  <p>OpenDILab Multi-Agent Environment</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-smartcross" target="_blank">
+                  <span class="dropdown-title">DI-smartcross </span>
+                  <p>Decision Intelligence Platform for Traffic Crossing Signal Control</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-treetensor" target="_blank">
+                  <span class="dropdown-title">DI-treetensor </span>
+                  <p>Tree Nested PyTorch Tensor Lib</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-sheep" target="_blank">
+                  <span class="dropdown-title">DI-sheep </span>
+                  <p>Deep Reinforcement Learning + 3 Tiles Game</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-model-based-RL" target="_blank">
+                  <span class="dropdown-title">awesome-model-based-RL </span>
+                  <p>A curated list of awesome model based RL resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-decision-transformer" target="_blank">
+                  <span class="dropdown-title">awesome-decision-transformer </span>
+                  <p>A curated list of Decision Transformer resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-exploration-rl" target="_blank">
+                  <span class="dropdown-title">awesome-exploration-rl </span>
+                  <p>A curated list of awesome exploration RL resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-multi-modal-reinforcement-learning" target="_blank">
+                  <span class="dropdown-title">awesome-multi-modal-reinforcement-learning </span>
+                  <p>A curated list of Multi-Modal Reinforcement Learning resources (continually updated)</p>
+                </a>
+              </div>
+          </li>
+        </ul>
+      </div>
+
+      <a class="main-menu-open-button" href="#" data-behavior="open-mobile-menu"></a>
+    </div>
+  </div>
+</div>
+
+<body class="pytorch-body">
+
+   
+
+  
+
+  <div class="table-of-contents-link-wrapper">
+    <span>Table of Contents</span>
+    <a href="#" class="toggle-table-of-contents" data-behavior="toggle-table-of-contents"></a>
+  </div>
+
+  <nav data-toggle="wy-nav-shift" class="pytorch-left-menu" id="pytorch-left-menu">
+    <div class="pytorch-side-scroll">
+      <div class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        <div class="pytorch-left-menu-search">
+          
+
+          
+          
+          
+          
+
+          
+
+
+
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search Docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        
+        
+        
+        
+        
+        <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../installation/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../quick_start/index.html">Quick Start</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide &amp; Best Practices</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../best_practice/index.html">Best Practices</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api_doc/utils/index.html">lightrft.utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api_doc/datasets/index.html">lightrft.datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api_doc/models/index.html">lightrft.models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api_doc/strategy/index.html">lightrft.strategy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api_doc/trainer/index.html">lightrft.trainer</a></li>
+</ul>
+
+        
+        
+      </div>
+    </div>
+  </nav>
+
+  <div class="pytorch-container">
+    <div class="pytorch-page-level-bar" id="pytorch-page-level-bar">
+      <div class="pytorch-breadcrumbs-wrapper">
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="pytorch-breadcrumbs">
+    
+      <li>
+        <a href="../../../../index.html">
+            Docs
+        </a> &gt;
+      </li>
+
+        
+          <li><a href="../../../index.html">Module code</a> &gt;</li>
+        
+      <li>lightrft.strategy.fsdp.fsdp_utils</li>
+    
+    
+      <li class="pytorch-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+</div>
+      </div>
+
+      <div class="pytorch-shortcuts-wrapper" id="pytorch-shortcuts-wrapper">
+        Shortcuts
+      </div>
+    </div>
+
+    <section data-toggle="wy-nav-shift" id="pytorch-content-wrap" class="pytorch-content-wrap">
+      <div class="pytorch-content-left">
+        
+          <div class="rst-content">
+            
+            <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
+              <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
+                
+  <h1>Source code for lightrft.strategy.fsdp.fsdp_utils</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Gradient scaling and optimization utilities for deep learning.</span>
+
+<span class="sd">This module provides tools for gradient handling, norm computation, and optimization in PyTorch.</span>
+<span class="sd">It includes dynamic gradient scaling for mixed precision training, gradient norm computation,</span>
+<span class="sd">and base classes for optimizers.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch.distributed</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">dist</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">torch</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tensor</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">torch.optim</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optimizer</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">lightrft.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_current_device</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">amp_C</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">apex.multi_tensor_apply</span><span class="w"> </span><span class="kn">import</span> <span class="n">multi_tensor_applier</span>
+
+    <span class="n">APEX_AVAILABLE</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="k">except</span> <span class="p">(</span><span class="ne">ModuleNotFoundError</span><span class="p">,</span> <span class="ne">ImportError</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;The torch implementation for cal_l2norm is slower than apex. Please note this!&quot;</span><span class="p">)</span>
+    <span class="n">APEX_AVAILABLE</span> <span class="o">=</span> <span class="kc">False</span>
+
+<span class="n">inf</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">inf</span>
+
+
+<div class="viewcode-block" id="is_meta_initialized"><a class="viewcode-back" href="../../../../api_doc/strategy/fsdp/fsdp_utils.html#lightrft.strategy.fsdp.fsdp_utils.is_meta_initialized">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">is_meta_initialized</span><span class="p">(</span><span class="n">model</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Check if a PyTorch model&#39;s parameters are meta-initialized.</span>
+
+<span class="sd">    Meta-initialized models contain parameters on a &#39;meta&#39; device, which are placeholders</span>
+<span class="sd">    that don&#39;t allocate actual memory. These are useful for model initialization without</span>
+<span class="sd">    memory overhead, commonly used in model parallelism and large model initialization.</span>
+
+<span class="sd">    For more information on meta device and meta tensors, see:</span>
+<span class="sd">    https://docs.pytorch.org/docs/stable/meta.html</span>
+
+<span class="sd">    :param model: The PyTorch module to check.</span>
+<span class="sd">    :type model: torch.nn.Module</span>
+<span class="sd">    :raises TypeError: if ``model`` is not an instance of :class:`torch.nn.Module`.</span>
+<span class="sd">    :returns: True if any parameter in the model is on a meta device, False otherwise.</span>
+<span class="sd">    :rtype: bool</span>
+
+<span class="sd">    Example::</span>
+
+<span class="sd">        &gt;&gt;&gt; import torch</span>
+<span class="sd">        &gt;&gt;&gt; model = torch.nn.Linear(10, 1)</span>
+<span class="sd">        &gt;&gt;&gt; is_meta_initialized(model)  # False for regular model</span>
+<span class="sd">        False</span>
+<span class="sd">        &gt;&gt;&gt; with torch.device(&#39;meta&#39;):</span>
+<span class="sd">        ...     meta_model = torch.nn.Linear(10, 1)</span>
+<span class="sd">        &gt;&gt;&gt; is_meta_initialized(meta_model)  # True for meta model</span>
+<span class="sd">        True</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">():</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">param</span><span class="p">,</span> <span class="s2">&quot;device&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">param</span><span class="o">.</span><span class="n">device</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;meta&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">return</span> <span class="kc">False</span></div>
+
+
+<div class="viewcode-block" id="multi_tensor_l2norm_torch"><a class="viewcode-back" href="../../../../api_doc/strategy/fsdp/fsdp_utils.html#lightrft.strategy.fsdp.fsdp_utils.multi_tensor_l2norm_torch">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">multi_tensor_l2norm_torch</span><span class="p">(</span><span class="n">tensor_list</span><span class="p">,</span> <span class="n">per_tensor</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute L2 norm of multiple tensors using PyTorch.</span>
+
+<span class="sd">    This function provides a pure PyTorch implementation for computing L2 norms</span>
+<span class="sd">    when APEX is not available. It converts all tensors to float32 for computation</span>
+<span class="sd">    and returns both overall and per-tensor norms.</span>
+
+<span class="sd">    :param tensor_list: List of tensors to compute norm for</span>
+<span class="sd">    :type tensor_list: list[torch.Tensor]</span>
+<span class="sd">    :param per_tensor: Whether to return per-tensor norms</span>
+<span class="sd">    :type per_tensor: bool</span>
+
+<span class="sd">    :return: Tuple of (overall L2 norm, per-tensor norms)</span>
+<span class="sd">    :rtype: tuple[torch.Tensor, torch.Tensor]</span>
+
+<span class="sd">    Example::</span>
+
+<span class="sd">        &gt;&gt;&gt; tensors = [torch.randn(3, 3), torch.randn(2, 2)]</span>
+<span class="sd">        &gt;&gt;&gt; overall_norm, per_tensor_norms = multi_tensor_l2norm_torch(tensors, True)</span>
+<span class="sd">        &gt;&gt;&gt; print(overall_norm.shape)  # torch.Size([1])</span>
+<span class="sd">        &gt;&gt;&gt; print(per_tensor_norms.shape)  # torch.Size([2])</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Convert tensor_list elements to torch.float32</span>
+    <span class="n">tensor_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">tensor</span><span class="o">.</span><span class="n">float</span><span class="p">()</span> <span class="k">for</span> <span class="n">tensor</span> <span class="ow">in</span> <span class="n">tensor_list</span><span class="p">]</span>
+    <span class="n">norms_tensor</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">torch</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">tensor</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span> <span class="k">for</span> <span class="n">tensor</span> <span class="ow">in</span> <span class="n">tensor_list</span><span class="p">])</span>
+    <span class="n">l2_norm</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">norms_tensor</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">per_tensor</span><span class="p">:</span>
+        <span class="n">per_tensor_norm</span> <span class="o">=</span> <span class="n">norms_tensor</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">per_tensor_norm</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">([])</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">norms_tensor</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">l2_norm</span><span class="p">,</span> <span class="n">per_tensor_norm</span></div>
+
+
+<div class="viewcode-block" id="calc_l2_norm"><a class="viewcode-back" href="../../../../api_doc/strategy/fsdp/fsdp_utils.html#lightrft.strategy.fsdp.fsdp_utils.calc_l2_norm">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">calc_l2_norm</span><span class="p">(</span><span class="n">grads</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate L2 norm of gradients using optimized implementation when available.</span>
+
+<span class="sd">    This function automatically selects the fastest available implementation for</span>
+<span class="sd">    computing L2 norms. It uses APEX&#39;s multi-tensor operations when available</span>
+<span class="sd">    for better performance, otherwise falls back to PyTorch implementation.</span>
+
+<span class="sd">    :param grads: List of gradient tensors</span>
+<span class="sd">    :type grads: list[torch.Tensor]</span>
+
+<span class="sd">    :return: L2 norm of gradients</span>
+<span class="sd">    :rtype: torch.Tensor</span>
+
+<span class="sd">    Example::</span>
+
+<span class="sd">        &gt;&gt;&gt; grads = [torch.randn(10, 10).requires_grad_(), torch.randn(5, 5).requires_grad_()]</span>
+<span class="sd">        &gt;&gt;&gt; norm = calc_l2_norm(grads)</span>
+<span class="sd">        &gt;&gt;&gt; print(norm.item())  # scalar value</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">norm</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">grads</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">APEX_AVAILABLE</span><span class="p">:</span>
+            <span class="n">dummy_overflow_buf</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mi">0</span><span class="p">],</span> <span class="n">device</span><span class="o">=</span><span class="n">get_current_device</span><span class="p">(),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+            <span class="n">norm</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">multi_tensor_applier</span><span class="p">(</span>
+                <span class="n">amp_C</span><span class="o">.</span><span class="n">multi_tensor_l2norm</span><span class="p">,</span>
+                <span class="n">dummy_overflow_buf</span><span class="p">,</span>
+                <span class="p">[</span><span class="n">grads</span><span class="p">],</span>
+                <span class="kc">False</span><span class="p">,</span>  <span class="c1"># no per-parameter norm</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">norm</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">multi_tensor_l2norm_torch</span><span class="p">(</span><span class="n">grads</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">norm</span></div>
+
+
+<div class="viewcode-block" id="calc_lp"><a class="viewcode-back" href="../../../../api_doc/strategy/fsdp/fsdp_utils.html#lightrft.strategy.fsdp.fsdp_utils.calc_lp">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">calc_lp</span><span class="p">(</span><span class="n">grads</span><span class="p">,</span> <span class="n">norm_type</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate Lp norm of gradients.</span>
+
+<span class="sd">    Computes the p-norm of a list of gradient tensors, where p is specified</span>
+<span class="sd">    by norm_type. This is useful for gradient clipping and monitoring.</span>
+
+<span class="sd">    :param grads: List of gradient tensors</span>
+<span class="sd">    :type grads: list[torch.Tensor]</span>
+<span class="sd">    :param norm_type: The p in Lp norm</span>
+<span class="sd">    :type norm_type: float</span>
+
+<span class="sd">    :return: Lp norm of gradients</span>
+<span class="sd">    :rtype: float</span>
+
+<span class="sd">    Example::</span>
+
+<span class="sd">        &gt;&gt;&gt; grads = [torch.randn(3, 3), torch.randn(2, 2)]</span>
+<span class="sd">        &gt;&gt;&gt; l1_norm = calc_lp(grads, 1.0)  # L1 norm</span>
+<span class="sd">        &gt;&gt;&gt; l2_norm = calc_lp(grads, 2.0)  # L2 norm</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">norm</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="k">for</span> <span class="n">grad</span> <span class="ow">in</span> <span class="n">grads</span><span class="p">:</span>
+        <span class="n">grad_norm</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">grad</span><span class="p">,</span> <span class="n">norm_type</span><span class="p">)</span>
+        <span class="n">norm</span> <span class="o">+=</span> <span class="n">grad_norm</span> <span class="o">**</span> <span class="n">norm_type</span>
+    <span class="k">return</span> <span class="n">norm</span></div>
+
+
+<div class="viewcode-block" id="get_norm"><a class="viewcode-back" href="../../../../api_doc/strategy/fsdp/fsdp_utils.html#lightrft.strategy.fsdp.fsdp_utils.get_norm">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">get_norm</span><span class="p">(</span><span class="n">grads</span><span class="p">,</span> <span class="n">norm_type</span><span class="p">,</span> <span class="n">enable_cuda_kernels</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get norm of gradients with specified norm type.</span>
+
+<span class="sd">    This function dispatches to the appropriate norm calculation method based</span>
+<span class="sd">    on the norm type and whether CUDA kernels are available. It handles special</span>
+<span class="sd">    cases like infinity norm and optimized L2 norm computation.</span>
+
+<span class="sd">    :param grads: List of gradient tensors</span>
+<span class="sd">    :type grads: list[torch.Tensor]</span>
+<span class="sd">    :param norm_type: Type of norm to compute (2.0, inf, etc.)</span>
+<span class="sd">    :type norm_type: float</span>
+<span class="sd">    :param enable_cuda_kernels: Whether to use CUDA optimized kernels</span>
+<span class="sd">    :type enable_cuda_kernels: bool</span>
+
+<span class="sd">    :return: Norm of gradients</span>
+<span class="sd">    :rtype: float or torch.Tensor</span>
+
+<span class="sd">    Example::</span>
+
+<span class="sd">        &gt;&gt;&gt; grads = [torch.randn(3, 3), torch.randn(2, 2)]</span>
+<span class="sd">        &gt;&gt;&gt; l2_norm = get_norm(grads, 2.0, True)</span>
+<span class="sd">        &gt;&gt;&gt; inf_norm = get_norm(grads, float(&#39;inf&#39;), True)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">norm_type</span> <span class="o">==</span> <span class="n">inf</span><span class="p">:</span>
+        <span class="n">grad_norm</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">abs</span><span class="p">()</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">grads</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">norm_type</span> <span class="o">==</span> <span class="mf">2.0</span> <span class="ow">and</span> <span class="n">enable_cuda_kernels</span><span class="p">:</span>
+        <span class="n">grad_norm</span> <span class="o">=</span> <span class="n">calc_l2_norm</span><span class="p">(</span><span class="n">grads</span><span class="p">)</span> <span class="o">**</span> <span class="n">norm_type</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">grad_norm</span> <span class="o">=</span> <span class="n">calc_lp</span><span class="p">(</span><span class="n">grads</span><span class="p">,</span> <span class="n">norm_type</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">grad_norm</span></div>
+
+
+<div class="viewcode-block" id="reduce_grads"><a class="viewcode-back" href="../../../../api_doc/strategy/fsdp/fsdp_utils.html#lightrft.strategy.fsdp.fsdp_utils.reduce_grads">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">reduce_grads</span><span class="p">(</span><span class="n">gradients</span><span class="p">,</span> <span class="n">parameters</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Prepare gradients for norm computation in distributed training.</span>
+
+<span class="sd">    This function processes gradients to prepare them for norm computation,</span>
+<span class="sd">    particularly in distributed training scenarios. It converts gradients to</span>
+<span class="sd">    float32 for numerical stability during norm calculations.</span>
+
+<span class="sd">    :param gradients: List of gradient tensors</span>
+<span class="sd">    :type gradients: list[torch.Tensor]</span>
+<span class="sd">    :param parameters: List of parameter tensors</span>
+<span class="sd">    :type parameters: list[torch.Tensor]</span>
+
+<span class="sd">    :return: List of processed gradient tensors</span>
+<span class="sd">    :rtype: list[torch.Tensor]</span>
+
+<span class="sd">    Example::</span>
+
+<span class="sd">        &gt;&gt;&gt; grads = [torch.randn(3, 3), torch.randn(2, 2)]</span>
+<span class="sd">        &gt;&gt;&gt; params = [torch.randn(3, 3), torch.randn(2, 2)]</span>
+<span class="sd">        &gt;&gt;&gt; processed_grads = reduce_grads(grads, params)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">parallel_grads</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">for</span> <span class="n">g</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">gradients</span><span class="p">,</span> <span class="n">parameters</span><span class="p">):</span>
+        <span class="c1"># process all ranks for FSDP parameter group</span>
+        <span class="n">parallel_grads</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">float</span><span class="p">())</span>
+
+    <span class="k">return</span> <span class="n">parallel_grads</span></div>
+
+
+<div class="viewcode-block" id="get_tensor_norm"><a class="viewcode-back" href="../../../../api_doc/strategy/fsdp/fsdp_utils.html#lightrft.strategy.fsdp.fsdp_utils.get_tensor_norm">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">get_tensor_norm</span><span class="p">(</span><span class="n">norm</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span> <span class="n">move_to_cuda</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convert norm to tensor and move to appropriate device.</span>
+
+<span class="sd">    This utility function ensures that norm values are properly converted to</span>
+<span class="sd">    tensors and placed on the correct device for further computation. It handles</span>
+<span class="sd">    both scalar and tensor inputs.</span>
+
+<span class="sd">    :param norm: Norm value as float or tensor</span>
+<span class="sd">    :type norm: Union[float, torch.Tensor]</span>
+<span class="sd">    :param move_to_cuda: Whether to move the tensor to CUDA</span>
+<span class="sd">    :type move_to_cuda: bool</span>
+
+<span class="sd">    :return: Norm as tensor on appropriate device</span>
+<span class="sd">    :rtype: torch.Tensor</span>
+
+<span class="sd">    Example::</span>
+
+<span class="sd">        &gt;&gt;&gt; norm_float = 2.5</span>
+<span class="sd">        &gt;&gt;&gt; norm_tensor = get_tensor_norm(norm_float, True)</span>
+<span class="sd">        &gt;&gt;&gt; print(norm_tensor.device)  # cuda:0 (if CUDA available)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">norm</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+        <span class="n">norm</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">([</span><span class="n">norm</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">move_to_cuda</span><span class="p">:</span>
+        <span class="n">norm</span> <span class="o">=</span> <span class="n">norm</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">get_current_device</span><span class="p">())</span>
+    <span class="k">return</span> <span class="n">norm</span></div>
+
+
+<div class="viewcode-block" id="compute_norm"><a class="viewcode-back" href="../../../../api_doc/strategy/fsdp/fsdp_utils.html#lightrft.strategy.fsdp.fsdp_utils.compute_norm">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">compute_norm</span><span class="p">(</span><span class="n">gradients</span><span class="p">,</span> <span class="n">parameters</span><span class="p">,</span> <span class="n">norm_type</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get the norm across distributed environment.</span>
+
+<span class="sd">    This function computes gradient norms in a distributed training setting,</span>
+<span class="sd">    handling device placement and distributed reduction. It&#39;s commonly used</span>
+<span class="sd">    for gradient clipping and monitoring training stability.</span>
+
+<span class="sd">    :param gradients: The gradient values</span>
+<span class="sd">    :type gradients: list[torch.Tensor]</span>
+<span class="sd">    :param parameters: The parameters each gradient corresponds to</span>
+<span class="sd">    :type parameters: list[torch.Tensor]</span>
+<span class="sd">    :param norm_type: Type of the used p-norm. Can be ``&#39;inf&#39;`` for infinity norm</span>
+<span class="sd">    :type norm_type: float or int</span>
+
+<span class="sd">    :return: Total norm of the parameters, need total_norm**(1/norm) before using</span>
+<span class="sd">    :rtype: float</span>
+
+<span class="sd">    Example::</span>
+
+<span class="sd">        &gt;&gt;&gt; grads = [param.grad for param in model.parameters() if param.grad is not None]</span>
+<span class="sd">        &gt;&gt;&gt; params = [param for param in model.parameters() if param.grad is not None]</span>
+<span class="sd">        &gt;&gt;&gt; total_norm = compute_norm(grads, params)</span>
+<span class="sd">        &gt;&gt;&gt; print(f&quot;Gradient norm: {total_norm}&quot;)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">enable_cuda_kernels</span> <span class="o">=</span> <span class="n">gradients</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">device</span><span class="o">.</span><span class="n">type</span> <span class="o">!=</span> <span class="s2">&quot;cpu&quot;</span>
+    <span class="c1"># Norm parameters.</span>
+    <span class="n">norm_type</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">norm_type</span><span class="p">)</span>
+
+    <span class="n">tensor_parallel_grads</span> <span class="o">=</span> <span class="n">reduce_grads</span><span class="p">(</span><span class="n">gradients</span><span class="p">,</span> <span class="n">parameters</span><span class="p">)</span>
+    <span class="n">tensor_parallel_norm</span> <span class="o">=</span> <span class="n">get_norm</span><span class="p">(</span><span class="n">tensor_parallel_grads</span><span class="p">,</span> <span class="n">norm_type</span><span class="p">,</span> <span class="n">enable_cuda_kernels</span><span class="p">)</span>
+
+    <span class="c1"># If norm is type of float, then we convert them into torch.Tensor.</span>
+    <span class="n">tensor_parallel_norm</span> <span class="o">=</span> <span class="n">get_tensor_norm</span><span class="p">(</span><span class="n">tensor_parallel_norm</span><span class="p">,</span> <span class="n">enable_cuda_kernels</span><span class="p">)</span>
+    <span class="c1"># If grads are on CPU, the norms is also on CPU. Cast them to CUDA tensors</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">enable_cuda_kernels</span><span class="p">:</span>
+        <span class="n">tensor_parallel_norm</span> <span class="o">=</span> <span class="n">tensor_parallel_norm</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">get_current_device</span><span class="p">())</span>
+
+    <span class="n">total_norm</span> <span class="o">=</span> <span class="n">tensor_parallel_norm</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Sum across all model-parallel GPUs.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">dist</span><span class="o">.</span><span class="n">all_reduce</span><span class="p">(</span><span class="n">total_norm</span><span class="p">,</span> <span class="n">op</span><span class="o">=</span><span class="n">dist</span><span class="o">.</span><span class="n">ReduceOp</span><span class="o">.</span><span class="n">SUM</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">is_tensor</span><span class="p">(</span><span class="n">total_norm</span><span class="p">):</span>
+        <span class="n">total_norm</span> <span class="o">=</span> <span class="n">total_norm</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+
+    <span class="c1"># Scale.</span>
+    <span class="k">if</span> <span class="n">total_norm</span> <span class="o">==</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;inf&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">total_norm</span> <span class="o">==</span> <span class="o">-</span><span class="nb">float</span><span class="p">(</span><span class="s2">&quot;inf&quot;</span><span class="p">):</span>
+        <span class="n">total_norm</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+
+    <span class="k">if</span> <span class="n">math</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">total_norm</span><span class="p">):</span>
+        <span class="n">total_norm</span> <span class="o">=</span> <span class="o">-</span><span class="mi">2</span>
+
+    <span class="k">return</span> <span class="n">total_norm</span></div>
+
+
+<div class="viewcode-block" id="BaseGradScaler"><a class="viewcode-back" href="../../../../api_doc/strategy/fsdp/fsdp_utils.html#lightrft.strategy.fsdp.fsdp_utils.BaseGradScaler">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">BaseGradScaler</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A base class for the gradient scaler.</span>
+
+<span class="sd">    This abstract base class defines the interface for gradient scalers used in</span>
+<span class="sd">    mixed precision training. Gradient scalers help prevent gradient underflow</span>
+<span class="sd">    in float16 training by scaling up the loss before backpropagation.</span>
+
+<span class="sd">    :param initial_scale: The initial loss scale</span>
+<span class="sd">    :type initial_scale: float</span>
+
+<span class="sd">    Example::</span>
+
+<span class="sd">        &gt;&gt;&gt; # Subclass implementation</span>
+<span class="sd">        &gt;&gt;&gt; class MyGradScaler(BaseGradScaler):</span>
+<span class="sd">        ...     def update(self, overflow: bool) -&gt; None:</span>
+<span class="sd">        ...         # Custom update logic</span>
+<span class="sd">        ...         pass</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">initial_scale</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="n">initial_scale</span> <span class="o">&gt;</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_scale</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="n">initial_scale</span><span class="p">],</span> <span class="n">device</span><span class="o">=</span><span class="n">get_current_device</span><span class="p">(),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">scale</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the loss scale.</span>
+
+<span class="sd">        :return: Current loss scale</span>
+<span class="sd">        :rtype: torch.Tensor</span>
+
+<span class="sd">        Example::</span>
+
+<span class="sd">            &gt;&gt;&gt; scaler = DynamicGradScaler(initial_scale=1024.0)</span>
+<span class="sd">            &gt;&gt;&gt; print(scaler.scale.item())  # 1024.0</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scale</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">inv_scale</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the inverse of the loss scale.</span>
+
+<span class="sd">        The inverse scale is used to unscale gradients after backpropagation</span>
+<span class="sd">        to restore their original magnitudes.</span>
+
+<span class="sd">        :return: Inverse of current loss scale</span>
+<span class="sd">        :rtype: torch.Tensor</span>
+
+<span class="sd">        Example::</span>
+
+<span class="sd">            &gt;&gt;&gt; scaler = DynamicGradScaler(initial_scale=1024.0)</span>
+<span class="sd">            &gt;&gt;&gt; print(scaler.inv_scale.item())  # 0.0009765625 (1/1024)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scale</span><span class="o">.</span><span class="n">double</span><span class="p">()</span><span class="o">.</span><span class="n">reciprocal</span><span class="p">()</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
+
+<div class="viewcode-block" id="BaseGradScaler.state_dict"><a class="viewcode-back" href="../../../../api_doc/strategy/fsdp/fsdp_utils.html#lightrft.strategy.fsdp.fsdp_utils.BaseGradScaler.state_dict">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">state_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the states of the gradient scaler as a dict object.</span>
+
+<span class="sd">        :return: State dictionary containing scale</span>
+<span class="sd">        :rtype: Dict</span>
+
+<span class="sd">        Example::</span>
+
+<span class="sd">            &gt;&gt;&gt; scaler = DynamicGradScaler()</span>
+<span class="sd">            &gt;&gt;&gt; state = scaler.state_dict()</span>
+<span class="sd">            &gt;&gt;&gt; print(state.keys())</span>
+<span class="sd">            dict_keys([&#39;scale&#39;])</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">state_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="n">state_dict</span><span class="p">[</span><span class="s2">&quot;scale&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale</span>
+        <span class="k">return</span> <span class="n">state_dict</span></div>
+
+<div class="viewcode-block" id="BaseGradScaler.load_state_dict"><a class="viewcode-back" href="../../../../api_doc/strategy/fsdp/fsdp_utils.html#lightrft.strategy.fsdp.fsdp_utils.BaseGradScaler.load_state_dict">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">load_state_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Load the states of the gradient scaler from a dict object.</span>
+
+<span class="sd">        :param state_dict: The states of the gradient scaler</span>
+<span class="sd">        :type state_dict: Dict</span>
+
+<span class="sd">        Example::</span>
+
+<span class="sd">            &gt;&gt;&gt; scaler = DynamicGradScaler()</span>
+<span class="sd">            &gt;&gt;&gt; state = {&quot;scale&quot;: torch.tensor([2048.0])}</span>
+<span class="sd">            &gt;&gt;&gt; scaler.load_state_dict(state)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_scale</span> <span class="o">=</span> <span class="n">state_dict</span><span class="p">[</span><span class="s2">&quot;scale&quot;</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="BaseGradScaler.update"><a class="viewcode-back" href="../../../../api_doc/strategy/fsdp/fsdp_utils.html#lightrft.strategy.fsdp.fsdp_utils.BaseGradScaler.update">[docs]</a>    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">overflow</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Update the loss scale.</span>
+
+<span class="sd">        This abstract method must be implemented by subclasses to define</span>
+<span class="sd">        how the loss scale should be updated based on overflow detection.</span>
+
+<span class="sd">        :param overflow: Whether overflow occurs</span>
+<span class="sd">        :type overflow: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">pass</span></div></div>
+
+
+<div class="viewcode-block" id="DynamicGradScaler"><a class="viewcode-back" href="../../../../api_doc/strategy/fsdp/fsdp_utils.html#lightrft.strategy.fsdp.fsdp_utils.DynamicGradScaler">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">DynamicGradScaler</span><span class="p">(</span><span class="n">BaseGradScaler</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A gradient scaler which uses dynamic loss scale.</span>
+
+<span class="sd">    This scaler automatically adjusts the loss scale based on gradient overflow</span>
+<span class="sd">    detection. It increases the scale when training is stable and decreases it</span>
+<span class="sd">    when overflow occurs, providing automatic mixed precision training support.</span>
+
+<span class="sd">    :param initial_scale: The initial loss scale</span>
+<span class="sd">    :type initial_scale: float</span>
+<span class="sd">    :param growth_factor: The multiplication factor for increasing loss scale</span>
+<span class="sd">    :type growth_factor: float</span>
+<span class="sd">    :param backoff_factor: The multiplication factor for decreasing loss scale</span>
+<span class="sd">    :type backoff_factor: float</span>
+<span class="sd">    :param growth_interval: The number of steps to increase loss scale when no overflow occurs</span>
+<span class="sd">    :type growth_interval: int</span>
+<span class="sd">    :param min_scale: The minimum loss scale</span>
+<span class="sd">    :type min_scale: Optional[float]</span>
+<span class="sd">    :param max_scale: The maximum loss scale</span>
+<span class="sd">    :type max_scale: Optional[float]</span>
+<span class="sd">    :param hysteresis: The number of overflows before decreasing loss scale</span>
+<span class="sd">    :type hysteresis: int</span>
+<span class="sd">    :param dtype: The data type used for training</span>
+<span class="sd">    :type dtype: torch.dtype</span>
+
+<span class="sd">    Example::</span>
+
+<span class="sd">        &gt;&gt;&gt; scaler = DynamicGradScaler(initial_scale=2**16, growth_factor=2.0)</span>
+<span class="sd">        &gt;&gt;&gt; # In training loop</span>
+<span class="sd">        &gt;&gt;&gt; for epoch in range(num_epochs):</span>
+<span class="sd">        ...     for batch in dataloader:</span>
+<span class="sd">        ...         # Forward pass with scaled loss</span>
+<span class="sd">        ...         scaled_loss = loss * scaler.scale</span>
+<span class="sd">        ...         scaled_loss.backward()</span>
+<span class="sd">        ...         # Check for overflow and update scaler</span>
+<span class="sd">        ...         overflow = check_overflow(model.parameters())</span>
+<span class="sd">        ...         scaler.update(overflow)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>  <span class="c1"># pylint: disable=R0917</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">initial_scale</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">2</span><span class="o">**</span><span class="mi">16</span><span class="p">,</span>
+        <span class="n">growth_factor</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="n">backoff_factor</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span>
+        <span class="n">growth_interval</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span>
+        <span class="n">min_scale</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">max_scale</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span><span class="o">**</span><span class="mi">24</span><span class="p">,</span>
+        <span class="n">hysteresis</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="n">dtype</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">dtype</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">bfloat16</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">initial_scale</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">min_scale</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_min_scale</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="n">min_scale</span><span class="p">],</span> <span class="n">device</span><span class="o">=</span><span class="n">get_current_device</span><span class="p">(),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_min_scale</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="n">max_scale</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_max_scale</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="n">max_scale</span><span class="p">],</span> <span class="n">device</span><span class="o">=</span><span class="n">get_current_device</span><span class="p">(),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_max_scale</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_growth_factor</span> <span class="o">=</span> <span class="n">growth_factor</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_backoff_factor</span> <span class="o">=</span> <span class="n">backoff_factor</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_growth_interval</span> <span class="o">=</span> <span class="n">growth_interval</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_growth_step</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_hysteresis</span> <span class="o">=</span> <span class="n">hysteresis</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_hysteresis_step</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span> <span class="o">=</span> <span class="n">dtype</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sanity_checks</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_sanity_checks</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check if the arguments are correct.</span>
+
+<span class="sd">        This method validates all the initialization parameters to ensure they</span>
+<span class="sd">        are within reasonable ranges and compatible with the specified data type.</span>
+<span class="sd">        It provides warnings for potentially suboptimal configurations.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span> <span class="ow">in</span> <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">float16</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">bfloat16</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_min_scale</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">min_scale</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_min_scale</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+            <span class="k">assert</span> <span class="n">min_scale</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;The minimum gradient scale cannot be zero or negative&quot;</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span> <span class="o">!=</span> <span class="n">torch</span><span class="o">.</span><span class="n">float16</span> <span class="ow">and</span> <span class="n">min_scale</span> <span class="o">!=</span> <span class="mf">1.0</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Detect you use </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span><span class="si">}</span><span class="s2">, but min_scale: </span><span class="si">{</span><span class="n">min_scale</span><span class="si">}</span><span class="s2"> != 1.0&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max_scale</span><span class="p">:</span>
+            <span class="n">max_scale</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max_scale</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+            <span class="k">assert</span> <span class="n">max_scale</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;The maximum gradient scale cannot be zero or negative&quot;</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span> <span class="o">!=</span> <span class="n">torch</span><span class="o">.</span><span class="n">float16</span> <span class="ow">and</span> <span class="n">max_scale</span> <span class="o">!=</span> <span class="mf">1.0</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Detect you use </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span><span class="si">}</span><span class="s2">, but max_scale: </span><span class="si">{</span><span class="n">max_scale</span><span class="si">}</span><span class="s2"> != 1.0&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span> <span class="o">==</span> <span class="n">torch</span><span class="o">.</span><span class="n">float16</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_growth_factor</span> <span class="o">&gt;</span> <span class="mf">1.0</span><span class="p">,</span> <span class="s2">&quot;The growth factor cannot be equal or smaller than 1&quot;</span>
+            <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_backoff_factor</span> <span class="o">&lt;</span> <span class="mf">1.0</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_backoff_factor</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;The backoff factor must be between 0 and 1&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_growth_factor</span> <span class="o">&gt;=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="s2">&quot;The growth factor cannot be smaller than 1&quot;</span>
+            <span class="k">assert</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_backoff_factor</span> <span class="o">&lt;=</span> <span class="mf">1.0</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_backoff_factor</span> <span class="o">&gt;</span> <span class="mi">0</span>
+            <span class="p">),</span> <span class="s2">&quot;The backoff factor must be between 0 and 1&quot;</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_growth_factor</span> <span class="o">!=</span> <span class="mf">1.0</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Detect you use </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span><span class="si">}</span><span class="s2">, but growth_factor: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_growth_factor</span><span class="si">}</span><span class="s2"> != 1.0&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_backoff_factor</span> <span class="o">!=</span> <span class="mf">1.0</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Detect you use </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_dtype</span><span class="si">}</span><span class="s2">, but backoff_factor: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_backoff_factor</span><span class="si">}</span><span class="s2"> != 1.0&quot;</span><span class="p">)</span>
+
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_hysteresis</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;The hysteresis cannot be negative&quot;</span>
+
+<div class="viewcode-block" id="DynamicGradScaler.update"><a class="viewcode-back" href="../../../../api_doc/strategy/fsdp/fsdp_utils.html#lightrft.strategy.fsdp.fsdp_utils.DynamicGradScaler.update">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">overflow</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Update the loss scale based on whether overflow occurred.</span>
+
+<span class="sd">        This method implements the dynamic scaling algorithm. When overflow occurs,</span>
+<span class="sd">        it increments the hysteresis counter and resets growth progress. When no</span>
+<span class="sd">        overflow occurs for a sufficient period, it increases the scale to maximize</span>
+<span class="sd">        gradient precision.</span>
+
+<span class="sd">        :param overflow: Whether overflow occurs</span>
+<span class="sd">        :type overflow: bool</span>
+
+<span class="sd">        Example::</span>
+
+<span class="sd">            &gt;&gt;&gt; scaler = DynamicGradScaler()</span>
+<span class="sd">            &gt;&gt;&gt; # Simulate training steps</span>
+<span class="sd">            &gt;&gt;&gt; scaler.update(False)  # No overflow, increment growth counter</span>
+<span class="sd">            &gt;&gt;&gt; scaler.update(True)   # Overflow detected, may decrease scale</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">overflow</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_hysteresis_step</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_growth_step</span> <span class="o">=</span> <span class="mi">0</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_hysteresis_step</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_hysteresis</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_backoff_scale</span><span class="p">()</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Overflow occurs, the loss scale is adjusted to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">scale</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_growth_step</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_growth_step</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">_growth_interval</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_growth_step</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_hysteresis_step</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_grow_scale</span><span class="p">()</span>
+                <span class="nb">print</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;No overflow for consecutive </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_growth_interval</span><span class="si">}</span><span class="s2"> steps, &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;the loss scale is adjusted to </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">scale</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="p">)</span></div>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_backoff_scale</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Decrease the loss scale when overflow occurs.</span>
+
+<span class="sd">        This private method reduces the loss scale by the backoff factor and</span>
+<span class="sd">        ensures it doesn&#39;t go below the minimum scale if specified.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_scale</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scale</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_backoff_factor</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_min_scale</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_scale</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_scale</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_min_scale</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_grow_scale</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Increase the loss scale when no overflow occurs for a period.</span>
+
+<span class="sd">        This private method increases the loss scale by the growth factor and</span>
+<span class="sd">        ensures it doesn&#39;t exceed the maximum scale if specified.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_scale</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scale</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_growth_factor</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max_scale</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_scale</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_scale</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max_scale</span><span class="p">)</span>
+
+<div class="viewcode-block" id="DynamicGradScaler.state_dict"><a class="viewcode-back" href="../../../../api_doc/strategy/fsdp/fsdp_utils.html#lightrft.strategy.fsdp.fsdp_utils.DynamicGradScaler.state_dict">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">state_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns the states of the gradient scaler as a dict object.</span>
+
+<span class="sd">        This method provides a complete state dictionary that can be saved</span>
+<span class="sd">        and restored to maintain training consistency across checkpoints.</span>
+
+<span class="sd">        :return: A dictionary containing the current state of the gradient scaler</span>
+<span class="sd">        :rtype: dict</span>
+
+<span class="sd">        Example::</span>
+
+<span class="sd">            &gt;&gt;&gt; scaler = DynamicGradScaler()</span>
+<span class="sd">            &gt;&gt;&gt; scaler_state = scaler.state_dict()</span>
+<span class="sd">            &gt;&gt;&gt; print(scaler_state.keys())</span>
+<span class="sd">            dict_keys([&#39;_scale&#39;, &#39;_growth_step&#39;, &#39;_hysteresis_step&#39;])</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">state_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="n">state_dict</span><span class="p">[</span><span class="s2">&quot;_scale&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scale</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+        <span class="n">state_dict</span><span class="p">[</span><span class="s2">&quot;_growth_step&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_growth_step</span>
+        <span class="n">state_dict</span><span class="p">[</span><span class="s2">&quot;_hysteresis_step&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_hysteresis_step</span>
+
+        <span class="k">return</span> <span class="n">state_dict</span></div>
+
+<div class="viewcode-block" id="DynamicGradScaler.load_state_dict"><a class="viewcode-back" href="../../../../api_doc/strategy/fsdp/fsdp_utils.html#lightrft.strategy.fsdp.fsdp_utils.DynamicGradScaler.load_state_dict">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">load_state_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state_dict</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Load the states of the gradient scaler from a dict object.</span>
+
+<span class="sd">        This method restores the scaler state from a previously saved state</span>
+<span class="sd">        dictionary, enabling seamless checkpoint restoration.</span>
+
+<span class="sd">        :param state_dict: The states of the gradient scaler</span>
+<span class="sd">        :type state_dict: dict</span>
+
+<span class="sd">        Example::</span>
+
+<span class="sd">            &gt;&gt;&gt; scaler = DynamicGradScaler()</span>
+<span class="sd">            &gt;&gt;&gt; scaler.load_state_dict({</span>
+<span class="sd">            ...     &quot;_scale&quot;: 2048.0,</span>
+<span class="sd">            ...     &quot;_growth_step&quot;: 0,</span>
+<span class="sd">            ...     &quot;_hysteresis_step&quot;: 0</span>
+<span class="sd">            ... })</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_scale</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_scale</span><span class="o">.</span><span class="n">fill_</span><span class="p">(</span><span class="n">state_dict</span><span class="p">[</span><span class="s2">&quot;_scale&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_growth_step</span> <span class="o">=</span> <span class="n">state_dict</span><span class="p">[</span><span class="s2">&quot;_growth_step&quot;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_hysteresis_step</span> <span class="o">=</span> <span class="n">state_dict</span><span class="p">[</span><span class="s2">&quot;_hysteresis_step&quot;</span><span class="p">]</span></div></div>
+
+
+<div class="viewcode-block" id="BaseOptimizer"><a class="viewcode-back" href="../../../../api_doc/strategy/fsdp/fsdp_utils.html#lightrft.strategy.fsdp.fsdp_utils.BaseOptimizer">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">BaseOptimizer</span><span class="p">(</span><span class="n">Optimizer</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Base Optimizer class that wraps a PyTorch optimizer.</span>
+
+<span class="sd">    This class provides a wrapper around PyTorch optimizers, exposing the same interface</span>
+<span class="sd">    while allowing for additional functionality like custom backward passes and gradient clipping.</span>
+<span class="sd">    It serves as a foundation for building more sophisticated optimizers with enhanced features</span>
+<span class="sd">    for distributed training, gradient scaling, and custom optimization strategies.</span>
+
+<span class="sd">    :param optim: The PyTorch optimizer to wrap</span>
+<span class="sd">    :type optim: torch.optim.Optimizer</span>
+
+<span class="sd">    Example::</span>
+
+<span class="sd">        &gt;&gt;&gt; import torch.optim as optim</span>
+<span class="sd">        &gt;&gt;&gt; model = torch.nn.Linear(10, 1)</span>
+<span class="sd">        &gt;&gt;&gt; pytorch_optimizer = optim.Adam(model.parameters(), lr=0.001)</span>
+<span class="sd">        &gt;&gt;&gt; wrapped_optimizer = BaseOptimizer(pytorch_optimizer)</span>
+<span class="sd">        &gt;&gt;&gt; # Use wrapped_optimizer like a regular optimizer</span>
+<span class="sd">        &gt;&gt;&gt; wrapped_optimizer.zero_grad()</span>
+<span class="sd">        &gt;&gt;&gt; loss.backward()</span>
+<span class="sd">        &gt;&gt;&gt; wrapped_optimizer.step()</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">optim</span><span class="p">:</span> <span class="n">Optimizer</span><span class="p">):</span>  <span class="c1"># pylint: disable=W0231</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">optim</span> <span class="o">=</span> <span class="n">optim</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">param_groups</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Access to the parameter groups of the wrapped optimizer.</span>
+
+<span class="sd">        Parameter groups allow different sets of parameters to have different</span>
+<span class="sd">        optimization settings like learning rates, weight decay, etc.</span>
+
+<span class="sd">        :return: List of parameter groups</span>
+<span class="sd">        :rtype: list</span>
+
+<span class="sd">        Example::</span>
+
+<span class="sd">            &gt;&gt;&gt; optimizer = BaseOptimizer(torch.optim.Adam(model.parameters()))</span>
+<span class="sd">            &gt;&gt;&gt; print(len(optimizer.param_groups))  # Number of parameter groups</span>
+<span class="sd">            &gt;&gt;&gt; print(optimizer.param_groups[0][&#39;lr&#39;])  # Learning rate of first group</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">param_groups</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">defaults</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Access to the default parameters of the wrapped optimizer.</span>
+
+<span class="sd">        :return: Default parameters dictionary</span>
+<span class="sd">        :rtype: dict</span>
+
+<span class="sd">        Example::</span>
+
+<span class="sd">            &gt;&gt;&gt; optimizer = BaseOptimizer(torch.optim.Adam(model.parameters(), lr=0.001))</span>
+<span class="sd">            &gt;&gt;&gt; print(optimizer.defaults[&#39;lr&#39;])  # 0.001</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">defaults</span>
+
+<div class="viewcode-block" id="BaseOptimizer.add_param_group"><a class="viewcode-back" href="../../../../api_doc/strategy/fsdp/fsdp_utils.html#lightrft.strategy.fsdp.fsdp_utils.BaseOptimizer.add_param_group">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">add_param_group</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add a parameter group to the optimizer.</span>
+
+<span class="sd">        This method allows adding new parameter groups with potentially different</span>
+<span class="sd">        optimization settings during training.</span>
+
+<span class="sd">        :param args: Positional arguments to pass to the wrapped optimizer</span>
+<span class="sd">        :param kwargs: Keyword arguments to pass to the wrapped optimizer</span>
+<span class="sd">        :return: Result from the wrapped optimizer&#39;s add_param_group method</span>
+
+<span class="sd">        Example::</span>
+
+<span class="sd">            &gt;&gt;&gt; optimizer = BaseOptimizer(torch.optim.Adam(model.parameters()))</span>
+<span class="sd">            &gt;&gt;&gt; new_params = [torch.randn(10, requires_grad=True)]</span>
+<span class="sd">            &gt;&gt;&gt; optimizer.add_param_group({&#39;params&#39;: new_params, &#39;lr&#39;: 0.01})</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">add_param_group</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="BaseOptimizer.step"><a class="viewcode-back" href="../../../../api_doc/strategy/fsdp/fsdp_utils.html#lightrft.strategy.fsdp.fsdp_utils.BaseOptimizer.step">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Perform a single optimization step.</span>
+
+<span class="sd">        This method executes one optimization step, updating the model parameters</span>
+<span class="sd">        based on their gradients and the optimizer&#39;s algorithm.</span>
+
+<span class="sd">        :param args: Positional arguments to pass to the wrapped optimizer</span>
+<span class="sd">        :param kwargs: Keyword arguments to pass to the wrapped optimizer</span>
+<span class="sd">        :return: Result from the wrapped optimizer&#39;s step method</span>
+
+<span class="sd">        Example::</span>
+
+<span class="sd">            &gt;&gt;&gt; optimizer = BaseOptimizer(torch.optim.Adam(model.parameters()))</span>
+<span class="sd">            &gt;&gt;&gt; loss.backward()</span>
+<span class="sd">            &gt;&gt;&gt; optimizer.step()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="BaseOptimizer.zero_grad"><a class="viewcode-back" href="../../../../api_doc/strategy/fsdp/fsdp_utils.html#lightrft.strategy.fsdp.fsdp_utils.BaseOptimizer.zero_grad">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">zero_grad</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Reset the gradients of all optimized tensors.</span>
+
+<span class="sd">        This method clears the gradients of all parameters, which is typically</span>
+<span class="sd">        done before each backward pass to prevent gradient accumulation.</span>
+
+<span class="sd">        :param args: Positional arguments to pass to the wrapped optimizer</span>
+<span class="sd">        :param kwargs: Keyword arguments to pass to the wrapped optimizer</span>
+
+<span class="sd">        Example::</span>
+
+<span class="sd">            &gt;&gt;&gt; optimizer = BaseOptimizer(torch.optim.Adam(model.parameters()))</span>
+<span class="sd">            &gt;&gt;&gt; optimizer.zero_grad()  # Clear gradients</span>
+<span class="sd">            &gt;&gt;&gt; loss.backward()        # Compute new gradients</span>
+<span class="sd">            &gt;&gt;&gt; optimizer.step()       # Update parameters</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="BaseOptimizer.load_state_dict"><a class="viewcode-back" href="../../../../api_doc/strategy/fsdp/fsdp_utils.html#lightrft.strategy.fsdp.fsdp_utils.BaseOptimizer.load_state_dict">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">load_state_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Load the optimizer state.</span>
+
+<span class="sd">        This method restores the optimizer&#39;s internal state from a state dictionary,</span>
+<span class="sd">        enabling checkpoint restoration and training resumption.</span>
+
+<span class="sd">        :param args: Positional arguments to pass to the wrapped optimizer</span>
+<span class="sd">        :param kwargs: Keyword arguments to pass to the wrapped optimizer</span>
+
+<span class="sd">        Example::</span>
+
+<span class="sd">            &gt;&gt;&gt; optimizer = BaseOptimizer(torch.optim.Adam(model.parameters()))</span>
+<span class="sd">            &gt;&gt;&gt; state_dict = torch.load(&#39;optimizer_checkpoint.pth&#39;)</span>
+<span class="sd">            &gt;&gt;&gt; optimizer.load_state_dict(state_dict)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="BaseOptimizer.state_dict"><a class="viewcode-back" href="../../../../api_doc/strategy/fsdp/fsdp_utils.html#lightrft.strategy.fsdp.fsdp_utils.BaseOptimizer.state_dict">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">state_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the state of the optimizer as a dict.</span>
+
+<span class="sd">        This method provides the optimizer&#39;s complete state for checkpointing,</span>
+<span class="sd">        including parameter states and hyperparameters.</span>
+
+<span class="sd">        :return: The state of the optimizer</span>
+<span class="sd">        :rtype: dict</span>
+
+<span class="sd">        Example::</span>
+
+<span class="sd">            &gt;&gt;&gt; optimizer = BaseOptimizer(torch.optim.Adam(model.parameters()))</span>
+<span class="sd">            &gt;&gt;&gt; state_dict = optimizer.state_dict()</span>
+<span class="sd">            &gt;&gt;&gt; torch.save(state_dict, &#39;optimizer_checkpoint.pth&#39;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">state_dict</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="BaseOptimizer.backward"><a class="viewcode-back" href="../../../../api_doc/strategy/fsdp/fsdp_utils.html#lightrft.strategy.fsdp.fsdp_utils.BaseOptimizer.backward">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">backward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">loss</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute gradients of the loss.</span>
+
+<span class="sd">        This method performs backpropagation to compute gradients of the loss</span>
+<span class="sd">        with respect to the model parameters.</span>
+
+<span class="sd">        :param loss: The loss tensor to compute gradients for</span>
+<span class="sd">        :type loss: torch.Tensor</span>
+
+<span class="sd">        Example::</span>
+
+<span class="sd">            &gt;&gt;&gt; optimizer = BaseOptimizer(torch.optim.Adam(model.parameters()))</span>
+<span class="sd">            &gt;&gt;&gt; loss = criterion(output, target)</span>
+<span class="sd">            &gt;&gt;&gt; optimizer.backward(loss)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="BaseOptimizer.backward_by_grad"><a class="viewcode-back" href="../../../../api_doc/strategy/fsdp/fsdp_utils.html#lightrft.strategy.fsdp.fsdp_utils.BaseOptimizer.backward_by_grad">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">backward_by_grad</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tensor</span><span class="p">,</span> <span class="n">grad</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute gradients of the tensor with respect to the provided gradients.</span>
+
+<span class="sd">        This method allows for custom gradient computation, useful in scenarios</span>
+<span class="sd">        like gradient accumulation or custom loss functions.</span>
+
+<span class="sd">        :param tensor: The tensor to compute gradients for</span>
+<span class="sd">        :type tensor: torch.Tensor</span>
+<span class="sd">        :param grad: The gradients to backpropagate</span>
+<span class="sd">        :type grad: torch.Tensor</span>
+
+<span class="sd">        Example::</span>
+
+<span class="sd">            &gt;&gt;&gt; optimizer = BaseOptimizer(torch.optim.Adam(model.parameters()))</span>
+<span class="sd">            &gt;&gt;&gt; output = model(input)</span>
+<span class="sd">            &gt;&gt;&gt; custom_grad = torch.randn_like(output)</span>
+<span class="sd">            &gt;&gt;&gt; optimizer.backward_by_grad(output, custom_grad)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">backward</span><span class="p">(</span><span class="n">tensors</span><span class="o">=</span><span class="n">tensor</span><span class="p">,</span> <span class="n">grad_tensors</span><span class="o">=</span><span class="n">grad</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="BaseOptimizer.clip_grad_norm"><a class="viewcode-back" href="../../../../api_doc/strategy/fsdp/fsdp_utils.html#lightrft.strategy.fsdp.fsdp_utils.BaseOptimizer.clip_grad_norm">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">clip_grad_norm</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Clip the gradient norm.</span>
+
+<span class="sd">        This is a placeholder method that should be implemented by subclasses</span>
+<span class="sd">        to provide gradient clipping functionality. Gradient clipping helps</span>
+<span class="sd">        prevent gradient explosion in deep networks.</span>
+
+<span class="sd">        Example::</span>
+
+<span class="sd">            &gt;&gt;&gt; class MyOptimizer(BaseOptimizer):</span>
+<span class="sd">            ...     def clip_grad_norm(self):</span>
+<span class="sd">            ...         torch.nn.utils.clip_grad_norm_(self.param_groups[0][&#39;params&#39;], max_norm=1.0)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div></div>
+</pre></div>
+
+              </article>
+              
+            </div>
+            <footer>
+  
+
+  <hr>
+
+  <div role="contentinfo">
+    <p>
+      &copy; Copyright 2025, OpenDILab.
+
+    </p>
+  </div>
+  
+  <div>
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a
+      href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the
+      Docs</a>.
+  </div>
+   
+
+</footer>
+          </div>
+        </div>
+
+        <div class="pytorch-content-right" id="pytorch-content-right">
+          <div class="pytorch-right-menu" id="pytorch-right-menu">
+            <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
+              
+            </div>
+          </div>
+        </div>
+    </section>
+  </div>
+
+  
+
+
+  
+
+  
+  <script type="text/javascript" id="documentation_options" data-url_root="../../../../"
+    src="../../../../_static/documentation_options.js"></script>
+  <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+  <script src="../../../../_static/doctools.js"></script>
+  <script src="../../../../_static/sphinx_highlight.js"></script>
+  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+  
+
+  
+
+  <script type="text/javascript" src="../../../../_static/js/vendor/popper.min.js"></script>
+  <script type="text/javascript" src="../../../../_static/js/vendor/bootstrap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
+  <script type="text/javascript" src="../../../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+    jQuery(function () {
+      SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+  <!-- Begin Footer -->
+
+  <div class="container-fluid docs-tutorials-resources" id="docs-tutorials-resources">
+  </div>
+
+  <!-- End Footer -->
+
+  <!-- Begin Mobile Menu -->
+
+  <div class="mobile-main-menu">
+    <div class="container-fluid">
+      <div class="container">
+        <div class="mobile-main-menu-header-container">
+          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
+        </div>
+      </div>
+    </div>
+
+    <div class="mobile-main-menu-links-container">
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://github.com/opendilab/LightRFT" target="_blank">GitHub</a>
+          </li>
+      </div>
+    </div>
+  </div>
+
+  <!-- End Mobile Menu -->
+
+  <script type="text/javascript" src="../../../../_static/js/vendor/anchor.min.js"></script>
+
+  <script type="text/javascript">
+    $(document).ready(function () {
+      mobileMenu.bind();
+      mobileTOC.bind();
+      pytorchAnchors.bind();
+      sideMenus.bind();
+      scrollToAnchor.bind();
+      highlightNavigation.bind();
+      mainMenuDropdown.bind();
+      filterTags.bind();
+
+      // Add class to links that have code blocks, since we cannot create links in code blocks
+      $("article.pytorch-article a span.pre").each(function (e) {
+        $(this).closest("a").addClass("has-code");
+      });
+    })
+  </script>
+</body>
+
+</html>

@@ -308,19 +308,288 @@
             <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
               <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
                 
-  <section id="lightrft-strategy-fsdp-fsdp-optimizer">
-<h1>lightrft.strategy.fsdp.fsdp_optimizer<a class="headerlink" href="#lightrft-strategy-fsdp-fsdp-optimizer" title="Permalink to this heading">¶</a></h1>
+  <section id="module-lightrft.strategy.fsdp.fsdp_optimizer">
+<span id="lightrft-strategy-fsdp-fsdp-optimizer"></span><h1>lightrft.strategy.fsdp.fsdp_optimizer<a class="headerlink" href="#module-lightrft.strategy.fsdp.fsdp_optimizer" title="Permalink to this heading">¶</a></h1>
+<p>FSDP Optimizer Module for PyTorch.</p>
+<p>This module provides optimizers and utilities for working with PyTorch’s Fully Sharded Data Parallel (FSDP)
+training. It includes an adapted optimizer for FSDP that handles gradient scaling, clipping, and state
+management, as well as utility functions for offloading and loading optimizer states.</p>
+<p>The main components include:
+- FSDPadaptOptimizer: A wrapper optimizer that handles mixed precision training with FSDP
+- Utility functions for optimizer state management and memory optimization
+- Support for gradient scaling, clipping, and overflow detection
+- Efficient FP16/FP32 parameter conversion and synchronization</p>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">torch.optim</span><span class="w"> </span><span class="kn">import</span> <span class="n">AdamW</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">lightrft.trainer.fsdp_optimizer</span><span class="w"> </span><span class="kn">import</span> <span class="n">FSDPadaptOptimizer</span>
+
+<span class="c1"># Create base optimizer</span>
+<span class="n">base_optimizer</span> <span class="o">=</span> <span class="n">AdamW</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">)</span>
+
+<span class="c1"># Wrap with FSDP adapter</span>
+<span class="n">fsdp_optimizer</span> <span class="o">=</span> <span class="n">FSDPadaptOptimizer</span><span class="p">(</span><span class="n">base_optimizer</span><span class="p">)</span>
+
+<span class="c1"># Training loop</span>
+<span class="k">for</span> <span class="n">batch</span> <span class="ow">in</span> <span class="n">dataloader</span><span class="p">:</span>
+    <span class="n">loss</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">batch</span><span class="p">)</span>
+    <span class="n">fsdp_optimizer</span><span class="o">.</span><span class="n">backward</span><span class="p">(</span><span class="n">loss</span><span class="p">)</span>
+    <span class="n">success</span> <span class="o">=</span> <span class="n">fsdp_optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">success</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Gradient overflow detected, skipping step&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
 <section id="dtensor-supported">
 <h2>DTENSOR_SUPPORTED<a class="headerlink" href="#dtensor-supported" title="Permalink to this heading">¶</a></h2>
+<dl class="py data">
+<dt class="sig sig-object py" id="lightrft.strategy.fsdp.fsdp_optimizer.DTENSOR_SUPPORTED">
+<span class="sig-prename descclassname"><span class="pre">lightrft.strategy.fsdp.fsdp_optimizer.</span></span><span class="sig-name descname"><span class="pre">DTENSOR_SUPPORTED</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#lightrft.strategy.fsdp.fsdp_optimizer.DTENSOR_SUPPORTED" title="Permalink to this definition">¶</a></dt>
+<dd><p>bool(x) -&gt; bool</p>
+<p>Returns True when the argument x is true, False otherwise.
+The builtins True and False are the only two instances of the class bool.
+The class bool is a subclass of the class int, and cannot be subclassed.</p>
+</dd></dl>
+
 </section>
 <section id="fsdpadaptoptimizer">
 <h2>FSDPadaptOptimizer<a class="headerlink" href="#fsdpadaptoptimizer" title="Permalink to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="lightrft.strategy.fsdp.fsdp_optimizer.FSDPadaptOptimizer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">lightrft.strategy.fsdp.fsdp_optimizer.</span></span><span class="sig-name descname"><span class="pre">FSDPadaptOptimizer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/lightrft/strategy/fsdp/fsdp_optimizer.html#FSDPadaptOptimizer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.fsdp.fsdp_optimizer.FSDPadaptOptimizer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Optimizer wrapper for PyTorch FSDP (Fully Sharded Data Parallel).</p>
+<p>This optimizer handles the necessary components for mixed precision training with FSDP:</p>
+<ul class="simple">
+<li><p>Gradient scaling for numerical stability in mixed precision training</p></li>
+<li><p>Gradient clipping and unscaling to prevent gradient explosion</p></li>
+<li><p>State dictionary management for checkpointing and model saving</p></li>
+<li><p>Efficient FP16/FP32 parameter conversion and synchronization</p></li>
+<li><p>Overflow detection and recovery mechanisms</p></li>
+</ul>
+<p>The optimizer maintains separate FP16 and FP32 parameter groups where FP16 parameters
+share memory space with the model’s FlatParam, while FP32 parameters are used for
+the actual optimization step to maintain numerical precision.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>optimizer</strong> (<em>torch.optim.Optimizer</em>) – The base optimizer to wrap (e.g., AdamW, SGD)</p>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">torch.optim</span><span class="w"> </span><span class="kn">import</span> <span class="n">AdamW</span>
+
+<span class="n">base_optimizer</span> <span class="o">=</span> <span class="n">AdamW</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">)</span>
+<span class="n">fsdp_optimizer</span> <span class="o">=</span> <span class="n">FSDPadaptOptimizer</span><span class="p">(</span><span class="n">base_optimizer</span><span class="p">)</span>
+
+<span class="c1"># Training step</span>
+<span class="n">loss</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">batch</span><span class="p">)</span>
+<span class="n">fsdp_optimizer</span><span class="o">.</span><span class="n">backward</span><span class="p">(</span><span class="n">loss</span><span class="p">)</span>
+<span class="n">success</span> <span class="o">=</span> <span class="n">fsdp_optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.fsdp.fsdp_optimizer.FSDPadaptOptimizer.backward">
+<span class="sig-name descname"><span class="pre">backward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">loss</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">retain_graph</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/lightrft/strategy/fsdp/fsdp_optimizer.html#FSDPadaptOptimizer.backward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.fsdp.fsdp_optimizer.FSDPadaptOptimizer.backward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform backward pass with loss scaling for mixed precision training.</p>
+<p>The loss is scaled to prevent gradient underflow in FP16 computations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>loss</strong> (<em>torch.Tensor</em>) – The loss tensor to backpropagate</p></li>
+<li><p><strong>retain_graph</strong> (<em>bool</em>) – If True, the computation graph will be retained for multiple backward passes</p></li>
+</ul>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">loss</span> <span class="o">=</span> <span class="n">criterion</span><span class="p">(</span><span class="n">outputs</span><span class="p">,</span> <span class="n">targets</span><span class="p">)</span>
+<span class="n">optimizer</span><span class="o">.</span><span class="n">backward</span><span class="p">(</span><span class="n">loss</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.fsdp.fsdp_optimizer.FSDPadaptOptimizer.clip_grad_norm">
+<span class="sig-name descname"><span class="pre">clip_grad_norm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_norm</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/lightrft/strategy/fsdp/fsdp_optimizer.html#FSDPadaptOptimizer.clip_grad_norm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.fsdp.fsdp_optimizer.FSDPadaptOptimizer.clip_grad_norm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set gradient clipping norm (actual clipping is performed in the step() method).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> – The model whose gradients will be clipped (unused in current implementation)</p></li>
+<li><p><strong>max_norm</strong> (<em>float</em>) – Maximum norm value for gradient clipping</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Note:</dt><dd><p>The actual gradient clipping is performed internally in the step() method
+using the _unscale_and_clip_grads method.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.fsdp.fsdp_optimizer.FSDPadaptOptimizer.load_state_dict">
+<span class="sig-name descname"><span class="pre">load_state_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">states</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/lightrft/strategy/fsdp/fsdp_optimizer.html#FSDPadaptOptimizer.load_state_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.fsdp.fsdp_optimizer.FSDPadaptOptimizer.load_state_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load a complete state dictionary from checkpoint.</p>
+<p>This method restores the optimizer to its exact previous state, including
+gradient scaler, optimizer states, and both FP32 and FP16 parameter values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>states</strong> (<em>dict</em>) – The state dictionary to load</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>AssertionError</strong> – If required state components are missing or parameter counts are inconsistent</p>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Load optimizer state</span>
+<span class="n">checkpoint</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;checkpoint.pt&#39;</span><span class="p">)</span>
+<span class="n">optimizer</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">[</span><span class="s1">&#39;optimizer&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="lightrft.strategy.fsdp.fsdp_optimizer.FSDPadaptOptimizer.loss_scale">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">loss_scale</span></span><a class="headerlink" href="#lightrft.strategy.fsdp.fsdp_optimizer.FSDPadaptOptimizer.loss_scale" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the current loss scale value used for gradient scaling.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The current loss scale tensor</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.fsdp.fsdp_optimizer.FSDPadaptOptimizer.state_dict">
+<span class="sig-name descname"><span class="pre">state_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/lightrft/strategy/fsdp/fsdp_optimizer.html#FSDPadaptOptimizer.state_dict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.fsdp.fsdp_optimizer.FSDPadaptOptimizer.state_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the complete state dictionary for checkpointing.</p>
+<p>The state dictionary includes:
+- Gradient scaler state for loss scaling
+- Base optimizer states (momentum, etc.)
+- FP32 parameter weights for precise restoration</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A dictionary containing all optimizer states and parameters</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict</p>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Save optimizer state</span>
+<span class="n">checkpoint</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;model&#39;</span><span class="p">:</span> <span class="n">model</span><span class="o">.</span><span class="n">state_dict</span><span class="p">(),</span>
+    <span class="s1">&#39;optimizer&#39;</span><span class="p">:</span> <span class="n">optimizer</span><span class="o">.</span><span class="n">state_dict</span><span class="p">(),</span>
+    <span class="s1">&#39;epoch&#39;</span><span class="p">:</span> <span class="n">epoch</span>
+<span class="p">}</span>
+<span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">,</span> <span class="s1">&#39;checkpoint.pt&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.fsdp.fsdp_optimizer.FSDPadaptOptimizer.step">
+<span class="sig-name descname"><span class="pre">step</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/lightrft/strategy/fsdp/fsdp_optimizer.html#FSDPadaptOptimizer.step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.fsdp.fsdp_optimizer.FSDPadaptOptimizer.step" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform a single optimization step with overflow detection and gradient processing.</p>
+<p>This method orchestrates the complete optimization process:
+1. Computes gradient norms for overflow detection
+2. Updates the gradient scaler based on overflow status
+3. Transfers gradients from FP16 to FP32 parameters
+4. Unscales and clips gradients as needed
+5. Performs the optimization step on FP32 parameters
+6. Copies updated FP32 parameters back to FP16 parameters</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>True if the optimization step was successful, False if overflow occurred</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">success</span> <span class="o">=</span> <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="n">success</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Gradient overflow detected, step skipped&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.fsdp.fsdp_optimizer.FSDPadaptOptimizer.zero_grad">
+<span class="sig-name descname"><span class="pre">zero_grad</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/lightrft/strategy/fsdp/fsdp_optimizer.html#FSDPadaptOptimizer.zero_grad"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.fsdp.fsdp_optimizer.FSDPadaptOptimizer.zero_grad" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set gradients of all FP16 parameters to None.</p>
+<p>This method clears gradients from the FP16 parameter groups that are used
+for the forward pass and gradient computation.</p>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 <section id="offload-fsdp-optimizer">
 <h2>offload_fsdp_optimizer<a class="headerlink" href="#offload-fsdp-optimizer" title="Permalink to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="lightrft.strategy.fsdp.fsdp_optimizer.offload_fsdp_optimizer">
+<span class="sig-prename descclassname"><span class="pre">lightrft.strategy.fsdp.fsdp_optimizer.</span></span><span class="sig-name descname"><span class="pre">offload_fsdp_optimizer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">optimizer</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#lightrft.strategy.fsdp.fsdp_optimizer.offload_fsdp_optimizer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Offload optimizer states from GPU to CPU memory to reduce GPU memory usage.</p>
+<p>This function moves all tensor-based optimizer states (such as momentum buffers,
+variance estimates, etc.) from GPU to CPU memory. This is useful for reducing
+GPU memory pressure during training, especially when using large models or
+when GPU memory is limited.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>optimizer</strong> (<em>torch.optim.Optimizer</em>) – The optimizer whose states should be offloaded to CPU</p>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Offload optimizer states to save GPU memory</span>
+<span class="n">offload_fsdp_optimizer</span><span class="p">(</span><span class="n">optimizer</span><span class="p">)</span>
+
+<span class="c1"># Later, load back when needed</span>
+<span class="n">load_fsdp_optimizer</span><span class="p">(</span><span class="n">optimizer</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="simple">
+<dt>Note:</dt><dd><p>After offloading, you should call load_fsdp_optimizer before the next
+optimization step to ensure states are available on the correct device.</p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 <section id="load-fsdp-optimizer">
 <h2>load_fsdp_optimizer<a class="headerlink" href="#load-fsdp-optimizer" title="Permalink to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="lightrft.strategy.fsdp.fsdp_optimizer.load_fsdp_optimizer">
+<span class="sig-prename descclassname"><span class="pre">lightrft.strategy.fsdp.fsdp_optimizer.</span></span><span class="sig-name descname"><span class="pre">load_fsdp_optimizer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">optimizer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">device_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">torch.cuda.current_device</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#lightrft.strategy.fsdp.fsdp_optimizer.load_fsdp_optimizer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load optimizer states from CPU back to the specified GPU device.</p>
+<p>This function moves all tensor-based optimizer states from CPU memory back to
+the specified GPU device. This is typically used after offload_fsdp_optimizer
+to restore states for the next optimization step.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>optimizer</strong> (<em>torch.optim.Optimizer</em>) – The optimizer whose states should be loaded to GPU</p></li>
+<li><p><strong>device_id</strong> (<em>int</em><em> or </em><em>torch.device</em>) – The device ID to load states to (default: current CUDA device)</p></li>
+</ul>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Load optimizer states back to GPU before optimization</span>
+<span class="n">load_fsdp_optimizer</span><span class="p">(</span><span class="n">optimizer</span><span class="p">,</span> <span class="n">device_id</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+<span class="c1"># Or use current device</span>
+<span class="n">load_fsdp_optimizer</span><span class="p">(</span><span class="n">optimizer</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="simple">
+<dt>Note:</dt><dd><p>This function automatically determines the current device using get_current_device()
+to ensure compatibility with distributed training setups.</p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 </section>
 
@@ -368,10 +637,31 @@
             <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
               <ul>
 <li><a class="reference internal" href="#">lightrft.strategy.fsdp.fsdp_optimizer</a><ul>
-<li><a class="reference internal" href="#dtensor-supported">DTENSOR_SUPPORTED</a></li>
-<li><a class="reference internal" href="#fsdpadaptoptimizer">FSDPadaptOptimizer</a></li>
-<li><a class="reference internal" href="#offload-fsdp-optimizer">offload_fsdp_optimizer</a></li>
-<li><a class="reference internal" href="#load-fsdp-optimizer">load_fsdp_optimizer</a></li>
+<li><a class="reference internal" href="#dtensor-supported">DTENSOR_SUPPORTED</a><ul>
+<li><a class="reference internal" href="#lightrft.strategy.fsdp.fsdp_optimizer.DTENSOR_SUPPORTED"><code class="docutils literal notranslate"><span class="pre">DTENSOR_SUPPORTED</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#fsdpadaptoptimizer">FSDPadaptOptimizer</a><ul>
+<li><a class="reference internal" href="#lightrft.strategy.fsdp.fsdp_optimizer.FSDPadaptOptimizer"><code class="docutils literal notranslate"><span class="pre">FSDPadaptOptimizer</span></code></a><ul>
+<li><a class="reference internal" href="#lightrft.strategy.fsdp.fsdp_optimizer.FSDPadaptOptimizer.backward"><code class="docutils literal notranslate"><span class="pre">FSDPadaptOptimizer.backward()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.fsdp.fsdp_optimizer.FSDPadaptOptimizer.clip_grad_norm"><code class="docutils literal notranslate"><span class="pre">FSDPadaptOptimizer.clip_grad_norm()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.fsdp.fsdp_optimizer.FSDPadaptOptimizer.load_state_dict"><code class="docutils literal notranslate"><span class="pre">FSDPadaptOptimizer.load_state_dict()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.fsdp.fsdp_optimizer.FSDPadaptOptimizer.loss_scale"><code class="docutils literal notranslate"><span class="pre">FSDPadaptOptimizer.loss_scale</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.fsdp.fsdp_optimizer.FSDPadaptOptimizer.state_dict"><code class="docutils literal notranslate"><span class="pre">FSDPadaptOptimizer.state_dict()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.fsdp.fsdp_optimizer.FSDPadaptOptimizer.step"><code class="docutils literal notranslate"><span class="pre">FSDPadaptOptimizer.step()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.fsdp.fsdp_optimizer.FSDPadaptOptimizer.zero_grad"><code class="docutils literal notranslate"><span class="pre">FSDPadaptOptimizer.zero_grad()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#offload-fsdp-optimizer">offload_fsdp_optimizer</a><ul>
+<li><a class="reference internal" href="#lightrft.strategy.fsdp.fsdp_optimizer.offload_fsdp_optimizer"><code class="docutils literal notranslate"><span class="pre">offload_fsdp_optimizer()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#load-fsdp-optimizer">load_fsdp_optimizer</a><ul>
+<li><a class="reference internal" href="#lightrft.strategy.fsdp.fsdp_optimizer.load_fsdp_optimizer"><code class="docutils literal notranslate"><span class="pre">load_fsdp_optimizer()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

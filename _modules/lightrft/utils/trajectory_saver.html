@@ -1,0 +1,866 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js" lang="en">
+<!--<![endif]-->
+
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>lightrft.utils.trajectory_saver &mdash; LightRFT v0.1.1 documentation</title>
+  
+
+  <link rel="shortcut icon" href="../../../_static/images/favicon.ico" />
+  
+  
+
+  
+
+  
+  
+  
+
+  
+
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <!-- <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" /> -->
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/readthedocs.css" type="text/css" />
+  <link rel="index" title="Index" href="../../../genindex.html" />
+  <link rel="search" title="Search" href="../../../search.html" />
+  <!-- Google Analytics -->
+  <script type="text/javascript">
+    var collapsedSections = [];
+  </script>
+  
+  <!-- End Google Analytics -->
+  
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+  <script>
+    MathJax = {
+        chtml: {
+            scale: 1,
+            minScale: 1,
+        },
+        svg: {
+            scale: 1,
+            minScale: 1,
+        }
+    }
+</script>
+
+  <!-- Preload the theme fonts -->
+
+<link rel="preload" href="../../../_static/fonts/FreightSans/freight-sans-book.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../_static/fonts/FreightSans/freight-sans-medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../_static/fonts/IBMPlexMono/IBMPlexMono-Medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../_static/fonts/FreightSans/freight-sans-bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../_static/fonts/FreightSans/freight-sans-medium-italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../_static/fonts/IBMPlexMono/IBMPlexMono-SemiBold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+
+<!-- Preload the katex fonts -->
+
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Math-Italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size1-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size4-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size2-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size3-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Caligraphic-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.2/css/all.css"
+    integrity="sha384-vSIIfh2YWi9wW0r9iZe7RJPrKwp6bG+s9QZMoITbCckVJqGCCRhc+ccxNcdpHuYu" crossorigin="anonymous">
+</head>
+
+<div class="container-fluid header-holder tutorials-header" id="header-holder">
+  <div class="container">
+    <div class="header-container">
+      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+        aria-label="OpenMMLab"></a>
+
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://github.com/opendilab/LightRFT" target="_blank">GitHub</a>
+          </li>
+          <li >
+            <div id="resourcesDropdownButton" data-toggle="resources-dropdown" class="resources-dropdown">
+              <a
+                class="resource-option with-down-arrow">
+                OpenDILab
+              </a>
+              <div class="resources-dropdown-menu">
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-engine" target="_blank">
+                  <span class="dropdown-title">DI-engine </span>
+                  <p>OpenDILab Decision AI Engine</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/LightZero" target="_blank">
+                  <span class="dropdown-title">LightZero </span>
+                  <p>OpenDILab Decision Monte Carlo Tree Search Framework</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/GenerativeRL" target="_blank">
+                  <span class="dropdown-title">GenerativeRL </span>
+                  <p>OpenDILab Generative AI Framework</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-star" target="_blank">
+                  <span class="dropdown-title">DI-star </span>
+                  <p>OpenDILab Decision AI in StarCraftII</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-drive" target="_blank">
+                  <span class="dropdown-title">DI-drive </span>
+                  <p>OpenDILab Auto-driving platform</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/GoBigger" target="_blank">
+                  <span class="dropdown-title">GoBigger </span>
+                  <p>OpenDILab Multi-Agent Environment</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-smartcross" target="_blank">
+                  <span class="dropdown-title">DI-smartcross </span>
+                  <p>Decision Intelligence Platform for Traffic Crossing Signal Control</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-treetensor" target="_blank">
+                  <span class="dropdown-title">DI-treetensor </span>
+                  <p>Tree Nested PyTorch Tensor Lib</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-sheep" target="_blank">
+                  <span class="dropdown-title">DI-sheep </span>
+                  <p>Deep Reinforcement Learning + 3 Tiles Game</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-model-based-RL" target="_blank">
+                  <span class="dropdown-title">awesome-model-based-RL </span>
+                  <p>A curated list of awesome model based RL resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-decision-transformer" target="_blank">
+                  <span class="dropdown-title">awesome-decision-transformer </span>
+                  <p>A curated list of Decision Transformer resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-exploration-rl" target="_blank">
+                  <span class="dropdown-title">awesome-exploration-rl </span>
+                  <p>A curated list of awesome exploration RL resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-multi-modal-reinforcement-learning" target="_blank">
+                  <span class="dropdown-title">awesome-multi-modal-reinforcement-learning </span>
+                  <p>A curated list of Multi-Modal Reinforcement Learning resources (continually updated)</p>
+                </a>
+              </div>
+          </li>
+        </ul>
+      </div>
+
+      <a class="main-menu-open-button" href="#" data-behavior="open-mobile-menu"></a>
+    </div>
+  </div>
+</div>
+
+<body class="pytorch-body">
+
+   
+
+  
+
+  <div class="table-of-contents-link-wrapper">
+    <span>Table of Contents</span>
+    <a href="#" class="toggle-table-of-contents" data-behavior="toggle-table-of-contents"></a>
+  </div>
+
+  <nav data-toggle="wy-nav-shift" class="pytorch-left-menu" id="pytorch-left-menu">
+    <div class="pytorch-side-scroll">
+      <div class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        <div class="pytorch-left-menu-search">
+          
+
+          
+          
+          
+          
+
+          
+
+
+
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search Docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        
+        
+        
+        
+        
+        <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../quick_start/index.html">Quick Start</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide &amp; Best Practices</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../best_practice/index.html">Best Practices</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_doc/utils/index.html">lightrft.utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_doc/datasets/index.html">lightrft.datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_doc/models/index.html">lightrft.models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_doc/strategy/index.html">lightrft.strategy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_doc/trainer/index.html">lightrft.trainer</a></li>
+</ul>
+
+        
+        
+      </div>
+    </div>
+  </nav>
+
+  <div class="pytorch-container">
+    <div class="pytorch-page-level-bar" id="pytorch-page-level-bar">
+      <div class="pytorch-breadcrumbs-wrapper">
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="pytorch-breadcrumbs">
+    
+      <li>
+        <a href="../../../index.html">
+            Docs
+        </a> &gt;
+      </li>
+
+        
+          <li><a href="../../index.html">Module code</a> &gt;</li>
+        
+      <li>lightrft.utils.trajectory_saver</li>
+    
+    
+      <li class="pytorch-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+</div>
+      </div>
+
+      <div class="pytorch-shortcuts-wrapper" id="pytorch-shortcuts-wrapper">
+        Shortcuts
+      </div>
+    </div>
+
+    <section data-toggle="wy-nav-shift" id="pytorch-content-wrap" class="pytorch-content-wrap">
+      <div class="pytorch-content-left">
+        
+          <div class="rst-content">
+            
+            <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
+              <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
+                
+  <h1>Source code for lightrft.utils.trajectory_saver</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Trajectory Saver Utility for debugging and analysis.</span>
+
+<span class="sd">This module provides utilities to save experience trajectories to JSON files</span>
+<span class="sd">for debugging and analysis purposes.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">base64</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">PIL</span><span class="w"> </span><span class="kn">import</span> <span class="n">Image</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
+
+
+<div class="viewcode-block" id="TrajectorySaver"><a class="viewcode-back" href="../../../api_doc/utils/trajectory_saver.html#lightrft.utils.trajectory_saver.TrajectorySaver">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">TrajectorySaver</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Utility class to save experience trajectories to JSON files.</span>
+
+<span class="sd">    Features:</span>
+<span class="sd">        - Saves experience sequences, rewards, and metadata for individual samples.</span>
+<span class="sd">        - Supports both text-only and vision-language models.</span>
+<span class="sd">        - Efficiently handles image data by saving them to a separate directory with clear linkage.</span>
+<span class="sd">        - Only saves on rank 0 to avoid duplication.</span>
+<span class="sd">        - Produces human-readable JSON output for easy debugging.</span>
+
+<span class="sd">    :param save_dir: Directory to save trajectory files</span>
+<span class="sd">    :type save_dir: str</span>
+<span class="sd">    :param tokenizer: Tokenizer for decoding sequences</span>
+<span class="sd">    :type tokenizer: Any</span>
+<span class="sd">    :param save_images_separately: If True, save images as separate files. Default to True</span>
+<span class="sd">    :type save_images_separately: bool</span>
+<span class="sd">    :param max_image_size: Maximum dimension for saved images (to reduce file size). Default to 512</span>
+<span class="sd">    :type max_image_size: int</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">save_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">tokenizer</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+        <span class="n">save_images_separately</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">max_image_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">512</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">save_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">save_dir</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tokenizer</span> <span class="o">=</span> <span class="n">tokenizer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">save_images_separately</span> <span class="o">=</span> <span class="n">save_images_separately</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_image_size</span> <span class="o">=</span> <span class="n">max_image_size</span>
+
+        <span class="c1"># Create directory structure only on rank 0</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">torch</span><span class="o">.</span><span class="n">distributed</span><span class="o">.</span><span class="n">is_initialized</span><span class="p">()</span> <span class="ow">or</span> <span class="n">torch</span><span class="o">.</span><span class="n">distributed</span><span class="o">.</span><span class="n">get_rank</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">save_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">save_images_separately</span><span class="p">:</span>
+                <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">save_dir</span> <span class="o">/</span> <span class="s2">&quot;images&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<div class="viewcode-block" id="TrajectorySaver.save_trajectories"><a class="viewcode-back" href="../../../api_doc/utils/trajectory_saver.html#lightrft.utils.trajectory_saver.TrajectorySaver.save_trajectories">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">save_trajectories</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">experiences</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">],</span>
+        <span class="n">step</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">num_samples</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
+        <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;trajectories&quot;</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Save a subset of experiences to a JSON file.</span>
+
+<span class="sd">        Each Experience object is a micro-batch. This function unpacks them</span>
+<span class="sd">        into individual sample trajectories before saving.</span>
+
+<span class="sd">        :param experiences: List of Experience or ExperienceVL objects from the replay buffer</span>
+<span class="sd">        :type experiences: List[Any]</span>
+<span class="sd">        :param step: Current training step (used in filename)</span>
+<span class="sd">        :type step: int</span>
+<span class="sd">        :param num_samples: Target number of individual sample trajectories to save. Default to 10</span>
+<span class="sd">        :type num_samples: int</span>
+<span class="sd">        :param prefix: Prefix for the output filename. Default to &quot;trajectories&quot;</span>
+<span class="sd">        :type prefix: str</span>
+<span class="sd">        :return: Path to the saved JSON file (None if not rank 0 or no experiences)</span>
+<span class="sd">        :rtype: Optional[str]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">torch</span><span class="o">.</span><span class="n">distributed</span><span class="o">.</span><span class="n">is_initialized</span><span class="p">()</span> <span class="ow">or</span> <span class="n">torch</span><span class="o">.</span><span class="n">distributed</span><span class="o">.</span><span class="n">get_rank</span><span class="p">()</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">experiences</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">all_trajectories</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="c1"># Iterate through experience objects (micro-batches) until we have enough samples.</span>
+        <span class="k">for</span> <span class="n">exp_idx</span><span class="p">,</span> <span class="n">exp</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">experiences</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">all_trajectories</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">num_samples</span><span class="p">:</span>
+                <span class="k">break</span>
+
+            <span class="c1">#  Unpack the micro-batch into individual trajectories.</span>
+            <span class="n">unpacked_trajs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_unpack_experience_to_dicts</span><span class="p">(</span><span class="n">exp</span><span class="p">,</span> <span class="n">step</span><span class="p">,</span> <span class="n">exp_idx</span><span class="p">)</span>
+            <span class="n">all_trajectories</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">unpacked_trajs</span><span class="p">)</span>
+
+        <span class="c1"># Ensure we don&#39;t save more than requested.</span>
+        <span class="n">sampled_trajectories</span> <span class="o">=</span> <span class="n">all_trajectories</span><span class="p">[:</span><span class="n">num_samples</span><span class="p">]</span>
+
+        <span class="c1"># Save to JSON</span>
+        <span class="n">output_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">save_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2">_step_</span><span class="si">{</span><span class="n">step</span><span class="si">}</span><span class="s2">.json&quot;</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">output_path</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">sampled_trajectories</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">ensure_ascii</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[TrajectorySaver] Saved </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">sampled_trajectories</span><span class="p">)</span><span class="si">}</span><span class="s2"> trajectories to </span><span class="si">{</span><span class="n">output_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">output_path</span><span class="p">)</span></div>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_unpack_experience_to_dicts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exp</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">step</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">exp_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Unpacks a single Experience object (a micro-batch) into a list of</span>
+<span class="sd">        dictionaries, where each dictionary represents a single sample.</span>
+
+<span class="sd">        :param exp: Experience object containing micro-batch data</span>
+<span class="sd">        :type exp: Any</span>
+<span class="sd">        :param step: Current training step</span>
+<span class="sd">        :type step: int</span>
+<span class="sd">        :param exp_idx: Index of the experience object in the list</span>
+<span class="sd">        :type exp_idx: int</span>
+<span class="sd">        :return: List of dictionaries, each representing a single sample trajectory</span>
+<span class="sd">        :rtype: List[Dict[str, Any]]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Extract tensors and move to CPU</span>
+        <span class="n">sequences</span> <span class="o">=</span> <span class="n">exp</span><span class="o">.</span><span class="n">sequences</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>
+
+        <span class="c1"># Validate sequences shape before processing</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sequences</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c1"># Scalar tensor - skip this experience</span>
+            <span class="nb">print</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;[TrajectorySaver] Warning: sequences is a scalar tensor at step </span><span class="si">{</span><span class="n">step</span><span class="si">}</span><span class="s2">, exp_idx </span><span class="si">{</span><span class="n">exp_idx</span><span class="si">}</span><span class="s2">. Skipping.&quot;</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="p">[]</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">sequences</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="c1"># 1D tensor - reshape to (1, seq_len)</span>
+            <span class="nb">print</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;[TrajectorySaver] Warning: sequences is 1D tensor with shape </span><span class="si">{</span><span class="n">sequences</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2"> at step </span><span class="si">{</span><span class="n">step</span><span class="si">}</span><span class="s2">, exp_idx </span><span class="si">{</span><span class="n">exp_idx</span><span class="si">}</span><span class="s2">. Reshaping to 2D.&quot;</span>  <span class="c1"># noqa: E501</span>
+            <span class="p">)</span>
+            <span class="n">sequences</span> <span class="o">=</span> <span class="n">sequences</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">sequences</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="c1"># Unexpected shape</span>
+            <span class="nb">print</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;[TrajectorySaver] Error: sequences has unexpected shape </span><span class="si">{</span><span class="n">sequences</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2"> at step </span><span class="si">{</span><span class="n">step</span><span class="si">}</span><span class="s2">, exp_idx </span><span class="si">{</span><span class="n">exp_idx</span><span class="si">}</span><span class="s2">. Expected 2D tensor (B, S). Skipping.&quot;</span>  <span class="c1"># noqa: E501</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="p">[]</span>
+
+        <span class="n">batch_size</span> <span class="o">=</span> <span class="n">sequences</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="c1"># Handle action_mask with same shape validation</span>
+        <span class="k">if</span> <span class="n">exp</span><span class="o">.</span><span class="n">action_mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">action_mask</span> <span class="o">=</span> <span class="n">exp</span><span class="o">.</span><span class="n">action_mask</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">action_mask</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">action_mask</span> <span class="o">=</span> <span class="n">action_mask</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">action_mask</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;[TrajectorySaver] Warning: action_mask has unexpected shape </span><span class="si">{</span><span class="n">action_mask</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">. Creating default mask.&quot;</span>  <span class="c1"># noqa: E501</span>
+                <span class="p">)</span>
+                <span class="n">action_mask</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">sequences</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">bool</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">action_mask</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">sequences</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">bool</span><span class="p">)</span>
+
+        <span class="c1"># Decode all sequences in the micro-batch at once</span>
+        <span class="n">decoded_sequences</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tokenizer</span><span class="o">.</span><span class="n">batch_decode</span><span class="p">(</span><span class="n">sequences</span><span class="p">,</span> <span class="n">skip_special_tokens</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="c1"># Handle optional tensors with shape validation</span>
+        <span class="n">advantages</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_safe_extract_tensor</span><span class="p">(</span><span class="n">exp</span><span class="p">,</span> <span class="s1">&#39;advantages&#39;</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">)</span>
+        <span class="n">returns</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_safe_extract_tensor</span><span class="p">(</span><span class="n">exp</span><span class="p">,</span> <span class="s1">&#39;returns&#39;</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">)</span>
+        <span class="n">action_log_probs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_safe_extract_tensor</span><span class="p">(</span><span class="n">exp</span><span class="p">,</span> <span class="s1">&#39;action_log_probs&#39;</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">)</span>
+        <span class="n">values</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_safe_extract_tensor</span><span class="p">(</span><span class="n">exp</span><span class="p">,</span> <span class="s1">&#39;values&#39;</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">)</span>
+        <span class="n">raw_images</span> <span class="o">=</span> <span class="n">exp</span><span class="o">.</span><span class="n">raw_images</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">exp</span><span class="p">,</span>
+                                               <span class="s1">&#39;raw_images&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">exp</span><span class="o">.</span><span class="n">raw_images</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">batch_size</span>
+
+        <span class="n">unpacked_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="c1"># Iterate over each sample in the micro-batch</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">batch_size</span><span class="p">):</span>
+            <span class="c1"># Get generated text for this specific sample</span>
+            <span class="c1"># action_mask indices are relative to action_mask, not sequences!</span>
+            <span class="c1"># action_mask is created from sequences[:, input_len - 1 : -1]</span>
+            <span class="c1"># So action_mask[j] corresponds to sequences[input_len - 1 + j]</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">gen_indices</span> <span class="o">=</span> <span class="n">action_mask</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">as_tuple</span><span class="o">=</span><span class="kc">True</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">gen_indices</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="c1"># Verify sequences[i] is indexable</span>
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sequences</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span>
+                            <span class="sa">f</span><span class="s2">&quot;[TrajectorySaver] Warning: sequences[</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">] is scalar at step </span><span class="si">{</span><span class="n">step</span><span class="si">}</span><span class="s2">, exp_idx </span><span class="si">{</span><span class="n">exp_idx</span><span class="si">}</span><span class="s2">. Skipping generation.&quot;</span>  <span class="c1"># noqa: E501</span>
+                        <span class="p">)</span>
+                        <span class="n">generated_text</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+                        <span class="n">pure_generated_text</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="c1"># Calculate offset to adjust indices from action_mask space to sequences space</span>
+                        <span class="c1"># action_mask length = seq_length - input_len</span>
+                        <span class="c1"># Therefore: input_len = seq_length - action_mask_len</span>
+                        <span class="c1"># Offset = input_len - 1 (because action_mask starts from input_len - 1)</span>
+                        <span class="n">input_len</span> <span class="o">=</span> <span class="n">sequences</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="n">action_mask</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+                        <span class="n">offset</span> <span class="o">=</span> <span class="n">input_len</span> <span class="o">-</span> <span class="mi">1</span>
+
+                        <span class="c1"># Adjust indices to sequences space</span>
+                        <span class="n">adjusted_indices</span> <span class="o">=</span> <span class="n">gen_indices</span> <span class="o">+</span> <span class="n">offset</span>
+                        <span class="n">gen_tokens</span> <span class="o">=</span> <span class="n">sequences</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">adjusted_indices</span><span class="p">]</span>
+
+                        <span class="c1"># generated_text includes the last prompt token (for RL state-action pairing)</span>
+                        <span class="n">generated_text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tokenizer</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="n">gen_tokens</span><span class="p">,</span> <span class="n">skip_special_tokens</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+                        <span class="c1"># pure_generated_text excludes the last prompt token (only model&#39;s output)</span>
+                        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">adjusted_indices</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                            <span class="n">pure_gen_tokens</span> <span class="o">=</span> <span class="n">sequences</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">adjusted_indices</span><span class="p">[</span><span class="mi">1</span><span class="p">:]]</span>
+                            <span class="n">pure_generated_text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tokenizer</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="n">pure_gen_tokens</span><span class="p">,</span> <span class="n">skip_special_tokens</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">pure_generated_text</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">generated_text</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+                    <span class="n">pure_generated_text</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+            <span class="k">except</span> <span class="p">(</span><span class="ne">IndexError</span><span class="p">,</span> <span class="ne">RuntimeError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;[TrajectorySaver] Error extracting generated text for sample </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2"> at step </span><span class="si">{</span><span class="n">step</span><span class="si">}</span><span class="s2">, exp_idx </span><span class="si">{</span><span class="n">exp_idx</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span>  <span class="c1"># noqa: E501</span>
+                <span class="p">)</span>
+                <span class="n">generated_text</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+                <span class="n">pure_generated_text</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
+            <span class="c1"># Build the dictionary for this single sample</span>
+            <span class="n">traj_dict</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;global_step&quot;</span><span class="p">:</span> <span class="n">step</span><span class="p">,</span>
+                <span class="s2">&quot;experience_index&quot;</span><span class="p">:</span> <span class="n">exp_idx</span><span class="p">,</span>  <span class="c1"># which micro-batch it came from</span>
+                <span class="s2">&quot;sample_in_exp&quot;</span><span class="p">:</span> <span class="n">i</span><span class="p">,</span>  <span class="c1"># which sample within the micro-batch</span>
+                <span class="s2">&quot;full_sequence&quot;</span><span class="p">:</span> <span class="n">decoded_sequences</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                <span class="s2">&quot;generated_text&quot;</span><span class="p">:</span> <span class="n">generated_text</span><span class="p">,</span>  <span class="c1"># Includes last prompt token (for RL state-action)</span>
+                <span class="s2">&quot;pure_generated_text&quot;</span><span class="p">:</span> <span class="n">pure_generated_text</span><span class="p">,</span>  <span class="c1"># Only model&#39;s output</span>
+            <span class="p">}</span>
+
+            <span class="c1"># Add optional fields for this sample</span>
+            <span class="k">if</span> <span class="n">advantages</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">traj_dict</span><span class="p">[</span><span class="s2">&quot;advantages&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tensor_to_list</span><span class="p">(</span><span class="n">advantages</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">returns</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">traj_dict</span><span class="p">[</span><span class="s2">&quot;return&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tensor_to_list</span><span class="p">(</span><span class="n">returns</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">action_log_probs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">traj_dict</span><span class="p">[</span><span class="s2">&quot;action_log_probs&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tensor_to_list</span><span class="p">(</span><span class="n">action_log_probs</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">values</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">traj_dict</span><span class="p">[</span><span class="s2">&quot;values&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tensor_to_list</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+
+            <span class="c1"># Add info dict fields, slicing if they are tensors</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">exp</span><span class="p">,</span> <span class="s1">&#39;info&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">exp</span><span class="o">.</span><span class="n">info</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">info_dict</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">exp</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="o">==</span> <span class="n">batch_size</span><span class="p">:</span>
+                        <span class="n">info_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tensor_to_list</span><span class="p">(</span><span class="n">value</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+                    <span class="k">elif</span> <span class="n">key</span> <span class="o">==</span> <span class="s1">&#39;reward_metrics&#39;</span><span class="p">:</span>
+                        <span class="n">metrics</span> <span class="o">=</span> <span class="p">{}</span>
+                        <span class="k">for</span> <span class="n">metric_name</span><span class="p">,</span> <span class="n">metric_tensor</span> <span class="ow">in</span> <span class="n">value</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">metric_tensor</span><span class="p">,</span>
+                                          <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">metric_tensor</span><span class="o">.</span><span class="n">shape</span>
+                                                                <span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">metric_tensor</span><span class="p">)</span> <span class="o">==</span> <span class="n">batch_size</span><span class="p">:</span>
+                                <span class="n">metrics</span><span class="p">[</span><span class="n">metric_name</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tensor_to_list</span><span class="p">(</span><span class="n">metric_tensor</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+                            <span class="k">else</span><span class="p">:</span>  <span class="c1"># scalar metric, applies to all</span>
+                                <span class="n">metrics</span><span class="p">[</span><span class="n">metric_name</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tensor_to_list</span><span class="p">(</span><span class="n">metric_tensor</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span>
+                                    <span class="n">metric_tensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
+                                <span class="p">)</span> <span class="k">else</span> <span class="n">metric_tensor</span>
+                        <span class="n">info_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">metrics</span>
+                    <span class="k">else</span><span class="p">:</span>  <span class="c1"># scalar value, applies to all samples in micro-batch</span>
+                        <span class="n">info_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tensor_to_list</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="k">else</span> <span class="n">value</span>
+                <span class="n">traj_dict</span><span class="p">[</span><span class="s2">&quot;info&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">info_dict</span>
+
+            <span class="c1"># Handle images for this specific sample</span>
+            <span class="n">sample_images</span> <span class="o">=</span> <span class="n">raw_images</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+
+            <span class="c1"># Normalize sample_images to always be a list or None</span>
+            <span class="k">if</span> <span class="n">sample_images</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="c1"># Check if it&#39;s a single image object (PIL.Image.Image or similar)</span>
+                <span class="c1"># Images have certain attributes like &#39;size&#39;, &#39;mode&#39;, etc.</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">sample_images</span><span class="p">,</span> <span class="s1">&#39;size&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">sample_images</span><span class="p">,</span> <span class="s1">&#39;mode&#39;</span><span class="p">):</span>
+                    <span class="c1"># Single image - wrap in list</span>
+                    <span class="n">sample_images</span> <span class="o">=</span> <span class="p">[</span><span class="n">sample_images</span><span class="p">]</span>
+                <span class="k">elif</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">sample_images</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                    <span class="c1"># Unknown type - try to convert to list</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">sample_images</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">sample_images</span><span class="p">)</span>
+                    <span class="k">except</span> <span class="p">(</span><span class="ne">TypeError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>
+                        <span class="nb">print</span><span class="p">(</span>
+                            <span class="sa">f</span><span class="s2">&quot;[TrajectorySaver] Warning: Unexpected image type </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">sample_images</span><span class="p">)</span><span class="si">}</span><span class="s2"> at step </span><span class="si">{</span><span class="n">step</span><span class="si">}</span><span class="s2">, exp_idx </span><span class="si">{</span><span class="n">exp_idx</span><span class="si">}</span><span class="s2">, sample </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">. Skipping images.&quot;</span>  <span class="c1"># noqa: E501</span>
+                        <span class="p">)</span>
+                        <span class="n">sample_images</span> <span class="o">=</span> <span class="kc">None</span>
+
+            <span class="k">if</span> <span class="n">sample_images</span><span class="p">:</span>
+                <span class="n">traj_dict</span><span class="p">[</span><span class="s2">&quot;has_images&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="n">traj_dict</span><span class="p">[</span><span class="s2">&quot;num_images&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">sample_images</span><span class="p">)</span>
+
+                <span class="c1">#  Logic now correctly handles a single list of images per sample</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">save_images_separately</span><span class="p">:</span>
+                    <span class="n">image_paths</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_save_images</span><span class="p">(</span><span class="n">sample_images</span><span class="p">,</span> <span class="n">step</span><span class="p">,</span> <span class="n">exp_idx</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+                    <span class="n">traj_dict</span><span class="p">[</span><span class="s2">&quot;image_paths&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">image_paths</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">traj_dict</span><span class="p">[</span><span class="s2">&quot;images_base64&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_encode_images_base64</span><span class="p">(</span><span class="n">sample_images</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">traj_dict</span><span class="p">[</span><span class="s2">&quot;has_images&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+
+            <span class="n">unpacked_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">traj_dict</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">unpacked_list</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_tensor_to_list</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tensor</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">],</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Convert tensor to list or scalar.</span>
+
+<span class="sd">        :param tensor: Input tensor to convert</span>
+<span class="sd">        :type tensor: Optional[torch.Tensor]</span>
+<span class="sd">        :return: Converted value as list, scalar, or None</span>
+<span class="sd">        :rtype: Union[List[Any], float, int, None]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">tensor</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="n">tensor</span> <span class="o">=</span> <span class="n">tensor</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">tensor</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">tensor</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">tensor</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_safe_extract_tensor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exp</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">attr_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                             <span class="n">expected_batch_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Safely extract a tensor attribute from an experience object.</span>
+
+<span class="sd">        :param exp: Experience object</span>
+<span class="sd">        :type exp: Any</span>
+<span class="sd">        :param attr_name: Name of the attribute to extract</span>
+<span class="sd">        :type attr_name: str</span>
+<span class="sd">        :param expected_batch_size: Expected batch size for validation</span>
+<span class="sd">        :type expected_batch_size: int</span>
+<span class="sd">        :return: List with one element per sample, or [None] * batch_size if extraction fails</span>
+<span class="sd">        :rtype: Union[torch.Tensor, List[Optional[torch.Tensor]]]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">exp</span><span class="p">,</span> <span class="n">attr_name</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">exp</span><span class="p">,</span> <span class="n">attr_name</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">expected_batch_size</span>
+
+        <span class="n">tensor</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">exp</span><span class="p">,</span> <span class="n">attr_name</span><span class="p">)</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>
+
+        <span class="c1"># Handle scalar tensors</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">tensor</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c1"># Scalar - apply to all samples</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">tensor</span><span class="p">]</span> <span class="o">*</span> <span class="n">expected_batch_size</span>
+
+        <span class="c1"># Handle 1D tensors</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">tensor</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">tensor</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">expected_batch_size</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">tensor</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;[TrajectorySaver] Warning: </span><span class="si">{</span><span class="n">attr_name</span><span class="si">}</span><span class="s2"> has mismatched batch size </span><span class="si">{</span><span class="n">tensor</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">, expected </span><span class="si">{</span><span class="n">expected_batch_size</span><span class="si">}</span><span class="s2">. Padding/truncating.&quot;</span>  <span class="c1"># noqa: E501</span>
+                <span class="p">)</span>
+                <span class="c1"># Pad or truncate</span>
+                <span class="k">if</span> <span class="n">tensor</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">expected_batch_size</span><span class="p">:</span>
+                    <span class="n">padding</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">expected_batch_size</span> <span class="o">-</span> <span class="n">tensor</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                    <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">tensor</span><span class="p">)</span> <span class="o">+</span> <span class="n">padding</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">tensor</span><span class="p">[:</span><span class="n">expected_batch_size</span><span class="p">]</span>
+
+        <span class="c1"># Handle 2D+ tensors</span>
+        <span class="k">if</span> <span class="n">tensor</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">expected_batch_size</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">tensor</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;[TrajectorySaver] Warning: </span><span class="si">{</span><span class="n">attr_name</span><span class="si">}</span><span class="s2"> has mismatched batch size </span><span class="si">{</span><span class="n">tensor</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">, expected </span><span class="si">{</span><span class="n">expected_batch_size</span><span class="si">}</span><span class="s2">. Using defaults.&quot;</span>  <span class="c1"># noqa: E501</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">expected_batch_size</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_save_images</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">imgs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Image</span><span class="o">.</span><span class="n">Image</span><span class="p">],</span> <span class="n">step</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">exp_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">sample_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Save a list of images for a single sample.</span>
+
+<span class="sd">        :param imgs: List of PIL Image objects to save</span>
+<span class="sd">        :type imgs: List[Image.Image]</span>
+<span class="sd">        :param step: Current training step</span>
+<span class="sd">        :type step: int</span>
+<span class="sd">        :param exp_idx: Index of the experience object</span>
+<span class="sd">        :type exp_idx: int</span>
+<span class="sd">        :param sample_idx: Index of the sample within the micro-batch</span>
+<span class="sd">        :type sample_idx: int</span>
+<span class="sd">        :return: List of relative image paths (or None for invalid images)</span>
+<span class="sd">        :rtype: List[Optional[str]]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">image_paths</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">img_idx</span><span class="p">,</span> <span class="n">img</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">imgs</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">img</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="c1"># Resize if needed</span>
+                <span class="k">if</span> <span class="nb">max</span><span class="p">(</span><span class="n">img</span><span class="o">.</span><span class="n">size</span><span class="p">)</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_image_size</span><span class="p">:</span>
+                    <span class="n">img</span><span class="o">.</span><span class="n">thumbnail</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">max_image_size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_image_size</span><span class="p">),</span> <span class="n">Image</span><span class="o">.</span><span class="n">Resampling</span><span class="o">.</span><span class="n">LANCZOS</span><span class="p">)</span>
+
+                <span class="c1">#  Filename is now much more specific and easier to trace</span>
+                <span class="n">img_filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;step</span><span class="si">{</span><span class="n">step</span><span class="si">}</span><span class="s2">_exp</span><span class="si">{</span><span class="n">exp_idx</span><span class="si">}</span><span class="s2">_sample</span><span class="si">{</span><span class="n">sample_idx</span><span class="si">}</span><span class="s2">_img</span><span class="si">{</span><span class="n">img_idx</span><span class="si">}</span><span class="s2">.png&quot;</span>
+                <span class="n">img_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">save_dir</span> <span class="o">/</span> <span class="s2">&quot;images&quot;</span> <span class="o">/</span> <span class="n">img_filename</span>
+                <span class="n">img</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">img_path</span><span class="p">)</span>
+                <span class="c1"># Store a relative path for portability</span>
+                <span class="n">image_paths</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;images/</span><span class="si">{</span><span class="n">img_filename</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">image_paths</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">image_paths</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_encode_images_base64</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">imgs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Image</span><span class="o">.</span><span class="n">Image</span><span class="p">],</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Encode a list of images for a single sample as base64 strings.</span>
+
+<span class="sd">        :param imgs: List of PIL Image objects to encode</span>
+<span class="sd">        :type imgs: List[Image.Image]</span>
+<span class="sd">        :return: List of base64-encoded image strings (or None for invalid images)</span>
+<span class="sd">        :rtype: List[Optional[str]]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">base64_images</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">img</span> <span class="ow">in</span> <span class="n">imgs</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">img</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="c1"># Resize if needed</span>
+                <span class="k">if</span> <span class="nb">max</span><span class="p">(</span><span class="n">img</span><span class="o">.</span><span class="n">size</span><span class="p">)</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_image_size</span><span class="p">:</span>
+                    <span class="n">img</span><span class="o">.</span><span class="n">thumbnail</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">max_image_size</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_image_size</span><span class="p">),</span> <span class="n">Image</span><span class="o">.</span><span class="n">Resampling</span><span class="o">.</span><span class="n">LANCZOS</span><span class="p">)</span>
+
+                <span class="c1"># Convert to base64</span>
+                <span class="n">buffer</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">()</span>
+                <span class="n">img</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;PNG&#39;</span><span class="p">)</span>
+                <span class="n">img_bytes</span> <span class="o">=</span> <span class="n">buffer</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()</span>
+                <span class="n">img_base64</span> <span class="o">=</span> <span class="n">base64</span><span class="o">.</span><span class="n">b64encode</span><span class="p">(</span><span class="n">img_bytes</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
+                <span class="n">base64_images</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">img_base64</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">base64_images</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">base64_images</span></div>
+
+
+<div class="viewcode-block" id="create_trajectory_saver"><a class="viewcode-back" href="../../../api_doc/utils/trajectory_saver.html#lightrft.utils.trajectory_saver.create_trajectory_saver">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">create_trajectory_saver</span><span class="p">(</span><span class="n">args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">tokenizer</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">TrajectorySaver</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Factory function to create TrajectorySaver if enabled.</span>
+
+<span class="sd">    :param args: Training arguments containing save_trajectories flag and save_path</span>
+<span class="sd">    :type args: Any</span>
+<span class="sd">    :param tokenizer: Tokenizer for decoding sequences</span>
+<span class="sd">    :type tokenizer: Any</span>
+<span class="sd">    :return: TrajectorySaver instance or None if not enabled</span>
+<span class="sd">    :rtype: Optional[TrajectorySaver]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="s1">&#39;save_trajectories&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="n">save_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">save_path</span><span class="p">,</span> <span class="s2">&quot;trajectories&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">TrajectorySaver</span><span class="p">(</span>
+        <span class="n">save_dir</span><span class="o">=</span><span class="n">save_dir</span><span class="p">,</span>
+        <span class="n">tokenizer</span><span class="o">=</span><span class="n">tokenizer</span><span class="p">,</span>
+        <span class="n">save_images_separately</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">max_image_size</span><span class="o">=</span><span class="mi">512</span><span class="p">,</span>
+    <span class="p">)</span></div>
+</pre></div>
+
+              </article>
+              
+            </div>
+            <footer>
+  
+
+  <hr>
+
+  <div role="contentinfo">
+    <p>
+      &copy; Copyright 2025, OpenDILab.
+
+    </p>
+  </div>
+  
+  <div>
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a
+      href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the
+      Docs</a>.
+  </div>
+   
+
+</footer>
+          </div>
+        </div>
+
+        <div class="pytorch-content-right" id="pytorch-content-right">
+          <div class="pytorch-right-menu" id="pytorch-right-menu">
+            <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
+              
+            </div>
+          </div>
+        </div>
+    </section>
+  </div>
+
+  
+
+
+  
+
+  
+  <script type="text/javascript" id="documentation_options" data-url_root="../../../"
+    src="../../../_static/documentation_options.js"></script>
+  <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+  <script src="../../../_static/doctools.js"></script>
+  <script src="../../../_static/sphinx_highlight.js"></script>
+  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+  
+
+  
+
+  <script type="text/javascript" src="../../../_static/js/vendor/popper.min.js"></script>
+  <script type="text/javascript" src="../../../_static/js/vendor/bootstrap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
+  <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+    jQuery(function () {
+      SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+  <!-- Begin Footer -->
+
+  <div class="container-fluid docs-tutorials-resources" id="docs-tutorials-resources">
+  </div>
+
+  <!-- End Footer -->
+
+  <!-- Begin Mobile Menu -->
+
+  <div class="mobile-main-menu">
+    <div class="container-fluid">
+      <div class="container">
+        <div class="mobile-main-menu-header-container">
+          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
+        </div>
+      </div>
+    </div>
+
+    <div class="mobile-main-menu-links-container">
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://github.com/opendilab/LightRFT" target="_blank">GitHub</a>
+          </li>
+      </div>
+    </div>
+  </div>
+
+  <!-- End Mobile Menu -->
+
+  <script type="text/javascript" src="../../../_static/js/vendor/anchor.min.js"></script>
+
+  <script type="text/javascript">
+    $(document).ready(function () {
+      mobileMenu.bind();
+      mobileTOC.bind();
+      pytorchAnchors.bind();
+      sideMenus.bind();
+      scrollToAnchor.bind();
+      highlightNavigation.bind();
+      mainMenuDropdown.bind();
+      filterTags.bind();
+
+      // Add class to links that have code blocks, since we cannot create links in code blocks
+      $("article.pytorch-article a span.pre").each(function (e) {
+        $(this).closest("a").addClass("has-code");
+      });
+    })
+  </script>
+</body>
+
+</html>

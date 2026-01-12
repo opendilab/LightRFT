@@ -306,8 +306,89 @@
             <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
               <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
                 
-  <section id="lightrft-trainer-replay-buffer-vl">
-<h1>lightrft.trainer.replay_buffer_vl<a class="headerlink" href="#lightrft-trainer-replay-buffer-vl" title="Permalink to this heading">¶</a></h1>
+  <section id="module-lightrft.trainer.replay_buffer_vl">
+<span id="lightrft-trainer-replay-buffer-vl"></span><h1>lightrft.trainer.replay_buffer_vl<a class="headerlink" href="#module-lightrft.trainer.replay_buffer_vl" title="Permalink to this heading">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="lightrft.trainer.replay_buffer_vl.NaiveReplayBufferVL">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">lightrft.trainer.replay_buffer_vl.</span></span><span class="sig-name descname"><span class="pre">NaiveReplayBufferVL</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sample_batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cpu_offload</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">packing_samples</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/trainer/replay_buffer_vl.html#NaiveReplayBufferVL"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.trainer.replay_buffer_vl.NaiveReplayBufferVL" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></p>
+<p>Naive replay buffer class for Vision-Language models. It stores experience samples.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sample_batch_size</strong> (<em>int</em>) – Batch size when sampling (train_micro_batch_size).</p></li>
+<li><p><strong>limit</strong> (<em>int</em>) – Limit of number of experience samples. A number &lt;= 0 means unlimited, defaults to 0.</p></li>
+<li><p><strong>cpu_offload</strong> (<em>bool</em>) – Whether to offload experience to CPU when sampling, defaults to True.</p></li>
+<li><p><strong>packing_samples</strong> (<em>bool</em>) – Whether to use packed samples format, defaults to False.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.trainer.replay_buffer_vl.NaiveReplayBufferVL.append">
+<span class="sig-name descname"><span class="pre">append</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">experience</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="experience_maker_vl.html#lightrft.trainer.experience_maker_vl.ExperienceVL" title="lightrft.trainer.experience_maker_vl.ExperienceVL"><span class="pre">ExperienceVL</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#lightrft.trainer.replay_buffer_vl.NaiveReplayBufferVL.append" title="Permalink to this definition">¶</a></dt>
+<dd><p>Append experience to the replay buffer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>experience</strong> (<a class="reference internal" href="experience_maker_vl.html#lightrft.trainer.experience_maker_vl.ExperienceVL" title="lightrft.trainer.experience_maker_vl.ExperienceVL"><em>ExperienceVL</em></a>) – Experience batch to append.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.trainer.replay_buffer_vl.NaiveReplayBufferVL.clear">
+<span class="sig-name descname"><span class="pre">clear</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/lightrft/trainer/replay_buffer_vl.html#NaiveReplayBufferVL.clear"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.trainer.replay_buffer_vl.NaiveReplayBufferVL.clear" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clear all items from the replay buffer.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.trainer.replay_buffer_vl.NaiveReplayBufferVL.collate_fn">
+<span class="sig-name descname"><span class="pre">collate_fn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="experience_maker_vl.html#lightrft.trainer.experience_maker_vl.ExperienceVL" title="lightrft.trainer.experience_maker_vl.ExperienceVL"><span class="pre">ExperienceVL</span></a></span></span><a class="reference internal" href="../../_modules/lightrft/trainer/replay_buffer_vl.html#NaiveReplayBufferVL.collate_fn"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.trainer.replay_buffer_vl.NaiveReplayBufferVL.collate_fn" title="Permalink to this definition">¶</a></dt>
+<dd><p>Collate function for DataLoader.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>batch</strong> (<em>List</em><em>[</em><a class="reference internal" href="replay_buffer_utils.html#lightrft.trainer.replay_buffer_utils.BufferItemVL" title="lightrft.trainer.replay_buffer_utils.BufferItemVL"><em>BufferItemVL</em></a><em>]</em>) – Batch of buffer items.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Batched experience.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="experience_maker_vl.html#lightrft.trainer.experience_maker_vl.ExperienceVL" title="lightrft.trainer.experience_maker_vl.ExperienceVL">ExperienceVL</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.trainer.replay_buffer_vl.NaiveReplayBufferVL.normalize">
+<span class="sig-name descname"><span class="pre">normalize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">attribute</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strategy</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/lightrft/trainer/replay_buffer_vl.html#NaiveReplayBufferVL.normalize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.trainer.replay_buffer_vl.NaiveReplayBufferVL.normalize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Normalize a specified attribute across all items in the buffer.</p>
+<p>This method computes the mean and standard deviation of the specified attribute
+across all items and normalizes them. Currently only supports “advantages”.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>attribute</strong> (<em>str</em>) – Name of the attribute to normalize (currently only “advantages” is supported).</p></li>
+<li><p><strong>strategy</strong> (<em>Strategy</em>) – Distributed training strategy for all_reduce operations.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.trainer.replay_buffer_vl.NaiveReplayBufferVL.sample">
+<span class="sig-name descname"><span class="pre">sample</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="experience_maker_vl.html#lightrft.trainer.experience_maker_vl.ExperienceVL" title="lightrft.trainer.experience_maker_vl.ExperienceVL"><span class="pre">ExperienceVL</span></a></span></span><a class="headerlink" href="#lightrft.trainer.replay_buffer_vl.NaiveReplayBufferVL.sample" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sample a batch of experiences from the replay buffer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Batch of sampled experiences.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="experience_maker_vl.html#lightrft.trainer.experience_maker_vl.ExperienceVL" title="lightrft.trainer.experience_maker_vl.ExperienceVL">ExperienceVL</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 
 
@@ -353,7 +434,17 @@
           <div class="pytorch-right-menu" id="pytorch-right-menu">
             <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
               <ul>
-<li><a class="reference internal" href="#">lightrft.trainer.replay_buffer_vl</a></li>
+<li><a class="reference internal" href="#">lightrft.trainer.replay_buffer_vl</a><ul>
+<li><a class="reference internal" href="#lightrft.trainer.replay_buffer_vl.NaiveReplayBufferVL"><code class="docutils literal notranslate"><span class="pre">NaiveReplayBufferVL</span></code></a><ul>
+<li><a class="reference internal" href="#lightrft.trainer.replay_buffer_vl.NaiveReplayBufferVL.append"><code class="docutils literal notranslate"><span class="pre">NaiveReplayBufferVL.append()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.trainer.replay_buffer_vl.NaiveReplayBufferVL.clear"><code class="docutils literal notranslate"><span class="pre">NaiveReplayBufferVL.clear()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.trainer.replay_buffer_vl.NaiveReplayBufferVL.collate_fn"><code class="docutils literal notranslate"><span class="pre">NaiveReplayBufferVL.collate_fn()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.trainer.replay_buffer_vl.NaiveReplayBufferVL.normalize"><code class="docutils literal notranslate"><span class="pre">NaiveReplayBufferVL.normalize()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.trainer.replay_buffer_vl.NaiveReplayBufferVL.sample"><code class="docutils literal notranslate"><span class="pre">NaiveReplayBufferVL.sample()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 
             </div>

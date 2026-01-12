@@ -306,8 +306,185 @@
             <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
               <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
                 
-  <section id="lightrft-trainer-ppo-trainer-vl">
-<h1>lightrft.trainer.ppo_trainer_vl<a class="headerlink" href="#lightrft-trainer-ppo-trainer-vl" title="Permalink to this heading">¶</a></h1>
+  <section id="module-lightrft.trainer.ppo_trainer_vl">
+<span id="lightrft-trainer-ppo-trainer-vl"></span><h1>lightrft.trainer.ppo_trainer_vl<a class="headerlink" href="#module-lightrft.trainer.ppo_trainer_vl" title="Permalink to this heading">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="lightrft.trainer.ppo_trainer_vl.PPOTrainerVL">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">lightrft.trainer.ppo_trainer_vl.</span></span><span class="sig-name descname"><span class="pre">PPOTrainerVL</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">strategy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">actor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../models/actor_vl.html#lightrft.models.actor_vl.ActorVL" title="lightrft.models.actor_vl.ActorVL"><span class="pre">ActorVL</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">critic</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.nn.Module</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reward_model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.nn.Module</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../models/actor_vl.html#lightrft.models.actor_vl.ActorVL" title="lightrft.models.actor_vl.ActorVL"><span class="pre">ActorVL</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">ema_model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../models/actor_vl.html#lightrft.models.actor_vl.ActorVL" title="lightrft.models.actor_vl.ActorVL"><span class="pre">ActorVL</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">actor_optim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.optim.Optimizer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">critic_optim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.optim.Optimizer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">actor_scheduler</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">critic_scheduler</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ema_beta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.992</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_kl_coef</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kl_target</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kl_horizon</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ptx_coef</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">micro_train_batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">buffer_limit</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">buffer_cpu_offload</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eps_clip</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value_clip</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">micro_rollout_batch_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gradient_checkpointing</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_epochs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_norm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tokenizer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">processor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prompt_max_len</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">128</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataloader_pin_memory</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remote_rm_url</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reward_fn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">torch.Tensor</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">torch.Tensor</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reward_fn_label_map</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reward_recipe</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_hf_ckpt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">disable_ds_ckpt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">generate_kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/trainer/ppo_trainer_vl.html#PPOTrainerVL"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.trainer.ppo_trainer_vl.PPOTrainerVL" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></p>
+<p>Trainer for Proximal Policy Optimization (PPO) algorithm for Vision-Language Models.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>strategy</strong> (<em>Strategy</em>) – The training strategy to use.</p></li>
+<li><p><strong>actor</strong> (<a class="reference internal" href="../models/actor_vl.html#lightrft.models.actor_vl.ActorVL" title="lightrft.models.actor_vl.ActorVL"><em>ActorVL</em></a>) – The actor model in the PPO algorithm.</p></li>
+<li><p><strong>critic</strong> (<em>nn.Module</em>) – The critic model in the PPO algorithm.</p></li>
+<li><p><strong>reward_model</strong> (<em>nn.Module</em>) – The reward model for calculating rewards in the RLHF setup.</p></li>
+<li><p><strong>initial_model</strong> (<a class="reference internal" href="../models/actor_vl.html#lightrft.models.actor_vl.ActorVL" title="lightrft.models.actor_vl.ActorVL"><em>ActorVL</em></a>) – The initial model for reference logits to limit actor updates in RLHF.</p></li>
+<li><p><strong>ema_model</strong> (<a class="reference internal" href="../models/actor_vl.html#lightrft.models.actor_vl.ActorVL" title="lightrft.models.actor_vl.ActorVL"><em>ActorVL</em></a>) – The exponential moving average model for stable training.</p></li>
+<li><p><strong>actor_optim</strong> (<em>Optimizer</em>) – The optimizer for the actor model.</p></li>
+<li><p><strong>critic_optim</strong> (<em>Optimizer</em>) – The optimizer for the critic model.</p></li>
+<li><p><strong>actor_scheduler</strong> (<em>Scheduler</em>) – The learning rate scheduler for the actor.</p></li>
+<li><p><strong>critic_scheduler</strong> (<em>Scheduler</em>) – The learning rate scheduler for the critic.</p></li>
+<li><p><strong>ema_beta</strong> (<em>float</em>) – EMA decay rate for model stability, defaults to 0.992.</p></li>
+<li><p><strong>init_kl_coef</strong> (<em>float</em>) – Initial coefficient for KL divergence, defaults to 0.001.</p></li>
+<li><p><strong>kl_target</strong> (<em>float</em><em>, </em><em>optional</em>) – Target value for KL divergence, defaults to None.</p></li>
+<li><p><strong>kl_horizon</strong> (<em>int</em>) – Horizon for KL annealing, defaults to 10000.</p></li>
+<li><p><strong>ptx_coef</strong> (<em>float</em>) – Coefficient for supervised loss from pre-trained data, defaults to 0.</p></li>
+<li><p><strong>micro_train_batch_size</strong> (<em>int</em>) – Micro-batch size for actor training, defaults to 8.</p></li>
+<li><p><strong>buffer_limit</strong> (<em>int</em>) – Maximum size of the replay buffer, defaults to 0.</p></li>
+<li><p><strong>buffer_cpu_offload</strong> (<em>bool</em>) – If True, offloads replay buffer to CPU, defaults to True.</p></li>
+<li><p><strong>eps_clip</strong> (<em>float</em>) – Clipping coefficient for policy loss, defaults to 0.2.</p></li>
+<li><p><strong>value_clip</strong> (<em>float</em>) – Clipping coefficient for value function loss, defaults to 0.2.</p></li>
+<li><p><strong>micro_rollout_batch_size</strong> (<em>int</em>) – Micro-batch size for generating rollouts, defaults to 8.</p></li>
+<li><p><strong>gradient_checkpointing</strong> (<em>bool</em>) – If True, enables gradient checkpointing, defaults to False.</p></li>
+<li><p><strong>max_epochs</strong> (<em>int</em>) – Number of epochs to train, defaults to 1.</p></li>
+<li><p><strong>max_norm</strong> (<em>float</em>) – Maximum gradient norm for gradient clipping, defaults to 1.0.</p></li>
+<li><p><strong>tokenizer</strong> (<em>Callable</em><em>, </em><em>optional</em>) – Tokenizer for input data, defaults to None.</p></li>
+<li><p><strong>processor</strong> (<em>Callable</em><em>, </em><em>optional</em>) – Processor for multimodal input data, defaults to None.</p></li>
+<li><p><strong>prompt_max_len</strong> (<em>int</em>) – Maximum length for prompts, defaults to 128.</p></li>
+<li><p><strong>dataloader_pin_memory</strong> (<em>bool</em>) – If True, pins memory in the data loader, defaults to True.</p></li>
+<li><p><strong>remote_rm_url</strong> (<em>str</em><em>, </em><em>optional</em>) – URL for remote reward model API, defaults to None.</p></li>
+<li><p><strong>reward_fn</strong> (<em>Callable</em><em>, </em><em>optional</em>) – Custom reward function for computing rewards, defaults to None.</p></li>
+<li><p><strong>reward_fn_label_map</strong> (<em>dict</em><em>, </em><em>optional</em>) – Label mapping for reward function, defaults to None.</p></li>
+<li><p><strong>reward_recipe</strong> (<em>dict</em><em>, </em><em>optional</em>) – Recipe configuration for reward computation, defaults to None.</p></li>
+<li><p><strong>save_hf_ckpt</strong> (<em>bool</em>) – Whether to save huggingface-format model weight, defaults to False.</p></li>
+<li><p><strong>disable_ds_ckpt</strong> (<em>bool</em>) – Whether not to save deepspeed-format model weight (used for training recovery).</p></li>
+<li><p><strong>generate_kwargs</strong> (<em>dict</em>) – Additional arguments for model generation.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.trainer.ppo_trainer_vl.PPOTrainerVL.evaluate">
+<span class="sig-name descname"><span class="pre">evaluate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eval_dataloader</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">global_step</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/trainer/ppo_trainer_vl.html#PPOTrainerVL.evaluate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.trainer.ppo_trainer_vl.PPOTrainerVL.evaluate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluate the model on evaluation dataset.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>eval_dataloader</strong> (<em>DataLoader</em>) – DataLoader for evaluation data.</p></li>
+<li><p><strong>global_step</strong> (<em>int</em>) – Current global step for logging.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dictionary of evaluation metrics.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.trainer.ppo_trainer_vl.PPOTrainerVL.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prompts_dataloader</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pretrain_dataloader</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eval_dataloader</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">consumed_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_update_steps_per_episodes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/lightrft/trainer/ppo_trainer_vl.html#PPOTrainerVL.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.trainer.ppo_trainer_vl.PPOTrainerVL.fit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Main training loop for PPO.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>args</strong> (<em>Namespace</em>) – Training arguments.</p></li>
+<li><p><strong>prompts_dataloader</strong> (<em>DataLoader</em>) – DataLoader for prompt data.</p></li>
+<li><p><strong>pretrain_dataloader</strong> (<em>DataLoader</em>) – DataLoader for pre-training data.</p></li>
+<li><p><strong>eval_dataloader</strong> (<em>DataLoader</em><em>, </em><em>optional</em>) – DataLoader for evaluation data, defaults to None.</p></li>
+<li><p><strong>consumed_samples</strong> (<em>int</em>) – Number of samples already consumed, defaults to 0.</p></li>
+<li><p><strong>num_update_steps_per_episodes</strong> (<em>int</em>) – Number of update steps per episode, defaults to 1.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.trainer.ppo_trainer_vl.PPOTrainerVL.ppo_train">
+<span class="sig-name descname"><span class="pre">ppo_train</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">global_steps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/trainer/ppo_trainer_vl.html#PPOTrainerVL.ppo_train"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.trainer.ppo_trainer_vl.PPOTrainerVL.ppo_train" title="Permalink to this definition">¶</a></dt>
+<dd><p>PPO training loop over the replay buffer.</p>
+<p>NOTE: This method is not used directly in the main trainer,
+as it’s overridden by external classes (e.g., lightrft/trainer/spmd_ppo_trainer.py).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>global_steps</strong> (<em>int</em>) – Current global step count, defaults to 0.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dictionary of averaged training statistics.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.trainer.ppo_trainer_vl.PPOTrainerVL.save_logs_and_checkpoints">
+<span class="sig-name descname"><span class="pre">save_logs_and_checkpoints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">global_step</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_bar</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logs_dict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">client_states</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">episode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/trainer/ppo_trainer_vl.html#PPOTrainerVL.save_logs_and_checkpoints"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.trainer.ppo_trainer_vl.PPOTrainerVL.save_logs_and_checkpoints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save logs to wandb/tensorboard and save model checkpoints.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>args</strong> (<em>Namespace</em>) – Training arguments.</p></li>
+<li><p><strong>global_step</strong> (<em>int</em>) – Current global step.</p></li>
+<li><p><strong>step_bar</strong> (<em>tqdm</em>) – Progress bar object.</p></li>
+<li><p><strong>logs_dict</strong> (<em>dict</em>) – Dictionary of metrics to log, defaults to {}.</p></li>
+<li><p><strong>client_states</strong> (<em>dict</em>) – Client state for checkpoint recovery, defaults to {}.</p></li>
+<li><p><strong>episode</strong> (<em>int</em>) – Current episode number, defaults to 0.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.trainer.ppo_trainer_vl.PPOTrainerVL.training_step">
+<span class="sig-name descname"><span class="pre">training_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">experience</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="experience_maker_vl.html#lightrft.trainer.experience_maker_vl.ExperienceVL" title="lightrft.trainer.experience_maker_vl.ExperienceVL"><span class="pre">ExperienceVL</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">global_steps</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/lightrft/trainer/ppo_trainer_vl.html#PPOTrainerVL.training_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.trainer.ppo_trainer_vl.PPOTrainerVL.training_step" title="Permalink to this definition">¶</a></dt>
+<dd><p>Single training step combining actor and critic updates.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>experience</strong> (<a class="reference internal" href="experience_maker_vl.html#lightrft.trainer.experience_maker_vl.ExperienceVL" title="lightrft.trainer.experience_maker_vl.ExperienceVL"><em>ExperienceVL</em></a>) – Experience batch from replay buffer.</p></li>
+<li><p><strong>global_steps</strong> (<em>int</em>) – Current global step count.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dictionary of training statistics.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dict[str, float]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.trainer.ppo_trainer_vl.PPOTrainerVL.training_step_actor">
+<span class="sig-name descname"><span class="pre">training_step_actor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">experience</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="experience_maker_vl.html#lightrft.trainer.experience_maker_vl.ExperienceVL" title="lightrft.trainer.experience_maker_vl.ExperienceVL"><span class="pre">ExperienceVL</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/lightrft/trainer/ppo_trainer_vl.html#PPOTrainerVL.training_step_actor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.trainer.ppo_trainer_vl.PPOTrainerVL.training_step_actor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Actor training step.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>experience</strong> (<a class="reference internal" href="experience_maker_vl.html#lightrft.trainer.experience_maker_vl.ExperienceVL" title="lightrft.trainer.experience_maker_vl.ExperienceVL"><em>ExperienceVL</em></a>) – Experience batch from replay buffer.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dictionary of actor training statistics.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dict[str, float]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.trainer.ppo_trainer_vl.PPOTrainerVL.training_step_critic">
+<span class="sig-name descname"><span class="pre">training_step_critic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">experience</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="experience_maker_vl.html#lightrft.trainer.experience_maker_vl.ExperienceVL" title="lightrft.trainer.experience_maker_vl.ExperienceVL"><span class="pre">ExperienceVL</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/lightrft/trainer/ppo_trainer_vl.html#PPOTrainerVL.training_step_critic"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.trainer.ppo_trainer_vl.PPOTrainerVL.training_step_critic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Critic training step.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>experience</strong> (<a class="reference internal" href="experience_maker_vl.html#lightrft.trainer.experience_maker_vl.ExperienceVL" title="lightrft.trainer.experience_maker_vl.ExperienceVL"><em>ExperienceVL</em></a>) – Experience batch from replay buffer.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dictionary of critic training statistics.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dict[str, float]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 
 
@@ -353,7 +530,19 @@
           <div class="pytorch-right-menu" id="pytorch-right-menu">
             <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
               <ul>
-<li><a class="reference internal" href="#">lightrft.trainer.ppo_trainer_vl</a></li>
+<li><a class="reference internal" href="#">lightrft.trainer.ppo_trainer_vl</a><ul>
+<li><a class="reference internal" href="#lightrft.trainer.ppo_trainer_vl.PPOTrainerVL"><code class="docutils literal notranslate"><span class="pre">PPOTrainerVL</span></code></a><ul>
+<li><a class="reference internal" href="#lightrft.trainer.ppo_trainer_vl.PPOTrainerVL.evaluate"><code class="docutils literal notranslate"><span class="pre">PPOTrainerVL.evaluate()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.trainer.ppo_trainer_vl.PPOTrainerVL.fit"><code class="docutils literal notranslate"><span class="pre">PPOTrainerVL.fit()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.trainer.ppo_trainer_vl.PPOTrainerVL.ppo_train"><code class="docutils literal notranslate"><span class="pre">PPOTrainerVL.ppo_train()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.trainer.ppo_trainer_vl.PPOTrainerVL.save_logs_and_checkpoints"><code class="docutils literal notranslate"><span class="pre">PPOTrainerVL.save_logs_and_checkpoints()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.trainer.ppo_trainer_vl.PPOTrainerVL.training_step"><code class="docutils literal notranslate"><span class="pre">PPOTrainerVL.training_step()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.trainer.ppo_trainer_vl.PPOTrainerVL.training_step_actor"><code class="docutils literal notranslate"><span class="pre">PPOTrainerVL.training_step_actor()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.trainer.ppo_trainer_vl.PPOTrainerVL.training_step_critic"><code class="docutils literal notranslate"><span class="pre">PPOTrainerVL.training_step_critic()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 
             </div>

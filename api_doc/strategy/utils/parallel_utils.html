@@ -308,28 +308,184 @@
             <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
               <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
                 
-  <section id="lightrft-strategy-utils-parallel-utils">
-<h1>lightrft.strategy.utils.parallel_utils<a class="headerlink" href="#lightrft-strategy-utils-parallel-utils" title="Permalink to this heading">¶</a></h1>
+  <section id="module-lightrft.strategy.utils.parallel_utils">
+<span id="lightrft-strategy-utils-parallel-utils"></span><h1>lightrft.strategy.utils.parallel_utils<a class="headerlink" href="#module-lightrft.strategy.utils.parallel_utils" title="Permalink to this heading">¶</a></h1>
+<p>Sequence Parallelism Utilities for Distributed Training</p>
+<p>This module provides utilities for sequence parallelism in distributed training environments.
+It includes functions for managing sequence parallel groups, data processing for sequence
+parallelism, and operations for tensor splitting, gathering, and all-to-all communication
+in sequence parallel contexts.</p>
+<p>The module supports:
+- Setting and retrieving sequence parallel groups
+- Processing data for sequence parallel distribution
+- Slicing and padding inputs for sequence parallelism
+- Specialized tensor operations for sequence parallel training</p>
 <section id="set-sequence-parallel-group">
 <h2>set_sequence_parallel_group<a class="headerlink" href="#set-sequence-parallel-group" title="Permalink to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="lightrft.strategy.utils.parallel_utils.set_sequence_parallel_group">
+<span class="sig-prename descclassname"><span class="pre">lightrft.strategy.utils.parallel_utils.</span></span><span class="sig-name descname"><span class="pre">set_sequence_parallel_group</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">group</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/lightrft/strategy/utils/parallel_utils.html#set_sequence_parallel_group"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.utils.parallel_utils.set_sequence_parallel_group" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the global sequence parallel process group.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>group</strong> (<em>torch.distributed.ProcessGroup</em>) – The process group to use for sequence parallelism.</p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 <section id="get-sequence-parallel-group">
 <h2>get_sequence_parallel_group<a class="headerlink" href="#get-sequence-parallel-group" title="Permalink to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="lightrft.strategy.utils.parallel_utils.get_sequence_parallel_group">
+<span class="sig-prename descclassname"><span class="pre">lightrft.strategy.utils.parallel_utils.</span></span><span class="sig-name descname"><span class="pre">get_sequence_parallel_group</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/lightrft/strategy/utils/parallel_utils.html#get_sequence_parallel_group"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.utils.parallel_utils.get_sequence_parallel_group" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the current sequence parallel process group.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The current sequence parallel process group.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>torch.distributed.ProcessGroup or None</p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 <section id="get-sequence-parallel-world-size">
 <h2>get_sequence_parallel_world_size<a class="headerlink" href="#get-sequence-parallel-world-size" title="Permalink to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="lightrft.strategy.utils.parallel_utils.get_sequence_parallel_world_size">
+<span class="sig-prename descclassname"><span class="pre">lightrft.strategy.utils.parallel_utils.</span></span><span class="sig-name descname"><span class="pre">get_sequence_parallel_world_size</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/lightrft/strategy/utils/parallel_utils.html#get_sequence_parallel_world_size"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.utils.parallel_utils.get_sequence_parallel_world_size" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the world size of the sequence parallel group.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The world size of the sequence parallel group, or 1 if no group is set.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 <section id="get-sequence-parallel-rank">
 <h2>get_sequence_parallel_rank<a class="headerlink" href="#get-sequence-parallel-rank" title="Permalink to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="lightrft.strategy.utils.parallel_utils.get_sequence_parallel_rank">
+<span class="sig-prename descclassname"><span class="pre">lightrft.strategy.utils.parallel_utils.</span></span><span class="sig-name descname"><span class="pre">get_sequence_parallel_rank</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/lightrft/strategy/utils/parallel_utils.html#get_sequence_parallel_rank"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.utils.parallel_utils.get_sequence_parallel_rank" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the rank of the current process in the sequence parallel group.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The rank in the sequence parallel group, or 0 if no group is set.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 <section id="spdataprocessor">
 <h2>SPDataProcessor<a class="headerlink" href="#spdataprocessor" title="Permalink to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="lightrft.strategy.utils.parallel_utils.SPDataProcessor">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">lightrft.strategy.utils.parallel_utils.</span></span><span class="sig-name descname"><span class="pre">SPDataProcessor</span></span><a class="reference internal" href="../../../_modules/lightrft/strategy/utils/parallel_utils.html#SPDataProcessor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.utils.parallel_utils.SPDataProcessor" title="Permalink to this definition">¶</a></dt>
+<dd><p>A context manager for preprocessing data before conducting sequence parallel operations.</p>
+<p>This class handles the distribution and collection of data across sequence parallel ranks,
+ensuring proper data sharding and gathering for sequence parallel training.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.utils.parallel_utils.SPDataProcessor.postprocess">
+<span class="sig-name descname"><span class="pre">postprocess</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/lightrft/strategy/utils/parallel_utils.html#SPDataProcessor.postprocess"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.utils.parallel_utils.SPDataProcessor.postprocess" title="Permalink to this definition">¶</a></dt>
+<dd><p>Postprocess data after sequence parallel operations by distributing data to appropriate ranks.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>data</strong> (<em>Any</em>) – The data to postprocess.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The postprocessed data, distributed to the current rank.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Any</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>AssertionError</strong> – If the data length is not divisible by sp_size.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.strategy.utils.parallel_utils.SPDataProcessor.preprocess">
+<span class="sig-name descname"><span class="pre">preprocess</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/lightrft/strategy/utils/parallel_utils.html#SPDataProcessor.preprocess"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.utils.parallel_utils.SPDataProcessor.preprocess" title="Permalink to this definition">¶</a></dt>
+<dd><p>Preprocess data for sequence parallelism by gathering data from all ranks.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>data</strong> (<em>Any</em>) – The data to preprocess.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The preprocessed data, gathered from all ranks if sp_size &gt; 1.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Any</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 <section id="sp-slice-and-pad-input">
 <h2>sp_slice_and_pad_input<a class="headerlink" href="#sp-slice-and-pad-input" title="Permalink to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="lightrft.strategy.utils.parallel_utils.sp_slice_and_pad_input">
+<span class="sig-prename descclassname"><span class="pre">lightrft.strategy.utils.parallel_utils.</span></span><span class="sig-name descname"><span class="pre">sp_slice_and_pad_input</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_ids</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">position_ids</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/lightrft/strategy/utils/parallel_utils.html#sp_slice_and_pad_input"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.utils.parallel_utils.sp_slice_and_pad_input" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pad and slice input_ids to be divisible by sp_size and pad position_ids to be divisible by sp_size.</p>
+<p>Note both input_ids and position_ids will be padded, but only input_ids will be sliced.
+This is the utility of pre-forward for ulysses sequence parallelism.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_ids</strong> (<em>torch.Tensor</em>) – Input tensor with shape [bsz, seqlen].</p></li>
+<li><p><strong>position_ids</strong> (<em>torch.Tensor</em>) – Position IDs tensor with shape [bsz, seqlen], where bsz must be 1.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A tuple containing:
+- Padded and sliced input_ids
+- Padded position_ids
+- Size of padding added</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tuple[torch.Tensor, torch.Tensor, int]</p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 <section id="gather-forward-split-backward-and-unpad">
 <h2>gather_forward_split_backward_and_unpad<a class="headerlink" href="#gather-forward-split-backward-and-unpad" title="Permalink to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="lightrft.strategy.utils.parallel_utils.gather_forward_split_backward_and_unpad">
+<span class="sig-prename descclassname"><span class="pre">lightrft.strategy.utils.parallel_utils.</span></span><span class="sig-name descname"><span class="pre">gather_forward_split_backward_and_unpad</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">padding_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unpad_dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/lightrft/strategy/utils/parallel_utils.html#gather_forward_split_backward_and_unpad"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.utils.parallel_utils.gather_forward_split_backward_and_unpad" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gather tensors in the forward pass, split gradients in the backward pass, and remove padding if needed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input</strong> (<em>torch.Tensor</em>) – The input tensor from the current rank.</p></li>
+<li><p><strong>group</strong> (<em>torch.distributed.ProcessGroup</em>) – The process group for gathering.</p></li>
+<li><p><strong>dim</strong> (<em>int</em>) – The dimension along which to gather/split.</p></li>
+<li><p><strong>padding_size</strong> (<em>int</em>) – Size of padding to remove, defaults to 0.</p></li>
+<li><p><strong>unpad_dim</strong> (<em>int</em><em> or </em><em>None</em>) – Dimension from which to remove padding, defaults to None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The gathered (and possibly unpadded) tensor.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 </section>
 
@@ -377,13 +533,38 @@
             <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
               <ul>
 <li><a class="reference internal" href="#">lightrft.strategy.utils.parallel_utils</a><ul>
-<li><a class="reference internal" href="#set-sequence-parallel-group">set_sequence_parallel_group</a></li>
-<li><a class="reference internal" href="#get-sequence-parallel-group">get_sequence_parallel_group</a></li>
-<li><a class="reference internal" href="#get-sequence-parallel-world-size">get_sequence_parallel_world_size</a></li>
-<li><a class="reference internal" href="#get-sequence-parallel-rank">get_sequence_parallel_rank</a></li>
-<li><a class="reference internal" href="#spdataprocessor">SPDataProcessor</a></li>
-<li><a class="reference internal" href="#sp-slice-and-pad-input">sp_slice_and_pad_input</a></li>
-<li><a class="reference internal" href="#gather-forward-split-backward-and-unpad">gather_forward_split_backward_and_unpad</a></li>
+<li><a class="reference internal" href="#set-sequence-parallel-group">set_sequence_parallel_group</a><ul>
+<li><a class="reference internal" href="#lightrft.strategy.utils.parallel_utils.set_sequence_parallel_group"><code class="docutils literal notranslate"><span class="pre">set_sequence_parallel_group()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#get-sequence-parallel-group">get_sequence_parallel_group</a><ul>
+<li><a class="reference internal" href="#lightrft.strategy.utils.parallel_utils.get_sequence_parallel_group"><code class="docutils literal notranslate"><span class="pre">get_sequence_parallel_group()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#get-sequence-parallel-world-size">get_sequence_parallel_world_size</a><ul>
+<li><a class="reference internal" href="#lightrft.strategy.utils.parallel_utils.get_sequence_parallel_world_size"><code class="docutils literal notranslate"><span class="pre">get_sequence_parallel_world_size()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#get-sequence-parallel-rank">get_sequence_parallel_rank</a><ul>
+<li><a class="reference internal" href="#lightrft.strategy.utils.parallel_utils.get_sequence_parallel_rank"><code class="docutils literal notranslate"><span class="pre">get_sequence_parallel_rank()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#spdataprocessor">SPDataProcessor</a><ul>
+<li><a class="reference internal" href="#lightrft.strategy.utils.parallel_utils.SPDataProcessor"><code class="docutils literal notranslate"><span class="pre">SPDataProcessor</span></code></a><ul>
+<li><a class="reference internal" href="#lightrft.strategy.utils.parallel_utils.SPDataProcessor.postprocess"><code class="docutils literal notranslate"><span class="pre">SPDataProcessor.postprocess()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.strategy.utils.parallel_utils.SPDataProcessor.preprocess"><code class="docutils literal notranslate"><span class="pre">SPDataProcessor.preprocess()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#sp-slice-and-pad-input">sp_slice_and_pad_input</a><ul>
+<li><a class="reference internal" href="#lightrft.strategy.utils.parallel_utils.sp_slice_and_pad_input"><code class="docutils literal notranslate"><span class="pre">sp_slice_and_pad_input()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#gather-forward-split-backward-and-unpad">gather_forward_split_backward_and_unpad</a><ul>
+<li><a class="reference internal" href="#lightrft.strategy.utils.parallel_utils.gather_forward_split_backward_and_unpad"><code class="docutils literal notranslate"><span class="pre">gather_forward_split_backward_and_unpad()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

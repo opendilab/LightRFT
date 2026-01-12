@@ -306,8 +306,96 @@
             <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
               <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
                 
-  <section id="lightrft-utils-remote-rm-utils">
-<h1>lightrft.utils.remote_rm_utils<a class="headerlink" href="#lightrft-utils-remote-rm-utils" title="Permalink to this heading">¶</a></h1>
+  <section id="module-lightrft.utils.remote_rm_utils">
+<span id="lightrft-utils-remote-rm-utils"></span><h1>lightrft.utils.remote_rm_utils<a class="headerlink" href="#module-lightrft.utils.remote_rm_utils" title="Permalink to this heading">¶</a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="lightrft.utils.remote_rm_utils.remote_rm_fn">
+<span class="sig-prename descclassname"><span class="pre">lightrft.utils.remote_rm_utils.</span></span><span class="sig-name descname"><span class="pre">remote_rm_fn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">api_url</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">queries</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prompts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">references</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raw_images</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Image</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Image</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">score_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'rewards'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">torch.Tensor</span></span></span><a class="reference internal" href="../../_modules/lightrft/utils/remote_rm_utils.html#remote_rm_fn"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.utils.remote_rm_utils.remote_rm_fn" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remote reward model API function for scoring text and image inputs.</p>
+<p>This function prepares data and sends requests to a remote reward model API,
+supporting both text-only and multimodal (text + image) scoring scenarios.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>api_url</strong> (<em>str</em>) – Reward model API endpoint URL</p></li>
+<li><p><strong>queries</strong> (<em>List</em><em>[</em><em>str</em><em>]</em>) – List of query strings with response templates</p></li>
+<li><p><strong>prompts</strong> (<em>List</em><em>[</em><em>str</em><em>]</em>) – List of prompt strings for context</p></li>
+<li><p><strong>labels</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><em>Any</em><em>]</em><em>]</em>) – Optional list of labels for supervised scoring (currently unused)</p></li>
+<li><p><strong>references</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><em>str</em><em>]</em><em>]</em>) – Optional list of reference responses for comparison scoring</p></li>
+<li><p><strong>raw_images</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><em>Optional</em><em>[</em><em>Union</em><em>[</em><em>Image.Image</em><em>, </em><em>List</em><em>[</em><em>Image.Image</em><em>]</em><em>]</em><em>]</em><em>]</em><em>]</em>) – Optional list of PIL Image objects or lists of PIL Image objects
+for multimodal scoring. Each element can be None, a single image,
+or a list of images.</p></li>
+<li><p><strong>score_key</strong> (<em>str</em>) – Key in the API response that contains the reward scores</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Tensor of reward scores for all input samples</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>Exception</strong> – When API requests fail after maximum retry attempts</p>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Text-only scoring</span>
+<span class="n">scores</span> <span class="o">=</span> <span class="n">remote_rm_fn</span><span class="p">(</span>
+    <span class="n">api_url</span><span class="o">=</span><span class="s2">&quot;http://localhost:8000/score&quot;</span><span class="p">,</span>
+    <span class="n">queries</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;What is 2+2?&quot;</span><span class="p">],</span>
+    <span class="n">prompts</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Calculate the following:&quot;</span><span class="p">],</span>
+    <span class="n">score_key</span><span class="o">=</span><span class="s2">&quot;rewards&quot;</span>
+<span class="p">)</span>
+
+<span class="c1"># Multimodal scoring with images</span>
+<span class="n">scores</span> <span class="o">=</span> <span class="n">remote_rm_fn</span><span class="p">(</span>
+    <span class="n">api_url</span><span class="o">=</span><span class="s2">&quot;http://localhost:8000/score&quot;</span><span class="p">,</span>
+    <span class="n">queries</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Describe this image&quot;</span><span class="p">],</span>
+    <span class="n">prompts</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Please analyze the image:&quot;</span><span class="p">],</span>
+    <span class="n">raw_images</span><span class="o">=</span><span class="p">[</span><span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">&quot;image.jpg&quot;</span><span class="p">)],</span>
+    <span class="n">score_key</span><span class="o">=</span><span class="s2">&quot;rewards&quot;</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="lightrft.utils.remote_rm_utils.request_api_wrapper">
+<span class="sig-prename descclassname"><span class="pre">lightrft.utils.remote_rm_utils.</span></span><span class="sig-name descname"><span class="pre">request_api_wrapper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">url</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">score_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'rewards'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">try_max_times</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/lightrft/utils/remote_rm_utils.html#request_api_wrapper"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.utils.remote_rm_utils.request_api_wrapper" title="Permalink to this definition">¶</a></dt>
+<dd><p>Synchronous request API wrapper for reward model scoring.</p>
+<p>This function makes HTTP POST requests to a reward model API endpoint and
+handles retries with exponential backoff for failed requests.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>url</strong> (<em>str</em>) – The API endpoint URL to send requests to</p></li>
+<li><p><strong>data</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – The request payload data as a dictionary</p></li>
+<li><p><strong>score_key</strong> (<em>str</em>) – The key in the response JSON that contains the reward scores</p></li>
+<li><p><strong>try_max_times</strong> (<em>int</em>) – Maximum number of retry attempts for failed requests</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Reward scores extracted from the API response, either as a single float
+or a list of floats depending on the API response structure</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Union[float, List[float]]</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>Exception</strong> – When all retry attempts fail after the maximum number of tries</p>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">score</span> <span class="o">=</span> <span class="n">request_api_wrapper</span><span class="p">(</span>
+    <span class="n">url</span><span class="o">=</span><span class="s2">&quot;http://localhost:8000/score&quot;</span><span class="p">,</span>
+    <span class="n">data</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Hello world&quot;</span><span class="p">},</span>
+    <span class="n">score_key</span><span class="o">=</span><span class="s2">&quot;rewards&quot;</span><span class="p">,</span>
+    <span class="n">try_max_times</span><span class="o">=</span><span class="mi">5</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
 </section>
 
 
@@ -353,7 +441,11 @@
           <div class="pytorch-right-menu" id="pytorch-right-menu">
             <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
               <ul>
-<li><a class="reference internal" href="#">lightrft.utils.remote_rm_utils</a></li>
+<li><a class="reference internal" href="#">lightrft.utils.remote_rm_utils</a><ul>
+<li><a class="reference internal" href="#lightrft.utils.remote_rm_utils.remote_rm_fn"><code class="docutils literal notranslate"><span class="pre">remote_rm_fn()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.utils.remote_rm_utils.request_api_wrapper"><code class="docutils literal notranslate"><span class="pre">request_api_wrapper()</span></code></a></li>
+</ul>
+</li>
 </ul>
 
             </div>

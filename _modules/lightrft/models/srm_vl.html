@@ -1,0 +1,729 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js" lang="en">
+<!--<![endif]-->
+
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>lightrft.models.srm_vl &mdash; LightRFT v0.1.1 documentation</title>
+  
+
+  <link rel="shortcut icon" href="../../../_static/images/favicon.ico" />
+  
+  
+
+  
+
+  
+  
+  
+
+  
+
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <!-- <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" /> -->
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/readthedocs.css" type="text/css" />
+  <link rel="index" title="Index" href="../../../genindex.html" />
+  <link rel="search" title="Search" href="../../../search.html" />
+  <!-- Google Analytics -->
+  <script type="text/javascript">
+    var collapsedSections = [];
+  </script>
+  
+  <!-- End Google Analytics -->
+  
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+  <script>
+    MathJax = {
+        chtml: {
+            scale: 1,
+            minScale: 1,
+        },
+        svg: {
+            scale: 1,
+            minScale: 1,
+        }
+    }
+</script>
+
+  <!-- Preload the theme fonts -->
+
+<link rel="preload" href="../../../_static/fonts/FreightSans/freight-sans-book.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../_static/fonts/FreightSans/freight-sans-medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../_static/fonts/IBMPlexMono/IBMPlexMono-Medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../_static/fonts/FreightSans/freight-sans-bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../_static/fonts/FreightSans/freight-sans-medium-italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../_static/fonts/IBMPlexMono/IBMPlexMono-SemiBold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+
+<!-- Preload the katex fonts -->
+
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Math-Italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size1-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size4-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size2-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size3-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Caligraphic-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.2/css/all.css"
+    integrity="sha384-vSIIfh2YWi9wW0r9iZe7RJPrKwp6bG+s9QZMoITbCckVJqGCCRhc+ccxNcdpHuYu" crossorigin="anonymous">
+</head>
+
+<div class="container-fluid header-holder tutorials-header" id="header-holder">
+  <div class="container">
+    <div class="header-container">
+      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+        aria-label="OpenMMLab"></a>
+
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://github.com/opendilab/LightRFT" target="_blank">GitHub</a>
+          </li>
+          <li >
+            <div id="resourcesDropdownButton" data-toggle="resources-dropdown" class="resources-dropdown">
+              <a
+                class="resource-option with-down-arrow">
+                OpenDILab
+              </a>
+              <div class="resources-dropdown-menu">
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-engine" target="_blank">
+                  <span class="dropdown-title">DI-engine </span>
+                  <p>OpenDILab Decision AI Engine</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/LightZero" target="_blank">
+                  <span class="dropdown-title">LightZero </span>
+                  <p>OpenDILab Decision Monte Carlo Tree Search Framework</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/GenerativeRL" target="_blank">
+                  <span class="dropdown-title">GenerativeRL </span>
+                  <p>OpenDILab Generative AI Framework</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-star" target="_blank">
+                  <span class="dropdown-title">DI-star </span>
+                  <p>OpenDILab Decision AI in StarCraftII</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-drive" target="_blank">
+                  <span class="dropdown-title">DI-drive </span>
+                  <p>OpenDILab Auto-driving platform</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/GoBigger" target="_blank">
+                  <span class="dropdown-title">GoBigger </span>
+                  <p>OpenDILab Multi-Agent Environment</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-smartcross" target="_blank">
+                  <span class="dropdown-title">DI-smartcross </span>
+                  <p>Decision Intelligence Platform for Traffic Crossing Signal Control</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-treetensor" target="_blank">
+                  <span class="dropdown-title">DI-treetensor </span>
+                  <p>Tree Nested PyTorch Tensor Lib</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-sheep" target="_blank">
+                  <span class="dropdown-title">DI-sheep </span>
+                  <p>Deep Reinforcement Learning + 3 Tiles Game</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-model-based-RL" target="_blank">
+                  <span class="dropdown-title">awesome-model-based-RL </span>
+                  <p>A curated list of awesome model based RL resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-decision-transformer" target="_blank">
+                  <span class="dropdown-title">awesome-decision-transformer </span>
+                  <p>A curated list of Decision Transformer resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-exploration-rl" target="_blank">
+                  <span class="dropdown-title">awesome-exploration-rl </span>
+                  <p>A curated list of awesome exploration RL resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-multi-modal-reinforcement-learning" target="_blank">
+                  <span class="dropdown-title">awesome-multi-modal-reinforcement-learning </span>
+                  <p>A curated list of Multi-Modal Reinforcement Learning resources (continually updated)</p>
+                </a>
+              </div>
+          </li>
+        </ul>
+      </div>
+
+      <a class="main-menu-open-button" href="#" data-behavior="open-mobile-menu"></a>
+    </div>
+  </div>
+</div>
+
+<body class="pytorch-body">
+
+   
+
+  
+
+  <div class="table-of-contents-link-wrapper">
+    <span>Table of Contents</span>
+    <a href="#" class="toggle-table-of-contents" data-behavior="toggle-table-of-contents"></a>
+  </div>
+
+  <nav data-toggle="wy-nav-shift" class="pytorch-left-menu" id="pytorch-left-menu">
+    <div class="pytorch-side-scroll">
+      <div class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        <div class="pytorch-left-menu-search">
+          
+
+          
+          
+          
+          
+
+          
+
+
+
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search Docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        
+        
+        
+        
+        
+        <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../quick_start/index.html">Quick Start</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide &amp; Best Practices</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../best_practice/index.html">Best Practices</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_doc/utils/index.html">lightrft.utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_doc/datasets/index.html">lightrft.datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_doc/models/index.html">lightrft.models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_doc/strategy/index.html">lightrft.strategy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_doc/trainer/index.html">lightrft.trainer</a></li>
+</ul>
+
+        
+        
+      </div>
+    </div>
+  </nav>
+
+  <div class="pytorch-container">
+    <div class="pytorch-page-level-bar" id="pytorch-page-level-bar">
+      <div class="pytorch-breadcrumbs-wrapper">
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="pytorch-breadcrumbs">
+    
+      <li>
+        <a href="../../../index.html">
+            Docs
+        </a> &gt;
+      </li>
+
+        
+          <li><a href="../../index.html">Module code</a> &gt;</li>
+        
+      <li>lightrft.models.srm_vl</li>
+    
+    
+      <li class="pytorch-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+</div>
+      </div>
+
+      <div class="pytorch-shortcuts-wrapper" id="pytorch-shortcuts-wrapper">
+        Shortcuts
+      </div>
+    </div>
+
+    <section data-toggle="wy-nav-shift" id="pytorch-content-wrap" class="pytorch-content-wrap">
+      <div class="pytorch-content-left">
+        
+          <div class="rst-content">
+            
+            <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
+              <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
+                
+  <h1>Source code for lightrft.models.srm_vl</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch.nn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nn</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">transformers</span><span class="w"> </span><span class="kn">import</span> <span class="n">AutoModel</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">transformers.integrations.deepspeed</span><span class="w"> </span><span class="kn">import</span> <span class="n">HfDeepSpeedConfig</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">apply_lora_configuration</span><span class="p">,</span> <span class="n">AttentionPooling</span>
+
+
+<div class="viewcode-block" id="ScalarRewardModelVL"><a class="viewcode-back" href="../../../api_doc/models/srm_vl.html#lightrft.models.srm_vl.ScalarRewardModelVL">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">ScalarRewardModelVL</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Scalar Reward Model for reinforcement learning applications with vision-language backbones.</span>
+
+<span class="sd">    This class wraps around a pretrained vision-language model and adds reward heads to produce scalar scores.</span>
+<span class="sd">    Reward heads are feed-forward networks that take the hidden states from a specific layer of the backbone</span>
+<span class="sd">    model and output scalar values.</span>
+
+<span class="sd">    :param pretrain_or_model: Either a string path to a pretrained model or a model instance</span>
+<span class="sd">    :type pretrain_or_model: Union[str, nn.Module]</span>
+<span class="sd">    :param use_flash_attention_2: Whether to utilize Flash Attention 2.0 for improved performance</span>
+<span class="sd">    :type use_flash_attention_2: bool</span>
+<span class="sd">    :param bf16: Enable bfloat16 precision for model computations</span>
+<span class="sd">    :type bf16: bool</span>
+<span class="sd">    :param lora_rank: Rank for LoRA adaptation (0 disables LoRA)</span>
+<span class="sd">    :type lora_rank: int</span>
+<span class="sd">    :param lora_alpha: Alpha parameter for LoRA scaling</span>
+<span class="sd">    :type lora_alpha: int</span>
+<span class="sd">    :param lora_dropout: Dropout rate for LoRA layers</span>
+<span class="sd">    :type lora_dropout: float</span>
+<span class="sd">    :param target_modules: List of target modules for applying LoRA (auto-detected if None)</span>
+<span class="sd">    :type target_modules: Optional[list]</span>
+<span class="sd">    :param ds_config: Configuration for DeepSpeed distributed training</span>
+<span class="sd">    :type ds_config: Optional[Dict]</span>
+<span class="sd">    :param device_map: Device mapping for loading the model onto specific devices</span>
+<span class="sd">    :type device_map: Optional[Dict]</span>
+<span class="sd">    :param pooling_method: Pooling method for aggregating hidden states (&#39;attn&#39; or &#39;last&#39;).</span>
+<span class="sd">                           Default to &#39;attn&#39;, which delivers better performance.</span>
+<span class="sd">    :type pooling_method: str</span>
+<span class="sd">    :param probing_layer: Index of the layer from which to extract hidden states for reward heads.</span>
+<span class="sd">                          Default to -1, which means the last layer.</span>
+<span class="sd">    :type probing_layer: int</span>
+<span class="sd">    :param scale_for_train: Whether to scale the scores for training. Default to True.</span>
+<span class="sd">                            We recommend enabling this for better performance.</span>
+<span class="sd">    :type scale_for_train: bool</span>
+<span class="sd">    :param head_types: List of head types for scoring (e.g., [&quot;preference&quot;, &quot;alignment&quot;]). Default to [&quot;preference&quot;].</span>
+<span class="sd">                       Must be consistent with the training data annotations.</span>
+<span class="sd">    :type head_types: list[str]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">pretrain_or_model</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">use_flash_attention_2</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">bf16</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">lora_rank</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">lora_alpha</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">lora_dropout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">target_modules</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">ds_config</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">device_map</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">pooling_method</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;attn&#39;</span><span class="p">,</span>
+        <span class="n">scale_for_train</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">probing_layer</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">head_types</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;preference&quot;</span><span class="p">],</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pretrain_or_model</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pretrain_or_model</span> <span class="o">=</span> <span class="n">pretrain_or_model</span>
+            <span class="n">attn_implementation</span> <span class="o">=</span> <span class="s2">&quot;flash_attention_2&quot;</span> <span class="k">if</span> <span class="n">use_flash_attention_2</span> <span class="k">else</span> <span class="s2">&quot;eager&quot;</span>
+
+            <span class="c1"># Note: dschf is defined in function scope to avoid global effects</span>
+            <span class="c1"># https://huggingface.co/docs/transformers/deepspeed#non-trainer-deepspeed-integration</span>
+            <span class="k">if</span> <span class="n">ds_config</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">ds_config</span><span class="p">[</span><span class="s2">&quot;zero_optimization&quot;</span><span class="p">][</span><span class="s2">&quot;stage&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+                <span class="n">dschf</span> <span class="o">=</span> <span class="n">HfDeepSpeedConfig</span><span class="p">(</span><span class="n">ds_config</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">dschf</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># noqa: F841</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">AutoModel</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span>
+                <span class="n">pretrain_or_model</span><span class="p">,</span>
+                <span class="n">trust_remote_code</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">attn_implementation</span><span class="o">=</span><span class="n">attn_implementation</span><span class="p">,</span>
+                <span class="n">torch_dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">bfloat16</span> <span class="k">if</span> <span class="n">bf16</span> <span class="k">else</span> <span class="s2">&quot;auto&quot;</span><span class="p">,</span>
+                <span class="n">device_map</span><span class="o">=</span><span class="n">device_map</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="c1"># LoRA</span>
+            <span class="k">if</span> <span class="n">lora_rank</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="c1"># https://github.com/huggingface/peft/issues/137</span>
+                <span class="n">target_modules</span> <span class="o">=</span> <span class="n">apply_lora_configuration</span><span class="p">(</span>
+                    <span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span>
+                    <span class="n">lora_rank</span><span class="o">=</span><span class="n">lora_rank</span><span class="p">,</span>
+                    <span class="n">lora_alpha</span><span class="o">=</span><span class="n">lora_alpha</span><span class="p">,</span>
+                    <span class="n">lora_dropout</span><span class="o">=</span><span class="n">lora_dropout</span><span class="p">,</span>
+                    <span class="n">target_modules</span><span class="o">=</span><span class="n">target_modules</span><span class="p">,</span>
+                    <span class="n">freeze_vision_tower</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="p">)</span>
+
+            <span class="c1"># Get the model configuration</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">num_hidden_layers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">num_hidden_layers</span>
+                <span class="n">hidden_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">hidden_size</span>
+            <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+                <span class="c1"># Special handling for Qwen3-VL</span>
+                <span class="n">num_hidden_layers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">text_config</span><span class="o">.</span><span class="n">num_hidden_layers</span>
+                <span class="n">hidden_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">text_config</span><span class="o">.</span><span class="n">hidden_size</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Using backbone model type: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">model_type</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  num_hidden_layers: &quot;</span><span class="p">,</span> <span class="n">num_hidden_layers</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  hidden_size: &quot;</span><span class="p">,</span> <span class="n">hidden_size</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">probing_layer</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">probing_layer</span> <span class="o">=</span> <span class="n">num_hidden_layers</span> <span class="o">+</span> <span class="n">probing_layer</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">probing_layer</span> <span class="o">=</span> <span class="n">probing_layer</span>
+            <span class="k">if</span> <span class="n">probing_layer</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">probing_layer</span> <span class="o">&gt;=</span> <span class="n">num_hidden_layers</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;reward_layer_index </span><span class="si">{</span><span class="n">probing_layer</span><span class="si">}</span><span class="s2"> is out of range for num_hidden_layers </span><span class="si">{</span><span class="n">num_hidden_layers</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">probing_layer</span> <span class="o">=</span> <span class="n">probing_layer</span>
+
+            <span class="c1"># Extra reward heads configuration</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scale_for_train</span> <span class="o">=</span> <span class="n">scale_for_train</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pooling_method</span> <span class="o">=</span> <span class="n">pooling_method</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">head_types</span> <span class="o">=</span> <span class="n">head_types</span>
+            <span class="k">for</span> <span class="n">head_type</span> <span class="ow">in</span> <span class="n">head_types</span><span class="p">:</span>  <span class="c1"># e.g., &quot;alignment&quot;, &quot;coherence&quot;, &quot;preference&quot;</span>
+                <span class="n">head</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
+                    <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">hidden_size</span><span class="p">,</span> <span class="n">hidden_size</span><span class="p">),</span>
+                    <span class="n">nn</span><span class="o">.</span><span class="n">RMSNorm</span><span class="p">(</span><span class="n">hidden_size</span><span class="p">),</span>
+                    <span class="n">nn</span><span class="o">.</span><span class="n">SiLU</span><span class="p">(),</span>
+                    <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">hidden_size</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">False</span><span class="p">),</span>
+                    <span class="n">nn</span><span class="o">.</span><span class="n">Sigmoid</span><span class="p">(),</span>
+                <span class="p">)</span>
+                <span class="n">head</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">bfloat16</span><span class="p">)</span>
+                <span class="n">head</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
+                <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">head_type</span><span class="si">}</span><span class="s2">_head&quot;</span><span class="p">,</span> <span class="n">head</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale_for_train</span><span class="p">:</span>
+                    <span class="n">logit_scale</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="mf">0.07</span><span class="p">)))</span>
+                    <span class="n">logit_scale</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">bfloat16</span><span class="p">)</span>
+                    <span class="n">logit_scale</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
+                    <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">head_type</span><span class="si">}</span><span class="s2">_logit_scale&quot;</span><span class="p">,</span> <span class="n">logit_scale</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pooling_method</span> <span class="o">==</span> <span class="s1">&#39;attn&#39;</span><span class="p">:</span>
+                    <span class="n">attnpool</span> <span class="o">=</span> <span class="n">AttentionPooling</span><span class="p">(</span><span class="n">hidden_size</span><span class="p">)</span>
+                    <span class="n">attnpool</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">bfloat16</span><span class="p">)</span>
+                    <span class="n">attnpool</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
+                    <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">head_type</span><span class="si">}</span><span class="s2">_attnpool&quot;</span><span class="p">,</span> <span class="n">attnpool</span><span class="p">)</span>
+
+            <span class="c1"># https://github.com/huggingface/transformers/issues/26877</span>
+            <span class="c1"># Use `model.generate(use_cache=True)` instead.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">use_cache</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">pretrain_or_model</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pretrain_or_model</span> <span class="o">=</span> <span class="n">pretrain_or_model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">model_type</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;pretrain_or_model: &quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pretrain_or_model</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ScalarRewardModelVL.forward"><a class="viewcode-back" href="../../../api_doc/models/srm_vl.html#lightrft.models.srm_vl.ScalarRewardModelVL.forward">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">sequences</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">LongTensor</span><span class="p">,</span>
+        <span class="n">attention_mask</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">pixel_values</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">image_grid_thw</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">pixel_values_videos</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">video_grid_thw</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The forward takes sequences and visual content (if exists) as input and returns a dictionary</span>
+<span class="sd">        containing reward scores of different heads.</span>
+
+<span class="sd">        :param sequences: Input token sequences</span>
+<span class="sd">        :type sequences: torch.LongTensor</span>
+<span class="sd">        :param attention_mask: Attention mask for the sequences</span>
+<span class="sd">        :type attention_mask: Optional[torch.Tensor]</span>
+<span class="sd">        :param pixel_values: Preprocessed pixel values of input images</span>
+<span class="sd">        :type pixel_values: torch.Tensor</span>
+<span class="sd">        :param image_grid_thw: Image grid dimensions (time, height, width)</span>
+<span class="sd">        :type image_grid_thw: torch.Tensor</span>
+<span class="sd">        :param pixel_values_videos: Preprocessed pixel values of input videos</span>
+<span class="sd">        :type pixel_values_videos: torch.Tensor</span>
+<span class="sd">        :param video_grid_thw: Video grid dimensions (time, height, width)</span>
+<span class="sd">        :type video_grid_thw: torch.Tensor</span>
+
+<span class="sd">        :return: A dictionary containing reward scores from different heads</span>
+<span class="sd">        :rtype: Dict</span>
+
+<span class="sd">        **Example:**</span>
+
+
+
+<span class="sd">        .. code-block:: python</span>
+
+
+<span class="sd">            # Compute reward scores from sequences and visual inputs</span>
+<span class="sd">            # Suppose `reward_model` has two heads: &quot;preference&quot; and &quot;alignment&quot;</span>
+<span class="sd">            scores = reward_model(</span>
+<span class="sd">                sequences=input_ids,</span>
+<span class="sd">                attention_mask=attention_mask,</span>
+<span class="sd">                pixel_values=pixel_values,</span>
+<span class="sd">                image_grid_thw=image_grid_thw,</span>
+<span class="sd">                pixel_values_videos=pixel_values_videos,</span>
+<span class="sd">                video_grid_thw=video_grid_thw,</span>
+<span class="sd">            )</span>
+<span class="sd">            preference_score = scores[&quot;preference&quot;]</span>
+<span class="sd">            alignment_score = scores[&quot;alignment&quot;]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">position_ids</span> <span class="o">=</span> <span class="n">attention_mask</span><span class="o">.</span><span class="n">long</span><span class="p">()</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="n">position_ids</span><span class="o">.</span><span class="n">masked_fill_</span><span class="p">(</span><span class="n">attention_mask</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span>
+            <span class="n">sequences</span><span class="p">,</span>
+            <span class="n">attention_mask</span><span class="o">=</span><span class="n">attention_mask</span><span class="p">,</span>
+            <span class="n">position_ids</span><span class="o">=</span><span class="n">position_ids</span><span class="p">,</span>
+            <span class="n">pixel_values</span><span class="o">=</span><span class="n">pixel_values</span><span class="p">,</span>
+            <span class="n">image_grid_thw</span><span class="o">=</span><span class="n">image_grid_thw</span><span class="p">,</span>
+            <span class="n">pixel_values_videos</span><span class="o">=</span><span class="n">pixel_values_videos</span><span class="p">,</span>
+            <span class="n">video_grid_thw</span><span class="o">=</span><span class="n">video_grid_thw</span><span class="p">,</span>
+            <span class="n">output_hidden_states</span><span class="o">=</span><span class="kc">True</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Extract hidden states and pass through reward heads</span>
+        <span class="n">hidden_states</span> <span class="o">=</span> <span class="n">output</span><span class="o">.</span><span class="n">hidden_states</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">probing_layer</span><span class="p">]</span>
+        <span class="n">hidden_states</span> <span class="o">=</span> <span class="n">hidden_states</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
+        <span class="n">scores</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pooling_method</span> <span class="o">==</span> <span class="s1">&#39;attn&#39;</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">head_type</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">head_types</span><span class="p">:</span>
+                <span class="n">new_hidden_states</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">head_type</span><span class="si">}</span><span class="s2">_attnpool&quot;</span><span class="p">)(</span><span class="n">hidden_states</span><span class="p">)</span>
+                <span class="n">scores</span><span class="p">[</span><span class="n">head_type</span><span class="p">]</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">head_type</span><span class="si">}</span><span class="s2">_head&quot;</span><span class="p">)(</span><span class="n">new_hidden_states</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">pooling_method</span> <span class="o">==</span> <span class="s1">&#39;last&#39;</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">head_type</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">head_types</span><span class="p">:</span>
+                <span class="n">new_hidden_states</span> <span class="o">=</span> <span class="n">hidden_states</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span>  <span class="c1"># only use the last token</span>
+                <span class="n">scores</span><span class="p">[</span><span class="n">head_type</span><span class="p">]</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">head_type</span><span class="si">}</span><span class="s2">_head&quot;</span><span class="p">)(</span><span class="n">new_hidden_states</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid pooling method: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">pooling_method</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">training</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale_for_train</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">head_type</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">head_types</span><span class="p">:</span>
+                <span class="n">scores</span><span class="p">[</span><span class="n">head_type</span><span class="p">]</span> <span class="o">=</span> <span class="n">scores</span><span class="p">[</span><span class="n">head_type</span><span class="p">]</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">head_type</span><span class="si">}</span><span class="s2">_logit_scale&quot;</span><span class="p">)</span>
+                                                                  <span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">scores</span><span class="p">[</span><span class="n">head_type</span><span class="p">]</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">scores</span></div>
+
+<div class="viewcode-block" id="ScalarRewardModelVL.gradient_checkpointing_enable"><a class="viewcode-back" href="../../../api_doc/models/srm_vl.html#lightrft.models.srm_vl.ScalarRewardModelVL.gradient_checkpointing_enable">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">gradient_checkpointing_enable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gradient_checkpointing_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;use_reentrant&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Enable gradient checkpointing to reduce memory usage during training.</span>
+
+<span class="sd">        Gradient checkpointing trades compute for memory by recomputing intermediate</span>
+<span class="sd">        activations during the backward pass instead of storing them. This is particularly</span>
+<span class="sd">        useful for training large vision-language models with limited GPU memory.</span>
+
+<span class="sd">        :param gradient_checkpointing_kwargs: Additional arguments for gradient checkpointing</span>
+<span class="sd">        :type gradient_checkpointing_kwargs: dict</span>
+
+<span class="sd">        **Example:**</span>
+
+
+
+<span class="sd">        .. code-block:: python</span>
+
+
+<span class="sd">            # Enable gradient checkpointing with default settings</span>
+<span class="sd">            actor.gradient_checkpointing_enable()</span>
+
+<span class="sd">            # Enable with custom settings</span>
+<span class="sd">            actor.gradient_checkpointing_enable({&quot;use_reentrant&quot;: True})</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">gradient_checkpointing_enable</span><span class="p">(</span><span class="n">gradient_checkpointing_kwargs</span><span class="o">=</span><span class="n">gradient_checkpointing_kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ScalarRewardModelVL.gradient_checkpointing_disable"><a class="viewcode-back" href="../../../api_doc/models/srm_vl.html#lightrft.models.srm_vl.ScalarRewardModelVL.gradient_checkpointing_disable">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">gradient_checkpointing_disable</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Disable gradient checkpointing to use normal forward/backward computation.</span>
+
+<span class="sd">        This method restores the default behavior where all intermediate activations</span>
+<span class="sd">        are stored during the forward pass for use in the backward pass. This increases</span>
+<span class="sd">        memory usage but reduces computation time.</span>
+
+<span class="sd">        **Example:**</span>
+
+
+
+<span class="sd">        .. code-block:: python</span>
+
+
+<span class="sd">            # Disable gradient checkpointing</span>
+<span class="sd">            actor.gradient_checkpointing_disable()</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">gradient_checkpointing_disable</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="ScalarRewardModelVL.print_trainable_parameters"><a class="viewcode-back" href="../../../api_doc/models/srm_vl.html#lightrft.models.srm_vl.ScalarRewardModelVL.print_trainable_parameters">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">print_trainable_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Print information about trainable parameters in the model.</span>
+
+<span class="sd">        This method displays the number and percentage of trainable parameters,</span>
+<span class="sd">        which is particularly useful when using parameter-efficient methods like LoRA.</span>
+<span class="sd">        It helps monitor the efficiency of the fine-tuning approach.</span>
+
+<span class="sd">        **Example:**</span>
+
+
+
+<span class="sd">        .. code-block:: python</span>
+
+
+<span class="sd">            # Print trainable parameter statistics</span>
+<span class="sd">            actor.print_trainable_parameters()</span>
+<span class="sd">            # Output: trainable params: 4,194,304 || all params: 7,241,732,096 || trainable%: 0.058</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">print_trainable_parameters</span><span class="p">()</span></div></div>
+</pre></div>
+
+              </article>
+              
+            </div>
+            <footer>
+  
+
+  <hr>
+
+  <div role="contentinfo">
+    <p>
+      &copy; Copyright 2025, OpenDILab.
+
+    </p>
+  </div>
+  
+  <div>
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a
+      href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the
+      Docs</a>.
+  </div>
+   
+
+</footer>
+          </div>
+        </div>
+
+        <div class="pytorch-content-right" id="pytorch-content-right">
+          <div class="pytorch-right-menu" id="pytorch-right-menu">
+            <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
+              
+            </div>
+          </div>
+        </div>
+    </section>
+  </div>
+
+  
+
+
+  
+
+  
+  <script type="text/javascript" id="documentation_options" data-url_root="../../../"
+    src="../../../_static/documentation_options.js"></script>
+  <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+  <script src="../../../_static/doctools.js"></script>
+  <script src="../../../_static/sphinx_highlight.js"></script>
+  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+  
+
+  
+
+  <script type="text/javascript" src="../../../_static/js/vendor/popper.min.js"></script>
+  <script type="text/javascript" src="../../../_static/js/vendor/bootstrap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
+  <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+    jQuery(function () {
+      SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+  <!-- Begin Footer -->
+
+  <div class="container-fluid docs-tutorials-resources" id="docs-tutorials-resources">
+  </div>
+
+  <!-- End Footer -->
+
+  <!-- Begin Mobile Menu -->
+
+  <div class="mobile-main-menu">
+    <div class="container-fluid">
+      <div class="container">
+        <div class="mobile-main-menu-header-container">
+          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
+        </div>
+      </div>
+    </div>
+
+    <div class="mobile-main-menu-links-container">
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://github.com/opendilab/LightRFT" target="_blank">GitHub</a>
+          </li>
+      </div>
+    </div>
+  </div>
+
+  <!-- End Mobile Menu -->
+
+  <script type="text/javascript" src="../../../_static/js/vendor/anchor.min.js"></script>
+
+  <script type="text/javascript">
+    $(document).ready(function () {
+      mobileMenu.bind();
+      mobileTOC.bind();
+      pytorchAnchors.bind();
+      sideMenus.bind();
+      scrollToAnchor.bind();
+      highlightNavigation.bind();
+      mainMenuDropdown.bind();
+      filterTags.bind();
+
+      // Add class to links that have code blocks, since we cannot create links in code blocks
+      $("article.pytorch-article a span.pre").each(function (e) {
+        $(this).closest("a").addClass("has-code");
+      });
+    })
+  </script>
+</body>
+
+</html>

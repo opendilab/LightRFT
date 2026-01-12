@@ -1,0 +1,1132 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js" lang="en">
+<!--<![endif]-->
+
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>lightrft.trainer.srm_trainer_vl &mdash; LightRFT v0.1.1 documentation</title>
+  
+
+  <link rel="shortcut icon" href="../../../_static/images/favicon.ico" />
+  
+  
+
+  
+
+  
+  
+  
+
+  
+
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <!-- <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" /> -->
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/readthedocs.css" type="text/css" />
+  <link rel="index" title="Index" href="../../../genindex.html" />
+  <link rel="search" title="Search" href="../../../search.html" />
+  <!-- Google Analytics -->
+  <script type="text/javascript">
+    var collapsedSections = [];
+  </script>
+  
+  <!-- End Google Analytics -->
+  
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+  <script>
+    MathJax = {
+        chtml: {
+            scale: 1,
+            minScale: 1,
+        },
+        svg: {
+            scale: 1,
+            minScale: 1,
+        }
+    }
+</script>
+
+  <!-- Preload the theme fonts -->
+
+<link rel="preload" href="../../../_static/fonts/FreightSans/freight-sans-book.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../_static/fonts/FreightSans/freight-sans-medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../_static/fonts/IBMPlexMono/IBMPlexMono-Medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../_static/fonts/FreightSans/freight-sans-bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../_static/fonts/FreightSans/freight-sans-medium-italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../_static/fonts/IBMPlexMono/IBMPlexMono-SemiBold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+
+<!-- Preload the katex fonts -->
+
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Math-Italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size1-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size4-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size2-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size3-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Caligraphic-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.2/css/all.css"
+    integrity="sha384-vSIIfh2YWi9wW0r9iZe7RJPrKwp6bG+s9QZMoITbCckVJqGCCRhc+ccxNcdpHuYu" crossorigin="anonymous">
+</head>
+
+<div class="container-fluid header-holder tutorials-header" id="header-holder">
+  <div class="container">
+    <div class="header-container">
+      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+        aria-label="OpenMMLab"></a>
+
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://github.com/opendilab/LightRFT" target="_blank">GitHub</a>
+          </li>
+          <li >
+            <div id="resourcesDropdownButton" data-toggle="resources-dropdown" class="resources-dropdown">
+              <a
+                class="resource-option with-down-arrow">
+                OpenDILab
+              </a>
+              <div class="resources-dropdown-menu">
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-engine" target="_blank">
+                  <span class="dropdown-title">DI-engine </span>
+                  <p>OpenDILab Decision AI Engine</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/LightZero" target="_blank">
+                  <span class="dropdown-title">LightZero </span>
+                  <p>OpenDILab Decision Monte Carlo Tree Search Framework</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/GenerativeRL" target="_blank">
+                  <span class="dropdown-title">GenerativeRL </span>
+                  <p>OpenDILab Generative AI Framework</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-star" target="_blank">
+                  <span class="dropdown-title">DI-star </span>
+                  <p>OpenDILab Decision AI in StarCraftII</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-drive" target="_blank">
+                  <span class="dropdown-title">DI-drive </span>
+                  <p>OpenDILab Auto-driving platform</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/GoBigger" target="_blank">
+                  <span class="dropdown-title">GoBigger </span>
+                  <p>OpenDILab Multi-Agent Environment</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-smartcross" target="_blank">
+                  <span class="dropdown-title">DI-smartcross </span>
+                  <p>Decision Intelligence Platform for Traffic Crossing Signal Control</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-treetensor" target="_blank">
+                  <span class="dropdown-title">DI-treetensor </span>
+                  <p>Tree Nested PyTorch Tensor Lib</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-sheep" target="_blank">
+                  <span class="dropdown-title">DI-sheep </span>
+                  <p>Deep Reinforcement Learning + 3 Tiles Game</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-model-based-RL" target="_blank">
+                  <span class="dropdown-title">awesome-model-based-RL </span>
+                  <p>A curated list of awesome model based RL resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-decision-transformer" target="_blank">
+                  <span class="dropdown-title">awesome-decision-transformer </span>
+                  <p>A curated list of Decision Transformer resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-exploration-rl" target="_blank">
+                  <span class="dropdown-title">awesome-exploration-rl </span>
+                  <p>A curated list of awesome exploration RL resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-multi-modal-reinforcement-learning" target="_blank">
+                  <span class="dropdown-title">awesome-multi-modal-reinforcement-learning </span>
+                  <p>A curated list of Multi-Modal Reinforcement Learning resources (continually updated)</p>
+                </a>
+              </div>
+          </li>
+        </ul>
+      </div>
+
+      <a class="main-menu-open-button" href="#" data-behavior="open-mobile-menu"></a>
+    </div>
+  </div>
+</div>
+
+<body class="pytorch-body">
+
+   
+
+  
+
+  <div class="table-of-contents-link-wrapper">
+    <span>Table of Contents</span>
+    <a href="#" class="toggle-table-of-contents" data-behavior="toggle-table-of-contents"></a>
+  </div>
+
+  <nav data-toggle="wy-nav-shift" class="pytorch-left-menu" id="pytorch-left-menu">
+    <div class="pytorch-side-scroll">
+      <div class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        <div class="pytorch-left-menu-search">
+          
+
+          
+          
+          
+          
+
+          
+
+
+
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search Docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        
+        
+        
+        
+        
+        <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../quick_start/index.html">Quick Start</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide &amp; Best Practices</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../best_practice/index.html">Best Practices</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_doc/utils/index.html">lightrft.utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_doc/datasets/index.html">lightrft.datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_doc/models/index.html">lightrft.models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_doc/strategy/index.html">lightrft.strategy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_doc/trainer/index.html">lightrft.trainer</a></li>
+</ul>
+
+        
+        
+      </div>
+    </div>
+  </nav>
+
+  <div class="pytorch-container">
+    <div class="pytorch-page-level-bar" id="pytorch-page-level-bar">
+      <div class="pytorch-breadcrumbs-wrapper">
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="pytorch-breadcrumbs">
+    
+      <li>
+        <a href="../../../index.html">
+            Docs
+        </a> &gt;
+      </li>
+
+        
+          <li><a href="../../index.html">Module code</a> &gt;</li>
+        
+      <li>lightrft.trainer.srm_trainer_vl</li>
+    
+    
+      <li class="pytorch-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+</div>
+      </div>
+
+      <div class="pytorch-shortcuts-wrapper" id="pytorch-shortcuts-wrapper">
+        Shortcuts
+      </div>
+    </div>
+
+    <section data-toggle="wy-nav-shift" id="pytorch-content-wrap" class="pytorch-content-wrap">
+      <div class="pytorch-content-left">
+        
+          <div class="rst-content">
+            
+            <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
+              <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
+                
+  <h1>Source code for lightrft.trainer.srm_trainer_vl</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Trainer utilities for scalar reward models (vision-language capable).</span>
+
+<span class="sd">This module provides a trainer that supports pairwise preference training with</span>
+<span class="sd">different loss functions, including Bradley-Terry (BT) loss and Human Preference</span>
+<span class="sd">Score (HPS) Loss. It integrates with the project&#39;s Strategy abstraction for distributed</span>
+<span class="sd">training, gradient accumulation, and checkpointing, while optionally logging to</span>
+<span class="sd">Weights &amp; Biases or TensorBoard.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tqdm</span><span class="w"> </span><span class="kn">import</span> <span class="n">tqdm</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Dict</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch.nn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nn</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">torch.optim</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optimizer</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch.distributed</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">dist</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">lightrft.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">LogExpLoss</span><span class="p">,</span> <span class="n">LogSigmoidLoss</span><span class="p">,</span> <span class="n">HPSLoss</span><span class="p">,</span> <span class="n">pad_to_length</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">lightrft.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">DistributedSampler</span><span class="p">,</span> <span class="n">all_gather_and_flatten</span><span class="p">,</span> <span class="n">all_reduce_dict</span>
+
+
+<div class="viewcode-block" id="SRMTrainerVL"><a class="viewcode-back" href="../../../api_doc/trainer/srm_trainer_vl.html#lightrft.trainer.srm_trainer_vl.SRMTrainerVL">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">SRMTrainerVL</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Trainer for scalar vision-language reward models.</span>
+
+<span class="sd">    :param model: The model to be trained; expected to return a dict of head</span>
+<span class="sd">        scores for each head type when called with token ids and optional image</span>
+<span class="sd">        or video features.</span>
+<span class="sd">    :type model: torch.nn.Module</span>
+<span class="sd">    :param strategy: Training strategy that manages distributed operations,</span>
+<span class="sd">        gradient accumulation, checkpointing, logging helpers, and args.</span>
+<span class="sd">    :type strategy: Strategy</span>
+<span class="sd">    :param optim: Optimizer used for parameter updates.</span>
+<span class="sd">    :type optim: torch.optim.Optimizer</span>
+<span class="sd">    :param train_dataloader: Dataloader providing pairwise (A/B/Equal) batches.</span>
+<span class="sd">    :type train_dataloader: torch.utils.data.DataLoader</span>
+<span class="sd">    :param scheduler: Learning rate scheduler.</span>
+<span class="sd">    :type scheduler: torch.optim.lr_scheduler._LRScheduler</span>
+<span class="sd">    :param tokenizer: Tokenizer used to obtain pad token id for sequence</span>
+<span class="sd">        padding when concatenating inputs.</span>
+<span class="sd">    :type tokenizer: Callable</span>
+<span class="sd">    :param eval_dataloader: Optional dataloader used for evaluation.</span>
+<span class="sd">    :type eval_dataloader: Optional[torch.utils.data.DataLoader]</span>
+<span class="sd">    :param max_epochs: Maximum number of training epochs.</span>
+<span class="sd">    :type max_epochs: int</span>
+<span class="sd">    :param loss: Loss function to use. Choices are &#39;sigmoid&#39; (PairWiseLoss),</span>
+<span class="sd">        &#39;logexp&#39; (LogExpLoss), and &#39;hps&#39; (HPSLoss).</span>
+<span class="sd">    :type loss: str</span>
+<span class="sd">    :param margin: Margin value for BT loss (only used if ``loss`` is BT).</span>
+<span class="sd">    :type margin: float</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">model</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span>
+        <span class="n">strategy</span><span class="p">,</span>
+        <span class="n">optim</span><span class="p">:</span> <span class="n">Optimizer</span><span class="p">,</span>
+        <span class="n">train_dataloader</span><span class="p">,</span>
+        <span class="n">scheduler</span><span class="p">,</span>
+        <span class="n">tokenizer</span><span class="p">,</span>
+        <span class="n">eval_dataloader</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">max_epochs</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="n">loss</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;sigmoid&quot;</span><span class="p">,</span>
+        <span class="n">margin</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span> <span class="o">=</span> <span class="n">strategy</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">epochs</span> <span class="o">=</span> <span class="n">max_epochs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">train_dataloader</span> <span class="o">=</span> <span class="n">train_dataloader</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">eval_dataloader</span> <span class="o">=</span> <span class="n">eval_dataloader</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scheduler</span> <span class="o">=</span> <span class="n">scheduler</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span> <span class="o">=</span> <span class="n">optim</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tokenizer</span> <span class="o">=</span> <span class="n">tokenizer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">margin</span> <span class="o">=</span> <span class="n">margin</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">args</span> <span class="o">=</span> <span class="n">strategy</span><span class="o">.</span><span class="n">args</span>
+
+        <span class="k">if</span> <span class="n">loss</span> <span class="o">==</span> <span class="s2">&quot;sigmoid&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">loss</span> <span class="o">=</span> <span class="s2">&quot;sigmoid&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">loss_fn</span> <span class="o">=</span> <span class="n">LogSigmoidLoss</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="s2">&quot;LogSigmoid Loss&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">loss</span> <span class="o">==</span> <span class="s2">&quot;logexp&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">loss</span> <span class="o">=</span> <span class="s2">&quot;logexp&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">loss_fn</span> <span class="o">=</span> <span class="n">LogExpLoss</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="s2">&quot;LogExp Loss&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">loss</span> <span class="o">==</span> <span class="s2">&quot;hps&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">loss</span> <span class="o">=</span> <span class="s2">&quot;hps&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">loss_fn</span> <span class="o">=</span> <span class="n">HPSLoss</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="s2">&quot;HPS Loss&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;invalid loss type: </span><span class="si">{</span><span class="n">loss</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># wandb/tensorboard setting</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_wandb</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tensorboard</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">use_wandb</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">is_rank_0</span><span class="p">():</span>
+            <span class="kn">import</span><span class="w"> </span><span class="nn">wandb</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_wandb</span> <span class="o">=</span> <span class="n">wandb</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">wandb</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">api_key</span><span class="p">:</span>
+                <span class="n">wandb</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="n">strategy</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">use_wandb</span><span class="p">)</span>
+            <span class="n">wandb</span><span class="o">.</span><span class="n">init</span><span class="p">(</span>
+                <span class="n">entity</span><span class="o">=</span><span class="n">strategy</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">wandb_org</span><span class="p">,</span>
+                <span class="n">project</span><span class="o">=</span><span class="n">strategy</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">wandb_project</span><span class="p">,</span>
+                <span class="n">group</span><span class="o">=</span><span class="n">strategy</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">wandb_group</span><span class="p">,</span>
+                <span class="n">name</span><span class="o">=</span><span class="n">strategy</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">wandb_run_name</span><span class="p">,</span>
+                <span class="n">config</span><span class="o">=</span><span class="n">strategy</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">,</span>
+                <span class="n">reinit</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="n">wandb</span><span class="o">.</span><span class="n">define_metric</span><span class="p">(</span><span class="s2">&quot;train/global_step&quot;</span><span class="p">)</span>
+            <span class="n">wandb</span><span class="o">.</span><span class="n">define_metric</span><span class="p">(</span><span class="s2">&quot;train/*&quot;</span><span class="p">,</span> <span class="n">step_metric</span><span class="o">=</span><span class="s2">&quot;train/global_step&quot;</span><span class="p">,</span> <span class="n">step_sync</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">wandb</span><span class="o">.</span><span class="n">define_metric</span><span class="p">(</span><span class="s2">&quot;eval/global_step&quot;</span><span class="p">)</span>
+            <span class="n">wandb</span><span class="o">.</span><span class="n">define_metric</span><span class="p">(</span><span class="s2">&quot;eval/*&quot;</span><span class="p">,</span> <span class="n">step_metric</span><span class="o">=</span><span class="s2">&quot;eval/global_step&quot;</span><span class="p">,</span> <span class="n">step_sync</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># Initialize TensorBoard writer if wandb is not available</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">use_tensorboard</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_wandb</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">is_rank_0</span><span class="p">():</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">torch.utils.tensorboard</span><span class="w"> </span><span class="kn">import</span> <span class="n">SummaryWriter</span>
+
+            <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">use_tensorboard</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">log_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">use_tensorboard</span><span class="p">,</span> <span class="n">strategy</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">wandb_run_name</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_tensorboard</span> <span class="o">=</span> <span class="n">SummaryWriter</span><span class="p">(</span><span class="n">log_dir</span><span class="o">=</span><span class="n">log_dir</span><span class="p">)</span>
+
+<div class="viewcode-block" id="SRMTrainerVL.fit"><a class="viewcode-back" href="../../../api_doc/trainer/srm_trainer_vl.html#lightrft.trainer.srm_trainer_vl.SRMTrainerVL.fit">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">consumed_samples</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">num_update_steps_per_epoch</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Train the model for ``max_epochs`` using the provided dataloaders.</span>
+
+<span class="sd">        :param args: Training arguments (typically ``strategy.args``) including</span>
+<span class="sd">            logging/eval/save intervals and batch sizing.</span>
+<span class="sd">        :type args: Any</span>
+<span class="sd">        :param consumed_samples: Number of samples already consumed (for</span>
+<span class="sd">            resuming training), defaults to ``0``.</span>
+<span class="sd">        :type consumed_samples: int</span>
+<span class="sd">        :param num_update_steps_per_epoch: Number of optimizer steps per epoch.</span>
+<span class="sd">            If ``None``, it&#39;s inferred externally and passed in by caller.</span>
+<span class="sd">        :type num_update_steps_per_epoch: Optional[int]</span>
+
+<span class="sd">        :returns: None</span>
+<span class="sd">        :rtype: NoneType</span>
+
+<span class="sd">        Notes:</span>
+<span class="sd">            - Supports HPS Scale training via ``scale_for_train`` flag in args.</span>
+<span class="sd">            - Logs to Weights &amp; Biases or TensorBoard when configured.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># get eval and save steps</span>
+        <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">eval_steps</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="n">args</span><span class="o">.</span><span class="n">eval_steps</span> <span class="o">=</span> <span class="n">num_update_steps_per_epoch</span>  <span class="c1"># Evaluate once per epoch</span>
+        <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">save_steps</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="n">args</span><span class="o">.</span><span class="n">save_steps</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;inf&quot;</span><span class="p">)</span>  <span class="c1"># do not save ckpt</span>
+
+        <span class="c1"># Restore step and start_epoch</span>
+        <span class="n">step</span> <span class="o">=</span> <span class="n">consumed_samples</span> <span class="o">//</span> <span class="n">args</span><span class="o">.</span><span class="n">train_batch_size</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">accumulated_gradient</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">start_epoch</span> <span class="o">=</span> <span class="n">consumed_samples</span> <span class="o">//</span> <span class="n">args</span><span class="o">.</span><span class="n">train_batch_size</span> <span class="o">//</span> <span class="n">num_update_steps_per_epoch</span>
+        <span class="n">consumed_samples</span> <span class="o">=</span> <span class="n">consumed_samples</span> <span class="o">%</span> <span class="p">(</span><span class="n">num_update_steps_per_epoch</span> <span class="o">*</span> <span class="n">args</span><span class="o">.</span><span class="n">train_batch_size</span><span class="p">)</span>
+
+        <span class="n">epoch_bar</span> <span class="o">=</span> <span class="n">tqdm</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">start_epoch</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">epochs</span><span class="p">),</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Train epoch&quot;</span><span class="p">,</span> <span class="n">disable</span><span class="o">=</span><span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">is_rank_0</span><span class="p">())</span>
+
+        <span class="n">head_types</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">head_types</span>
+        <span class="n">loss_mean</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">acc_mean</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">acc</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">total_loss_mean</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="k">for</span> <span class="n">head_type</span> <span class="ow">in</span> <span class="n">head_types</span><span class="p">:</span>
+            <span class="n">loss_mean</span><span class="p">[</span><span class="n">head_type</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">acc_mean</span><span class="p">[</span><span class="n">head_type</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">acc</span><span class="p">[</span><span class="n">head_type</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">start_epoch</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">epochs</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">train_dataloader</span><span class="o">.</span><span class="n">sampler</span><span class="p">,</span> <span class="n">DistributedSampler</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">train_dataloader</span><span class="o">.</span><span class="n">sampler</span><span class="o">.</span><span class="n">set_epoch</span><span class="p">(</span>
+                    <span class="n">epoch</span><span class="p">,</span> <span class="n">consumed_samples</span><span class="o">=</span><span class="mi">0</span> <span class="k">if</span> <span class="n">epoch</span> <span class="o">&gt;</span> <span class="n">start_epoch</span> <span class="k">else</span> <span class="n">consumed_samples</span>
+                <span class="p">)</span>
+
+            <span class="n">step_bar</span> <span class="o">=</span> <span class="n">tqdm</span><span class="p">(</span>
+                <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">train_dataloader</span><span class="o">.</span><span class="fm">__len__</span><span class="p">()),</span>
+                <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Train step of epoch </span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">epoch</span><span class="p">,</span>
+                <span class="n">disable</span><span class="o">=</span><span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">is_rank_0</span><span class="p">(),</span>
+            <span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
+            <span class="n">scale_for_train</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">scale_for_train</span>
+
+            <span class="k">for</span> <span class="n">data</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">train_dataloader</span><span class="p">:</span>
+                <span class="p">(</span>
+                    <span class="n">input0_ids</span><span class="p">,</span>
+                    <span class="n">input0_mask</span><span class="p">,</span>
+                    <span class="n">input1_ids</span><span class="p">,</span>
+                    <span class="n">input1_mask</span><span class="p">,</span>
+                    <span class="n">input0_img_pixels</span><span class="p">,</span>
+                    <span class="n">input0_img_grid_thws</span><span class="p">,</span>
+                    <span class="n">input1_img_pixels</span><span class="p">,</span>
+                    <span class="n">input1_img_grid_thws</span><span class="p">,</span>
+                    <span class="n">input0_video_pixels</span><span class="p">,</span>
+                    <span class="n">input0_video_grid_thws</span><span class="p">,</span>
+                    <span class="n">input1_video_pixels</span><span class="p">,</span>
+                    <span class="n">input1_video_grid_thws</span><span class="p">,</span>
+                    <span class="n">extras</span><span class="p">,</span>
+                <span class="p">)</span> <span class="o">=</span> <span class="n">data</span>
+
+                <span class="n">device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">current_device</span><span class="p">()</span>
+
+                <span class="n">input0_ids</span> <span class="o">=</span> <span class="n">input0_ids</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+                <span class="n">input0_mask</span> <span class="o">=</span> <span class="n">input0_mask</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+                <span class="n">input1_ids</span> <span class="o">=</span> <span class="n">input1_ids</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+                <span class="n">input1_mask</span> <span class="o">=</span> <span class="n">input1_mask</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="n">input0_img_pixels</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">input0_img_pixels</span> <span class="o">=</span> <span class="n">input0_img_pixels</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+                    <span class="n">input0_img_grid_thws</span> <span class="o">=</span> <span class="n">input0_img_grid_thws</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+                    <span class="n">input1_img_pixels</span> <span class="o">=</span> <span class="n">input1_img_pixels</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+                    <span class="n">input1_img_grid_thws</span> <span class="o">=</span> <span class="n">input1_img_grid_thws</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="n">input0_video_pixels</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">input0_video_pixels</span> <span class="o">=</span> <span class="n">input0_video_pixels</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+                    <span class="n">input0_video_grid_thws</span> <span class="o">=</span> <span class="n">input0_video_grid_thws</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+                    <span class="n">input1_video_pixels</span> <span class="o">=</span> <span class="n">input1_video_pixels</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+                    <span class="n">input1_video_grid_thws</span> <span class="o">=</span> <span class="n">input1_video_grid_thws</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+
+                <span class="n">scores0</span><span class="p">,</span> <span class="n">scores1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">concatenated_forward</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span>
+                    <span class="n">input0_ids</span><span class="p">,</span>
+                    <span class="n">input0_mask</span><span class="p">,</span>
+                    <span class="n">input1_ids</span><span class="p">,</span>
+                    <span class="n">input1_mask</span><span class="p">,</span>
+                    <span class="n">input0_img_pixels</span><span class="p">,</span>
+                    <span class="n">input0_img_grid_thws</span><span class="p">,</span>
+                    <span class="n">input1_img_pixels</span><span class="p">,</span>
+                    <span class="n">input1_img_grid_thws</span><span class="p">,</span>
+                    <span class="n">input0_video_pixels</span><span class="p">,</span>
+                    <span class="n">input0_video_grid_thws</span><span class="p">,</span>
+                    <span class="n">input1_video_pixels</span><span class="p">,</span>
+                    <span class="n">input1_video_grid_thws</span><span class="p">,</span>
+                <span class="p">)</span>
+
+                <span class="n">labels</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="k">for</span> <span class="n">head_type</span> <span class="ow">in</span> <span class="n">head_types</span><span class="p">:</span>
+                    <span class="n">labels</span><span class="p">[</span><span class="n">head_type</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">e</span><span class="p">[</span><span class="n">head_type</span><span class="p">]</span> <span class="k">if</span> <span class="n">head_type</span> <span class="ow">in</span> <span class="n">e</span> <span class="k">else</span> <span class="s2">&quot;C&quot;</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">extras</span><span class="p">]</span>
+
+                <span class="n">chosens</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="n">rejects</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="n">equals</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="k">for</span> <span class="n">head_type</span> <span class="ow">in</span> <span class="n">head_types</span><span class="p">:</span>
+                    <span class="n">chosens</span><span class="p">[</span><span class="n">head_type</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+                    <span class="n">rejects</span><span class="p">[</span><span class="n">head_type</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+                    <span class="n">equals</span><span class="p">[</span><span class="n">head_type</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">extras</span><span class="p">)):</span>
+                    <span class="k">for</span> <span class="n">head_type</span> <span class="ow">in</span> <span class="n">head_types</span><span class="p">:</span>
+                        <span class="n">label</span> <span class="o">=</span> <span class="n">labels</span><span class="p">[</span><span class="n">head_type</span><span class="p">][</span><span class="n">i</span><span class="p">]</span>
+
+                        <span class="k">if</span> <span class="n">label</span> <span class="o">==</span> <span class="s2">&quot;A&quot;</span><span class="p">:</span>
+                            <span class="n">chosens</span><span class="p">[</span><span class="n">head_type</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">scores0</span><span class="p">[</span><span class="n">head_type</span><span class="p">][</span><span class="n">i</span><span class="p">])</span>
+                            <span class="n">rejects</span><span class="p">[</span><span class="n">head_type</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">scores1</span><span class="p">[</span><span class="n">head_type</span><span class="p">][</span><span class="n">i</span><span class="p">])</span>
+                        <span class="k">elif</span> <span class="n">label</span> <span class="o">==</span> <span class="s2">&quot;B&quot;</span><span class="p">:</span>
+                            <span class="n">chosens</span><span class="p">[</span><span class="n">head_type</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">scores1</span><span class="p">[</span><span class="n">head_type</span><span class="p">][</span><span class="n">i</span><span class="p">])</span>
+                            <span class="n">rejects</span><span class="p">[</span><span class="n">head_type</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">scores0</span><span class="p">[</span><span class="n">head_type</span><span class="p">][</span><span class="n">i</span><span class="p">])</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">equals</span><span class="p">[</span><span class="n">head_type</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">scores0</span><span class="p">[</span><span class="n">head_type</span><span class="p">][</span><span class="n">i</span><span class="p">],</span> <span class="n">scores1</span><span class="p">[</span><span class="n">head_type</span><span class="p">][</span><span class="n">i</span><span class="p">]])</span>
+
+                <span class="k">for</span> <span class="n">head_type</span> <span class="ow">in</span> <span class="n">head_types</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">chosens</span><span class="p">[</span><span class="n">head_type</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="n">chosens</span><span class="p">[</span><span class="n">head_type</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">chosens</span><span class="p">[</span><span class="n">head_type</span><span class="p">])</span>
+                        <span class="n">rejects</span><span class="p">[</span><span class="n">head_type</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">rejects</span><span class="p">[</span><span class="n">head_type</span><span class="p">])</span>
+
+                <span class="n">equals_loss</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="k">for</span> <span class="n">head_type</span> <span class="ow">in</span> <span class="n">head_types</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">equals</span><span class="p">[</span><span class="n">head_type</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="n">equals</span><span class="p">[</span><span class="n">head_type</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span><span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">equals</span><span class="p">[</span><span class="n">head_type</span><span class="p">]])</span>
+                        <span class="n">equal_loss</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">equals</span><span class="p">[</span><span class="n">head_type</span><span class="p">][:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">equals</span><span class="p">[</span><span class="n">head_type</span><span class="p">][:,</span> <span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+                        <span class="n">equals_loss</span><span class="p">[</span><span class="n">head_type</span><span class="p">]</span> <span class="o">=</span> <span class="n">equal_loss</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">equals_loss</span><span class="p">[</span><span class="n">head_type</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+
+                <span class="n">head_loss</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="k">for</span> <span class="n">head_type</span> <span class="ow">in</span> <span class="n">head_types</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">chosens</span><span class="p">[</span><span class="n">head_type</span><span class="p">])</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="k">continue</span>
+                    <span class="c1"># Compute per head loss based on the selected loss function</span>
+                    <span class="n">head_loss</span><span class="p">[</span><span class="n">head_type</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss_fn</span><span class="p">(</span><span class="n">chosens</span><span class="p">[</span><span class="n">head_type</span><span class="p">],</span> <span class="n">rejects</span><span class="p">[</span><span class="n">head_type</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">margin</span><span class="p">)</span>
+
+                <span class="n">total_loss</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">head_loss</span><span class="o">.</span><span class="n">values</span><span class="p">())</span> <span class="o">+</span> <span class="mf">0.01</span> <span class="o">*</span> <span class="nb">sum</span><span class="p">(</span><span class="n">equals_loss</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">backward</span><span class="p">(</span><span class="n">total_loss</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">optimizer_step</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">scheduler</span><span class="p">)</span>
+
+                <span class="k">for</span> <span class="n">head_type</span> <span class="ow">in</span> <span class="n">head_types</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">chosens</span><span class="p">[</span><span class="n">head_type</span><span class="p">])</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="k">continue</span>
+                    <span class="n">acc</span><span class="p">[</span><span class="n">head_type</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">chosens</span><span class="p">[</span><span class="n">head_type</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">rejects</span><span class="p">[</span><span class="n">head_type</span><span class="p">])</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+                    <span class="n">acc_mean</span><span class="p">[</span><span class="n">head_type</span><span class="p">]</span> <span class="o">=</span> <span class="n">acc_mean</span><span class="p">[</span><span class="n">head_type</span><span class="p">]</span> <span class="o">*</span> <span class="mf">0.9</span> <span class="o">+</span> <span class="mf">0.1</span> <span class="o">*</span> <span class="n">acc</span><span class="p">[</span><span class="n">head_type</span><span class="p">]</span>
+                    <span class="n">loss_mean</span><span class="p">[</span><span class="n">head_type</span><span class="p">]</span> <span class="o">=</span> <span class="n">loss_mean</span><span class="p">[</span><span class="n">head_type</span><span class="p">]</span> <span class="o">*</span> <span class="mf">0.9</span> <span class="o">+</span> <span class="mf">0.1</span> <span class="o">*</span> <span class="n">head_loss</span><span class="p">[</span><span class="n">head_type</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+
+                <span class="n">total_loss_mean</span> <span class="o">=</span> <span class="n">total_loss_mean</span> <span class="o">*</span> <span class="mf">0.9</span> <span class="o">+</span> <span class="mf">0.1</span> <span class="o">*</span> <span class="n">total_loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+                <span class="n">logs_dict</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s2">&quot;loss&quot;</span><span class="p">:</span> <span class="n">total_loss</span><span class="o">.</span><span class="n">item</span><span class="p">(),</span>
+                    <span class="s2">&quot;loss_mean&quot;</span><span class="p">:</span> <span class="n">total_loss_mean</span><span class="p">,</span>
+                    <span class="s2">&quot;lr&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">scheduler</span><span class="o">.</span><span class="n">get_last_lr</span><span class="p">()[</span><span class="mi">0</span><span class="p">],</span>
+                <span class="p">}</span>
+                <span class="k">for</span> <span class="n">head_type</span> <span class="ow">in</span> <span class="n">head_types</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">chosens</span><span class="p">[</span><span class="n">head_type</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="n">logs_dict</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">head_type</span><span class="si">}</span><span class="s2">_loss&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">head_loss</span><span class="p">[</span><span class="n">head_type</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+                        <span class="n">logs_dict</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">head_type</span><span class="si">}</span><span class="s2">_acc&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">acc</span><span class="p">[</span><span class="n">head_type</span><span class="p">]</span>
+                        <span class="n">logs_dict</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">head_type</span><span class="si">}</span><span class="s2">_acc_mean&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">acc_mean</span><span class="p">[</span><span class="n">head_type</span><span class="p">]</span>
+                        <span class="n">logs_dict</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">head_type</span><span class="si">}</span><span class="s2">_loss_mean&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">loss_mean</span><span class="p">[</span><span class="n">head_type</span><span class="p">]</span>
+                        <span class="n">logs_dict</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">head_type</span><span class="si">}</span><span class="s2">_chosen_reward&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                            <span class="nb">round</span><span class="p">(</span><span class="n">chosens</span><span class="p">[</span><span class="n">head_type</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span> <span class="o">*</span>
+                                  <span class="mf">0.07</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span> <span class="k">if</span> <span class="n">scale_for_train</span> <span class="k">else</span> <span class="n">chosens</span><span class="p">[</span><span class="n">head_type</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+                        <span class="p">)</span>
+                        <span class="n">logs_dict</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">head_type</span><span class="si">}</span><span class="s2">_reject_reward&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                            <span class="nb">round</span><span class="p">(</span><span class="n">rejects</span><span class="p">[</span><span class="n">head_type</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span> <span class="o">*</span>
+                                  <span class="mf">0.07</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span> <span class="k">if</span> <span class="n">scale_for_train</span> <span class="k">else</span> <span class="n">rejects</span><span class="p">[</span><span class="n">head_type</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+                        <span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">logs_dict</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">head_type</span><span class="si">}</span><span class="s2">_loss&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+                        <span class="n">logs_dict</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">head_type</span><span class="si">}</span><span class="s2">_acc&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+                        <span class="n">logs_dict</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">head_type</span><span class="si">}</span><span class="s2">_acc_mean&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+                        <span class="n">logs_dict</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">head_type</span><span class="si">}</span><span class="s2">_loss_mean&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+                        <span class="n">logs_dict</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">head_type</span><span class="si">}</span><span class="s2">_chosen_reward&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+                        <span class="n">logs_dict</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">head_type</span><span class="si">}</span><span class="s2">_reject_reward&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+                <span class="c1"># step bar</span>
+                <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">logs_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                    <span class="k">if</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;preference&quot;</span><span class="p">):</span>
+                        <span class="n">logs_dict</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">all_reduce</span><span class="p">(</span><span class="n">logs_dict</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">op</span><span class="o">=</span><span class="s2">&quot;max&quot;</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">logs_dict</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">all_reduce</span><span class="p">(</span><span class="n">logs_dict</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+                <span class="n">step_bar</span><span class="o">.</span><span class="n">set_postfix</span><span class="p">(</span><span class="n">logs_dict</span><span class="p">)</span>
+                <span class="n">step_bar</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
+
+                <span class="c1"># logs/checkpoints/evaluation</span>
+                <span class="k">if</span> <span class="n">step</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">accumulated_gradient</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">global_step</span> <span class="o">=</span> <span class="n">step</span> <span class="o">//</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">accumulated_gradient</span>
+                    <span class="n">client_states</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;consumed_samples&quot;</span><span class="p">:</span> <span class="n">global_step</span> <span class="o">*</span> <span class="n">args</span><span class="o">.</span><span class="n">train_batch_size</span><span class="p">}</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">save_logs_and_checkpoints</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">global_step</span><span class="p">,</span> <span class="n">step_bar</span><span class="p">,</span> <span class="n">logs_dict</span><span class="p">,</span> <span class="n">client_states</span><span class="p">)</span>
+
+                <span class="n">step</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">epoch_bar</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_wandb</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">is_rank_0</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_wandb</span><span class="o">.</span><span class="n">finish</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tensorboard</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">is_rank_0</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_tensorboard</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_wandb</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">is_rank_0</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_wandb</span><span class="o">.</span><span class="n">finish</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tensorboard</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">is_rank_0</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_tensorboard</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+    <span class="c1"># logs/checkpoints/evaluate</span>
+<div class="viewcode-block" id="SRMTrainerVL.save_logs_and_checkpoints"><a class="viewcode-back" href="../../../api_doc/trainer/srm_trainer_vl.html#lightrft.trainer.srm_trainer_vl.SRMTrainerVL.save_logs_and_checkpoints">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">save_logs_and_checkpoints</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">global_step</span><span class="p">,</span> <span class="n">step_bar</span><span class="p">,</span> <span class="n">logs_dict</span><span class="o">=</span><span class="p">{},</span> <span class="n">client_states</span><span class="o">=</span><span class="p">{})</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Log metrics and optionally run evaluation and checkpointing.</span>
+
+<span class="sd">        :param args: Training arguments providing logging/eval/save intervals</span>
+<span class="sd">            and checkpoint configurations.</span>
+<span class="sd">        :type args: Any</span>
+<span class="sd">        :param global_step: Current global optimization step.</span>
+<span class="sd">        :type global_step: int</span>
+<span class="sd">        :param step_bar: Progress bar for step-level updates.</span>
+<span class="sd">        :type step_bar: tqdm.tqdm</span>
+<span class="sd">        :param logs_dict: Dictionary of metrics to log (will be reduced across</span>
+<span class="sd">            ranks via ``strategy.all_reduce`` before display/logging).</span>
+<span class="sd">        :type logs_dict: Dict[str, float]</span>
+<span class="sd">        :param client_states: Extra state to persist with checkpoints (e.g.,</span>
+<span class="sd">            consumed samples).</span>
+<span class="sd">        :type client_states: Dict[str, Any]</span>
+
+<span class="sd">        :returns: None</span>
+<span class="sd">        :rtype: NoneType</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">global_step</span> <span class="o">%</span> <span class="n">args</span><span class="o">.</span><span class="n">logging_steps</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c1"># wandb</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_wandb</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">is_rank_0</span><span class="p">():</span>
+                <span class="n">logs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;train/</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="p">{</span><span class="o">**</span><span class="n">logs_dict</span><span class="p">,</span> <span class="s2">&quot;global_step&quot;</span><span class="p">:</span> <span class="n">global_step</span><span class="p">}</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_wandb</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">logs</span><span class="p">)</span>
+            <span class="c1"># TensorBoard</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tensorboard</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">is_rank_0</span><span class="p">():</span>
+                <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">logs_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_tensorboard</span><span class="o">.</span><span class="n">add_scalar</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;train/</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">global_step</span><span class="p">)</span>
+
+        <span class="c1"># eval</span>
+        <span class="k">if</span> <span class="n">global_step</span> <span class="o">%</span> <span class="n">args</span><span class="o">.</span><span class="n">eval_steps</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c1"># do eval when len(dataloader) &gt; 0, avoid zero division in eval.</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">eval_dataloader</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">eval_dataloader</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="c1"># Pass args first to match evaluate signature (args, dataloader, steps)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">eval_dataloader</span><span class="p">,</span> <span class="n">global_step</span><span class="p">)</span>
+        <span class="c1"># save ckpt</span>
+        <span class="c1"># TODO: save best model on dev, use loss/perplexity on whole dev dataset as metric</span>
+        <span class="k">if</span> <span class="n">global_step</span> <span class="o">%</span> <span class="n">args</span><span class="o">.</span><span class="n">save_steps</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">tag</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;global_step</span><span class="si">{</span><span class="n">global_step</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">save_ckpt</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">ckpt_path</span><span class="p">,</span> <span class="n">tag</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">max_ckpt_num</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">max_ckpt_mem</span><span class="p">,</span> <span class="n">client_states</span>
+            <span class="p">)</span></div>
+
+<div class="viewcode-block" id="SRMTrainerVL.evaluate"><a class="viewcode-back" href="../../../api_doc/trainer/srm_trainer_vl.html#lightrft.trainer.srm_trainer_vl.SRMTrainerVL.evaluate">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">eval_dataloader</span><span class="p">,</span> <span class="n">steps</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Evaluate the model on the provided dataloader and write a JSONL of</span>
+<span class="sd">        scores to the save path indicated by ``strategy.args.save_path``.</span>
+<span class="sd">        Also calculates and logs accuracy metrics to Weights &amp; Biases or</span>
+<span class="sd">        TensorBoard.</span>
+
+<span class="sd">        :param args: present for API compatibility with callers.</span>
+<span class="sd">        :type args: Any</span>
+<span class="sd">        :param eval_dataloader: Dataloader for evaluation samples.</span>
+<span class="sd">        :type eval_dataloader: torch.utils.data.DataLoader</span>
+<span class="sd">        :param steps: Global step id for naming the output file.</span>
+<span class="sd">        :type steps: int</span>
+
+<span class="sd">        :returns: None</span>
+<span class="sd">        :rtype: NoneType</span>
+
+<span class="sd">        The output file name format is ``eval_scores_{steps}.jsonl``.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">step_bar</span> <span class="o">=</span> <span class="n">tqdm</span><span class="p">(</span>
+            <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">eval_dataloader</span><span class="p">)),</span>
+            <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Eval stage of steps </span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">steps</span><span class="p">,</span>
+            <span class="n">disable</span><span class="o">=</span><span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">is_rank_0</span><span class="p">(),</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+
+        <span class="c1"># Create JSONL file and write header (only on rank 0)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">is_rank_0</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Start Evaluation at global step </span><span class="si">{</span><span class="n">steps</span><span class="si">}</span><span class="s2">...&quot;</span><span class="p">)</span>
+            <span class="n">output_file</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;eval_results_</span><span class="si">{</span><span class="n">steps</span><span class="si">}</span><span class="s2">.jsonl&quot;</span>
+            <span class="n">output_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">save_path</span><span class="p">,</span> <span class="s2">&quot;evals&quot;</span><span class="p">,</span> <span class="n">output_file</span><span class="p">)</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">output_file</span><span class="p">),</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">output_file</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>  <span class="c1"># Just create/clear the file</span>
+
+        <span class="n">head_types</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">head_types</span>
+        <span class="c1"># Metrics accumulators</span>
+        <span class="n">eval_metrics</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;count&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">}</span>
+        <span class="k">for</span> <span class="n">head</span> <span class="ow">in</span> <span class="n">head_types</span><span class="p">:</span>
+            <span class="n">eval_metrics</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">head</span><span class="si">}</span><span class="s2">_correct&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+            <span class="n">eval_metrics</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">head</span><span class="si">}</span><span class="s2">_count&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">eval_metrics</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">head</span><span class="si">}</span><span class="s2">_chosen_reward&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+            <span class="n">eval_metrics</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">head</span><span class="si">}</span><span class="s2">_reject_reward&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+        <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">eval_dataloader</span><span class="p">:</span>
+                <span class="p">(</span>
+                    <span class="n">input0_ids</span><span class="p">,</span>
+                    <span class="n">input0_mask</span><span class="p">,</span>
+                    <span class="n">input1_ids</span><span class="p">,</span>
+                    <span class="n">input1_mask</span><span class="p">,</span>
+                    <span class="n">input0_img_pixels</span><span class="p">,</span>
+                    <span class="n">input0_img_grid_thws</span><span class="p">,</span>
+                    <span class="n">input1_img_pixels</span><span class="p">,</span>
+                    <span class="n">input1_img_grid_thws</span><span class="p">,</span>
+                    <span class="n">input0_video_pixels</span><span class="p">,</span>
+                    <span class="n">input0_video_grid_thws</span><span class="p">,</span>
+                    <span class="n">input1_video_pixels</span><span class="p">,</span>
+                    <span class="n">input1_video_grid_thws</span><span class="p">,</span>
+                    <span class="n">extras</span><span class="p">,</span>
+                <span class="p">)</span> <span class="o">=</span> <span class="n">data</span>
+
+                <span class="n">device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">current_device</span><span class="p">()</span>
+                <span class="n">input0_ids</span> <span class="o">=</span> <span class="n">input0_ids</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+                <span class="n">input0_mask</span> <span class="o">=</span> <span class="n">input0_mask</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+                <span class="n">input1_ids</span> <span class="o">=</span> <span class="n">input1_ids</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+                <span class="n">input1_mask</span> <span class="o">=</span> <span class="n">input1_mask</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="n">input0_img_pixels</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">input0_img_pixels</span> <span class="o">=</span> <span class="n">input0_img_pixels</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+                    <span class="n">input0_img_grid_thws</span> <span class="o">=</span> <span class="n">input0_img_grid_thws</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+                    <span class="n">input1_img_pixels</span> <span class="o">=</span> <span class="n">input1_img_pixels</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+                    <span class="n">input1_img_grid_thws</span> <span class="o">=</span> <span class="n">input1_img_grid_thws</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="n">input0_video_pixels</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">input0_video_pixels</span> <span class="o">=</span> <span class="n">input0_video_pixels</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+                    <span class="n">input0_video_grid_thws</span> <span class="o">=</span> <span class="n">input0_video_grid_thws</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+                    <span class="n">input1_video_pixels</span> <span class="o">=</span> <span class="n">input1_video_pixels</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+                    <span class="n">input1_video_grid_thws</span> <span class="o">=</span> <span class="n">input1_video_grid_thws</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+
+                <span class="n">scores0</span><span class="p">,</span> <span class="n">scores1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">concatenated_forward</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span>
+                    <span class="n">input0_ids</span><span class="p">,</span>
+                    <span class="n">input0_mask</span><span class="p">,</span>
+                    <span class="n">input1_ids</span><span class="p">,</span>
+                    <span class="n">input1_mask</span><span class="p">,</span>
+                    <span class="n">input0_img_pixels</span><span class="p">,</span>
+                    <span class="n">input0_img_grid_thws</span><span class="p">,</span>
+                    <span class="n">input1_img_pixels</span><span class="p">,</span>
+                    <span class="n">input1_img_grid_thws</span><span class="p">,</span>
+                    <span class="n">input0_video_pixels</span><span class="p">,</span>
+                    <span class="n">input0_video_grid_thws</span><span class="p">,</span>
+                    <span class="n">input1_video_pixels</span><span class="p">,</span>
+                    <span class="n">input1_video_grid_thws</span><span class="p">,</span>
+                <span class="p">)</span>
+
+                <span class="c1"># --- Metric Calculation Start ---</span>
+                <span class="n">labels</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="k">for</span> <span class="n">head_type</span> <span class="ow">in</span> <span class="n">head_types</span><span class="p">:</span>
+                    <span class="n">labels</span><span class="p">[</span><span class="n">head_type</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">e</span><span class="p">[</span><span class="n">head_type</span><span class="p">]</span> <span class="k">if</span> <span class="n">head_type</span> <span class="ow">in</span> <span class="n">e</span> <span class="k">else</span> <span class="s2">&quot;C&quot;</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">extras</span><span class="p">]</span>
+
+                <span class="n">chosens</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="n">rejects</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="k">for</span> <span class="n">head_type</span> <span class="ow">in</span> <span class="n">head_types</span><span class="p">:</span>
+                    <span class="n">chosens</span><span class="p">[</span><span class="n">head_type</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+                    <span class="n">rejects</span><span class="p">[</span><span class="n">head_type</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">extras</span><span class="p">)):</span>
+                    <span class="k">for</span> <span class="n">head_type</span> <span class="ow">in</span> <span class="n">head_types</span><span class="p">:</span>
+                        <span class="n">label</span> <span class="o">=</span> <span class="n">labels</span><span class="p">[</span><span class="n">head_type</span><span class="p">][</span><span class="n">i</span><span class="p">]</span>
+                        <span class="k">if</span> <span class="n">label</span> <span class="o">==</span> <span class="s2">&quot;A&quot;</span><span class="p">:</span>
+                            <span class="n">chosens</span><span class="p">[</span><span class="n">head_type</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">scores0</span><span class="p">[</span><span class="n">head_type</span><span class="p">][</span><span class="n">i</span><span class="p">])</span>
+                            <span class="n">rejects</span><span class="p">[</span><span class="n">head_type</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">scores1</span><span class="p">[</span><span class="n">head_type</span><span class="p">][</span><span class="n">i</span><span class="p">])</span>
+                        <span class="k">elif</span> <span class="n">label</span> <span class="o">==</span> <span class="s2">&quot;B&quot;</span><span class="p">:</span>
+                            <span class="n">chosens</span><span class="p">[</span><span class="n">head_type</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">scores1</span><span class="p">[</span><span class="n">head_type</span><span class="p">][</span><span class="n">i</span><span class="p">])</span>
+                            <span class="n">rejects</span><span class="p">[</span><span class="n">head_type</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">scores0</span><span class="p">[</span><span class="n">head_type</span><span class="p">][</span><span class="n">i</span><span class="p">])</span>
+                        <span class="c1"># We don&#39;t need equals for accuracy/reward calculation</span>
+
+                <span class="k">for</span> <span class="n">head_type</span> <span class="ow">in</span> <span class="n">head_types</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">chosens</span><span class="p">[</span><span class="n">head_type</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="n">chosens</span><span class="p">[</span><span class="n">head_type</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">chosens</span><span class="p">[</span><span class="n">head_type</span><span class="p">])</span>
+                        <span class="n">rejects</span><span class="p">[</span><span class="n">head_type</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">rejects</span><span class="p">[</span><span class="n">head_type</span><span class="p">])</span>
+
+                <span class="c1"># Update local metrics</span>
+                <span class="n">batch_size</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">extras</span><span class="p">)</span>
+                <span class="n">eval_metrics</span><span class="p">[</span><span class="s2">&quot;count&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">batch_size</span>
+
+                <span class="k">for</span> <span class="n">head_type</span> <span class="ow">in</span> <span class="n">head_types</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">chosens</span><span class="p">[</span><span class="n">head_type</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="n">count</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">chosens</span><span class="p">[</span><span class="n">head_type</span><span class="p">])</span>
+                        <span class="n">eval_metrics</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">head_type</span><span class="si">}</span><span class="s2">_correct&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="p">((</span><span class="n">chosens</span><span class="p">[</span><span class="n">head_type</span><span class="p">]</span> <span class="o">&gt;</span>
+                                                                  <span class="n">rejects</span><span class="p">[</span><span class="n">head_type</span><span class="p">])</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
+                        <span class="n">eval_metrics</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">head_type</span><span class="si">}</span><span class="s2">_count&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">count</span>
+                        <span class="n">eval_metrics</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">head_type</span><span class="si">}</span><span class="s2">_chosen_reward&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">chosens</span><span class="p">[</span><span class="n">head_type</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+                        <span class="n">eval_metrics</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">head_type</span><span class="si">}</span><span class="s2">_reject_reward&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">rejects</span><span class="p">[</span><span class="n">head_type</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+                <span class="c1"># --- Metric Calculation End ---</span>
+
+                <span class="c1"># Gather scores from all GPUs for each head_type</span>
+                <span class="n">gathered_scores0</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="n">gathered_scores1</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="k">for</span> <span class="n">head_type</span> <span class="ow">in</span> <span class="n">scores0</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                    <span class="k">if</span> <span class="n">head_type</span> <span class="ow">in</span> <span class="n">scores0</span><span class="p">:</span>
+                        <span class="c1"># Create tensor list for all_gather</span>
+                        <span class="n">tensor_list0</span> <span class="o">=</span> <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">scores0</span><span class="p">[</span><span class="n">head_type</span><span class="p">])</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">get_world_size</span><span class="p">())]</span>
+                        <span class="n">tensor_list1</span> <span class="o">=</span> <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">scores1</span><span class="p">[</span><span class="n">head_type</span><span class="p">])</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">get_world_size</span><span class="p">())]</span>
+                        <span class="c1"># Use all_gather instead of all_gather_object for tensors</span>
+                        <span class="n">dist</span><span class="o">.</span><span class="n">all_gather</span><span class="p">(</span><span class="n">tensor_list0</span><span class="p">,</span> <span class="n">scores0</span><span class="p">[</span><span class="n">head_type</span><span class="p">])</span>
+                        <span class="n">dist</span><span class="o">.</span><span class="n">all_gather</span><span class="p">(</span><span class="n">tensor_list1</span><span class="p">,</span> <span class="n">scores1</span><span class="p">[</span><span class="n">head_type</span><span class="p">])</span>
+                        <span class="c1"># Concatenate all tensors along batch dimension</span>
+                        <span class="n">gathered_scores0</span><span class="p">[</span><span class="n">head_type</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">tensor_list0</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+                        <span class="n">gathered_scores1</span><span class="p">[</span><span class="n">head_type</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">tensor_list1</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+                <span class="c1"># Gather extras</span>
+                <span class="n">all_extras</span> <span class="o">=</span> <span class="n">all_gather_and_flatten</span><span class="p">(</span><span class="n">extras</span><span class="p">)</span>
+
+                <span class="c1"># write scores to JSONL file immediately (only on rank 0)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">is_rank_0</span><span class="p">():</span>
+                    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">output_file</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">extras</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">all_extras</span><span class="p">):</span>
+                            <span class="c1"># build per-sample scores dict from gathered_scores</span>
+                            <span class="n">input0_scores</span> <span class="o">=</span> <span class="p">{</span>
+                                <span class="n">head_type</span><span class="p">:</span> <span class="n">gathered_scores0</span><span class="p">[</span><span class="n">head_type</span><span class="p">][</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+                                <span class="k">for</span> <span class="n">head_type</span> <span class="ow">in</span> <span class="n">gathered_scores0</span>
+                            <span class="p">}</span>
+                            <span class="n">input1_scores</span> <span class="o">=</span> <span class="p">{</span>
+                                <span class="n">head_type</span><span class="p">:</span> <span class="n">gathered_scores1</span><span class="p">[</span><span class="n">head_type</span><span class="p">][</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+                                <span class="k">for</span> <span class="n">head_type</span> <span class="ow">in</span> <span class="n">gathered_scores1</span>
+                            <span class="p">}</span>
+                            <span class="c1"># build per-sample results dict</span>
+                            <span class="n">results</span> <span class="o">=</span> <span class="p">{</span>
+                                <span class="s2">&quot;info&quot;</span><span class="p">:</span> <span class="n">extras</span><span class="p">,</span>
+                                <span class="s2">&quot;scores0&quot;</span><span class="p">:</span> <span class="n">input0_scores</span><span class="p">,</span>
+                                <span class="s2">&quot;scores1&quot;</span><span class="p">:</span> <span class="n">input1_scores</span><span class="p">,</span>
+                            <span class="p">}</span>
+                            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">results</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+                <span class="n">step_bar</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
+
+        <span class="c1"># --- Aggregate and Log Metrics ---</span>
+        <span class="n">reduced_metrics</span> <span class="o">=</span> <span class="n">all_reduce_dict</span><span class="p">(</span><span class="n">eval_metrics</span><span class="p">,</span> <span class="n">op</span><span class="o">=</span><span class="s2">&quot;sum&quot;</span><span class="p">)</span>
+
+        <span class="n">logs_dict</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">for</span> <span class="n">head</span> <span class="ow">in</span> <span class="n">head_types</span><span class="p">:</span>
+            <span class="n">count</span> <span class="o">=</span> <span class="n">reduced_metrics</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">head</span><span class="si">}</span><span class="s2">_count&quot;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">count</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">logs_dict</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;eval/</span><span class="si">{</span><span class="n">head</span><span class="si">}</span><span class="s2">_acc&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">reduced_metrics</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">head</span><span class="si">}</span><span class="s2">_correct&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="n">count</span>
+
+                <span class="n">chosen_reward</span> <span class="o">=</span> <span class="n">reduced_metrics</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">head</span><span class="si">}</span><span class="s2">_chosen_reward&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="n">count</span>
+                <span class="n">reject_reward</span> <span class="o">=</span> <span class="n">reduced_metrics</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">head</span><span class="si">}</span><span class="s2">_reject_reward&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="n">count</span>
+
+                <span class="n">logs_dict</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;eval/</span><span class="si">{</span><span class="n">head</span><span class="si">}</span><span class="s2">_chosen_reward_mean&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">chosen_reward</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+                <span class="n">logs_dict</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;eval/</span><span class="si">{</span><span class="n">head</span><span class="si">}</span><span class="s2">_reject_reward_mean&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">reject_reward</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">is_rank_0</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Evaluation scores written to </span><span class="si">{</span><span class="n">output_file</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Eval metrics: </span><span class="si">{</span><span class="n">logs_dict</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="c1"># Log to wandb/tensorboard</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_wandb</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">logs_dict</span><span class="p">[</span><span class="s2">&quot;eval/global_step&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">steps</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_wandb</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">logs_dict</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tensorboard</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">logs_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="k">if</span> <span class="n">k</span> <span class="o">!=</span> <span class="s2">&quot;eval/global_step&quot;</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_tensorboard</span><span class="o">.</span><span class="n">add_scalar</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">steps</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>  <span class="c1"># reset model state</span></div>
+
+<div class="viewcode-block" id="SRMTrainerVL.concatenated_forward"><a class="viewcode-back" href="../../../api_doc/trainer/srm_trainer_vl.html#lightrft.trainer.srm_trainer_vl.SRMTrainerVL.concatenated_forward">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">concatenated_forward</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">model</span><span class="p">,</span>
+        <span class="n">input0_ids</span><span class="p">,</span>
+        <span class="n">input0_mask</span><span class="p">,</span>
+        <span class="n">input1_ids</span><span class="p">,</span>
+        <span class="n">input1_mask</span><span class="p">,</span>
+        <span class="n">input0_img_pixels</span><span class="p">,</span>
+        <span class="n">input0_img_grid_thws</span><span class="p">,</span>
+        <span class="n">input1_img_pixels</span><span class="p">,</span>
+        <span class="n">input1_img_grid_thws</span><span class="p">,</span>
+        <span class="n">input0_video_pixels</span><span class="p">,</span>
+        <span class="n">input0_video_grid_thws</span><span class="p">,</span>
+        <span class="n">input1_video_pixels</span><span class="p">,</span>
+        <span class="n">input1_video_grid_thws</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Run the model once on concatenated chosen/rejected inputs.</span>
+
+<span class="sd">        Concatenation reduces the number of forward passes.</span>
+
+<span class="sd">        :param model: Model to evaluate.</span>
+<span class="sd">        :type model: nn.Module</span>
+<span class="sd">        :param input0_ids: Token ids for chosen sequences.</span>
+<span class="sd">        :type input0_ids: torch.Tensor</span>
+<span class="sd">        :param input0_mask: Attention mask for chosen sequences.</span>
+<span class="sd">        :type input0_mask: torch.Tensor</span>
+<span class="sd">        :param input1_ids: Token ids for rejected sequences.</span>
+<span class="sd">        :type input1_ids: torch.Tensor</span>
+<span class="sd">        :param input1_mask: Attention mask for rejected sequences.</span>
+<span class="sd">        :type input1_mask: torch.Tensor</span>
+<span class="sd">        :param input0_img_pixels: Optional image features for chosen samples.</span>
+<span class="sd">        :type input0_img_pixels: Optional[torch.Tensor]</span>
+<span class="sd">        :param input0_img_grid_thws: Optional image grid meta for chosen.</span>
+<span class="sd">        :type input0_img_grid_thws: Optional[torch.Tensor]</span>
+<span class="sd">        :param input1_img_pixels: Optional image features for rejected samples.</span>
+<span class="sd">        :type input1_img_pixels: Optional[torch.Tensor]</span>
+<span class="sd">        :param input1_img_grid_thws: Optional image grid meta for rejected.</span>
+<span class="sd">        :type input1_img_grid_thws: Optional[torch.Tensor]</span>
+<span class="sd">        :param input0_video_pixels: Optional video features for chosen samples.</span>
+<span class="sd">        :type input0_video_pixels: Optional[torch.Tensor]</span>
+<span class="sd">        :param input0_video_grid_thws: Optional video grid meta for chosen.</span>
+<span class="sd">        :type input0_video_grid_thws: Optional[torch.Tensor]</span>
+<span class="sd">        :param input1_video_pixels: Optional video features for rejected samples.</span>
+<span class="sd">        :type input1_video_pixels: Optional[torch.Tensor]</span>
+<span class="sd">        :param input1_video_grid_thws: Optional video grid meta for rejected.</span>
+<span class="sd">        :type input1_video_grid_thws: Optional[torch.Tensor]</span>
+
+<span class="sd">        :returns: Tuple of dicts ``(scores0, scores1)`` separating the outputs</span>
+<span class="sd">            for chosen and rejected samples.</span>
+<span class="sd">        :rtype: Tuple[Dict[str, torch.Tensor], Dict[str, torch.Tensor]]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">input_ids</span><span class="p">,</span> <span class="n">att_masks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">concatenated_inputs</span><span class="p">(</span><span class="n">input0_ids</span><span class="p">,</span> <span class="n">input0_mask</span><span class="p">,</span> <span class="n">input1_ids</span><span class="p">,</span> <span class="n">input1_mask</span><span class="p">)</span>
+
+        <span class="n">pixel_values</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">image_grid_thws</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">pixel_values_videos</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">video_grid_thws</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">input0_img_pixels</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">pixel_values</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="n">input0_img_pixels</span><span class="p">,</span> <span class="n">input1_img_pixels</span><span class="p">),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+                <span class="n">image_grid_thws</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="n">input0_img_grid_thws</span><span class="p">,</span> <span class="n">input1_img_grid_thws</span><span class="p">),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">input0_video_pixels</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">pixel_values_videos</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="n">input0_video_pixels</span><span class="p">,</span> <span class="n">input1_video_pixels</span><span class="p">),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+                <span class="n">video_grid_thws</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="n">input0_video_grid_thws</span><span class="p">,</span> <span class="n">input1_video_grid_thws</span><span class="p">),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="n">scores</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span>
+            <span class="n">input_ids</span><span class="p">,</span>
+            <span class="n">attention_mask</span><span class="o">=</span><span class="n">att_masks</span><span class="p">,</span>
+            <span class="n">pixel_values</span><span class="o">=</span><span class="n">pixel_values</span><span class="p">,</span>
+            <span class="n">image_grid_thw</span><span class="o">=</span><span class="n">image_grid_thws</span><span class="p">,</span>
+            <span class="n">pixel_values_videos</span><span class="o">=</span><span class="n">pixel_values_videos</span><span class="p">,</span>
+            <span class="n">video_grid_thw</span><span class="o">=</span><span class="n">video_grid_thws</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">scores0</span> <span class="o">=</span> <span class="p">{</span><span class="n">head_type</span><span class="p">:</span> <span class="n">score</span><span class="p">[:</span><span class="n">input0_ids</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="k">for</span> <span class="n">head_type</span><span class="p">,</span> <span class="n">score</span> <span class="ow">in</span> <span class="n">scores</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+        <span class="n">scores1</span> <span class="o">=</span> <span class="p">{</span><span class="n">head_type</span><span class="p">:</span> <span class="n">score</span><span class="p">[</span><span class="n">input0_ids</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:]</span> <span class="k">for</span> <span class="n">head_type</span><span class="p">,</span> <span class="n">score</span> <span class="ow">in</span> <span class="n">scores</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+        <span class="k">return</span> <span class="n">scores0</span><span class="p">,</span> <span class="n">scores1</span></div>
+
+<div class="viewcode-block" id="SRMTrainerVL.concatenated_inputs"><a class="viewcode-back" href="../../../api_doc/trainer/srm_trainer_vl.html#lightrft.trainer.srm_trainer_vl.SRMTrainerVL.concatenated_inputs">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">concatenated_inputs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input0_ids</span><span class="p">,</span> <span class="n">input0_mask</span><span class="p">,</span> <span class="n">input1_ids</span><span class="p">,</span>
+                            <span class="n">input1_mask</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Concatenate two inputs into a single batch.</span>
+
+<span class="sd">        :param input0_ids: Token ids for the first sequences, shape ``(N, Lc)``.</span>
+<span class="sd">        :type input0_ids: torch.Tensor</span>
+<span class="sd">        :param input0_mask: Attention mask for chosen sequences, shape ``(N, Lc)``.</span>
+<span class="sd">        :type input0_mask: torch.Tensor</span>
+<span class="sd">        :param input1_ids: Token ids for the second sequences, shape ``(N, Lr)``.</span>
+<span class="sd">        :type input1_ids: torch.Tensor</span>
+<span class="sd">        :param input1_mask: Attention mask for the second sequences, shape ``(N, Lr)``.</span>
+<span class="sd">        :type input1_mask: torch.Tensor</span>
+
+<span class="sd">        :returns: Tuple ``(input_ids, att_masks)`` where inputs are padded to</span>
+<span class="sd">            a common max length across input0 and input1, then concatenated</span>
+<span class="sd">            along the batch dimension to shape ``(2N, Lmax)``.</span>
+<span class="sd">        :rtype: Tuple[torch.Tensor, torch.Tensor]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">max_length</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">input0_ids</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">input1_ids</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">inputs_ids</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span>
+            <span class="p">(</span>
+                <span class="n">pad_to_length</span><span class="p">(</span><span class="n">input0_ids</span><span class="p">,</span> <span class="n">max_length</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tokenizer</span><span class="o">.</span><span class="n">pad_token_id</span><span class="p">),</span>
+                <span class="n">pad_to_length</span><span class="p">(</span><span class="n">input1_ids</span><span class="p">,</span> <span class="n">max_length</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tokenizer</span><span class="o">.</span><span class="n">pad_token_id</span><span class="p">),</span>
+            <span class="p">),</span>
+            <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">max_length</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">input0_mask</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">input1_mask</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">att_masks</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="n">pad_to_length</span><span class="p">(</span><span class="n">input0_mask</span><span class="p">,</span> <span class="n">max_length</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">pad_to_length</span><span class="p">(</span><span class="n">input1_mask</span><span class="p">,</span> <span class="n">max_length</span><span class="p">,</span> <span class="mi">0</span><span class="p">)),</span>
+                              <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">inputs_ids</span><span class="p">,</span> <span class="n">att_masks</span></div></div>
+</pre></div>
+
+              </article>
+              
+            </div>
+            <footer>
+  
+
+  <hr>
+
+  <div role="contentinfo">
+    <p>
+      &copy; Copyright 2025, OpenDILab.
+
+    </p>
+  </div>
+  
+  <div>
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a
+      href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the
+      Docs</a>.
+  </div>
+   
+
+</footer>
+          </div>
+        </div>
+
+        <div class="pytorch-content-right" id="pytorch-content-right">
+          <div class="pytorch-right-menu" id="pytorch-right-menu">
+            <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
+              
+            </div>
+          </div>
+        </div>
+    </section>
+  </div>
+
+  
+
+
+  
+
+  
+  <script type="text/javascript" id="documentation_options" data-url_root="../../../"
+    src="../../../_static/documentation_options.js"></script>
+  <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+  <script src="../../../_static/doctools.js"></script>
+  <script src="../../../_static/sphinx_highlight.js"></script>
+  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+  
+
+  
+
+  <script type="text/javascript" src="../../../_static/js/vendor/popper.min.js"></script>
+  <script type="text/javascript" src="../../../_static/js/vendor/bootstrap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
+  <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+    jQuery(function () {
+      SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+  <!-- Begin Footer -->
+
+  <div class="container-fluid docs-tutorials-resources" id="docs-tutorials-resources">
+  </div>
+
+  <!-- End Footer -->
+
+  <!-- Begin Mobile Menu -->
+
+  <div class="mobile-main-menu">
+    <div class="container-fluid">
+      <div class="container">
+        <div class="mobile-main-menu-header-container">
+          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
+        </div>
+      </div>
+    </div>
+
+    <div class="mobile-main-menu-links-container">
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://github.com/opendilab/LightRFT" target="_blank">GitHub</a>
+          </li>
+      </div>
+    </div>
+  </div>
+
+  <!-- End Mobile Menu -->
+
+  <script type="text/javascript" src="../../../_static/js/vendor/anchor.min.js"></script>
+
+  <script type="text/javascript">
+    $(document).ready(function () {
+      mobileMenu.bind();
+      mobileTOC.bind();
+      pytorchAnchors.bind();
+      sideMenus.bind();
+      scrollToAnchor.bind();
+      highlightNavigation.bind();
+      mainMenuDropdown.bind();
+      filterTags.bind();
+
+      // Add class to links that have code blocks, since we cannot create links in code blocks
+      $("article.pytorch-article a span.pre").each(function (e) {
+        $(this).closest("a").addClass("has-code");
+      });
+    })
+  </script>
+</body>
+
+</html>

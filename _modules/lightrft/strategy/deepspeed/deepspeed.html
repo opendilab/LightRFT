@@ -1,0 +1,1020 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js" lang="en">
+<!--<![endif]-->
+
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>lightrft.strategy.deepspeed.deepspeed &mdash; LightRFT v0.1.1 documentation</title>
+  
+
+  <link rel="shortcut icon" href="../../../../_static/images/favicon.ico" />
+  
+  
+
+  
+
+  
+  
+  
+
+  
+
+  <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  <!-- <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" /> -->
+  <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/css/readthedocs.css" type="text/css" />
+  <link rel="index" title="Index" href="../../../../genindex.html" />
+  <link rel="search" title="Search" href="../../../../search.html" />
+  <!-- Google Analytics -->
+  <script type="text/javascript">
+    var collapsedSections = [];
+  </script>
+  
+  <!-- End Google Analytics -->
+  
+
+  
+  <script src="../../../../_static/js/modernizr.min.js"></script>
+  <script>
+    MathJax = {
+        chtml: {
+            scale: 1,
+            minScale: 1,
+        },
+        svg: {
+            scale: 1,
+            minScale: 1,
+        }
+    }
+</script>
+
+  <!-- Preload the theme fonts -->
+
+<link rel="preload" href="../../../../_static/fonts/FreightSans/freight-sans-book.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../../_static/fonts/FreightSans/freight-sans-medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../../_static/fonts/IBMPlexMono/IBMPlexMono-Medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../../_static/fonts/FreightSans/freight-sans-bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../../_static/fonts/FreightSans/freight-sans-medium-italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../../_static/fonts/IBMPlexMono/IBMPlexMono-SemiBold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+
+<!-- Preload the katex fonts -->
+
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Math-Italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size1-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size4-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size2-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size3-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Caligraphic-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.2/css/all.css"
+    integrity="sha384-vSIIfh2YWi9wW0r9iZe7RJPrKwp6bG+s9QZMoITbCckVJqGCCRhc+ccxNcdpHuYu" crossorigin="anonymous">
+</head>
+
+<div class="container-fluid header-holder tutorials-header" id="header-holder">
+  <div class="container">
+    <div class="header-container">
+      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+        aria-label="OpenMMLab"></a>
+
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://github.com/opendilab/LightRFT" target="_blank">GitHub</a>
+          </li>
+          <li >
+            <div id="resourcesDropdownButton" data-toggle="resources-dropdown" class="resources-dropdown">
+              <a
+                class="resource-option with-down-arrow">
+                OpenDILab
+              </a>
+              <div class="resources-dropdown-menu">
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-engine" target="_blank">
+                  <span class="dropdown-title">DI-engine </span>
+                  <p>OpenDILab Decision AI Engine</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/LightZero" target="_blank">
+                  <span class="dropdown-title">LightZero </span>
+                  <p>OpenDILab Decision Monte Carlo Tree Search Framework</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/GenerativeRL" target="_blank">
+                  <span class="dropdown-title">GenerativeRL </span>
+                  <p>OpenDILab Generative AI Framework</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-star" target="_blank">
+                  <span class="dropdown-title">DI-star </span>
+                  <p>OpenDILab Decision AI in StarCraftII</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-drive" target="_blank">
+                  <span class="dropdown-title">DI-drive </span>
+                  <p>OpenDILab Auto-driving platform</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/GoBigger" target="_blank">
+                  <span class="dropdown-title">GoBigger </span>
+                  <p>OpenDILab Multi-Agent Environment</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-smartcross" target="_blank">
+                  <span class="dropdown-title">DI-smartcross </span>
+                  <p>Decision Intelligence Platform for Traffic Crossing Signal Control</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-treetensor" target="_blank">
+                  <span class="dropdown-title">DI-treetensor </span>
+                  <p>Tree Nested PyTorch Tensor Lib</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-sheep" target="_blank">
+                  <span class="dropdown-title">DI-sheep </span>
+                  <p>Deep Reinforcement Learning + 3 Tiles Game</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-model-based-RL" target="_blank">
+                  <span class="dropdown-title">awesome-model-based-RL </span>
+                  <p>A curated list of awesome model based RL resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-decision-transformer" target="_blank">
+                  <span class="dropdown-title">awesome-decision-transformer </span>
+                  <p>A curated list of Decision Transformer resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-exploration-rl" target="_blank">
+                  <span class="dropdown-title">awesome-exploration-rl </span>
+                  <p>A curated list of awesome exploration RL resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-multi-modal-reinforcement-learning" target="_blank">
+                  <span class="dropdown-title">awesome-multi-modal-reinforcement-learning </span>
+                  <p>A curated list of Multi-Modal Reinforcement Learning resources (continually updated)</p>
+                </a>
+              </div>
+          </li>
+        </ul>
+      </div>
+
+      <a class="main-menu-open-button" href="#" data-behavior="open-mobile-menu"></a>
+    </div>
+  </div>
+</div>
+
+<body class="pytorch-body">
+
+   
+
+  
+
+  <div class="table-of-contents-link-wrapper">
+    <span>Table of Contents</span>
+    <a href="#" class="toggle-table-of-contents" data-behavior="toggle-table-of-contents"></a>
+  </div>
+
+  <nav data-toggle="wy-nav-shift" class="pytorch-left-menu" id="pytorch-left-menu">
+    <div class="pytorch-side-scroll">
+      <div class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        <div class="pytorch-left-menu-search">
+          
+
+          
+          
+          
+          
+
+          
+
+
+
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search Docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        
+        
+        
+        
+        
+        <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../installation/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../quick_start/index.html">Quick Start</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide &amp; Best Practices</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../best_practice/index.html">Best Practices</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api_doc/utils/index.html">lightrft.utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api_doc/datasets/index.html">lightrft.datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api_doc/models/index.html">lightrft.models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api_doc/strategy/index.html">lightrft.strategy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api_doc/trainer/index.html">lightrft.trainer</a></li>
+</ul>
+
+        
+        
+      </div>
+    </div>
+  </nav>
+
+  <div class="pytorch-container">
+    <div class="pytorch-page-level-bar" id="pytorch-page-level-bar">
+      <div class="pytorch-breadcrumbs-wrapper">
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="pytorch-breadcrumbs">
+    
+      <li>
+        <a href="../../../../index.html">
+            Docs
+        </a> &gt;
+      </li>
+
+        
+          <li><a href="../../../index.html">Module code</a> &gt;</li>
+        
+      <li>lightrft.strategy.deepspeed.deepspeed</li>
+    
+    
+      <li class="pytorch-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+</div>
+      </div>
+
+      <div class="pytorch-shortcuts-wrapper" id="pytorch-shortcuts-wrapper">
+        Shortcuts
+      </div>
+    </div>
+
+    <section data-toggle="wy-nav-shift" id="pytorch-content-wrap" class="pytorch-content-wrap">
+      <div class="pytorch-content-left">
+        
+          <div class="rst-content">
+            
+            <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
+              <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
+                
+  <h1>Source code for lightrft.strategy.deepspeed.deepspeed</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">DeepSpeed Strategy Module for lightrft.</span>
+
+<span class="sd">This module provides a DeepSpeed-based strategy for training and inference in lightrft.</span>
+<span class="sd">It handles model initialization, optimization, parameter management, and checkpoint operations</span>
+<span class="sd">using DeepSpeed&#39;s distributed training capabilities. The strategy supports various DeepSpeed</span>
+<span class="sd">features including ZeRO optimization stages, mixed precision training, and parameter offloading.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">contextlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">contextmanager</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">deepspeed</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">deepspeed.ops.adam</span><span class="w"> </span><span class="kn">import</span> <span class="n">DeepSpeedCPUAdam</span><span class="p">,</span> <span class="n">FusedAdam</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">peft</span><span class="w"> </span><span class="kn">import</span> <span class="n">PeftModel</span><span class="p">,</span> <span class="n">get_peft_model_state_dict</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">torch</span><span class="w"> </span><span class="kn">import</span> <span class="n">distributed</span> <span class="k">as</span> <span class="n">dist</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">torch</span><span class="w"> </span><span class="kn">import</span> <span class="n">nn</span><span class="p">,</span> <span class="n">optim</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">torch.optim</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optimizer</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">transformers.integrations.deepspeed</span><span class="w"> </span><span class="kn">import</span> <span class="n">HfDeepSpeedConfig</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">lightrft.strategy.strategy_base</span><span class="w"> </span><span class="kn">import</span> <span class="n">StrategyBase</span><span class="p">,</span> <span class="n">is_actor</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">lightrft.strategy.utils.optimizer_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_optimizer_grouped_parameters</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.deepspeed_utils</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">_z3_params_to_fetch</span><span class="p">,</span>
+    <span class="n">get_eval_ds_config</span><span class="p">,</span>
+    <span class="n">get_train_ds_config</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">ModelOptimPair</span> <span class="o">=</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span> <span class="n">Optimizer</span><span class="p">]</span>
+<span class="n">ModelOrModelOptimPair</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span> <span class="n">ModelOptimPair</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="DeepspeedStrategy"><a class="viewcode-back" href="../../../../api_doc/strategy/deepspeed/deepspeed.html#lightrft.strategy.deepspeed.deepspeed.DeepspeedStrategy">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">DeepspeedStrategy</span><span class="p">(</span><span class="n">StrategyBase</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    DeepSpeed implementation of the training strategy.</span>
+
+<span class="sd">    Modified from https://github.com/OpenRLHF/OpenRLHF, with these changes:</span>
+<span class="sd">    1. inherits from StrategyBase, add some api</span>
+<span class="sd">    2. removed ring-attn related code</span>
+
+<span class="sd">    :param seed: Random seed for reproducibility</span>
+<span class="sd">    :type seed: int</span>
+<span class="sd">    :param max_norm: Maximum gradient norm for gradient clipping (0.0 means no clipping)</span>
+<span class="sd">    :type max_norm: float</span>
+<span class="sd">    :param micro_train_batch_size: Batch size for a single GPU/process</span>
+<span class="sd">    :type micro_train_batch_size: int</span>
+<span class="sd">    :param train_batch_size: Global batch size across all GPUs/processes</span>
+<span class="sd">    :type train_batch_size: int</span>
+<span class="sd">    :param zero_stage: DeepSpeed ZeRO optimization stage (0, 1, 2, or 3)</span>
+<span class="sd">    :type zero_stage: int</span>
+<span class="sd">    :param bf16: Whether to use bfloat16 precision</span>
+<span class="sd">    :type bf16: bool</span>
+<span class="sd">    :param args: Additional arguments for configuration</span>
+<span class="sd">    :type args: object</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="DeepspeedStrategy.__init__"><a class="viewcode-back" href="../../../../api_doc/strategy/deepspeed/deepspeed.html#lightrft.strategy.deepspeed.deepspeed.DeepspeedStrategy.__init__">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>  <span class="c1"># pylint: disable=R0917</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">42</span><span class="p">,</span>
+        <span class="n">max_norm</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+        <span class="n">micro_train_batch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">train_batch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">zero_stage</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span>
+        <span class="n">bf16</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">args</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">seed</span><span class="p">,</span> <span class="n">max_norm</span><span class="p">,</span> <span class="n">micro_train_batch_size</span><span class="p">,</span> <span class="n">train_batch_size</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">bf16</span> <span class="o">=</span> <span class="n">bf16</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">stage</span> <span class="o">=</span> <span class="n">zero_stage</span>
+        <span class="c1"># TODO: refactor this mark</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_rlhf</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="s2">&quot;DeepspeedStrategy Initialized&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DeepspeedStrategy.create_optimizer"><a class="viewcode-back" href="../../../../api_doc/strategy/deepspeed/deepspeed.html#lightrft.strategy.deepspeed.deepspeed.DeepspeedStrategy.create_optimizer">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">create_optimizer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optimizer</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create an optimizer for the given model.</span>
+
+<span class="sd">        :param model: The model to create an optimizer for</span>
+<span class="sd">        :type model: nn.Module</span>
+<span class="sd">        :param kwargs: Additional arguments for the optimizer</span>
+
+<span class="sd">        :return: The created optimizer</span>
+<span class="sd">        :rtype: Optimizer</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">is_actor</span><span class="p">(</span><span class="n">model</span><span class="p">):</span>
+            <span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">model</span>
+        <span class="c1"># Optimizer</span>
+        <span class="n">AdamOptimizer</span> <span class="o">=</span> <span class="n">DeepSpeedCPUAdam</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">adam_offload</span> <span class="k">else</span> <span class="n">FusedAdam</span>
+        <span class="n">optim_params</span> <span class="o">=</span> <span class="n">get_optimizer_grouped_parameters</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;weight_decay&quot;</span><span class="p">])</span>
+        <span class="n">optim</span> <span class="o">=</span> <span class="n">AdamOptimizer</span><span class="p">(</span><span class="n">optim_params</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">optim</span></div>
+
+<div class="viewcode-block" id="DeepspeedStrategy.backward"><a class="viewcode-back" href="../../../../api_doc/strategy/deepspeed/deepspeed.html#lightrft.strategy.deepspeed.deepspeed.DeepspeedStrategy.backward">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">backward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">loss</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">:</span> <span class="n">optim</span><span class="o">.</span><span class="n">Optimizer</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Perform backward pass to compute gradients.</span>
+
+<span class="sd">        :param loss: The loss tensor to backpropagate</span>
+<span class="sd">        :type loss: torch.Tensor</span>
+<span class="sd">        :param model: The model being trained</span>
+<span class="sd">        :type model: nn.Module</span>
+<span class="sd">        :param optimizer: The optimizer for the model</span>
+<span class="sd">        :type optimizer: optim.Optimizer</span>
+<span class="sd">        :param kwargs: Additional arguments</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">is_actor</span><span class="p">(</span><span class="n">model</span><span class="p">):</span>
+            <span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">model</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">backward</span><span class="p">(</span><span class="n">loss</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DeepspeedStrategy.optimizer_step"><a class="viewcode-back" href="../../../../api_doc/strategy/deepspeed/deepspeed.html#lightrft.strategy.deepspeed.deepspeed.DeepspeedStrategy.optimizer_step">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">optimizer_step</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">optimizer</span><span class="p">:</span> <span class="n">optim</span><span class="o">.</span><span class="n">Optimizer</span><span class="p">,</span>
+        <span class="n">model</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span>
+        <span class="n">scheduler</span><span class="p">,</span>
+        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;model&quot;</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Perform an optimization step.</span>
+
+<span class="sd">        :param optimizer: The optimizer to step</span>
+<span class="sd">        :type optimizer: optim.Optimizer</span>
+<span class="sd">        :param model: The model being trained</span>
+<span class="sd">        :type model: nn.Module</span>
+<span class="sd">        :param scheduler: The learning rate scheduler</span>
+<span class="sd">        :param name: Name identifier for the model</span>
+<span class="sd">        :type name: str</span>
+<span class="sd">        :param kwargs: Additional arguments</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">is_actor</span><span class="p">(</span><span class="n">model</span><span class="p">):</span>
+            <span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">model</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">step</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="DeepspeedStrategy.unwrap_model"><a class="viewcode-back" href="../../../../api_doc/strategy/deepspeed/deepspeed.html#lightrft.strategy.deepspeed.deepspeed.DeepspeedStrategy.unwrap_model">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">unwrap_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Unwrap the model from any wrappers to access the base model.</span>
+
+<span class="sd">        :param model: The model to unwrap</span>
+<span class="sd">        :type model: nn.Module</span>
+
+<span class="sd">        :return: The unwrapped model</span>
+<span class="sd">        :rtype: nn.Module</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">is_actor</span><span class="p">(</span><span class="n">model</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">unwrap_model</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">model</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="s2">&quot;module&quot;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">model</span><span class="o">.</span><span class="n">module</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">model</span></div>
+
+<div class="viewcode-block" id="DeepspeedStrategy.prepare"><a class="viewcode-back" href="../../../../api_doc/strategy/deepspeed/deepspeed.html#lightrft.strategy.deepspeed.deepspeed.DeepspeedStrategy.prepare">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">prepare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                <span class="o">*</span><span class="n">models_or_model_optim_pairs</span><span class="p">:</span> <span class="n">ModelOrModelOptimPair</span><span class="p">,</span>
+                <span class="n">is_rlhf</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">ModelOrModelOptimPair</span><span class="p">],</span> <span class="n">ModelOrModelOptimPair</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Prepare models and optimizers for DeepSpeed training.</span>
+
+<span class="sd">        Expected input format for RLHF:</span>
+<span class="sd">        tuple: ((actor, actor_optim, actor_scheduler),</span>
+<span class="sd">                (critic, critic_optim, critic_scheduler),</span>
+<span class="sd">                reward_models,</span>
+<span class="sd">                initial_model)</span>
+
+<span class="sd">        :param models_or_model_optim_pairs: Models or (model, optimizer, scheduler) tuples</span>
+<span class="sd">        :param is_rlhf: Whether this is for RLHF training</span>
+<span class="sd">        :type is_rlhf: bool</span>
+
+<span class="sd">        :return: Prepared models or model-optimizer pairs</span>
+<span class="sd">        :rtype: Union[List[ModelOrModelOptimPair], ModelOrModelOptimPair]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_rlhf</span> <span class="o">=</span> <span class="n">is_rlhf</span>
+        <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">models_or_model_optim_pairs</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="p">(</span><span class="nb">tuple</span><span class="p">,</span> <span class="nb">list</span><span class="p">)):</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">)</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">arg</span><span class="p">):</span>
+                    <span class="k">assert</span> <span class="p">(</span>
+                        <span class="nb">len</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span>
+                    <span class="p">),</span> <span class="sa">f</span><span class="s1">&#39;Expect (model, optimizer, scheduler) pair, got a tuple with size &quot;</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span><span class="si">}</span><span class="s1">&quot;&#39;</span>
+                    <span class="k">if</span> <span class="n">arg</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="n">ret</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ds_init_train_model</span><span class="p">(</span><span class="o">*</span><span class="n">arg</span><span class="p">))</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">ret</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">ret</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prepare_reward_models</span><span class="p">(</span><span class="n">arg</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">ret</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ds_init_eval_model</span><span class="p">(</span><span class="n">arg</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">ret</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">ret</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">ret</span></div>
+
+<div class="viewcode-block" id="DeepspeedStrategy.prepare_reward_models"><a class="viewcode-back" href="../../../../api_doc/strategy/deepspeed/deepspeed.html#lightrft.strategy.deepspeed.deepspeed.DeepspeedStrategy.prepare_reward_models">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">prepare_reward_models</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reward_models</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Prepare reward models for DeepSpeed evaluation.</span>
+
+<span class="sd">        :param reward_models: List of reward models to prepare</span>
+<span class="sd">        :type reward_models: List[nn.Module]</span>
+
+<span class="sd">        :return: List of prepared reward models</span>
+<span class="sd">        :rtype: List[nn.Module]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_ds_init_eval_model</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">param_offload</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">reward_models</span><span class="p">]</span></div>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_ds_init_train_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">optim</span><span class="p">,</span> <span class="n">scheduler</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize a model for DeepSpeed training.</span>
+
+<span class="sd">        :param model: The model to initialize</span>
+<span class="sd">        :type model: nn.Module</span>
+<span class="sd">        :param optim: The optimizer for the model</span>
+<span class="sd">        :type optim: Optimizer</span>
+<span class="sd">        :param scheduler: The learning rate scheduler</span>
+
+<span class="sd">        :return: Tuple of (initialized model, optimizer, scheduler)</span>
+<span class="sd">        :rtype: Tuple[nn.Module, Optimizer, object]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">is_actor_model</span> <span class="o">=</span> <span class="n">is_actor</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+        <span class="n">ds_config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_ds_train_config</span><span class="p">(</span><span class="n">is_actor_model</span><span class="p">)</span>
+
+        <span class="n">engine</span><span class="p">,</span> <span class="n">optim</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">scheduler</span> <span class="o">=</span> <span class="n">deepspeed</span><span class="o">.</span><span class="n">initialize</span><span class="p">(</span>
+            <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">model</span> <span class="k">if</span> <span class="n">is_actor_model</span> <span class="k">else</span> <span class="n">model</span><span class="p">,</span>
+            <span class="n">optimizer</span><span class="o">=</span><span class="n">optim</span><span class="p">,</span>
+            <span class="n">lr_scheduler</span><span class="o">=</span><span class="n">scheduler</span><span class="p">,</span>
+            <span class="n">config</span><span class="o">=</span><span class="n">ds_config</span><span class="p">,</span>
+            <span class="n">args</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;local_rank&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">local_rank</span><span class="p">},</span>
+            <span class="n">dist_init_required</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">is_actor_model</span><span class="p">:</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">engine</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">model</span> <span class="o">=</span> <span class="n">engine</span>
+
+        <span class="k">return</span> <span class="n">model</span><span class="p">,</span> <span class="n">optim</span><span class="p">,</span> <span class="n">scheduler</span>
+
+<div class="viewcode-block" id="DeepspeedStrategy.get_ds_train_config"><a class="viewcode-back" href="../../../../api_doc/strategy/deepspeed/deepspeed.html#lightrft.strategy.deepspeed.deepspeed.DeepspeedStrategy.get_ds_train_config">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_ds_train_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">is_actor</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the DeepSpeed configuration for training.</span>
+
+<span class="sd">        :param is_actor: Whether the model is an actor model</span>
+<span class="sd">        :type is_actor: bool</span>
+
+<span class="sd">        :return: DeepSpeed configuration dictionary</span>
+<span class="sd">        :rtype: dict</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># DS Config</span>
+        <span class="n">ds_config</span> <span class="o">=</span> <span class="n">get_train_ds_config</span><span class="p">(</span>
+            <span class="n">offload</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">adam_offload</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">adam_offload</span><span class="p">,</span>
+            <span class="n">stage</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">stage</span><span class="p">,</span>
+            <span class="n">bf16</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bf16</span><span class="p">,</span>
+            <span class="n">max_norm</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">max_norm</span><span class="p">,</span>
+            <span class="n">zpg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">zpg</span><span class="p">,</span>
+            <span class="n">grad_accum_dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">grad_accum_dtype</span><span class="p">,</span>
+            <span class="n">overlap_comm</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">overlap_comm</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">ds_config</span><span class="p">[</span><span class="s2">&quot;train_micro_batch_size_per_gpu&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">micro_train_batch_size</span>
+        <span class="n">train_batch_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">train_batch_size</span>
+        <span class="c1"># corner case for ptx loss (backward twice)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_rlhf</span> <span class="ow">and</span> <span class="n">is_actor</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">pretrain_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">train_batch_size</span> <span class="o">*=</span> <span class="mi">2</span>
+        <span class="n">ds_config</span><span class="p">[</span><span class="s2">&quot;train_batch_size&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">train_batch_size</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">ring_attn_size</span>
+
+        <span class="k">return</span> <span class="n">ds_config</span></div>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_ds_init_eval_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">param_offload</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize a model for DeepSpeed evaluation.</span>
+
+<span class="sd">        :param model: The model to initialize</span>
+<span class="sd">        :type model: nn.Module</span>
+<span class="sd">        :param param_offload: Whether to offload parameters to CPU</span>
+<span class="sd">        :type param_offload: bool</span>
+
+<span class="sd">        :return: Initialized model</span>
+<span class="sd">        :rtype: nn.Module</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">model</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">model</span>
+        <span class="n">is_actor_model</span> <span class="o">=</span> <span class="n">is_actor</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+        <span class="n">ds_config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_ds_eval_config</span><span class="p">(</span><span class="n">offload</span><span class="o">=</span><span class="n">param_offload</span><span class="p">)</span>
+
+        <span class="n">engine</span><span class="p">,</span> <span class="o">*</span><span class="n">_</span> <span class="o">=</span> <span class="n">deepspeed</span><span class="o">.</span><span class="n">initialize</span><span class="p">(</span>
+            <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">model</span> <span class="k">if</span> <span class="n">is_actor_model</span> <span class="k">else</span> <span class="n">model</span><span class="p">,</span>
+            <span class="n">args</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;local_rank&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">local_rank</span><span class="p">},</span>
+            <span class="n">config</span><span class="o">=</span><span class="n">ds_config</span><span class="p">,</span>
+            <span class="n">dist_init_required</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">is_actor_model</span><span class="p">:</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">engine</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">model</span> <span class="o">=</span> <span class="n">engine</span>
+        <span class="k">return</span> <span class="n">model</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_ds_init_inference_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize a model for DeepSpeed inference.</span>
+
+<span class="sd">        :param model: The model to initialize</span>
+<span class="sd">        :type model: nn.Module</span>
+
+<span class="sd">        :return: DeepSpeed inference engine</span>
+<span class="sd">        :rtype: deepspeed.InferenceEngine</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ds_engine</span> <span class="o">=</span> <span class="n">deepspeed</span><span class="o">.</span><span class="n">init_inference</span><span class="p">(</span>
+            <span class="n">model</span><span class="p">,</span>
+            <span class="n">tensor_parallel</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;tp_size&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">world_size</span><span class="p">},</span>
+            <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">bfloat16</span><span class="p">,</span>
+            <span class="n">checkpoint</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">replace_with_kernel_inject</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">report_memory</span><span class="p">(</span><span class="s2">&quot;after _ds_init_inference_model &quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ds_engine</span>
+
+<div class="viewcode-block" id="DeepspeedStrategy.get_ds_eval_config"><a class="viewcode-back" href="../../../../api_doc/strategy/deepspeed/deepspeed.html#lightrft.strategy.deepspeed.deepspeed.DeepspeedStrategy.get_ds_eval_config">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_ds_eval_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">offload</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the DeepSpeed configuration for evaluation.</span>
+
+<span class="sd">        :param offload: Whether to offload parameters to CPU</span>
+<span class="sd">        :type offload: bool</span>
+
+<span class="sd">        :return: DeepSpeed configuration dictionary</span>
+<span class="sd">        :rtype: dict</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># DS Config</span>
+        <span class="n">ds_config</span> <span class="o">=</span> <span class="n">get_eval_ds_config</span><span class="p">(</span><span class="n">offload</span><span class="o">=</span><span class="n">offload</span><span class="p">,</span> <span class="n">stage</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">stage</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">stage</span> <span class="o">==</span> <span class="mi">3</span> <span class="k">else</span> <span class="mi">0</span><span class="p">,</span> <span class="n">bf16</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bf16</span><span class="p">)</span>
+        <span class="n">ds_config</span><span class="p">[</span><span class="s2">&quot;train_micro_batch_size_per_gpu&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">micro_train_batch_size</span>
+        <span class="n">ds_config</span><span class="p">[</span><span class="s2">&quot;train_batch_size&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">train_batch_size</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">ring_attn_size</span>
+
+        <span class="k">return</span> <span class="n">ds_config</span></div>
+
+<div class="viewcode-block" id="DeepspeedStrategy.init_model_context"><a class="viewcode-back" href="../../../../api_doc/strategy/deepspeed/deepspeed.html#lightrft.strategy.deepspeed.deepspeed.DeepspeedStrategy.init_model_context">[docs]</a>    <span class="nd">@contextmanager</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">init_model_context</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Context manager for initializing a model with DeepSpeed configuration.</span>
+
+<span class="sd">        This sets up the HfDeepSpeedConfig for use with Hugging Face models.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">_dscfg</span> <span class="o">=</span> <span class="n">HfDeepSpeedConfig</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_ds_eval_config</span><span class="p">())</span>  <span class="c1"># noqa</span>
+
+            <span class="k">yield</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">report_memory</span><span class="p">(</span><span class="s2">&quot;Finished init_model_context&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DeepspeedStrategy.moving_average"><a class="viewcode-back" href="../../../../api_doc/strategy/deepspeed/deepspeed.html#lightrft.strategy.deepspeed.deepspeed.DeepspeedStrategy.moving_average">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">moving_average</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">model_ema</span><span class="p">,</span> <span class="n">beta</span><span class="o">=</span><span class="mf">0.992</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cpu&quot;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Update model_ema parameters with exponential moving average of model parameters.</span>
+
+<span class="sd">        :param model: Source model</span>
+<span class="sd">        :type model: nn.Module</span>
+<span class="sd">        :param model_ema: Target model for EMA</span>
+<span class="sd">        :type model_ema: nn.Module</span>
+<span class="sd">        :param beta: EMA decay factor</span>
+<span class="sd">        :type beta: float</span>
+<span class="sd">        :param device: Device to perform operations on</span>
+<span class="sd">        :type device: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">time_steps</span><span class="p">[</span><span class="s2">&quot;ema&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_steps</span><span class="p">[</span><span class="s2">&quot;ema&quot;</span><span class="p">]</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">accumulated_gradient</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+                <span class="k">for</span> <span class="n">param</span><span class="p">,</span> <span class="n">param_ema</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">model_ema</span><span class="o">.</span><span class="n">parameters</span><span class="p">()):</span>
+                    <span class="k">if</span> <span class="n">param</span><span class="o">.</span><span class="n">requires_grad</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">stage</span> <span class="o">!=</span> <span class="mi">3</span><span class="p">:</span>
+                            <span class="n">data</span> <span class="o">=</span> <span class="n">param</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+                            <span class="n">param_ema</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">copy_</span><span class="p">((</span><span class="mi">1</span> <span class="o">-</span> <span class="n">beta</span><span class="p">)</span> <span class="o">*</span> <span class="n">data</span> <span class="o">+</span> <span class="n">beta</span> <span class="o">*</span> <span class="n">param_ema</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="c1"># TODO: use prefiltering for efficiency</span>
+                            <span class="n">params_to_fetch</span> <span class="o">=</span> <span class="n">_z3_params_to_fetch</span><span class="p">([</span><span class="n">param</span><span class="p">,</span> <span class="n">param_ema</span><span class="p">])</span>
+                            <span class="k">with</span> <span class="n">deepspeed</span><span class="o">.</span><span class="n">zero</span><span class="o">.</span><span class="n">GatheredParameters</span><span class="p">(</span><span class="n">params_to_fetch</span><span class="p">,</span> <span class="n">enabled</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">params_to_fetch</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">):</span>
+                                <span class="n">data</span> <span class="o">=</span> <span class="n">param</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+                                <span class="n">param_ema</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">copy_</span><span class="p">((</span><span class="mi">1</span> <span class="o">-</span> <span class="n">beta</span><span class="p">)</span> <span class="o">*</span> <span class="n">data</span> <span class="o">+</span> <span class="n">beta</span> <span class="o">*</span> <span class="n">param_ema</span><span class="o">.</span><span class="n">data</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DeepspeedStrategy.load_model"><a class="viewcode-back" href="../../../../api_doc/strategy/deepspeed/deepspeed.html#lightrft.strategy.deepspeed.deepspeed.DeepspeedStrategy.load_model">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">load_model</span><span class="p">(</span>  <span class="c1"># pylint: disable=R0917</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">model</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span>
+        <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">map_location</span><span class="o">=</span><span class="s2">&quot;cpu&quot;</span><span class="p">,</span>
+        <span class="n">strict</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">key_replace_fn</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Load model weights from a file.</span>
+
+<span class="sd">        :param model: The model to load weights into</span>
+<span class="sd">        :type model: nn.Module</span>
+<span class="sd">        :param path: Path to the saved model weights</span>
+<span class="sd">        :type path: str</span>
+<span class="sd">        :param map_location: Device to load the weights to</span>
+<span class="sd">        :type map_location: str or torch.device</span>
+<span class="sd">        :param strict: Whether to strictly enforce that the keys in state_dict match the model</span>
+<span class="sd">        :type strict: bool</span>
+<span class="sd">        :param key_replace_fn: Function to modify state dict keys</span>
+<span class="sd">        :type key_replace_fn: callable</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">unwrapped_model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">unwrap_model</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+        <span class="n">state_dict</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">map_location</span><span class="o">=</span><span class="n">map_location</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">key_replace_fn</span><span class="p">:</span>
+            <span class="n">state_dict</span> <span class="o">=</span> <span class="n">key_replace_fn</span><span class="p">(</span><span class="n">state_dict</span><span class="p">)</span>
+        <span class="n">unwrapped_model</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">state_dict</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="n">strict</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DeepspeedStrategy.save_model"><a class="viewcode-back" href="../../../../api_doc/strategy/deepspeed/deepspeed.html#lightrft.strategy.deepspeed.deepspeed.DeepspeedStrategy.save_model">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">save_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span> <span class="n">tokenizer</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Save a model, its configuration, and tokenizer to the specified output directory.</span>
+
+<span class="sd">        Handles special cases for DeepSpeed ZeRO-2/3 parameters and PEFT models. For ZeRO parallelism,</span>
+<span class="sd">        it gathers distributed parameters before saving. For PEFT models, it saves adapter weights</span>
+<span class="sd">        appropriately based on the DeepSpeed stage.</span>
+
+<span class="sd">        :param model: The model to save</span>
+<span class="sd">        :type model: nn.Module</span>
+<span class="sd">        :param tokenizer: The tokenizer to save</span>
+<span class="sd">        :type tokenizer: PreTrainedTokenizer or similar</span>
+<span class="sd">        :param output_dir: Directory where the model, config, and tokenizer will be saved</span>
+<span class="sd">        :type output_dir: str</span>
+<span class="sd">        :param kwargs: Additional arguments to pass to the model&#39;s save_pretrained method</span>
+
+<span class="sd">        :return: None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_rank_0</span><span class="p">():</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># save model weights for ZeRO2/3</span>
+        <span class="n">model_to_save</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">unwrap_model</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+
+        <span class="c1"># gather parameters</span>
+        <span class="n">output_state_dict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">model_to_save</span><span class="o">.</span><span class="n">named_parameters</span><span class="p">():</span>
+            <span class="c1"># only gather z3 params</span>
+            <span class="n">params_to_fetch</span> <span class="o">=</span> <span class="n">_z3_params_to_fetch</span><span class="p">([</span><span class="n">v</span><span class="p">])</span>
+            <span class="k">with</span> <span class="n">deepspeed</span><span class="o">.</span><span class="n">zero</span><span class="o">.</span><span class="n">GatheredParameters</span><span class="p">(</span><span class="n">params_to_fetch</span><span class="p">,</span> <span class="n">enabled</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">params_to_fetch</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">):</span>
+                <span class="n">vv</span> <span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_rank_0</span><span class="p">():</span>
+                    <span class="n">output_state_dict</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">vv</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_rank_0</span><span class="p">():</span>
+            <span class="n">state_dict</span> <span class="o">=</span> <span class="n">model_to_save</span><span class="o">.</span><span class="n">state_dict</span><span class="p">()</span>
+
+            <span class="c1"># copy named_buffers with `persistent=True`</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">model_to_save</span><span class="o">.</span><span class="n">named_buffers</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">state_dict</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="n">vv</span> <span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>
+                <span class="n">output_state_dict</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">vv</span>
+
+            <span class="n">state_dict_keys</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">state_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+            <span class="n">output_state_dict_keys</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">output_state_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+
+            <span class="c1"># corner case for tie_word_embeddings, such as Qwen2-0.5B</span>
+            <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">model_to_save</span><span class="o">.</span><span class="n">config</span><span class="p">,</span> <span class="s2">&quot;tie_word_embeddings&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span> <span class="ow">and</span> <span class="s2">&quot;lm_head.weight&quot;</span> <span class="ow">in</span> <span class="n">state_dict_keys</span><span class="p">:</span>
+                <span class="n">state_dict_keys</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s2">&quot;lm_head.weight&quot;</span><span class="p">)</span>
+
+            <span class="k">assert</span> <span class="n">state_dict_keys</span><span class="o">.</span><span class="n">issubset</span><span class="p">(</span>
+                <span class="n">output_state_dict_keys</span>
+            <span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;mismatch keys </span><span class="si">{</span><span class="n">output_state_dict_keys</span><span class="o">.</span><span class="n">symmetric_difference</span><span class="p">(</span><span class="n">state_dict_keys</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+
+            <span class="c1"># only save peft weights https://github.com/microsoft/DeepSpeed/issues/4295</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">model_to_save</span><span class="p">,</span> <span class="n">PeftModel</span><span class="p">):</span>
+                <span class="n">model_to_save</span><span class="o">.</span><span class="n">save_pretrained</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">stage</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+                    <span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">(</span>
+                        <span class="n">get_peft_model_state_dict</span><span class="p">(</span><span class="n">model_to_save</span><span class="p">,</span> <span class="n">output_state_dict</span><span class="p">),</span>
+                        <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="s2">&quot;adapter_model.bin&quot;</span><span class="p">),</span>
+                    <span class="p">)</span>
+                    <span class="n">filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="s2">&quot;adapter_model.safetensors&quot;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+                        <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># save model</span>
+                <span class="n">model_to_save</span><span class="o">.</span><span class="n">save_pretrained</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="n">state_dict</span><span class="o">=</span><span class="n">output_state_dict</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+            <span class="c1"># save config</span>
+            <span class="n">output_config_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="s2">&quot;config.json&quot;</span><span class="p">)</span>
+            <span class="n">model_to_save</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">to_json_file</span><span class="p">(</span><span class="n">output_config_file</span><span class="p">)</span>
+            <span class="c1"># save tokenizer</span>
+            <span class="n">tokenizer</span><span class="o">.</span><span class="n">save_pretrained</span><span class="p">(</span><span class="n">output_dir</span><span class="p">)</span>
+
+            <span class="c1"># for models not in AutoModel, copy python module files</span>
+            <span class="n">train_from_model_path</span> <span class="o">=</span> <span class="n">model_to_save</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">_name_or_path</span>
+            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">train_from_model_path</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">train_from_model_path</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">filename</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.py&quot;</span><span class="p">):</span>
+                        <span class="n">shutil</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">train_from_model_path</span><span class="p">,</span> <span class="n">filename</span><span class="p">),</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="n">filename</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="DeepspeedStrategy.save_ckpt"><a class="viewcode-back" href="../../../../api_doc/strategy/deepspeed/deepspeed.html#lightrft.strategy.deepspeed.deepspeed.DeepspeedStrategy.save_ckpt">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">save_ckpt</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">model</span><span class="p">,</span>
+        <span class="n">save_dir</span><span class="p">,</span>
+        <span class="n">tag</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">max_num</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+        <span class="n">max_mem</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
+        <span class="n">client_state</span><span class="o">=</span><span class="p">{},</span>
+        <span class="n">save_latest</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">_kwargs</span>
+    <span class="p">):</span>  <span class="c1"># pylint: disable=R0917,W0102</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Save a DeepSpeed model checkpoint with automatic management of checkpoint storage.</span>
+
+<span class="sd">        This function manages checkpoint storage by limiting the number of checkpoints and total</span>
+<span class="sd">        storage size. It automatically removes the oldest checkpoints when limits are exceeded.</span>
+
+<span class="sd">        :param model: The DeepSpeed model to save</span>
+<span class="sd">        :type model: deepspeed.DeepSpeedEngine</span>
+<span class="sd">        :param save_dir: Directory where checkpoints will be saved</span>
+<span class="sd">        :type save_dir: str</span>
+<span class="sd">        :param tag: Optional tag for the checkpoint (e.g., iteration number)</span>
+<span class="sd">        :type tag: str, optional</span>
+<span class="sd">        :param max_num: Maximum number of checkpoints to keep</span>
+<span class="sd">        :type max_num: int, default=3</span>
+<span class="sd">        :param max_mem: Maximum storage size for checkpoints in GB</span>
+<span class="sd">        :type max_mem: int, default=1000</span>
+<span class="sd">        :param client_state: Additional client state to save with the checkpoint</span>
+<span class="sd">        :type client_state: dict, default={}</span>
+<span class="sd">        :param save_latest: Whether to save a symbolic link to the latest checkpoint</span>
+<span class="sd">        :type save_latest: bool, default=True</span>
+<span class="sd">        :param _kwargs: dict, not used keys, e.g. optimizer, scheduler</span>
+
+<span class="sd">        :return: None</span>
+<span class="sd">        :raises AssertionError: If model is not a DeepSpeedEngine</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">deepspeed</span><span class="o">.</span><span class="n">DeepSpeedEngine</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_rank_0</span><span class="p">():</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">save_dir</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">MAX_SIZE</span> <span class="o">=</span> <span class="n">max_mem</span> <span class="o">*</span> <span class="mi">1024</span> <span class="o">**</span> <span class="mi">3</span>  <span class="c1"># Convert GB to bytes</span>
+
+            <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="n">subdirs</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span>
+                    <span class="p">[(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">save_dir</span><span class="p">,</span> <span class="n">d</span><span class="p">),</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">getmtime</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">save_dir</span><span class="p">,</span> <span class="n">d</span><span class="p">)))</span>
+                     <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">save_dir</span><span class="p">)</span>
+                     <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">save_dir</span><span class="p">,</span> <span class="n">d</span><span class="p">))],</span>
+                    <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                <span class="p">)</span>
+                <span class="n">total_size</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span>
+                    <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">getsize</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">dirpath</span><span class="p">,</span> <span class="n">f</span><span class="p">))</span> <span class="k">for</span> <span class="n">subdir</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">subdirs</span>
+                    <span class="k">for</span> <span class="n">dirpath</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">filenames</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="n">subdir</span><span class="p">)</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">filenames</span>
+                <span class="p">)</span>
+
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">subdirs</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">max_num</span> <span class="ow">or</span> <span class="n">total_size</span> <span class="o">&gt;</span> <span class="n">MAX_SIZE</span><span class="p">:</span>
+                    <span class="n">oldest_dir</span> <span class="o">=</span> <span class="n">subdirs</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">oldest_dir</span><span class="p">):</span>
+                        <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">oldest_dir</span><span class="p">)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Deleted oldest ckpt </span><span class="si">{</span><span class="n">oldest_dir</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">break</span>
+
+        <span class="n">dist</span><span class="o">.</span><span class="n">barrier</span><span class="p">()</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">save_checkpoint</span><span class="p">(</span><span class="n">save_dir</span><span class="p">,</span> <span class="n">tag</span><span class="o">=</span><span class="n">tag</span><span class="p">,</span> <span class="n">client_state</span><span class="o">=</span><span class="n">client_state</span><span class="p">,</span> <span class="n">save_latest</span><span class="o">=</span><span class="n">save_latest</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DeepspeedStrategy.load_ckpt"><a class="viewcode-back" href="../../../../api_doc/strategy/deepspeed/deepspeed.html#lightrft.strategy.deepspeed.deepspeed.DeepspeedStrategy.load_ckpt">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">load_ckpt</span><span class="p">(</span>  <span class="c1"># pylint: disable=R0917</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">model</span><span class="p">,</span>
+        <span class="n">load_dir</span><span class="p">,</span>
+        <span class="n">tag</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">load_module_strict</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">load_optimizer_states</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">load_lr_scheduler_states</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">load_module_only</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">_kwargs</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Load a DeepSpeed model checkpoint from the specified directory.</span>
+
+<span class="sd">        This function wraps DeepSpeed&#39;s checkpoint loading functionality with error handling.</span>
+
+<span class="sd">        :param model: The DeepSpeed model to load the checkpoint into</span>
+<span class="sd">        :type model: deepspeed.DeepSpeedEngine</span>
+<span class="sd">        :param load_dir: Directory from which to load the checkpoint</span>
+<span class="sd">        :type load_dir: str</span>
+<span class="sd">        :param tag: Optional tag to specify which checkpoint to load</span>
+<span class="sd">        :type tag: str, optional</span>
+<span class="sd">        :param load_module_strict: Whether to strictly enforce that the keys in the model</span>
+<span class="sd">                                  state dict match the keys in the checkpoint</span>
+<span class="sd">        :type load_module_strict: bool, default=True</span>
+<span class="sd">        :param load_optimizer_states: Whether to load optimizer states from checkpoint</span>
+<span class="sd">        :type load_optimizer_states: bool, default=True</span>
+<span class="sd">        :param load_lr_scheduler_states: Whether to load learning rate scheduler states</span>
+<span class="sd">        :type load_lr_scheduler_states: bool, default=True</span>
+<span class="sd">        :param load_module_only: Whether to load only the module weights and not optimizer or scheduler states</span>
+<span class="sd">        :type load_module_only: bool, default=False</span>
+
+<span class="sd">        :return: A tuple containing the checkpoint path and loaded states</span>
+<span class="sd">        :rtype: tuple(str, dict)</span>
+<span class="sd">        :raises AssertionError: If model is not a DeepSpeedEngine</span>
+<span class="sd">        :raises Exception: If loading the checkpoint fails</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">deepspeed</span><span class="o">.</span><span class="n">DeepSpeedEngine</span><span class="p">)</span>
+        <span class="n">load_path</span><span class="p">,</span> <span class="n">states</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">(</span>
+            <span class="n">load_dir</span><span class="p">,</span>
+            <span class="n">tag</span><span class="p">,</span>
+            <span class="n">load_module_strict</span><span class="o">=</span><span class="n">load_module_strict</span><span class="p">,</span>
+            <span class="n">load_optimizer_states</span><span class="o">=</span><span class="n">load_optimizer_states</span><span class="p">,</span>
+            <span class="n">load_lr_scheduler_states</span><span class="o">=</span><span class="n">load_lr_scheduler_states</span><span class="p">,</span>
+            <span class="n">load_module_only</span><span class="o">=</span><span class="n">load_module_only</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">load_path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[deepspeed] failed to resume from checkpoint </span><span class="si">{</span><span class="n">load_dir</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">load_path</span><span class="p">,</span> <span class="n">states</span></div></div>
+</pre></div>
+
+              </article>
+              
+            </div>
+            <footer>
+  
+
+  <hr>
+
+  <div role="contentinfo">
+    <p>
+      &copy; Copyright 2025, OpenDILab.
+
+    </p>
+  </div>
+  
+  <div>
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a
+      href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the
+      Docs</a>.
+  </div>
+   
+
+</footer>
+          </div>
+        </div>
+
+        <div class="pytorch-content-right" id="pytorch-content-right">
+          <div class="pytorch-right-menu" id="pytorch-right-menu">
+            <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
+              
+            </div>
+          </div>
+        </div>
+    </section>
+  </div>
+
+  
+
+
+  
+
+  
+  <script type="text/javascript" id="documentation_options" data-url_root="../../../../"
+    src="../../../../_static/documentation_options.js"></script>
+  <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+  <script src="../../../../_static/doctools.js"></script>
+  <script src="../../../../_static/sphinx_highlight.js"></script>
+  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+  
+
+  
+
+  <script type="text/javascript" src="../../../../_static/js/vendor/popper.min.js"></script>
+  <script type="text/javascript" src="../../../../_static/js/vendor/bootstrap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
+  <script type="text/javascript" src="../../../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+    jQuery(function () {
+      SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+  <!-- Begin Footer -->
+
+  <div class="container-fluid docs-tutorials-resources" id="docs-tutorials-resources">
+  </div>
+
+  <!-- End Footer -->
+
+  <!-- Begin Mobile Menu -->
+
+  <div class="mobile-main-menu">
+    <div class="container-fluid">
+      <div class="container">
+        <div class="mobile-main-menu-header-container">
+          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
+        </div>
+      </div>
+    </div>
+
+    <div class="mobile-main-menu-links-container">
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://github.com/opendilab/LightRFT" target="_blank">GitHub</a>
+          </li>
+      </div>
+    </div>
+  </div>
+
+  <!-- End Mobile Menu -->
+
+  <script type="text/javascript" src="../../../../_static/js/vendor/anchor.min.js"></script>
+
+  <script type="text/javascript">
+    $(document).ready(function () {
+      mobileMenu.bind();
+      mobileTOC.bind();
+      pytorchAnchors.bind();
+      sideMenus.bind();
+      scrollToAnchor.bind();
+      highlightNavigation.bind();
+      mainMenuDropdown.bind();
+      filterTags.bind();
+
+      // Add class to links that have code blocks, since we cannot create links in code blocks
+      $("article.pytorch-article a span.pre").each(function (e) {
+        $(this).closest("a").addClass("has-code");
+      });
+    })
+  </script>
+</body>
+
+</html>

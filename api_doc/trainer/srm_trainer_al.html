@@ -306,8 +306,176 @@
             <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
               <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
                 
-  <section id="lightrft-trainer-srm-trainer-al">
-<h1>lightrft.trainer.srm_trainer_al<a class="headerlink" href="#lightrft-trainer-srm-trainer-al" title="Permalink to this heading">¶</a></h1>
+  <section id="module-lightrft.trainer.srm_trainer_al">
+<span id="lightrft-trainer-srm-trainer-al"></span><h1>lightrft.trainer.srm_trainer_al<a class="headerlink" href="#module-lightrft.trainer.srm_trainer_al" title="Permalink to this heading">¶</a></h1>
+<p>Trainer utilities for scalar reward models (audio-language capable).</p>
+<p>This module provides a trainer that supports pairwise preference training with
+different loss functions, including Bradley-Terry (BT) loss and Human Preference
+Score (HPS) Loss. It integrates with the project’s Strategy abstraction for distributed
+training, gradient accumulation, and checkpointing, while optionally logging to
+Weights &amp; Biases or TensorBoard.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="lightrft.trainer.srm_trainer_al.SRMTrainerAL">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">lightrft.trainer.srm_trainer_al.</span></span><span class="sig-name descname"><span class="pre">SRMTrainerAL</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.nn.Module</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strategy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.optim.Optimizer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_dataloader</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scheduler</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tokenizer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eval_dataloader</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_epochs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'sigmoid'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">margin</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/trainer/srm_trainer_al.html#SRMTrainerAL"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.trainer.srm_trainer_al.SRMTrainerAL" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Trainer for scalar audio-language reward models.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> (<em>torch.nn.Module</em>) – The model to be trained; expected to return a dict of head
+scores for each head type when called with token ids and audio features.</p></li>
+<li><p><strong>strategy</strong> (<em>Strategy</em>) – Training strategy that manages distributed operations,
+gradient accumulation, checkpointing, logging helpers, and args.</p></li>
+<li><p><strong>optim</strong> (<em>torch.optim.Optimizer</em>) – Optimizer used for parameter updates.</p></li>
+<li><p><strong>train_dataloader</strong> (<em>torch.utils.data.DataLoader</em>) – Dataloader providing pairwise (A/B/Equal) batches.</p></li>
+<li><p><strong>scheduler</strong> (<em>torch.optim.lr_scheduler._LRScheduler</em>) – Learning rate scheduler.</p></li>
+<li><p><strong>tokenizer</strong> (<em>Callable</em>) – Tokenizer used to obtain pad token id for sequence
+padding when concatenating inputs.</p></li>
+<li><p><strong>eval_dataloader</strong> (<em>Optional</em><em>[</em><em>torch.utils.data.DataLoader</em><em>]</em>) – Optional dataloader used for evaluation.</p></li>
+<li><p><strong>max_epochs</strong> (<em>int</em>) – Maximum number of training epochs.</p></li>
+<li><p><strong>loss</strong> (<em>str</em>) – Loss function to use. Choices are ‘sigmoid’ (PairWiseLoss),
+‘logexp’ (LogExpLoss), and ‘hps’ (HPSLoss).</p></li>
+<li><p><strong>margin</strong> (<em>float</em>) – Margin value for BT loss (only used if <code class="docutils literal notranslate"><span class="pre">loss</span></code> is BT).</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.trainer.srm_trainer_al.SRMTrainerAL.concatenated_forward">
+<span class="sig-name descname"><span class="pre">concatenated_forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input0_ids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input0_mask</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input1_ids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input1_mask</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input0_input_features</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input0_feature_attention_mask</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input1_input_features</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input1_feature_attention_mask</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">torch.Tensor</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">torch.Tensor</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/lightrft/trainer/srm_trainer_al.html#SRMTrainerAL.concatenated_forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.trainer.srm_trainer_al.SRMTrainerAL.concatenated_forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run the model once on two concatenated inputs.</p>
+<p>Concatenation reduces the number of forward passes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> (<em>nn.Module</em>) – Model to evaluate.</p></li>
+<li><p><strong>input0_ids</strong> (<em>torch.Tensor</em>) – Token ids for the first sequences.</p></li>
+<li><p><strong>input0_mask</strong> (<em>torch.Tensor</em>) – Attention mask for the first sequences.</p></li>
+<li><p><strong>input1_ids</strong> (<em>torch.Tensor</em>) – Token ids for the second sequences.</p></li>
+<li><p><strong>input1_mask</strong> (<em>torch.Tensor</em>) – Attention mask for the second sequences.</p></li>
+<li><p><strong>input0_input_features</strong> (<em>torch.Tensor</em>) – Audio features for the first sequences.</p></li>
+<li><p><strong>input0_feature_attention_mask</strong> (<em>torch.Tensor</em>) – Attention mask for the first audio features.</p></li>
+<li><p><strong>input1_input_features</strong> (<em>torch.Tensor</em>) – Audio features for the second sequences.</p></li>
+<li><p><strong>input1_feature_attention_mask</strong> (<em>torch.Tensor</em>) – Attention mask for the second audio features.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Tuple of dicts <code class="docutils literal notranslate"><span class="pre">(scores0,</span> <span class="pre">scores1)</span></code> separating the outputs
+for the first and second samples.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tuple[Dict[str, torch.Tensor], Dict[str, torch.Tensor]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.trainer.srm_trainer_al.SRMTrainerAL.concatenated_inputs">
+<span class="sig-name descname"><span class="pre">concatenated_inputs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input0_ids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input0_mask</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input1_ids</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input1_mask</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">torch.Tensor</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">torch.Tensor</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/lightrft/trainer/srm_trainer_al.html#SRMTrainerAL.concatenated_inputs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.trainer.srm_trainer_al.SRMTrainerAL.concatenated_inputs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Concatenate two inputs into a single batch.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input0_ids</strong> (<em>torch.Tensor</em>) – Token ids for the first sequences, shape <code class="docutils literal notranslate"><span class="pre">(N,</span> <span class="pre">Lc)</span></code>.</p></li>
+<li><p><strong>input0_mask</strong> (<em>torch.Tensor</em>) – Attention mask for chosen sequences, shape <code class="docutils literal notranslate"><span class="pre">(N,</span> <span class="pre">Lc)</span></code>.</p></li>
+<li><p><strong>input1_ids</strong> (<em>torch.Tensor</em>) – Token ids for the second sequences, shape <code class="docutils literal notranslate"><span class="pre">(N,</span> <span class="pre">Lr)</span></code>.</p></li>
+<li><p><strong>input1_mask</strong> (<em>torch.Tensor</em>) – Attention mask for the second sequences, shape <code class="docutils literal notranslate"><span class="pre">(N,</span> <span class="pre">Lr)</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Tuple <code class="docutils literal notranslate"><span class="pre">(input_ids,</span> <span class="pre">att_masks)</span></code> where inputs are padded to
+a common max length across input0 and input1, then concatenated
+along the batch dimension to shape <code class="docutils literal notranslate"><span class="pre">(2N,</span> <span class="pre">Lmax)</span></code>.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tuple[torch.Tensor, torch.Tensor]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.trainer.srm_trainer_al.SRMTrainerAL.evaluate">
+<span class="sig-name descname"><span class="pre">evaluate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eval_dataloader</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">steps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/lightrft/trainer/srm_trainer_al.html#SRMTrainerAL.evaluate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.trainer.srm_trainer_al.SRMTrainerAL.evaluate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluate the model on the provided dataloader and write a JSONL of
+scores to the save path indicated by <code class="docutils literal notranslate"><span class="pre">strategy.args.save_path</span></code>.
+Also calculates and logs accuracy metrics to Weights &amp; Biases or
+TensorBoard.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>args</strong> (<em>Any</em>) – present for API compatibility with callers.</p></li>
+<li><p><strong>eval_dataloader</strong> (<em>torch.utils.data.DataLoader</em>) – Dataloader for evaluation samples.</p></li>
+<li><p><strong>steps</strong> (<em>int</em>) – Global step id for naming the output file.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>NoneType</p>
+</dd>
+</dl>
+<p>The output file name format is <code class="docutils literal notranslate"><span class="pre">eval_scores_{steps}.jsonl</span></code>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.trainer.srm_trainer_al.SRMTrainerAL.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">consumed_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_update_steps_per_epoch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/lightrft/trainer/srm_trainer_al.html#SRMTrainerAL.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.trainer.srm_trainer_al.SRMTrainerAL.fit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Train the model for <code class="docutils literal notranslate"><span class="pre">max_epochs</span></code> using the provided dataloaders.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>args</strong> (<em>Any</em>) – Training arguments (typically <code class="docutils literal notranslate"><span class="pre">strategy.args</span></code>) including
+logging/eval/save intervals and batch sizing.</p></li>
+<li><p><strong>consumed_samples</strong> (<em>int</em>) – Number of samples already consumed (for
+resuming training), defaults to <code class="docutils literal notranslate"><span class="pre">0</span></code>.</p></li>
+<li><p><strong>num_update_steps_per_epoch</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – Number of optimizer steps per epoch.
+If <code class="docutils literal notranslate"><span class="pre">None</span></code>, it’s inferred externally and passed in by caller.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>NoneType</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Notes:</dt><dd><ul class="simple">
+<li><p>Supports HPS Scale training via <code class="docutils literal notranslate"><span class="pre">scale_for_train</span></code> flag in args.</p></li>
+<li><p>Logs to Weights &amp; Biases or TensorBoard when configured.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.trainer.srm_trainer_al.SRMTrainerAL.save_logs_and_checkpoints">
+<span class="sig-name descname"><span class="pre">save_logs_and_checkpoints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">global_step</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_bar</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logs_dict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">client_states</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/lightrft/trainer/srm_trainer_al.html#SRMTrainerAL.save_logs_and_checkpoints"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.trainer.srm_trainer_al.SRMTrainerAL.save_logs_and_checkpoints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Log metrics and optionally run evaluation and checkpointing.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>args</strong> (<em>Any</em>) – Training arguments providing logging/eval/save intervals
+and checkpoint configurations.</p></li>
+<li><p><strong>global_step</strong> (<em>int</em>) – Current global optimization step.</p></li>
+<li><p><strong>step_bar</strong> (<em>tqdm.tqdm</em>) – Progress bar for step-level updates.</p></li>
+<li><p><strong>logs_dict</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>float</em><em>]</em>) – Dictionary of metrics to log (will be reduced across
+ranks via <code class="docutils literal notranslate"><span class="pre">strategy.all_reduce</span></code> before display/logging).</p></li>
+<li><p><strong>client_states</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – Extra state to persist with checkpoints (e.g.,
+consumed samples).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>NoneType</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 
 
@@ -353,7 +521,17 @@
           <div class="pytorch-right-menu" id="pytorch-right-menu">
             <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
               <ul>
-<li><a class="reference internal" href="#">lightrft.trainer.srm_trainer_al</a></li>
+<li><a class="reference internal" href="#">lightrft.trainer.srm_trainer_al</a><ul>
+<li><a class="reference internal" href="#lightrft.trainer.srm_trainer_al.SRMTrainerAL"><code class="docutils literal notranslate"><span class="pre">SRMTrainerAL</span></code></a><ul>
+<li><a class="reference internal" href="#lightrft.trainer.srm_trainer_al.SRMTrainerAL.concatenated_forward"><code class="docutils literal notranslate"><span class="pre">SRMTrainerAL.concatenated_forward()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.trainer.srm_trainer_al.SRMTrainerAL.concatenated_inputs"><code class="docutils literal notranslate"><span class="pre">SRMTrainerAL.concatenated_inputs()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.trainer.srm_trainer_al.SRMTrainerAL.evaluate"><code class="docutils literal notranslate"><span class="pre">SRMTrainerAL.evaluate()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.trainer.srm_trainer_al.SRMTrainerAL.fit"><code class="docutils literal notranslate"><span class="pre">SRMTrainerAL.fit()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.trainer.srm_trainer_al.SRMTrainerAL.save_logs_and_checkpoints"><code class="docutils literal notranslate"><span class="pre">SRMTrainerAL.save_logs_and_checkpoints()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 
             </div>

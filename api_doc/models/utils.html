@@ -306,10 +306,58 @@
             <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
               <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
                 
-  <section id="lightrft-models-utils">
-<h1>lightrft.models.utils<a class="headerlink" href="#lightrft-models-utils" title="Permalink to this heading">¶</a></h1>
+  <section id="module-lightrft.models.utils">
+<span id="lightrft-models-utils"></span><h1>lightrft.models.utils<a class="headerlink" href="#module-lightrft.models.utils" title="Permalink to this heading">¶</a></h1>
+<p>Utility functions for computing log probabilities from logits in PyTorch.</p>
+<p>This module provides functions to efficiently calculate log probabilities
+for token predictions, with optimizations to handle different data types
+and reduce memory consumption. It also includes utilities for finding
+linear modules in neural networks and handling position IDs for packed
+sequences in transformer models.</p>
+<p>The module is particularly useful for:
+- Computing log probabilities from model logits with memory-efficient approaches
+- Finding LoRA-injectable linear modules in various model architectures
+- Handling position IDs in packed sequence scenarios for transformer models</p>
 <section id="log-probs-from-logits">
 <h2>log_probs_from_logits<a class="headerlink" href="#log-probs-from-logits" title="Permalink to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="lightrft.models.utils.log_probs_from_logits">
+<span class="sig-prename descclassname"><span class="pre">lightrft.models.utils.</span></span><span class="sig-name descname"><span class="pre">log_probs_from_logits</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logits</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">disable_logprobs_flashattn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">torch.Tensor</span></span></span><a class="reference internal" href="../../_modules/lightrft/models/utils.html#log_probs_from_logits"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.models.utils.log_probs_from_logits" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute log probabilities for the given labels from logits.</p>
+<p>This function calculates log probabilities efficiently, using different approaches
+based on the input data type to optimize memory usage. For float32/float64 tensors,
+it uses a direct computation approach, while for other data types (e.g. float16 and bfloat16)
+it uses PyTorch’s log_softmax function with row-by-row processing to reduce peak memory consumption.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>logits</strong> (<em>torch.Tensor</em>) – Logits tensor of shape (batch_size, sequence_length, vocab_size)
+or (batch_size, vocab_size)</p></li>
+<li><p><strong>labels</strong> (<em>torch.Tensor</em>) – Labels tensor containing token indices, of shape (batch_size, sequence_length)
+or (batch_size,)</p></li>
+<li><p><strong>disable_logprobs_flashattn</strong> (<em>bool</em>) – Whether to use flash attn when calculating cross entropy loss
+default to False</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Log probabilities for the given labels, of shape matching labels</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+<dl>
+<dt>Example::</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">logits</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>  <span class="c1"># batch_size=2, seq_len=3, vocab_size=5</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">labels</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>  <span class="c1"># batch_size=2, seq_len=3</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">log_probs</span> <span class="o">=</span> <span class="n">log_probs_from_logits</span><span class="p">(</span><span class="n">logits</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">log_probs</span><span class="o">.</span><span class="n">shape</span>
+<span class="go">torch.Size([2, 3])</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 </section>
 
@@ -357,7 +405,10 @@
             <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
               <ul>
 <li><a class="reference internal" href="#">lightrft.models.utils</a><ul>
-<li><a class="reference internal" href="#log-probs-from-logits">log_probs_from_logits</a></li>
+<li><a class="reference internal" href="#log-probs-from-logits">log_probs_from_logits</a><ul>
+<li><a class="reference internal" href="#lightrft.models.utils.log_probs_from_logits"><code class="docutils literal notranslate"><span class="pre">log_probs_from_logits()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

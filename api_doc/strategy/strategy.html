@@ -306,10 +306,45 @@
             <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
               <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
                 
-  <section id="lightrft-strategy-strategy">
-<h1>lightrft.strategy.strategy<a class="headerlink" href="#lightrft-strategy-strategy" title="Permalink to this heading">¶</a></h1>
+  <section id="module-lightrft.strategy.strategy">
+<span id="lightrft-strategy-strategy"></span><h1>lightrft.strategy.strategy<a class="headerlink" href="#module-lightrft.strategy.strategy" title="Permalink to this heading">¶</a></h1>
+<p>Strategy factory module for lightrft.</p>
+<p>This module provides functionality to create appropriate distributed training strategies
+based on configuration arguments. It supports three types of strategies:</p>
+<ol class="arabic simple">
+<li><p>DeepSpeed - For training with the DeepSpeed library</p></li>
+<li><p>FSDP V2 - For training with PyTorch’s Fully Sharded Data Parallel (newer version)</p></li>
+</ol>
+<p>The module automatically selects the appropriate strategy based on the provided arguments.</p>
 <section id="get-strategy">
 <h2>get_strategy<a class="headerlink" href="#get-strategy" title="Permalink to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="lightrft.strategy.strategy.get_strategy">
+<span class="sig-prename descclassname"><span class="pre">lightrft.strategy.strategy.</span></span><span class="sig-name descname"><span class="pre">get_strategy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/strategy/strategy.html#get_strategy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.strategy.get_strategy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create and return the appropriate training strategy based on configuration arguments.</p>
+<p>This function examines the provided arguments and instantiates either a DeepSpeed,
+or FSDP V2 strategy with the appropriate parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>args</strong> (<em>object</em>) – Configuration arguments containing strategy selection flags and parameters</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>An instantiated strategy object</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Union[<a class="reference internal" href="fsdp/fsdpv2.html#lightrft.strategy.fsdp.fsdpv2.FSDPV2Strategy" title="lightrft.strategy.fsdp.fsdpv2.FSDPV2Strategy">FSDPV2Strategy</a>, <a class="reference internal" href="deepspeed/deepspeed.html#lightrft.strategy.deepspeed.deepspeed.DeepspeedStrategy" title="lightrft.strategy.deepspeed.deepspeed.DeepspeedStrategy">DeepspeedStrategy</a>]</p>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">parser</span> <span class="o">=</span> <span class="n">ArgumentParser</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;--fsdp&quot;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;--seed&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">strategy</span> <span class="o">=</span> <span class="n">get_strategy</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
 </section>
 </section>
 
@@ -357,7 +392,10 @@
             <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
               <ul>
 <li><a class="reference internal" href="#">lightrft.strategy.strategy</a><ul>
-<li><a class="reference internal" href="#get-strategy">get_strategy</a></li>
+<li><a class="reference internal" href="#get-strategy">get_strategy</a><ul>
+<li><a class="reference internal" href="#lightrft.strategy.strategy.get_strategy"><code class="docutils literal notranslate"><span class="pre">get_strategy()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
