@@ -211,6 +211,14 @@ class GRMDataset(Dataset):
         return input_token
 
     def collate_fn(self, batch):
+        """
+        Collate function for generative reward model samples.
+
+        :param batch: List of data samples.
+        :type batch: list
+        :return: Dictionary with batched tensors for GRM training.
+        :rtype: dict
+        """
         batch = [b for b in batch if b is not None]
         if not batch:
             return None

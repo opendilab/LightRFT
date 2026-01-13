@@ -27,6 +27,29 @@ def init_process_group(
     group_name: str = None,
     pg_options: Optional[Any] = None,
 ):
+    """
+    Initialize the distributed process group.
+
+    Wrapper around torch.distributed.init_process_group with additional validation.
+
+    :param backend: Backend to use (e.g., 'nccl', 'gloo').
+    :type backend: Union[str, Backend], optional
+    :param init_method: URL specifying how to initialize the process group.
+    :type init_method: Optional[str]
+    :param timeout: Timeout for operations executed against the process group.
+    :type timeout: Optional[timedelta]
+    :param world_size: Total number of processes participating.
+    :type world_size: int
+    :param rank: Rank of the current process.
+    :type rank: int
+    :param store: Key/value store accessible to all workers.
+    :type store: Optional[Store]
+    :param group_name: Name of the process group.
+    :type group_name: str, optional
+    :param pg_options: Process group options.
+    :type pg_options: Optional[Any]
+    :raises AssertionError: If both init_method and store are specified.
+    """
     assert (store is None) or (init_method is None), "Cannot specify both init_method and store."
 
     if store is not None:

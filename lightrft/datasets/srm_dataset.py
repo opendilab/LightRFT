@@ -183,6 +183,14 @@ class RankDatasetVL(Dataset):
         return input0_token, input1_token
 
     def collate_fn(self, batch):
+        """
+        Collate function to batch vision-language scalar reward model samples.
+
+        :param batch: List of tuples (input0_token, input1_token, extra).
+        :type batch: list
+        :return: Dictionary with batched tensors for VL reward model training.
+        :rtype: dict
+        """
         batch = [b for b in batch if b is not None]
         if not batch:
             return None
@@ -411,6 +419,14 @@ class RankDatasetAL(Dataset):
         return input0_token, input1_token
 
     def collate_fn(self, batch):
+        """
+        Collate function to batch audio-language scalar reward model samples.
+
+        :param batch: List of tuples (input0_token, input1_token, extra).
+        :type batch: list
+        :return: Dictionary with batched tensors for AL reward model training.
+        :rtype: dict
+        """
         batch = [b for b in batch if b is not None]
         if not batch:
             return None

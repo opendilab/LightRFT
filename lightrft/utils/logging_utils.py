@@ -14,6 +14,14 @@ class NewLineFormatter(logging.Formatter):
         logging.Formatter.__init__(self, fmt, datefmt)
 
     def format(self, record):
+        """
+        Format a log record with newline prefix alignment.
+
+        :param record: Log record to format.
+        :type record: logging.LogRecord
+        :return: Formatted log string with aligned multi-line messages.
+        :rtype: str
+        """
         msg = logging.Formatter.format(self, record)
         if record.message != "":
             parts = msg.split(record.message)
@@ -47,6 +55,14 @@ _setup_logger()
 
 
 def init_logger(name: str):
+    """
+    Initialize and configure a logger with LightRFT settings.
+
+    :param name: Logger name.
+    :type name: str
+    :return: Configured logger instance.
+    :rtype: logging.Logger
+    """
     # Use the same settings as above for root logger
     logger = logging.getLogger(name)
     logger.setLevel(logging.DEBUG)

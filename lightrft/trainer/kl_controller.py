@@ -12,6 +12,14 @@ class AdaptiveKLController:
         self.horizon = horizon
 
     def update(self, current, n_steps):
+        """
+        Update KL coefficient using adaptive algorithm.
+
+        :param current: Current KL divergence value.
+        :type current: float
+        :param n_steps: Number of training steps taken.
+        :type n_steps: int
+        """
         target = self.target
         proportional_error = np.clip(current / target - 1, -0.2, 0.2)
         mult = 1 + proportional_error * n_steps / self.horizon
@@ -24,4 +32,12 @@ class FixedKLController:
         self.value = kl_coef
 
     def update(self, current, n_steps):
+        """
+        Update KL controller state (no-op for fixed KL).
+
+        :param current: Current KL divergence value (unused).
+        :type current: float
+        :param n_steps: Number of training steps (unused).
+        :type n_steps: int
+        """
         pass

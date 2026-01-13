@@ -9,6 +9,22 @@ import torch.distributed as dist
 
 
 def get_tokenizer(pretrain, model, padding_side="left", strategy=None, use_fast=True):
+    """
+    Load and configure a tokenizer for language models.
+
+    :param pretrain: Path or name of the pretrained tokenizer.
+    :type pretrain: str
+    :param model: Model instance to sync pad_token_id with.
+    :type model: transformers.PreTrainedModel
+    :param padding_side: Which side to pad on ('left' or 'right').
+    :type padding_side: str
+    :param strategy: Optional training strategy for logging.
+    :type strategy: Optional[Any]
+    :param use_fast: Whether to use fast tokenizer implementation.
+    :type use_fast: bool
+    :return: Configured tokenizer instance.
+    :rtype: transformers.AutoTokenizer
+    """
     tokenizer = AutoTokenizer.from_pretrained(pretrain, trust_remote_code=True, use_fast=use_fast)
     tokenizer.padding_side = padding_side
     # NOTE: When enable vLLM, do not resize_token_embeddings, or the vocab size will mismatch with vLLM.
@@ -22,6 +38,22 @@ def get_tokenizer(pretrain, model, padding_side="left", strategy=None, use_fast=
 
 
 def get_tokenizer_processor_vl(pretrain, model, padding_side="left", strategy=None, use_fast=True):
+    """
+    Load and configure tokenizer and processor for vision-language models.
+
+    :param pretrain: Path or name of the pretrained model.
+    :type pretrain: str
+    :param model: Model instance to sync pad_token_id with.
+    :type model: transformers.PreTrainedModel
+    :param padding_side: Which side to pad on ('left' or 'right').
+    :type padding_side: str
+    :param strategy: Optional training strategy for logging.
+    :type strategy: Optional[Any]
+    :param use_fast: Whether to use fast tokenizer implementation.
+    :type use_fast: bool
+    :return: Tuple of (tokenizer, processor).
+    :rtype: Tuple[transformers.AutoTokenizer, transformers.AutoProcessor]
+    """
     tokenizer = AutoTokenizer.from_pretrained(pretrain, trust_remote_code=True, use_fast=use_fast)
     processor = AutoProcessor.from_pretrained(pretrain, trust_remote_code=True, use_fast=use_fast)
 
@@ -47,6 +79,34 @@ def blending_datasets(
     train_split="train",
     eval_split="test",
 ):
+    """
+    Load and blend multiple datasets with specified sampling probabilities.
+
+    Supports various dataset formats including local files (.json, .jsonl, .csv),
+    HuggingFace datasets, and datasets saved with ``save_to_disk``.
+
+    :param datasets: Comma-separated dataset paths or names (e.g., 'path1,path2').
+    :type datasets: str
+    :param probabilities: Comma-separated sampling probabilities (e.g., '0.5,0.5').
+    :type probabilities: str
+    :param strategy: Optional training strategy for distributed logging.
+    :type strategy: Optional[Any]
+    :param seed: Random seed for reproducible interleaving.
+    :type seed: int
+    :param max_count: Maximum number of samples to load per dataset.
+    :type max_count: int
+    :param return_eval: Whether to return evaluation dataset.
+    :type return_eval: bool
+    :param stopping_strategy: How to handle datasets of different sizes
+        ('first_exhausted' or 'all_exhausted').
+    :type stopping_strategy: str
+    :param train_split: Name of the training split.
+    :type train_split: str
+    :param eval_split: Name of the evaluation split.
+    :type eval_split: str
+    :return: Training dataset, or tuple of (train_dataset, eval_dataset) if return_eval=True.
+    :rtype: Union[Dataset, Tuple[Dataset, Dataset]]
+    """
     datasets = datasets.split(",")
     probabilities = list(map(float, probabilities.split(",")))
     assert len(probabilities) == len(datasets)
@@ -168,6 +228,17 @@ def blending_datasets(
 
 
 def convert_token_to_id(token, tokenizer):
+    """
+    Convert a string token to its corresponding token ID.
+
+    :param token: Token string to convert.
+    :type token: str
+    :param tokenizer: Tokenizer instance to use for conversion.
+    :type tokenizer: transformers.PreTrainedTokenizer
+    :return: Token ID.
+    :rtype: int
+    :raises ValueError: If token is not a string or encodes to multiple IDs.
+    """
     if isinstance(token, str):
         token = tokenizer.encode(token, add_special_tokens=False)
         assert len(token) == 1
@@ -373,6 +444,13 @@ def ensure_video_input_available():
         except ImportError:
 
             class VideoInput:
+                """
+                Placeholder class for VideoInput when transformers doesn't provide it.
+
+                This class serves as a compatibility shim for older Transformers versions
+                that don't export VideoInput from transformers.image_utils or
+                transformers.video_utils.
+                """
                 pass
 
         import transformers
