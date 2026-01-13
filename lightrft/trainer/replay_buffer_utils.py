@@ -681,7 +681,7 @@ def _remove_padding_in_sequences(items: List) -> List:
         )
         # Get action_entropy if it exists
         action_entropy = getattr(item, 'action_entropy', None)
-        
+
         right_pad = (1 - act_mask.long()).sum()
         right_pad = None if right_pad == 0 else -right_pad
 
@@ -753,7 +753,7 @@ def _remove_padding_in_sequences_vl(items: List) -> List:
         )
         # Get action_entropy if it exists
         action_entropy = getattr(item, 'action_entropy', None)
-        
+
         right_pad = (1 - act_mask.long()).sum()
         right_pad = None if right_pad == 0 else -right_pad
 

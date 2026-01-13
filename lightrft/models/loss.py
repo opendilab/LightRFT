@@ -98,7 +98,7 @@ class PolicyLoss(nn.Module):
       where ``ratio = exp(log_probs - old_log_probs)`` and clipping is applied to prevent
       large policy updates.
 
-    - **CPGD (Clipped Policy Gradient Descent)**: Enabled via ``use_cpg_loss=True``. Uses
+    - **Clipped Policy Gradient Optimization with Policy Drift (CPGD)**: Enabled via ``use_cpg_loss=True``. Uses
       asymmetric clipping bounds for positive and negative advantages, providing better
       stability for constrained policy optimization. See: https://arxiv.org/abs/2505.12504
 
@@ -165,9 +165,9 @@ class PolicyLoss(nn.Module):
     - High-Entropy Token Filtering: https://arxiv.org/abs/2506.01939
     """
     def __init__(
-        self, 
-        clip_eps: float = 0.2, 
-        use_dapo: bool = False, 
+        self,
+        clip_eps: float = 0.2,
+        use_dapo: bool = False,
         use_cpg_loss: bool = False,
         high_entropy_token_ratio: float = 0.0,
     ) -> None:

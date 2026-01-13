@@ -35,14 +35,10 @@ class TrajectorySaver:
     :type save_images_separately: bool
     :param max_image_size: Maximum dimension for saved images (to reduce file size). Default to 512
     :type max_image_size: int
-    :param mark_high_entropy_tokens: If True, mark high-entropy tokens in saved trajectories with special markers. Default to False
+    :param mark_high_entropy_tokens: If True, create token arrays with high-entropy information for HTML rendering. Default to False
     :type mark_high_entropy_tokens: bool
     :param high_entropy_token_ratio: Ratio of high-entropy tokens to mark (e.g., 0.2 means top 20%). Only used if mark_high_entropy_tokens is True. Default to 0.2
     :type high_entropy_token_ratio: float
-    :param high_entropy_marker_start: Special token/marker to indicate the start of a high-entropy token. Default to "<HIGH_ENTROPY>"
-    :type high_entropy_marker_start: str
-    :param high_entropy_marker_end: Special token/marker to indicate the end of a high-entropy token. Default to "</HIGH_ENTROPY>"
-    :type high_entropy_marker_end: str
     """
     def __init__(
         self,
@@ -52,8 +48,6 @@ class TrajectorySaver:
         max_image_size: int = 512,
         mark_high_entropy_tokens: bool = False,
         high_entropy_token_ratio: float = 0.2,
-        high_entropy_marker_start: str = "<HIGH_ENTROPY>",
-        high_entropy_marker_end: str = "</HIGH_ENTROPY>",
     ) -> None:
         self.save_dir = Path(save_dir)
         self.tokenizer = tokenizer
@@ -61,8 +55,6 @@ class TrajectorySaver:
         self.max_image_size = max_image_size
         self.mark_high_entropy_tokens = mark_high_entropy_tokens
         self.high_entropy_token_ratio = high_entropy_token_ratio
-        self.high_entropy_marker_start = high_entropy_marker_start
-        self.high_entropy_marker_end = high_entropy_marker_end
 
         # Create directory structure only on rank 0
         if not torch.distributed.is_initialized() or torch.distributed.get_rank() == 0:
@@ -102,7 +94,9 @@ class TrajectorySaver:
 
         # Check if any experience has action_entropy (silently)
         if self.mark_high_entropy_tokens:
-            has_entropy_count = sum(1 for exp in experiences if hasattr(exp, 'action_entropy') and exp.action_entropy is not None)
+            has_entropy_count = sum(
+                1 for exp in experiences if hasattr(exp, 'action_entropy') and exp.action_entropy is not None
+            )
 
         all_trajectories = []
         # Iterate through experience objects (micro-batches) until we have enough samples.
@@ -225,9 +219,6 @@ class TrajectorySaver:
                         generated_tokens = None
                         if high_entropy_info is not None:
                             high_entropy_mask, sample_entropy = high_entropy_info
-                            generated_text = self._mark_high_entropy_tokens_in_text(
-                                generated_text, gen_tokens, gen_indices, high_entropy_mask
-                            )
                             generated_tokens = self._create_token_array(
                                 gen_tokens, gen_indices, high_entropy_mask, sample_entropy
                             )
@@ -240,9 +231,6 @@ class TrajectorySaver:
                             pure_generated_text = self.tokenizer.decode(pure_gen_tokens, skip_special_tokens=True)
                             if high_entropy_info is not None:
                                 high_entropy_mask, sample_entropy = high_entropy_info
-                                pure_generated_text = self._mark_high_entropy_tokens_in_text(
-                                    pure_generated_text, pure_gen_tokens, pure_gen_indices, high_entropy_mask
-                                )
                                 # pure_gen_indices already correspond to the correct positions in high_entropy_mask
                                 # since they are just gen_indices[1:], which still map to action_mask positions
                                 pure_generated_tokens = self._create_token_array(
@@ -273,7 +261,7 @@ class TrajectorySaver:
                 "generated_text": generated_text,  # Includes last prompt token (for RL state-action)
                 "pure_generated_text": pure_generated_text,  # Only model's output
             }
-            
+
             # Add token arrays if available
             if generated_tokens is not None:
                 traj_dict["generated_tokens"] = generated_tokens
@@ -491,17 +479,17 @@ class TrajectorySaver:
         # Check if action_entropy exists (without using getattr)
         if not hasattr(exp, 'action_entropy'):
             return None
-        
+
         action_entropy = exp.action_entropy
         if action_entropy is None:
             return None
 
         # Move to CPU and extract sample
         action_entropy = action_entropy.cpu()
-        
+
         # Get action_mask length for this sample
         action_mask_len = action_mask.shape[0] if len(action_mask.shape) > 0 else 0
-        
+
         # Handle different tensor shapes
         if len(action_entropy.shape) == 0:
             return None
@@ -527,10 +515,11 @@ class TrajectorySaver:
                         for i in range(batch_size):
                             # Count non-padding tokens (assuming padding is False/0)
                             mask_row = full_action_mask[i]
-                            num_actions = mask_row.sum().item() if mask_row.dtype == torch.bool else (mask_row != 0).sum().item()
+                            num_actions = mask_row.sum().item() if mask_row.dtype == torch.bool else (mask_row
+                                                                                                      != 0).sum().item()
                             cumulative_lengths.append((current_length, current_length + num_actions))
                             current_length += num_actions
-                        
+
                         # Check if the total matches action_entropy length
                         if current_length == action_entropy.shape[0] and sample_idx < len(cumulative_lengths):
                             start_idx, end_idx = cumulative_lengths[sample_idx]
@@ -572,11 +561,11 @@ class TrajectorySaver:
 
         # Create high-entropy mask using the utility function
         from lightrft.models.utils import create_high_entropy_mask
-        
+
         # Reshape to (1, num_actions) for create_high_entropy_mask
         # action_mask is already for a single sample (1D), so we need to add batch dimension
         sample_entropy_2d = sample_entropy.unsqueeze(0)
-        
+
         # Ensure action_mask is 1D and add batch dimension
         if len(action_mask.shape) == 1:
             sample_action_mask = action_mask.unsqueeze(0)
@@ -585,79 +574,14 @@ class TrajectorySaver:
             sample_action_mask = action_mask[:1]
         else:
             return None
-        
+
         high_entropy_mask = create_high_entropy_mask(
-            sample_entropy_2d,
-            sample_action_mask,
-            self.high_entropy_token_ratio
+            sample_entropy_2d, sample_action_mask, self.high_entropy_token_ratio
         )
-        
+
         # Return the mask and entropy values for this sample (remove batch dimension)
         result_mask = high_entropy_mask[0]
         return (result_mask, sample_entropy)
-
-    def _mark_high_entropy_tokens_in_text(
-        self,
-        text: str,
-        tokens: torch.Tensor,
-        action_indices: torch.Tensor,
-        high_entropy_mask: torch.Tensor,
-    ) -> str:
-        """
-        Mark high-entropy tokens in the decoded text with special markers.
-
-        This method decodes tokens one by one and wraps high-entropy tokens with
-        special markers. Since tokenizer.decode may merge tokens, we decode each
-        token individually and reconstruct the text with markers.
-
-        :param text: Decoded text string (for reference, but we reconstruct it)
-        :type text: str
-        :param tokens: Token IDs tensor
-        :type tokens: torch.Tensor
-        :param action_indices: Indices in action_mask space corresponding to tokens
-        :type action_indices: torch.Tensor
-        :param high_entropy_mask: Binary mask indicating high-entropy tokens (1 for high-entropy)
-        :type high_entropy_mask: torch.Tensor
-        :return: Text with high-entropy tokens marked
-        :rtype: str
-        """
-        if high_entropy_mask is None or len(tokens) == 0:
-            return text
-
-        # Convert to lists for easier processing
-        tokens_list = tokens.tolist()
-        action_indices_list = action_indices.tolist()
-        
-        # Decode each token individually and mark high-entropy ones
-        marked_parts = []
-        
-        # Debug: log mask info (only print once to avoid spam)
-        # Note: This method is called multiple times, so we'll skip detailed logging here
-        
-        for token_id, action_idx in zip(tokens_list, action_indices_list):
-            # Decode this token
-            token_text = self.tokenizer.decode([token_id], skip_special_tokens=True)
-            
-            # Check if this token is high-entropy
-            # action_idx should be within [0, len(high_entropy_mask))
-            if action_idx < len(high_entropy_mask) and action_idx >= 0:
-                is_high_entropy = high_entropy_mask[action_idx].item() > 0.5
-                if is_high_entropy:
-                    # Mark as high-entropy
-                    marked_parts.append(self.high_entropy_marker_start)
-                    marked_parts.append(token_text)
-                    marked_parts.append(self.high_entropy_marker_end)
-                else:
-                    # Regular token
-                    marked_parts.append(token_text)
-            else:
-                # Index out of range - just add token without marking
-                marked_parts.append(token_text)
-        
-        result = ''.join(marked_parts)
-        # Debug: check if markers were added (only log once to avoid spam)
-        # Note: We'll check this in the main loop instead
-        return result
 
     def _create_token_array(
         self,
@@ -689,26 +613,26 @@ class TrajectorySaver:
         tokens_list = tokens.tolist()
         action_indices_list = action_indices.tolist()
         entropy_list = sample_entropy.tolist() if len(sample_entropy.shape) > 0 else []
-        
+
         token_array = []
-        
+
         for token_id, action_idx in zip(tokens_list, action_indices_list):
             # Decode this token
             token_text = self.tokenizer.decode([token_id], skip_special_tokens=True)
-            
+
             # Check if this token is high-entropy
             token_obj = {"text": token_text, "high_entropy": False}
-            
+
             if action_idx < len(high_entropy_mask) and action_idx >= 0:
                 is_high_entropy = high_entropy_mask[action_idx].item() > 0.5
                 token_obj["high_entropy"] = is_high_entropy
-                
+
                 # Add entropy_score if it's a high-entropy token
                 if is_high_entropy and action_idx < len(entropy_list):
                     token_obj["entropy_score"] = float(entropy_list[action_idx])
-            
+
             token_array.append(token_obj)
-        
+
         return token_array
 
 
@@ -732,9 +656,7 @@ def create_trajectory_saver(args: Any, tokenizer: Any) -> Optional[TrajectorySav
     # Extract configuration options (without using getattr)
     mark_high_entropy = False
     high_entropy_ratio = 0.2
-    marker_start = "<HIGH_ENTROPY>"
-    marker_end = "</HIGH_ENTROPY>"
-    
+
     if hasattr(args, 'mark_high_entropy_tokens'):
         mark_high_entropy = args.mark_high_entropy_tokens
     if hasattr(args, 'high_entropy_token_ratio'):
@@ -747,6 +669,4 @@ def create_trajectory_saver(args: Any, tokenizer: Any) -> Optional[TrajectorySav
         max_image_size=512,
         mark_high_entropy_tokens=mark_high_entropy,
         high_entropy_token_ratio=high_entropy_ratio,
-        high_entropy_marker_start=marker_start,
-        high_entropy_marker_end=marker_end,
     )

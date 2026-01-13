@@ -285,7 +285,7 @@ class ActorLanguage(nn.Module):
             return output
 
         log_probs = log_probs_from_logits(output["logits"][:, :-1, :], sequences[:, 1:])
-        
+
         # Calculate entropy for action tokens (for high-entropy token identification)
         # Only compute entropy when high_entropy_token_ratio is not 0
         if self.high_entropy_token_ratio > 0.0:

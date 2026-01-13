@@ -384,7 +384,10 @@ class PPOTrainer(ABC):
         torch.cuda.empty_cache()
         return status_mean
 
-    def training_step(self, experience: Experience, global_steps, entropy_mask: Optional[torch.Tensor] = None) -> Dict[str, float]:
+    def training_step(self,
+                      experience: Experience,
+                      global_steps,
+                      entropy_mask: Optional[torch.Tensor] = None) -> Dict[str, float]:
         """
         Single training step combining actor and critic updates.
 
@@ -404,7 +407,9 @@ class PPOTrainer(ABC):
             status.update(self.training_step_critic(experience))
         return status
 
-    def training_step_actor(self, experience: Experience, entropy_mask: Optional[torch.Tensor] = None) -> Dict[str, float]:
+    def training_step_actor(self,
+                            experience: Experience,
+                            entropy_mask: Optional[torch.Tensor] = None) -> Dict[str, float]:
         """
         Actor training step.
 

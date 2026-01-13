@@ -139,51 +139,49 @@ def create_high_entropy_mask(
         if action_mask is not None:
             return action_mask.clone()
         return torch.ones_like(entropy, dtype=torch.float32)
-    
+
     # Validate shapes
     if len(entropy.shape) != 2:
         raise ValueError(f"entropy must be 2D tensor (batch_size, seq_len), got shape {entropy.shape}")
-    
+
     batch_size, seq_len = entropy.shape
-    
+
     if action_mask is not None:
         if len(action_mask.shape) != 2:
             raise ValueError(f"action_mask must be 2D tensor (batch_size, seq_len), got shape {action_mask.shape}")
         if action_mask.shape != entropy.shape:
-            raise ValueError(
-                f"action_mask shape {action_mask.shape} must match entropy shape {entropy.shape}"
-            )
-    
+            raise ValueError(f"action_mask shape {action_mask.shape} must match entropy shape {entropy.shape}")
+
     high_entropy_mask = torch.zeros_like(entropy, dtype=torch.float32)
-    
+
     for i in range(batch_size):
         # Get valid entropy values for this sequence
         if action_mask is not None:
             # Ensure both are 1D tensors of the same length
             entropy_i = entropy[i]  # Shape: (seq_len,)
             mask_i = action_mask[i]  # Shape: (seq_len,)
-            
+
             # Convert to float if needed for multiplication
             if mask_i.dtype != entropy_i.dtype:
                 mask_i = mask_i.to(dtype=entropy_i.dtype)
-            
+
             valid_entropy = entropy_i * mask_i
             valid_indices = mask_i.bool()
         else:
             valid_entropy = entropy[i]
             valid_indices = torch.ones(seq_len, dtype=torch.bool, device=entropy.device)
-        
+
         if not valid_indices.any():
             continue
-        
+
         # Calculate number of high-entropy tokens to keep
         num_valid = valid_indices.sum().item()
         num_high_entropy = max(1, int(num_valid * high_entropy_ratio))
-        
+
         # Get top-k highest entropy tokens
         _, top_indices = torch.topk(valid_entropy, k=num_high_entropy, dim=0)
         high_entropy_mask[i, top_indices] = 1.0
-    
+
     return high_entropy_mask
 
 
