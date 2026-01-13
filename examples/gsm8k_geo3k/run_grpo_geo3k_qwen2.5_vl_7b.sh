@@ -18,11 +18,11 @@
 # --- Model and Dataset Paths ---
 # Path to the base model. Can be a Hugging Face model name (e.g., "Qwen/Qwen2.5-VL-7B-Instruct")
 # or a local directory containing the model files.
-PATH_TO_YOUR_BASE_MODEL="/mnt/shared-storage-user/puyuan/model/Qwen2.5-VL-7B-Instruct"
+PATH_TO_YOUR_BASE_MODEL="/path/to/your/base/model"
 
 # Path to the preprocessed geo3k dataset.
 # See "Usage Instructions" at the end of the script for preprocessing steps.
-PATH_TO_YOUR_GEO3K_DATASET="/mnt/shared-storage-user/puyuan/data/geo3k"
+PATH_TO_YOUR_GEO3K_DATASET="/path/to/your/preprocessed/geo3k_dataset"
 
 # --- Experiment and Logging ---
 # A descriptive name for your experiment. Used for organizing logs and checkpoints.
@@ -31,8 +31,8 @@ EXPERIMENT_NAME="lightrft-geo3k-grpo-training"
 # Your Weights & Biases API key.
 # Set to an empty string "" if you are not using W&B.
 # It is strongly recommended to set this as an environment variable instead of hardcoding.
-export WANDB_API_KEY="5e7332a98e2c4c7d2252cff2d58bd1d3948899e3"
-export WANDB_PROJECT="LightRFT-Geo3K-GRPO"
+export WANDB_API_KEY="YOUR_WANDB_API_KEY"
+export WANDB_PROJECT="LightRFT-Geo3K-Experiments"
 
 
 ################################################################################
@@ -55,9 +55,6 @@ MAX_LENGTH=3072          # Max sequence length (prompt + generation).
 PROMPT_MAX_LEN=1024      # Max length of the input prompt.
 GENERATE_MAX_LEN=2048    # Max length of the generated response.
 
-# --- High-Entropy Token Selection Settings ---
-HIGH_ENTROPY_TOKEN_RATIO=0.2  # Ratio of high-entropy tokens to use for gradient updates (0.0 means use all tokens, 0.2 means use top 20% highest entropy tokens). Based on "Beyond the 80/20 Rule" paper (https://arxiv.org/abs/2506.01939)
-
 # --- Multi-modal Settings ---
 limit_mm_image_per_prompt=10  # Max number of images per prompt.
 
@@ -75,9 +72,9 @@ MAX_EVAL_SAMPLES=700          # Max samples for evaluation to keep it fast.
 # --- Single-Node Distributed Setup ---
 # Update these if you are running in a multi-node environment.
 export MLP_WORKER_NUM=1                 # Number of nodes.
-export MLP_WORKER_GPU=2                 # Number of GPUs per node.
+export MLP_WORKER_GPU=8                 # Number of GPUs per node.
 export MLP_ROLE_INDEX=0                 # Rank of the current node.
-export MLP_WORKER_0_HOST=100.99.41.31   # IP address of the master node (node 0).
+export MLP_WORKER_0_HOST="localhost"    # IP address of the master node (node 0).
 export MLP_WORKER_0_PORT=20091          # Port for the master node.
 
 # --- PyTorch Distributed Environment Variables ---
@@ -125,10 +122,9 @@ torchrun \
     --node_rank $NODE_RANK \
     --master-port $MASTER_PORT \
     --master-addr $MASTER_ADDR \
-    examples/gsm8k_geo3k/train_colocate.py \
+    examples/safework_t1/train_colocate.py \
     --pretrain "${PATH_TO_YOUR_BASE_MODEL}" \
     --save_trajectories \
-    --mark_high_entropy_tokens \
     --print_replay_buffer_stats \
     --loss_agg_mode "seq-mean-token-mean" \
     --fsdp \
@@ -154,7 +150,6 @@ torchrun \
     --use_kl_loss \
     --init_kl_coef $KL \
     --kl_estimator "k3" \
-    --high_entropy_token_ratio $HIGH_ENTROPY_TOKEN_RATIO \
     --prompt_data "${PATH_TO_YOUR_GEO3K_DATASET}" \
     --input_key "prompt" \
     --images_key "images" \
@@ -163,7 +158,7 @@ torchrun \
     --apply_chat_template \
     --flash_attn \
     --gradient_checkpointing \
-    --save_steps 1 \
+    --save_steps 20 \
     --max_ckpt_num 2 \
     --engine_mem_util 0.6 \
     --engine_tp_size $ENGINE_TP \
