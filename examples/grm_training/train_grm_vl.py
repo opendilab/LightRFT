@@ -49,6 +49,7 @@ def train(args):
             "input_template": args.input_template,
             "task_instruction": args.task_instruction,
             "video_fps": args.fps,
+            "max_pixels": args.max_pixels,
         }
     )
 
@@ -72,6 +73,7 @@ def train(args):
                 "input_template": args.input_template,
                 "task_instruction": args.task_instruction,
                 "video_fps": args.fps,
+                "max_pixels": args.max_pixels,
             }
         )
 
@@ -190,6 +192,7 @@ if __name__ == "__main__":
     parser.add_argument("--task_instruction", type=str, default=None, help="Task instruction used as the reward model system prompt.")
     parser.add_argument("--input_template", type=str, default=None, help="Input template with a {} placeholder for prompt.")
     parser.add_argument("--fps", type=float, default=2.0, help="Frames per second for video data.")
+    parser.add_argument("--max_pixels", type=int, default=360*28*28, help="Maximum pixels for each image frame.")
 
     # wandb parameters
     parser.add_argument("--use_wandb", type=str, default=None)
