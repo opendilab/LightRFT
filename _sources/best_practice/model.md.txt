@@ -49,7 +49,7 @@ Built-in optimizations for efficient training and inference:
 
 **Key Features**:
 - Multi-modal input processing (text + vision)
-- Support for various VL architectures (LLaVA, Qwen2-VL, InternVL, etc.)
+- Support for various VL architectures (LLaVA, Qwen2-VL, Qwen2.5-VL, Keye-VL, Qwen3-VL, etc.)
 - Image grid processing for different aspect ratios
 - Specialized handling for different model types
 

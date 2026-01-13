@@ -308,44 +308,25 @@
                 
   <section id="module-lightrft.utils.logging_utils">
 <span id="lightrft-utils-logging-utils"></span><h1>lightrft.utils.logging_utils<a class="headerlink" href="#module-lightrft.utils.logging_utils" title="Permalink to this heading">¶</a></h1>
-<p>Logging configuration for vLLM.</p>
-<dl class="py class">
-<dt class="sig sig-object py" id="lightrft.utils.logging_utils.NewLineFormatter">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">lightrft.utils.logging_utils.</span></span><span class="sig-name descname"><span class="pre">NewLineFormatter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fmt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">datefmt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/utils/logging_utils.html#NewLineFormatter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.utils.logging_utils.NewLineFormatter" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Formatter</span></code></p>
-<p>Adds logging prefix to newlines to align multi-line messages.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="lightrft.utils.logging_utils.NewLineFormatter.format">
-<span class="sig-name descname"><span class="pre">format</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/utils/logging_utils.html#NewLineFormatter.format"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.utils.logging_utils.NewLineFormatter.format" title="Permalink to this definition">¶</a></dt>
-<dd><p>Format a log record with newline prefix alignment.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>record</strong> (<em>logging.LogRecord</em>) – Log record to format.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Formatted log string with aligned multi-line messages.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>str</p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
+<p>Logging configuration using loguru.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="lightrft.utils.logging_utils.init_logger">
-<span class="sig-prename descclassname"><span class="pre">lightrft.utils.logging_utils.</span></span><span class="sig-name descname"><span class="pre">init_logger</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/utils/logging_utils.html#init_logger"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.utils.logging_utils.init_logger" title="Permalink to this definition">¶</a></dt>
-<dd><p>Initialize and configure a logger with LightRFT settings.</p>
+<span class="sig-prename descclassname"><span class="pre">lightrft.utils.logging_utils.</span></span><span class="sig-name descname"><span class="pre">init_logger</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">level</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'DEBUG'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Logger</span></span></span><a class="reference internal" href="../../_modules/lightrft/utils/logging_utils.html#init_logger"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.utils.logging_utils.init_logger" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the loguru logger instance.</p>
+<p>Note: loguru uses a singleton pattern, so all loggers share the same configuration.
+The ‘name’ parameter is kept for backward compatibility but is not used by loguru.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>name</strong> (<em>str</em>) – Logger name.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>str</em>) – Logger name (kept for backward compatibility)</p></li>
+<li><p><strong>level</strong> (<em>str</em>) – Logging level (kept for backward compatibility)</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Configured logger instance.</p>
+<dd class="field-even"><p>The loguru logger instance</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>logging.Logger</p>
+<dd class="field-odd"><p>loguru.Logger</p>
 </dd>
 </dl>
 </dd></dl>
@@ -396,10 +377,6 @@
             <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
               <ul>
 <li><a class="reference internal" href="#">lightrft.utils.logging_utils</a><ul>
-<li><a class="reference internal" href="#lightrft.utils.logging_utils.NewLineFormatter"><code class="docutils literal notranslate"><span class="pre">NewLineFormatter</span></code></a><ul>
-<li><a class="reference internal" href="#lightrft.utils.logging_utils.NewLineFormatter.format"><code class="docutils literal notranslate"><span class="pre">NewLineFormatter.format()</span></code></a></li>
-</ul>
-</li>
 <li><a class="reference internal" href="#lightrft.utils.logging_utils.init_logger"><code class="docutils literal notranslate"><span class="pre">init_logger()</span></code></a></li>
 </ul>
 </li>

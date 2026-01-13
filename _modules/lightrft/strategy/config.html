@@ -348,8 +348,6 @@
     <span class="n">grad_accum_dtype</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="c1"># (bool): Overlap communication and computation, defaults to False</span>
     <span class="n">overlap_comm</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
-    <span class="c1"># (int): Ring attention size, defaults to 1</span>
-    <span class="n">ring_attn_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span>
 
     <span class="c1"># Engine and inference parameters</span>
     <span class="c1"># (str): Inference engine type, defaults to &quot;vllm&quot;</span>
@@ -525,8 +523,7 @@
         <span class="c1"># Distributed Training Parameters</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Distributed Training Parameters:&quot;</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="p">[</span>
-            <span class="s1">&#39;zero_stage&#39;</span><span class="p">,</span> <span class="s1">&#39;fsdp&#39;</span><span class="p">,</span> <span class="s1">&#39;fsdp_cpu_offload&#39;</span><span class="p">,</span> <span class="s1">&#39;adam_offload&#39;</span><span class="p">,</span> <span class="s1">&#39;zpg&#39;</span><span class="p">,</span> <span class="s1">&#39;grad_accum_dtype&#39;</span><span class="p">,</span> <span class="s1">&#39;overlap_comm&#39;</span><span class="p">,</span>
-            <span class="s1">&#39;ring_attn_size&#39;</span>
+            <span class="s1">&#39;zero_stage&#39;</span><span class="p">,</span> <span class="s1">&#39;fsdp&#39;</span><span class="p">,</span> <span class="s1">&#39;fsdp_cpu_offload&#39;</span><span class="p">,</span> <span class="s1">&#39;adam_offload&#39;</span><span class="p">,</span> <span class="s1">&#39;zpg&#39;</span><span class="p">,</span> <span class="s1">&#39;grad_accum_dtype&#39;</span><span class="p">,</span> <span class="s1">&#39;overlap_comm&#39;</span>
         <span class="p">]:</span>
             <span class="n">current</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span>
             <span class="n">default</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">default_config</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span>

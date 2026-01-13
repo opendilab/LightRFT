@@ -429,11 +429,7 @@
             <span class="k">if</span> <span class="ow">not</span> <span class="n">is_meta_context</span> <span class="ow">and</span> <span class="n">device_map</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">from_pretrained_kwargs</span><span class="p">[</span><span class="s2">&quot;device_map&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">device_map</span>
 
-            <span class="k">if</span> <span class="s2">&quot;intern&quot;</span> <span class="ow">in</span> <span class="n">pretrain_or_model</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">AutoModel</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">pretrain_or_model</span><span class="p">,</span> <span class="o">**</span><span class="n">from_pretrained_kwargs</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">img_context_token_id</span> <span class="o">=</span> <span class="mi">151667</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">AutoModelForVision2Seq</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">pretrain_or_model</span><span class="p">,</span> <span class="o">**</span><span class="n">from_pretrained_kwargs</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">AutoModelForVision2Seq</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">pretrain_or_model</span><span class="p">,</span> <span class="o">**</span><span class="n">from_pretrained_kwargs</span><span class="p">)</span>
 
             <span class="c1"># LoRA</span>
             <span class="k">if</span> <span class="n">lora_rank</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
@@ -461,8 +457,9 @@
     <span class="nd">@torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">()</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">generate</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">input_ids</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">pixel_values</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">image_grid_thw</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">LongTensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">LongTensor</span><span class="p">],</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">LongTensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">LongTensor</span><span class="p">,</span>
-                                                                <span class="n">torch</span><span class="o">.</span><span class="n">BoolTensor</span><span class="p">],</span> <span class="p">]:</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span>
+        <span class="n">Tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">LongTensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">LongTensor</span><span class="p">],</span>
+        <span class="n">Tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">LongTensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">LongTensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">BoolTensor</span><span class="p">],</span> <span class="p">]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Generate text sequences based on input text and visual information.</span>
 
@@ -532,10 +529,7 @@
         <span class="n">pixel_values</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">image_grid_thw</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">return_output</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-        <span class="n">ring_attn_group</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">dist</span><span class="o">.</span><span class="n">ProcessGroup</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">packed_seq_lens</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">pixel_values_intern</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">image_flags</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Forward pass to compute action log probabilities for reinforcement learning.</span>
@@ -556,14 +550,8 @@
 <span class="sd">        :type image_grid_thw: torch.Tensor</span>
 <span class="sd">        :param return_output: Whether to return the full model output along with log probs</span>
 <span class="sd">        :type return_output: bool</span>
-<span class="sd">        :param ring_attn_group: Process group for ring attention (distributed training)</span>
-<span class="sd">        :type ring_attn_group: Optional[dist.ProcessGroup]</span>
 <span class="sd">        :param packed_seq_lens: Sequence lengths for packed samples</span>
 <span class="sd">        :type packed_seq_lens: Optional[list[int]]</span>
-<span class="sd">        :param pixel_values_intern: Pixel values for InternVL models</span>
-<span class="sd">        :type pixel_values_intern: torch.Tensor</span>
-<span class="sd">        :param image_flags: Flags indicating image positions for InternVL models</span>
-<span class="sd">        :type image_flags: torch.Tensor</span>
 
 <span class="sd">        :return: Action log probabilities or tuple of (action_log_probs, output) if return_output=True</span>
 <span class="sd">        :rtype: torch.Tensor</span>
@@ -592,26 +580,17 @@
             <span class="n">position_ids</span><span class="o">.</span><span class="n">masked_fill_</span><span class="p">(</span><span class="n">attention_mask</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># convert attention_mask to position_ids</span>
-
             <span class="n">position_ids</span> <span class="o">=</span> <span class="n">reset_position_ids</span><span class="p">(</span><span class="n">attention_mask</span><span class="p">)</span>
             <span class="c1"># explicitly ignore attention_mask for packing_samples</span>
             <span class="n">attention_mask</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="k">if</span> <span class="n">pixel_values_intern</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span>
-                <span class="n">pixel_values_intern</span><span class="p">,</span>
-                <span class="n">sequences</span><span class="p">,</span>
-                <span class="n">attention_mask</span><span class="o">=</span><span class="n">attention_mask</span><span class="p">,</span>
-                <span class="n">position_ids</span><span class="o">=</span><span class="n">position_ids</span><span class="p">,</span>
-                <span class="n">image_flags</span><span class="o">=</span><span class="n">image_flags</span><span class="p">,</span>
-            <span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span>
-                <span class="n">sequences</span><span class="p">,</span>
-                <span class="n">attention_mask</span><span class="o">=</span><span class="n">attention_mask</span><span class="p">,</span>
-                <span class="n">position_ids</span><span class="o">=</span><span class="n">position_ids</span><span class="p">,</span>
-                <span class="n">pixel_values</span><span class="o">=</span><span class="n">pixel_values</span><span class="p">,</span>
-                <span class="n">image_grid_thw</span><span class="o">=</span><span class="n">image_grid_thw</span><span class="p">,</span>
-            <span class="p">)</span>
+
+        <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span>
+            <span class="n">sequences</span><span class="p">,</span>
+            <span class="n">attention_mask</span><span class="o">=</span><span class="n">attention_mask</span><span class="p">,</span>
+            <span class="n">position_ids</span><span class="o">=</span><span class="n">position_ids</span><span class="p">,</span>
+            <span class="n">pixel_values</span><span class="o">=</span><span class="n">pixel_values</span><span class="p">,</span>
+            <span class="n">image_grid_thw</span><span class="o">=</span><span class="n">image_grid_thw</span><span class="p">,</span>
+        <span class="p">)</span>
 
         <span class="k">if</span> <span class="n">num_actions</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># defult</span>
             <span class="k">assert</span> <span class="n">return_output</span>

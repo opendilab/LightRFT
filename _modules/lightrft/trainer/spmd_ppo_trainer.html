@@ -744,18 +744,36 @@
 <span class="sd">        Save experience trajectories if trajectory saving is enabled.</span>
 
 <span class="sd">        This method is called during checkpoint saving to store sample trajectories</span>
-<span class="sd">        for debugging and analysis purposes.</span>
+<span class="sd">        for debugging and analysis purposes. If trajectory analysis is enabled,</span>
+<span class="sd">        it also logs statistics to wandb.</span>
 
 <span class="sd">        :param global_step: Current global training step</span>
 <span class="sd">        :type global_step: int</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">trajectory_saver</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">replay_buffer</span><span class="o">.</span><span class="n">items</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">trajectory_saver</span><span class="o">.</span><span class="n">save_trajectories</span><span class="p">(</span>
+            <span class="c1"># Check if trajectory analysis is enabled</span>
+
+            <span class="n">output_path</span><span class="p">,</span> <span class="n">stats</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">trajectory_saver</span><span class="o">.</span><span class="n">save_trajectories</span><span class="p">(</span>
                 <span class="n">experiences</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">replay_buffer</span><span class="o">.</span><span class="n">items</span><span class="p">,</span>
                 <span class="n">step</span><span class="o">=</span><span class="n">global_step</span><span class="p">,</span>
                 <span class="n">num_samples</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">num_trajectories_to_save</span><span class="p">,</span>
-                <span class="n">prefix</span><span class="o">=</span><span class="s2">&quot;trajectories&quot;</span>
-            <span class="p">)</span></div>
+                <span class="n">prefix</span><span class="o">=</span><span class="s2">&quot;trajectories&quot;</span><span class="p">,</span>
+                <span class="n">compute_stats</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">trajectory_analysis</span>
+            <span class="p">)</span>
+
+            <span class="c1"># Log statistics to wandb if available</span>
+            <span class="k">if</span> <span class="n">stats</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">trajectory_analysis</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;strategy&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">is_rank_0</span><span class="p">():</span>
+                <span class="c1"># Try to get wandb from strategy or parent class</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="p">,</span> <span class="s1">&#39;args&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">use_wandb</span><span class="p">:</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="kn">import</span><span class="w"> </span><span class="nn">wandb</span>
+                        <span class="k">if</span> <span class="n">wandb</span><span class="o">.</span><span class="n">run</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                            <span class="c1"># Prefix with train/ for consistency</span>
+                            <span class="n">wandb_stats</span> <span class="o">=</span> <span class="p">{</span><span class="sa">f</span><span class="s2">&quot;train/</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">stats</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+                            <span class="n">wandb_stats</span><span class="p">[</span><span class="s2">&quot;train/global_step&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">global_step</span>
+                            <span class="n">wandb</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">wandb_stats</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="n">global_step</span><span class="p">)</span>
+                    <span class="k">except</span> <span class="p">(</span><span class="ne">ImportError</span><span class="p">,</span> <span class="ne">AttributeError</span><span class="p">):</span>
+                        <span class="k">pass</span></div>
 
 
 <div class="viewcode-block" id="SPMDPPOTrainer"><a class="viewcode-back" href="../../../api_doc/trainer/spmd_ppo_trainer.html#lightrft.trainer.spmd_ppo_trainer.SPMDPPOTrainer">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">SPMDPPOTrainer</span><span class="p">(</span><span class="n">SPMDPPOTrainerBase</span><span class="p">,</span> <span class="n">PPOTrainer</span><span class="p">):</span>

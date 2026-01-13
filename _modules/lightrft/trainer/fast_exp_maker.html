@@ -383,9 +383,7 @@
 
 <span class="sd">        # Vision-Language Model (VLM) specific fields</span>
 <span class="sd">        pixel_values: Processed pixel values for images (Qwen-VL format)</span>
-<span class="sd">        pixel_values_intern: Processed pixel values (InternVL format)</span>
 <span class="sd">        image_grid_thw: Image grid dimensions [temporal, height, width]</span>
-<span class="sd">        image_flags: Flags indicating image presence (InternVL)</span>
 <span class="sd">        raw_images: Original PIL images</span>
 <span class="sd">        references: Reference texts for evaluation</span>
 <span class="sd">        img_num: Number of images per sample</span>
@@ -412,9 +410,7 @@
 
     <span class="c1"># Vision-Language Model fields</span>
     <span class="n">pixel_values</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="n">pixel_values_intern</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">image_grid_thw</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="n">image_flags</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">raw_images</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">list</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">references</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">list</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">img_num</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
@@ -461,7 +457,7 @@
 
 <span class="sd">        :param tokenizer: HuggingFace tokenizer for text processing</span>
 <span class="sd">        :type tokenizer: transformers.PreTrainedTokenizer</span>
-<span class="sd">        :param processor: Multimodal processor (e.g., Qwen-VL, InternVL processor)</span>
+<span class="sd">        :param processor: Multimodal processor (e.g., Qwen-VL processor)</span>
 <span class="sd">        :type processor: Union[transformers.ProcessorMixin, Any]</span>
 <span class="sd">        :param prompt_max_len: Maximum allowed prompt length</span>
 <span class="sd">        :type prompt_max_len: int</span>
@@ -555,7 +551,6 @@
         <span class="n">all_references</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]],</span>
         <span class="n">images_num</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
         <span class="n">n_samples_per_prompt</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-        <span class="n">is_internvl</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">EasyDict</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Process multimodal batch - following original implementation exactly.</span>
@@ -573,8 +568,6 @@
 <span class="sd">        :type images_num: List[int]</span>
 <span class="sd">        :param n_samples_per_prompt: Number of samples to generate per prompt</span>
 <span class="sd">        :type n_samples_per_prompt: int</span>
-<span class="sd">        :param is_internvl: Whether using InternVL processor</span>
-<span class="sd">        :type is_internvl: bool</span>
 <span class="sd">        :return: Dictionary containing processed data</span>
 <span class="sd">        :rtype: EasyDict</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -619,8 +612,6 @@
             <span class="n">all_prompt_token_ids_text</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="n">all_images_grid_thw_text</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">long</span><span class="p">)</span>
 
-        <span class="n">all_image_flags_text</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">all_prompt_token_ids_text</span><span class="p">)</span>
-
         <span class="c1"># ===== Stage 3-B: Image-text processing =====</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">all_prompts_image_text</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">processor</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;Processor required for multimodal data&quot;</span>
@@ -634,18 +625,11 @@
 
             <span class="n">all_prompt_token_ids_image_text</span> <span class="o">=</span> <span class="n">inputs_image_text</span><span class="p">[</span><span class="s2">&quot;input_ids&quot;</span><span class="p">]</span>
             <span class="n">all_images_pixel_values_image_txt</span> <span class="o">=</span> <span class="n">inputs_image_text</span><span class="p">[</span><span class="s2">&quot;pixel_values&quot;</span><span class="p">]</span>
-
-            <span class="k">if</span> <span class="n">is_internvl</span><span class="p">:</span>
-                <span class="n">all_images_grid_thw_image_text</span> <span class="o">=</span> <span class="n">inputs_image_text</span><span class="p">[</span><span class="s2">&quot;num_tiles&quot;</span><span class="p">]</span>
-                <span class="n">all_image_flags_image_text</span> <span class="o">=</span> <span class="n">inputs_image_text</span><span class="p">[</span><span class="s2">&quot;image_flags&quot;</span><span class="p">]</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">all_images_grid_thw_image_text</span> <span class="o">=</span> <span class="n">inputs_image_text</span><span class="p">[</span><span class="s2">&quot;image_grid_thw&quot;</span><span class="p">]</span>
-                <span class="n">all_image_flags_image_text</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">all_images_grid_thw_image_text</span><span class="p">)</span>
+            <span class="n">all_images_grid_thw_image_text</span> <span class="o">=</span> <span class="n">inputs_image_text</span><span class="p">[</span><span class="s2">&quot;image_grid_thw&quot;</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">all_prompt_token_ids_image_text</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="n">all_images_pixel_values_image_txt</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1176</span><span class="p">)</span>
             <span class="n">all_images_grid_thw_image_text</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">long</span><span class="p">)</span>
-            <span class="n">all_image_flags_image_text</span> <span class="o">=</span> <span class="p">[]</span>
 
         <span class="c1"># ===== Stage 4: Merge back in original order =====</span>
         <span class="n">total_samples</span> <span class="o">=</span> <span class="n">L</span> <span class="o">*</span> <span class="n">N</span>
@@ -653,7 +637,6 @@
         <span class="n">all_images_out</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">total_samples</span>
         <span class="n">all_prompt_token_ids_out</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">total_samples</span>
         <span class="n">all_images_grid_thw_list</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">total_samples</span>
-        <span class="n">all_image_flags_out</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">total_samples</span>
 
         <span class="c1"># 4-A: Fill text-only</span>
         <span class="n">text_ptr</span> <span class="o">=</span> <span class="mi">0</span>
@@ -663,7 +646,6 @@
                 <span class="n">all_prompts_out</span><span class="p">[</span><span class="n">gid</span><span class="p">]</span> <span class="o">=</span> <span class="n">all_prompts_text</span><span class="p">[</span><span class="n">text_ptr</span><span class="p">]</span>
                 <span class="n">all_prompt_token_ids_out</span><span class="p">[</span><span class="n">gid</span><span class="p">]</span> <span class="o">=</span> <span class="n">all_prompt_token_ids_text</span><span class="p">[</span><span class="n">text_ptr</span><span class="p">]</span>
                 <span class="n">all_images_grid_thw_list</span><span class="p">[</span><span class="n">gid</span><span class="p">]</span> <span class="o">=</span> <span class="n">all_images_grid_thw_text</span><span class="p">[</span><span class="n">text_ptr</span><span class="p">]</span>
-                <span class="n">all_image_flags_out</span><span class="p">[</span><span class="n">gid</span><span class="p">]</span> <span class="o">=</span> <span class="n">all_image_flags_text</span><span class="p">[</span><span class="n">text_ptr</span><span class="p">]</span>
                 <span class="n">text_ptr</span> <span class="o">+=</span> <span class="mi">1</span>
 
         <span class="c1"># 4-B: Fill image-text</span>
@@ -677,7 +659,6 @@
                 <span class="n">all_images_out</span><span class="p">[</span><span class="n">gid</span><span class="p">]</span> <span class="o">=</span> <span class="n">all_images_valid</span><span class="p">[</span><span class="n">img_ptr</span><span class="p">]</span>
                 <span class="n">all_prompt_token_ids_out</span><span class="p">[</span><span class="n">gid</span><span class="p">]</span> <span class="o">=</span> <span class="n">all_prompt_token_ids_image_text</span><span class="p">[</span><span class="n">img_ptr</span><span class="p">]</span>
                 <span class="n">all_images_grid_thw_list</span><span class="p">[</span><span class="n">gid</span><span class="p">]</span> <span class="o">=</span> <span class="n">all_images_grid_thw_image_text</span><span class="p">[</span><span class="n">img_ptr</span><span class="p">]</span>
-                <span class="n">all_image_flags_out</span><span class="p">[</span><span class="n">gid</span><span class="p">]</span> <span class="o">=</span> <span class="n">all_image_flags_image_text</span><span class="p">[</span><span class="n">img_ptr</span><span class="p">]</span>
                 <span class="n">img_ptr</span> <span class="o">+=</span> <span class="mi">1</span>
 
         <span class="c1"># Stack grid_thw</span>
@@ -697,7 +678,6 @@
             <span class="n">all_images_num</span><span class="o">=</span><span class="n">all_images_num</span><span class="p">,</span>
             <span class="n">all_images_pixel_values</span><span class="o">=</span><span class="n">all_images_pixel_values_image_txt</span><span class="p">,</span>
             <span class="n">all_images_grid_thw</span><span class="o">=</span><span class="n">all_images_grid_thw</span><span class="p">,</span>
-            <span class="n">all_image_flags</span><span class="o">=</span><span class="n">all_image_flags_out</span><span class="p">,</span>
             <span class="n">all_references</span><span class="o">=</span><span class="n">all_references</span><span class="p">,</span>
         <span class="p">)</span>
 
@@ -1387,9 +1367,6 @@
         <span class="n">is_multimodal</span> <span class="o">=</span> <span class="n">all_images</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
         <span class="n">n_samples</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">n_samples_per_prompt</span>
 
-        <span class="k">if</span> <span class="n">is_multimodal</span><span class="p">:</span>
-            <span class="n">is_internvl</span> <span class="o">=</span> <span class="s2">&quot;internvl&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">actor</span><span class="o">.</span><span class="n">pretrain_or_model</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
-
         <span class="c1"># ========== Configure Sampling Parameters ==========</span>
         <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">engine_type</span> <span class="o">==</span> <span class="s2">&quot;vllm&quot;</span><span class="p">:</span>
             <span class="n">sampling_params</span> <span class="o">=</span> <span class="n">SamplingParams</span><span class="p">(</span>
@@ -1432,7 +1409,6 @@
                 <span class="n">all_references</span><span class="o">=</span><span class="n">all_references</span><span class="p">,</span>
                 <span class="n">images_num</span><span class="o">=</span><span class="n">images_num</span><span class="p">,</span>
                 <span class="n">n_samples_per_prompt</span><span class="o">=</span><span class="n">n_samples</span><span class="p">,</span>
-                <span class="n">is_internvl</span><span class="o">=</span><span class="n">is_internvl</span><span class="p">,</span>
             <span class="p">)</span>
             <span class="n">all_prompt_token_ids</span> <span class="o">=</span> <span class="n">processed_data</span><span class="p">[</span><span class="s2">&quot;all_prompt_token_ids&quot;</span><span class="p">]</span>
             <span class="n">all_prompts</span> <span class="o">=</span> <span class="n">processed_data</span><span class="p">[</span><span class="s2">&quot;all_prompts&quot;</span><span class="p">]</span>
@@ -1440,7 +1416,6 @@
             <span class="n">all_images_num</span> <span class="o">=</span> <span class="n">processed_data</span><span class="p">[</span><span class="s2">&quot;all_images_num&quot;</span><span class="p">]</span>
             <span class="n">all_images_pixel_values</span> <span class="o">=</span> <span class="n">processed_data</span><span class="p">[</span><span class="s2">&quot;all_images_pixel_values&quot;</span><span class="p">]</span>
             <span class="n">all_images_grid_thw</span> <span class="o">=</span> <span class="n">processed_data</span><span class="p">[</span><span class="s2">&quot;all_images_grid_thw&quot;</span><span class="p">]</span>
-            <span class="n">all_image_flags</span> <span class="o">=</span> <span class="n">processed_data</span><span class="p">[</span><span class="s2">&quot;all_image_flags&quot;</span><span class="p">]</span>
             <span class="n">all_references</span> <span class="o">=</span> <span class="n">processed_data</span><span class="p">[</span><span class="s2">&quot;all_references&quot;</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># Text-only processing</span>
@@ -1518,9 +1493,7 @@
                     <span class="n">grid_thw</span><span class="o">=</span><span class="n">micro_batch_grid_thw</span> <span class="k">if</span> <span class="n">is_multimodal</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
                     <span class="n">raw_images</span><span class="o">=</span><span class="n">micro_batch_raw_images</span> <span class="k">if</span> <span class="n">is_multimodal</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
                     <span class="n">pixel_values</span><span class="o">=</span><span class="n">all_images_pixel_values</span> <span class="k">if</span> <span class="n">is_multimodal</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
-                    <span class="n">image_flags</span><span class="o">=</span><span class="n">all_image_flags</span> <span class="k">if</span> <span class="n">is_multimodal</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
                     <span class="n">images_num</span><span class="o">=</span><span class="n">all_images_num</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">i</span> <span class="o">+</span> <span class="n">config</span><span class="o">.</span><span class="n">micro_rollout_batch_size</span><span class="p">]</span> <span class="k">if</span> <span class="n">is_multimodal</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
-                    <span class="n">is_internvl</span><span class="o">=</span><span class="n">is_internvl</span> <span class="k">if</span> <span class="n">is_multimodal</span> <span class="k">else</span> <span class="kc">False</span><span class="p">,</span>
                     <span class="n">image_patch_idx</span><span class="o">=</span><span class="n">image_patch_idx</span><span class="p">,</span>
                 <span class="p">)</span>
                 <span class="c1"># Update image_patch_idx from the returned value</span>
@@ -1866,10 +1839,9 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">device</span> <span class="o">=</span> <span class="n">get_current_device</span><span class="p">()</span>
         <span class="n">vlm_mode</span> <span class="o">=</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">all_samples</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">SamplesVL</span><span class="p">)</span>
-        <span class="n">is_internvl</span> <span class="o">=</span> <span class="s2">&quot;internvl&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">actor</span><span class="o">.</span><span class="n">pretrain_or_model</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">if</span> <span class="n">vlm_mode</span> <span class="k">else</span> <span class="kc">False</span>
 
         <span class="c1"># ========== Stage 0: Preprocessing ==========</span>
-        <span class="n">outputs</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_preprocess_sample</span><span class="p">(</span><span class="n">sample</span><span class="p">,</span> <span class="n">vlm_mode</span><span class="p">,</span> <span class="n">is_internvl</span><span class="p">,</span> <span class="n">device</span><span class="p">)</span> <span class="k">for</span> <span class="n">sample</span> <span class="ow">in</span> <span class="n">all_samples</span><span class="p">]</span>
+        <span class="n">outputs</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_preprocess_sample</span><span class="p">(</span><span class="n">sample</span><span class="p">,</span> <span class="n">vlm_mode</span><span class="p">,</span> <span class="n">device</span><span class="p">)</span> <span class="k">for</span> <span class="n">sample</span> <span class="ow">in</span> <span class="n">all_samples</span><span class="p">]</span>
 
         <span class="c1"># ========== Stage 1: Actor Forward ==========</span>
         <span class="n">Timer</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="s1">&#39;    actor_logprob&#39;</span><span class="p">)</span>
@@ -1915,7 +1887,6 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">sample</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Samples</span><span class="p">,</span> <span class="n">SamplesVL</span><span class="p">],</span>
         <span class="n">vlm</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
-        <span class="n">internvl</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
         <span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_SamplesOutput</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -1925,8 +1896,6 @@
 <span class="sd">        :type sample: Union[Samples, SamplesVL]</span>
 <span class="sd">        :param vlm: Vision-language mode flag</span>
 <span class="sd">        :type vlm: bool</span>
-<span class="sd">        :param internvl: InternVL model flag</span>
-<span class="sd">        :type internvl: bool</span>
 <span class="sd">        :param device: Target device</span>
 <span class="sd">        :type device: torch.device</span>
 <span class="sd">        :return: _SamplesOutput with data ready for model inference</span>
@@ -1948,19 +1917,13 @@
         <span class="c1"># Build extra kwargs for VLM</span>
         <span class="n">extra_kwargs</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">if</span> <span class="n">vlm</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">internvl</span><span class="p">:</span>
-                <span class="n">extra_kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
-                    <span class="n">pixel_values_intern</span><span class="o">=</span><span class="n">sample</span><span class="o">.</span><span class="n">pixel_values_intern</span><span class="p">,</span>
-                    <span class="n">image_flags</span><span class="o">=</span><span class="n">sample</span><span class="o">.</span><span class="n">image_flags</span><span class="p">,</span>
-                <span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">extra_kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
-                    <span class="n">pixel_values</span><span class="o">=</span><span class="n">sample</span><span class="o">.</span><span class="n">pixel_values</span><span class="p">,</span>
-                    <span class="n">image_grid_thw</span><span class="o">=</span><span class="n">sample</span><span class="o">.</span><span class="n">image_grid_thws</span><span class="p">,</span>
-                <span class="p">)</span>
+            <span class="n">extra_kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+                <span class="n">pixel_values</span><span class="o">=</span><span class="n">sample</span><span class="o">.</span><span class="n">pixel_values</span><span class="p">,</span>
+                <span class="n">image_grid_thw</span><span class="o">=</span><span class="n">sample</span><span class="o">.</span><span class="n">image_grid_thws</span><span class="p">,</span>
+            <span class="p">)</span>
 
         <span class="c1"># Fix Qwen-VL image token count bug</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_fix_qwen_vl_image_tokens</span><span class="p">(</span><span class="n">sequences</span><span class="p">,</span> <span class="n">sample</span><span class="p">,</span> <span class="n">vlm</span><span class="p">,</span> <span class="n">internvl</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_fix_qwen_vl_image_tokens</span><span class="p">(</span><span class="n">sequences</span><span class="p">,</span> <span class="n">sample</span><span class="p">,</span> <span class="n">vlm</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">_SamplesOutput</span><span class="p">(</span>
             <span class="n">sequences</span><span class="o">=</span><span class="n">sequences</span><span class="p">,</span>
@@ -1973,7 +1936,6 @@
             <span class="n">prompts</span><span class="o">=</span><span class="n">prompts</span><span class="p">,</span>
             <span class="n">labels</span><span class="o">=</span><span class="n">labels</span><span class="p">,</span>
             <span class="n">pixel_values</span><span class="o">=</span><span class="nb">getattr</span><span class="p">(</span><span class="n">sample</span><span class="p">,</span> <span class="s2">&quot;pixel_values&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
-            <span class="n">pixel_values_intern</span><span class="o">=</span><span class="nb">getattr</span><span class="p">(</span><span class="n">sample</span><span class="p">,</span> <span class="s2">&quot;pixel_values_intern&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
             <span class="n">image_grid_thw</span><span class="o">=</span><span class="nb">getattr</span><span class="p">(</span><span class="n">sample</span><span class="p">,</span> <span class="s2">&quot;image_grid_thws&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
             <span class="n">raw_images</span><span class="o">=</span><span class="nb">getattr</span><span class="p">(</span><span class="n">sample</span><span class="p">,</span> <span class="s2">&quot;raw_images&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
             <span class="n">img_num</span><span class="o">=</span><span class="nb">getattr</span><span class="p">(</span><span class="n">sample</span><span class="p">,</span> <span class="s2">&quot;img_num&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
@@ -1987,7 +1949,6 @@
         <span class="n">sequences</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
         <span class="n">sample</span><span class="p">:</span> <span class="n">SamplesVL</span><span class="p">,</span>
         <span class="n">vlm</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
-        <span class="n">internvl</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Fix Qwen-VL image token count mismatch.</span>
@@ -2002,10 +1963,8 @@
 <span class="sd">        :type sample: SamplesVL</span>
 <span class="sd">        :param vlm: Vision-language mode flag</span>
 <span class="sd">        :type vlm: bool</span>
-<span class="sd">        :param internvl: InternVL flag</span>
-<span class="sd">        :type internvl: bool</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">vlm</span> <span class="ow">or</span> <span class="n">internvl</span> <span class="ow">or</span> <span class="n">sample</span><span class="o">.</span><span class="n">pixel_values</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">vlm</span> <span class="ow">or</span> <span class="n">sample</span><span class="o">.</span><span class="n">pixel_values</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span>
 
         <span class="n">config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">unwrap_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">actor</span><span class="o">.</span><span class="n">model</span><span class="p">)</span><span class="o">.</span><span class="n">config</span>
@@ -2084,8 +2043,6 @@
                 <span class="n">output</span><span class="o">.</span><span class="n">pixel_values</span><span class="p">,</span>
                 <span class="n">output</span><span class="o">.</span><span class="n">image_grid_thw</span><span class="p">,</span>
                 <span class="n">output</span><span class="o">.</span><span class="n">raw_images</span><span class="p">,</span>
-                <span class="n">output</span><span class="o">.</span><span class="n">pixel_values_intern</span><span class="p">,</span>
-                <span class="n">output</span><span class="o">.</span><span class="n">image_flags</span><span class="p">,</span>
                 <span class="n">output</span><span class="o">.</span><span class="n">action_log_probs</span><span class="p">,</span>
                 <span class="n">output</span><span class="o">.</span><span class="n">base_action_log_probs</span><span class="p">,</span>
                 <span class="n">output</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>
@@ -2154,15 +2111,12 @@
         <span class="k">if</span> <span class="n">is_multimodal</span><span class="p">:</span>
             <span class="n">pixel_values</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="n">image_grid_thw_list</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="n">image_flags</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="n">all_img_num</span> <span class="o">=</span> <span class="p">[]</span>
 
             <span class="n">grid_thw</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;grid_thw&quot;</span><span class="p">]</span>
             <span class="n">raw_images</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;raw_images&quot;</span><span class="p">]</span>
             <span class="n">pixel_values_tensor</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;pixel_values&quot;</span><span class="p">]</span>
-            <span class="n">image_flags_tensor</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;image_flags&quot;</span><span class="p">]</span>
             <span class="n">images_num</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;images_num&quot;</span><span class="p">]</span>
-            <span class="n">is_internvl</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;is_internvl&quot;</span><span class="p">]</span>
             <span class="n">image_patch_idx</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;image_patch_idx&quot;</span><span class="p">]</span>
 
             <span class="n">local_grid_idx</span> <span class="o">=</span> <span class="mi">0</span>
@@ -2185,15 +2139,8 @@
 
                 <span class="k">for</span> <span class="n">img_idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">image_num</span><span class="p">):</span>
                     <span class="n">grid</span> <span class="o">=</span> <span class="n">grid_thw</span><span class="p">[</span><span class="n">local_grid_idx</span> <span class="o">+</span> <span class="n">img_idx</span><span class="p">]</span>
-
-                    <span class="k">if</span> <span class="n">is_internvl</span><span class="p">:</span>
-                        <span class="n">num_patch</span> <span class="o">=</span> <span class="n">grid</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="k">else</span> <span class="n">grid</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
-                        <span class="n">flags_slice</span> <span class="o">=</span> <span class="n">image_flags_tensor</span><span class="p">[</span><span class="n">image_patch_idx</span><span class="p">:</span><span class="n">image_patch_idx</span> <span class="o">+</span> <span class="n">num_patch</span><span class="p">]</span>
-                        <span class="n">image_flags</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">flags_slice</span><span class="p">)</span>
-                        <span class="n">image_grid_thw_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">num_patch</span><span class="p">])</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
-                    <span class="k">else</span><span class="p">:</span>
-                        <span class="n">num_patch</span> <span class="o">=</span> <span class="n">grid</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">grid</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">grid</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
-                        <span class="n">image_grid_thw_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+                    <span class="n">num_patch</span> <span class="o">=</span> <span class="n">grid</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">grid</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">grid</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+                    <span class="n">image_grid_thw_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">grid</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
 
                     <span class="n">pixel_slice</span> <span class="o">=</span> <span class="n">pixel_values_tensor</span><span class="p">[</span><span class="n">image_patch_idx</span><span class="p">:</span><span class="n">image_patch_idx</span> <span class="o">+</span> <span class="n">num_patch</span><span class="p">]</span>
                     <span class="n">pixel_values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pixel_slice</span><span class="o">.</span><span class="n">clone</span><span class="p">())</span>
@@ -2233,22 +2180,15 @@
             <span class="p">),</span> <span class="kc">None</span>  <span class="c1"># Return None for image_patch_idx when no images</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># Process VLM pixel values</span>
-            <span class="k">if</span> <span class="n">is_internvl</span><span class="p">:</span>
-                <span class="n">pixel_values_intern</span> <span class="o">=</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">pixel_values</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span> <span class="k">if</span> <span class="n">pixel_values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
-                <span class="n">pixel_values</span> <span class="o">=</span> <span class="kc">None</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">pixel_values</span> <span class="o">=</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">pixel_values</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span> <span class="k">if</span> <span class="n">pixel_values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
-                <span class="n">pixel_values_intern</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">pixel_values</span> <span class="o">=</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">pixel_values</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span> <span class="k">if</span> <span class="n">pixel_values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
 
             <span class="k">return</span> <span class="n">SamplesVL</span><span class="p">(</span>
                 <span class="n">sequences</span><span class="o">=</span><span class="n">sequences</span><span class="p">,</span>
                 <span class="n">attention_mask</span><span class="o">=</span><span class="n">attention_mask</span><span class="p">,</span>
                 <span class="n">action_mask</span><span class="o">=</span><span class="n">action_mask</span><span class="p">,</span>
-                <span class="n">image_grid_thws</span><span class="o">=</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">image_grid_thw_list</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;cuda&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">is_internvl</span> <span class="k">else</span> <span class="kc">None</span><span class="p">),</span>
+                <span class="n">image_grid_thws</span><span class="o">=</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">image_grid_thw_list</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;cuda&quot;</span><span class="p">)),</span>
                 <span class="n">raw_images</span><span class="o">=</span><span class="n">raw_images</span><span class="p">,</span>
                 <span class="n">pixel_values</span><span class="o">=</span><span class="n">pixel_values</span><span class="p">,</span>
-                <span class="n">pixel_values_intern</span><span class="o">=</span><span class="n">pixel_values_intern</span><span class="p">,</span>
-                <span class="n">image_flags</span><span class="o">=</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">image_flags</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;cuda&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="n">is_internvl</span> <span class="k">else</span> <span class="kc">None</span><span class="p">),</span>
                 <span class="n">num_actions</span><span class="o">=</span><span class="n">action_mask</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span>
                 <span class="n">packed_seq_lens</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                 <span class="n">response_length</span><span class="o">=</span><span class="n">action_mask</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">),</span>

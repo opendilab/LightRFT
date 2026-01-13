@@ -300,76 +300,44 @@
               <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
                 
   <h1>Source code for lightrft.utils.logging_utils</h1><div class="highlight"><pre>
-<span></span><span class="c1"># Adapted from</span>
-<span class="c1"># https://github.com/skypilot-org/skypilot/blob/86dc0f6283a335e4aa37b3c10716f90999f48ab6/sky/sky_logging.py</span>
-<span class="sd">&quot;&quot;&quot;Logging configuration for vLLM.&quot;&quot;&quot;</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span></span><span class="sd">&quot;&quot;&quot;Logging configuration using loguru.&quot;&quot;&quot;</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">loguru</span><span class="w"> </span><span class="kn">import</span> <span class="n">logger</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
 
-<span class="n">_FORMAT</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%(levelname)s</span><span class="s2"> </span><span class="si">%(asctime)s</span><span class="s2"> </span><span class="si">%(filename)s</span><span class="s2">:</span><span class="si">%(lineno)d</span><span class="s2">] </span><span class="si">%(message)s</span><span class="s2">&quot;</span>
-<span class="n">_DATE_FORMAT</span> <span class="o">=</span> <span class="s2">&quot;%m-</span><span class="si">%d</span><span class="s2"> %H:%M:%S&quot;</span>
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">loguru</span><span class="w"> </span><span class="kn">import</span> <span class="n">Logger</span>
+
+<span class="c1"># Configure loguru with format similar to the old logging configuration</span>
+<span class="n">_FORMAT</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="s2">&quot;&lt;level&gt;</span><span class="si">{level: &lt;8}</span><span class="s2">&lt;/level&gt; &lt;green&gt;{time:MM-DD HH:mm:ss}&lt;/green&gt; &quot;</span>
+    <span class="s2">&quot;&lt;cyan&gt;</span><span class="si">{name}</span><span class="s2">&lt;/cyan&gt;:&lt;cyan&gt;</span><span class="si">{line}</span><span class="s2">&lt;/cyan&gt;] </span><span class="si">{message}</span><span class="s2">&quot;</span>
+<span class="p">)</span>
+
+<span class="c1"># Remove default handler and add custom one</span>
+<span class="n">logger</span><span class="o">.</span><span class="n">remove</span><span class="p">()</span>
 
 
-<div class="viewcode-block" id="NewLineFormatter"><a class="viewcode-back" href="../../../api_doc/utils/logging_utils.html#lightrft.utils.logging_utils.NewLineFormatter">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">NewLineFormatter</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">Formatter</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Adds logging prefix to newlines to align multi-line messages.&quot;&quot;&quot;</span>
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fmt</span><span class="p">,</span> <span class="n">datefmt</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="n">logging</span><span class="o">.</span><span class="n">Formatter</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fmt</span><span class="p">,</span> <span class="n">datefmt</span><span class="p">)</span>
-
-<div class="viewcode-block" id="NewLineFormatter.format"><a class="viewcode-back" href="../../../api_doc/utils/logging_utils.html#lightrft.utils.logging_utils.NewLineFormatter.format">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">format</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">record</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Format a log record with newline prefix alignment.</span>
-
-<span class="sd">        :param record: Log record to format.</span>
-<span class="sd">        :type record: logging.LogRecord</span>
-<span class="sd">        :return: Formatted log string with aligned multi-line messages.</span>
-<span class="sd">        :rtype: str</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">msg</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">Formatter</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">record</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">record</span><span class="o">.</span><span class="n">message</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
-            <span class="n">parts</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">record</span><span class="o">.</span><span class="n">message</span><span class="p">)</span>
-            <span class="n">msg</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\r\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-        <span class="k">return</span> <span class="n">msg</span></div></div>
-
-
-<span class="n">_root_logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;lightrft&quot;</span><span class="p">)</span>
-<span class="n">_default_handler</span> <span class="o">=</span> <span class="kc">None</span>
-
-
-<span class="k">def</span><span class="w"> </span><span class="nf">_setup_logger</span><span class="p">():</span>
-    <span class="n">_root_logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
-    <span class="k">global</span> <span class="n">_default_handler</span>
-    <span class="k">if</span> <span class="n">_default_handler</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">_default_handler</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">StreamHandler</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">)</span>
-        <span class="n">_default_handler</span><span class="o">.</span><span class="n">flush</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">flush</span>  <span class="c1"># type: ignore</span>
-        <span class="n">_default_handler</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
-        <span class="n">_root_logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">_default_handler</span><span class="p">)</span>
-    <span class="n">fmt</span> <span class="o">=</span> <span class="n">NewLineFormatter</span><span class="p">(</span><span class="n">_FORMAT</span><span class="p">,</span> <span class="n">datefmt</span><span class="o">=</span><span class="n">_DATE_FORMAT</span><span class="p">)</span>
-    <span class="n">_default_handler</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span><span class="n">fmt</span><span class="p">)</span>
-    <span class="c1"># Setting this will avoid the message</span>
-    <span class="c1"># being propagated to the parent logger.</span>
-    <span class="n">_root_logger</span><span class="o">.</span><span class="n">propagate</span> <span class="o">=</span> <span class="kc">False</span>
-
-
-<span class="c1"># The logger is initialized when the module is imported.</span>
-<span class="c1"># This is thread-safe as the module is only imported once,</span>
-<span class="c1"># guaranteed by the Python GIL.</span>
-<span class="n">_setup_logger</span><span class="p">()</span>
-
-
-<div class="viewcode-block" id="init_logger"><a class="viewcode-back" href="../../../api_doc/utils/logging_utils.html#lightrft.utils.logging_utils.init_logger">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">init_logger</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<div class="viewcode-block" id="init_logger"><a class="viewcode-back" href="../../../api_doc/utils/logging_utils.html#lightrft.utils.logging_utils.init_logger">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">init_logger</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">level</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;DEBUG&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Logger&quot;</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Initialize and configure a logger with LightRFT settings.</span>
+<span class="sd">    Return the loguru logger instance.</span>
 
-<span class="sd">    :param name: Logger name.</span>
+<span class="sd">    Note: loguru uses a singleton pattern, so all loggers share the same configuration.</span>
+<span class="sd">    The &#39;name&#39; parameter is kept for backward compatibility but is not used by loguru.</span>
+
+<span class="sd">    :param name: Logger name (kept for backward compatibility)</span>
 <span class="sd">    :type name: str</span>
-<span class="sd">    :return: Configured logger instance.</span>
-<span class="sd">    :rtype: logging.Logger</span>
+<span class="sd">    :param level: Logging level (kept for backward compatibility)</span>
+<span class="sd">    :type level: str</span>
+<span class="sd">    :return: The loguru logger instance</span>
+<span class="sd">    :rtype: loguru.Logger</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># Use the same settings as above for root logger</span>
-    <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">_default_handler</span><span class="p">)</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">propagate</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span>
+        <span class="nb">format</span><span class="o">=</span><span class="n">_FORMAT</span><span class="p">,</span>
+        <span class="n">level</span><span class="o">=</span><span class="n">level</span><span class="p">,</span>
+        <span class="n">colorize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span>
     <span class="k">return</span> <span class="n">logger</span></div>
 </pre></div>
 

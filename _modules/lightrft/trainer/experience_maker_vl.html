@@ -360,8 +360,6 @@
 <span class="sd">        - pixel_values: (B * h, w) - image pixels processed by HF processor</span>
 <span class="sd">        - image_grid_thws: (B, 3) - image grid thw</span>
 <span class="sd">        - raw_images: Optional[List[Image.Image]] - raw images before processing</span>
-<span class="sd">        - pixel_values_intern: InternVL pixel values</span>
-<span class="sd">        - image_flags: InternVL image flags</span>
 <span class="sd">        - action_log_probs: (B, A) where A is number of actions</span>
 <span class="sd">        - base_action_log_probs: (B, A)</span>
 <span class="sd">        - values: (B, A)</span>
@@ -379,10 +377,6 @@
 <span class="sd">    :type image_grid_thws: Optional[torch.Tensor]</span>
 <span class="sd">    :param raw_images: Raw images before processing, defaults to None.</span>
 <span class="sd">    :type raw_images: Optional[List[Image.Image]]</span>
-<span class="sd">    :param pixel_values_intern: InternVL pixel values, defaults to None.</span>
-<span class="sd">    :type pixel_values_intern: Optional[torch.Tensor]</span>
-<span class="sd">    :param image_flags: InternVL image flags, defaults to None.</span>
-<span class="sd">    :type image_flags: Optional[torch.Tensor]</span>
 <span class="sd">    :param action_log_probs: Log probabilities of actions from the current policy, defaults to None.</span>
 <span class="sd">    :type action_log_probs: torch.Tensor</span>
 <span class="sd">    :param base_action_log_probs: Log probabilities from the reference policy, defaults to None.</span>
@@ -408,9 +402,6 @@
     <span class="n">pixel_values</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># image pixel processed by HF processor</span>
     <span class="n">image_grid_thws</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># image grid thw</span>
     <span class="n">raw_images</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Image</span><span class="o">.</span><span class="n">Image</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># raw images before processing</span>
-    <span class="c1"># InternVL image_info</span>
-    <span class="n">pixel_values_intern</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="n">image_flags</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="n">action_log_probs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">base_action_log_probs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="kc">None</span>
@@ -441,9 +432,6 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">pixel_values</span> <span class="o">=</span> <span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pixel_values</span><span class="p">,</span> <span class="n">device</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">image_grid_thws</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">image_grid_thws</span> <span class="o">=</span> <span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">image_grid_thws</span><span class="p">,</span> <span class="n">device</span><span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pixel_values_intern</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">pixel_values_intern</span> <span class="o">=</span> <span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pixel_values_intern</span><span class="p">,</span> <span class="n">device</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">image_flags</span> <span class="o">=</span> <span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">image_flags</span><span class="p">,</span> <span class="n">device</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">values</span> <span class="o">=</span> <span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">device</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">attention_mask</span> <span class="o">=</span> <span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">attention_mask</span><span class="p">,</span> <span class="n">device</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">action_mask</span> <span class="o">=</span> <span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">action_mask</span><span class="p">,</span> <span class="n">device</span><span class="p">)</span>
@@ -467,9 +455,6 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">pixel_values</span> <span class="o">=</span> <span class="n">pin_memory</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pixel_values</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">image_grid_thws</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">image_grid_thws</span> <span class="o">=</span> <span class="n">pin_memory</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">image_grid_thws</span><span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pixel_values_intern</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">pixel_values_intern</span> <span class="o">=</span> <span class="n">pin_memory</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pixel_values_intern</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">image_flags</span> <span class="o">=</span> <span class="n">pin_memory</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">image_flags</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">values</span> <span class="o">=</span> <span class="n">pin_memory</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">attention_mask</span> <span class="o">=</span> <span class="n">pin_memory</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">attention_mask</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">action_mask</span> <span class="o">=</span> <span class="n">pin_memory</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">action_mask</span><span class="p">)</span>
@@ -494,8 +479,6 @@
 <span class="sd">        - pixel_values: Optional[torch.Tensor] - image pixels processed by HF processor</span>
 <span class="sd">        - image_grid_thws: Optional[torch.Tensor] - image grid thw</span>
 <span class="sd">        - raw_images: Optional[List[Image.Image]] - raw image data list</span>
-<span class="sd">        - pixel_values_intern: Optional[torch.Tensor] - InternVL pixel values</span>
-<span class="sd">        - image_flags: Optional[torch.Tensor] - InternVL image flags</span>
 <span class="sd">        - num_actions: int or (B,) - number of actions (tokens) in the response</span>
 <span class="sd">        - packed_seq_lens: None or (B,) - length of each sample in packed format</span>
 <span class="sd">        - response_length: (B,) - number of tokens in the response</span>
@@ -518,10 +501,6 @@
 <span class="sd">    :type image_grid_thws: Optional[torch.Tensor]</span>
 <span class="sd">    :param raw_images: Raw image data list, defaults to None.</span>
 <span class="sd">    :type raw_images: Optional[List[Image.Image]]</span>
-<span class="sd">    :param pixel_values_intern: InternVL pixel values, defaults to None.</span>
-<span class="sd">    :type pixel_values_intern: Optional[torch.Tensor]</span>
-<span class="sd">    :param image_flags: InternVL image flags, defaults to None.</span>
-<span class="sd">    :type image_flags: Optional[torch.Tensor]</span>
 <span class="sd">    :param num_actions: Number of actions per sample, defaults to None.</span>
 <span class="sd">    :type num_actions: Union[int, torch.Tensor]</span>
 <span class="sd">    :param packed_seq_lens: Sequence lengths for packed format, defaults to None.</span>
@@ -549,10 +528,6 @@
     <span class="n">pixel_values</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># image pixel processed by HF processor</span>
     <span class="n">image_grid_thws</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># image grid thw</span>
     <span class="n">raw_images</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Image</span><span class="o">.</span><span class="n">Image</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># raw image data list</span>
-
-    <span class="c1"># InternVL image_info</span>
-    <span class="n">pixel_values_intern</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="n">image_flags</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="n">num_actions</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">packed_seq_lens</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
@@ -772,37 +747,21 @@
             <span class="n">labels</span> <span class="o">=</span> <span class="n">all_labels</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">i</span> <span class="o">+</span> <span class="n">args</span><span class="o">.</span><span class="n">micro_rollout_batch_size</span><span class="p">]</span>
             <span class="n">inputs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">processor_fn</span><span class="p">(</span><span class="n">prompts</span><span class="p">,</span> <span class="n">images</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">prompt_max_len</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cuda&quot;</span><span class="p">)</span>
             <span class="n">sequences</span><span class="p">,</span> <span class="n">attention_mask</span><span class="p">,</span> <span class="n">action_mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">actor</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="o">**</span><span class="n">inputs</span><span class="p">,</span> <span class="o">**</span><span class="n">generate_kwargs</span><span class="p">)</span>
-            <span class="k">if</span> <span class="s2">&quot;internvl&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">actor</span><span class="o">.</span><span class="n">pretrain_or_model</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
-                <span class="n">samples</span> <span class="o">=</span> <span class="n">SamplesVL</span><span class="p">(</span>
-                    <span class="n">sequences</span><span class="o">=</span><span class="n">sequences</span><span class="p">,</span>
-                    <span class="n">attention_mask</span><span class="o">=</span><span class="n">attention_mask</span><span class="p">,</span>
-                    <span class="n">action_mask</span><span class="o">=</span><span class="n">action_mask</span><span class="p">,</span>
-                    <span class="n">pixel_values_intern</span><span class="o">=</span><span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;pixel_values&quot;</span><span class="p">],</span>
-                    <span class="n">image_flags</span><span class="o">=</span><span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;image_flags&quot;</span><span class="p">],</span>
-                    <span class="n">raw_images</span><span class="o">=</span><span class="n">images</span><span class="p">,</span>
-                    <span class="n">num_actions</span><span class="o">=</span><span class="n">action_mask</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span>
-                    <span class="n">packed_seq_lens</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                    <span class="n">response_length</span><span class="o">=</span><span class="n">action_mask</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">),</span>
-                    <span class="n">total_length</span><span class="o">=</span><span class="n">attention_mask</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">),</span>
-                    <span class="n">references</span><span class="o">=</span><span class="n">references</span><span class="p">,</span>
-                    <span class="n">labels</span><span class="o">=</span><span class="n">labels</span><span class="p">,</span>
-                    <span class="n">prompts</span><span class="o">=</span><span class="n">prompts</span><span class="p">,</span>
-                <span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">samples</span> <span class="o">=</span> <span class="n">SamplesVL</span><span class="p">(</span>
-                    <span class="n">sequences</span><span class="o">=</span><span class="n">sequences</span><span class="p">,</span>
-                    <span class="n">attention_mask</span><span class="o">=</span><span class="n">attention_mask</span><span class="p">,</span>
-                    <span class="n">action_mask</span><span class="o">=</span><span class="n">action_mask</span><span class="p">,</span>
-                    <span class="n">pixel_values</span><span class="o">=</span><span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;pixel_values&quot;</span><span class="p">],</span>
-                    <span class="n">image_grid_thws</span><span class="o">=</span><span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;image_grid_thw&quot;</span><span class="p">],</span>
-                    <span class="n">raw_images</span><span class="o">=</span><span class="n">images</span><span class="p">,</span>
-                    <span class="n">num_actions</span><span class="o">=</span><span class="n">action_mask</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span>
-                    <span class="n">packed_seq_lens</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                    <span class="n">response_length</span><span class="o">=</span><span class="n">action_mask</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">),</span>
-                    <span class="n">total_length</span><span class="o">=</span><span class="n">attention_mask</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">),</span>
-                    <span class="n">references</span><span class="o">=</span><span class="n">references</span><span class="p">,</span>
-                    <span class="n">labels</span><span class="o">=</span><span class="n">labels</span><span class="p">,</span>
-                <span class="p">)</span>
+            <span class="n">samples</span> <span class="o">=</span> <span class="n">SamplesVL</span><span class="p">(</span>
+                <span class="n">sequences</span><span class="o">=</span><span class="n">sequences</span><span class="p">,</span>
+                <span class="n">attention_mask</span><span class="o">=</span><span class="n">attention_mask</span><span class="p">,</span>
+                <span class="n">action_mask</span><span class="o">=</span><span class="n">action_mask</span><span class="p">,</span>
+                <span class="n">pixel_values</span><span class="o">=</span><span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;pixel_values&quot;</span><span class="p">],</span>
+                <span class="n">image_grid_thws</span><span class="o">=</span><span class="n">inputs</span><span class="p">[</span><span class="s2">&quot;image_grid_thw&quot;</span><span class="p">],</span>
+                <span class="n">raw_images</span><span class="o">=</span><span class="n">images</span><span class="p">,</span>
+                <span class="n">num_actions</span><span class="o">=</span><span class="n">action_mask</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span>
+                <span class="n">packed_seq_lens</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">response_length</span><span class="o">=</span><span class="n">action_mask</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">),</span>
+                <span class="n">total_length</span><span class="o">=</span><span class="n">attention_mask</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">),</span>
+                <span class="n">references</span><span class="o">=</span><span class="n">references</span><span class="p">,</span>
+                <span class="n">labels</span><span class="o">=</span><span class="n">labels</span><span class="p">,</span>
+                <span class="n">prompts</span><span class="o">=</span><span class="n">prompts</span><span class="p">,</span>
+            <span class="p">)</span>
             <span class="n">samples_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">samples</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">samples_list</span>
 
@@ -831,100 +790,43 @@
         <span class="n">pixel_values</span> <span class="o">=</span> <span class="n">samples</span><span class="o">.</span><span class="n">pixel_values</span>
         <span class="n">image_grid_thws</span> <span class="o">=</span> <span class="n">samples</span><span class="o">.</span><span class="n">image_grid_thws</span>
         <span class="n">raw_images</span> <span class="o">=</span> <span class="n">samples</span><span class="o">.</span><span class="n">raw_images</span>
-        <span class="n">pixel_values_intern</span> <span class="o">=</span> <span class="n">samples</span><span class="o">.</span><span class="n">pixel_values_intern</span>
-        <span class="n">image_flags</span> <span class="o">=</span> <span class="n">samples</span><span class="o">.</span><span class="n">image_flags</span>
         <span class="n">num_actions</span> <span class="o">=</span> <span class="n">samples</span><span class="o">.</span><span class="n">num_actions</span>
 
-        <span class="k">if</span> <span class="s2">&quot;internvl&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">actor</span><span class="o">.</span><span class="n">pretrain_or_model</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
-            <span class="c1"># Log probabilities from current policy</span>
-            <span class="n">action_log_probs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">actor</span><span class="p">(</span>
-                <span class="n">sequences</span><span class="p">,</span>
-                <span class="n">num_actions</span><span class="p">,</span>
-                <span class="n">attention_mask</span><span class="p">,</span>
-                <span class="n">pixel_values_intern</span><span class="o">=</span><span class="n">pixel_values_intern</span><span class="p">,</span>
-                <span class="n">image_flags</span><span class="o">=</span><span class="n">image_flags</span>
+        <span class="c1"># Log probabilities from current policy</span>
+        <span class="n">action_log_probs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">actor</span><span class="p">(</span><span class="n">sequences</span><span class="p">,</span> <span class="n">num_actions</span><span class="p">,</span> <span class="n">attention_mask</span><span class="p">,</span> <span class="n">pixel_values</span><span class="p">,</span> <span class="n">image_grid_thws</span><span class="p">)</span>
+
+        <span class="c1"># Log probabilities from initial/reference policy</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial_model</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">base_action_log_probs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial_model</span><span class="p">(</span>
+                <span class="n">sequences</span><span class="p">,</span> <span class="n">num_actions</span><span class="p">,</span> <span class="n">attention_mask</span><span class="p">,</span> <span class="n">pixel_values</span><span class="p">,</span> <span class="n">image_grid_thws</span>
             <span class="p">)</span>
-
-            <span class="c1"># Log probabilities from initial/reference policy</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial_model</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">base_action_log_probs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial_model</span><span class="p">(</span>
-                    <span class="n">sequences</span><span class="p">,</span>
-                    <span class="n">num_actions</span><span class="p">,</span>
-                    <span class="n">attention_mask</span><span class="p">,</span>
-                    <span class="n">pixel_values_intern</span><span class="o">=</span><span class="n">pixel_values_intern</span><span class="p">,</span>
-                    <span class="n">image_flags</span><span class="o">=</span><span class="n">image_flags</span>
-                <span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">base_action_log_probs</span> <span class="o">=</span> <span class="kc">None</span>
-
-            <span class="c1"># Values from critic</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">critic</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">critic</span><span class="p">(</span>
-                    <span class="n">sequences</span><span class="p">,</span>
-                    <span class="n">num_actions</span><span class="p">,</span>
-                    <span class="n">attention_mask</span><span class="p">,</span>
-                    <span class="n">pixel_values_intern</span><span class="o">=</span><span class="n">pixel_values_intern</span><span class="p">,</span>
-                    <span class="n">image_flags</span><span class="o">=</span><span class="n">image_flags</span>
-                <span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">value</span> <span class="o">=</span> <span class="kc">None</span>
-
-            <span class="c1"># Rewards</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">remote_rm_url</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="c1"># Remote reward model</span>
-                <span class="n">queries</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tokenizer</span><span class="o">.</span><span class="n">batch_decode</span><span class="p">(</span><span class="n">sequences</span><span class="o">.</span><span class="n">cpu</span><span class="p">(),</span> <span class="n">skip_special_tokens</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-                <span class="n">references</span> <span class="o">=</span> <span class="n">samples</span><span class="o">.</span><span class="n">references</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">samples</span><span class="p">,</span> <span class="s2">&quot;references&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">custom_reward_func</span><span class="p">:</span>
-                    <span class="n">r</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">custom_reward_func</span><span class="p">(</span><span class="n">queries</span><span class="p">,</span> <span class="n">samples</span><span class="o">.</span><span class="n">prompts</span><span class="p">,</span> <span class="n">references</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="o">=</span><span class="n">action_log_probs</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">r</span> <span class="o">=</span> <span class="n">remote_rm_fn</span><span class="p">(</span>
-                        <span class="n">api_url</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">remote_rm_url</span><span class="p">,</span>
-                        <span class="n">queries</span><span class="o">=</span><span class="n">queries</span><span class="p">,</span>
-                        <span class="n">prompts</span><span class="o">=</span><span class="n">samples</span><span class="o">.</span><span class="n">prompts</span><span class="p">,</span>
-                        <span class="n">references</span><span class="o">=</span><span class="n">references</span><span class="p">,</span>
-                        <span class="n">raw_images</span><span class="o">=</span><span class="n">raw_images</span>
-                    <span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="o">=</span><span class="n">action_log_probs</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="c1"># Local reward model</span>
-                <span class="n">r</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reward_model</span><span class="p">(</span>
-                    <span class="n">sequences</span><span class="p">,</span> <span class="n">attention_mask</span><span class="p">,</span> <span class="n">pixel_values_intern</span><span class="o">=</span><span class="n">pixel_values_intern</span><span class="p">,</span> <span class="n">image_flags</span><span class="o">=</span><span class="n">image_flags</span>
-                <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="c1"># Log probabilities from current policy</span>
-            <span class="n">action_log_probs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">actor</span><span class="p">(</span><span class="n">sequences</span><span class="p">,</span> <span class="n">num_actions</span><span class="p">,</span> <span class="n">attention_mask</span><span class="p">,</span> <span class="n">pixel_values</span><span class="p">,</span> <span class="n">image_grid_thws</span><span class="p">)</span>
+            <span class="n">base_action_log_probs</span> <span class="o">=</span> <span class="kc">None</span>
 
-            <span class="c1"># Log probabilities from initial/reference policy</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial_model</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">base_action_log_probs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial_model</span><span class="p">(</span>
-                    <span class="n">sequences</span><span class="p">,</span> <span class="n">num_actions</span><span class="p">,</span> <span class="n">attention_mask</span><span class="p">,</span> <span class="n">pixel_values</span><span class="p">,</span> <span class="n">image_grid_thws</span>
-                <span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">base_action_log_probs</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="c1"># Values from critic</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">critic</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">critic</span><span class="p">(</span><span class="n">sequences</span><span class="p">,</span> <span class="n">num_actions</span><span class="p">,</span> <span class="n">attention_mask</span><span class="p">,</span> <span class="n">pixel_values</span><span class="p">,</span> <span class="n">image_grid_thws</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="kc">None</span>
 
-            <span class="c1"># Values from critic</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">critic</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">critic</span><span class="p">(</span><span class="n">sequences</span><span class="p">,</span> <span class="n">num_actions</span><span class="p">,</span> <span class="n">attention_mask</span><span class="p">,</span> <span class="n">pixel_values</span><span class="p">,</span> <span class="n">image_grid_thws</span><span class="p">)</span>
+        <span class="c1"># Rewards</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">remote_rm_url</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># Remote reward model</span>
+            <span class="n">queries</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tokenizer</span><span class="o">.</span><span class="n">batch_decode</span><span class="p">(</span><span class="n">sequences</span><span class="o">.</span><span class="n">cpu</span><span class="p">(),</span> <span class="n">skip_special_tokens</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="n">references</span> <span class="o">=</span> <span class="n">samples</span><span class="o">.</span><span class="n">references</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">samples</span><span class="p">,</span> <span class="s2">&quot;references&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">custom_reward_func</span><span class="p">:</span>
+                <span class="n">r</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">custom_reward_func</span><span class="p">(</span><span class="n">queries</span><span class="p">,</span> <span class="n">samples</span><span class="o">.</span><span class="n">prompts</span><span class="p">,</span> <span class="n">references</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="o">=</span><span class="n">action_log_probs</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">value</span> <span class="o">=</span> <span class="kc">None</span>
-
-            <span class="c1"># Rewards</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">remote_rm_url</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="c1"># Remote reward model</span>
-                <span class="n">queries</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tokenizer</span><span class="o">.</span><span class="n">batch_decode</span><span class="p">(</span><span class="n">sequences</span><span class="o">.</span><span class="n">cpu</span><span class="p">(),</span> <span class="n">skip_special_tokens</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-                <span class="n">references</span> <span class="o">=</span> <span class="n">samples</span><span class="o">.</span><span class="n">references</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">samples</span><span class="p">,</span> <span class="s2">&quot;references&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="kc">None</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">custom_reward_func</span><span class="p">:</span>
-                    <span class="n">r</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">custom_reward_func</span><span class="p">(</span><span class="n">queries</span><span class="p">,</span> <span class="n">samples</span><span class="o">.</span><span class="n">prompts</span><span class="p">,</span> <span class="n">references</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="o">=</span><span class="n">action_log_probs</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">r</span> <span class="o">=</span> <span class="n">remote_rm_fn</span><span class="p">(</span>
-                        <span class="n">api_url</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">remote_rm_url</span><span class="p">,</span>
-                        <span class="n">queries</span><span class="o">=</span><span class="n">queries</span><span class="p">,</span>
-                        <span class="n">prompts</span><span class="o">=</span><span class="n">samples</span><span class="o">.</span><span class="n">prompts</span><span class="p">,</span>
-                        <span class="n">references</span><span class="o">=</span><span class="n">references</span><span class="p">,</span>
-                        <span class="n">raw_images</span><span class="o">=</span><span class="n">raw_images</span>
-                    <span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="o">=</span><span class="n">action_log_probs</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="c1"># Local reward model</span>
-                <span class="n">r</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reward_model</span><span class="p">(</span><span class="n">sequences</span><span class="p">,</span> <span class="n">attention_mask</span><span class="p">,</span> <span class="n">pixel_values</span><span class="p">,</span> <span class="n">image_grid_thws</span><span class="p">)</span>
+                <span class="n">r</span> <span class="o">=</span> <span class="n">remote_rm_fn</span><span class="p">(</span>
+                    <span class="n">api_url</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">remote_rm_url</span><span class="p">,</span>
+                    <span class="n">queries</span><span class="o">=</span><span class="n">queries</span><span class="p">,</span>
+                    <span class="n">prompts</span><span class="o">=</span><span class="n">samples</span><span class="o">.</span><span class="n">prompts</span><span class="p">,</span>
+                    <span class="n">references</span><span class="o">=</span><span class="n">references</span><span class="p">,</span>
+                    <span class="n">raw_images</span><span class="o">=</span><span class="n">raw_images</span>
+                <span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="o">=</span><span class="n">action_log_probs</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Local reward model</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reward_model</span><span class="p">(</span><span class="n">sequences</span><span class="p">,</span> <span class="n">attention_mask</span><span class="p">,</span> <span class="n">pixel_values</span><span class="p">,</span> <span class="n">image_grid_thws</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">initial_model</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">use_kl_loss</span><span class="p">):</span>
             <span class="n">kl</span> <span class="o">=</span> <span class="n">compute_approx_kl</span><span class="p">(</span>
@@ -953,8 +855,6 @@
             <span class="n">pixel_values</span><span class="p">,</span>
             <span class="n">image_grid_thws</span><span class="p">,</span>
             <span class="n">raw_images</span><span class="p">,</span>
-            <span class="n">pixel_values_intern</span><span class="p">,</span>  <span class="c1"># InternVL image_info</span>
-            <span class="n">image_flags</span><span class="p">,</span>
             <span class="n">action_log_probs</span><span class="p">,</span>
             <span class="n">base_action_log_probs</span><span class="p">,</span>
             <span class="n">value</span><span class="p">,</span>

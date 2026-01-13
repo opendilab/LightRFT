@@ -356,9 +356,7 @@
 
         <span class="c1"># Override distributed setup for fake environment</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">world_size</span> <span class="o">=</span> <span class="mi">1</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">accumulated_gradient</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">train_batch_size</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">ring_attn_size</span> <span class="o">//</span> <span class="bp">self</span><span class="o">.</span><span class="n">micro_train_batch_size</span> <span class="o">//</span> <span class="bp">self</span><span class="o">.</span><span class="n">world_size</span>
-        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">accumulated_gradient</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">train_batch_size</span> <span class="o">//</span> <span class="bp">self</span><span class="o">.</span><span class="n">micro_train_batch_size</span> <span class="o">//</span> <span class="bp">self</span><span class="o">.</span><span class="n">world_size</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="s2">&quot;FakeStrategy Initialized (single process mode)&quot;</span><span class="p">)</span>
 

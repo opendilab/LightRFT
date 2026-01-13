@@ -325,15 +325,13 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">transformers.cache_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">Cache</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">transformers.models.llama.modeling_llama</span><span class="w"> </span><span class="kn">import</span> <span class="n">apply_rotary_pos_emb</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">transformers.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">logging</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">loguru</span><span class="w"> </span><span class="kn">import</span> <span class="n">logger</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">lightrft.strategy.utils.parallel_utils</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">_SeqAllToAll</span><span class="p">,</span>
     <span class="n">get_sequence_parallel_group</span><span class="p">,</span>
     <span class="n">get_sequence_parallel_world_size</span><span class="p">,</span>
 <span class="p">)</span>
-
-<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="llama_attn_forward"><a class="viewcode-back" href="../../../../api_doc/models/monkey_patch/llama.html#lightrft.models.monkey_patch.llama.llama_attn_forward">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">llama_attn_forward</span><span class="p">(</span>  <span class="c1"># pylint: disable=R0917</span>

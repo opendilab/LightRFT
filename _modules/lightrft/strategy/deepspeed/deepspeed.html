@@ -564,7 +564,7 @@
         <span class="c1"># corner case for ptx loss (backward twice)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_rlhf</span> <span class="ow">and</span> <span class="n">is_actor</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">pretrain_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">train_batch_size</span> <span class="o">*=</span> <span class="mi">2</span>
-        <span class="n">ds_config</span><span class="p">[</span><span class="s2">&quot;train_batch_size&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">train_batch_size</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">ring_attn_size</span>
+        <span class="n">ds_config</span><span class="p">[</span><span class="s2">&quot;train_batch_size&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">train_batch_size</span>
 
         <span class="k">return</span> <span class="n">ds_config</span></div>
 
@@ -630,7 +630,7 @@
         <span class="c1"># DS Config</span>
         <span class="n">ds_config</span> <span class="o">=</span> <span class="n">get_eval_ds_config</span><span class="p">(</span><span class="n">offload</span><span class="o">=</span><span class="n">offload</span><span class="p">,</span> <span class="n">stage</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">stage</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">stage</span> <span class="o">==</span> <span class="mi">3</span> <span class="k">else</span> <span class="mi">0</span><span class="p">,</span> <span class="n">bf16</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bf16</span><span class="p">)</span>
         <span class="n">ds_config</span><span class="p">[</span><span class="s2">&quot;train_micro_batch_size_per_gpu&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">micro_train_batch_size</span>
-        <span class="n">ds_config</span><span class="p">[</span><span class="s2">&quot;train_batch_size&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">train_batch_size</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">ring_attn_size</span>
+        <span class="n">ds_config</span><span class="p">[</span><span class="s2">&quot;train_batch_size&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">train_batch_size</span>
 
         <span class="k">return</span> <span class="n">ds_config</span></div>
 
@@ -836,8 +836,10 @@
                     <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
                 <span class="p">)</span>
                 <span class="n">total_size</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span>
-                    <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">getsize</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">dirpath</span><span class="p">,</span> <span class="n">f</span><span class="p">))</span> <span class="k">for</span> <span class="n">subdir</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">subdirs</span>
-                    <span class="k">for</span> <span class="n">dirpath</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">filenames</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="n">subdir</span><span class="p">)</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">filenames</span>
+                    <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">getsize</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">dirpath</span><span class="p">,</span> <span class="n">f</span><span class="p">))</span>
+                    <span class="k">for</span> <span class="n">subdir</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">subdirs</span>
+                    <span class="k">for</span> <span class="n">dirpath</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">filenames</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="n">subdir</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">filenames</span>
                 <span class="p">)</span>
 
                 <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">subdirs</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">max_num</span> <span class="ow">or</span> <span class="n">total_size</span> <span class="o">&gt;</span> <span class="n">MAX_SIZE</span><span class="p">:</span>

@@ -310,12 +310,153 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">base64</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">itertools</span><span class="w"> </span><span class="kn">import</span> <span class="n">islice</span><span class="p">,</span> <span class="n">zip_longest</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
 
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">PIL</span><span class="w"> </span><span class="kn">import</span> <span class="n">Image</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_calculate_repeatness</span><span class="p">(</span><span class="n">s</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate the repeatness score of a string using suffix array and LCP.</span>
+
+<span class="sd">    Higher values indicate more repetition in the text.</span>
+
+<span class="sd">    :param s: Input string to analyze</span>
+<span class="sd">    :type s: str</span>
+<span class="sd">    :return: Repeatness score between 0 and 1</span>
+<span class="sd">    :rtype: float</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">ranks</span><span class="p">(</span><span class="n">l</span><span class="p">):</span>  <span class="c1"># noqa: E741</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="p">{</span><span class="n">v</span><span class="p">:</span> <span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">l</span><span class="p">)))}</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">index</span><span class="p">[</span><span class="n">v</span><span class="p">]</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">l</span><span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">suffix_array</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+        <span class="n">line</span> <span class="o">=</span> <span class="n">ranks</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+        <span class="n">n</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">ans</span><span class="p">,</span> <span class="n">sa</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">),</span> <span class="mi">1</span><span class="p">,</span> <span class="n">line</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+        <span class="k">while</span> <span class="n">k</span> <span class="o">&lt;</span> <span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">line</span> <span class="o">=</span> <span class="n">ranks</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">zip_longest</span><span class="p">(</span><span class="n">line</span><span class="p">,</span> <span class="n">islice</span><span class="p">(</span><span class="n">line</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="n">fillvalue</span><span class="o">=-</span><span class="mi">1</span><span class="p">)))</span>
+            <span class="n">ans</span><span class="p">,</span> <span class="n">k</span> <span class="o">=</span> <span class="n">line</span><span class="p">,</span> <span class="n">k</span> <span class="o">&lt;&lt;</span> <span class="mi">1</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">ans</span><span class="p">):</span>
+            <span class="n">sa</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span>
+        <span class="k">return</span> <span class="n">ans</span><span class="p">,</span> <span class="n">sa</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">lcp</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">suffix_arr</span><span class="p">,</span> <span class="n">inv_suff</span><span class="p">):</span>
+        <span class="n">n</span><span class="p">,</span> <span class="n">ans</span><span class="p">,</span> <span class="n">k</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">arr</span><span class="p">),</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">arr</span><span class="p">),</span> <span class="mi">0</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">inv_suff</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">k</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="k">continue</span>
+
+            <span class="n">j</span> <span class="o">=</span> <span class="n">suffix_arr</span><span class="p">[</span><span class="n">inv_suff</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+            <span class="k">while</span> <span class="n">i</span> <span class="o">+</span> <span class="n">k</span> <span class="o">&lt;</span> <span class="n">n</span> <span class="ow">and</span> <span class="n">j</span> <span class="o">+</span> <span class="n">k</span> <span class="o">&lt;</span> <span class="n">n</span> <span class="ow">and</span> <span class="n">arr</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="n">k</span><span class="p">]</span> <span class="o">==</span> <span class="n">arr</span><span class="p">[</span><span class="n">j</span> <span class="o">+</span> <span class="n">k</span><span class="p">]:</span>
+                <span class="n">k</span> <span class="o">+=</span> <span class="mi">1</span>
+
+            <span class="n">ans</span><span class="p">[</span><span class="n">inv_suff</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">=</span> <span class="n">k</span>
+            <span class="k">if</span> <span class="n">k</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">k</span> <span class="o">-=</span> <span class="mi">1</span>
+
+        <span class="k">return</span> <span class="n">ans</span>
+
+    <span class="n">arr</span> <span class="o">=</span> <span class="p">[</span><span class="nb">ord</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">s</span><span class="p">]</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">n</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mf">0.0</span>
+    <span class="n">c</span><span class="p">,</span> <span class="n">sa</span> <span class="o">=</span> <span class="n">suffix_array</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span>
+    <span class="n">cnt</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">lcp</span><span class="p">(</span><span class="n">arr</span><span class="p">,</span> <span class="n">sa</span><span class="p">,</span> <span class="n">c</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">cnt</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="n">n</span> <span class="o">*</span> <span class="p">(</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_check_reflection_pattern</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Check for reflection patterns in the text (e.g., &quot;Let me think&quot;, &quot;Let me reconsider&quot;).</span>
+
+<span class="sd">    :param text: Input text to analyze</span>
+<span class="sd">    :type text: str</span>
+<span class="sd">    :return: Dictionary with pattern counts</span>
+<span class="sd">    :rtype: Dict[str, int]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">patterns</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;let_me_think&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;\blet\s+me\s+think\b&#39;</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)),</span>
+        <span class="s2">&quot;let_me_reconsider&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;\blet\s+me\s+reconsider\b&#39;</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)),</span>
+        <span class="s2">&quot;actually&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;\bactually\b&#39;</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)),</span>
+        <span class="s2">&quot;wait&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;\bwait\b&#39;</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)),</span>
+        <span class="s2">&quot;correction&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;\bcorrection\b&#39;</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)),</span>
+        <span class="s2">&quot;mistake&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;\bmistake\b&#39;</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)),</span>
+        <span class="s2">&quot;wrong&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;\bwrong\b&#39;</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)),</span>
+        <span class="s2">&quot;rethink&quot;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;\brethink\b&#39;</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)),</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="n">patterns</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_calculate_reflection_pattern_score</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate total reflection pattern count in text.</span>
+
+<span class="sd">    :param text: Input text to analyze</span>
+<span class="sd">    :type text: str</span>
+<span class="sd">    :return: Total count of reflection patterns</span>
+<span class="sd">    :rtype: int</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">reflection_pattern_dict</span> <span class="o">=</span> <span class="n">_check_reflection_pattern</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="n">reflection_pattern_dict</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_calculate_entropy_from_log_probs</span><span class="p">(</span><span class="n">log_probs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate policy entropy from action log probabilities.</span>
+
+<span class="sd">    Note: In RL, action_log_probs can be:</span>
+<span class="sd">    1. Full distribution: shape (seq_len, vocab_size) - can calculate proper entropy</span>
+<span class="sd">    2. Sequence of selected token log_probs: shape (seq_len,) - use variance/std as uncertainty measure</span>
+<span class="sd">    3. Aggregated value: scalar - cannot calculate entropy, return 0.0</span>
+
+<span class="sd">    For full distributions: Entropy = -sum(p * log(p)) where p = exp(log_prob)</span>
+<span class="sd">    For sequences: Use standard deviation as uncertainty measure</span>
+
+<span class="sd">    :param log_probs: Action log probabilities tensor</span>
+<span class="sd">    :type log_probs: torch.Tensor</span>
+<span class="sd">    :return: Entropy value or uncertainty measure</span>
+<span class="sd">    :rtype: float</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">log_probs</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">log_probs</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mf">0.0</span>
+
+    <span class="c1"># Handle scalar (aggregated value) - cannot calculate entropy</span>
+    <span class="k">if</span> <span class="n">log_probs</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mf">0.0</span>
+
+    <span class="c1"># Check if we have a full distribution (2D with large second dimension = vocab_size)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">log_probs</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span> <span class="ow">and</span> <span class="n">log_probs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">100</span><span class="p">:</span>
+        <span class="c1"># Likely shape: (seq_len, vocab_size) - full distribution</span>
+        <span class="c1"># Calculate entropy for each position: -sum(exp(log_prob) * log_prob)</span>
+        <span class="n">probs</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">log_probs</span><span class="p">)</span>
+        <span class="c1"># Clamp to avoid numerical issues</span>
+        <span class="n">probs</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">probs</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">1e-10</span><span class="p">)</span>
+        <span class="n">log_probs_clamped</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">log_probs</span><span class="p">,</span> <span class="nb">min</span><span class="o">=-</span><span class="mf">1e10</span><span class="p">)</span>
+        <span class="n">entropy_per_position</span> <span class="o">=</span> <span class="o">-</span><span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">probs</span> <span class="o">*</span> <span class="n">log_probs_clamped</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="c1"># Return average entropy across sequence</span>
+        <span class="k">return</span> <span class="n">entropy_per_position</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+    <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">log_probs</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">log_probs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="c1"># Sequence of selected token log_probs: shape (seq_len,)</span>
+        <span class="c1"># Cannot calculate true entropy without full distribution, but we can use</span>
+        <span class="c1"># standard deviation as an uncertainty measure</span>
+        <span class="c1"># Higher std = more uncertainty = higher &quot;entropy-like&quot; measure</span>
+        <span class="n">std_dev</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">log_probs</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+        <span class="c1"># Normalize by a factor to make it more interpretable</span>
+        <span class="c1"># Using absolute value since log_probs are negative</span>
+        <span class="n">uncertainty</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">std_dev</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">uncertainty</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Unknown shape or single value</span>
+        <span class="k">return</span> <span class="mf">0.0</span>
 
 
 <div class="viewcode-block" id="TrajectorySaver"><a class="viewcode-back" href="../../../api_doc/utils/trajectory_saver.html#lightrft.utils.trajectory_saver.TrajectorySaver">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">TrajectorySaver</span><span class="p">:</span>
@@ -362,9 +503,10 @@
         <span class="n">step</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">num_samples</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
         <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;trajectories&quot;</span><span class="p">,</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="n">compute_stats</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Save a subset of experiences to a JSON file.</span>
+<span class="sd">        Save a subset of experiences to a JSON file and optionally compute statistics.</span>
 
 <span class="sd">        Each Experience object is a micro-batch. This function unpacks them</span>
 <span class="sd">        into individual sample trajectories before saving.</span>
@@ -377,14 +519,16 @@
 <span class="sd">        :type num_samples: int</span>
 <span class="sd">        :param prefix: Prefix for the output filename. Default to &quot;trajectories&quot;</span>
 <span class="sd">        :type prefix: str</span>
-<span class="sd">        :return: Path to the saved JSON file (None if not rank 0 or no experiences)</span>
-<span class="sd">        :rtype: Optional[str]</span>
+<span class="sd">        :param compute_stats: Whether to compute and return statistics. Default to False</span>
+<span class="sd">        :type compute_stats: bool</span>
+<span class="sd">        :return: Tuple of (path to saved JSON file, statistics dict) or (None, None) if not rank 0 or no experiences</span>
+<span class="sd">        :rtype: Tuple[Optional[str], Optional[Dict[str, float]]]</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">torch</span><span class="o">.</span><span class="n">distributed</span><span class="o">.</span><span class="n">is_initialized</span><span class="p">()</span> <span class="ow">or</span> <span class="n">torch</span><span class="o">.</span><span class="n">distributed</span><span class="o">.</span><span class="n">get_rank</span><span class="p">()</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">return</span> <span class="kc">None</span>
+            <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">experiences</span><span class="p">:</span>
-            <span class="k">return</span> <span class="kc">None</span>
+            <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
 
         <span class="n">all_trajectories</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="c1"># Iterate through experience objects (micro-batches) until we have enough samples.</span>
@@ -405,7 +549,13 @@
             <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">sampled_trajectories</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">ensure_ascii</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[TrajectorySaver] Saved </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">sampled_trajectories</span><span class="p">)</span><span class="si">}</span><span class="s2"> trajectories to </span><span class="si">{</span><span class="n">output_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">output_path</span><span class="p">)</span></div>
+
+        <span class="c1"># Compute statistics if requested</span>
+        <span class="n">stats</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">compute_stats</span><span class="p">:</span>
+            <span class="n">stats</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_compute_statistics</span><span class="p">(</span><span class="n">sampled_trajectories</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">output_path</span><span class="p">),</span> <span class="n">stats</span></div>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_unpack_experience_to_dicts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exp</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">step</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">exp_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -487,6 +637,7 @@
                         <span class="p">)</span>
                         <span class="n">generated_text</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
                         <span class="n">pure_generated_text</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+                        <span class="n">pure_gen_tokens</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">sequences</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
                     <span class="k">else</span><span class="p">:</span>
                         <span class="c1"># Calculate offset to adjust indices from action_mask space to sequences space</span>
                         <span class="c1"># action_mask length = seq_length - input_len</span>
@@ -507,16 +658,59 @@
                             <span class="n">pure_gen_tokens</span> <span class="o">=</span> <span class="n">sequences</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">adjusted_indices</span><span class="p">[</span><span class="mi">1</span><span class="p">:]]</span>
                             <span class="n">pure_generated_text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tokenizer</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="n">pure_gen_tokens</span><span class="p">,</span> <span class="n">skip_special_tokens</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
                         <span class="k">else</span><span class="p">:</span>
+                            <span class="n">pure_gen_tokens</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">sequences</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
                             <span class="n">pure_generated_text</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">generated_text</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
                     <span class="n">pure_generated_text</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+                    <span class="n">pure_gen_tokens</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">sequences</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
             <span class="k">except</span> <span class="p">(</span><span class="ne">IndexError</span><span class="p">,</span> <span class="ne">RuntimeError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                 <span class="nb">print</span><span class="p">(</span>
                     <span class="sa">f</span><span class="s2">&quot;[TrajectorySaver] Error extracting generated text for sample </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2"> at step </span><span class="si">{</span><span class="n">step</span><span class="si">}</span><span class="s2">, exp_idx </span><span class="si">{</span><span class="n">exp_idx</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span>  <span class="c1"># noqa: E501</span>
                 <span class="p">)</span>
                 <span class="n">generated_text</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
                 <span class="n">pure_generated_text</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+                <span class="n">pure_gen_tokens</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">sequences</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+
+            <span class="c1"># Calculate analysis metrics for this sample</span>
+            <span class="c1"># Calculate repeatness score</span>
+            <span class="n">repeat_score</span> <span class="o">=</span> <span class="n">_calculate_repeatness</span><span class="p">(</span><span class="n">pure_generated_text</span><span class="p">)</span> <span class="k">if</span> <span class="n">pure_generated_text</span> <span class="k">else</span> <span class="mf">0.0</span>
+
+            <span class="c1"># Calculate reflection pattern score</span>
+            <span class="n">reflection_pattern_score</span> <span class="o">=</span> <span class="n">_calculate_reflection_pattern_score</span><span class="p">(</span>
+                <span class="n">pure_generated_text</span>
+            <span class="p">)</span> <span class="k">if</span> <span class="n">pure_generated_text</span> <span class="k">else</span> <span class="mi">0</span>
+            <span class="n">reflection_pattern_dict</span> <span class="o">=</span> <span class="n">_check_reflection_pattern</span><span class="p">(</span><span class="n">pure_generated_text</span><span class="p">)</span> <span class="k">if</span> <span class="n">pure_generated_text</span> <span class="k">else</span> <span class="p">{}</span>
+
+            <span class="c1"># Calculate policy entropy from action_log_probs</span>
+            <span class="n">policy_entropy</span> <span class="o">=</span> <span class="mf">0.0</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">exp</span><span class="p">,</span> <span class="s1">&#39;action_log_probs&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">exp</span><span class="o">.</span><span class="n">action_log_probs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">exp_action_log_probs</span> <span class="o">=</span> <span class="n">exp</span><span class="o">.</span><span class="n">action_log_probs</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>
+                    <span class="n">log_probs_tensor</span> <span class="o">=</span> <span class="kc">None</span>
+
+                    <span class="c1"># Handle different shapes - simplified based on actual usage patterns</span>
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">exp_action_log_probs</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                        <span class="c1"># 1D tensor: (seq_len,) for single sample</span>
+                        <span class="k">if</span> <span class="n">batch_size</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">exp_action_log_probs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">action_mask</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">1</span><span class="p">):</span>
+                            <span class="n">log_probs_tensor</span> <span class="o">=</span> <span class="n">exp_action_log_probs</span>
+                    <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">exp_action_log_probs</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                        <span class="c1"># 2D tensor: (batch_size, seq_len)</span>
+                        <span class="k">if</span> <span class="n">exp_action_log_probs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">batch_size</span> <span class="ow">and</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">exp_action_log_probs</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+                            <span class="n">log_probs_tensor</span> <span class="o">=</span> <span class="n">exp_action_log_probs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+
+                    <span class="c1"># Calculate entropy if we have a valid tensor</span>
+                    <span class="k">if</span> <span class="n">log_probs_tensor</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">log_probs_tensor</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                        <span class="n">policy_entropy</span> <span class="o">=</span> <span class="n">_calculate_entropy_from_log_probs</span><span class="p">(</span><span class="n">log_probs_tensor</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="c1"># Silently fail - entropy calculation is optional</span>
+                <span class="k">pass</span>
+
+            <span class="c1"># Calculate response token count</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">response_token_count</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">pure_gen_tokens</span><span class="p">)</span> <span class="k">if</span> <span class="n">pure_gen_tokens</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mi">0</span>
+            <span class="k">except</span> <span class="p">(</span><span class="ne">AttributeError</span><span class="p">,</span> <span class="ne">NameError</span><span class="p">):</span>
+                <span class="n">response_token_count</span> <span class="o">=</span> <span class="mi">0</span>
 
             <span class="c1"># Build the dictionary for this single sample</span>
             <span class="n">traj_dict</span> <span class="o">=</span> <span class="p">{</span>
@@ -526,6 +720,12 @@
                 <span class="s2">&quot;full_sequence&quot;</span><span class="p">:</span> <span class="n">decoded_sequences</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
                 <span class="s2">&quot;generated_text&quot;</span><span class="p">:</span> <span class="n">generated_text</span><span class="p">,</span>  <span class="c1"># Includes last prompt token (for RL state-action)</span>
                 <span class="s2">&quot;pure_generated_text&quot;</span><span class="p">:</span> <span class="n">pure_generated_text</span><span class="p">,</span>  <span class="c1"># Only model&#39;s output</span>
+                <span class="c1"># Analysis metrics</span>
+                <span class="s2">&quot;repeat_score&quot;</span><span class="p">:</span> <span class="n">repeat_score</span><span class="p">,</span>
+                <span class="s2">&quot;reflection_pattern_score&quot;</span><span class="p">:</span> <span class="n">reflection_pattern_score</span><span class="p">,</span>
+                <span class="s2">&quot;reflection_pattern_details&quot;</span><span class="p">:</span> <span class="n">reflection_pattern_dict</span><span class="p">,</span>
+                <span class="s2">&quot;policy_entropy&quot;</span><span class="p">:</span> <span class="n">policy_entropy</span><span class="p">,</span>
+                <span class="s2">&quot;response_token_count&quot;</span><span class="p">:</span> <span class="n">response_token_count</span><span class="p">,</span>
             <span class="p">}</span>
 
             <span class="c1"># Add optional fields for this sample</span>
@@ -547,9 +747,9 @@
                     <span class="k">elif</span> <span class="n">key</span> <span class="o">==</span> <span class="s1">&#39;reward_metrics&#39;</span><span class="p">:</span>
                         <span class="n">metrics</span> <span class="o">=</span> <span class="p">{}</span>
                         <span class="k">for</span> <span class="n">metric_name</span><span class="p">,</span> <span class="n">metric_tensor</span> <span class="ow">in</span> <span class="n">value</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">metric_tensor</span><span class="p">,</span>
-                                          <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">metric_tensor</span><span class="o">.</span><span class="n">shape</span>
-                                                                <span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">metric_tensor</span><span class="p">)</span> <span class="o">==</span> <span class="n">batch_size</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">metric_tensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span>
+                                <span class="n">metric_tensor</span><span class="o">.</span><span class="n">shape</span>
+                            <span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">metric_tensor</span><span class="p">)</span> <span class="o">==</span> <span class="n">batch_size</span><span class="p">:</span>
                                 <span class="n">metrics</span><span class="p">[</span><span class="n">metric_name</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tensor_to_list</span><span class="p">(</span><span class="n">metric_tensor</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
                             <span class="k">else</span><span class="p">:</span>  <span class="c1"># scalar metric, applies to all</span>
                                 <span class="n">metrics</span><span class="p">[</span><span class="n">metric_name</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tensor_to_list</span><span class="p">(</span><span class="n">metric_tensor</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span>
@@ -661,6 +861,54 @@
                 <span class="sa">f</span><span class="s2">&quot;[TrajectorySaver] Warning: </span><span class="si">{</span><span class="n">attr_name</span><span class="si">}</span><span class="s2"> has mismatched batch size </span><span class="si">{</span><span class="n">tensor</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">, expected </span><span class="si">{</span><span class="n">expected_batch_size</span><span class="si">}</span><span class="s2">. Using defaults.&quot;</span>  <span class="c1"># noqa: E501</span>
             <span class="p">)</span>
             <span class="k">return</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">expected_batch_size</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_compute_statistics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">trajectories</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute statistics from saved trajectories for logging to wandb.</span>
+
+<span class="sd">        :param trajectories: List of trajectory dictionaries</span>
+<span class="sd">        :type trajectories: List[Dict[str, Any]]</span>
+<span class="sd">        :return: Dictionary of statistics</span>
+<span class="sd">        :rtype: Dict[str, float]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">trajectories</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">{}</span>
+
+        <span class="n">stats</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="c1"># Collect all metric values</span>
+        <span class="n">repeat_scores</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">reflection_pattern_scores</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">policy_entropies</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">response_token_counts</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">traj</span> <span class="ow">in</span> <span class="n">trajectories</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s2">&quot;repeat_score&quot;</span> <span class="ow">in</span> <span class="n">traj</span><span class="p">:</span>
+                <span class="n">repeat_scores</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">traj</span><span class="p">[</span><span class="s2">&quot;repeat_score&quot;</span><span class="p">])</span>
+            <span class="k">if</span> <span class="s2">&quot;reflection_pattern_score&quot;</span> <span class="ow">in</span> <span class="n">traj</span><span class="p">:</span>
+                <span class="n">reflection_pattern_scores</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">traj</span><span class="p">[</span><span class="s2">&quot;reflection_pattern_score&quot;</span><span class="p">])</span>
+            <span class="k">if</span> <span class="s2">&quot;policy_entropy&quot;</span> <span class="ow">in</span> <span class="n">traj</span><span class="p">:</span>
+                <span class="n">policy_entropies</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">traj</span><span class="p">[</span><span class="s2">&quot;policy_entropy&quot;</span><span class="p">])</span>
+            <span class="k">if</span> <span class="s2">&quot;response_token_count&quot;</span> <span class="ow">in</span> <span class="n">traj</span><span class="p">:</span>
+                <span class="n">response_token_counts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">traj</span><span class="p">[</span><span class="s2">&quot;response_token_count&quot;</span><span class="p">])</span>
+
+        <span class="c1"># Compute statistics (only mean values)</span>
+        <span class="k">if</span> <span class="n">repeat_scores</span><span class="p">:</span>
+            <span class="n">stats</span><span class="p">[</span><span class="s2">&quot;trajectory/repeat_score_mean&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">repeat_scores</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">reflection_pattern_scores</span><span class="p">:</span>
+            <span class="n">stats</span><span class="p">[</span><span class="s2">&quot;trajectory/reflection_pattern_score_mean&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">reflection_pattern_scores</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">policy_entropies</span><span class="p">:</span>
+            <span class="c1"># Filter out zero values for meaningful statistics</span>
+            <span class="n">non_zero_entropies</span> <span class="o">=</span> <span class="p">[</span><span class="n">e</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">policy_entropies</span> <span class="k">if</span> <span class="n">e</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">non_zero_entropies</span><span class="p">:</span>
+                <span class="n">stats</span><span class="p">[</span><span class="s2">&quot;trajectory/policy_entropy_mean&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">non_zero_entropies</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">response_token_counts</span><span class="p">:</span>
+            <span class="n">stats</span><span class="p">[</span><span class="s2">&quot;trajectory/response_token_count_mean&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">response_token_counts</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">stats</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_save_images</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">imgs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Image</span><span class="o">.</span><span class="n">Image</span><span class="p">],</span> <span class="n">step</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">exp_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">sample_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]]:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
