@@ -66,7 +66,7 @@ dev = [
     "pytest",
     "black",
     "pylint",
-    "yapf",
+    "yapf==0.29.0",
 ]
 docs = [
     "sphinx",

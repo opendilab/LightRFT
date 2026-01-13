@@ -1,17 +1,15 @@
-import time
 from abc import ABC
 from copy import deepcopy
 from dataclasses import dataclass
 from typing import List, Optional, Tuple, Union, Callable, Dict
 
-import ray
 import torch
 import torch.nn as nn
 from tqdm import tqdm
 
 from lightrft.models import ActorLanguage
 
-from lightrft.models.utils import compute_approx_kl, compute_reward, masked_mean, unpacking_samples
+from lightrft.models.utils import compute_approx_kl, compute_reward, masked_mean
 from lightrft.utils import init_logger, remote_rm_fn
 
 logger = init_logger(__name__)

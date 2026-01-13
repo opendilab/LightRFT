@@ -11,18 +11,12 @@ from .distributed_sampler import DistributedSampler
 
 from .processor import get_processor, reward_normalization
 from .utils import (
-    blending_datasets,
-    get_tokenizer,
-    get_tokenizer_processor_vl,
-    print_rank_0,
-    get_current_device,
-    get_torch_profiler,
-    ensure_video_input_available,
+    blending_datasets, get_tokenizer, get_tokenizer_processor_vl, print_rank_0, get_current_device, get_torch_profiler,
+    ensure_video_input_available, all_gather_and_flatten, all_reduce_dict
 )
 
 from .cli_args import add_arguments
 from .timer import Timer
-
 
 __all__ = [
     # logging and trajectory
@@ -46,6 +40,8 @@ __all__ = [
     "get_current_device",
     "get_torch_profiler",
     "ensure_video_input_available",
+    "all_gather_and_flatten",
+    "all_reduce_dict",
 
     # cli_args
     "add_arguments",

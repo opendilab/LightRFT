@@ -39,7 +39,7 @@ def get_sequence_parallel_group():
     :return: The current sequence parallel process group.
     :rtype: torch.distributed.ProcessGroup or None
     """
-    global _SEQUENCE_PARALLEL_GROUP  # pylint: disable=W0602
+    global _SEQUENCE_PARALLEL_GROUP  # pylint: disable=W0602  # noqa: F824
     return _SEQUENCE_PARALLEL_GROUP
 
 
@@ -50,7 +50,7 @@ def get_sequence_parallel_world_size():
     :return: The world size of the sequence parallel group, or 1 if no group is set.
     :rtype: int
     """
-    global _SEQUENCE_PARALLEL_GROUP  # pylint: disable=W0602
+    global _SEQUENCE_PARALLEL_GROUP  # pylint: disable=W0602  # noqa: F824
     if _SEQUENCE_PARALLEL_GROUP is not None:
         return torch.distributed.get_world_size(_SEQUENCE_PARALLEL_GROUP)
     return 1
@@ -63,7 +63,7 @@ def get_sequence_parallel_rank():
     :return: The rank in the sequence parallel group, or 0 if no group is set.
     :rtype: int
     """
-    global _SEQUENCE_PARALLEL_GROUP  # pylint: disable=W0602
+    global _SEQUENCE_PARALLEL_GROUP  # pylint: disable=W0602  # noqa: F824
     if _SEQUENCE_PARALLEL_GROUP is not None:
         return torch.distributed.get_rank(_SEQUENCE_PARALLEL_GROUP)
     return 0
