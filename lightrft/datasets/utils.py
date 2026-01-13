@@ -171,6 +171,29 @@ def load_multimodal_content(media_info: Dict) -> Dict:
     return loaded_content
 
 
+def get_task_instructions(handler: Any, config: Dict[str, Any]) -> str:
+    """
+    Select task instruction based on task type from handler and config.
+
+    :param handler: Data handler instance.
+    :param config: Configuration dictionary which contains 'task_instruction'.
+    :return: The selected task instruction.
+    """
+    task_instruction_raw = config.get("task_instruction")
+    if isinstance(task_instruction_raw, dict):
+        if hasattr(handler, "task_type"):
+            prompt = task_instruction_raw.get(handler.task_type)
+            if prompt is None:
+                raise ValueError(f"Task instruction for {handler.task_type} not found.")
+        else:
+            raise ValueError(f"Handler {handler.__class__.__name__} does not specify a task_type.")
+        return prompt
+    elif isinstance(task_instruction_raw, str):
+        return task_instruction_raw
+    else:
+        raise ValueError("task_instruction in config must be either a dict or a str.")
+
+
 class BaseDataHandler(ABC):
     """
     Base class for data handlers.
