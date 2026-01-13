@@ -10,8 +10,8 @@ N_SAMPLES=8
 EPISODE=2
 WARMUP=0.03
  
-RBS=128  # rollout_batch_size
-TBS=128 # train_batch_size
+RBS=32   # rollout_batch_size
+TBS=64   # train_batch_size
 
 # --- Learning and Model Settings ---
 KL=0.001
@@ -39,7 +39,7 @@ DATA_PATH=$(printf '%s,' "${data_files[@]}" | sed 's/,$//')
 
 # -- Pre-processing Settings ---
 video_fps=2.0
-max_pixels=282240 # 360*28*28
+max_pixels=282240    # 360*28*28
 
 # --- System Prompt ---
 # Path to the YAML file containing system prompts for different tasks.
@@ -52,21 +52,21 @@ SYSTEM_PROMPT_PATH="examples/grm_vl_rl/system_prompts.yaml"
 PRETRAIN_PATH="path/to/your/pretrained/model"
 
 # --- vLLM/SGLang Engine Settings ---
-ENGINE_TP=1  # Tensor parallelism size for the inference engine. Adjust based on your model and GPU setup.
+ENGINE_TP=1    # Tensor parallelism size for the inference engine. Adjust based on your model and GPU setup.
 
 # --- Single-Node Distributed Setup ---
 export MLP_WORKER_NUM=1
 export MLP_WORKER_GPU=2
 export MLP_ROLE_INDEX=0
 export MLP_WORKER_0_PORT=20091
-export MLP_WORKER_0_HOST=localhost # or 127.0.0.1
+export MLP_WORKER_0_HOST=localhost  # or 127.0.0.1
 
 # --- PyTorch Distributed Environment Variables ---
-export MASTER_ADDR=$MLP_WORKER_0_HOST
-export NNODES=$MLP_WORKER_NUM
-export NODE_RANK=$MLP_ROLE_INDEX
-export GPUS_PER_NODE=$MLP_WORKER_GPU
-export MASTER_PORT=$MLP_WORKER_0_PORT
+export MASTER_ADDR=localhost  # Address of the master node, alternatively set to 127.0.0.1
+export NNODES=1               # Number of nodes
+export NODE_RANK=0            # Rank of this node
+export GPUS_PER_NODE=8        # Number of GPUs per node
+export MASTER_PORT=20091      # Port for communication
 
 # --- Generate dynamic names and paths ---
 EXPERIMENT_NAME="LightRFT-GRM-VL-GRPO"
