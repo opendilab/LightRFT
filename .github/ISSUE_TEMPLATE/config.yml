@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 Questions & Discussions
+    url: https://github.com/opendilab/LightRFT/discussions
+    about: Ask questions and discuss with other LightRFT community members
+  - name: 📚 Documentation
+    url: https://github.com/opendilab/LightRFT/tree/main/docs
+    about: Browse the documentation for guides, tutorials, and API references

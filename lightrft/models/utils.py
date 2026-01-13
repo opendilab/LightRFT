@@ -15,7 +15,7 @@ The module is particularly useful for:
 
 from typing import List, Optional, Union, Tuple
 
-import logging
+from loguru import logger
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -115,7 +115,7 @@ def log_probs_from_logits(
 
                 flashattn_available = True
             except ImportError:
-                logging.warning("Failed to import cross_entropy_loss from flash_attn")
+                logger.warning("Failed to import cross_entropy_loss from flash_attn")
                 flashattn_available = False
         if flashattn_available:
             # use cross_entropy_loss from flash_attn to reduce peak mem consumption

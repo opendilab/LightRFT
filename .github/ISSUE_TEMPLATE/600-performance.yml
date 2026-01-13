@@ -1,0 +1,176 @@
+name: ⚡ Performance Discussion
+description: Discuss performance improvements, report performance regressions, or share benchmarks
+title: "[Performance]: "
+labels: ["performance"]
+
+body:
+- type: markdown
+  attributes:
+    value: >
+      #### Before submitting an issue, please make sure the issue hasn't been already addressed by searching through [the existing and past issues](https://github.com/opendilab/LightRFT/issues?q=is%3Aissue+sort%3Acreated-desc+).
+
+- type: dropdown
+  id: performance-type
+  attributes:
+    label: Performance Issue Type
+    description: What type of performance issue/discussion is this?
+    options:
+      - Performance Improvement Proposal
+      - Performance Regression Report
+      - Benchmark Results Sharing
+      - Training Speed Discussion
+      - Memory Efficiency Discussion
+      - Inference Engine Performance
+      - Distributed Training Performance
+      - Other Performance Topic
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: Proposal to Improve Performance
+    description: >
+      If you have a proposal to improve LightRFT's performance, please describe it here.
+
+      Include:
+      - What specific aspect you want to improve (training speed, memory usage, etc.)
+      - Your proposed approach or technique
+      - Expected performance gains
+      - Implementation complexity
+    placeholder: |
+      I propose to improve [aspect] by [method].
+
+      Current performance: ...
+      Expected improvement: ...
+      Implementation approach: ...
+  validations:
+    required: false
+
+- type: textarea
+  attributes:
+    label: Performance Regression Report
+    description: >
+      If you're reporting a performance regression, please provide detailed comparison.
+
+      Include:
+      - What version/commit introduced the regression
+      - Benchmark comparison (before vs after)
+      - Configuration used for benchmarking
+      - Potential cause if identified
+    placeholder: |
+      Performance regression observed between version X and Y.
+
+      Benchmark results:
+      - Version X: ... samples/sec, ... GB memory
+      - Version Y: ... samples/sec, ... GB memory
+
+      Configuration used:
+      - Model: ...
+      - Batch sizes: ...
+      - Hardware: ...
+  validations:
+    required: false
+
+- type: textarea
+  attributes:
+    label: Benchmark Results
+    description: >
+      Share your benchmark results with the community.
+
+      Please include:
+      - Training configuration (model, algorithm, batch sizes, etc.)
+      - Hardware setup (GPU model, number of GPUs, etc.)
+      - Performance metrics (throughput, memory usage, time per episode, etc.)
+      - Comparison with other frameworks if available
+    placeholder: |
+      **Model:** Qwen2.5-0.5B
+      **Algorithm:** GRPO
+      **Hardware:** 8x A100 80GB
+      **Configuration:**
+      - TBS: 128
+      - RBS: 128
+      - Micro batch sizes: ...
+
+      **Results:**
+      - Training throughput: X samples/sec
+      - Peak memory per GPU: Y GB
+      - Time per episode: Z minutes
+
+      **Comparison with [other framework]:**
+      - ...
+  validations:
+    required: false
+
+- type: textarea
+  attributes:
+    label: Performance Discussion
+    description: >
+      General discussion about performance topics.
+    placeholder: |
+      Discuss any performance-related topics, questions, or observations.
+  validations:
+    required: false
+
+- type: textarea
+  attributes:
+    label: Environment Information
+    description: |
+      If relevant, please provide environment information:
+    value: |
+      - LightRFT Version:
+      - Python Version:
+      - PyTorch Version:
+      - CUDA Version:
+      - GPU Model and Memory:
+      - Number of GPUs/Nodes:
+      - Distributed Backend:
+      - Inference Engine:
+  validations:
+    required: false
+
+- type: textarea
+  attributes:
+    label: Configuration Details
+    description: |
+      If relevant, provide your configuration for benchmarking or discussion.
+    render: bash
+    placeholder: |
+      Model: ...
+      Algorithm: ...
+      Batch sizes: ...
+      Other relevant parameters: ...
+
+- type: textarea
+  attributes:
+    label: Performance Data
+    description: |
+      If available, please share performance metrics, profiling results, or plots.
+    placeholder: |
+      - Training throughput: ...
+      - Memory usage: ...
+      - GPU utilization: ...
+      - Time breakdown: ...
+
+      You can also attach screenshots or plots.
+
+- type: textarea
+  attributes:
+    label: Additional Context
+    description: |
+      Any other relevant information:
+      - Links to profiling results
+      - Comparison with baseline
+      - References to papers or techniques
+
+- type: markdown
+  attributes:
+    value: >
+      Thanks for contributing to performance discussions 🎉!
+
+- type: checkboxes
+  id: confirmation
+  attributes:
+    label: Before submitting a new issue...
+    options:
+      - label: Make sure you already searched for relevant performance issues and discussions.
+        required: true

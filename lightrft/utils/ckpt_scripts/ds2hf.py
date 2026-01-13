@@ -24,10 +24,10 @@ from dataclasses import dataclass
 from transformers import AutoModelForCausalLM, AutoModelForVision2Seq, PreTrainedModel, AutoModel  # noqa
 from pathlib import Path
 import shutil
+from loguru import logger
 
 # while this script doesn't use deepspeed to recover data, since the checkpoints are pickled with
 # DeepSpeed data structures it has to be available in the current python environment.
-from deepspeed.utils import logger
 from deepspeed.checkpoint.constants import (
     DS_VERSION, OPTIMIZER_STATE_DICT, SINGLE_PARTITION_OF_FP32_GROUPS, FP32_FLAT_GROUPS, ZERO_STAGE, PARTITION_COUNT,
     PARAM_SHAPES, BUFFER_NAMES, FROZEN_PARAM_SHAPES, FROZEN_PARAM_FRAGMENTS

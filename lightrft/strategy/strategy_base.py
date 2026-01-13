@@ -107,10 +107,6 @@ class StrategyBase(ABC):
         self.zpg = self.config.zpg
         self.grad_accum_dtype = self.config.grad_accum_dtype
         self.overlap_comm = self.config.overlap_comm
-        self.ring_attn_size = self.config.ring_attn_size
-
-        # This is not used but set due to compatibility
-        self.ring_attn_group = None
 
         # inference (rollout) engine related
         self.inference_engine = None
@@ -207,18 +203,15 @@ class StrategyBase(ABC):
                 raise ValueError(f"Unsupported backend: {self.config.engine_type}")
 
         self.world_size = dist.get_world_size()
-        self.accumulated_gradient = (
-            self.train_batch_size * self.ring_attn_size // self.micro_train_batch_size // self.world_size
-        )
+        self.accumulated_gradient = (self.train_batch_size // self.micro_train_batch_size // self.world_size)
 
-        if self.train_batch_size * self.ring_attn_size % (self.micro_train_batch_size * self.world_size) != 0:
+        if self.train_batch_size % (self.micro_train_batch_size * self.world_size) != 0:
             raise ValueError(
                 f"train_batch_size must be divisible by (micro_train_batch_size * world_size)\n"
                 f"  train_batch_size:        {self.train_batch_size}\n"
                 f"  micro_train_batch_size:  {self.micro_train_batch_size}\n"
                 f"  world_size:              {self.world_size}\n"
-                f"  ring_attn_size:          {self.ring_attn_size}\n"
-                f"  Required: {self.train_batch_size} * {self.ring_attn_size} % ({self.micro_train_batch_size} * {self.world_size}) == 0"  # noqa
+                f"  Required: {self.train_batch_size} % ({self.micro_train_batch_size} * {self.world_size}) == 0"
             )
         # initialize sequence parallel
         if self.config.sp_size > 1:
@@ -322,8 +315,8 @@ class StrategyBase(ABC):
         :rtype: DataLoader
         """
         if sampler is None:
-            num_replicas = dist.get_world_size() // self.ring_attn_size
-            rank = dist.get_rank() // self.ring_attn_size
+            num_replicas = dist.get_world_size()
+            rank = dist.get_rank()
             sampler = DistributedSampler(
                 replay_buffer,
                 num_replicas=num_replicas,

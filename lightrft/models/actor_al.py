@@ -142,8 +142,9 @@ class ActorAL(nn.Module):
     @torch.no_grad()
     def generate(
         self, input_ids: torch.Tensor, audio_values: torch.Tensor, **kwargs
-    ) -> Union[Tuple[torch.LongTensor, torch.LongTensor], Tuple[torch.LongTensor, torch.LongTensor,
-                                                                torch.BoolTensor], ]:
+    ) -> Union[
+        Tuple[torch.LongTensor, torch.LongTensor],
+        Tuple[torch.LongTensor, torch.LongTensor, torch.BoolTensor], ]:
         """
         Generate text sequences based on input text and audio information.
 
@@ -225,7 +226,6 @@ class ActorAL(nn.Module):
         attention_mask: Optional[torch.Tensor] = None,
         audio_values: torch.Tensor = None,
         return_output=False,
-        ring_attn_group: Optional[dist.ProcessGroup] = None,
         packed_seq_lens: Optional[list[int]] = None,
     ) -> torch.Tensor:
         """
@@ -245,8 +245,6 @@ class ActorAL(nn.Module):
         :type audio_values: torch.Tensor
         :param return_output: Whether to return the full model output along with log probs
         :type return_output: bool
-        :param ring_attn_group: Process group for ring attention (distributed training)
-        :type ring_attn_group: Optional[dist.ProcessGroup]
         :param packed_seq_lens: Sequence lengths for packed samples
         :type packed_seq_lens: Optional[list[int]]
 

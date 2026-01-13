@@ -36,7 +36,7 @@ def test_generation(model, tokenizer, prompts: List[str], max_new_tokens: int = 
     results = []
 
     for i, prompt in enumerate(prompts):
-        print(f"\n=== Test Case {i+1} ===")
+        print(f"\n=== Test Case {i + 1} ===")
         print(f"Input: {prompt}")
 
         # Encode input

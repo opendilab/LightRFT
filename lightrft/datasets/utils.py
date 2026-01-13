@@ -1,3 +1,10 @@
+"""
+Utility functions for dataset processing.
+
+Parts of this file are adapted from Open-Reasoner-Zero:
+https://github.com/Open-Reasoner-Zero/Open-Reasoner-Zero
+"""
+
 from abc import ABC, abstractmethod
 
 import re

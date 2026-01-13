@@ -1,4 +1,4 @@
 pylint
 flake8
 black
-yapf==0.29.0
+yapf>=0.40.0

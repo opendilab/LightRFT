@@ -54,9 +54,7 @@ class FakeStrategy(StrategyBase):
 
         # Override distributed setup for fake environment
         self.world_size = 1
-        self.accumulated_gradient = (
-            self.train_batch_size * self.ring_attn_size // self.micro_train_batch_size // self.world_size
-        )
+        self.accumulated_gradient = (self.train_batch_size // self.micro_train_batch_size // self.world_size)
 
         self.print("FakeStrategy Initialized (single process mode)")
 

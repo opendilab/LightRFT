@@ -127,11 +127,7 @@ class ActorVL(nn.Module):
             if not is_meta_context and device_map is not None:
                 from_pretrained_kwargs["device_map"] = device_map
 
-            if "intern" in pretrain_or_model.lower():
-                self.model = AutoModel.from_pretrained(pretrain_or_model, **from_pretrained_kwargs)
-                self.model.img_context_token_id = 151667
-            else:
-                self.model = AutoModelForVision2Seq.from_pretrained(pretrain_or_model, **from_pretrained_kwargs)
+            self.model = AutoModelForVision2Seq.from_pretrained(pretrain_or_model, **from_pretrained_kwargs)
 
             # LoRA
             if lora_rank > 0:
@@ -244,7 +240,6 @@ class ActorVL(nn.Module):
         pixel_values_videos: Optional[torch.Tensor] = None,
         video_grid_thw: Optional[torch.Tensor] = None,
         return_output=False,
-        ring_attn_group: Optional[dist.ProcessGroup] = None,
         packed_seq_lens: Optional[list[int]] = None,
     ) -> torch.Tensor:
         """
@@ -270,8 +265,6 @@ class ActorVL(nn.Module):
         :type video_grid_thw: Optional[torch.Tensor]
         :param return_output: Whether to return the full model output along with log probs
         :type return_output: bool
-        :param ring_attn_group: Process group for ring attention (distributed training)
-        :type ring_attn_group: Optional[dist.ProcessGroup]
         :param packed_seq_lens: Sequence lengths for packed samples
         :type packed_seq_lens: Optional[list[int]]
 
@@ -302,11 +295,10 @@ class ActorVL(nn.Module):
             position_ids.masked_fill_(attention_mask == 0, 1)
         else:
             # convert attention_mask to position_ids
-
             position_ids = reset_position_ids(attention_mask)
             # explicitly ignore attention_mask for packing_samples
             attention_mask = None
-        
+            
         output = self.model(
             sequences,
             attention_mask=attention_mask,

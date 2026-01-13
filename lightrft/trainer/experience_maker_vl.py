@@ -485,6 +485,7 @@ class NaiveExperienceMakerVL(ABC):
                 total_length=attention_mask.float().sum(dim=-1),
                 references=references,
                 labels=labels,
+                prompts=prompts,
             )
             samples_list.append(samples)
         return samples_list
