@@ -127,11 +127,7 @@ class ActorVL(nn.Module):
             if not is_meta_context and device_map is not None:
                 from_pretrained_kwargs["device_map"] = device_map
 
-            if "intern" in pretrain_or_model.lower():
-                self.model = AutoModel.from_pretrained(pretrain_or_model, **from_pretrained_kwargs)
-                self.model.img_context_token_id = 151667
-            else:
-                self.model = AutoModelForVision2Seq.from_pretrained(pretrain_or_model, **from_pretrained_kwargs)
+            self.model = AutoModelForVision2Seq.from_pretrained(pretrain_or_model, **from_pretrained_kwargs)
 
             # LoRA
             if lora_rank > 0:
@@ -159,8 +155,9 @@ class ActorVL(nn.Module):
     @torch.no_grad()
     def generate(
         self, input_ids: torch.Tensor, pixel_values: torch.Tensor, image_grid_thw: torch.Tensor, **kwargs
-    ) -> Union[Tuple[torch.LongTensor, torch.LongTensor], Tuple[torch.LongTensor, torch.LongTensor,
-                                                                torch.BoolTensor], ]:
+    ) -> Union[
+        Tuple[torch.LongTensor, torch.LongTensor],
+        Tuple[torch.LongTensor, torch.LongTensor, torch.BoolTensor], ]:
         """
         Generate text sequences based on input text and visual information.
 
@@ -230,10 +227,7 @@ class ActorVL(nn.Module):
         pixel_values: torch.Tensor = None,
         image_grid_thw: torch.Tensor = None,
         return_output=False,
-        ring_attn_group: Optional[dist.ProcessGroup] = None,
         packed_seq_lens: Optional[list[int]] = None,
-        pixel_values_intern: torch.Tensor = None,
-        image_flags: torch.Tensor = None,
     ) -> torch.Tensor:
         """
         Forward pass to compute action log probabilities for reinforcement learning.
@@ -254,14 +248,8 @@ class ActorVL(nn.Module):
         :type image_grid_thw: torch.Tensor
         :param return_output: Whether to return the full model output along with log probs
         :type return_output: bool
-        :param ring_attn_group: Process group for ring attention (distributed training)
-        :type ring_attn_group: Optional[dist.ProcessGroup]
         :param packed_seq_lens: Sequence lengths for packed samples
         :type packed_seq_lens: Optional[list[int]]
-        :param pixel_values_intern: Pixel values for InternVL models
-        :type pixel_values_intern: torch.Tensor
-        :param image_flags: Flags indicating image positions for InternVL models
-        :type image_flags: torch.Tensor
 
         :return: Action log probabilities or tuple of (action_log_probs, output) if return_output=True
         :rtype: torch.Tensor
@@ -290,26 +278,17 @@ class ActorVL(nn.Module):
             position_ids.masked_fill_(attention_mask == 0, 1)
         else:
             # convert attention_mask to position_ids
-
             position_ids = reset_position_ids(attention_mask)
             # explicitly ignore attention_mask for packing_samples
             attention_mask = None
-        if pixel_values_intern is not None:
-            output = self.model(
-                pixel_values_intern,
-                sequences,
-                attention_mask=attention_mask,
-                position_ids=position_ids,
-                image_flags=image_flags,
-            )
-        else:
-            output = self.model(
-                sequences,
-                attention_mask=attention_mask,
-                position_ids=position_ids,
-                pixel_values=pixel_values,
-                image_grid_thw=image_grid_thw,
-            )
+
+        output = self.model(
+            sequences,
+            attention_mask=attention_mask,
+            position_ids=position_ids,
+            pixel_values=pixel_values,
+            image_grid_thw=image_grid_thw,
+        )
 
         if num_actions is None:  # defult
             assert return_output

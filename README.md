@@ -343,13 +343,24 @@ make docs-live
 
 ## 🤝 Contributing
 
-We welcome community contributions! Please follow these steps:
+We welcome and appreciate contributions from the community! To ensure a smooth workflow, please follow these steps:
 
-1. Fork this repository
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+1.  **Fork the Repository**: Click the "Fork" button at the top right to copy this project to your GitHub account.
+2.  **Create a Feature Branch**: Create a new branch for your changes, preferably based on `main`. Ensure documentation branches are named with the *doc* pattern to enable auto-deployment of the docs site.
+    ```bash
+    git checkout -b feature/your-feature-name
+    ```
+3.  **Commit Your Changes**: Please follow the [Conventional Commits](https://www.conventionalcommits.org/) specification.
+    *   Format example: `feature(user): short description of the change`
+    *   Common types: `feature` (new feature), `fix` (bug fix), `polish` (polish or optimize), `docs` (documentation), `style` (formatting), `refactor` (code restructuring).
+    ```bash
+    git commit -m 'feature(user): add an amazing feature'
+    ```
+4.  **Push to the Branch**: Push your changes to your forked repository.
+    ```bash
+    git push origin feature/your-feature-name
+    ```
+5.  **Open a Pull Request**: Go to the original repository and create a Pull Request targeting the `main` (or specific development) branch. Please provide a detailed description of your changes.
 
 ### Code Standards
 
@@ -408,41 +419,6 @@ This project builds upon the following outstanding open-source projects (includi
 
 Thanks to all contributors and supporters!
 
----
-
-## 🗓️ RoadMap
-
-We are actively working on the following improvements and features:
-
-### Core Feature Enhancements
-
-- [ ] **Trajectory Functionality Extension**
-  - Add more analysis metrics
-  - Enhanced trajectory saving and analysis capabilities
-
-- [ ] **Reward Mechanism Refactoring**
-  - Refactor rule-based and model-based reward computation
-  - Optimize reward dataset processing pipeline
-
-### Algorithm Optimization & Integration
-
-- [ ] **More Algorithm Integration**
-  - Entropy-based token selection 
-  - GMPO (Geometric-Mean Policy Optimization)
-  - GSPO (Group Sequence Policy Optimization)
-
-- [ ] **Advantage Computation Refactoring**
-  - Optimize advantage estimation module architecture
-  - Unify advantage computation interface across algorithms
-
-- [ ] **Loss-Filter Mechanism Optimization**
-  - Refactor loss filtering implementation
-  - Complete GSM8K/Geo3K benchmark experiments
-  - Document experimental results and analysis
-
-
-
-Community contributions and feedback are welcome!
 
 ---
 

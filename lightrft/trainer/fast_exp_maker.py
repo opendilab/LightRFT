@@ -81,9 +81,7 @@ class _SamplesOutput:
 
         # Vision-Language Model (VLM) specific fields
         pixel_values: Processed pixel values for images (Qwen-VL format)
-        pixel_values_intern: Processed pixel values (InternVL format)
         image_grid_thw: Image grid dimensions [temporal, height, width]
-        image_flags: Flags indicating image presence (InternVL)
         raw_images: Original PIL images
         references: Reference texts for evaluation
         img_num: Number of images per sample
@@ -110,9 +108,7 @@ class _SamplesOutput:
 
     # Vision-Language Model fields
     pixel_values: Optional[torch.Tensor] = None
-    pixel_values_intern: Optional[torch.Tensor] = None
     image_grid_thw: Optional[torch.Tensor] = None
-    image_flags: Optional[torch.Tensor] = None
     raw_images: Optional[list] = None
     references: Optional[list] = None
     img_num: Optional[List[int]] = None
@@ -159,7 +155,7 @@ class MultimodalDataProcessor:
 
         :param tokenizer: HuggingFace tokenizer for text processing
         :type tokenizer: transformers.PreTrainedTokenizer
-        :param processor: Multimodal processor (e.g., Qwen-VL, InternVL processor)
+        :param processor: Multimodal processor (e.g., Qwen-VL processor)
         :type processor: Union[transformers.ProcessorMixin, Any]
         :param prompt_max_len: Maximum allowed prompt length
         :type prompt_max_len: int
@@ -253,7 +249,6 @@ class MultimodalDataProcessor:
         all_references: Optional[List[str]],
         images_num: List[int],
         n_samples_per_prompt: int,
-        is_internvl: bool,
     ) -> EasyDict:
         """
         Process multimodal batch - following original implementation exactly.
@@ -271,8 +266,6 @@ class MultimodalDataProcessor:
         :type images_num: List[int]
         :param n_samples_per_prompt: Number of samples to generate per prompt
         :type n_samples_per_prompt: int
-        :param is_internvl: Whether using InternVL processor
-        :type is_internvl: bool
         :return: Dictionary containing processed data
         :rtype: EasyDict
         """
@@ -317,8 +310,6 @@ class MultimodalDataProcessor:
             all_prompt_token_ids_text = []
             all_images_grid_thw_text = torch.empty((0, 3), dtype=torch.long)
 
-        all_image_flags_text = [None] * len(all_prompt_token_ids_text)
-
         # ===== Stage 3-B: Image-text processing =====
         if len(all_prompts_image_text) > 0:
             assert self.processor is not None, "Processor required for multimodal data"
@@ -332,18 +323,11 @@ class MultimodalDataProcessor:
 
             all_prompt_token_ids_image_text = inputs_image_text["input_ids"]
             all_images_pixel_values_image_txt = inputs_image_text["pixel_values"]
-
-            if is_internvl:
-                all_images_grid_thw_image_text = inputs_image_text["num_tiles"]
-                all_image_flags_image_text = inputs_image_text["image_flags"]
-            else:
-                all_images_grid_thw_image_text = inputs_image_text["image_grid_thw"]
-                all_image_flags_image_text = [None] * len(all_images_grid_thw_image_text)
+            all_images_grid_thw_image_text = inputs_image_text["image_grid_thw"]
         else:
             all_prompt_token_ids_image_text = []
             all_images_pixel_values_image_txt = torch.empty(0, 1176)
             all_images_grid_thw_image_text = torch.empty((0, 3), dtype=torch.long)
-            all_image_flags_image_text = []
 
         # ===== Stage 4: Merge back in original order =====
         total_samples = L * N
@@ -351,7 +335,6 @@ class MultimodalDataProcessor:
         all_images_out = [None] * total_samples
         all_prompt_token_ids_out = [None] * total_samples
         all_images_grid_thw_list = [None] * total_samples
-        all_image_flags_out = [None] * total_samples
 
         # 4-A: Fill text-only
         text_ptr = 0
@@ -361,7 +344,6 @@ class MultimodalDataProcessor:
                 all_prompts_out[gid] = all_prompts_text[text_ptr]
                 all_prompt_token_ids_out[gid] = all_prompt_token_ids_text[text_ptr]
                 all_images_grid_thw_list[gid] = all_images_grid_thw_text[text_ptr]
-                all_image_flags_out[gid] = all_image_flags_text[text_ptr]
                 text_ptr += 1
 
         # 4-B: Fill image-text
@@ -375,7 +357,6 @@ class MultimodalDataProcessor:
                 all_images_out[gid] = all_images_valid[img_ptr]
                 all_prompt_token_ids_out[gid] = all_prompt_token_ids_image_text[img_ptr]
                 all_images_grid_thw_list[gid] = all_images_grid_thw_image_text[img_ptr]
-                all_image_flags_out[gid] = all_image_flags_image_text[img_ptr]
                 img_ptr += 1
 
         # Stack grid_thw
@@ -395,7 +376,6 @@ class MultimodalDataProcessor:
             all_images_num=all_images_num,
             all_images_pixel_values=all_images_pixel_values_image_txt,
             all_images_grid_thw=all_images_grid_thw,
-            all_image_flags=all_image_flags_out,
             all_references=all_references,
         )
 
@@ -1085,9 +1065,6 @@ class FastExperienceMaker(NaiveExperienceMaker):
         is_multimodal = all_images is not None
         n_samples = config.n_samples_per_prompt
 
-        if is_multimodal:
-            is_internvl = "internvl" in self.actor.pretrain_or_model.lower()
-
         # ========== Configure Sampling Parameters ==========
         if config.engine_type == "vllm":
             sampling_params = SamplingParams(
@@ -1130,7 +1107,6 @@ class FastExperienceMaker(NaiveExperienceMaker):
                 all_references=all_references,
                 images_num=images_num,
                 n_samples_per_prompt=n_samples,
-                is_internvl=is_internvl,
             )
             all_prompt_token_ids = processed_data["all_prompt_token_ids"]
             all_prompts = processed_data["all_prompts"]
@@ -1138,7 +1114,6 @@ class FastExperienceMaker(NaiveExperienceMaker):
             all_images_num = processed_data["all_images_num"]
             all_images_pixel_values = processed_data["all_images_pixel_values"]
             all_images_grid_thw = processed_data["all_images_grid_thw"]
-            all_image_flags = processed_data["all_image_flags"]
             all_references = processed_data["all_references"]
         else:
             # Text-only processing
@@ -1216,9 +1191,7 @@ class FastExperienceMaker(NaiveExperienceMaker):
                     grid_thw=micro_batch_grid_thw if is_multimodal else None,
                     raw_images=micro_batch_raw_images if is_multimodal else None,
                     pixel_values=all_images_pixel_values if is_multimodal else None,
-                    image_flags=all_image_flags if is_multimodal else None,
                     images_num=all_images_num[i:i + config.micro_rollout_batch_size] if is_multimodal else None,
-                    is_internvl=is_internvl if is_multimodal else False,
                     image_patch_idx=image_patch_idx,
                 )
                 # Update image_patch_idx from the returned value
@@ -1564,10 +1537,9 @@ class FastExperienceMaker(NaiveExperienceMaker):
         """
         device = get_current_device()
         vlm_mode = isinstance(all_samples[0], SamplesVL)
-        is_internvl = "internvl" in self.actor.pretrain_or_model.lower() if vlm_mode else False
 
         # ========== Stage 0: Preprocessing ==========
-        outputs = [self._preprocess_sample(sample, vlm_mode, is_internvl, device) for sample in all_samples]
+        outputs = [self._preprocess_sample(sample, vlm_mode, device) for sample in all_samples]
 
         # ========== Stage 1: Actor Forward ==========
         Timer.start('    actor_logprob')
@@ -1613,7 +1585,6 @@ class FastExperienceMaker(NaiveExperienceMaker):
         self,
         sample: Union[Samples, SamplesVL],
         vlm: bool,
-        internvl: bool,
         device: torch.device,
     ) -> _SamplesOutput:
         """
@@ -1623,8 +1594,6 @@ class FastExperienceMaker(NaiveExperienceMaker):
         :type sample: Union[Samples, SamplesVL]
         :param vlm: Vision-language mode flag
         :type vlm: bool
-        :param internvl: InternVL model flag
-        :type internvl: bool
         :param device: Target device
         :type device: torch.device
         :return: _SamplesOutput with data ready for model inference
@@ -1646,19 +1615,13 @@ class FastExperienceMaker(NaiveExperienceMaker):
         # Build extra kwargs for VLM
         extra_kwargs = {}
         if vlm:
-            if internvl:
-                extra_kwargs = dict(
-                    pixel_values_intern=sample.pixel_values_intern,
-                    image_flags=sample.image_flags,
-                )
-            else:
-                extra_kwargs = dict(
-                    pixel_values=sample.pixel_values,
-                    image_grid_thw=sample.image_grid_thws,
-                )
+            extra_kwargs = dict(
+                pixel_values=sample.pixel_values,
+                image_grid_thw=sample.image_grid_thws,
+            )
 
         # Fix Qwen-VL image token count bug
-        self._fix_qwen_vl_image_tokens(sequences, sample, vlm, internvl)
+        self._fix_qwen_vl_image_tokens(sequences, sample, vlm)
 
         return _SamplesOutput(
             sequences=sequences,
@@ -1671,7 +1634,6 @@ class FastExperienceMaker(NaiveExperienceMaker):
             prompts=prompts,
             labels=labels,
             pixel_values=getattr(sample, "pixel_values", None),
-            pixel_values_intern=getattr(sample, "pixel_values_intern", None),
             image_grid_thw=getattr(sample, "image_grid_thws", None),
             raw_images=getattr(sample, "raw_images", None),
             img_num=getattr(sample, "img_num", None),
@@ -1685,7 +1647,6 @@ class FastExperienceMaker(NaiveExperienceMaker):
         sequences: torch.Tensor,
         sample: SamplesVL,
         vlm: bool,
-        internvl: bool,
     ) -> None:
         """
         Fix Qwen-VL image token count mismatch.
@@ -1700,10 +1661,8 @@ class FastExperienceMaker(NaiveExperienceMaker):
         :type sample: SamplesVL
         :param vlm: Vision-language mode flag
         :type vlm: bool
-        :param internvl: InternVL flag
-        :type internvl: bool
         """
-        if not vlm or internvl or sample.pixel_values is None:
+        if not vlm or sample.pixel_values is None:
             return
 
         config = self.strategy.unwrap_model(self.actor.model).config
@@ -1782,8 +1741,6 @@ class FastExperienceMaker(NaiveExperienceMaker):
                 output.pixel_values,
                 output.image_grid_thw,
                 output.raw_images,
-                output.pixel_values_intern,
-                output.image_flags,
                 output.action_log_probs,
                 output.base_action_log_probs,
                 output.value,
@@ -1852,15 +1809,12 @@ class FastExperienceMaker(NaiveExperienceMaker):
         if is_multimodal:
             pixel_values = []
             image_grid_thw_list = []
-            image_flags = []
             all_img_num = []
 
             grid_thw = kwargs["grid_thw"]
             raw_images = kwargs["raw_images"]
             pixel_values_tensor = kwargs["pixel_values"]
-            image_flags_tensor = kwargs["image_flags"]
             images_num = kwargs["images_num"]
-            is_internvl = kwargs["is_internvl"]
             image_patch_idx = kwargs["image_patch_idx"]
 
             local_grid_idx = 0
@@ -1883,15 +1837,8 @@ class FastExperienceMaker(NaiveExperienceMaker):
 
                 for img_idx in range(image_num):
                     grid = grid_thw[local_grid_idx + img_idx]
-
-                    if is_internvl:
-                        num_patch = grid if isinstance(grid, int) else grid.sum().item()
-                        flags_slice = image_flags_tensor[image_patch_idx:image_patch_idx + num_patch]
-                        image_flags.append(flags_slice)
-                        image_grid_thw_list.append(torch.tensor([1, 1, num_patch]).unsqueeze(0))
-                    else:
-                        num_patch = grid[0] * grid[1] * grid[2]
-                        image_grid_thw_list.append(grid.clone().unsqueeze(0))
+                    num_patch = grid[0] * grid[1] * grid[2]
+                    image_grid_thw_list.append(grid.clone().unsqueeze(0))
 
                     pixel_slice = pixel_values_tensor[image_patch_idx:image_patch_idx + num_patch]
                     pixel_values.append(pixel_slice.clone())
@@ -1931,22 +1878,15 @@ class FastExperienceMaker(NaiveExperienceMaker):
             ), None  # Return None for image_patch_idx when no images
         else:
             # Process VLM pixel values
-            if is_internvl:
-                pixel_values_intern = (torch.cat(pixel_values, dim=0).cuda() if pixel_values[0].shape[0] > 0 else None)
-                pixel_values = None
-            else:
-                pixel_values = (torch.cat(pixel_values, dim=0).cuda() if pixel_values[0].shape[0] > 0 else None)
-                pixel_values_intern = None
+            pixel_values = (torch.cat(pixel_values, dim=0).cuda() if pixel_values[0].shape[0] > 0 else None)
 
             return SamplesVL(
                 sequences=sequences,
                 attention_mask=attention_mask,
                 action_mask=action_mask,
-                image_grid_thws=(torch.cat(image_grid_thw_list, dim=0).to("cuda") if not is_internvl else None),
+                image_grid_thws=(torch.cat(image_grid_thw_list, dim=0).to("cuda")),
                 raw_images=raw_images,
                 pixel_values=pixel_values,
-                pixel_values_intern=pixel_values_intern,
-                image_flags=(torch.cat(image_flags, dim=0).to("cuda") if is_internvl else None),
                 num_actions=action_mask.size(1),
                 packed_seq_lens=None,
                 response_length=action_mask.float().sum(dim=-1),

@@ -343,13 +343,24 @@ make docs-live
 
 ## 🤝 贡献指南
 
-我们欢迎社区贡献！请遵循以下步骤：
+非常欢迎并感谢您的贡献！为了确保协作顺畅，请遵循以下开发流程：
 
-1. Fork 本仓库
-2. 创建特性分支 (`git checkout -b feature/AmazingFeature`)
-3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
-4. 推送到分支 (`git push origin feature/AmazingFeature`)
-5. 开启 Pull Request
+1.  **Fork 本仓库**：点击右上角的 "Fork" 按钮，将项目复刻到您的 GitHub 账户下。
+2.  **创建特性分支**：建议基于 `main` 分支创建新分支。确保属于文档的分支以 *doc* 模式命名，以便自动部署文档站点。
+    ```bash
+    git checkout -b feature/your-feature-name
+    ```
+3.  **提交更改**：请遵循 [Conventional Commits](https://www.conventionalcommits.org/) 规范撰写提交信息。
+    *   格式示例：`feature(user): 简短描述您的更改`
+    *   常用类型：`feature` (新功能), `fix` (修复), `polish` (润色优化), `docs` (文档), `style` (格式), `refactor` (重构)。
+    ```bash
+    git commit -m 'feature(user): add an amazing feature'
+    ```
+4.  **推送到分支**：将更改推送到您的远程仓库。
+    ```bash
+    git push origin feature/your-feature-name
+    ```
+5.  **开启 Pull Request**：前往原仓库，创建一个指向 `main` (或指定开发分支) 的 Pull Request，并详细描述您的更改内容。
 
 ### 代码规范
 
@@ -408,40 +419,6 @@ make fcheck
 
 感谢所有贡献者和支持者！
 
----
-
-## 🗓️ RoadMap
-
-我们正在进行以下改进和功能开发：
-
-### 核心功能增强
-
-- [ ] **Trajectory 功能扩展**
-  - 新增更多分析指标
-  - 增强轨迹保存和分析能力
-
-- [ ] **Reward 机制重构**
-  - 重构 rule-based 和 model-based reward 计算
-  - 优化 reward dataset 处理流程
-
-### 算法优化与集成
-
-- [ ] **更多算法支持**
-  - Entropy-based token selection
-  - GMPO (Geometric-Mean Policy Optimization)
-  - GSPO (Group Sequence Policy Optimization)
-
-- [ ] **Advantage 计算重构**
-  - 优化 advantage estimation 模块架构
-  - 统一不同算法的 advantage 计算接口
-
-- [ ] **Loss-Filter 机制优化**
-  - 重构 loss filtering 实现
-  - 完成 GSM8K/Geo3K 基准测试
-  - 实验结果记录和分析
-
-
-欢迎社区贡献和反馈！
 
 ---
 

@@ -607,11 +607,13 @@ class PPOTrainer(ABC):
         if global_step % args.logging_steps == 0:
             # Wandb logging
             if self._wandb is not None and self.strategy.is_rank_0():
-                logs = {"train/%s" % k: v
-                        for k, v in {
-                            **logs_dict,
-                            "global_step": global_step,
-                        }.items()}
+                logs = {
+                    "train/%s" % k: v
+                    for k, v in {
+                        **logs_dict,
+                        "global_step": global_step,
+                    }.items()
+                }
                 if self.experience_maker.perf_stats is not None:
                     logs.update({f"perf/experience_maker/{k}": v for k, v in self.experience_maker.perf_stats.items()})
                 self._wandb.log(logs)
