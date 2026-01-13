@@ -5,7 +5,7 @@ import random
 from typing import List, Dict, Any, Tuple
 from loguru import logger
 
-from .utils import BaseDataHandler
+from .utils import BaseDataHandler, get_task_instructions
 
 
 class HPDv3Handler(BaseDataHandler):
@@ -341,7 +341,7 @@ class HPDv3PairHandler(HPDv3Handler):
             raise ValueError(f"Missing generation prompt in item: {item}")
 
         # Get system prompts from config
-        task_instruction_template = config["task_instruction"]
+        task_instruction_template = get_task_instructions(self, config)
         task_instruction = task_instruction_template.format(prompt=prompt_text)
 
         # Get max_pixels from config
@@ -360,7 +360,7 @@ class HPDv3PairHandler(HPDv3Handler):
 
             {"role": "user", "content": [
                 {"type": "text", "text": "The following is the first image."},
-                {"type": "image", "image": image0, "max_pixels": max_pixels} # to save memory
+                {"type": "image", "image": image0, "max_pixels": max_pixels}
             ]},
             
             {"role": "user", "content": [

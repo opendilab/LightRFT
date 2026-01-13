@@ -7,7 +7,7 @@ import pyarrow.parquet as pq
 from typing import List, Dict, Any, Tuple
 from loguru import logger
 
-from .utils import BaseDataHandler
+from .utils import BaseDataHandler, get_task_instructions
 
 
 class GenAIBenchPairHandler(BaseDataHandler):
@@ -154,14 +154,14 @@ class GenAIBenchPairHandler(BaseDataHandler):
             raise ValueError("Missing visual content for 'image1' or 'image2'.")
 
         # Get generation prompt from data item
-        gen_prompt = item["prompt"]
+        prompt_text = item["prompt"]
 
         # Get system prompts from config
-        task_instruction_template = config.get("task_instruction", "{prompt}")
-        task_instruction = task_instruction_template.format(prompt=gen_prompt)
+        task_instruction_template = get_task_instructions(self, config)
+        task_instruction = task_instruction_template.format(prompt=prompt_text)
 
         # Get max_pixels from config
-        max_pixels = config.get("max_pixels", 768*480)
+        max_pixels = config["max_pixels"]
 
         # Random flip to avoid positional bias
         flip = random.random() > 0.5
@@ -218,7 +218,7 @@ class GenAIBenchPairHandler(BaseDataHandler):
         other = {
             "preference": actual_preference,
             "reward_rule_label": "general",
-            "prompt": gen_prompt,
+            "prompt": prompt_text,
             "model1": item['model1'] if not flip else item['model2'],
             "model2": item['model2'] if not flip else item['model1'],
             "index": item['index'],
@@ -363,15 +363,15 @@ class GenAIBenchVideoPairHandler(BaseDataHandler):
             raise ValueError(f"Missing video content for id {item['id']}.")
 
         # Get generation prompt from data item
-        gen_prompt = item["prompt"]
+        prompt_text = item["prompt"]
 
         # Get system prompts from config
-        task_instruction_template = config.get("task_instruction", "{prompt}")
-        task_instruction = task_instruction_template.format(prompt=gen_prompt)
+        task_instruction_template = get_task_instructions(self, config)
+        task_instruction = task_instruction_template.format(prompt=prompt_text)
 
         # Get FPS and max_pixels from config
-        fps = config.get("video_fps", 2.0)
-        max_pixels = config.get("video_max_pixels", config.get("max_pixels", 720 * 480))
+        fps = config["video_fps"]
+        max_pixels = config["max_pixels"]
 
         # Random flip to avoid positional bias
         flip = random.random() > 0.5
@@ -428,7 +428,7 @@ class GenAIBenchVideoPairHandler(BaseDataHandler):
         other = {
             "id": item["id"],
             "preference": actual_preference,
-            "prompt": gen_prompt,
+            "prompt": prompt_text,
             "model1": item['model1'] if not flip else item['model2'],
             "model2": item['model2'] if not flip else item['model1'],
             "source": item.get("source", "genai_bench_video"),

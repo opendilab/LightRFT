@@ -5,7 +5,7 @@ import random
 from typing import List, Dict, Any, Tuple
 from loguru import logger
 
-from .utils import BaseDataHandler
+from .utils import BaseDataHandler, get_task_instructions
 
 
 class VideoDPOPairHandler(BaseDataHandler):
@@ -129,7 +129,7 @@ class VideoDPOPairHandler(BaseDataHandler):
         video_gen_prompt = item["frame_caption"]
 
         # Get system prompts from config
-        task_instruction_template = config["task_instruction"]
+        task_instruction_template = get_task_instructions(self, config)
         task_instruction = task_instruction_template.format(prompt=video_gen_prompt)
 
         # Get max_pixels from config

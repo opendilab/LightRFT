@@ -3,7 +3,7 @@ import copy
 from typing import List, Dict, Any, Tuple
 from loguru import logger
 
-from .utils import BaseDataHandler
+from .utils import BaseDataHandler, get_task_instructions
 
 
 class RapidataT2VHandler(BaseDataHandler):
@@ -384,7 +384,7 @@ class RapidataT2VPairHandler(RapidataT2VHandler):
         video_gen_prompt = item["prompt"]
 
         # Get system prompts from config
-        task_instruction_template = config["task_instruction"]
+        task_instruction_template = get_task_instructions(self, config)
         task_instruction = task_instruction_template.format(prompt=video_gen_prompt)
 
         # Get max_pixels from config
@@ -475,7 +475,7 @@ class RapidataI2VPairHandler(RapidataI2VHandler):
         prompt_text = item["prompt"]
 
         # Get system prompts from config
-        task_instruction_template = config["task_instruction"]
+        task_instruction_template = get_task_instructions(self, config)
         task_instruction = task_instruction_template.format(prompt=prompt_text)
 
         # Get FPS from config

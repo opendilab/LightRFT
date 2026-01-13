@@ -177,17 +177,6 @@ def train(args: argparse.Namespace) -> None:
             initial_model = strategy.prepare_model(initial_model, is_training=False)
             strategy.offload_model(initial_model)
 
-    if args.enable_ema:
-        ema_model = Actor(
-            args.pretrain,
-            use_flash_attention_2=args.flash_attn,
-            bf16=args.bf16,
-            load_in_4bit=args.load_in_4bit,
-            ds_config=ds_eval_cfg,
-        )
-    else:
-        ema_model = None
-
     # configure tokenizer and processor
     tokenizer, processor = get_tokenizer_processor_vl(
         args.pretrain, actor.model, "left", strategy, use_fast=not strategy.args.disable_fast_tokenizer
@@ -264,10 +253,6 @@ def train(args: argparse.Namespace) -> None:
         initial_model,
     ) = strategy.prepare_models_and_optimizers(actor, critic, [], initial_model, args, max_steps)
 
-    if ema_model:
-        ema_model._offload = True
-        ema_model = strategy.prepare(ema_model, is_rlhf=True)
-
     # load checkpoint
     consumed_samples = 0
     if args.load_checkpoint and os.path.exists(os.path.join(args.ckpt_path, "_actor")):
@@ -292,7 +277,7 @@ def train(args: argparse.Namespace) -> None:
         critic,
         reward_models,
         initial_model,
-        ema_model,
+        None,
         actor_optim,
         critic_optim,
         actor_scheduler,
@@ -350,12 +335,6 @@ def train(args: argparse.Namespace) -> None:
     )
 
     # save model checkpoint after fitting on only rank0
-    strategy.save_model(
-        ema_model if args.enable_ema else actor,
-        tokenizer,
-        args.save_path,
-    )
-
     if args.critic_pretrain and args.save_value_network:
         strategy.save_model(
             critic,
@@ -452,7 +431,6 @@ if __name__ == "__main__":
     parser.add_argument("--zero_stage", type=int, default=2, help="DeepSpeed ZeRO stage")
     parser.add_argument("--gradient_checkpointing", action="store_true", default=False)
     parser.add_argument("--bf16", action="store_true", default=False, help="Enable bfloat16")
-    parser.add_argument("--enable_ema", action="store_true", help="Enable EMA checkpoint for the model.")
     parser.add_argument("--zpg", type=int, default=1, help="ZeRO++ max partition size")
     parser.add_argument("--adam_offload", action="store_true", default=False, help="Offload Adam Optimizer")
     parser.add_argument("--actor_init_on_gpu", action="store_true", default=False)

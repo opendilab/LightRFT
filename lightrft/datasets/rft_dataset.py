@@ -156,20 +156,8 @@ class RFTDatasetVL(Dataset):
         if loaded_content is None:
             raise RuntimeError(f"Failed to load media content: {media_info}")
 
-        # Select prompt based on task type or source if task_instruction is a dict
-        config = copy.deepcopy(self.config)
-        task_instruction = config.get("task_instruction")
-        if isinstance(task_instruction, dict):
-            if hasattr(handler, "task_type"):
-                prompt = task_instruction.get(handler.task_type)
-                if prompt is None:
-                   raise ValueError(f"Task instruction for {handler.task_type} not found.")
-            else:
-                raise ValueError(f"Handler for source {source} does not specify a task_type.")
-
-            config["task_instruction"] = prompt
-
         # Pass the loaded content dict to parse_item
+        config = copy.deepcopy(self.config)
         messages, reference = handler.parse_item(item, loaded_content, config)
 
         # Prepare inputs from message sequences

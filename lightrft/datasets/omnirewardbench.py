@@ -3,7 +3,7 @@ import copy
 from typing import List, Dict, Any, Tuple
 from loguru import logger
 
-from .utils import BaseDataHandler
+from .utils import BaseDataHandler, get_task_instructions
 
 
 class OmniRewardBenchT2IHandler(BaseDataHandler):
@@ -525,7 +525,7 @@ class OmniRewardBenchT2IPairHandler(OmniRewardBenchT2IHandler):
     Dataset Repo: https://huggingface.co/datasets/HongbangYuan/OmniRewardBench
     """
     def parse_item(self, item: Dict[str, Any], media_content: Dict[str, Any],
-                   config: Dict[str, Any]) -> Tuple[List[Dict], List[Dict], Dict]:
+                   config: Dict[str, Any]) -> Tuple[List[Dict], Dict]:
         """
         Parse a data item into generative messages and metadata.
 
@@ -552,12 +552,15 @@ class OmniRewardBenchT2IPairHandler(OmniRewardBenchT2IHandler):
             raise ValueError(f"Missing visual content for 'image1' or 'image2'.")
 
         # Get generation prompt from data item
-        gen_prompt = item["prompt"]
+        prompt_text = item["prompt"]
 
         # Get system prompts from config
-        task_instruction_template = config["task_instruction"]
-        task_instruction = task_instruction_template.format(prompt=gen_prompt)
+        task_instruction_template = get_task_instructions(self, config)
+        task_instruction = task_instruction_template.format(prompt=prompt_text)
         criteria = item["criteria"]
+
+        # Get max_pixels from config
+        max_pixels = config["max_pixels"]
 
         # Build messages
         messages = [
@@ -577,7 +580,7 @@ class OmniRewardBenchT2IPairHandler(OmniRewardBenchT2IHandler):
                 }, {
                     "type": "image",
                     "image": image1,
-                    "max_pixels": 1280 * 720
+                    "max_pixels": max_pixels,
                 }]
             },
             {
@@ -588,7 +591,7 @@ class OmniRewardBenchT2IPairHandler(OmniRewardBenchT2IHandler):
                 }, {
                     "type": "image",
                     "image": image2,
-                    "max_pixels": 1280 * 720
+                    "max_pixels": max_pixels,
                 }]
             },
         ]
@@ -603,7 +606,7 @@ class OmniRewardBenchT2IPairHandler(OmniRewardBenchT2IHandler):
             "criteria": item["criteria"],
             "criteria_preference": item["criteria_preference"],
             "id": item["id"],
-            "prompt": gen_prompt,
+            "prompt": prompt_text,
             "source": item['source'],
             "image1_path": item['response1_path'],
             "image2_path": item['response2_path'],
@@ -622,7 +625,7 @@ class OmniRewardBenchT2VPairHandler(OmniRewardBenchT2VHandler):
     Dataset Repo: https://huggingface.co/datasets/HongbangYuan/OmniRewardBench
     """
     def parse_item(self, item: Dict[str, Any], media_content: Dict[str, Any],
-                   config: Dict[str, Any]) -> Tuple[List[Dict], List[Dict], Dict]:
+                   config: Dict[str, Any]) -> Tuple[List[Dict], Dict]:
         """
         Parse a data item into generative messages and metadata.
 
@@ -652,12 +655,12 @@ class OmniRewardBenchT2VPairHandler(OmniRewardBenchT2VHandler):
         gen_prompt = item["prompt"]
 
         # Get system prompts from config
-        task_instruction_template = config["task_instruction"]
+        task_instruction_template = get_task_instructions(self, config)
         task_instruction = task_instruction_template.format(prompt=gen_prompt)
 
         # Get FPS and max_pixels from config
         fps = config["video_fps"]
-        max_pixels = config.get("video_max_pixels", 720 * 480)
+        max_pixels = config["max_pixels"]
 
         # Build messages
         messages = [{

@@ -4,7 +4,7 @@ import pandas as pd
 from typing import List, Dict, Any, Tuple, Union
 from loguru import logger
 
-from .utils import BaseDataHandler
+from .utils import BaseDataHandler, get_task_instructions
 
 
 class VideoGenRewardBenchPairHandler(BaseDataHandler):
@@ -123,7 +123,7 @@ class VideoGenRewardBenchPairHandler(BaseDataHandler):
             raise ValueError(f"Missing generation prompt in item: {item}")
 
         # Get system prompts from config
-        task_instruction_template = config["task_instruction"]
+        task_instruction_template = get_task_instructions(self, config)
         task_instruction = task_instruction_template.format(prompt=prompt_text)
 
         # Identify preferred and rejected videos
