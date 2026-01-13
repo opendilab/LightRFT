@@ -371,6 +371,7 @@ class HPDv3PairHandler(HPDv3Handler):
 
         other = {
             "preference": preference,
+            "reward_rule_label": "general",
             "source": item["source"],
             "task_type": self.task_type,
             "prompt": prompt_text,

@@ -179,6 +179,7 @@ class VideoGenRewardBenchPairHandler(BaseDataHandler):
 
         other = {
             "preference": preference,
+            "reward_rule_label": "general",
             "task_type": self.task_type,
             "prompt": prompt_text,
             "A_model": item.get("A_model"),

@@ -174,6 +174,7 @@ class VideoDPOPairHandler(BaseDataHandler):
         
         other = {
             "preference": preference,
+            "reward_rule_label": "general",
             "prompt": video_gen_prompt,
             "source": "VideoDPO",
             "task_type": self.task_type,

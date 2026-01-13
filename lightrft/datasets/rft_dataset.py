@@ -13,7 +13,6 @@ from lightrft.datasets import (
     RapidataT2VPairHandler, 
     VideoGenRewardBenchPairHandler,
     HPDv3PairHandler,
-    ImageGenCoTRewardHandler,
     OmniRewardBenchT2IPairHandler,
     OmniRewardBenchT2VPairHandler,
     VideoDPOPairHandler,
@@ -91,7 +90,6 @@ class RFTDatasetVL(Dataset):
             "rapidata-t2v": RapidataT2VPairHandler(),
             "videogen-rewardbench": VideoGenRewardBenchPairHandler(),
             "hpdv3": HPDv3PairHandler(),
-            "imagegen-cot-reward-5k": ImageGenCoTRewardHandler(),
             "omnirewardbench-t2i": OmniRewardBenchT2IPairHandler(),
             "omnirewardbench-t2v": OmniRewardBenchT2VPairHandler(),
             "videodpo": VideoDPOPairHandler(),
@@ -177,9 +175,10 @@ class RFTDatasetVL(Dataset):
         # Prepare inputs from message sequences
         input_text, image_inputs, video_inputs = self._prepare_inputs(messages)
 
-        # Configure label, by default "general"
-        # Label is used to identified which reward function or reward model to use
-        label = config.get("label", "general")
+        # Configure label for reward rule, by default "general"
+        # This label is used to identify which reward function or reward model to use
+        # for computing rewards during RL training
+        label = reference.get("reward_rule_label", "general")
 
         return input_text, image_inputs, video_inputs, reference, label
 

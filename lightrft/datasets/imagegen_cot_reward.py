@@ -6,7 +6,7 @@ from loguru import logger
 from .utils import BaseDataHandler
 
 
-class ImageGenCoTRewardHandler(BaseDataHandler):
+class ImageGenCoTRewardGRMHandler(BaseDataHandler):
     """
     Data handler for ImageGen-CoT-Reward-5K dataset. For Text-to-Image generation task.
 

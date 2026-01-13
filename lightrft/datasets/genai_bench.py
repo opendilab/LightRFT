@@ -217,6 +217,7 @@ class GenAIBenchPairHandler(BaseDataHandler):
 
         other = {
             "preference": actual_preference,
+            "reward_rule_label": "general",
             "prompt": gen_prompt,
             "model1": item['model1'] if not flip else item['model2'],
             "model2": item['model2'] if not flip else item['model1'],
@@ -430,7 +431,8 @@ class GenAIBenchVideoPairHandler(BaseDataHandler):
             "prompt": gen_prompt,
             "model1": item['model1'] if not flip else item['model2'],
             "model2": item['model2'] if not flip else item['model1'],
-            "source": item.get("source", "genai_bench_video")
+            "source": item.get("source", "genai_bench_video"),
+            "reward_rule_label": "general",
         }
 
         return messages, other

@@ -426,6 +426,7 @@ class RapidataT2VPairHandler(RapidataT2VHandler):
             **labels,
             "source": item['source'],
             "task_type": self.task_type,
+            "reward_rule_label": "general",
         }
         return messages, other
 
@@ -517,5 +518,6 @@ class RapidataI2VPairHandler(RapidataI2VHandler):
             **labels,
             "source": item['source'],
             "task_type": self.task_type,
+            "reward_rule_label": "general",
         }
         return messages, other

@@ -598,6 +598,7 @@ class OmniRewardBenchT2IPairHandler(OmniRewardBenchT2IHandler):
 
         other = {
             "preference": pref_label,
+            "reward_rule_label": "general",
             "task_type": self.task_type,
             "criteria": item["criteria"],
             "criteria_preference": item["criteria_preference"],
@@ -691,6 +692,7 @@ class OmniRewardBenchT2VPairHandler(OmniRewardBenchT2VHandler):
 
         other = {
             "preference": pref_label,
+            "reward_rule_label": "general",
             "task_type": self.task_type,
             "criteria": item["criteria"],
             "criteria_preference": item["criteria_preference"],

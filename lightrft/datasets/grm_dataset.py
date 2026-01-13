@@ -6,7 +6,7 @@ from typing import List, Dict, Any, Tuple, Optional
 from transformers import AutoTokenizer, AutoProcessor
 
 from .omnirewardbench import OmniRewardBenchT2IGRMHandler
-from .imagegen_cot_reward import ImageGenCoTRewardHandler
+from .imagegen_cot_reward import ImageGenCoTRewardGRMHandler
 from .hpdv3 import HPDv3GRMHandler
 from .utils import zero_pad_sequences, load_multimodal_content, find_subsequence
 
@@ -85,7 +85,7 @@ class GRMDataset(Dataset):
             raise NotImplementedError(f"Processor type {self.processor.__class__.__name__} not supported yet.")
 
         self.handlers = {
-            "imagegen-cot-reward-5k": ImageGenCoTRewardHandler(),
+            "imagegen-cot-reward-5k": ImageGenCoTRewardGRMHandler(),
             "omnirewardbench-t2i": OmniRewardBenchT2IGRMHandler(),
             "hpdv3": HPDv3GRMHandler(),
         }
