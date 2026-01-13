@@ -314,6 +314,14 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">horizon</span> <span class="o">=</span> <span class="n">horizon</span>
 
 <div class="viewcode-block" id="AdaptiveKLController.update"><a class="viewcode-back" href="../../../api_doc/trainer/kl_controller.html#lightrft.trainer.kl_controller.AdaptiveKLController.update">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">current</span><span class="p">,</span> <span class="n">n_steps</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Update KL coefficient using adaptive algorithm.</span>
+
+<span class="sd">        :param current: Current KL divergence value.</span>
+<span class="sd">        :type current: float</span>
+<span class="sd">        :param n_steps: Number of training steps taken.</span>
+<span class="sd">        :type n_steps: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">target</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">target</span>
         <span class="n">proportional_error</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">current</span> <span class="o">/</span> <span class="n">target</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">)</span>
         <span class="n">mult</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">proportional_error</span> <span class="o">*</span> <span class="n">n_steps</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">horizon</span>
@@ -326,6 +334,14 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">kl_coef</span>
 
 <div class="viewcode-block" id="FixedKLController.update"><a class="viewcode-back" href="../../../api_doc/trainer/kl_controller.html#lightrft.trainer.kl_controller.FixedKLController.update">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">current</span><span class="p">,</span> <span class="n">n_steps</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Update KL controller state (no-op for fixed KL).</span>
+
+<span class="sd">        :param current: Current KL divergence value (unused).</span>
+<span class="sd">        :type current: float</span>
+<span class="sd">        :param n_steps: Number of training steps (unused).</span>
+<span class="sd">        :type n_steps: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">pass</span></div></div>
 </pre></div>
 

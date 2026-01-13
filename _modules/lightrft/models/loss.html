@@ -381,6 +381,20 @@
         <span class="n">advantages</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
         <span class="n">action_mask</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute PPO policy loss with optional clipping or CPG variant.</span>
+
+<span class="sd">        :param log_probs: Log probabilities of actions under current policy.</span>
+<span class="sd">        :type log_probs: torch.Tensor</span>
+<span class="sd">        :param old_log_probs: Log probabilities of actions under old policy.</span>
+<span class="sd">        :type old_log_probs: torch.Tensor</span>
+<span class="sd">        :param advantages: Estimated advantages for each action.</span>
+<span class="sd">        :type advantages: torch.Tensor</span>
+<span class="sd">        :param action_mask: Optional mask for valid actions (1 = valid, 0 = ignore).</span>
+<span class="sd">        :type action_mask: Optional[torch.Tensor]</span>
+<span class="sd">        :return: Scalar policy loss.</span>
+<span class="sd">        :rtype: torch.Tensor</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_cpg_loss</span><span class="p">:</span>
             <span class="n">clipped_log_probs</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
                 <span class="n">advantages</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">log_probs</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">clip_eps</span><span class="p">))</span> <span class="o">+</span> <span class="n">old_log_probs</span><span class="p">),</span>
@@ -415,6 +429,20 @@
         <span class="n">returns</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
         <span class="n">action_mask</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute PPO value function loss with optional clipping.</span>
+
+<span class="sd">        :param values: Current value predictions.</span>
+<span class="sd">        :type values: torch.Tensor</span>
+<span class="sd">        :param old_values: Value predictions from old policy (for clipping).</span>
+<span class="sd">        :type old_values: torch.Tensor</span>
+<span class="sd">        :param returns: Target return values (e.g., GAE returns).</span>
+<span class="sd">        :type returns: torch.Tensor</span>
+<span class="sd">        :param action_mask: Optional mask for valid timesteps (1 = valid, 0 = ignore).</span>
+<span class="sd">        :type action_mask: Optional[torch.Tensor]</span>
+<span class="sd">        :return: Scalar value loss (0.5 * MSE).</span>
+<span class="sd">        :rtype: torch.Tensor</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">clip_eps</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">values_clipped</span> <span class="o">=</span> <span class="n">old_values</span> <span class="o">+</span> <span class="p">(</span><span class="n">values</span> <span class="o">-</span> <span class="n">old_values</span><span class="p">)</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">clip_eps</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">clip_eps</span><span class="p">)</span>
             <span class="n">surr1</span> <span class="o">=</span> <span class="p">(</span><span class="n">values_clipped</span> <span class="o">-</span> <span class="n">returns</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
@@ -434,6 +462,18 @@
 <div class="viewcode-block" id="PairWiseLoss.forward"><a class="viewcode-back" href="../../../api_doc/models/loss.html#lightrft.models.loss.PairWiseLoss.forward">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">chosen_reward</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">reject_reward</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">margin</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute pairwise ranking loss.</span>
+
+<span class="sd">        :param chosen_reward: Reward scores for chosen/preferred samples.</span>
+<span class="sd">        :type chosen_reward: torch.Tensor</span>
+<span class="sd">        :param reject_reward: Reward scores for rejected samples.</span>
+<span class="sd">        :type reject_reward: torch.Tensor</span>
+<span class="sd">        :param margin: Optional margin value to enforce separation.</span>
+<span class="sd">        :type margin: Optional[torch.Tensor]</span>
+<span class="sd">        :return: Mean negative log-sigmoid loss.</span>
+<span class="sd">        :rtype: torch.Tensor</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">margin</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">loss</span> <span class="o">=</span> <span class="o">-</span><span class="n">F</span><span class="o">.</span><span class="n">logsigmoid</span><span class="p">(</span><span class="n">chosen_reward</span> <span class="o">-</span> <span class="n">reject_reward</span> <span class="o">-</span> <span class="n">margin</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
@@ -458,6 +498,20 @@
         <span class="n">reference_chosen_logps</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
         <span class="n">reference_rejected_logps</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute DPO (Direct Preference Optimization) loss.</span>
+
+<span class="sd">        :param policy_chosen_logps: Log probabilities under policy for chosen samples.</span>
+<span class="sd">        :type policy_chosen_logps: torch.Tensor</span>
+<span class="sd">        :param policy_rejected_logps: Log probabilities under policy for rejected samples.</span>
+<span class="sd">        :type policy_rejected_logps: torch.Tensor</span>
+<span class="sd">        :param reference_chosen_logps: Log probabilities under reference model for chosen samples.</span>
+<span class="sd">        :type reference_chosen_logps: torch.Tensor</span>
+<span class="sd">        :param reference_rejected_logps: Log probabilities under reference model for rejected samples.</span>
+<span class="sd">        :type reference_rejected_logps: torch.Tensor</span>
+<span class="sd">        :return: Tuple of (loss, chosen_rewards, rejected_rewards).</span>
+<span class="sd">        :rtype: Tuple[torch.Tensor, torch.Tensor, torch.Tensor]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">pi_logratios</span> <span class="o">=</span> <span class="n">policy_chosen_logps</span> <span class="o">-</span> <span class="n">policy_rejected_logps</span>
         <span class="n">ref_logratios</span> <span class="o">=</span> <span class="n">reference_chosen_logps</span> <span class="o">-</span> <span class="n">reference_rejected_logps</span>
         <span class="n">logits</span> <span class="o">=</span> <span class="n">pi_logratios</span> <span class="o">-</span> <span class="n">ref_logratios</span>
@@ -495,6 +549,20 @@
         <span class="n">reference_chosen_logps</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">FloatTensor</span><span class="p">,</span>
         <span class="n">reference_rejected_logps</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">FloatTensor</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">FloatTensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">FloatTensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">FloatTensor</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute vanilla KTO loss for evenly sampled chosen/rejected pairs.</span>
+
+<span class="sd">        :param policy_chosen_logps: Log probabilities under policy for chosen samples.</span>
+<span class="sd">        :type policy_chosen_logps: torch.FloatTensor</span>
+<span class="sd">        :param policy_rejected_logps: Log probabilities under policy for rejected samples.</span>
+<span class="sd">        :type policy_rejected_logps: torch.FloatTensor</span>
+<span class="sd">        :param reference_chosen_logps: Log probabilities under reference model for chosen samples.</span>
+<span class="sd">        :type reference_chosen_logps: torch.FloatTensor</span>
+<span class="sd">        :param reference_rejected_logps: Log probabilities under reference model for rejected samples.</span>
+<span class="sd">        :type reference_rejected_logps: torch.FloatTensor</span>
+<span class="sd">        :return: Tuple of (losses, chosen_rewards, rejected_rewards).</span>
+<span class="sd">        :rtype: Tuple[torch.FloatTensor, torch.FloatTensor, torch.FloatTensor]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">chosen_KL</span> <span class="o">=</span> <span class="p">(</span><span class="n">policy_chosen_logps</span> <span class="o">-</span> <span class="n">reference_chosen_logps</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
         <span class="n">rejected_KL</span> <span class="o">=</span> <span class="p">(</span><span class="n">policy_rejected_logps</span> <span class="o">-</span> <span class="n">reference_rejected_logps</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 
@@ -538,6 +606,24 @@
         <span class="n">reference_rejected_logps</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">FloatTensor</span><span class="p">,</span>
         <span class="n">reference_KL_logps</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">FloatTensor</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">FloatTensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">FloatTensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">FloatTensor</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute KTO loss for unevenly sampled chosen/rejected pairs with distributed KL estimation.</span>
+
+<span class="sd">        :param policy_chosen_logps: Log probabilities under policy for chosen samples.</span>
+<span class="sd">        :type policy_chosen_logps: torch.FloatTensor</span>
+<span class="sd">        :param policy_rejected_logps: Log probabilities under policy for rejected samples.</span>
+<span class="sd">        :type policy_rejected_logps: torch.FloatTensor</span>
+<span class="sd">        :param policy_KL_logps: Log probabilities under policy for KL estimation samples.</span>
+<span class="sd">        :type policy_KL_logps: torch.FloatTensor</span>
+<span class="sd">        :param reference_chosen_logps: Log probabilities under reference model for chosen samples.</span>
+<span class="sd">        :type reference_chosen_logps: torch.FloatTensor</span>
+<span class="sd">        :param reference_rejected_logps: Log probabilities under reference model for rejected samples.</span>
+<span class="sd">        :type reference_rejected_logps: torch.FloatTensor</span>
+<span class="sd">        :param reference_KL_logps: Log probabilities under reference model for KL estimation samples.</span>
+<span class="sd">        :type reference_KL_logps: torch.FloatTensor</span>
+<span class="sd">        :return: Tuple of (losses, chosen_rewards, rejected_rewards, KL).</span>
+<span class="sd">        :rtype: Tuple[torch.FloatTensor, torch.FloatTensor, torch.FloatTensor, torch.FloatTensor]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">KL</span> <span class="o">=</span> <span class="p">(</span><span class="n">policy_KL_logps</span> <span class="o">-</span> <span class="n">reference_KL_logps</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span>
         <span class="c1"># all_reduce sums up the KL estimates across all devices (gradient will also be scaled by world size)</span>
         <span class="n">dist</span><span class="o">.</span><span class="n">all_reduce</span><span class="p">(</span><span class="n">KL</span><span class="p">,</span> <span class="n">op</span><span class="o">=</span><span class="n">dist</span><span class="o">.</span><span class="n">ReduceOp</span><span class="o">.</span><span class="n">SUM</span><span class="p">)</span>
@@ -576,6 +662,18 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">IGNORE_INDEX</span> <span class="o">=</span> <span class="o">-</span><span class="mi">100</span>
 
 <div class="viewcode-block" id="KDLoss.forward"><a class="viewcode-back" href="../../../api_doc/models/loss.html#lightrft.models.loss.KDLoss.forward">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logits</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">teacher_logits</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">label</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute knowledge distillation loss.</span>
+
+<span class="sd">        :param logits: Student model logits.</span>
+<span class="sd">        :type logits: torch.Tensor</span>
+<span class="sd">        :param teacher_logits: Teacher model logits (detached).</span>
+<span class="sd">        :type teacher_logits: torch.Tensor</span>
+<span class="sd">        :param label: Ground truth labels (tokens to ignore set to IGNORE_INDEX).</span>
+<span class="sd">        :type label: torch.Tensor</span>
+<span class="sd">        :return: Scalar KD loss.</span>
+<span class="sd">        :rtype: torch.Tensor</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">teacher_probs</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">teacher_logits</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
         <span class="n">inf_mask</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">logits</span><span class="p">)</span>
         <span class="n">logprobs</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">log_softmax</span><span class="p">(</span><span class="n">logits</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
@@ -599,6 +697,20 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">reward_token_ids</span> <span class="o">=</span> <span class="n">reward_token_ids</span>
 
 <div class="viewcode-block" id="PRMLoss.forward"><a class="viewcode-back" href="../../../api_doc/models/loss.html#lightrft.models.loss.PRMLoss.forward">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">logits</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">labels</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">return_acc</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute process reward model loss.</span>
+
+<span class="sd">        :param inputs: Input token IDs (used to locate placeholder tokens).</span>
+<span class="sd">        :type inputs: torch.Tensor</span>
+<span class="sd">        :param logits: Model output logits.</span>
+<span class="sd">        :type logits: torch.Tensor</span>
+<span class="sd">        :param labels: Target labels (hard or soft labels for reward tokens).</span>
+<span class="sd">        :type labels: torch.Tensor</span>
+<span class="sd">        :param return_acc: If True, also return accuracy.</span>
+<span class="sd">        :type return_acc: bool</span>
+<span class="sd">        :return: Loss tensor or tuple of (loss, accuracy) if return_acc=True.</span>
+<span class="sd">        :rtype: Union[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">placeholder_mask</span> <span class="o">=</span> <span class="n">inputs</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">placeholder_token_id</span>
         <span class="n">logits</span> <span class="o">=</span> <span class="n">logits</span><span class="p">[</span><span class="n">placeholder_mask</span><span class="p">]</span>
         <span class="n">labels</span> <span class="o">=</span> <span class="n">labels</span><span class="p">[</span><span class="n">placeholder_mask</span><span class="p">]</span>

@@ -311,6 +311,22 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">get_tokenizer</span><span class="p">(</span><span class="n">pretrain</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">padding_side</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">,</span> <span class="n">strategy</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">use_fast</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Load and configure a tokenizer for language models.</span>
+
+<span class="sd">    :param pretrain: Path or name of the pretrained tokenizer.</span>
+<span class="sd">    :type pretrain: str</span>
+<span class="sd">    :param model: Model instance to sync pad_token_id with.</span>
+<span class="sd">    :type model: transformers.PreTrainedModel</span>
+<span class="sd">    :param padding_side: Which side to pad on (&#39;left&#39; or &#39;right&#39;).</span>
+<span class="sd">    :type padding_side: str</span>
+<span class="sd">    :param strategy: Optional training strategy for logging.</span>
+<span class="sd">    :type strategy: Optional[Any]</span>
+<span class="sd">    :param use_fast: Whether to use fast tokenizer implementation.</span>
+<span class="sd">    :type use_fast: bool</span>
+<span class="sd">    :return: Configured tokenizer instance.</span>
+<span class="sd">    :rtype: transformers.AutoTokenizer</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">tokenizer</span> <span class="o">=</span> <span class="n">AutoTokenizer</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">pretrain</span><span class="p">,</span> <span class="n">trust_remote_code</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">use_fast</span><span class="o">=</span><span class="n">use_fast</span><span class="p">)</span>
     <span class="n">tokenizer</span><span class="o">.</span><span class="n">padding_side</span> <span class="o">=</span> <span class="n">padding_side</span>
     <span class="c1"># NOTE: When enable vLLM, do not resize_token_embeddings, or the vocab size will mismatch with vLLM.</span>
@@ -324,6 +340,22 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">get_tokenizer_processor_vl</span><span class="p">(</span><span class="n">pretrain</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">padding_side</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">,</span> <span class="n">strategy</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">use_fast</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Load and configure tokenizer and processor for vision-language models.</span>
+
+<span class="sd">    :param pretrain: Path or name of the pretrained model.</span>
+<span class="sd">    :type pretrain: str</span>
+<span class="sd">    :param model: Model instance to sync pad_token_id with.</span>
+<span class="sd">    :type model: transformers.PreTrainedModel</span>
+<span class="sd">    :param padding_side: Which side to pad on (&#39;left&#39; or &#39;right&#39;).</span>
+<span class="sd">    :type padding_side: str</span>
+<span class="sd">    :param strategy: Optional training strategy for logging.</span>
+<span class="sd">    :type strategy: Optional[Any]</span>
+<span class="sd">    :param use_fast: Whether to use fast tokenizer implementation.</span>
+<span class="sd">    :type use_fast: bool</span>
+<span class="sd">    :return: Tuple of (tokenizer, processor).</span>
+<span class="sd">    :rtype: Tuple[transformers.AutoTokenizer, transformers.AutoProcessor]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">tokenizer</span> <span class="o">=</span> <span class="n">AutoTokenizer</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">pretrain</span><span class="p">,</span> <span class="n">trust_remote_code</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">use_fast</span><span class="o">=</span><span class="n">use_fast</span><span class="p">)</span>
     <span class="n">processor</span> <span class="o">=</span> <span class="n">AutoProcessor</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">pretrain</span><span class="p">,</span> <span class="n">trust_remote_code</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">use_fast</span><span class="o">=</span><span class="n">use_fast</span><span class="p">)</span>
 
@@ -349,6 +381,34 @@
     <span class="n">train_split</span><span class="o">=</span><span class="s2">&quot;train&quot;</span><span class="p">,</span>
     <span class="n">eval_split</span><span class="o">=</span><span class="s2">&quot;test&quot;</span><span class="p">,</span>
 <span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Load and blend multiple datasets with specified sampling probabilities.</span>
+
+<span class="sd">    Supports various dataset formats including local files (.json, .jsonl, .csv),</span>
+<span class="sd">    HuggingFace datasets, and datasets saved with ``save_to_disk``.</span>
+
+<span class="sd">    :param datasets: Comma-separated dataset paths or names (e.g., &#39;path1,path2&#39;).</span>
+<span class="sd">    :type datasets: str</span>
+<span class="sd">    :param probabilities: Comma-separated sampling probabilities (e.g., &#39;0.5,0.5&#39;).</span>
+<span class="sd">    :type probabilities: str</span>
+<span class="sd">    :param strategy: Optional training strategy for distributed logging.</span>
+<span class="sd">    :type strategy: Optional[Any]</span>
+<span class="sd">    :param seed: Random seed for reproducible interleaving.</span>
+<span class="sd">    :type seed: int</span>
+<span class="sd">    :param max_count: Maximum number of samples to load per dataset.</span>
+<span class="sd">    :type max_count: int</span>
+<span class="sd">    :param return_eval: Whether to return evaluation dataset.</span>
+<span class="sd">    :type return_eval: bool</span>
+<span class="sd">    :param stopping_strategy: How to handle datasets of different sizes</span>
+<span class="sd">        (&#39;first_exhausted&#39; or &#39;all_exhausted&#39;).</span>
+<span class="sd">    :type stopping_strategy: str</span>
+<span class="sd">    :param train_split: Name of the training split.</span>
+<span class="sd">    :type train_split: str</span>
+<span class="sd">    :param eval_split: Name of the evaluation split.</span>
+<span class="sd">    :type eval_split: str</span>
+<span class="sd">    :return: Training dataset, or tuple of (train_dataset, eval_dataset) if return_eval=True.</span>
+<span class="sd">    :rtype: Union[Dataset, Tuple[Dataset, Dataset]]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">datasets</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
     <span class="n">probabilities</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">probabilities</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)))</span>
     <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">probabilities</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">datasets</span><span class="p">)</span>
@@ -470,6 +530,17 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">convert_token_to_id</span><span class="p">(</span><span class="n">token</span><span class="p">,</span> <span class="n">tokenizer</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convert a string token to its corresponding token ID.</span>
+
+<span class="sd">    :param token: Token string to convert.</span>
+<span class="sd">    :type token: str</span>
+<span class="sd">    :param tokenizer: Tokenizer instance to use for conversion.</span>
+<span class="sd">    :type tokenizer: transformers.PreTrainedTokenizer</span>
+<span class="sd">    :return: Token ID.</span>
+<span class="sd">    :rtype: int</span>
+<span class="sd">    :raises ValueError: If token is not a string or encodes to multiple IDs.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">token</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
         <span class="n">token</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="n">token</span><span class="p">,</span> <span class="n">add_special_tokens</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">token</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
@@ -675,6 +746,13 @@
         <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
 
             <span class="k">class</span><span class="w"> </span><span class="nc">VideoInput</span><span class="p">:</span>
+<span class="w">                </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">                Placeholder class for VideoInput when transformers doesn&#39;t provide it.</span>
+
+<span class="sd">                This class serves as a compatibility shim for older Transformers versions</span>
+<span class="sd">                that don&#39;t export VideoInput from transformers.image_utils or</span>
+<span class="sd">                transformers.video_utils.</span>
+<span class="sd">                &quot;&quot;&quot;</span>
                 <span class="k">pass</span>
 
         <span class="kn">import</span><span class="w"> </span><span class="nn">transformers</span>

@@ -318,6 +318,14 @@
 <span class="sd">    Dataset Repo: https://huggingface.co/datasets/MizzenAI/HPDv3</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 <div class="viewcode-block" id="HPDv3Handler.load_data"><a class="viewcode-back" href="../../../api_doc/datasets/hpdv3.html#lightrft.datasets.hpdv3.HPDv3Handler.load_data">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">load_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Load and validate HPDv3 data from JSON or JSONL file.</span>
+
+<span class="sd">        :param path: Path to the data file.</span>
+<span class="sd">        :type path: str</span>
+<span class="sd">        :return: List of validated data items with existing visual files.</span>
+<span class="sd">        :rtype: List[Dict[str, Any]]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
                 <span class="n">raw_data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
@@ -348,6 +356,15 @@
         <span class="k">return</span> <span class="n">valid_data</span></div>
 
 <div class="viewcode-block" id="HPDv3Handler.get_media_info"><a class="viewcode-back" href="../../../api_doc/datasets/hpdv3.html#lightrft.datasets.hpdv3.HPDv3Handler.get_media_info">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_media_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Extract path info for the preferred and rejected images.</span>
+
+<span class="sd">        :param item: Data item containing image paths.</span>
+<span class="sd">        :type item: Dict[str, Any]</span>
+<span class="sd">        :return: Dictionary with &#39;preferred_image&#39; and &#39;rejected_image&#39; keys mapping</span>
+<span class="sd">            to path dictionaries, or None if files don&#39;t exist.</span>
+<span class="sd">        :rtype: Optional[Dict[str, Dict[str, str]]]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">data_root</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;data_root&#39;</span><span class="p">]</span>
 
         <span class="c1"># Build full local paths</span>
@@ -369,6 +386,23 @@
 
 <div class="viewcode-block" id="HPDv3Handler.parse_item"><a class="viewcode-back" href="../../../api_doc/datasets/hpdv3.html#lightrft.datasets.hpdv3.HPDv3Handler.parse_item">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">parse_item</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">media_content</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
                    <span class="n">config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">],</span> <span class="n">Dict</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parse a single HPDv3 item into message pairs for ranking.</span>
+
+<span class="sd">        Randomly shuffles preferred/rejected images to avoid positional bias.</span>
+
+<span class="sd">        :param item: Raw data item from HPDv3 dataset.</span>
+<span class="sd">        :type item: Dict[str, Any]</span>
+<span class="sd">        :param media_content: Loaded media content with &#39;preferred_image&#39; and</span>
+<span class="sd">            &#39;rejected_image&#39; keys.</span>
+<span class="sd">        :type media_content: Dict[str, Any]</span>
+<span class="sd">        :param config: Configuration dict with task_instruction template.</span>
+<span class="sd">        :type config: Dict[str, Any]</span>
+<span class="sd">        :return: Tuple of (messages0, messages1, other_info) where messages are</span>
+<span class="sd">            formatted for the reward model and other_info contains the preference label.</span>
+<span class="sd">        :rtype: Tuple[List[Dict], List[Dict], Dict]</span>
+<span class="sd">        :raises ValueError: If required visual content or prompt is missing.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Get loaded visual content</span>
         <span class="n">preferred_image</span> <span class="o">=</span> <span class="n">media_content</span><span class="p">[</span><span class="s1">&#39;preferred_image&#39;</span><span class="p">]</span>
         <span class="n">rejected_image</span> <span class="o">=</span> <span class="n">media_content</span><span class="p">[</span><span class="s1">&#39;rejected_image&#39;</span><span class="p">]</span>
@@ -441,6 +475,24 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 <div class="viewcode-block" id="HPDv3GRMHandler.parse_item"><a class="viewcode-back" href="../../../api_doc/datasets/hpdv3.html#lightrft.datasets.hpdv3.HPDv3GRMHandler.parse_item">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">parse_item</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">media_content</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
                    <span class="n">config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">],</span> <span class="n">Dict</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parse a single HPDv3 item for GRM training.</span>
+
+<span class="sd">        Randomly shuffles preferred/rejected images to avoid positional bias and</span>
+<span class="sd">        formats messages for generative reward model.</span>
+
+<span class="sd">        :param item: Raw data item from HPDv3 dataset.</span>
+<span class="sd">        :type item: Dict[str, Any]</span>
+<span class="sd">        :param media_content: Loaded media content with &#39;preferred_image&#39; and</span>
+<span class="sd">            &#39;rejected_image&#39; keys.</span>
+<span class="sd">        :type media_content: Dict[str, Any]</span>
+<span class="sd">        :param config: Configuration dict with task_instruction template.</span>
+<span class="sd">        :type config: Dict[str, Any]</span>
+<span class="sd">        :return: Tuple of (messages0, messages1, other_info) where messages are</span>
+<span class="sd">            formatted for the generative reward model.</span>
+<span class="sd">        :rtype: Tuple[List[Dict], List[Dict], Dict]</span>
+<span class="sd">        :raises ValueError: If required visual content or prompt is missing.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Get loaded visual content</span>
         <span class="n">preferred_image</span> <span class="o">=</span> <span class="n">media_content</span><span class="p">[</span><span class="s1">&#39;preferred_image&#39;</span><span class="p">]</span>
         <span class="n">rejected_image</span> <span class="o">=</span> <span class="n">media_content</span><span class="p">[</span><span class="s1">&#39;rejected_image&#39;</span><span class="p">]</span>

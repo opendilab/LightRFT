@@ -432,6 +432,16 @@
 
 
 <div class="viewcode-block" id="exist_and_not_none"><a class="viewcode-back" href="../../../api_doc/datasets/utils.html#lightrft.datasets.utils.exist_and_not_none">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">exist_and_not_none</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Check if a key exists in dictionary and its value is not None.</span>
+
+<span class="sd">    :param d: Dictionary to check.</span>
+<span class="sd">    :type d: dict</span>
+<span class="sd">    :param key: Key to look for.</span>
+<span class="sd">    :type key: Any</span>
+<span class="sd">    :return: True if key exists and value is not None.</span>
+<span class="sd">    :rtype: bool</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">d</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">d</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span></div>
 
 

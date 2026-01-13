@@ -513,6 +513,14 @@
         <span class="k">return</span> <span class="n">input_token</span>
 
 <div class="viewcode-block" id="GRMDataset.collate_fn"><a class="viewcode-back" href="../../../api_doc/datasets/grm_dataset.html#lightrft.datasets.grm_dataset.GRMDataset.collate_fn">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">collate_fn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Collate function for generative reward model samples.</span>
+
+<span class="sd">        :param batch: List of data samples.</span>
+<span class="sd">        :type batch: list</span>
+<span class="sd">        :return: Dictionary with batched tensors for GRM training.</span>
+<span class="sd">        :rtype: dict</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">batch</span> <span class="o">=</span> <span class="p">[</span><span class="n">b</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">batch</span> <span class="k">if</span> <span class="n">b</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">]</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">batch</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">None</span>

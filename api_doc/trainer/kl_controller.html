@@ -317,7 +317,16 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="lightrft.trainer.kl_controller.AdaptiveKLController.update">
 <span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">current</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_steps</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/trainer/kl_controller.html#AdaptiveKLController.update"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.trainer.kl_controller.AdaptiveKLController.update" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Update KL coefficient using adaptive algorithm.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>current</strong> (<em>float</em>) – Current KL divergence value.</p></li>
+<li><p><strong>n_steps</strong> (<em>int</em>) – Number of training steps taken.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
 
 </dd></dl>
 
@@ -329,7 +338,16 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="lightrft.trainer.kl_controller.FixedKLController.update">
 <span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">current</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_steps</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/trainer/kl_controller.html#FixedKLController.update"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.trainer.kl_controller.FixedKLController.update" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Update KL controller state (no-op for fixed KL).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>current</strong> (<em>float</em>) – Current KL divergence value (unused).</p></li>
+<li><p><strong>n_steps</strong> (<em>int</em>) – Number of training steps (unused).</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
 
 </dd></dl>
 

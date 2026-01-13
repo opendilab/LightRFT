@@ -375,7 +375,20 @@
 
 <div class="viewcode-block" id="RapidataT2VHandler.parse_item"><a class="viewcode-back" href="../../../api_doc/datasets/rapidata.html#lightrft.datasets.rapidata.RapidataT2VHandler.parse_item">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">parse_item</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">media_content</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
                    <span class="n">config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">],</span> <span class="n">Dict</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parse a single Rapidata T2V item into message pairs for ranking.</span>
 
+<span class="sd">        :param item: Raw data item from Rapidata T2V dataset.</span>
+<span class="sd">        :type item: Dict[str, Any]</span>
+<span class="sd">        :param media_content: Loaded media content with &#39;video1&#39; and &#39;video2&#39; keys.</span>
+<span class="sd">        :type media_content: Dict[str, Any]</span>
+<span class="sd">        :param config: Configuration dict with task_instruction template and video_fps.</span>
+<span class="sd">        :type config: Dict[str, Any]</span>
+<span class="sd">        :return: Tuple of (messages0, messages1, other_info) where messages are</span>
+<span class="sd">            formatted for the reward model and other_info contains preference labels.</span>
+<span class="sd">        :rtype: Tuple[List[Dict], List[Dict], Dict]</span>
+<span class="sd">        :raises ValueError: If required visual content is missing.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">video1</span> <span class="o">=</span> <span class="n">media_content</span><span class="p">[</span><span class="s1">&#39;video1&#39;</span><span class="p">]</span>
         <span class="n">video2</span> <span class="o">=</span> <span class="n">media_content</span><span class="p">[</span><span class="s1">&#39;video2&#39;</span><span class="p">]</span>
 
@@ -464,6 +477,16 @@
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Item missing &#39;file_name1&#39; or &#39;file_name2&#39;.&quot;</span><span class="p">)</span>
 
         <span class="k">def</span><span class="w"> </span><span class="nf">process_path</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">root_path</span><span class="p">):</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Process filename to construct local path from URL or relative path.</span>
+
+<span class="sd">            :param fname: Filename or URL.</span>
+<span class="sd">            :type fname: str</span>
+<span class="sd">            :param root_path: Root directory path.</span>
+<span class="sd">            :type root_path: str</span>
+<span class="sd">            :return: Local file path.</span>
+<span class="sd">            :rtype: str</span>
+<span class="sd">            &quot;&quot;&quot;</span>
             <span class="k">if</span> <span class="n">fname</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;https&quot;</span><span class="p">):</span>
                 <span class="n">fname</span> <span class="o">=</span> <span class="n">fname</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span>
                 <span class="n">model_name</span> <span class="o">=</span> <span class="n">fname</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
@@ -495,7 +518,21 @@
 
 <div class="viewcode-block" id="RapidataI2VHandler.parse_item"><a class="viewcode-back" href="../../../api_doc/datasets/rapidata.html#lightrft.datasets.rapidata.RapidataI2VHandler.parse_item">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">parse_item</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">media_content</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
                    <span class="n">config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">],</span> <span class="n">Dict</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parse a single Rapidata I2V item into message pairs for ranking.</span>
 
+<span class="sd">        :param item: Raw data item from Rapidata I2V dataset.</span>
+<span class="sd">        :type item: Dict[str, Any]</span>
+<span class="sd">        :param media_content: Loaded media content with &#39;video1&#39;, &#39;video2&#39;, and</span>
+<span class="sd">            &#39;init_image&#39; keys.</span>
+<span class="sd">        :type media_content: Dict[str, Any]</span>
+<span class="sd">        :param config: Configuration dict with task_instruction template and video_fps.</span>
+<span class="sd">        :type config: Dict[str, Any]</span>
+<span class="sd">        :return: Tuple of (messages0, messages1, other_info) where messages are</span>
+<span class="sd">            formatted for the reward model and other_info contains preference labels.</span>
+<span class="sd">        :rtype: Tuple[List[Dict], List[Dict], Dict]</span>
+<span class="sd">        :raises ValueError: If required visual content is missing.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">video1</span> <span class="o">=</span> <span class="n">media_content</span><span class="p">[</span><span class="s1">&#39;video1&#39;</span><span class="p">]</span>
         <span class="n">video2</span> <span class="o">=</span> <span class="n">media_content</span><span class="p">[</span><span class="s1">&#39;video2&#39;</span><span class="p">]</span>
         <span class="n">init_image</span> <span class="o">=</span> <span class="n">media_content</span><span class="p">[</span><span class="s1">&#39;init_image&#39;</span><span class="p">]</span>

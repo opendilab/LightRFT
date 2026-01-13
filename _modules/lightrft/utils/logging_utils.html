@@ -316,6 +316,14 @@
         <span class="n">logging</span><span class="o">.</span><span class="n">Formatter</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fmt</span><span class="p">,</span> <span class="n">datefmt</span><span class="p">)</span>
 
 <div class="viewcode-block" id="NewLineFormatter.format"><a class="viewcode-back" href="../../../api_doc/utils/logging_utils.html#lightrft.utils.logging_utils.NewLineFormatter.format">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">format</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">record</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Format a log record with newline prefix alignment.</span>
+
+<span class="sd">        :param record: Log record to format.</span>
+<span class="sd">        :type record: logging.LogRecord</span>
+<span class="sd">        :return: Formatted log string with aligned multi-line messages.</span>
+<span class="sd">        :rtype: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">msg</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">Formatter</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">record</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">record</span><span class="o">.</span><span class="n">message</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
             <span class="n">parts</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">record</span><span class="o">.</span><span class="n">message</span><span class="p">)</span>
@@ -349,6 +357,14 @@
 
 
 <div class="viewcode-block" id="init_logger"><a class="viewcode-back" href="../../../api_doc/utils/logging_utils.html#lightrft.utils.logging_utils.init_logger">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">init_logger</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Initialize and configure a logger with LightRFT settings.</span>
+
+<span class="sd">    :param name: Logger name.</span>
+<span class="sd">    :type name: str</span>
+<span class="sd">    :return: Configured logger instance.</span>
+<span class="sd">    :rtype: logging.Logger</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Use the same settings as above for root logger</span>
     <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>

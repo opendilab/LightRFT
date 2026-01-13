@@ -366,7 +366,17 @@ TensorBoard if configured.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="lightrft.trainer.grm_trainer_vl.GRMTrainerVL.fit">
 <span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">consumed_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_update_steps_per_epoch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/lightrft/trainer/grm_trainer_vl.html#GRMTrainerVL.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.trainer.grm_trainer_vl.GRMTrainerVL.fit" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Main training loop for generative reward model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>args</strong> (<em>argparse.Namespace</em>) – Training arguments containing hyperparameters and configurations.</p></li>
+<li><p><strong>consumed_samples</strong> (<em>int</em>) – Number of samples already consumed (for resuming).</p></li>
+<li><p><strong>num_update_steps_per_epoch</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – Number of update steps per epoch (for eval scheduling).</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="lightrft.trainer.grm_trainer_vl.GRMTrainerVL.save_logs_and_checkpoints">

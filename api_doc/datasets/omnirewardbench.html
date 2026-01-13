@@ -325,22 +325,24 @@ Dataset Repo: <a class="reference external" href="https://huggingface.co/dataset
 <dl class="py method">
 <dt class="sig sig-object py" id="lightrft.datasets.omnirewardbench.OmniRewardBenchT2AHandler.parse_item">
 <span class="sig-name descname"><span class="pre">parse_item</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">media_content</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/lightrft/datasets/omnirewardbench.html#OmniRewardBenchT2AHandler.parse_item"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.datasets.omnirewardbench.OmniRewardBenchT2AHandler.parse_item" title="Permalink to this definition">¶</a></dt>
-<dd><p>Parse the raw item and the loaded media_content into the standard format.</p>
+<dd><p>Parse a single T2A benchmark item into message pairs for ranking.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>item</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – The raw data item.</p></li>
-<li><p><strong>media_content</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – A dict containing loaded content.</p></li>
-<li><p><strong>config</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – A dict of additional configuration options.</p></li>
+<li><p><strong>item</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – Raw data item from OmniRewardBench T2A dataset.</p></li>
+<li><p><strong>media_content</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – Loaded media content with ‘audio1’ and ‘audio2’ keys.</p></li>
+<li><p><strong>config</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – Configuration dict with task_instruction template.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A tuple containing lists of dictionaries and one dictionary.
-For pointwise scoring data: (messages_chosen, messages_rejected, other)
-For pairwise ranking data: (messages, other)</p>
+<dd class="field-even"><p>Tuple of (messages0, messages1, other_info) where messages are
+formatted for the reward model and other_info contains metadata.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Union[Tuple[List[Dict], List[Dict], Dict], Tuple[List[Dict], Dict]]</p>
+<dd class="field-odd"><p>Tuple[List[Dict], List[Dict], Dict]</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If required audio content is missing.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -358,22 +360,24 @@ Dataset Repo: <a class="reference external" href="https://huggingface.co/dataset
 <dl class="py method">
 <dt class="sig sig-object py" id="lightrft.datasets.omnirewardbench.OmniRewardBenchT2IGRMHandler.parse_item">
 <span class="sig-name descname"><span class="pre">parse_item</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">media_content</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/lightrft/datasets/omnirewardbench.html#OmniRewardBenchT2IGRMHandler.parse_item"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.datasets.omnirewardbench.OmniRewardBenchT2IGRMHandler.parse_item" title="Permalink to this definition">¶</a></dt>
-<dd><p>Parse the raw item and the loaded media_content into the standard format.</p>
+<dd><p>Parse a single T2I item for generative reward model training.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>item</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – The raw data item.</p></li>
-<li><p><strong>media_content</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – A dict containing loaded content.</p></li>
-<li><p><strong>config</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – A dict of additional configuration options.</p></li>
+<li><p><strong>item</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – Raw data item from OmniRewardBench T2I dataset.</p></li>
+<li><p><strong>media_content</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – Loaded media content with ‘image1’ and ‘image2’ keys.</p></li>
+<li><p><strong>config</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – Configuration dict with task_instruction template.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A tuple containing lists of dictionaries and one dictionary.
-For pointwise scoring data: (messages_chosen, messages_rejected, other)
-For pairwise ranking data: (messages, other)</p>
+<dd class="field-even"><p>Tuple of (messages0, messages1, other_info) where messages are
+formatted for the generative reward model.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Union[Tuple[List[Dict], List[Dict], Dict], Tuple[List[Dict], Dict]]</p>
+<dd class="field-odd"><p>Tuple[List[Dict], List[Dict], Dict]</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If required visual content is missing.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -403,22 +407,24 @@ Dataset Repo: <a class="reference external" href="https://huggingface.co/dataset
 <dl class="py method">
 <dt class="sig sig-object py" id="lightrft.datasets.omnirewardbench.OmniRewardBenchT2IHandler.parse_item">
 <span class="sig-name descname"><span class="pre">parse_item</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">media_content</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/lightrft/datasets/omnirewardbench.html#OmniRewardBenchT2IHandler.parse_item"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.datasets.omnirewardbench.OmniRewardBenchT2IHandler.parse_item" title="Permalink to this definition">¶</a></dt>
-<dd><p>Parse the raw item and the loaded media_content into the standard format.</p>
+<dd><p>Parse a single T2I benchmark item into message pairs for ranking.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>item</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – The raw data item.</p></li>
-<li><p><strong>media_content</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – A dict containing loaded content.</p></li>
-<li><p><strong>config</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – A dict of additional configuration options.</p></li>
+<li><p><strong>item</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – Raw data item from OmniRewardBench T2I dataset.</p></li>
+<li><p><strong>media_content</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – Loaded media content with ‘image1’ and ‘image2’ keys.</p></li>
+<li><p><strong>config</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – Configuration dict with task_instruction template.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A tuple containing lists of dictionaries and one dictionary.
-For pointwise scoring data: (messages_chosen, messages_rejected, other)
-For pairwise ranking data: (messages, other)</p>
+<dd class="field-even"><p>Tuple of (messages0, messages1, other_info) where messages are
+formatted for the reward model and other_info contains metadata.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Union[Tuple[List[Dict], List[Dict], Dict], Tuple[List[Dict], Dict]]</p>
+<dd class="field-odd"><p>Tuple[List[Dict], List[Dict], Dict]</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If required visual content is missing.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -442,22 +448,24 @@ Dataset Repo: <a class="reference external" href="https://huggingface.co/dataset
 <dl class="py method">
 <dt class="sig sig-object py" id="lightrft.datasets.omnirewardbench.OmniRewardBenchT2VHandler.parse_item">
 <span class="sig-name descname"><span class="pre">parse_item</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">media_content</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/lightrft/datasets/omnirewardbench.html#OmniRewardBenchT2VHandler.parse_item"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.datasets.omnirewardbench.OmniRewardBenchT2VHandler.parse_item" title="Permalink to this definition">¶</a></dt>
-<dd><p>Parse the raw item and the loaded media_content into the standard format.</p>
+<dd><p>Parse a single T2V benchmark item into message pairs for ranking.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>item</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – The raw data item.</p></li>
-<li><p><strong>media_content</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – A dict containing loaded content.</p></li>
-<li><p><strong>config</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – A dict of additional configuration options.</p></li>
+<li><p><strong>item</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – Raw data item from OmniRewardBench T2V dataset.</p></li>
+<li><p><strong>media_content</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – Loaded media content with ‘video1’ and ‘video2’ keys.</p></li>
+<li><p><strong>config</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – Configuration dict with task_instruction template.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A tuple containing lists of dictionaries and one dictionary.
-For pointwise scoring data: (messages_chosen, messages_rejected, other)
-For pairwise ranking data: (messages, other)</p>
+<dd class="field-even"><p>Tuple of (messages0, messages1, other_info) where messages are
+formatted for the reward model and other_info contains metadata.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Union[Tuple[List[Dict], List[Dict], Dict], Tuple[List[Dict], Dict]]</p>
+<dd class="field-odd"><p>Tuple[List[Dict], List[Dict], Dict]</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If required visual content is missing.</p>
 </dd>
 </dl>
 </dd></dl>

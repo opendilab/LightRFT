@@ -357,7 +357,20 @@
 
 <div class="viewcode-block" id="OmniRewardBenchT2IHandler.parse_item"><a class="viewcode-back" href="../../../api_doc/datasets/omnirewardbench.html#lightrft.datasets.omnirewardbench.OmniRewardBenchT2IHandler.parse_item">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">parse_item</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">media_content</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
                    <span class="n">config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">],</span> <span class="n">Dict</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parse a single T2I benchmark item into message pairs for ranking.</span>
 
+<span class="sd">        :param item: Raw data item from OmniRewardBench T2I dataset.</span>
+<span class="sd">        :type item: Dict[str, Any]</span>
+<span class="sd">        :param media_content: Loaded media content with &#39;image1&#39; and &#39;image2&#39; keys.</span>
+<span class="sd">        :type media_content: Dict[str, Any]</span>
+<span class="sd">        :param config: Configuration dict with task_instruction template.</span>
+<span class="sd">        :type config: Dict[str, Any]</span>
+<span class="sd">        :return: Tuple of (messages0, messages1, other_info) where messages are</span>
+<span class="sd">            formatted for the reward model and other_info contains metadata.</span>
+<span class="sd">        :rtype: Tuple[List[Dict], List[Dict], Dict]</span>
+<span class="sd">        :raises ValueError: If required visual content is missing.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">image1</span> <span class="o">=</span> <span class="n">media_content</span><span class="p">[</span><span class="s1">&#39;image1&#39;</span><span class="p">]</span>
         <span class="n">image2</span> <span class="o">=</span> <span class="n">media_content</span><span class="p">[</span><span class="s1">&#39;image2&#39;</span><span class="p">]</span>
 
@@ -446,7 +459,20 @@
 
 <div class="viewcode-block" id="OmniRewardBenchT2VHandler.parse_item"><a class="viewcode-back" href="../../../api_doc/datasets/omnirewardbench.html#lightrft.datasets.omnirewardbench.OmniRewardBenchT2VHandler.parse_item">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">parse_item</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">media_content</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
                    <span class="n">config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">],</span> <span class="n">Dict</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parse a single T2V benchmark item into message pairs for ranking.</span>
 
+<span class="sd">        :param item: Raw data item from OmniRewardBench T2V dataset.</span>
+<span class="sd">        :type item: Dict[str, Any]</span>
+<span class="sd">        :param media_content: Loaded media content with &#39;video1&#39; and &#39;video2&#39; keys.</span>
+<span class="sd">        :type media_content: Dict[str, Any]</span>
+<span class="sd">        :param config: Configuration dict with task_instruction template.</span>
+<span class="sd">        :type config: Dict[str, Any]</span>
+<span class="sd">        :return: Tuple of (messages0, messages1, other_info) where messages are</span>
+<span class="sd">            formatted for the reward model and other_info contains metadata.</span>
+<span class="sd">        :rtype: Tuple[List[Dict], List[Dict], Dict]</span>
+<span class="sd">        :raises ValueError: If required visual content is missing.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">video1</span> <span class="o">=</span> <span class="n">media_content</span><span class="p">[</span><span class="s1">&#39;video1&#39;</span><span class="p">]</span>
         <span class="n">video2</span> <span class="o">=</span> <span class="n">media_content</span><span class="p">[</span><span class="s1">&#39;video2&#39;</span><span class="p">]</span>
 
@@ -537,7 +563,20 @@
 
 <div class="viewcode-block" id="OmniRewardBenchT2AHandler.parse_item"><a class="viewcode-back" href="../../../api_doc/datasets/omnirewardbench.html#lightrft.datasets.omnirewardbench.OmniRewardBenchT2AHandler.parse_item">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">parse_item</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">media_content</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
                    <span class="n">config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">],</span> <span class="n">Dict</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parse a single T2A benchmark item into message pairs for ranking.</span>
 
+<span class="sd">        :param item: Raw data item from OmniRewardBench T2A dataset.</span>
+<span class="sd">        :type item: Dict[str, Any]</span>
+<span class="sd">        :param media_content: Loaded media content with &#39;audio1&#39; and &#39;audio2&#39; keys.</span>
+<span class="sd">        :type media_content: Dict[str, Any]</span>
+<span class="sd">        :param config: Configuration dict with task_instruction template.</span>
+<span class="sd">        :type config: Dict[str, Any]</span>
+<span class="sd">        :return: Tuple of (messages0, messages1, other_info) where messages are</span>
+<span class="sd">            formatted for the reward model and other_info contains metadata.</span>
+<span class="sd">        :rtype: Tuple[List[Dict], List[Dict], Dict]</span>
+<span class="sd">        :raises ValueError: If required audio content is missing.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">audio1</span> <span class="o">=</span> <span class="n">media_content</span><span class="p">[</span><span class="s1">&#39;audio1&#39;</span><span class="p">]</span>
         <span class="n">audio2</span> <span class="o">=</span> <span class="n">media_content</span><span class="p">[</span><span class="s1">&#39;audio2&#39;</span><span class="p">]</span>
 
@@ -608,7 +647,20 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 <div class="viewcode-block" id="OmniRewardBenchT2IGRMHandler.parse_item"><a class="viewcode-back" href="../../../api_doc/datasets/omnirewardbench.html#lightrft.datasets.omnirewardbench.OmniRewardBenchT2IGRMHandler.parse_item">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">parse_item</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">media_content</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
                    <span class="n">config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">],</span> <span class="n">Dict</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Parse a single T2I item for generative reward model training.</span>
 
+<span class="sd">        :param item: Raw data item from OmniRewardBench T2I dataset.</span>
+<span class="sd">        :type item: Dict[str, Any]</span>
+<span class="sd">        :param media_content: Loaded media content with &#39;image1&#39; and &#39;image2&#39; keys.</span>
+<span class="sd">        :type media_content: Dict[str, Any]</span>
+<span class="sd">        :param config: Configuration dict with task_instruction template.</span>
+<span class="sd">        :type config: Dict[str, Any]</span>
+<span class="sd">        :return: Tuple of (messages0, messages1, other_info) where messages are</span>
+<span class="sd">            formatted for the generative reward model.</span>
+<span class="sd">        :rtype: Tuple[List[Dict], List[Dict], Dict]</span>
+<span class="sd">        :raises ValueError: If required visual content is missing.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">image1</span> <span class="o">=</span> <span class="n">media_content</span><span class="p">[</span><span class="s1">&#39;image1&#39;</span><span class="p">]</span>
         <span class="n">image2</span> <span class="o">=</span> <span class="n">media_content</span><span class="p">[</span><span class="s1">&#39;image2&#39;</span><span class="p">]</span>
 

@@ -329,6 +329,29 @@
     <span class="n">group_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">pg_options</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Initialize the distributed process group.</span>
+
+<span class="sd">    Wrapper around torch.distributed.init_process_group with additional validation.</span>
+
+<span class="sd">    :param backend: Backend to use (e.g., &#39;nccl&#39;, &#39;gloo&#39;).</span>
+<span class="sd">    :type backend: Union[str, Backend], optional</span>
+<span class="sd">    :param init_method: URL specifying how to initialize the process group.</span>
+<span class="sd">    :type init_method: Optional[str]</span>
+<span class="sd">    :param timeout: Timeout for operations executed against the process group.</span>
+<span class="sd">    :type timeout: Optional[timedelta]</span>
+<span class="sd">    :param world_size: Total number of processes participating.</span>
+<span class="sd">    :type world_size: int</span>
+<span class="sd">    :param rank: Rank of the current process.</span>
+<span class="sd">    :type rank: int</span>
+<span class="sd">    :param store: Key/value store accessible to all workers.</span>
+<span class="sd">    :type store: Optional[Store]</span>
+<span class="sd">    :param group_name: Name of the process group.</span>
+<span class="sd">    :type group_name: str, optional</span>
+<span class="sd">    :param pg_options: Process group options.</span>
+<span class="sd">    :type pg_options: Optional[Any]</span>
+<span class="sd">    :raises AssertionError: If both init_method and store are specified.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">assert</span> <span class="p">(</span><span class="n">store</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">init_method</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">),</span> <span class="s2">&quot;Cannot specify both init_method and store.&quot;</span>
 
     <span class="k">if</span> <span class="n">store</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>

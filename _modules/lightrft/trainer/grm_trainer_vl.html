@@ -412,6 +412,16 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_tensorboard</span> <span class="o">=</span> <span class="n">SummaryWriter</span><span class="p">(</span><span class="n">log_dir</span><span class="o">=</span><span class="n">log_dir</span><span class="p">)</span>
 
 <div class="viewcode-block" id="GRMTrainerVL.fit"><a class="viewcode-back" href="../../../api_doc/trainer/grm_trainer_vl.html#lightrft.trainer.grm_trainer_vl.GRMTrainerVL.fit">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">consumed_samples</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">num_update_steps_per_epoch</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Main training loop for generative reward model.</span>
+
+<span class="sd">        :param args: Training arguments containing hyperparameters and configurations.</span>
+<span class="sd">        :type args: argparse.Namespace</span>
+<span class="sd">        :param consumed_samples: Number of samples already consumed (for resuming).</span>
+<span class="sd">        :type consumed_samples: int</span>
+<span class="sd">        :param num_update_steps_per_epoch: Number of update steps per epoch (for eval scheduling).</span>
+<span class="sd">        :type num_update_steps_per_epoch: Optional[int]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># get eval and save steps</span>
         <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">eval_steps</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
             <span class="n">args</span><span class="o">.</span><span class="n">eval_steps</span> <span class="o">=</span> <span class="n">num_update_steps_per_epoch</span>  <span class="c1"># Evaluate once per epoch</span>
