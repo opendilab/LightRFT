@@ -54,13 +54,6 @@ PRETRAIN_PATH="path/to/your/pretrained/model"
 # --- vLLM/SGLang Engine Settings ---
 ENGINE_TP=1    # Tensor parallelism size for the inference engine. Adjust based on your model and GPU setup.
 
-# --- Single-Node Distributed Setup ---
-export MLP_WORKER_NUM=1
-export MLP_WORKER_GPU=2
-export MLP_ROLE_INDEX=0
-export MLP_WORKER_0_PORT=20091
-export MLP_WORKER_0_HOST=localhost  # or 127.0.0.1
-
 # --- PyTorch Distributed Environment Variables ---
 export MASTER_ADDR=localhost  # Address of the master node, alternatively set to 127.0.0.1
 export NNODES=1               # Number of nodes
