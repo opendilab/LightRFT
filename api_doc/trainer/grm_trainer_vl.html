@@ -372,7 +372,8 @@ TensorBoard if configured.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>args</strong> (<em>argparse.Namespace</em>) – Training arguments containing hyperparameters and configurations.</p></li>
 <li><p><strong>consumed_samples</strong> (<em>int</em>) – Number of samples already consumed (for resuming).</p></li>
-<li><p><strong>num_update_steps_per_epoch</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – Number of update steps per epoch (for eval scheduling).</p></li>
+<li><p><strong>num_update_steps_per_epoch</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – Number of update steps per epoch. Used for
+eval scheduling, determining epoch boundaries, and resuming training from checkpoints.</p></li>
 </ul>
 </dd>
 </dl>

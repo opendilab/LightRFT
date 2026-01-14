@@ -305,15 +305,22 @@
 
 <div class="viewcode-block" id="AdaptiveKLController"><a class="viewcode-back" href="../../../api_doc/trainer/kl_controller.html#lightrft.trainer.kl_controller.AdaptiveKLController">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">AdaptiveKLController</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Adaptive KL controller described in the paper:</span>
-<span class="sd">    https://arxiv.org/pdf/1909.08593.pdf</span>
+<span class="sd">    Adaptive KL controller for PPO training.</span>
+
+<span class="sd">    Implements the adaptive KL penalty coefficient adjustment described in:</span>
+<span class="sd">    &quot;Fine-Tuning Language Models from Human Preferences&quot;</span>
+<span class="sd">    (https://arxiv.org/pdf/1909.08593.pdf)</span>
+
+<span class="sd">    This controller dynamically adjusts the KL penalty coefficient based on how</span>
+<span class="sd">    the current KL divergence compares to a target value, helping maintain stable</span>
+<span class="sd">    training while preventing the policy from deviating too far from the reference.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">init_kl_coef</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">horizon</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">init_kl_coef</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">horizon</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">init_kl_coef</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">target</span> <span class="o">=</span> <span class="n">target</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">horizon</span> <span class="o">=</span> <span class="n">horizon</span>
 
-<div class="viewcode-block" id="AdaptiveKLController.update"><a class="viewcode-back" href="../../../api_doc/trainer/kl_controller.html#lightrft.trainer.kl_controller.AdaptiveKLController.update">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">current</span><span class="p">,</span> <span class="n">n_steps</span><span class="p">):</span>
+<div class="viewcode-block" id="AdaptiveKLController.update"><a class="viewcode-back" href="../../../api_doc/trainer/kl_controller.html#lightrft.trainer.kl_controller.AdaptiveKLController.update">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">current</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">n_steps</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Update KL coefficient using adaptive algorithm.</span>
 
@@ -329,11 +336,16 @@
 
 
 <div class="viewcode-block" id="FixedKLController"><a class="viewcode-back" href="../../../api_doc/trainer/kl_controller.html#lightrft.trainer.kl_controller.FixedKLController">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">FixedKLController</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Fixed KL controller.&quot;&quot;&quot;</span>
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kl_coef</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Fixed KL controller that maintains a constant KL penalty coefficient.</span>
+
+<span class="sd">    Unlike the adaptive controller, this keeps the KL coefficient fixed throughout</span>
+<span class="sd">    training, providing consistent regularization strength.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kl_coef</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">kl_coef</span>
 
-<div class="viewcode-block" id="FixedKLController.update"><a class="viewcode-back" href="../../../api_doc/trainer/kl_controller.html#lightrft.trainer.kl_controller.FixedKLController.update">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">current</span><span class="p">,</span> <span class="n">n_steps</span><span class="p">):</span>
+<div class="viewcode-block" id="FixedKLController.update"><a class="viewcode-back" href="../../../api_doc/trainer/kl_controller.html#lightrft.trainer.kl_controller.FixedKLController.update">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">current</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">n_steps</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Update KL controller state (no-op for fixed KL).</span>
 

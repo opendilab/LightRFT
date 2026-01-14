@@ -300,43 +300,53 @@
               <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
                 
   <h1>Source code for lightrft.utils.processor</h1><div class="highlight"><pre>
-<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">tqdm</span><span class="w"> </span><span class="kn">import</span> <span class="n">tqdm</span>
 
 
-<div class="viewcode-block" id="reward_normalization"><a class="viewcode-back" href="../../../api_doc/utils/processor.html#lightrft.utils.processor.reward_normalization">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">reward_normalization</span><span class="p">(</span><span class="n">objs</span><span class="p">):</span>
+<div class="viewcode-block" id="reward_normalization"><a class="viewcode-back" href="../../../api_doc/utils/processor.html#lightrft.utils.processor.reward_normalization">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">reward_normalization</span><span class="p">(</span><span class="n">objs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Normalize reward values across a list of objects using z-score normalization.</span>
 
+<span class="sd">    This function applies standardization (z-score normalization) to reward values,</span>
+<span class="sd">    transforming them to have zero mean and unit variance. This helps stabilize</span>
+<span class="sd">    training by ensuring rewards are on a consistent scale.</span>
+
 <span class="sd">    :param objs: List of dictionaries, each containing a &#39;reward&#39; key.</span>
-<span class="sd">    :type objs: list</span>
+<span class="sd">    :type objs: List[Dict[str, Any]]</span>
 <span class="sd">    :return: None (modifies objs in-place).</span>
 <span class="sd">    :rtype: None</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">rewards</span> <span class="o">=</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">obj</span><span class="p">[</span><span class="s2">&quot;reward&quot;</span><span class="p">])</span> <span class="k">for</span> <span class="n">obj</span> <span class="ow">in</span> <span class="n">objs</span><span class="p">]</span>
-    <span class="n">rewards</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">rewards</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+    <span class="c1"># Using float32 for efficiency; sufficient precision for reward normalization</span>
+    <span class="n">rewards</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">rewards</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
     <span class="n">rewards</span> <span class="o">=</span> <span class="p">(</span><span class="n">rewards</span> <span class="o">-</span> <span class="n">rewards</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span> <span class="o">/</span> <span class="n">rewards</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
     <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">obj</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">objs</span><span class="p">):</span>
         <span class="n">obj</span><span class="p">[</span><span class="s2">&quot;reward&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rewards</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">()</span></div>
 
 
-<span class="c1"># Conditional SFT</span>
-<span class="c1"># See https://arxiv.org/abs/2308.12050</span>
+<span class="c1"># Default reward prompt template for Conditional SFT</span>
 <span class="n">DEFAULT_REWARD_PROMPT</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">{input}</span><span class="s2"> &lt;rm_score&gt;: </span><span class="si">{reward}</span><span class="s2"> &quot;</span>
 
 
-<div class="viewcode-block" id="conditional_sft_processor"><a class="viewcode-back" href="../../../api_doc/utils/processor.html#lightrft.utils.processor.conditional_sft_processor">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">conditional_sft_processor</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">objs</span><span class="p">):</span>
+<div class="viewcode-block" id="conditional_sft_processor"><a class="viewcode-back" href="../../../api_doc/utils/processor.html#lightrft.utils.processor.conditional_sft_processor">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">conditional_sft_processor</span><span class="p">(</span><span class="n">args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">objs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Process data for Conditional SFT by prepending reward information to inputs.</span>
 
-<span class="sd">    Implements the approach from https://arxiv.org/abs/2308.12050.</span>
+<span class="sd">    Implements the Conditional SFT approach from the paper:</span>
+<span class="sd">    &quot;Conditional Language Policy: A General Framework for Steerable Multi-Objective Finetuning&quot;</span>
+<span class="sd">    (https://arxiv.org/abs/2308.12050)</span>
+
+<span class="sd">    This technique conditions the model on reward scores during training, allowing</span>
+<span class="sd">    it to generate outputs of varying quality based on the specified reward threshold.</span>
 
 <span class="sd">    :param args: Arguments object containing &#39;reward_template&#39; and &#39;normalize_reward&#39; flags.</span>
-<span class="sd">    :type args: object</span>
+<span class="sd">    :type args: Any</span>
 <span class="sd">    :param objs: List of training examples with &#39;input&#39;, &#39;output&#39;, and &#39;reward&#39; keys.</span>
-<span class="sd">    :type objs: list</span>
+<span class="sd">    :type objs: List[Dict[str, Any]]</span>
 <span class="sd">    :return: Processed list of training examples.</span>
-<span class="sd">    :rtype: list</span>
+<span class="sd">    :rtype: List[Dict[str, Any]]</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="s2">&quot;reward_template&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">args</span> <span class="ow">or</span> <span class="n">args</span><span class="o">.</span><span class="n">reward_template</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">reward_template</span> <span class="o">=</span> <span class="n">DEFAULT_REWARD_PROMPT</span>
@@ -357,20 +367,23 @@
     <span class="k">return</span> <span class="n">objs</span></div>
 
 
-<span class="c1"># Rejection Sampling</span>
-<span class="c1"># See https://arxiv.org/abs/2307.09288</span>
-<div class="viewcode-block" id="rejection_sampling_processor"><a class="viewcode-back" href="../../../api_doc/utils/processor.html#lightrft.utils.processor.rejection_sampling_processor">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">rejection_sampling_processor</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">objs</span><span class="p">):</span>
+<div class="viewcode-block" id="rejection_sampling_processor"><a class="viewcode-back" href="../../../api_doc/utils/processor.html#lightrft.utils.processor.rejection_sampling_processor">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">rejection_sampling_processor</span><span class="p">(</span><span class="n">args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">objs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Process data using Rejection Sampling by selecting highest-reward output per input.</span>
 
-<span class="sd">    Implements the approach from https://arxiv.org/abs/2307.09288.</span>
+<span class="sd">    Implements the Rejection Sampling approach from the paper:</span>
+<span class="sd">    &quot;Llama 2: Open Foundation and Fine-Tuned Chat Models&quot; (https://arxiv.org/abs/2307.09288)</span>
+
+<span class="sd">    This technique filters multiple candidate outputs per input, keeping only the one</span>
+<span class="sd">    with the highest reward score. This creates a high-quality training dataset by</span>
+<span class="sd">    rejecting lower-quality samples.</span>
 
 <span class="sd">    :param args: Arguments object (unused but kept for API consistency).</span>
-<span class="sd">    :type args: object</span>
+<span class="sd">    :type args: Any</span>
 <span class="sd">    :param objs: List of examples with &#39;input&#39;, &#39;output&#39;, and &#39;reward&#39; keys.</span>
-<span class="sd">    :type objs: list</span>
+<span class="sd">    :type objs: List[Dict[str, Any]]</span>
 <span class="sd">    :return: List of examples with only the highest-reward output per unique input.</span>
-<span class="sd">    :rtype: list</span>
+<span class="sd">    :rtype: List[Dict[str, Any]]</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">out</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">obj</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">objs</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Rejection Sampling process....&quot;</span><span class="p">):</span>
@@ -387,21 +400,24 @@
     <span class="k">return</span> <span class="p">[{</span><span class="s2">&quot;input&quot;</span><span class="p">:</span> <span class="n">k</span><span class="p">,</span> <span class="s2">&quot;output&quot;</span><span class="p">:</span> <span class="n">v</span><span class="p">[</span><span class="s2">&quot;output&quot;</span><span class="p">],</span> <span class="s2">&quot;reward&quot;</span><span class="p">:</span> <span class="n">v</span><span class="p">[</span><span class="s2">&quot;reward&quot;</span><span class="p">]}</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">out</span><span class="o">.</span><span class="n">items</span><span class="p">()]</span></div>
 
 
-<span class="c1"># Iterative DPO</span>
-<span class="c1"># See https://github.com/RLHFlow/Online-RLHF/blob/main/run_loop.sh</span>
-<div class="viewcode-block" id="iterative_dpo_processor"><a class="viewcode-back" href="../../../api_doc/utils/processor.html#lightrft.utils.processor.iterative_dpo_processor">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">iterative_dpo_processor</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">objs</span><span class="p">):</span>
+<div class="viewcode-block" id="iterative_dpo_processor"><a class="viewcode-back" href="../../../api_doc/utils/processor.html#lightrft.utils.processor.iterative_dpo_processor">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">iterative_dpo_processor</span><span class="p">(</span><span class="n">args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">objs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Process data for Iterative DPO by creating chosen/rejected pairs per input.</span>
 
-<span class="sd">    For each unique input, tracks the highest-reward (chosen) and lowest-reward</span>
-<span class="sd">    (rejected) outputs to create preference pairs.</span>
+<span class="sd">    Implements the Iterative DPO approach from:</span>
+<span class="sd">    &quot;Online Iterative Reinforcement Learning from Human Feedback with General Preference Model&quot;</span>
+<span class="sd">    (https://github.com/RLHFlow/Online-RLHF)</span>
+
+<span class="sd">    For each unique input, this technique tracks the highest-reward (chosen) and</span>
+<span class="sd">    lowest-reward (rejected) outputs to create preference pairs for Direct Preference</span>
+<span class="sd">    Optimization (DPO) training. This enables iterative improvement through online RLHF.</span>
 
 <span class="sd">    :param args: Arguments object (unused but kept for API consistency).</span>
-<span class="sd">    :type args: object</span>
+<span class="sd">    :type args: Any</span>
 <span class="sd">    :param objs: List of examples with &#39;input&#39;, &#39;output&#39;, and &#39;reward&#39; keys.</span>
-<span class="sd">    :type objs: list</span>
+<span class="sd">    :type objs: List[Dict[str, Any]]</span>
 <span class="sd">    :return: List of preference pairs with &#39;prompt&#39;, &#39;chosen&#39;, &#39;rejected&#39;, and reward values.</span>
-<span class="sd">    :rtype: list</span>
+<span class="sd">    :rtype: List[Dict[str, Any]]</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">out</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">obj</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">objs</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Iterative DPO process....&quot;</span><span class="p">):</span>
@@ -440,14 +456,14 @@
 <span class="p">}</span>
 
 
-<div class="viewcode-block" id="get_processor"><a class="viewcode-back" href="../../../api_doc/utils/processor.html#lightrft.utils.processor.get_processor">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">get_processor</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+<div class="viewcode-block" id="get_processor"><a class="viewcode-back" href="../../../api_doc/utils/processor.html#lightrft.utils.processor.get_processor">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">get_processor</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Any</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]],</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Retrieve a data processor function by name.</span>
 
 <span class="sd">    :param name: Name of the processor (&#39;rs&#39;, &#39;csft&#39;, or &#39;iter_dpo&#39;).</span>
 <span class="sd">    :type name: str</span>
 <span class="sd">    :return: The corresponding processor function.</span>
-<span class="sd">    :rtype: callable</span>
+<span class="sd">    :rtype: Callable[[Any, List[Dict[str, Any]]], List[Dict[str, Any]]]</span>
 <span class="sd">    :raises ValueError: If the processor name doesn&#39;t exist.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">PROCESSORS</span><span class="p">:</span>

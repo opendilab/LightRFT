@@ -417,23 +417,59 @@ Items from each process are flattened into a single list.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="lightrft.strategy.utils.distributed_util.init_process_group">
 <span class="sig-prename descclassname"><span class="pre">lightrft.strategy.utils.distributed_util.</span></span><span class="sig-name descname"><span class="pre">init_process_group</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">backend</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">torch.distributed.distributed_c10d.Backend</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_method</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">timedelta</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">world_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rank</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">store</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.distributed.distributed_c10d.Store</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pg_options</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/lightrft/strategy/utils/distributed_util.html#init_process_group"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.utils.distributed_util.init_process_group" title="Permalink to this definition">¶</a></dt>
-<dd><p>Initialize the distributed process group.</p>
-<p>Wrapper around torch.distributed.init_process_group with additional validation.</p>
+<dd><p>Initialize the distributed process group for multi-process training.</p>
+<p>This function is a custom wrapper around torch.distributed.init_process_group that
+allows creating multiple main process groups, which is not supported by the standard
+PyTorch API. It handles the rendezvous process, backend initialization, and provides
+additional validation.</p>
+<p><strong>Process Groups Overview:</strong>
+A process group is a collection of processes that can communicate with each other
+using collective operations (e.g., all_reduce, all_gather). Process groups are
+essential for distributed training, enabling data parallelism, model parallelism,
+and other distributed computing patterns.</p>
+<p><strong>Initialization Methods:</strong>
+- <code class="docutils literal notranslate"><span class="pre">env://</span></code> (default): Uses environment variables (MASTER_ADDR, MASTER_PORT, RANK, WORLD_SIZE)
+- <code class="docutils literal notranslate"><span class="pre">tcp://</span></code>: Explicitly specifies master address and port (e.g., <a class="reference external" href="tcp://10.1.1.20:23456">tcp://10.1.1.20:23456</a>)
+- <code class="docutils literal notranslate"><span class="pre">file://</span></code>: Uses a shared file system for coordination (e.g., <a class="reference external" href="file:///mnt/nfs/sharedfile">file:///mnt/nfs/sharedfile</a>)</p>
+<p><strong>Backends:</strong>
+- <code class="docutils literal notranslate"><span class="pre">nccl</span></code>: Recommended for GPU training, optimized for NVIDIA GPUs
+- <code class="docutils literal notranslate"><span class="pre">gloo</span></code>: Works for both CPU and GPU, recommended for CPU training
+- <code class="docutils literal notranslate"><span class="pre">mpi</span></code>: Requires MPI installation, useful for HPC environments</p>
+<p><strong>Rendezvous Process:</strong>
+The rendezvous mechanism coordinates all processes to discover each other and
+establish communication channels. This function handles the rendezvous automatically
+based on the init_method or store provided.</p>
+<p>For more details, see PyTorch distributed documentation:
+<a class="reference external" href="https://pytorch.org/docs/stable/distributed.html">https://pytorch.org/docs/stable/distributed.html</a></p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>backend</strong> (<em>Union</em><em>[</em><em>str</em><em>, </em><em>Backend</em><em>]</em><em>, </em><em>optional</em>) – Backend to use (e.g., ‘nccl’, ‘gloo’).</p></li>
-<li><p><strong>init_method</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – URL specifying how to initialize the process group.</p></li>
-<li><p><strong>timeout</strong> (<em>Optional</em><em>[</em><em>timedelta</em><em>]</em>) – Timeout for operations executed against the process group.</p></li>
-<li><p><strong>world_size</strong> (<em>int</em>) – Total number of processes participating.</p></li>
-<li><p><strong>rank</strong> (<em>int</em>) – Rank of the current process.</p></li>
-<li><p><strong>store</strong> (<em>Optional</em><em>[</em><em>Store</em><em>]</em>) – Key/value store accessible to all workers.</p></li>
-<li><p><strong>group_name</strong> (<em>str</em><em>, </em><em>optional</em>) – Name of the process group.</p></li>
-<li><p><strong>pg_options</strong> (<em>Optional</em><em>[</em><em>Any</em><em>]</em>) – Process group options.</p></li>
+<li><p><strong>backend</strong> (<em>Union</em><em>[</em><em>str</em><em>, </em><em>Backend</em><em>]</em><em>, </em><em>optional</em>) – Backend to use (e.g., ‘nccl’, ‘gloo’, ‘mpi’).</p></li>
+<li><p><strong>init_method</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – URL specifying how to initialize the process group.
+Defaults to ‘env://’ if not specified.</p></li>
+<li><p><strong>timeout</strong> (<em>Optional</em><em>[</em><em>timedelta</em><em>]</em>) – Timeout for operations executed against the process group.
+Defaults to 30 minutes if not specified.</p></li>
+<li><p><strong>world_size</strong> (<em>int</em>) – Total number of processes participating in the job.
+Required if using store-based initialization.</p></li>
+<li><p><strong>rank</strong> (<em>int</em>) – Rank of the current process (0 to world_size - 1).
+Required if using store-based initialization.</p></li>
+<li><p><strong>store</strong> (<em>Optional</em><em>[</em><em>Store</em><em>]</em>) – Key/value store accessible to all workers for coordination.
+If provided, init_method must be None.</p></li>
+<li><p><strong>group_name</strong> (<em>str</em><em>, </em><em>optional</em>) – Name of the process group for identification.
+Useful when creating multiple process groups.</p></li>
+<li><p><strong>pg_options</strong> (<em>Optional</em><em>[</em><em>Any</em><em>]</em>) – Process group options (backend-specific configuration).
+Note: Renamed to backend_options in PyTorch 2.6.0+.</p></li>
 </ul>
 </dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The initialized process group.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dist.ProcessGroup</p>
+</dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>AssertionError</strong> – If both init_method and store are specified.</p>
+<dd class="field-even"><p><strong>AssertionError</strong> – If both init_method and store are specified, or if
+world_size/rank are invalid when using store.</p>
 </dd>
 </dl>
 </dd></dl>

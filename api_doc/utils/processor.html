@@ -310,28 +310,32 @@
 <span id="lightrft-utils-processor"></span><h1>lightrft.utils.processor<a class="headerlink" href="#module-lightrft.utils.processor" title="Permalink to this heading">¶</a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="lightrft.utils.processor.conditional_sft_processor">
-<span class="sig-prename descclassname"><span class="pre">lightrft.utils.processor.</span></span><span class="sig-name descname"><span class="pre">conditional_sft_processor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">objs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/utils/processor.html#conditional_sft_processor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.utils.processor.conditional_sft_processor" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">lightrft.utils.processor.</span></span><span class="sig-name descname"><span class="pre">conditional_sft_processor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">objs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/lightrft/utils/processor.html#conditional_sft_processor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.utils.processor.conditional_sft_processor" title="Permalink to this definition">¶</a></dt>
 <dd><p>Process data for Conditional SFT by prepending reward information to inputs.</p>
-<p>Implements the approach from <a class="reference external" href="https://arxiv.org/abs/2308.12050">https://arxiv.org/abs/2308.12050</a>.</p>
+<p>Implements the Conditional SFT approach from the paper:
+“Conditional Language Policy: A General Framework for Steerable Multi-Objective Finetuning”
+(<a class="reference external" href="https://arxiv.org/abs/2308.12050">https://arxiv.org/abs/2308.12050</a>)</p>
+<p>This technique conditions the model on reward scores during training, allowing
+it to generate outputs of varying quality based on the specified reward threshold.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>args</strong> (<em>object</em>) – Arguments object containing ‘reward_template’ and ‘normalize_reward’ flags.</p></li>
-<li><p><strong>objs</strong> (<em>list</em>) – List of training examples with ‘input’, ‘output’, and ‘reward’ keys.</p></li>
+<li><p><strong>args</strong> (<em>Any</em>) – Arguments object containing ‘reward_template’ and ‘normalize_reward’ flags.</p></li>
+<li><p><strong>objs</strong> (<em>List</em><em>[</em><em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em><em>]</em>) – List of training examples with ‘input’, ‘output’, and ‘reward’ keys.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Processed list of training examples.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>list</p>
+<dd class="field-odd"><p>List[Dict[str, Any]]</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="lightrft.utils.processor.get_processor">
-<span class="sig-prename descclassname"><span class="pre">lightrft.utils.processor.</span></span><span class="sig-name descname"><span class="pre">get_processor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/utils/processor.html#get_processor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.utils.processor.get_processor" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">lightrft.utils.processor.</span></span><span class="sig-name descname"><span class="pre">get_processor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/lightrft/utils/processor.html#get_processor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.utils.processor.get_processor" title="Permalink to this definition">¶</a></dt>
 <dd><p>Retrieve a data processor function by name.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -341,7 +345,7 @@
 <dd class="field-even"><p>The corresponding processor function.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>callable</p>
+<dd class="field-odd"><p>Callable[[Any, List[Dict[str, Any]]], List[Dict[str, Any]]]</p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>ValueError</strong> – If the processor name doesn’t exist.</p>
@@ -351,54 +355,65 @@
 
 <dl class="py function">
 <dt class="sig sig-object py" id="lightrft.utils.processor.iterative_dpo_processor">
-<span class="sig-prename descclassname"><span class="pre">lightrft.utils.processor.</span></span><span class="sig-name descname"><span class="pre">iterative_dpo_processor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">objs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/utils/processor.html#iterative_dpo_processor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.utils.processor.iterative_dpo_processor" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">lightrft.utils.processor.</span></span><span class="sig-name descname"><span class="pre">iterative_dpo_processor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">objs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/lightrft/utils/processor.html#iterative_dpo_processor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.utils.processor.iterative_dpo_processor" title="Permalink to this definition">¶</a></dt>
 <dd><p>Process data for Iterative DPO by creating chosen/rejected pairs per input.</p>
-<p>For each unique input, tracks the highest-reward (chosen) and lowest-reward
-(rejected) outputs to create preference pairs.</p>
+<p>Implements the Iterative DPO approach from:
+“Online Iterative Reinforcement Learning from Human Feedback with General Preference Model”
+(<a class="reference external" href="https://github.com/RLHFlow/Online-RLHF">https://github.com/RLHFlow/Online-RLHF</a>)</p>
+<p>For each unique input, this technique tracks the highest-reward (chosen) and
+lowest-reward (rejected) outputs to create preference pairs for Direct Preference
+Optimization (DPO) training. This enables iterative improvement through online RLHF.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>args</strong> (<em>object</em>) – Arguments object (unused but kept for API consistency).</p></li>
-<li><p><strong>objs</strong> (<em>list</em>) – List of examples with ‘input’, ‘output’, and ‘reward’ keys.</p></li>
+<li><p><strong>args</strong> (<em>Any</em>) – Arguments object (unused but kept for API consistency).</p></li>
+<li><p><strong>objs</strong> (<em>List</em><em>[</em><em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em><em>]</em>) – List of examples with ‘input’, ‘output’, and ‘reward’ keys.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>List of preference pairs with ‘prompt’, ‘chosen’, ‘rejected’, and reward values.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>list</p>
+<dd class="field-odd"><p>List[Dict[str, Any]]</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="lightrft.utils.processor.rejection_sampling_processor">
-<span class="sig-prename descclassname"><span class="pre">lightrft.utils.processor.</span></span><span class="sig-name descname"><span class="pre">rejection_sampling_processor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">objs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/utils/processor.html#rejection_sampling_processor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.utils.processor.rejection_sampling_processor" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">lightrft.utils.processor.</span></span><span class="sig-name descname"><span class="pre">rejection_sampling_processor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">objs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/lightrft/utils/processor.html#rejection_sampling_processor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.utils.processor.rejection_sampling_processor" title="Permalink to this definition">¶</a></dt>
 <dd><p>Process data using Rejection Sampling by selecting highest-reward output per input.</p>
-<p>Implements the approach from <a class="reference external" href="https://arxiv.org/abs/2307.09288">https://arxiv.org/abs/2307.09288</a>.</p>
+<p>Implements the Rejection Sampling approach from the paper:
+“Llama 2: Open Foundation and Fine-Tuned Chat Models” (<a class="reference external" href="https://arxiv.org/abs/2307.09288">https://arxiv.org/abs/2307.09288</a>)</p>
+<p>This technique filters multiple candidate outputs per input, keeping only the one
+with the highest reward score. This creates a high-quality training dataset by
+rejecting lower-quality samples.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>args</strong> (<em>object</em>) – Arguments object (unused but kept for API consistency).</p></li>
-<li><p><strong>objs</strong> (<em>list</em>) – List of examples with ‘input’, ‘output’, and ‘reward’ keys.</p></li>
+<li><p><strong>args</strong> (<em>Any</em>) – Arguments object (unused but kept for API consistency).</p></li>
+<li><p><strong>objs</strong> (<em>List</em><em>[</em><em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em><em>]</em>) – List of examples with ‘input’, ‘output’, and ‘reward’ keys.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>List of examples with only the highest-reward output per unique input.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>list</p>
+<dd class="field-odd"><p>List[Dict[str, Any]]</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="lightrft.utils.processor.reward_normalization">
-<span class="sig-prename descclassname"><span class="pre">lightrft.utils.processor.</span></span><span class="sig-name descname"><span class="pre">reward_normalization</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">objs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/utils/processor.html#reward_normalization"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.utils.processor.reward_normalization" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">lightrft.utils.processor.</span></span><span class="sig-name descname"><span class="pre">reward_normalization</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">objs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/lightrft/utils/processor.html#reward_normalization"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.utils.processor.reward_normalization" title="Permalink to this definition">¶</a></dt>
 <dd><p>Normalize reward values across a list of objects using z-score normalization.</p>
+<p>This function applies standardization (z-score normalization) to reward values,
+transforming them to have zero mean and unit variance. This helps stabilize
+training by ensuring rewards are on a consistent scale.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>objs</strong> (<em>list</em>) – List of dictionaries, each containing a ‘reward’ key.</p>
+<dd class="field-odd"><p><strong>objs</strong> (<em>List</em><em>[</em><em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em><em>]</em>) – List of dictionaries, each containing a ‘reward’ key.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>None (modifies objs in-place).</p>
