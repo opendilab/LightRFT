@@ -11,6 +11,8 @@ from typing import Any
 
 from vllm import LLM
 
+from .qwen2_weight_loader_patch import apply_qwen2_weight_loader_patch, check_if_patch_needed
+
 
 def get_vllm_engine_for_rollout(args: Any) -> LLM:
     """
@@ -112,6 +114,10 @@ def get_vllm_engine(
         Uses external launcher for distributed execution and custom worker class
         for integration with lightrft strategy components.
     """
+
+    # Apply Qwen2 weight loader patch for vLLM 0.13.0 if needed
+    if check_if_patch_needed():
+        apply_qwen2_weight_loader_patch()
 
     vllm_engine = LLM(
         model=pretrain_name_or_path,

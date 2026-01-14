@@ -648,6 +648,56 @@ class PPOTrainerVL(ABC):
             status.update(self.training_step_critic(experience))
         return status
 
+    def _align_pixel_values_with_sequence(
+        self,
+        sequences: torch.Tensor,
+        pixel_values: torch.Tensor,
+        image_grid_thws: torch.Tensor,
+    ):
+        """
+        Align pixel_values features with image placeholder tokens in sequences.
+
+        This handles mismatches between SGLang-generated sequences (which may have
+        different image token counts) and HuggingFace processor-generated pixel_values.
+
+        :param sequences: Token sequences with image placeholders
+        :param pixel_values: Image features from HF processor
+        :param image_grid_thws: Image grid dimensions
+        :return: Adjusted pixel_values and image_grid_thws
+        """
+        if pixel_values is None or image_grid_thws is None:
+            return pixel_values, image_grid_thws
+
+        # Get image_pad token ID (151655 for Qwen2.5-VL)
+        image_pad_id = self.tokenizer.convert_tokens_to_ids("<|image_pad|>")
+
+        # Count image_pad tokens in sequences
+        num_image_tokens = (sequences == image_pad_id).sum().item()
+
+        # Get current number of features
+        num_features = pixel_values.shape[0]
+
+        if num_image_tokens == num_features:
+            return pixel_values, image_grid_thws
+
+        # Adjust pixel_values to match sequence
+        if num_image_tokens > num_features:
+            # Need to pad: repeat last feature
+            padding_size = num_image_tokens - num_features
+            last_feature = pixel_values[-1:].repeat(padding_size, 1)
+            pixel_values = torch.cat([pixel_values, last_feature], dim=0)
+            self.strategy.print(
+                f"[Alignment] Padded pixel_values: {num_features} -> {num_image_tokens}"
+            )
+        else:
+            # Need to truncate
+            pixel_values = pixel_values[:num_image_tokens]
+            self.strategy.print(
+                f"[Alignment] Truncated pixel_values: {num_features} -> {num_image_tokens}"
+            )
+
+        return pixel_values, image_grid_thws
+
     def training_step_actor(self, experience: ExperienceVL) -> Dict[str, float]:
         """
         Actor training step.
@@ -666,6 +716,11 @@ class PPOTrainerVL(ABC):
             pixel_values = experience.pixel_values
             image_grid_thws = experience.image_grid_thws
 
+            # Align pixel_values with sequence image tokens
+            pixel_values, image_grid_thws = self._align_pixel_values_with_sequence(
+                sequences, pixel_values, image_grid_thws
+            )
+
             old_action_log_probs = torch.cat(experience.action_log_probs, dim=0).unsqueeze(0)
             advantages = torch.cat(experience.advantages, dim=0).unsqueeze(0)
             num_actions = [v.numel() for v in experience.advantages]
@@ -679,6 +734,11 @@ class PPOTrainerVL(ABC):
 
             pixel_values = experience.pixel_values
             image_grid_thws = experience.image_grid_thws
+
+            # Align pixel_values with sequence image tokens
+            pixel_values, image_grid_thws = self._align_pixel_values_with_sequence(
+                sequences, pixel_values, image_grid_thws
+            )
 
             old_action_log_probs = experience.action_log_probs
             advantages = experience.advantages

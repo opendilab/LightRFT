@@ -772,50 +772,84 @@ class StrategyBase(ABC):
             ]
         elif self.inference_engine_type == "sglang":
             if multi_modal_inputs is not None:  # VLM case
-                prompt = [p["prompt"] for p in multi_modal_inputs]
-                image = [p["multi_modal_data"]["image"] for p in multi_modal_inputs]
-            else:
-                prompt = prompt_token_ids
-                image = None
+                # SGLang requires token IDs (initialized with skip_tokenizer_init=True)
+                # Extract token IDs from multi_modal_inputs
+                prompt_token_ids_list = [p["prompt_token_ids"] for p in multi_modal_inputs]
 
-            sglang_outputs = self.inference_engine.generate(
-                sampling_params=sampling_params,
-                input_ids=prompt,
-                image_data=image,
-            )
-            return [
-                EasyDict(
-                    prompt_token_ids=prompt[i],
-                    output_token_ids=sglang_outputs[i]["output_ids"],
-                ) for i, output in enumerate(sglang_outputs)
-            ]
+                # Handle cases where some prompts might not have images
+                # Flatten nested list format if needed: [[PIL.Image]] -> [PIL.Image]
+                image = [
+                    (img[0] if isinstance(img, list) and len(img) > 0 else img)
+                    for img in (p.get("multi_modal_data", {}).get("image") for p in multi_modal_inputs)
+                ]
+                # If all images are None, set image to None instead of [None, None, ...]
+                if all(img is None for img in image):
+                    image = None
+
+                # Use input_ids parameter for token IDs (SGLang doesn't have tokenizer)
+                sglang_outputs = self.inference_engine.generate(
+                    sampling_params=sampling_params,
+                    input_ids=prompt_token_ids_list,
+                    image_data=image,
+                )
+                # Return with the token IDs we already have
+                return [
+                    EasyDict(
+                        prompt_token_ids=prompt_token_ids_list[i],
+                        output_token_ids=sglang_outputs[i]["output_ids"],
+                    ) for i, output in enumerate(sglang_outputs)
+                ]
+            else:
+                # Use input_ids parameter for token IDs
+                sglang_outputs = self.inference_engine.generate(
+                    sampling_params=sampling_params,
+                    input_ids=prompt_token_ids,
+                    image_data=None,
+                )
+                # Use the prompt_token_ids we already have
+                return [
+                    EasyDict(
+                        prompt_token_ids=prompt_token_ids[i],
+                        output_token_ids=sglang_outputs[i]["output_ids"],
+                    ) for i, output in enumerate(sglang_outputs)
+                ]
         else:
             raise ValueError(f"Unsupported engine type: {self.inference_engine_type}")
 
     @classmethod
-    def _build_multimodal_inputs(cls, all_prompts, all_images, images_num):
+    def _build_multimodal_inputs(cls, all_prompts, all_images, images_num, all_prompt_token_ids=None):
         """
         In this function, we build multimodal inputs for inference engine.
+
+        Args:
+            all_prompts: List of prompt strings
+            all_images: List of images
+            images_num: Number of images per prompt
+            all_prompt_token_ids: Optional list of tokenized prompts (for engines without tokenizer)
         """
         inputs = []
         img_start_idx = 0
         for i, prompt in enumerate(all_prompts):
             img_num = images_num[i]
             img_list = all_images[img_start_idx:img_start_idx + img_num]
+
+            # Build the input dictionary
+            input_dict = {"prompt": prompt}
+
+            # Add token IDs if available (needed for SGLang with skip_tokenizer_init=True)
+            if all_prompt_token_ids is not None:
+                input_dict["prompt_token_ids"] = all_prompt_token_ids[i]
+
             if img_list is None or len(img_list) == 0 or img_list[0] is None:
                 # remove the vision start and end tokens for data after apply chat template.
                 # Use regex to handle multiple <|image_pad|> tokens (e.g., for high-res images)
-                prompt = re.sub(r'<\|vision_start\|>(<\|image_pad\|>)+<\|vision_end\|>', '', prompt)
-                inputs.append({
-                    "prompt": prompt,
-                })
+                input_dict["prompt"] = re.sub(r'<\|vision_start\|>(<\|image_pad\|>)+<\|vision_end\|>', '', prompt)
             else:
-                inputs.append({
-                    "prompt": prompt,
-                    "multi_modal_data": {
-                        "image": img_list
-                    },
-                })
+                input_dict["multi_modal_data"] = {
+                    "image": img_list
+                }
+
+            inputs.append(input_dict)
             img_start_idx += img_num
         return inputs
 
@@ -846,7 +880,8 @@ class StrategyBase(ABC):
 
         if is_multimodal:
             inputs = self._build_multimodal_inputs(
-                all_prompts=all_prompts, all_images=all_images, images_num=images_num
+                all_prompts=all_prompts, all_images=all_images, images_num=images_num,
+                all_prompt_token_ids=all_prompt_token_ids
             )
         else:
             inputs = all_prompt_token_ids

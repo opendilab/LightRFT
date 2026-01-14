@@ -203,10 +203,12 @@ class RLGenerationEngine:
             # Most naive implementation, can extract tensor and send via gloo if too slow
             # Try to use force_cpu_device parameter if available (sglang>=0.4.6)
             # Otherwise, fall back to calling without it for older versions
+            # IMPORTANT: broadcast_pyobj expects global rank, not local rank within group
+            global_rank = dist.get_rank()
             try:
                 [output] = broadcast_pyobj(
                     data=[output],
-                    rank=self._tp_rank,
+                    rank=global_rank,
                     dist_group=self.tp_group_cpu,
                     src=self._leader_rank,
                     force_cpu_device=True,
@@ -215,7 +217,7 @@ class RLGenerationEngine:
                 # Older versions don't support force_cpu_device parameter
                 [output] = broadcast_pyobj(
                     data=[output],
-                    rank=self._tp_rank,
+                    rank=global_rank,
                     dist_group=self.tp_group_cpu,
                     src=self._leader_rank,
                 )
