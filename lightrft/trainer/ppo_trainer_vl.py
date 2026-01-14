@@ -460,6 +460,17 @@ class PPOTrainerVL(ABC):
 
                 status = self.ppo_train(steps)
 
+                # # ========================= [ ROBUST FIX START ] =========================
+                # # 检查 training_step 是否返回了空字典。
+                # # 如果是，说明 ppo_trainer_vl.py 检测到了数据不匹配并决定跳过此批次。
+                # # 我们必须在这里 `continue`，以避免后续的分布式操作（如 all_reduce）
+                # # 因各 Rank 行为不一致而导致死锁。
+                # if not status:
+                #     if self.strategy.is_rank_0():
+                #         pbar.set_description(f"Train epoch [{epoch + 1}/{self.max_epochs}] (skipping a batch)")
+                #     continue # 直接跳到下一个 mini-batch
+                # # ========================== [ ROBUST FIX END ] ==========================
+
                 self.strategy.report_memory('before clear buffer')
                 self.replay_buffer.clear()
 
@@ -671,9 +682,16 @@ class PPOTrainerVL(ABC):
                 self.strategy.print(f"[Warning] Huge advantage detected: {max_adv}")
             advantages = torch.clamp(advantages, min=-10.0, max=10.0)
 
-        # [ROBUST FIX] Validate RL data before actor forward pass
+        # [DEFENSIVE CHECK] Validate RL data before actor forward pass
+        # NOTE: This validation is now primarily done in spmd_ppo_trainer.py BEFORE calling training_step
+        # to ensure all ranks make the same skip decision. This check remains as a safety fallback.
+        # If this triggers, it indicates a bug in the pre-validation logic.
         if not self._validate_qwen_vl_tensors(sequences, pixel_values, context="actor_rl_update"):
-            return {}  # Skip this entire training step for this batch
+            self.strategy.print(
+                "[CRITICAL ERROR] Validation failed inside training_step_actor. "
+                "This should have been caught by pre-validation in spmd_ppo_trainer.py!"
+            )
+            return {}  # Emergency fallback - should not normally execute
 
         # Actor loss
         action_log_probs, output = self.actor(
