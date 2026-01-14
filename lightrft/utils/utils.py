@@ -1,14 +1,32 @@
 import os
 import sys
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from datasets import interleave_datasets, load_dataset, load_from_disk, Dataset, DatasetDict
-from transformers import AutoTokenizer, AutoProcessor
+from transformers import AutoTokenizer, AutoProcessor, PreTrainedTokenizer, PreTrainedModel, ProcessorMixin
 import torch
 import torch.distributed as dist
 
 
-def get_tokenizer(pretrain, model, padding_side="left", strategy=None, use_fast=True):
+def get_tokenizer(
+    pretrain: str, model: PreTrainedModel, padding_side: str = "left", use_fast: bool = True
+) -> PreTrainedTokenizer:
+    """
+    Load and configure a tokenizer for language models.
+
+    :param pretrain: Path or name of the pretrained tokenizer.
+    :type pretrain: str
+    :param model: Model instance to sync pad_token_id with.
+    :type model: transformers.PreTrainedModel
+    :param padding_side: Which side to pad on ('left' or 'right'). Defaults to 'left'
+        for causal language models to enable efficient batching during generation,
+        where padding tokens should be on the left to avoid affecting the generation.
+    :type padding_side: str
+    :param use_fast: Whether to use fast tokenizer implementation.
+    :type use_fast: bool
+    :return: Configured tokenizer instance.
+    :rtype: transformers.PreTrainedTokenizer
+    """
     tokenizer = AutoTokenizer.from_pretrained(pretrain, trust_remote_code=True, use_fast=use_fast)
     tokenizer.padding_side = padding_side
     # NOTE: When enable vLLM, do not resize_token_embeddings, or the vocab size will mismatch with vLLM.
@@ -21,7 +39,28 @@ def get_tokenizer(pretrain, model, padding_side="left", strategy=None, use_fast=
     return tokenizer
 
 
-def get_tokenizer_processor_vl(pretrain, model, padding_side="left", strategy=None, use_fast=True):
+def get_tokenizer_processor_vl(
+    pretrain: str,
+    model: PreTrainedModel,
+    padding_side: str = "left",
+    use_fast: bool = True
+) -> Tuple[PreTrainedTokenizer, ProcessorMixin]:
+    """
+    Load and configure tokenizer and processor for vision-language models.
+
+    :param pretrain: Path or name of the pretrained model.
+    :type pretrain: str
+    :param model: Model instance to sync pad_token_id with.
+    :type model: transformers.PreTrainedModel
+    :param padding_side: Which side to pad on ('left' or 'right'). Defaults to 'left'
+        for causal language models to enable efficient batching during generation,
+        where padding tokens should be on the left to avoid affecting the generation.
+    :type padding_side: str
+    :param use_fast: Whether to use fast tokenizer implementation.
+    :type use_fast: bool
+    :return: Tuple of (tokenizer, processor).
+    :rtype: Tuple[transformers.PreTrainedTokenizer, transformers.ProcessorMixin]
+    """
     tokenizer = AutoTokenizer.from_pretrained(pretrain, trust_remote_code=True, use_fast=use_fast)
     processor = AutoProcessor.from_pretrained(pretrain, trust_remote_code=True, use_fast=use_fast)
 
@@ -37,16 +76,44 @@ def get_tokenizer_processor_vl(pretrain, model, padding_side="left", strategy=No
 
 
 def blending_datasets(
-    datasets,
-    probabilities,
-    strategy=None,
-    seed=42,
-    max_count=5000000,
-    return_eval=True,
-    stopping_strategy="first_exhausted",
-    train_split="train",
-    eval_split="test",
-):
+    datasets: str,
+    probabilities: str,
+    strategy: Optional[Any] = None,
+    seed: int = 42,
+    max_count: int = 5000000,
+    return_eval: bool = True,
+    stopping_strategy: str = "first_exhausted",
+    train_split: str = "train",
+    eval_split: str = "test",
+) -> Union[Dataset, Tuple[Dataset, Dataset]]:
+    """
+    Load and blend multiple datasets with specified sampling probabilities.
+
+    Supports various dataset formats including local files (.json, .jsonl, .csv),
+    HuggingFace datasets, and datasets saved with ``save_to_disk``.
+
+    :param datasets: Comma-separated dataset paths or names (e.g., 'path1,path2').
+    :type datasets: str
+    :param probabilities: Comma-separated sampling probabilities (e.g., '0.5,0.5').
+    :type probabilities: str
+    :param strategy: Optional training strategy for distributed logging.
+    :type strategy: Optional[Any]
+    :param seed: Random seed for reproducible interleaving.
+    :type seed: int
+    :param max_count: Maximum number of samples to load per dataset.
+    :type max_count: int
+    :param return_eval: Whether to return evaluation dataset.
+    :type return_eval: bool
+    :param stopping_strategy: How to handle datasets of different sizes
+        ('first_exhausted' or 'all_exhausted').
+    :type stopping_strategy: str
+    :param train_split: Name of the training split.
+    :type train_split: str
+    :param eval_split: Name of the evaluation split.
+    :type eval_split: str
+    :return: Training dataset, or tuple of (train_dataset, eval_dataset) if return_eval=True.
+    :rtype: Union[Dataset, Tuple[Dataset, Dataset]]
+    """
     datasets = datasets.split(",")
     probabilities = list(map(float, probabilities.split(",")))
     assert len(probabilities) == len(datasets)
@@ -167,16 +234,27 @@ def blending_datasets(
         return train_dataset
 
 
-def convert_token_to_id(token, tokenizer):
+def convert_token_to_id(token: str, tokenizer: PreTrainedTokenizer) -> int:
+    """
+    Convert a string token to its corresponding token ID.
+
+    :param token: Token string to convert.
+    :type token: str
+    :param tokenizer: Tokenizer instance to use for conversion.
+    :type tokenizer: transformers.PreTrainedTokenizer
+    :return: Token ID.
+    :rtype: int
+    :raises ValueError: If token is not a string or encodes to multiple IDs.
+    """
     if isinstance(token, str):
-        token = tokenizer.encode(token, add_special_tokens=False)
-        assert len(token) == 1
-        return token[0]
+        token_ids = tokenizer.encode(token, add_special_tokens=False)
+        assert len(token_ids) == 1, f"Token '{token}' encodes to {len(token_ids)} IDs, expected 1"
+        return token_ids[0]
     else:
-        raise ValueError("token should be int or str")
+        raise ValueError(f"token should be a string, got {type(token).__name__}")
 
 
-def print_rank_0(msg, *args, **kwargs):
+def print_rank_0(msg: str, *args: Any, **kwargs: Any) -> None:
     """
     Prints message only from rank 0 process in distributed training.
 
@@ -196,7 +274,7 @@ def print_rank_0(msg, *args, **kwargs):
         print(f"RANK 0: {msg} {args} {kwargs}", flush=True)
 
 
-def get_current_device(num_device_per_node=8) -> torch.device:
+def get_current_device(num_device_per_node: int = 8) -> torch.device:
     """
     Returns the current CUDA device.
 
@@ -218,7 +296,10 @@ def get_current_device(num_device_per_node=8) -> torch.device:
     return torch.device(f"cuda:{torch.distributed.get_rank() % num_device_per_node}")
 
 
-def get_torch_profiler(output_file, warmup=1, active=1, repeat=1):
+def get_torch_profiler(output_file: str,
+                       warmup: int = 1,
+                       active: int = 1,
+                       repeat: int = 1) -> Union[torch.profiler.profile, "DummyProfile"]:
     """
     Creates and returns a PyTorch profiler configured for distributed training.
 
@@ -286,7 +367,7 @@ class DummyProfile:
         """
         pass
 
-    def __enter__(self):
+    def __enter__(self) -> "DummyProfile":
         """
         Context manager entry method.
 
@@ -295,7 +376,7 @@ class DummyProfile:
         """
         return self
 
-    def __exit__(self, a, b, c):
+    def __exit__(self, a: Any, b: Any, c: Any) -> None:
         """
         Context manager exit method.
 
@@ -305,21 +386,21 @@ class DummyProfile:
         """
         pass
 
-    def start(self):
+    def start(self) -> None:
         """
         Dummy implementation of the profiler start method.
         Does nothing.
         """
         pass
 
-    def stop(self):
+    def stop(self) -> None:
         """
         Dummy implementation of the profiler stop method.
         Does nothing.
         """
         pass
 
-    def step(self):
+    def step(self) -> None:
         """
         Dummy implementation of the profiler step method.
         Does nothing.
@@ -327,7 +408,7 @@ class DummyProfile:
         pass
 
 
-def ensure_video_input_available():
+def ensure_video_input_available() -> None:
     """
     Ensure ``VideoInput`` is available from ``transformers.image_utils``.
 
@@ -373,6 +454,13 @@ def ensure_video_input_available():
         except ImportError:
 
             class VideoInput:
+                """
+                Placeholder class for VideoInput when transformers doesn't provide it.
+
+                This class serves as a compatibility shim for older Transformers versions
+                that don't export VideoInput from transformers.image_utils or
+                transformers.video_utils.
+                """
                 pass
 
         import transformers

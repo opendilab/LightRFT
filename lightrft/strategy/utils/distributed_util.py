@@ -27,6 +27,66 @@ def init_process_group(
     group_name: str = None,
     pg_options: Optional[Any] = None,
 ):
+    """
+    Initialize the distributed process group for multi-process training.
+
+    This function is a custom wrapper around torch.distributed.init_process_group that
+    allows creating multiple main process groups, which is not supported by the standard
+    PyTorch API. It handles the rendezvous process, backend initialization, and provides
+    additional validation.
+
+    **Process Groups Overview:**
+    A process group is a collection of processes that can communicate with each other
+    using collective operations (e.g., all_reduce, all_gather). Process groups are
+    essential for distributed training, enabling data parallelism, model parallelism,
+    and other distributed computing patterns.
+
+    **Initialization Methods:**
+    - ``env://`` (default): Uses environment variables (MASTER_ADDR, MASTER_PORT, RANK, WORLD_SIZE)
+    - ``tcp://``: Explicitly specifies master address and port (e.g., tcp://10.1.1.20:23456)
+    - ``file://``: Uses a shared file system for coordination (e.g., file:///mnt/nfs/sharedfile)
+
+    **Backends:**
+    - ``nccl``: Recommended for GPU training, optimized for NVIDIA GPUs
+    - ``gloo``: Works for both CPU and GPU, recommended for CPU training
+    - ``mpi``: Requires MPI installation, useful for HPC environments
+
+    **Rendezvous Process:**
+    The rendezvous mechanism coordinates all processes to discover each other and
+    establish communication channels. This function handles the rendezvous automatically
+    based on the init_method or store provided.
+
+    For more details, see PyTorch distributed documentation:
+    https://pytorch.org/docs/stable/distributed.html
+
+    :param backend: Backend to use (e.g., 'nccl', 'gloo', 'mpi').
+    :type backend: Union[str, Backend], optional
+    :param init_method: URL specifying how to initialize the process group.
+        Defaults to 'env://' if not specified.
+    :type init_method: Optional[str]
+    :param timeout: Timeout for operations executed against the process group.
+        Defaults to 30 minutes if not specified.
+    :type timeout: Optional[timedelta]
+    :param world_size: Total number of processes participating in the job.
+        Required if using store-based initialization.
+    :type world_size: int
+    :param rank: Rank of the current process (0 to world_size - 1).
+        Required if using store-based initialization.
+    :type rank: int
+    :param store: Key/value store accessible to all workers for coordination.
+        If provided, init_method must be None.
+    :type store: Optional[Store]
+    :param group_name: Name of the process group for identification.
+        Useful when creating multiple process groups.
+    :type group_name: str, optional
+    :param pg_options: Process group options (backend-specific configuration).
+        Note: Renamed to backend_options in PyTorch 2.6.0+.
+    :type pg_options: Optional[Any]
+    :return: The initialized process group.
+    :rtype: dist.ProcessGroup
+    :raises AssertionError: If both init_method and store are specified, or if
+        world_size/rank are invalid when using store.
+    """
     assert (store is None) or (init_method is None), "Cannot specify both init_method and store."
 
     if store is not None:

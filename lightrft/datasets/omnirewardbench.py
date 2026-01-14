@@ -57,7 +57,20 @@ class OmniRewardBenchT2IHandler(BaseDataHandler):
 
     def parse_item(self, item: Dict[str, Any], media_content: Dict[str, Any],
                    config: Dict[str, Any]) -> Tuple[List[Dict], List[Dict], Dict]:
+        """
+        Parse a single T2I benchmark item into message pairs for ranking.
 
+        :param item: Raw data item from OmniRewardBench T2I dataset.
+        :type item: Dict[str, Any]
+        :param media_content: Loaded media content with 'image1' and 'image2' keys.
+        :type media_content: Dict[str, Any]
+        :param config: Configuration dict with task_instruction template.
+        :type config: Dict[str, Any]
+        :return: Tuple of (messages0, messages1, other_info) where messages are
+            formatted for the reward model and other_info contains metadata.
+        :rtype: Tuple[List[Dict], List[Dict], Dict]
+        :raises ValueError: If required visual content is missing.
+        """
         image1 = media_content['image1']
         image2 = media_content['image2']
 
@@ -146,7 +159,20 @@ class OmniRewardBenchT2VHandler(OmniRewardBenchT2IHandler):
 
     def parse_item(self, item: Dict[str, Any], media_content: Dict[str, Any],
                    config: Dict[str, Any]) -> Tuple[List[Dict], List[Dict], Dict]:
+        """
+        Parse a single T2V benchmark item into message pairs for ranking.
 
+        :param item: Raw data item from OmniRewardBench T2V dataset.
+        :type item: Dict[str, Any]
+        :param media_content: Loaded media content with 'video1' and 'video2' keys.
+        :type media_content: Dict[str, Any]
+        :param config: Configuration dict with task_instruction template.
+        :type config: Dict[str, Any]
+        :return: Tuple of (messages0, messages1, other_info) where messages are
+            formatted for the reward model and other_info contains metadata.
+        :rtype: Tuple[List[Dict], List[Dict], Dict]
+        :raises ValueError: If required visual content is missing.
+        """
         video1 = media_content['video1']
         video2 = media_content['video2']
 
@@ -237,7 +263,20 @@ class OmniRewardBenchT2AHandler(OmniRewardBenchT2IHandler):
 
     def parse_item(self, item: Dict[str, Any], media_content: Dict[str, Any],
                    config: Dict[str, Any]) -> Tuple[List[Dict], List[Dict], Dict]:
+        """
+        Parse a single T2A benchmark item into message pairs for ranking.
 
+        :param item: Raw data item from OmniRewardBench T2A dataset.
+        :type item: Dict[str, Any]
+        :param media_content: Loaded media content with 'audio1' and 'audio2' keys.
+        :type media_content: Dict[str, Any]
+        :param config: Configuration dict with task_instruction template.
+        :type config: Dict[str, Any]
+        :return: Tuple of (messages0, messages1, other_info) where messages are
+            formatted for the reward model and other_info contains metadata.
+        :rtype: Tuple[List[Dict], List[Dict], Dict]
+        :raises ValueError: If required audio content is missing.
+        """
         audio1 = media_content['audio1']
         audio2 = media_content['audio2']
 
@@ -308,7 +347,20 @@ class OmniRewardBenchT2IGRMHandler(OmniRewardBenchT2IHandler):
     """
     def parse_item(self, item: Dict[str, Any], media_content: Dict[str, Any],
                    config: Dict[str, Any]) -> Tuple[List[Dict], List[Dict], Dict]:
+        """
+        Parse a single T2I item for generative reward model training.
 
+        :param item: Raw data item from OmniRewardBench T2I dataset.
+        :type item: Dict[str, Any]
+        :param media_content: Loaded media content with 'image1' and 'image2' keys.
+        :type media_content: Dict[str, Any]
+        :param config: Configuration dict with task_instruction template.
+        :type config: Dict[str, Any]
+        :return: Tuple of (messages0, messages1, other_info) where messages are
+            formatted for the generative reward model.
+        :rtype: Tuple[List[Dict], List[Dict], Dict]
+        :raises ValueError: If required visual content is missing.
+        """
         image1 = media_content['image1']
         image2 = media_content['image2']
 

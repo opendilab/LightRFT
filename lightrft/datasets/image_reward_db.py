@@ -133,6 +133,14 @@ class ImageRewardDBHandler(BaseDataHandler):
         return preference_pairs
 
     def get_media_info(self, item: Dict[str, Any]) -> Dict[str, Dict[str, str]]:
+        """
+        Extract path info for chosen and rejected images.
+
+        :param item: Data item containing image paths.
+        :type item: Dict[str, Any]
+        :return: Dictionary with 'preferred_image' and 'rejected_image' keys, or None if files don't exist.
+        :rtype: Optional[Dict[str, Dict[str, str]]]
+        """
         data_root = item['data_root']
 
         # Build full local paths
@@ -154,6 +162,19 @@ class ImageRewardDBHandler(BaseDataHandler):
 
     def parse_item(self, item: Dict[str, Any], media_content: Dict[str, Any],
                    config: Dict[str, Any]) -> Tuple[List[Dict], List[Dict], Dict]:
+        """
+        Parse a single ImageRewardDB item into message pairs for ranking.
+
+        :param item: Raw data item from ImageRewardDB dataset.
+        :type item: Dict[str, Any]
+        :param media_content: Loaded media content with 'preferred_image' and 'rejected_image' keys.
+        :type media_content: Dict[str, Any]
+        :param config: Configuration dict with task_instruction template.
+        :type config: Dict[str, Any]
+        :return: Tuple of (messages0, messages1, other_info).
+        :rtype: Tuple[List[Dict], List[Dict], Dict]
+        :raises ValueError: If required content is missing.
+        """
         # Get loaded visual content
         preferred_image = media_content['preferred_image']
         rejected_image = media_content['rejected_image']

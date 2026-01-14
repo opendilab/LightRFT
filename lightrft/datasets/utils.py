@@ -137,6 +137,16 @@ def zero_pad_sequences(sequences, side: str = "left", value=0) -> torch.Tensor:
 
 
 def exist_and_not_none(d, key):
+    """
+    Check if a key exists in dictionary and its value is not None.
+
+    :param d: Dictionary to check.
+    :type d: dict
+    :param key: Key to look for.
+    :type key: Any
+    :return: True if key exists and value is not None.
+    :rtype: bool
+    """
     return key in d and not d[key] is None
 
 

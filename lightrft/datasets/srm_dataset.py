@@ -29,10 +29,8 @@ class RankDatasetVL(Dataset):
     and "C" to indicate which input is better or if they tie. For example,
     label "A" means input0 is preferred over input1; "C" means a tie.
 
-    :param dataset_paths: List of dataset file paths or directories. The
-        handler is determined by the source keyword (e.g. "hpdv3",
-        "rapidata", "omnirewardbench"). The format is "source:path".
-        e.g. "rapidata-t2v:/path/to/file.parquet"
+    :param dataset_paths: List of dataset file paths or directories, in the format ``source:path`` where
+        the handler is determined by the source keyword such as hpdv3, rapidata, or omnirewardbench.
     :type dataset_paths: List[str]
     :param processor: Multimodal processor used for tokenization and visual
         processing.
@@ -49,11 +47,11 @@ class RankDatasetVL(Dataset):
           with a ``{prompt}`` placeholder.
     :type config: Dict[str, Any]
 
-    :example:
+    **Example:**
 
-        >>> dataset = RMRankDataset([
-        ...     'hpdv3:/data/hpdv3/train.json'
-        ... ], processor=proc, tokenizer=tok, max_length=4096)
+    >>> dataset = RMRankDataset([
+    ...     'hpdv3:/data/hpdv3/train.json'
+    ... ], processor=proc, tokenizer=tok, max_length=4096)
 
     """
     def __init__(
@@ -185,6 +183,14 @@ class RankDatasetVL(Dataset):
         return input0_token, input1_token
 
     def collate_fn(self, batch):
+        """
+        Collate function to batch vision-language scalar reward model samples.
+
+        :param batch: List of tuples (input0_token, input1_token, extra).
+        :type batch: list
+        :return: Dictionary with batched tensors for VL reward model training.
+        :rtype: dict
+        """
         batch = [b for b in batch if b is not None]
         if not batch:
             return None
@@ -255,10 +261,8 @@ class RankDatasetAL(Dataset):
     RMRankDatasetAL dataset supports multiple audio-language data sources through pluggable
     Data Handlers and support training reward model for text-to-audio task.
 
-    :param dataset_paths: List of dataset file paths or directories. The
-        handler is determined by the source keyword (e.g. "audio-alpaca",
-        "omnirewardbench-t2a"). The format is "source:path".
-        e.g. "audio-alpaca:/path/to/file.parquet"
+    :param dataset_paths: List of dataset file paths or directories, in the format ``source:path`` where
+        the handler is determined by the source keyword such as audio-alpaca or omnirewardbench-t2a.
     :type dataset_paths: List[str]
     :param processor: Multimodal processor used for tokenization and audio
         processing.
@@ -415,6 +419,14 @@ class RankDatasetAL(Dataset):
         return input0_token, input1_token
 
     def collate_fn(self, batch):
+        """
+        Collate function to batch audio-language scalar reward model samples.
+
+        :param batch: List of tuples (input0_token, input1_token, extra).
+        :type batch: list
+        :return: Dictionary with batched tensors for AL reward model training.
+        :rtype: dict
+        """
         batch = [b for b in batch if b is not None]
         if not batch:
             return None

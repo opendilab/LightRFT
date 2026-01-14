@@ -36,6 +36,26 @@ from deepspeed.checkpoint.constants import (
 
 @dataclass
 class zero_model_state:
+    """
+    Data structure to hold ZeRO model state components.
+
+    This dataclass encapsulates the various components of a DeepSpeed ZeRO checkpoint
+    model state, including buffers, parameter shapes, shared parameters, and frozen
+    parameter information.
+
+    :param buffers: Dictionary of model buffers recovered from checkpoint.
+    :type buffers: dict
+    :param param_shapes: Dictionary of parameter shapes for reconstruction.
+    :type param_shapes: dict
+    :param shared_params: List of shared parameter pairs.
+    :type shared_params: list
+    :param ds_version: DeepSpeed version used to create the checkpoint.
+    :type ds_version: int
+    :param frozen_param_shapes: Dictionary of frozen parameter shapes.
+    :type frozen_param_shapes: dict
+    :param frozen_param_fragments: Dictionary of frozen parameter fragments.
+    :type frozen_param_fragments: dict
+    """
     buffers: dict()
     param_shapes: dict()
     shared_params: list
@@ -51,6 +71,14 @@ device = torch.device('cpu')
 
 
 def atoi(text):
+    """
+    Convert text to integer if it represents a digit, otherwise return as-is.
+
+    :param text: Text string to convert.
+    :type text: str
+    :return: Integer if text is a digit, otherwise the original text.
+    :rtype: int or str
+    """
     return int(text) if text.isdigit() else text
 
 
@@ -64,6 +92,17 @@ def natural_keys(text):
 
 
 def get_model_state_file(checkpoint_dir, zero_stage):
+    """
+    Get the path to the model state file based on ZeRO stage.
+
+    :param checkpoint_dir: Path to the checkpoint directory.
+    :type checkpoint_dir: str
+    :param zero_stage: ZeRO optimization stage (1, 2, or 3).
+    :type zero_stage: int
+    :return: Path to the model state file.
+    :rtype: str
+    :raises FileNotFoundError: If checkpoint directory or model state file doesn't exist.
+    """
     if not os.path.isdir(checkpoint_dir):
         raise FileNotFoundError(f"Directory '{checkpoint_dir}' doesn't exist")
 
@@ -80,6 +119,17 @@ def get_model_state_file(checkpoint_dir, zero_stage):
 
 
 def get_checkpoint_files(checkpoint_dir, glob_pattern):
+    """
+    Get list of checkpoint files matching the glob pattern.
+
+    :param checkpoint_dir: Path to the checkpoint directory.
+    :type checkpoint_dir: str
+    :param glob_pattern: Glob pattern to match checkpoint files.
+    :type glob_pattern: str
+    :return: Sorted list of checkpoint file paths.
+    :rtype: list
+    :raises FileNotFoundError: If no files matching the pattern are found.
+    """
     # XXX: need to test that this simple glob rule works for multi-node setup too
     ckpt_files = sorted(glob.glob(os.path.join(checkpoint_dir, glob_pattern)), key=natural_keys)
 
@@ -90,14 +140,41 @@ def get_checkpoint_files(checkpoint_dir, glob_pattern):
 
 
 def get_optim_files(checkpoint_dir):
+    """
+    Get list of optimizer state files from checkpoint directory.
+
+    :param checkpoint_dir: Path to the checkpoint directory.
+    :type checkpoint_dir: str
+    :return: Sorted list of optimizer state file paths.
+    :rtype: list
+    :raises FileNotFoundError: If no optimizer state files are found.
+    """
     return get_checkpoint_files(checkpoint_dir, "*_optim_states.pt")
 
 
 def get_model_state_files(checkpoint_dir):
+    """
+    Get list of model state files from checkpoint directory.
+
+    :param checkpoint_dir: Path to the checkpoint directory.
+    :type checkpoint_dir: str
+    :return: Sorted list of model state file paths.
+    :rtype: list
+    :raises FileNotFoundError: If no model state files are found.
+    """
     return get_checkpoint_files(checkpoint_dir, "*_model_states.pt")
 
 
 def parse_model_states(files):
+    """
+    Parse model state files and extract ZeRO model state information.
+
+    :param files: List of model state file paths to parse.
+    :type files: list
+    :return: List of zero_model_state objects containing parsed model states.
+    :rtype: list
+    :raises ValueError: If a file is not a valid model state checkpoint.
+    """
     zero_model_states = []
     for file in files:
         state_dict = torch.load(file, map_location=device)
@@ -146,6 +223,17 @@ def parse_model_states(files):
 
 
 def parse_optim_states(files, ds_checkpoint_dir):
+    """
+    Parse optimizer state files and extract fp32 flat parameter groups.
+
+    :param files: List of optimizer state file paths to parse.
+    :type files: list
+    :param ds_checkpoint_dir: Path to the DeepSpeed checkpoint directory.
+    :type ds_checkpoint_dir: str
+    :return: Tuple of (zero_stage, world_size, fp32_flat_groups).
+    :rtype: tuple
+    :raises ValueError: If files are not valid ZeRO checkpoints or world_size mismatch.
+    """
 
     total_files = len(files)
     state_dicts = []
@@ -319,6 +407,14 @@ def _zero2_merge_trainable_params(state_dict, world_size, fp32_flat_groups, zero
         align_to = 2 * world_size
 
         def zero2_align(x):
+            """
+            Align number to ZeRO-2 chunk boundaries.
+
+            :param x: Number to align.
+            :type x: int
+            :return: Aligned number.
+            :rtype: int
+            """
             return align_to * math.ceil(x / align_to)
 
         if debug:
@@ -362,6 +458,16 @@ def _get_fp32_state_dict_from_zero2_checkpoint(
 
 
 def zero3_partitioned_param_info(unpartitioned_numel, world_size):
+    """
+    Calculate partitioned parameter info for ZeRO-3.
+
+    :param unpartitioned_numel: Number of elements in the unpartitioned parameter.
+    :type unpartitioned_numel: int
+    :param world_size: Number of parallel processes (world size).
+    :type world_size: int
+    :return: Tuple of (partitioned_numel, padding_numel).
+    :rtype: tuple
+    """
     remainder = unpartitioned_numel % world_size
     padding_numel = (world_size - remainder) if remainder else 0
     partitioned_numel = math.ceil(unpartitioned_numel / world_size)

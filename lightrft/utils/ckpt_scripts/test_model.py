@@ -98,6 +98,12 @@ def run_benchmark_test(model, tokenizer, num_samples: int = 5):
 
 
 def main():
+    """
+    Main function to test converted HuggingFace checkpoint.
+
+    Loads a converted model checkpoint and runs inference tests
+    with optional benchmarking.
+    """
     parser = argparse.ArgumentParser(description="Test converted HuggingFace model")
     parser.add_argument("--model_path", type=str, help="Path to the converted HuggingFace model")
     parser.add_argument("--device", type=str, default="cuda", help="Device to run on")
