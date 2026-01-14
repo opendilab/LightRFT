@@ -616,7 +616,7 @@ class PPOTrainerVL(ABC):
                 return True
 
             num_tokens = (sequences == image_token_id).sum().item()
-            num_patches = pixel_values.shape[0]
+            num_patches = pixel_values.shape[0] // 4
 
             if num_tokens != num_patches:
                 self.strategy.print(
