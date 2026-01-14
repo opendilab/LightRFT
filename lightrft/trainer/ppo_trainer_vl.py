@@ -237,69 +237,6 @@ class PPOTrainerVL(ABC):
             log_dir = os.path.join(self.strategy.args.use_tensorboard, strategy.args.wandb_run_name)
             self._tensorboard = SummaryWriter(log_dir=log_dir)
 
-    # def _ensure_model_buffers_on_device(self):
-    #     """
-    #     Ensure all model buffers are on GPU.
-
-    #     This is CRITICAL for preventing Triton kernel errors. Models with:
-    #     - RoPE caches (cos/sin tables)
-    #     - Normalization statistics (mean/std)
-    #     - Other persistent buffers
-
-    #     may have buffers initialized on CPU, especially with DeepSpeed Zero-3.
-    #     This method explicitly moves all buffers to the current GPU.
-
-    #     Called at the start of training to "warm up" models.
-    #     """
-    #     device = torch.cuda.current_device()
-
-    #     # Check Actor
-    #     if self.actor is not None:
-    #         self._ensure_single_model_buffers(self.actor, "Actor", device)
-
-    #     # Check Critic (most critical - often causes Triton errors)
-    #     if self.critic is not None:
-    #         self._ensure_single_model_buffers(self.critic, "Critic", device)
-
-    #     # Check Initial Model (for KL calculation)
-    #     if self.initial_model is not None:
-    #         self._ensure_single_model_buffers(self.initial_model, "InitialModel", device)
-
-    #     # Check Reward Model
-    #     if isinstance(self.reward_model, nn.Module):
-    #         self._ensure_single_model_buffers(self.reward_model, "RewardModel", device)
-
-    # def _ensure_single_model_buffers(self, model, model_name, device):
-    #     """
-    #     Move all buffers of a single model to the specified device.
-
-    #     :param model: The model whose buffers to move.
-    #     :type model: nn.Module
-    #     :param model_name: Name of the model for logging.
-    #     :type model_name: str
-    #     :param device: Target device.
-    #     :type device: torch.device
-    #     """
-    #     moved_buffers = []
-
-    #     for buffer_name, buffer in model.named_buffers():
-    #         if buffer is not None and buffer.device.type != 'cuda':
-    #             try:
-    #                 # Force buffer to GPU
-    #                 buffer.data = buffer.data.to(device)
-    #                 moved_buffers.append(buffer_name)
-    #             except Exception as e:
-    #                 self.strategy.print(
-    #                     f"[WARNING] Failed to move {model_name}.{buffer_name} to GPU: {e}"
-    #                 )
-
-    #     if moved_buffers and self.strategy.is_rank_0():
-    #         self.strategy.print(
-    #             f"[INFO] Moved {len(moved_buffers)} buffers of {model_name} to GPU: {moved_buffers[:5]}{'...' if len(moved_buffers) > 5 else ''}"  # noqa
-    #         )
-    #     elif self.strategy.is_rank_0():
-    #         self.strategy.print(f"[INFO] All buffers of {model_name} already on GPU")
-
     def fit(
         self,
         args,
@@ -648,6 +585,49 @@ class PPOTrainerVL(ABC):
             status.update(self.training_step_critic(experience))
         return status
 
+
+    def _validate_qwen_vl_tensors(
+            self,
+            sequences: torch.Tensor,
+            pixel_values: Optional[torch.Tensor],
+            context: str = "training"
+        ) -> bool:
+            """
+            Validates the consistency between image tokens in sequences and pixel_values features.
+
+            :param sequences: Token sequence tensor.
+            :type sequences: torch.Tensor
+            :param pixel_values: Processed pixel values tensor.
+            :type pixel_values: Optional[torch.Tensor]
+            :param context: A string indicating where the validation is called from (e.g., "actor_rl", "actor_ptx").
+            :type context: str
+            :return: True if data is consistent, False otherwise.
+            :rtype: bool
+            """
+            if pixel_values is None or pixel_values.numel() == 0:
+                # This is a text-only batch, no validation needed.
+                return True
+
+            config = self.strategy.unwrap_model(self.actor.model).config
+            image_token_id = getattr(config, "image_token_id", None)
+
+            if image_token_id is None:
+                # Model does not use special image tokens.
+                return True
+
+            num_tokens = (sequences == image_token_id).sum().item()
+            num_patches = pixel_values.shape[0]
+
+            if num_tokens != num_patches:
+                self.strategy.print(
+                    f"[CRITICAL WARNING] Skipping batch in '{context}'. "
+                    f"Image features and image tokens do not match: tokens: {num_tokens}, features: {num_patches}. "
+                    "This batch will be discarded to prevent a crash."
+                )
+                return False
+
+            return True
+
     def training_step_actor(self, experience: ExperienceVL) -> Dict[str, float]:
         """
         Actor training step.
@@ -694,6 +674,10 @@ class PPOTrainerVL(ABC):
             if max_adv > 10.0:
                 self.strategy.print(f"[Warning] Huge advantage detected: {max_adv}")
             advantages = torch.clamp(advantages, min=-10.0, max=10.0)
+
+        # [ROBUST FIX] Validate RL data before actor forward pass
+        if not self._validate_qwen_vl_tensors(sequences, pixel_values, context="actor_rl_update"):
+            return {} # Skip this entire training step for this batch
 
         # Actor loss
         action_log_probs, output = self.actor(
