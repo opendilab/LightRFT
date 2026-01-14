@@ -12,15 +12,13 @@ from typing import Callable, Optional, Tuple
 import torch
 from transformers.cache_utils import Cache
 from transformers.models.llama.modeling_llama import apply_rotary_pos_emb
-from transformers.utils import logging
+from loguru import logger
 
 from lightrft.strategy.utils.parallel_utils import (
     _SeqAllToAll,
     get_sequence_parallel_group,
     get_sequence_parallel_world_size,
 )
-
-logger = logging.get_logger(__name__)
 
 
 def qwen2_attn_forward(

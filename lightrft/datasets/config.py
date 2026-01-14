@@ -24,10 +24,10 @@ from typing import Optional, Union
 class DatasetConfig:
     """
     Configuration for dataset loading.
-    
+
     This class unifies parameters for train, eval, and pretrain datasets,
     providing a consistent interface for dataset configuration.
-    
+
     :param data_path: Path(s) to dataset(s), can be string or list
     :type data_path: Optional[Union[str, list]]
     :param data_probs: Sampling probabilities for datasets. Default to "1.0"
@@ -62,7 +62,7 @@ class DatasetConfig:
     def __post_init__(self):
         """
         Validate configuration after initialization.
-        
+
         :raises ValueError: If data_path is None or if data_path and data_probs have mismatched lengths
         """
         if self.data_path is None:
@@ -101,7 +101,7 @@ class DatasetConfig:
     ) -> "DatasetConfig":
         """
         Create configuration for training dataset.
-        
+
         :param data_path: Path(s) to dataset(s)
         :type data_path: Optional[Union[str, list]]
         :param data_probs: Sampling probabilities for datasets
@@ -139,7 +139,7 @@ class DatasetConfig:
     ) -> "DatasetConfig":
         """
         Create configuration for evaluation dataset.
-        
+
         :param data_path: Path(s) to dataset(s)
         :type data_path: Optional[Union[str, list]]
         :param data_probs: Sampling probabilities for datasets
@@ -177,7 +177,7 @@ class DatasetConfig:
     ) -> "DatasetConfig":
         """
         Create configuration for pretraining dataset.
-        
+
         :param data_path: Path(s) to dataset(s)
         :type data_path: Optional[Union[str, list]]
         :param data_probs: Sampling probabilities for datasets

@@ -25,11 +25,11 @@ import torch
 class BaseReward(ABC):
     """
     Abstract base class for all reward types.
-    
+
     This class defines the unified interface that all reward implementations
     must follow, ensuring consistency across rule-based rewards, single reward
     models, and multiple reward models.
-    
+
     All reward implementations should return:
         - rewards: torch.Tensor of shape (batch_size,) containing reward values
         - metrics: Dict[str, torch.Tensor] containing detailed reward metrics
@@ -44,7 +44,7 @@ class BaseReward(ABC):
     ) -> Tuple[torch.Tensor, Dict[str, torch.Tensor]]:
         """
         Compute rewards for given queries.
-        
+
         :param queries: List of query/solution strings (length B)
         :type queries: Sequence[str]
         :param references: List of reference answers (length B), optional
@@ -68,7 +68,7 @@ class BaseReward(ABC):
     ) -> Tuple[torch.Tensor, Dict[str, torch.Tensor]]:
         """
         Make the reward object callable.
-        
+
         :param queries: List of query/solution strings
         :type queries: Sequence[str]
         :param references: List of reference answers, optional

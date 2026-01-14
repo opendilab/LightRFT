@@ -28,11 +28,11 @@ from .config import DatasetConfig
 class DatasetLoader:
     """
     Unified dataset loader for train, eval, and pretrain datasets.
-    
+
     This class provides a consistent interface for loading datasets,
     handling the differences between prompt datasets (for training/eval)
     and SFT datasets (for pretraining).
-    
+
     :param tokenizer: Tokenizer for tokenizing text
     :type tokenizer: Any
     :param processor: Processor for multimodal data (optional)
@@ -48,7 +48,7 @@ class DatasetLoader:
     ):
         """
         Initialize dataset loader.
-        
+
         :param tokenizer: Tokenizer for tokenizing text
         :type tokenizer: Any
         :param processor: Processor for multimodal data (optional)
@@ -63,7 +63,7 @@ class DatasetLoader:
     def _log(self, message: str):
         """
         Log message if strategy is available.
-        
+
         :param message: Message to log
         :type message: str
         """
@@ -80,7 +80,7 @@ class DatasetLoader:
     ) -> PromptDatasetVL:
         """
         Load training dataset.
-        
+
         :param config: Dataset configuration
         :type config: DatasetConfig
         :param prompt_max_len: Maximum prompt length
@@ -130,7 +130,7 @@ class DatasetLoader:
     ) -> Optional[PromptDatasetVL]:
         """
         Load evaluation dataset.
-        
+
         :param config: Dataset configuration
         :type config: DatasetConfig
         :param prompt_max_len: Maximum prompt length
@@ -189,7 +189,7 @@ class DatasetLoader:
     ) -> Optional[SFTDatasetVL]:
         """
         Load pretraining dataset.
-        
+
         :param config: Dataset configuration
         :type config: DatasetConfig
         :param pretrain_max_len: Maximum sequence length for pretraining

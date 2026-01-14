@@ -103,9 +103,9 @@ class ActorAL(nn.Module):
             # Note: dschf is defined in function scope to avoid global effects
             # https://huggingface.co/docs/transformers/deepspeed#non-trainer-deepspeed-integration
             if ds_config is not None and ds_config["zero_optimization"]["stage"] == 3:
-                dschf = HfDeepSpeedConfig(ds_config)
+                dschf = HfDeepSpeedConfig(ds_config)  # noqa: F841
             else:
-                dschf = None
+                dschf = None  # noqa: F841
 
             # Load Qwen2Audio model
             self.model = Qwen2AudioForConditionalGeneration.from_pretrained(
@@ -226,7 +226,6 @@ class ActorAL(nn.Module):
         attention_mask: Optional[torch.Tensor] = None,
         audio_values: torch.Tensor = None,
         return_output=False,
-        ring_attn_group: Optional[dist.ProcessGroup] = None,
         packed_seq_lens: Optional[list[int]] = None,
     ) -> torch.Tensor:
         """
@@ -246,8 +245,6 @@ class ActorAL(nn.Module):
         :type audio_values: torch.Tensor
         :param return_output: Whether to return the full model output along with log probs
         :type return_output: bool
-        :param ring_attn_group: Process group for ring attention (distributed training)
-        :type ring_attn_group: Optional[dist.ProcessGroup]
         :param packed_seq_lens: Sequence lengths for packed samples
         :type packed_seq_lens: Optional[list[int]]
 

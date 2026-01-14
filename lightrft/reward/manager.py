@@ -30,12 +30,12 @@ class RewardManager(BaseReward):
     """
     Unified reward manager that automatically selects the appropriate
     reward implementation based on configuration.
-    
+
     Supports:
     - Rule-based rewards (pure rule functions)
     - Single reward model
     - Multiple reward models (with recipe-based aggregation)
-    
+
     :param reward_type: Type of reward to use ("rule", "single", "multi")
     :type reward_type: str
     :param reward_model: Single reward model or list of reward models
@@ -75,7 +75,7 @@ class RewardManager(BaseReward):
     ):
         """
         Initialize reward manager.
-        
+
         :param reward_type: Type of reward to use ("rule", "single", "multi")
         :type reward_type: str
         :param reward_model: Single reward model or list of reward models
@@ -170,7 +170,7 @@ class RewardManager(BaseReward):
     ) -> Tuple[torch.Tensor, Dict[str, torch.Tensor]]:
         """
         Compute rewards using the configured reward implementation.
-        
+
         :param queries: List of query/solution strings (length B)
         :type queries: Sequence[str]
         :param references: List of reference answers (length B), optional
@@ -195,7 +195,7 @@ class RewardManager(BaseReward):
     ) -> "RewardManager":
         """
         Create RewardManager from configuration dictionary.
-        
+
         :param config: Configuration dictionary with keys:
             - reward_type: "rule", "single", or "multi"
             - rule_type: Type of rule (for rule-based rewards)

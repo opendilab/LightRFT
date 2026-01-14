@@ -83,6 +83,14 @@ class ProcessRewardDataset(Dataset):
         )
 
     def collate_fn(self, item_list):
+        """
+        Collate function to batch process reward model samples.
+
+        :param item_list: List of tuples (input_id, input_mask, label_id).
+        :type item_list: list
+        :return: Batched tensors (input_ids, input_masks, label_ids).
+        :rtype: tuple
+        """
         input_ids = []
         input_masks = []
         label_ids = []
@@ -98,12 +106,20 @@ class ProcessRewardDataset(Dataset):
         return input_ids, input_masks, label_ids
 
     def packing_collate_fn(self, item_list):
+        """
+        Collate function for packing multiple process reward samples.
+
+        :param item_list: List of tuples (input_id, input_mask, label_id).
+        :type item_list: list
+        :return: Packed tensors (packed_input_ids, packed_attention_masks, packed_label_ids, infos).
+        :rtype: tuple
+        """
         input_ids = []
         input_att_masks = []
         input_seq_lens = []
         label_ids = []
         index = 1
-        for input_id, input_mask, label_id in item_list:
+        for input_id, _, label_id in item_list:
             input_ids.append(input_id.flatten())
             input_att_masks.append(torch.full_like(input_id.flatten(), index))
             input_seq_lens.append(len(input_id.flatten()))

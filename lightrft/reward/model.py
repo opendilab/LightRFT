@@ -26,11 +26,11 @@ from .base import BaseReward
 class SingleRewardModel(BaseReward):
     """
     Single reward model implementation.
-    
+
     This class encapsulates the logic for computing rewards using a single
     neural reward model. It handles both standard PyTorch models and custom
     engine models (e.g., SGLang).
-    
+
     :param reward_model: PyTorch reward model instance
     :type reward_model: nn.Module
     :param tokenizer: Tokenizer for decoding sequences
@@ -52,7 +52,7 @@ class SingleRewardModel(BaseReward):
     ):
         """
         Initialize single reward model.
-        
+
         :param reward_model: PyTorch reward model instance
         :type reward_model: nn.Module
         :param tokenizer: Tokenizer for decoding sequences
@@ -85,7 +85,7 @@ class SingleRewardModel(BaseReward):
     ) -> Tuple[torch.Tensor, Dict[str, torch.Tensor]]:
         """
         Compute rewards using a single reward model.
-        
+
         :param queries: List of query/solution strings (length B)
         :type queries: Sequence[str]
         :param references: List of reference answers (length B), optional
@@ -162,10 +162,10 @@ class SingleRewardModel(BaseReward):
 class MultiRewardModel(BaseReward):
     """
     Multiple reward model implementation.
-    
+
     This class encapsulates the logic for computing rewards using multiple
     reward models and aggregating them according to a recipe configuration.
-    
+
     :param reward_models: List of reward model instances
     :type reward_models: List[nn.Module]
     :param reward_tokenizers: List of corresponding tokenizers
@@ -199,7 +199,7 @@ class MultiRewardModel(BaseReward):
     ):
         """
         Initialize multiple reward models.
-        
+
         :param reward_models: List of reward model instances
         :type reward_models: List[nn.Module]
         :param reward_tokenizers: List of corresponding tokenizers
@@ -244,7 +244,7 @@ class MultiRewardModel(BaseReward):
     ) -> Tuple[torch.Tensor, Dict[str, torch.Tensor]]:
         """
         Compute rewards using multiple reward models and aggregate them.
-        
+
         :param queries: List of query/solution strings (length B)
         :type queries: Sequence[str]
         :param references: List of reference answers (length B), optional

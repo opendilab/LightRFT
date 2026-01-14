@@ -3,10 +3,9 @@ import copy
 import json
 import random
 import glob
-from typing import List, Dict, Any, Tuple, Union
+from typing import List, Dict, Any, Tuple
 from itertools import combinations
 from collections import defaultdict
-from tqdm import tqdm
 from loguru import logger
 
 from .utils import BaseDataHandler
@@ -15,7 +14,7 @@ from .utils import BaseDataHandler
 class ImageRewardDBHandler(BaseDataHandler):
     """
     Data Handler for ImageRewardDB dataset.
-    
+
     Paper: https://arxiv.org/abs/2304.05977
     Dataset Repo: https://huggingface.co/datasets/zai-org/ImageRewardDB
     """
@@ -29,7 +28,7 @@ class ImageRewardDBHandler(BaseDataHandler):
 
         :param path: Path to the dataset root directory of ImageRewardDB.
         :type path: str
-        
+
         :return: List of preference pair dictionaries.
         :rtype: List[Dict[str, Any]]
             - ``prompt_id`` (str): Unique identifier for the prompt group.
@@ -134,6 +133,14 @@ class ImageRewardDBHandler(BaseDataHandler):
         return preference_pairs
 
     def get_media_info(self, item: Dict[str, Any]) -> Dict[str, Dict[str, str]]:
+        """
+        Extract path info for chosen and rejected images.
+
+        :param item: Data item containing image paths.
+        :type item: Dict[str, Any]
+        :return: Dictionary with 'preferred_image' and 'rejected_image' keys, or None if files don't exist.
+        :rtype: Optional[Dict[str, Dict[str, str]]]
+        """
         data_root = item['data_root']
 
         # Build full local paths
@@ -155,12 +162,25 @@ class ImageRewardDBHandler(BaseDataHandler):
 
     def parse_item(self, item: Dict[str, Any], media_content: Dict[str, Any],
                    config: Dict[str, Any]) -> Tuple[List[Dict], List[Dict], Dict]:
+        """
+        Parse a single ImageRewardDB item into message pairs for ranking.
+
+        :param item: Raw data item from ImageRewardDB dataset.
+        :type item: Dict[str, Any]
+        :param media_content: Loaded media content with 'preferred_image' and 'rejected_image' keys.
+        :type media_content: Dict[str, Any]
+        :param config: Configuration dict with task_instruction template.
+        :type config: Dict[str, Any]
+        :return: Tuple of (messages0, messages1, other_info).
+        :rtype: Tuple[List[Dict], List[Dict], Dict]
+        :raises ValueError: If required content is missing.
+        """
         # Get loaded visual content
         preferred_image = media_content['preferred_image']
         rejected_image = media_content['rejected_image']
 
         if not all([preferred_image, rejected_image]):
-            raise ValueError(f"Missing visual content for 'preferred_image' or 'rejected_image'.")
+            raise ValueError("Missing visual content for 'preferred_image' or 'rejected_image'.")
 
         # Get generation prompt from data item
         prompt_text = item["prompt"]
@@ -179,21 +199,17 @@ class ImageRewardDBHandler(BaseDataHandler):
             image0, image1 = rejected_image, preferred_image
 
         # Build messages
-        messages0 = [
-            {
-                "role": "system",
-                "content": copy.deepcopy(task_instruction)
-            },
-            {
-                "role": "user",
-                "content": [{
-                    "type": "image",
-                    "image": image0,
-                    "max_pixels": 1280 * 720
-                }  # to save memory
-                            ]
-            }
-        ]
+        messages0 = [{
+            "role": "system",
+            "content": copy.deepcopy(task_instruction)
+        }, {
+            "role": "user",
+            "content": [{
+                "type": "image",
+                "image": image0,
+                "max_pixels": 1280 * 720
+            }]
+        }]
 
         messages1 = [{
             "role": "system",

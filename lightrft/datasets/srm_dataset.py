@@ -1,6 +1,6 @@
 import io
 import random
-from typing import List, Dict, Any, Tuple, Union
+from typing import List, Dict, Any
 
 import librosa
 from loguru import logger
@@ -21,18 +21,16 @@ class RankDatasetVL(Dataset):
     """
     Preference ranking dataset used for vision-language scalar reward model (RM) training.
 
-    RMRankDatasetVL dataset supports multiple data sources through pluggable 
-    Data Handlers and covers both understanding tasks (image-to-text, video-to-text) 
+    RMRankDatasetVL dataset supports multiple data sources through pluggable
+    Data Handlers and covers both understanding tasks (image-to-text, video-to-text)
     and generation tasks (text-to-image, text-to-video).
 
     Each example contains two inputs to be compared. Labels use "A", "B",
     and "C" to indicate which input is better or if they tie. For example,
     label "A" means input0 is preferred over input1; "C" means a tie.
 
-    :param dataset_paths: List of dataset file paths or directories. The
-        handler is determined by the source keyword (e.g. "hpdv3",
-        "rapidata", "omnirewardbench"). The format is "source:path".
-        e.g. "rapidata-t2v:/path/to/file.parquet"
+    :param dataset_paths: List of dataset file paths or directories, in the format ``source:path`` where
+        the handler is determined by the source keyword such as hpdv3, rapidata, or omnirewardbench.
     :type dataset_paths: List[str]
     :param processor: Multimodal processor used for tokenization and visual
         processing.
@@ -49,11 +47,11 @@ class RankDatasetVL(Dataset):
           with a ``{prompt}`` placeholder.
     :type config: Dict[str, Any]
 
-    :example:
+    **Example:**
 
-        >>> dataset = RMRankDataset([
-        ...     'hpdv3:/data/hpdv3/train.json'
-        ... ], processor=proc, tokenizer=tok, max_length=4096)
+    >>> dataset = RMRankDataset([
+    ...     'hpdv3:/data/hpdv3/train.json'
+    ... ], processor=proc, tokenizer=tok, max_length=4096)
 
     """
     def __init__(
@@ -115,7 +113,7 @@ class RankDatasetVL(Dataset):
             except Exception as e:
                 logger.error(f"Failed to load data {path} (source: {source}): {e}")
 
-        logger.info(f"Loaded {len(self.data)} items in total, sources: {[s for s in dataset_paths]}")
+        logger.info(f"Loaded {len(self.data)} items in total, sources: {list(dataset_paths)}")
         random.shuffle(self.data)
 
     def __len__(self):
@@ -185,6 +183,14 @@ class RankDatasetVL(Dataset):
         return input0_token, input1_token
 
     def collate_fn(self, batch):
+        """
+        Collate function to batch vision-language scalar reward model samples.
+
+        :param batch: List of tuples (input0_token, input1_token, extra).
+        :type batch: list
+        :return: Dictionary with batched tensors for VL reward model training.
+        :rtype: dict
+        """
         batch = [b for b in batch if b is not None]
         if not batch:
             return None
@@ -252,13 +258,11 @@ class RankDatasetAL(Dataset):
     """
     Preference ranking dataset used for audio-language scalar reward model (RM) training.
 
-    RMRankDatasetAL dataset supports multiple audio-language data sources through pluggable 
+    RMRankDatasetAL dataset supports multiple audio-language data sources through pluggable
     Data Handlers and support training reward model for text-to-audio task.
 
-    :param dataset_paths: List of dataset file paths or directories. The
-        handler is determined by the source keyword (e.g. "audio-alpaca",
-        "omnirewardbench-t2a"). The format is "source:path".
-        e.g. "audio-alpaca:/path/to/file.parquet"
+    :param dataset_paths: List of dataset file paths or directories, in the format ``source:path`` where
+        the handler is determined by the source keyword such as audio-alpaca or omnirewardbench-t2a.
     :type dataset_paths: List[str]
     :param processor: Multimodal processor used for tokenization and audio
         processing.
@@ -320,7 +324,7 @@ class RankDatasetAL(Dataset):
             except Exception as e:
                 logger.error(f"Failed to load data {path} (source: {source}): {e}")
 
-        logger.info(f"Loaded {len(self.data)} items in total, sources: {[s for s in dataset_paths]}")
+        logger.info(f"Loaded {len(self.data)} items in total, sources: {list(dataset_paths)}")
         random.shuffle(self.data)
 
     def __len__(self):
@@ -350,6 +354,7 @@ class RankDatasetAL(Dataset):
 
     def _tokenize_pair(self, messages0, messages1):
         # Get audio data from messages
+        audio0, audio1 = None, None
         for msg in messages0:
             if isinstance(msg["content"], list):
                 for ele in msg["content"]:
@@ -414,6 +419,14 @@ class RankDatasetAL(Dataset):
         return input0_token, input1_token
 
     def collate_fn(self, batch):
+        """
+        Collate function to batch audio-language scalar reward model samples.
+
+        :param batch: List of tuples (input0_token, input1_token, extra).
+        :type batch: list
+        :return: Dictionary with batched tensors for AL reward model training.
+        :rtype: dict
+        """
         batch = [b for b in batch if b is not None]
         if not batch:
             return None

@@ -1,0 +1,89 @@
+name: 🛠️ Installation
+description: Report an issue when you encounter errors during installation
+title: "[Installation]: "
+labels: ["installation"]
+
+body:
+- type: markdown
+  attributes:
+    value: >
+      #### Before submitting an issue, please make sure the issue hasn't been already addressed by searching through [the existing and past issues](https://github.com/opendilab/LightRFT/issues?q=is%3Aissue+sort%3Acreated-desc+).
+
+- type: markdown
+  attributes:
+    value: |
+      ⚠️ **SECURITY WARNING:** Please review any text you paste to ensure it does not contain sensitive information such as:
+      - API tokens or keys (e.g., Hugging Face tokens, OpenAI API keys)
+      - Passwords or authentication credentials
+      - Private URLs or endpoints
+      - Personal or confidential data
+
+      Consider redacting or replacing sensitive values with placeholders like `<YOUR_TOKEN_HERE>` when sharing configuration or code examples.
+
+- type: textarea
+  attributes:
+    label: Your current environment
+    description: |
+      Please provide your environment information:
+    value: |
+      - Python Version:
+      - PyTorch Version:
+      - CUDA Version:
+      - GPU Model:
+      - Operating System:
+      - Installation Method (pip/conda/source):
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: Installation Command
+    description: |
+      Please paste the full command(s) you are trying to execute.
+    value: |
+      ```bash
+      # Example:
+      git clone https://github.com/opendilab/LightRFT.git
+      cd LightRFT
+      pip install -r requirements.txt
+      pip install -e .
+      ```
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: Error Message
+    description: |
+      Please paste the **full** error message including the traceback.
+
+      Please set `pip install -vvv` or similar verbose flags to get detailed error logs.
+    placeholder: |
+      ```
+      The full error message and traceback
+      ```
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: Additional Context
+    description: |
+      Any additional information that might help diagnose the issue:
+      - Are you installing in a virtual environment?
+      - Have you tried alternative installation methods?
+      - Any proxy or network restrictions?
+      - Previous successful installations on similar systems?
+
+- type: markdown
+  attributes:
+    value: >
+      Thanks for contributing 🎉!
+
+- type: checkboxes
+  id: confirmation
+  attributes:
+    label: Before submitting a new issue...
+    options:
+      - label: Make sure you already searched for relevant issues and checked the [installation documentation](https://github.com/opendilab/LightRFT/tree/main/docs/source/installation).
+        required: true

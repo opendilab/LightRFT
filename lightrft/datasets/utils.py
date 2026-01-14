@@ -1,3 +1,10 @@
+"""
+Utility functions for dataset processing.
+
+Parts of this file are adapted from Open-Reasoner-Zero:
+https://github.com/Open-Reasoner-Zero/Open-Reasoner-Zero
+"""
+
 from abc import ABC, abstractmethod
 
 import re
@@ -11,7 +18,6 @@ import torch.nn.functional as F
 
 def find_subsequence(lst: List[int], sub: List[int]) -> int:
     """Find first index where ``sub`` appears in ``lst``.
-    
     This function is used to finda marker token sequence (e.g. assistant-start)
     in the token id list so prompt and response can be separated for label masking.
 
@@ -131,6 +137,16 @@ def zero_pad_sequences(sequences, side: str = "left", value=0) -> torch.Tensor:
 
 
 def exist_and_not_none(d, key):
+    """
+    Check if a key exists in dictionary and its value is not None.
+
+    :param d: Dictionary to check.
+    :type d: dict
+    :param key: Key to look for.
+    :type key: Any
+    :return: True if key exists and value is not None.
+    :rtype: bool
+    """
     return key in d and not d[key] is None
 
 
@@ -173,11 +189,14 @@ def load_multimodal_content(media_info: Dict) -> Dict:
 
 
 class BaseDataHandler(ABC):
+    """
+    Base class for data handlers.
+    """
     @abstractmethod
     def load_data(self, path: str) -> List[Dict[str, Any]]:
         """
         Load all data items from a data config file, e.g. a json file, or a parquet file.
-        
+
         :param path: The path to load data from.
         :type path: str
 
@@ -193,10 +212,10 @@ class BaseDataHandler(ABC):
 
         :param item: The raw data item.
         :type item: Dict[str, Any]
-        
+
         :return: A dict where keys are logical names (e.g. 'init_image') and values are path dicts.
         :rtype: Dict[str, Dict[str, str]]
-            
+
         Example::
             >>> item = {'init_image_path': '/path/img.jpg', 'video_path': '/path/vid.mp4'}
             >>> visual_info = get_media_info(item)

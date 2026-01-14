@@ -33,14 +33,14 @@ from .base import BaseReward
 class RuleReward(BaseReward):
     """
     Rule-based reward implementation.
-    
+
     This class encapsulates various rule-based reward functions such as:
     - Format checking (e.g., <think> tags)
     - Accuracy checking (e.g., math answer verification)
     - Language consistency checking
-    
+
     Supports multiple rule types through a registry pattern.
-    
+
     :param rule_type: Type of rule to use (e.g., "geo3k_combined", "gsm8k_combined", "default")
     :type rule_type: str
     :param format_weight: Weight for format reward when combining with accuracy. Default to 0.1
@@ -56,14 +56,14 @@ class RuleReward(BaseReward):
     def register_rule(cls, name: str):
         """
         Decorator to register a rule reward function.
-        
+
         :param name: Name of the rule type
         :type name: str
         :return: Decorator function
         :rtype: Callable
-        
+
         Example::
-        
+
             @RuleReward.register_rule("geo3k")
             def geo3k_rule(sol: str, gt: str) -> float:
                 ...
@@ -82,7 +82,7 @@ class RuleReward(BaseReward):
     ):
         """
         Initialize rule-based reward.
-        
+
         :param rule_type: Type of rule to use (e.g., "geo3k", "gsm8k", "default")
         :type rule_type: str
         :param format_weight: Weight for format reward when combining with accuracy
@@ -113,7 +113,7 @@ class RuleReward(BaseReward):
     ) -> tuple[torch.Tensor, Dict[str, torch.Tensor]]:
         """
         Compute rule-based rewards.
-        
+
         :param queries: List of solution strings (length B)
         :type queries: Sequence[str]
         :param references: List of ground truth answers (length B), required for accuracy checking
@@ -166,9 +166,9 @@ class RuleReward(BaseReward):
 def _default_rule_reward_fn(sol: str, gt: str) -> float:
     """
     Default rule reward: format checking.
-    
+
     Checks if solution matches format: <think> ... </think> + non-empty content.
-    
+
     :param sol: Solution string to check
     :type sol: str
     :param gt: Ground truth (not used in format check)
@@ -190,9 +190,9 @@ RuleReward.register_rule("default")(_default_rule_reward_fn)
 def _geo3k_accuracy_reward_fn(sol: str, gt: str) -> float:
     """
     Geo3K accuracy reward function.
-    
+
     Extract answer from \\boxed{} notation and use mathruler to verify correctness.
-    
+
     :param sol: Solution string from model (should contain \\boxed{answer})
     :type sol: str
     :param gt: Ground truth answer
@@ -212,12 +212,12 @@ def _geo3k_accuracy_reward_fn(sol: str, gt: str) -> float:
 def _geo3k_format_reward_fn(sol: str, gt: str) -> float:
     """
     Geo3K format reward function.
-    
+
     Check if the solution follows the required format:
     - Contains <think>...</think> tags for reasoning
     - Contains \\boxed{} for final answer
     - The think tags must appear BEFORE the boxed answer
-    
+
     :param sol: Solution string from model
     :type sol: str
     :param gt: Ground truth (not used in format check)
@@ -241,10 +241,10 @@ def _geo3k_format_reward_fn(sol: str, gt: str) -> float:
 def _geo3k_combined_reward_fn(sol: str, gt: str) -> float:
     """
     Geo3K combined reward function.
-    
+
     Combines format reward and accuracy reward with weights.
     Default: 90% accuracy + 10% format.
-    
+
     :param sol: Solution string from model
     :type sol: str
     :param gt: Ground truth answer
@@ -269,9 +269,9 @@ RuleReward.register_rule("geo3k_combined")(_geo3k_combined_reward_fn)
 def _gsm8k_accuracy_reward_fn(sol: str, gt: str) -> float:
     """
     GSM8K accuracy reward function.
-    
+
     Extract answer from \\boxed{} notation and use mathruler to verify correctness.
-    
+
     :param sol: Solution string from model (should contain \\boxed{answer})
     :type sol: str
     :param gt: Ground truth answer
@@ -290,12 +290,12 @@ def _gsm8k_accuracy_reward_fn(sol: str, gt: str) -> float:
 def _gsm8k_format_reward_fn(sol: str, gt: str) -> float:
     """
     GSM8K format reward function.
-    
+
     Check if the solution follows the required format:
     - Contains <think>...</think> tags for reasoning
     - Contains \\boxed{} for final answer
     - The think tags must appear BEFORE the boxed answer
-    
+
     :param sol: Solution string from model
     :type sol: str
     :param gt: Ground truth (not used in format check)
@@ -319,10 +319,10 @@ def _gsm8k_format_reward_fn(sol: str, gt: str) -> float:
 def _gsm8k_combined_reward_fn(sol: str, gt: str) -> float:
     """
     GSM8K combined reward function.
-    
+
     Combines format reward and accuracy reward with weights.
     Default: 90% accuracy + 10% format.
-    
+
     :param sol: Solution string from model
     :type sol: str
     :param gt: Ground truth answer

@@ -12,33 +12,9 @@ from transformers import AutoProcessor
 
 from lightrft.datasets import GRMDataset, extract_answer
 
-
-TASK_INSTRUCTION_COT = """Given a caption and two images generated based on this caption, please analyze in detail the two provided images. 
-Evaluate them on various dimensions such as semantic consistency (how closely the image content aligns with the caption), 
-aesthetics (composition, color usage, artistic expression), authenticity (realism and attention to detail), 
-and any other factors you deem relevant. For each evaluation dimension, 
-provide a score between 1-10 for both images (e.g., Image 1: 8/10, Image 2: 6/10) and provide a concise rationale for the score. 
-Calculate the total score for each image by summing all dimension scores. 
-Use a chain-of-thought process to detail your reasoning steps, and enclose all your detailed reasoning within tags. 
-Then, in the <answer> tag, output exactly one of the following strings: 'Image 1 is better' or 'Image 2 is better' based on the total scores. 
-No additional text is allowed in the <answer> section.
-Example output format:
-<think>
-Semantic consistency: Image 1 (9/10) - ...; Image 2 (7/10) - ...
-Aesthetics: Image 2 (8/10) - ...; Image 1 (8/10) - ...
-Authenticity: Image 1 (8/10) - ...; Image 2 (5/10) - ...
-[Additional dimensions if any]: Image 2 (8/10) - ...; Image 1 (6/10) - ...
-Total score:
-Image 1: 9+8+8+6=31
-Image 2: 7+8+5+8=28
-</think>
-<answer>Image 1 is better</answer>
-Note: In the example above, scores and the final answer are placeholders meant only to demonstrate the format. Your actual evaluation should be based on the quality of two given images.
-Your task is provided as follows:
-Text Caption: {prompt}
-"""
-
-TASK_INSTRUCTION = """You will act as an expert image evaluator for text-to-image generation.
+# Example Task Instruction for GRM Evaluation
+TASK_INSTRUCTION = """
+You will act as an expert image evaluator for text-to-image generation.
 Given a text prompt and two generated images, your task is to assess the overall quality of the images and determine which one is better.
 Your evaluation should focus on the following key aspects:
 • Preference: Which image would a human viewer find more satisfying or visually appealing overall.
@@ -233,6 +209,7 @@ def test_grm(
             pixel_values_videos=pixel_values_videos,
             video_grid_thw=video_grid_thws,
             max_new_tokens=max_new_tokens, 
+            use_cache=True,
         )
 
         # Decode

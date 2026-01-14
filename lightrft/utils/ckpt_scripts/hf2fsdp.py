@@ -16,6 +16,14 @@ def convert_hf_checkpoint(
     checkpoint_dir: Path,
     output_dir: Path,
 ) -> None:
+    """
+    Convert HuggingFace checkpoint to FSDP-compatible format.
+
+    :param checkpoint_dir: Directory containing HF checkpoint safetensors files.
+    :type checkpoint_dir: Path
+    :param output_dir: Directory to save converted FSDP checkpoint.
+    :type output_dir: Path
+    """
     # Load the json file containing weight mapping
 
     safetensor_files = sorted(list(checkpoint_dir.glob("*.safetensors")))
