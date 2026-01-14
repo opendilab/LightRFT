@@ -13,8 +13,8 @@ class RapidataT2VHandler(BaseDataHandler):
     Support datasets:
 
     - Rapidata/text-2-video-human-preferences-pika2.2
-    - Rapidata/text-2-image-human-preferences-veo3:
-    - Rapidata/text-2-video-human-preferences-wan2.1:
+    - Rapidata/text-2-image-human-preferences-veo3
+    - Rapidata/text-2-video-human-preferences-wan2.1
 
     This dataset contains pairs of videos (video1, video2) generated from a prompt.
     It includes weighted scores for Preference, Coherence, and Alignment.
@@ -223,8 +223,7 @@ class RapidataI2VHandler(RapidataT2VHandler):
 
         :param item: Raw data item from Rapidata I2V dataset.
         :type item: Dict[str, Any]
-        :param media_content: Loaded media content with 'video1', 'video2', and
-            'init_image' keys.
+        :param media_content: Loaded media content with 'video1', 'video2', and 'init_image' keys.
         :type media_content: Dict[str, Any]
         :param config: Configuration dict with task_instruction template and video_fps.
         :type config: Dict[str, Any]

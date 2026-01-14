@@ -117,7 +117,8 @@ class GRMTrainerVL:
         :type args: argparse.Namespace
         :param consumed_samples: Number of samples already consumed (for resuming).
         :type consumed_samples: int
-        :param num_update_steps_per_epoch: Number of update steps per epoch (for eval scheduling).
+        :param num_update_steps_per_epoch: Number of update steps per epoch. Used for
+            eval scheduling, determining epoch boundaries, and resuming training from checkpoints.
         :type num_update_steps_per_epoch: Optional[int]
         """
         # get eval and save steps
