@@ -52,8 +52,10 @@ class GenAIBenchPairHandler(BaseDataHandler):
         all_raw_items = []
         for f in files:
             data_table = pq.read_table(f)
-            raw_items = [{name: col[i].as_py()
-                          for name, col in zip(data_table.column_names, data_table.itercolumns())}
+            raw_items = [{
+                name: col[i].as_py()
+                for name, col in zip(data_table.column_names, data_table.itercolumns())
+            }
                          for i in range(data_table.num_rows)]
             all_raw_items.extend(raw_items)
 

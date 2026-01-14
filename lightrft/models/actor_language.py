@@ -164,8 +164,9 @@ class ActorLanguage(nn.Module):
         pixel_values: Optional[torch.Tensor] = None,
         image_grid_thw: Optional[torch.Tensor] = None,
         **kwargs,
-    ) -> Union[Tuple[torch.LongTensor, torch.LongTensor], Tuple[torch.LongTensor, torch.LongTensor,
-                                                                torch.BoolTensor], ]:
+    ) -> Union[
+        Tuple[torch.LongTensor, torch.LongTensor],
+        Tuple[torch.LongTensor, torch.LongTensor, torch.BoolTensor], ]:
         """
         Generate text sequences using the actor model.
 

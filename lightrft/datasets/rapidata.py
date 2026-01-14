@@ -47,8 +47,10 @@ class RapidataT2VHandler(BaseDataHandler):
         raw_data = []
         import pyarrow.parquet as pq
         data_table = pq.read_table(path)
-        raw_data = [{name: col[i].as_py()
-                     for name, col in zip(data_table.column_names, data_table.itercolumns())}
+        raw_data = [{
+            name: col[i].as_py()
+            for name, col in zip(data_table.column_names, data_table.itercolumns())
+        }
                     for i in range(data_table.num_rows)]
 
         data_root = os.path.dirname(os.path.dirname(path))
@@ -163,8 +165,9 @@ class RapidataT2VHandler(BaseDataHandler):
         # Get human preference labels and total scores based on weighted metrics
         metrics = ['Preference', 'Coherence', 'Alignment']
         labels = {
-            f"{m.lower()}_label":
-            self._get_label(item.get(f'weighted_results1_{m}'), item.get(f'weighted_results2_{m}'))
+            f"{m.lower()}_label": self._get_label(
+                item.get(f'weighted_results1_{m}'), item.get(f'weighted_results2_{m}')
+            )
             for m in metrics
         }
 
@@ -338,8 +341,9 @@ class RapidataI2VHandler(RapidataT2VHandler):
         # Get human preference labels and total scores based on weighted metrics
         metrics = ['Preference', 'Coherence', 'Alignment']
         labels = {
-            f"{m.lower()}_label":
-            self._get_label(item.get(f'weighted_results1_{m}'), item.get(f'weighted_results2_{m}'))
+            f"{m.lower()}_label": self._get_label(
+                item.get(f'weighted_results1_{m}'), item.get(f'weighted_results2_{m}')
+            )
             for m in metrics
         }
 
@@ -438,8 +442,9 @@ class RapidataT2VPairHandler(RapidataT2VHandler):
         # Get human preference labels and total scores based on weighted metrics
         metrics = ['Preference', 'Coherence', 'Alignment']
         labels = {
-            f"{m.lower()}_label":
-            self._get_label(item.get(f'weighted_results1_{m}'), item.get(f'weighted_results2_{m}'))
+            f"{m.lower()}_label": self._get_label(
+                item.get(f'weighted_results1_{m}'), item.get(f'weighted_results2_{m}')
+            )
             for m in metrics
         }
 
@@ -549,8 +554,9 @@ class RapidataI2VPairHandler(RapidataI2VHandler):
         # Get human preference labels and total scores based on weighted metrics
         metrics = ['Preference', 'Coherence', 'Alignment']
         labels = {
-            f"{m.lower()}_label":
-            self._get_label(item.get(f'weighted_results1_{m}'), item.get(f'weighted_results2_{m}'))
+            f"{m.lower()}_label": self._get_label(
+                item.get(f'weighted_results1_{m}'), item.get(f'weighted_results2_{m}')
+            )
             for m in metrics
         }
 
