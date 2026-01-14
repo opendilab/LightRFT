@@ -1626,8 +1626,124 @@ class FastExperienceMaker(NaiveExperienceMaker):
                 image_grid_thw=sample.image_grid_thws,
             )
 
+            # =================================================================
+            # [Fix Start] Robust Qwen2.5-VL Token/Patch Mismatch Fix (Per-Sample)
+            # =================================================================
+            # if sample.pixel_values is not None:
+            #     try:
+            #         # 1. 获取模型配置和 Image Token ID
+            #         if hasattr(self.actor.model, 'module'):
+            #             config = self.actor.model.module.config
+            #         else:
+            #             config = self.actor.model.config
+            #         image_token_id = config.image_token_id
+            #         pad_token_id = self.tokenizer.pad_token_id
+
+            #         # 2. 准备遍历 Batch
+            #         batch_size = sequences.shape[0]
+                    
+            #         # 获取每个样本的图片数量列表
+            #         # sample.img_num 是由 ExperienceMaker 传入的 List[int]
+            #         img_nums = sample.img_num if (hasattr(sample, 'img_num') and sample.img_num is not None) else [1] * batch_size
+                    
+            #         # 指针，用于在展平的 image_grid_thw 中定位
+            #         grid_idx_ptr = 0
+                    
+            #         # 3. 逐样本检查与修复
+            #         for i in range(batch_size):
+            #             # --- A. 计算当前样本的 Patch 数量 ---
+            #             current_sample_patches = 0
+            #             n_imgs = img_nums[i]
+                        
+            #             if n_imgs > 0 and sample.image_grid_thws is not None:
+            #                 # 取出当前样本对应的 grid (shape: [n_imgs, 3])
+            #                 # 注意：这里假设 image_grid_thws 是 Tensor
+            #                 current_grids = sample.image_grid_thws[grid_idx_ptr : grid_idx_ptr + n_imgs]
+                            
+            #                 # Qwen2.5-VL Patch 计算公式: t * h * w
+            #                 for grid in current_grids:
+            #                     current_sample_patches += grid.prod().item()
+                            
+            #                 grid_idx_ptr += n_imgs
+                        
+            #             # --- B. 计算当前样本的 Token 数量 ---
+            #             # 仅统计当前序列 (sequences[i]) 中的 image_token
+            #             current_sample_tokens = (sequences[i] == image_token_id).sum().item()
+                        
+            #             # --- C. 比较与修复 ---
+            #             diff = current_sample_tokens - current_sample_patches
+                        
+            #             if diff != 0:
+            #                 self.strategy.print(
+            #                     f"[Qwen VL Fix] Sample {i}: Tokens={current_sample_tokens}, Patches={current_sample_patches}, Diff={diff}. Fixing..."
+            #                 )
+                            
+            #                 if diff > 0:
+            #                     # Case 1: Token 太多 -> 将末尾多余的 image_token 替换为 pad_token
+            #                     # 找到当前样本中所有 image_token 的位置
+            #                     token_indices = (sequences[i] == image_token_id).nonzero(as_tuple=True)[0]
+            #                     # 从后往前替换
+            #                     for k in range(diff):
+            #                         if k < len(token_indices):
+            #                             idx_to_replace = token_indices[-(k+1)]
+            #                             sequences[i, idx_to_replace] = pad_token_id
+                                        
+            #                 elif diff < 0:
+            #                     # Case 2: Token 太少 -> 将 pad_token 替换为 image_token
+            #                     # 我们优先替换序列末尾的 PAD，以保持 tensor 形状不变
+            #                     abs_diff = abs(diff)
+            #                     pad_indices = (sequences[i] == pad_token_id).nonzero(as_tuple=True)[0]
+                                
+            #                     if len(pad_indices) >= abs_diff:
+            #                         # 有足够的 Padding 空间
+            #                         for k in range(abs_diff):
+            #                             # 替换最前面的 PAD (通常紧跟在 EOS 后面，或者替换最后的 PAD)
+            #                             # 为了安全，我们替换最后的 PAD，或者紧邻文本的 PAD。
+            #                             # 简单策略：替换找到的最后几个 PAD，这样相当于在序列末尾追加 Image Token
+            #                             idx_to_replace = pad_indices[-(k+1)]
+            #                             sequences[i, idx_to_replace] = image_token_id
+            #                     else:
+            #                         self.strategy.print(
+            #                             f"[Qwen VL Fix] Sample {i}: Not enough padding to insert {abs_diff} missing image tokens! Skipping fix (Risk of crash)."
+            #                         )
+
+            #     except Exception as e:
+            #         import traceback
+            #         self.strategy.print(f"[Warning] Failed to fix image token count: {e}\n{traceback.format_exc()}")
+            
+            # =================================================================
+            # [Fix End]
+            # =================================================================
+            
+            # Fix Qwen2.5-VL image token count mismatch
+            # This is a workaround for the tokenizer generating more image tokens than features
+            if sample.pixel_values is not None:
+                try:
+                    config = self.actor.model.module.config if hasattr(self.actor.model, 'module') else self.actor.model.config
+                    image_token_id = config.image_token_id
+                    num_tokens = (sequences == image_token_id).sum().item()
+                    num_patches = sample.pixel_values.shape[0] // 4  # spatial_merge_unit = 4
+
+                    if num_tokens != num_patches:
+                        self.strategy.print(
+                            f"[Qwen VL Fix] Token/Patch mismatch: {num_tokens} tokens != {num_patches} patches "
+                            f"(pixel_values.shape[0]={sample.pixel_values.shape[0]}). "
+                            f"Replacing {num_tokens - num_patches} extra tokens with pad tokens."
+                        )
+                        pad_token_id = self.tokenizer.pad_token_id
+                        token_positions = (sequences == image_token_id).nonzero()
+
+                        # Replace extra tokens from the end
+                        for i in range(num_tokens - num_patches):
+                            if i < len(token_positions):
+                                pos = token_positions[-(i + 1)]
+                                sequences[pos[0], pos[1]] = pad_token_id
+                except Exception as e:
+                    self.strategy.print(f"[Warning] Failed to fix image token count: {e}")
+
         # Fix Qwen-VL image token count bug
-        self._fix_qwen_vl_image_tokens(sequences, sample, vlm)
+        # self._fix_qwen_vl_image_tokens(sequences, sample, vlm)
+
 
         return _SamplesOutput(
             sequences=sequences,
@@ -1661,6 +1777,11 @@ class FastExperienceMaker(NaiveExperienceMaker):
         the number of pixel value patches. This fixes the discrepancy by replacing
         extra image tokens with padding tokens.
 
+        For Qwen2.5-VL with SGLang:
+        - pixel_values.shape[0] contains spatial_merge_unit (4) factor
+        - Need to divide by 4 to get actual patch count
+        - Each patch corresponds to one <|image_pad|> token in the sequence
+
         :param sequences: Token sequence (modified in-place)
         :type sequences: torch.Tensor
         :param sample: Original sample
@@ -1673,18 +1794,29 @@ class FastExperienceMaker(NaiveExperienceMaker):
 
         config = self.strategy.unwrap_model(self.actor.model).config
         image_token_id = config.image_token_id
-        num_tokens = (sequences == image_token_id).sum()
+        num_tokens = (sequences == image_token_id).sum().item()
+
+        # For Qwen2.5-VL, pixel_values from SGLang includes spatial_merge_unit factor
+        # Divide by spatial_merge_unit (4) to get actual number of patches
         num_patches = sample.pixel_values.shape[0] // 4
 
         if num_tokens != num_patches:
             pad_token_id = self.tokenizer.pad_token_id
             diff = num_tokens - num_patches
-            token_positions = (sequences == image_token_id).nonzero()
 
-            # Replace extra tokens from the end
-            for k in range(diff):
-                pos = token_positions[-(k + 1)]
-                sequences[pos[0], pos[1]] = pad_token_id
+            if diff > 0:
+                # More tokens than patches: replace extra tokens from the end
+                token_positions = (sequences == image_token_id).nonzero()
+                for k in range(diff):
+                    pos = token_positions[-(k + 1)]
+                    sequences[pos[0], pos[1]] = pad_token_id
+            else:
+                # More patches than tokens: this shouldn't happen normally
+                # Log a warning for debugging
+                self.strategy.print(
+                    f"[Warning] Patch/Token mismatch: {num_patches} patches vs {num_tokens} tokens. "
+                    f"pixel_values.shape[0]={sample.pixel_values.shape[0]}"
+                )
 
     def _pack_experience(
         self,

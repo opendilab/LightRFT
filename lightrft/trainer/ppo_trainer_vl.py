@@ -717,9 +717,9 @@ class PPOTrainerVL(ABC):
             image_grid_thws = experience.image_grid_thws
 
             # Align pixel_values with sequence image tokens
-            pixel_values, image_grid_thws = self._align_pixel_values_with_sequence(
-                sequences, pixel_values, image_grid_thws
-            )
+            # pixel_values, image_grid_thws = self._align_pixel_values_with_sequence(
+            #     sequences, pixel_values, image_grid_thws
+            # )
 
             old_action_log_probs = torch.cat(experience.action_log_probs, dim=0).unsqueeze(0)
             advantages = torch.cat(experience.advantages, dim=0).unsqueeze(0)
@@ -736,9 +736,9 @@ class PPOTrainerVL(ABC):
             image_grid_thws = experience.image_grid_thws
 
             # Align pixel_values with sequence image tokens
-            pixel_values, image_grid_thws = self._align_pixel_values_with_sequence(
-                sequences, pixel_values, image_grid_thws
-            )
+            # pixel_values, image_grid_thws = self._align_pixel_values_with_sequence(
+            #     sequences, pixel_values, image_grid_thws
+            # )
 
             old_action_log_probs = experience.action_log_probs
             advantages = experience.advantages
@@ -754,6 +754,32 @@ class PPOTrainerVL(ABC):
             if max_adv > 10.0:
                 self.strategy.print(f"[Warning] Huge advantage detected: {max_adv}")
             advantages = torch.clamp(advantages, min=-10.0, max=10.0)
+
+        # # Fix Qwen2.5-VL image token count mismatch
+        # # This is a workaround for the tokenizer generating more image tokens than features
+        # if pixel_values is not None:
+        #     try:
+        #         config = self.actor.model.module.config if hasattr(self.actor.model, 'module') else self.actor.model.config
+        #         image_token_id = config.image_token_id
+        #         num_tokens = (sequences == image_token_id).sum().item()
+        #         num_patches = pixel_values.shape[0] // 4  # spatial_merge_unit = 4
+
+        #         if num_tokens != num_patches:
+        #             self.strategy.print(
+        #                 f"[Qwen VL Fix] Token/Patch mismatch: {num_tokens} tokens != {num_patches} patches "
+        #                 f"(pixel_values.shape[0]={pixel_values.shape[0]}). "
+        #                 f"Replacing {num_tokens - num_patches} extra tokens with pad tokens."
+        #             )
+        #             pad_token_id = self.tokenizer.pad_token_id
+        #             token_positions = (sequences == image_token_id).nonzero()
+
+        #             # Replace extra tokens from the end
+        #             for i in range(num_tokens - num_patches):
+        #                 if i < len(token_positions):
+        #                     pos = token_positions[-(i + 1)]
+        #                     sequences[pos[0], pos[1]] = pad_token_id
+        #     except Exception as e:
+        #         self.strategy.print(f"[Warning] Failed to fix image token count: {e}")
 
         # Actor loss
         action_log_probs, output = self.actor(
