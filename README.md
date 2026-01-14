@@ -78,8 +78,8 @@ For detailed algorithm descriptions, implementation details, and usage guide, se
 | Algorithm | Type | Key Improvement | Paper |
 |-----------|------|-----------------|-------|
 | **GRPO** | Policy Optimization | Group normalized advantage estimation |  [arXiv:2402.03300](https://arxiv.org/pdf/2402.03300)  |
-| **GSPO** | Policy Optimization | Generalized surrogate objectives | [arXiv:2507.18071](https://arxiv.org/abs/2507.18071) |
-| **GMPO (WIP)** | Policy Optimization | Generalized mirror policy optimization | [arXiv:2507.20673](https://arxiv.org/abs/2507.20673) |
+| **GSPO** | Policy Optimization | Group sequence policy optimization | [arXiv:2507.18071](https://arxiv.org/abs/2507.18071) |
+| **GMPO (WIP)** | Policy Optimization | Geometric-mean policy optimization | [arXiv:2507.20673](https://arxiv.org/abs/2507.20673) |
 | **Dr.GRPO** | Policy Optimization | Length bias mitigation | [arXiv:2503.20783](https://arxiv.org/abs/2503.20783) |
 | **DAPO** | Policy Optimization | Decoupled clip and dynamic sampling policy optimization | [arXiv:2503.14476](https://arxiv.org/abs/2503.14476) |
 | **REINFORCE++** | Advantage Estimation | Improved baseline estimation | [arXiv:2501.03262](https://arxiv.org/abs/2501.03262) |
@@ -143,48 +143,88 @@ LightRFT/
 │   │   ├── fsdp/                  # FSDP implementation
 │   │   ├── deepspeed/             # DeepSpeed implementation
 │   │   ├── vllm_utils/            # vLLM utilities
-│   │   └── sglang_utils/          # SGLang utilities
+│   │   ├── sglang_utils/          # SGLang utilities
+│   │   └── utils/                 # Strategy utilities
 │   ├── models/                    # Model definitions
+│   │   ├── actor_al.py            # Audio-language model actor
 │   │   ├── actor_language.py      # Language model actor
 │   │   ├── actor_vl.py            # Vision-language model actor
-│   │   └── monkey_patch/          # Model adaptation patches
+│   │   ├── grm_vl.py              # Generative reward model (Vision-Language)
+│   │   ├── srm_al.py              # Scalar reward model (Audio-Language)
+│   │   ├── srm_vl.py              # Scalar reward model (Vision-Language)
+│   │   ├── loss.py                # Loss functions
+│   │   ├── monkey_patch/          # Model adaptation patches for distributed training
+│   │   ├── tests/                 # Model tests
+│   │   └── utils.py               # Model utilities
 │   ├── trainer/                   # Trainer implementations
-│   │   ├── ppo_trainer.py         # PPO trainer
+│   │   ├── ppo_trainer.py         # LLM PPO trainer
 │   │   ├── ppo_trainer_vl.py      # VLM PPO trainer
-│   │   ├── fast_exp_maker.py      # Experience generator
+│   │   ├── spmd_ppo_trainer.py    # SPMD PPO trainer Extension (**Core**)
+│   │   ├── grm_trainer_vl.py      # Generative reward model trainer (Vision-Language)
+│   │   ├── srm_trainer_al.py      # Scalar reward model trainer (Audio-Language)
+│   │   ├── srm_trainer_vl.py      # Scalar reward model trainer (Vision-Language)
+│   │   ├── fast_exp_maker.py      # Fast experience generator (**Core**)
 │   │   ├── experience_maker.py    # Base experience generator
-│   │   ├── experience_maker_vl.py # VLM experience generator
-│   │   └── spmd_ppo_trainer.py    # SPMD PPO trainer
+│   │   ├── experience_maker_vl.py # Base experience generator for VLM
+│   │   ├── replay_buffer.py       # Replay buffer
+│   │   ├── replay_buffer_vl.py    # VLM replay buffer
+│   │   ├── replay_buffer_utils.py # Replay buffer utilities
+│   │   ├── kl_controller.py       # KL divergence controller
+│   │   └── utils.py               # Trainer utilities
 │   ├── datasets/                  # Dataset processing
+│   │   ├── audio_alpaca.py        # Audio Alpaca dataset
+│   │   ├── grm_dataset.py         # Generative reward model dataset
+│   │   ├── hpdv3.py               # HPDv3 reward model dataset
+│   │   ├── image_reward_db.py     # Image reward database
+│   │   ├── imagegen_cot_reward.py # Image generation CoT generative reward
+│   │   ├── omnirewardbench.py     # OmniRewardBench dataset
+│   │   ├── process_reward_dataset.py # Reward dataset processing
+│   │   ├── prompts_dataset.py     # LLM Prompts dataset
+│   │   ├── prompts_dataset_vl.py  # Vision-language prompts dataset
+│   │   ├── rapidata.py            # Rapidata reward modeldataset
+│   │   ├── sft_dataset.py         # SFT dataset
+│   │   ├── sft_dataset_vl.py      # VLM SFT dataset
+│   │   ├── srm_dataset.py         # Scalar reward model base dataset
+│   │   └── utils.py               # Dataset utilities
 │   └── utils/                     # Utility functions
-│       └── ckpt_scripts/          # Checkpoint processing scripts
+│       ├── ckpt_scripts/          # Checkpoint processing scripts
+│       ├── cli_args.py            # CLI argument parsing
+│       ├── distributed_sampler.py # Distributed sampler
+│       ├── logging_utils.py       # Logging utilities
+│       ├── processor.py           # Data processor for HF model
+│       ├── remote_rm_utils.py     # Remote reward model utilities
+│       ├── timer.py               # Timer utilities
+│       ├── trajectory_saver.py    # Trajectory saver
+│       └── utils.py               # General utilities
 │
 ├── examples/                      # Usage examples
 │   ├── gsm8k_geo3k/               # GSM8K/Geo3K math reasoning training examples
 │   ├── grm_training/              # Generative reward model training examples
 │   ├── srm_training/              # Scalar reward model training examples
-│   └── chat/                      # Model dialogue examples
+│   ├── chat/                      # Model dialogue examples
 │
 ├── docs/                          # 📚 Sphinx documentation
-│   └── source/
+│   ├── Makefile                   # Documentation build Makefile
+│   ├── make.bat                   # Documentation build batch file
+│   └── source/                    # Documentation source
+│       ├── _static/               # Static files (CSS, etc.)
+│       ├── api_doc/               # API documentation
+│       ├── best_practice/         # Best practices & resources
 │       ├── installation/          # Installation guides
-│       ├── quick_start/           # Quick start & user guides
-│       │   ├── algorithms.md      # Algorithm documentation (English)
-│       │   ├── algorithms_cn.md   # Algorithm documentation (Chinese)
-│       │   └── configuration.md   # Configuration reference
-│       └── best_practice/         # Best practices & resources
-│           ├── strategy_usage.rst   # Training strategy usage (English)
-│           ├── strategy_usage_zh.md # Training strategy usage (Chinese)
-│           ├── faq.md              # Frequently asked questions
-│           ├── troubleshooting.md  # Troubleshooting guide
-│           └── contributing.md     # Contribution guidelines
+│       └── quick_start/           # Quick start & user guides
 │
 ├── assets/                        # Assets
 │   └── logo.png                   # Project logo
 │
-├── results/                       # Training results
-├── rft_logs/                      # Training logs
-└── README.md                      # Project documentation
+├── CHANGELOG.md                   # Changelog
+├── LICENSE                        # License file
+├── Makefile                       # Project Makefile
+├── README.md                      # Project documentation (English)
+├── README_zh.md                   # Project documentation (Chinese)
+├── requirements.txt               # Python dependencies
+├── requirements-dev.txt           # Development dependencies
+├── requirements-doc.txt           # Documentation dependencies
+└── setup.py                       # Package setup script
 ```
 
 ### 🔑 Key Directory Descriptions
@@ -303,13 +343,24 @@ make docs-live
 
 ## 🤝 Contributing
 
-We welcome community contributions! Please follow these steps:
+We welcome and appreciate contributions from the community! To ensure a smooth workflow, please follow these steps:
 
-1. Fork this repository
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+1.  **Fork the Repository**: Click the "Fork" button at the top right to copy this project to your GitHub account.
+2.  **Create a Feature Branch**: Create a new branch for your changes, preferably based on `main`. Ensure documentation branches are named with the *doc* pattern to enable auto-deployment of the docs site.
+    ```bash
+    git checkout -b feature/your-feature-name
+    ```
+3.  **Commit Your Changes**: Please follow the [Conventional Commits](https://www.conventionalcommits.org/) specification.
+    *   Format example: `feature(user): short description of the change`
+    *   Common types: `feature` (new feature), `fix` (bug fix), `polish` (polish or optimize), `docs` (documentation), `style` (formatting), `refactor` (code restructuring).
+    ```bash
+    git commit -m 'feature(user): add an amazing feature'
+    ```
+4.  **Push to the Branch**: Push your changes to your forked repository.
+    ```bash
+    git push origin feature/your-feature-name
+    ```
+5.  **Open a Pull Request**: Go to the original repository and create a Pull Request targeting the `main` (or specific development) branch. Please provide a detailed description of your changes.
 
 ### Code Standards
 
@@ -318,13 +369,29 @@ We welcome community contributions! Please follow these steps:
 pip install -r requirements-dev.txt
 
 # Code formatting (YAPF)
-yapf -i -r lightrft/
+make format
 
-# Code linting (Pylint)
-pylint lightrft/
+# Code linting (Flake8)
+make fcheck
 ```
 
 ---
+
+## 📚 Citation
+
+If you use this codebase in your research or applications, please cite it as follows:
+
+```bibtex
+@misc{lightrft,
+  title={LightRFT},
+  author={Niu, Yazhe and Pu, Yuan and Shi, Dongxing and Lu, Yudong and Xiong, Yingtong and Ge, Ruijun and Sun, Jiaxuan and Wan, Zunian and Zhang, Shaoang and others},
+  publisher={GitHub},
+  howpublished={\url{https://github.com/opendilab/LightRFT}},
+  year={2025},
+}
+```
+
+
 
 ## 📄 License
 
@@ -352,41 +419,6 @@ This project builds upon the following outstanding open-source projects (includi
 
 Thanks to all contributors and supporters!
 
----
-
-## 🗓️ RoadMap
-
-We are actively working on the following improvements and features:
-
-### Core Feature Enhancements
-
-- [ ] **Trajectory Functionality Extension**
-  - Add more analysis metrics
-  - Enhanced trajectory saving and analysis capabilities
-
-- [ ] **Reward Mechanism Refactoring**
-  - Refactor rule-based and model-based reward computation
-  - Optimize reward dataset processing pipeline
-
-### Algorithm Optimization & Integration
-
-- [ ] **More Algorithm Integration**
-  - Entropy-based token selection 
-  - GMPO (Generalized Mirror Policy Optimization)
-  - GSPO (Generalized Surrogate Policy Optimization)
-
-- [ ] **Advantage Computation Refactoring**
-  - Optimize advantage estimation module architecture
-  - Unify advantage computation interface across algorithms
-
-- [ ] **Loss-Filter Mechanism Optimization**
-  - Refactor loss filtering implementation
-  - Complete GSM8K/Geo3K benchmark experiments
-  - Document experimental results and analysis
-
-
-
-Community contributions and feedback are welcome!
 
 ---
 
@@ -394,7 +426,7 @@ Community contributions and feedback are welcome!
 
 For questions or suggestions, please contact us via:
 
-- **Issues**: [GitHub Issues](https://github.com/yourusername/lightrft/issues)
+- **Issues**: [GitHub Issues](https://github.com/opendilab/LightRFT/issues)
 - **Email**: opendilab@pjlab.org.cn
 
 

@@ -37,7 +37,7 @@ def train(args):
 
     # configure tokenizer and processor
     tokenizer, processor = get_tokenizer_processor_vl(
-        args.pretrain, reward_model.model, "left", strategy, use_fast=not strategy.args.disable_fast_tokenizer
+        args.pretrain, reward_model.model, "left", use_fast=not strategy.args.disable_fast_tokenizer
     )
     assert processor is not None, "processor is None"
     
@@ -212,6 +212,9 @@ if __name__ == "__main__":
 
     if args.train_data:
         args.train_data = args.train_data.split(",")
+
+    if args.eval_data:
+        args.eval_data = args.eval_data.split(",")
 
     if args.input_template and "{}" not in args.input_template:
         print("[Warning] {} not in args.input_template, set to None")

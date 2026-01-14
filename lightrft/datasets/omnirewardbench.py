@@ -1,6 +1,6 @@
 import os
 import copy
-from typing import List, Dict, Any, Tuple, Union
+from typing import List, Dict, Any, Tuple
 from loguru import logger
 
 from .utils import BaseDataHandler
@@ -21,8 +21,10 @@ class OmniRewardBenchT2IHandler(BaseDataHandler):
         raw_data = []
         import pyarrow.parquet as pq
         data_table = pq.read_table(path)
-        raw_data = [{name: col[i].as_py()
-                     for name, col in zip(data_table.column_names, data_table.itercolumns())}
+        raw_data = [{
+            name: col[i].as_py()
+            for name, col in zip(data_table.column_names, data_table.itercolumns())
+        }
                     for i in range(data_table.num_rows)]
 
         data_root = os.path.dirname(os.path.dirname(path))
@@ -38,7 +40,7 @@ class OmniRewardBenchT2IHandler(BaseDataHandler):
         """
         data_root = item['data_root']
         if not data_root:
-            raise ValueError(f"Missing 'data_root' in item. Cannot resolve video paths.")
+            raise ValueError("Missing 'data_root' in item. Cannot resolve video paths.")
 
         full_path1 = os.path.join(data_root, "media_data", item['response1_path'])
         full_path2 = os.path.join(data_root, "media_data", item['response2_path'])
@@ -55,12 +57,25 @@ class OmniRewardBenchT2IHandler(BaseDataHandler):
 
     def parse_item(self, item: Dict[str, Any], media_content: Dict[str, Any],
                    config: Dict[str, Any]) -> Tuple[List[Dict], List[Dict], Dict]:
+        """
+        Parse a single T2I benchmark item into message pairs for ranking.
 
+        :param item: Raw data item from OmniRewardBench T2I dataset.
+        :type item: Dict[str, Any]
+        :param media_content: Loaded media content with 'image1' and 'image2' keys.
+        :type media_content: Dict[str, Any]
+        :param config: Configuration dict with task_instruction template.
+        :type config: Dict[str, Any]
+        :return: Tuple of (messages0, messages1, other_info) where messages are
+            formatted for the reward model and other_info contains metadata.
+        :rtype: Tuple[List[Dict], List[Dict], Dict]
+        :raises ValueError: If required visual content is missing.
+        """
         image1 = media_content['image1']
         image2 = media_content['image2']
 
         if not all([image1, image2]):
-            raise ValueError(f"Missing visual content for 'image1' or 'image2'.")
+            raise ValueError("Missing visual content for 'image1' or 'image2'.")
 
         # Get generation prompt from data item
         gen_prompt = item["prompt"]
@@ -68,7 +83,7 @@ class OmniRewardBenchT2IHandler(BaseDataHandler):
         # Get system prompts from config
         task_instruction_template = config["task_instruction"]
         task_instruction = task_instruction_template.format(prompt=gen_prompt)
-        criteria = item["criteria"]
+        # criteria = item["criteria"]
 
         # Build messages
         messages0 = [
@@ -76,7 +91,7 @@ class OmniRewardBenchT2IHandler(BaseDataHandler):
                 "role": "system",
                 "content": copy.deepcopy(task_instruction)
             },
-            # {"role": "system", "content": f"Please give your evaluation considering the following criteria: {criteria}."},
+            # {"role": "system", "content": f"Please give your evaluation considering the following criteria: {criteria}."},  # noqa: E501
             {
                 "role": "user",
                 "content": [{
@@ -92,7 +107,7 @@ class OmniRewardBenchT2IHandler(BaseDataHandler):
                 "role": "system",
                 "content": copy.deepcopy(task_instruction)
             },
-            # {"role": "system", "content": f"Please give your evaluation considering the following criteria: {criteria}."},
+            # {"role": "system", "content": f"Please give your evaluation considering the following criteria: {criteria}."},  # noqa: E501
             {
                 "role": "user",
                 "content": [{
@@ -135,7 +150,7 @@ class OmniRewardBenchT2VHandler(OmniRewardBenchT2IHandler):
         """
         data_root = item['data_root']
         if not data_root:
-            raise ValueError(f"Missing 'data_root' in item. Cannot resolve video paths.")
+            raise ValueError("Missing 'data_root' in item. Cannot resolve video paths.")
 
         full_path1 = os.path.join(data_root, "media_data", item['response1'])
         full_path2 = os.path.join(data_root, "media_data", item['response2'])
@@ -144,12 +159,25 @@ class OmniRewardBenchT2VHandler(OmniRewardBenchT2IHandler):
 
     def parse_item(self, item: Dict[str, Any], media_content: Dict[str, Any],
                    config: Dict[str, Any]) -> Tuple[List[Dict], List[Dict], Dict]:
+        """
+        Parse a single T2V benchmark item into message pairs for ranking.
 
+        :param item: Raw data item from OmniRewardBench T2V dataset.
+        :type item: Dict[str, Any]
+        :param media_content: Loaded media content with 'video1' and 'video2' keys.
+        :type media_content: Dict[str, Any]
+        :param config: Configuration dict with task_instruction template.
+        :type config: Dict[str, Any]
+        :return: Tuple of (messages0, messages1, other_info) where messages are
+            formatted for the reward model and other_info contains metadata.
+        :rtype: Tuple[List[Dict], List[Dict], Dict]
+        :raises ValueError: If required visual content is missing.
+        """
         video1 = media_content['video1']
         video2 = media_content['video2']
 
         if not all([video1, video2]):
-            raise ValueError(f"Missing visual content for 'video1' or 'video2'.")
+            raise ValueError("Missing visual content for 'video1' or 'video2'.")
 
         # Get generation prompt from data item
         gen_prompt = item["prompt"]
@@ -226,21 +254,34 @@ class OmniRewardBenchT2AHandler(OmniRewardBenchT2IHandler):
         """
         data_root = item['data_root']
         if not data_root:
-            raise ValueError(f"Missing 'data_root' in item. Cannot resolve audio paths.")
+            raise ValueError("Missing 'data_root' in item. Cannot resolve audio paths.")
 
         full_path1 = os.path.join(data_root, "media_data", item['response1_path'])
         full_path2 = os.path.join(data_root, "media_data", item['response2_path'])
 
         return {'audio1': {'audio_local_path': full_path1}, 'audio2': {'audio_local_path': full_path2}}
 
-    def parse_item(self, item: Dict[str, Any], audio_content: Dict[str, Any],
+    def parse_item(self, item: Dict[str, Any], media_content: Dict[str, Any],
                    config: Dict[str, Any]) -> Tuple[List[Dict], List[Dict], Dict]:
+        """
+        Parse a single T2A benchmark item into message pairs for ranking.
 
-        audio1 = audio_content['audio1']
-        audio2 = audio_content['audio2']
+        :param item: Raw data item from OmniRewardBench T2A dataset.
+        :type item: Dict[str, Any]
+        :param media_content: Loaded media content with 'audio1' and 'audio2' keys.
+        :type media_content: Dict[str, Any]
+        :param config: Configuration dict with task_instruction template.
+        :type config: Dict[str, Any]
+        :return: Tuple of (messages0, messages1, other_info) where messages are
+            formatted for the reward model and other_info contains metadata.
+        :rtype: Tuple[List[Dict], List[Dict], Dict]
+        :raises ValueError: If required audio content is missing.
+        """
+        audio1 = media_content['audio1']
+        audio2 = media_content['audio2']
 
         if not all([audio1, audio2]):
-            raise ValueError(f"Missing visual content for 'audio1' or 'audio2'.")
+            raise ValueError("Missing visual content for 'audio1' or 'audio2'.")
 
         # Get generation prompt from data item
         gen_prompt = item["prompt"]
@@ -306,12 +347,25 @@ class OmniRewardBenchT2IGRMHandler(OmniRewardBenchT2IHandler):
     """
     def parse_item(self, item: Dict[str, Any], media_content: Dict[str, Any],
                    config: Dict[str, Any]) -> Tuple[List[Dict], List[Dict], Dict]:
+        """
+        Parse a single T2I item for generative reward model training.
 
+        :param item: Raw data item from OmniRewardBench T2I dataset.
+        :type item: Dict[str, Any]
+        :param media_content: Loaded media content with 'image1' and 'image2' keys.
+        :type media_content: Dict[str, Any]
+        :param config: Configuration dict with task_instruction template.
+        :type config: Dict[str, Any]
+        :return: Tuple of (messages0, messages1, other_info) where messages are
+            formatted for the generative reward model.
+        :rtype: Tuple[List[Dict], List[Dict], Dict]
+        :raises ValueError: If required visual content is missing.
+        """
         image1 = media_content['image1']
         image2 = media_content['image2']
 
         if not all([image1, image2]):
-            raise ValueError(f"Missing visual content for 'image1' or 'image2'.")
+            raise ValueError("Missing visual content for 'image1' or 'image2'.")
 
         # Get generation prompt from data item
         gen_prompt = item["prompt"]

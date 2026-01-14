@@ -2,7 +2,7 @@ import os
 import copy
 import json
 import random
-from typing import List, Dict, Any, Tuple, Union
+from typing import List, Dict, Any, Tuple
 from loguru import logger
 
 from .utils import BaseDataHandler
@@ -11,11 +11,19 @@ from .utils import BaseDataHandler
 class HPDv3Handler(BaseDataHandler):
     """
     Data Handler for HPDv3 dataset. Image-to-Text human preferences dataset.
-    
+
     Paper: https://huggingface.co/MizzenAI/HPSv3
     Dataset Repo: https://huggingface.co/datasets/MizzenAI/HPDv3
     """
     def load_data(self, path: str) -> List[Dict[str, Any]]:
+        """
+        Load and validate HPDv3 data from JSON or JSONL file.
+
+        :param path: Path to the data file.
+        :type path: str
+        :return: List of validated data items with existing visual files.
+        :rtype: List[Dict[str, Any]]
+        """
         try:
             with open(path, 'rb') as f:
                 raw_data = json.load(f)
@@ -46,6 +54,15 @@ class HPDv3Handler(BaseDataHandler):
         return valid_data
 
     def get_media_info(self, item: Dict[str, Any]) -> Dict[str, Dict[str, str]]:
+        """
+        Extract path info for the preferred and rejected images.
+
+        :param item: Data item containing image paths.
+        :type item: Dict[str, Any]
+        :return: Dictionary with 'preferred_image' and 'rejected_image' keys mapping
+            to path dictionaries, or None if files don't exist.
+        :rtype: Optional[Dict[str, Dict[str, str]]]
+        """
         data_root = item['data_root']
 
         # Build full local paths
@@ -67,12 +84,29 @@ class HPDv3Handler(BaseDataHandler):
 
     def parse_item(self, item: Dict[str, Any], media_content: Dict[str, Any],
                    config: Dict[str, Any]) -> Tuple[List[Dict], List[Dict], Dict]:
+        """
+        Parse a single HPDv3 item into message pairs for ranking.
+
+        Randomly shuffles preferred/rejected images to avoid positional bias.
+
+        :param item: Raw data item from HPDv3 dataset.
+        :type item: Dict[str, Any]
+        :param media_content: Loaded media content with 'preferred_image' and
+            'rejected_image' keys.
+        :type media_content: Dict[str, Any]
+        :param config: Configuration dict with task_instruction template.
+        :type config: Dict[str, Any]
+        :return: Tuple of (messages0, messages1, other_info) where messages are
+            formatted for the reward model and other_info contains the preference label.
+        :rtype: Tuple[List[Dict], List[Dict], Dict]
+        :raises ValueError: If required visual content or prompt is missing.
+        """
         # Get loaded visual content
         preferred_image = media_content['preferred_image']
         rejected_image = media_content['rejected_image']
 
         if not all([preferred_image, rejected_image]):
-            raise ValueError(f"Missing visual content for 'preferred_image' or 'rejected_image'.")
+            raise ValueError("Missing visual content for 'preferred_image' or 'rejected_image'.")
 
         # Get generation prompt from data item
         prompt_text = item["prompt"]
@@ -91,21 +125,17 @@ class HPDv3Handler(BaseDataHandler):
             image0, image1 = rejected_image, preferred_image
 
         # Build messages
-        messages0 = [
-            {
-                "role": "system",
-                "content": copy.deepcopy(task_instruction)
-            },
-            {
-                "role": "user",
-                "content": [{
-                    "type": "image",
-                    "image": image0,
-                    "max_pixels": 720 * 480
-                }  # to save memory
-                            ]
-            }
-        ]
+        messages0 = [{
+            "role": "system",
+            "content": copy.deepcopy(task_instruction)
+        }, {
+            "role": "user",
+            "content": [{
+                "type": "image",
+                "image": image0,
+                "max_pixels": 720 * 480
+            }]
+        }]
 
         messages1 = [{
             "role": "system",
@@ -141,14 +171,32 @@ class HPDv3GRMHandler(HPDv3Handler):
     Paper: https://huggingface.co/MizzenAI/HPSv3
     Dataset Repo: https://huggingface.co/datasets/MizzenAI/HPDv3
     """
-    def parse_item(self, item: Dict[str, Any], visual_content: Dict[str, Any],
+    def parse_item(self, item: Dict[str, Any], media_content: Dict[str, Any],
                    config: Dict[str, Any]) -> Tuple[List[Dict], List[Dict], Dict]:
+        """
+        Parse a single HPDv3 item for GRM training.
+
+        Randomly shuffles preferred/rejected images to avoid positional bias and
+        formats messages for generative reward model.
+
+        :param item: Raw data item from HPDv3 dataset.
+        :type item: Dict[str, Any]
+        :param media_content: Loaded media content with 'preferred_image' and
+            'rejected_image' keys.
+        :type media_content: Dict[str, Any]
+        :param config: Configuration dict with task_instruction template.
+        :type config: Dict[str, Any]
+        :return: Tuple of (messages0, messages1, other_info) where messages are
+            formatted for the generative reward model.
+        :rtype: Tuple[List[Dict], List[Dict], Dict]
+        :raises ValueError: If required visual content or prompt is missing.
+        """
         # Get loaded visual content
-        preferred_image = visual_content['preferred_image']
-        rejected_image = visual_content['rejected_image']
+        preferred_image = media_content['preferred_image']
+        rejected_image = media_content['rejected_image']
 
         if not all([preferred_image, rejected_image]):
-            raise ValueError(f"Missing visual content for 'preferred_image' or 'rejected_image'.")
+            raise ValueError("Missing visual content for 'preferred_image' or 'rejected_image'.")
 
         # Get generation prompt from data item
         prompt_text = item["prompt"]
@@ -198,14 +246,13 @@ class HPDv3GRMHandler(HPDv3Handler):
                 }]
             }
         ]
-        # During evaluation, we do not include the response part in the messages
-        is_training = config.get("is_training", True)
-        if is_training:
-            response = "<answer>Image 1 is better</answer>" if preference == "A" else "<answer>Image 2 is better</answer>"
-            messages.append({"role": "assistant", "content": response})
+
+        response = "<answer>Image 1 is better</answer>" if preference == "A" else "<answer>Image 2 is better</answer>"
+        messages.append({"role": "assistant", "content": [{"type": "text", "text": response}]})
 
         other = {
             "preference": preference,
+            "response": response,
             "source": item["source"],
             "prompt": prompt_text,
             "confidence": item.get("confidence"),

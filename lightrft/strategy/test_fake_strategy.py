@@ -29,6 +29,14 @@ class SimpleModel(nn.Module):
         self.relu = nn.ReLU()
 
     def forward(self, x):
+        """
+        Forward pass through the test model.
+
+        :param x: Input tensor.
+        :type x: torch.Tensor
+        :return: Model output.
+        :rtype: torch.Tensor
+        """
         x = self.relu(self.linear1(x))
         x = self.linear2(x)
         return x
@@ -271,6 +279,7 @@ class TestFakeStrategyWithConfig(unittest.TestCase):
 
         # Create mock args with various attributes
         class MockArgs:
+            """Mock arguments class for testing."""
             def __init__(self):
                 self.seed = 999
                 self.max_norm = 3.0

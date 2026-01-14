@@ -78,8 +78,8 @@
 | 算法 | 类型 | 主要改进 | 论文链接 |
 |------|------|----------|---------|
 | **GRPO** | Policy Optimization | 组归一化优势估计 |  [arXiv:2402.03300](https://arxiv.org/pdf/2402.03300)  |
-| **GSPO** | Policy Optimization | 广义替代目标 | [arXiv:2507.18071](https://arxiv.org/abs/2507.18071) |
-| **GMPO (WIP)** | Policy Optimization | 广义镜像策略优化 | [arXiv:2507.20673](https://arxiv.org/abs/2507.20673) |
+| **GSPO** | Policy Optimization | 组序列策略优化 | [arXiv:2507.18071](https://arxiv.org/abs/2507.18071) |
+| **GMPO (WIP)** | Policy Optimization | 几何平均策略优化 | [arXiv:2507.20673](https://arxiv.org/abs/2507.20673) |
 | **Dr.GRPO** | Policy Optimization | 缓解长度偏差 | [arXiv:2503.20783](https://arxiv.org/abs/2503.20783) |
 | **REINFORCE++** | Advantage Estimation | 改进基线估计 | [arXiv:2501.03262](https://arxiv.org/abs/2501.03262) |
 | **DAPO** | Policy Optimization | 解耦剪裁和动态采样策略优化 | [arXiv:2503.14476](https://arxiv.org/abs/2503.14476) |
@@ -145,21 +145,59 @@ LightRFT/
 │   │   ├── fsdp/                  # FSDP 实现
 │   │   ├── deepspeed/             # DeepSpeed 实现
 │   │   ├── vllm_utils/            # vLLM 工具
-│   │   └── sglang_utils/          # SGLang 工具
+│   │   ├── sglang_utils/          # SGLang 工具
+│   │   └── utils/                 # 策略工具函数
 │   ├── models/                    # 模型定义
+│   │   ├── actor_al.py            # 音频-语言模型 Actor
 │   │   ├── actor_language.py      # 语言模型 Actor
-│   │   ├── actor_vl.py            # 视觉语言模型 Actor
-│   │   └── monkey_patch/          # 模型适配补丁
+│   │   ├── actor_vl.py            # 视觉-语言模型 Actor
+│   │   ├── grm_vl.py              # 生成式奖励模型（视觉-语言）
+│   │   ├── srm_al.py              # 标量奖励模型（音频-语言）
+│   │   ├── srm_vl.py              # 标量奖励模型（视觉-语言）
+│   │   ├── loss.py                # 损失函数
+│   │   ├── monkey_patch/          # 分布式训练模型适配补丁
+│   │   ├── tests/                 # 模型测试
+│   │   └── utils.py               # 模型工具函数
 │   ├── trainer/                   # 训练器实现
-│   │   ├── ppo_trainer.py         # PPO 训练器
+│   │   ├── ppo_trainer.py         # LLM PPO 训练器
 │   │   ├── ppo_trainer_vl.py      # VLM PPO 训练器
-│   │   ├── fast_exp_maker.py      # 经验生成器
+│   │   ├── spmd_ppo_trainer.py    # SPMD PPO 训练器扩展（**核心**）
+│   │   ├── grm_trainer_vl.py      # 生成式奖励模型训练器（视觉-语言）
+│   │   ├── srm_trainer_al.py      # 标量奖励模型训练器（音频-语言）
+│   │   ├── srm_trainer_vl.py      # 标量奖励模型训练器（视觉-语言）
+│   │   ├── fast_exp_maker.py      # 快速经验生成器（**核心**）
 │   │   ├── experience_maker.py    # 基础经验生成器
-│   │   ├── experience_maker_vl.py # VLM 经验生成器
-│   │   └── spmd_ppo_trainer.py    # SPMD PPO 训练器
+│   │   ├── experience_maker_vl.py # VLM 基础经验生成器
+│   │   ├── replay_buffer.py       # 经验回放缓冲区
+│   │   ├── replay_buffer_vl.py    # VLM 经验回放缓冲区
+│   │   ├── replay_buffer_utils.py # 经验回放缓冲区工具函数
+│   │   ├── kl_controller.py       # KL 散度控制器
+│   │   └── utils.py               # 训练器工具函数
 │   ├── datasets/                  # 数据集处理
+│   │   ├── audio_alpaca.py        # Audio Alpaca 数据集
+│   │   ├── grm_dataset.py         # 生成式奖励模型数据集
+│   │   ├── hpdv3.py               # HPDv3 奖励模型数据集
+│   │   ├── image_reward_db.py     # 图像奖励数据库
+│   │   ├── imagegen_cot_reward.py # 图像生成 CoT 生成式奖励
+│   │   ├── omnirewardbench.py     # OmniRewardBench 数据集
+│   │   ├── process_reward_dataset.py # 奖励数据集处理
+│   │   ├── prompts_dataset.py     # LLM 提示词数据集
+│   │   ├── prompts_dataset_vl.py  # 视觉-语言提示词数据集
+│   │   ├── rapidata.py            # Rapidata 奖励模型数据集
+│   │   ├── sft_dataset.py         # SFT 数据集
+│   │   ├── sft_dataset_vl.py      # VLM SFT 数据集
+│   │   ├── srm_dataset.py         # 标量奖励模型基础数据集
+│   │   └── utils.py               # 数据集工具函数
 │   └── utils/                     # 工具函数
-│       └── ckpt_scripts/          # 检查点处理脚本
+│       ├── ckpt_scripts/          # 检查点处理脚本
+│       ├── cli_args.py            # 命令行参数解析
+│       ├── distributed_sampler.py # 分布式采样器
+│       ├── logging_utils.py       # 日志工具函数
+│       ├── processor.py           # HuggingFace 模型数据处理器
+│       ├── remote_rm_utils.py     # 远程奖励模型工具函数
+│       ├── timer.py               # 计时器工具函数
+│       ├── trajectory_saver.py     # 轨迹保存器
+│       └── utils.py               # 通用工具函数
 │
 ├── examples/                      # 使用示例
 │   ├── gsm8k_geo3k/               # GSM8K/Geo3K 数学推理训练示例
@@ -168,25 +206,27 @@ LightRFT/
 │   ├── chat/                      # 模型对话示例
 │
 ├── docs/                          # 📚 Sphinx 文档
-│   └── source/
+│   ├── Makefile                   # 文档构建 Makefile
+│   ├── make.bat                   # 文档构建批处理文件
+│   └── source/                    # 文档源码
+│       ├── _static/               # 静态文件（CSS 等）
+│       ├── api_doc/               # API 文档
+│       ├── best_practice/         # 最佳实践 & 资源
 │       ├── installation/          # 安装指南
-│       ├── quick_start/           # 快速开始 & 用户指南
-│       │   ├── algorithms.md      # 算法文档（英文）
-│       │   ├── algorithms_cn.md   # 算法文档（中文）
-│       │   └── configuration.md   # 配置参数参考
-│       └── best_practice/         # 最佳实践 & 资源
-│           ├── strategy_usage.rst   # 训练策略使用指南（英文）
-│           ├── strategy_usage_zh.md # 训练策略使用指南（中文）
-│           ├── faq.md              # 常见问题
-│           ├── troubleshooting.md  # 问题排查指南
-│           └── contributing.md     # 贡献指南
+│       └── quick_start/           # 快速开始 & 用户指南
 │
 ├── assets/                        # 资源文件
-│   └── logo.png                   # 项目Logo
+│   └── logo.png                   # 项目 Logo
 │
-├── results/                       # 训练结果
-├── rft_logs/                      # 训练日志
-└── README.md                      # 项目文档
+├── CHANGELOG.md                   # 更新日志
+├── LICENSE                        # 许可证文件
+├── Makefile                       # 项目 Makefile
+├── README.md                      # 项目文档（英文）
+├── README_zh.md                   # 项目文档（中文）
+├── requirements.txt               # Python 依赖
+├── requirements-dev.txt           # 开发依赖
+├── requirements-doc.txt           # 文档依赖
+└── setup.py                       # 包安装脚本
 ```
 
 ### 🔑 关键目录说明
@@ -303,13 +343,24 @@ make docs-live
 
 ## 🤝 贡献指南
 
-我们欢迎社区贡献！请遵循以下步骤：
+非常欢迎并感谢您的贡献！为了确保协作顺畅，请遵循以下开发流程：
 
-1. Fork 本仓库
-2. 创建特性分支 (`git checkout -b feature/AmazingFeature`)
-3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
-4. 推送到分支 (`git push origin feature/AmazingFeature`)
-5. 开启 Pull Request
+1.  **Fork 本仓库**：点击右上角的 "Fork" 按钮，将项目复刻到您的 GitHub 账户下。
+2.  **创建特性分支**：建议基于 `main` 分支创建新分支。确保属于文档的分支以 *doc* 模式命名，以便自动部署文档站点。
+    ```bash
+    git checkout -b feature/your-feature-name
+    ```
+3.  **提交更改**：请遵循 [Conventional Commits](https://www.conventionalcommits.org/) 规范撰写提交信息。
+    *   格式示例：`feature(user): 简短描述您的更改`
+    *   常用类型：`feature` (新功能), `fix` (修复), `polish` (润色优化), `docs` (文档), `style` (格式), `refactor` (重构)。
+    ```bash
+    git commit -m 'feature(user): add an amazing feature'
+    ```
+4.  **推送到分支**：将更改推送到您的远程仓库。
+    ```bash
+    git push origin feature/your-feature-name
+    ```
+5.  **开启 Pull Request**：前往原仓库，创建一个指向 `main` (或指定开发分支) 的 Pull Request，并详细描述您的更改内容。
 
 ### 代码规范
 
@@ -318,10 +369,26 @@ make docs-live
 pip install -r requirements-dev.txt
 
 # 代码格式化（YAPF）
-yapf -i -r lightrft/
+make format
 
-# 代码检查（Pylint）
-pylint lightrft/
+# 代码检查（Flake8）
+make fcheck
+```
+
+---
+
+## 📚 引用
+
+如果您在研究和应用中使用了本代码库，请按下列说明引用：
+
+```bibtex
+@misc{lightrft,
+  title={LightRFT},
+  author={Niu, Yazhe and Pu, Yuan and Shi, Dongxing and Lu, Yudong and Xiong, Yingtong and Ge, Ruijun and Sun, Jiaxuan and Wan, Zunian and Zhang, Shaoang and others},
+  publisher={GitHub},
+  howpublished={\url{https://github.com/opendilab/LightRFT}},
+  year={2025},
+}
 ```
 
 ---
@@ -352,40 +419,6 @@ pylint lightrft/
 
 感谢所有贡献者和支持者！
 
----
-
-## 🗓️ RoadMap
-
-我们正在进行以下改进和功能开发：
-
-### 核心功能增强
-
-- [ ] **Trajectory 功能扩展**
-  - 新增更多分析指标
-  - 增强轨迹保存和分析能力
-
-- [ ] **Reward 机制重构**
-  - 重构 rule-based 和 model-based reward 计算
-  - 优化 reward dataset 处理流程
-
-### 算法优化与集成
-
-- [ ] **更多算法支持**
-  - Entropy-based token selection
-  - GMPO (Generalized Mirror Policy Optimization)
-  - GSPO (Generalized Surrogate Policy Optimization)
-
-- [ ] **Advantage 计算重构**
-  - 优化 advantage estimation 模块架构
-  - 统一不同算法的 advantage 计算接口
-
-- [ ] **Loss-Filter 机制优化**
-  - 重构 loss filtering 实现
-  - 完成 GSM8K/Geo3K 基准测试
-  - 实验结果记录和分析
-
-
-欢迎社区贡献和反馈！
 
 ---
 
@@ -393,7 +426,7 @@ pylint lightrft/
 
 如有问题或建议，请通过以下方式联系：
 
-- **Issues**: [GitHub Issues](https://github.com/yourusername/lightrft/issues)
+- **Issues**: [GitHub Issues](https://github.com/opendilab/LightRFT/issues)
 - **邮件**: opendilab@pjlab.org.cn
 
 ---
