@@ -76,8 +76,6 @@ class BufferItemVL:
     pixel_values: Optional[torch.Tensor] = None  # image pixel processed by HF processor
     image_grid_thws: Optional[torch.Tensor] = None  # image grid thw
     raw_images: Optional[List[Image.Image]] = None  # raw images before processing
-    pixel_values_intern: Optional[torch.Tensor] = None  # InternVL image_info
-    image_flags: Optional[torch.Tensor] = None
 
     action_log_probs: torch.Tensor = None
     base_action_log_probs: torch.Tensor = None
@@ -107,7 +105,7 @@ def is_vl_experience(experience: Union[Experience, ExperienceVL]) -> bool:
         if is_vl_experience(exp):
             print("This is a vision-language experience")
     """
-    return hasattr(experience, 'pixel_values') or hasattr(experience, 'pixel_values_intern')
+    return hasattr(experience, 'pixel_values')
 
 
 def split_experience_batch(experience: Union[Experience, ExperienceVL]) -> List:
@@ -285,24 +283,6 @@ def _split_experience_batch_vl(experience: ExperienceVL) -> List:
                                         ) if batch_kwargs[i]["image_grid_thws"] is not None else 0
                 batch_kwargs[i]["pixel_values"] = pixel_values[index:index + num_images]
                 index += num_images
-    if experience.pixel_values_intern is not None:
-        pixel_values_intern = experience.pixel_values_intern
-        if isinstance(pixel_values_intern, torch.Tensor):
-            index = 0
-            for i in range(len(batch_kwargs)):
-                num_images = torch.prod(batch_kwargs[i]["image_grid_thws"]
-                                        ) if batch_kwargs[i]["image_grid_thws"] is not None else 0
-                batch_kwargs[i]["pixel_values_intern"] = pixel_values_intern[index:index + num_images]
-                index += num_images
-    if experience.image_flags is not None:
-        image_flags = experience.image_flags
-        if isinstance(image_flags, torch.Tensor):
-            index = 0
-            for i in range(len(batch_kwargs)):
-                num_images = torch.prod(batch_kwargs[i]["image_grid_thws"]
-                                        ) if batch_kwargs[i]["image_grid_thws"] is not None else 0
-                batch_kwargs[i]["image_flags"] = image_flags[index:index + num_images]
-                index += num_images
 
     # Split raw images
     if experience.raw_images is not None:
@@ -414,7 +394,7 @@ def make_experience_batch(items: List, packing_samples: bool = False) -> Union[E
 
     # Determine experience type by checking the first item
     first_item = items[0]
-    if hasattr(first_item, 'pixel_values') or hasattr(first_item, 'pixel_values_intern'):
+    if hasattr(first_item, 'pixel_values'):
         return _make_experience_batch_vl(items, packing_samples)
     else:
         return _make_experience_batch(items, packing_samples)
@@ -556,18 +536,6 @@ def _make_experience_batch_vl(items: List, packing_samples: bool = False) -> Exp
     raw_images_list = [item.raw_images for item in items]
     kwargs["raw_images"] = raw_images_list if raw_images_list and raw_images_list[0] is not None else None
 
-    pixel_values_intern_list = [
-        item.pixel_values_intern
-        for item in items
-        if item.pixel_values_intern is not None and item.pixel_values_intern.numel() > 0
-    ]
-    kwargs["pixel_values_intern"] = torch.cat(pixel_values_intern_list, dim=0) if pixel_values_intern_list else None
-
-    image_flags_list = [
-        item.image_flags for item in items if item.image_flags is not None and item.image_flags.numel() > 0
-    ]
-    kwargs["image_flags"] = torch.cat(image_flags_list, dim=0) if image_flags_list else None
-
     kwargs["info"] = {}
     if items and items[0].info:
         for key in items[0].info.keys():
@@ -617,7 +585,7 @@ def remove_padding_in_sequences(items: List) -> List:
 
     # Determine item type by checking the first item
     first_item = items[0]
-    if hasattr(first_item, 'pixel_values') or hasattr(first_item, 'pixel_values_intern'):
+    if hasattr(first_item, 'pixel_values'):
         return _remove_padding_in_sequences_vl(items)
     else:
         return _remove_padding_in_sequences(items)

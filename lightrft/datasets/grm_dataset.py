@@ -19,10 +19,8 @@ class GRMDataset(Dataset):
     and covers both understanding tasks (image-to-text, video-to-text) and
     generation tasks (text-to-image, text-to-video).
 
-    :param dataset_paths: List of dataset file paths or directories. The
-        handler is determined by the source keyword (e.g. "hpdv3",
-        "imagegen-cot-reward", "omnirewardbench"). The format is "source:path".
-        e.g. "hpdv3:/path/to/train.json"
+    :param dataset_paths: List of dataset file paths or directories, in the format ``source:path`` where
+        the handler is determined by the source keyword such as hpdv3, imagegen-cot-reward, or omnirewardbench.
     :type dataset_paths: List[str]
     :param processor: Multimodal processor used for tokenization and visual
         processing.
@@ -43,11 +41,11 @@ class GRMDataset(Dataset):
         labels) or evaluation (no labels returned).
     :type is_training: bool
 
-    :example:
+    **Example:**
 
-        >>> dataset = GRMDataset([
-        ...     'imagegen-cot-reward-5k:/data/imagegen-cot-reward-5k/train.json'
-        ... ], processor=proc, tokenizer=tok, max_length=4096, is_training=True)
+    >>> dataset = GRMDataset([
+    ...     'imagegen-cot-reward-5k:/data/imagegen-cot-reward-5k/train.json'
+    ... ], processor=proc, tokenizer=tok, max_length=4096, is_training=True)
 
     """
     def __init__(
@@ -110,7 +108,7 @@ class GRMDataset(Dataset):
             except Exception as e:
                 logger.error(f"Failed to load data {path} (source: {source}): {e}")
 
-        logger.info(f"Loaded {len(self.data)} items in total, sources: {[s for s in dataset_paths]}")
+        logger.info(f"Loaded {len(self.data)} items in total, sources: {list(dataset_paths)}")
         random.shuffle(self.data)
 
     def __len__(self):
@@ -191,7 +189,9 @@ class GRMDataset(Dataset):
         return tokenized, labels
 
     def _tokenize_msg_for_eval(self, messages):
-        messages = messages[:-1]  # exclude the last generation part
+        # Remove the last assistant response if present
+        if messages and messages[-1]['role'] == 'assistant':
+            messages = messages[:-1]
         prompt_only_text = self.processor.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
         image_inputs, video_inputs, video_kwargs = self.process_vision_info(messages, return_video_kwargs=True)
 
@@ -211,6 +211,14 @@ class GRMDataset(Dataset):
         return input_token
 
     def collate_fn(self, batch):
+        """
+        Collate function for generative reward model samples.
+
+        :param batch: List of data samples.
+        :type batch: list
+        :return: Dictionary with batched tensors for GRM training.
+        :rtype: dict
+        """
         batch = [b for b in batch if b is not None]
         if not batch:
             return None
@@ -245,6 +253,8 @@ class GRMDataset(Dataset):
         input_masks = zero_pad_sequences(input_masks_list, side=padding_side)
         if labels_list:
             labels_list = zero_pad_sequences(labels_list, side=padding_side, value=-100)
+        else:
+            labels_list = None
 
         return (
             # Text inputs
@@ -257,7 +267,7 @@ class GRMDataset(Dataset):
             torch.cat(input_video_pixels, dim=0) if input_video_pixels else None,
             torch.cat(input_video_grid, dim=0) if input_video_grid else None,
             # Labels
-            labels_list if len(labels_list) else None,
+            labels_list,
             # Extras
             extras_list
         )

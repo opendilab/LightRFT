@@ -262,7 +262,7 @@ class DeepspeedStrategy(StrategyBase):
         # corner case for ptx loss (backward twice)
         if self.is_rlhf and is_actor and self.args.pretrain_data is not None:
             train_batch_size *= 2
-        ds_config["train_batch_size"] = train_batch_size * self.ring_attn_size
+        ds_config["train_batch_size"] = train_batch_size
 
         return ds_config
 
@@ -328,7 +328,7 @@ class DeepspeedStrategy(StrategyBase):
         # DS Config
         ds_config = get_eval_ds_config(offload=offload, stage=self.stage if self.stage == 3 else 0, bf16=self.bf16)
         ds_config["train_micro_batch_size_per_gpu"] = self.micro_train_batch_size
-        ds_config["train_batch_size"] = self.train_batch_size * self.ring_attn_size
+        ds_config["train_batch_size"] = self.train_batch_size
 
         return ds_config
 
@@ -534,8 +534,10 @@ class DeepspeedStrategy(StrategyBase):
                     key=lambda x: x[1],
                 )
                 total_size = sum(
-                    os.path.getsize(os.path.join(dirpath, f)) for subdir, _ in subdirs
-                    for dirpath, _, filenames in os.walk(subdir) for f in filenames
+                    os.path.getsize(os.path.join(dirpath, f))
+                    for subdir, _ in subdirs
+                    for dirpath, _, filenames in os.walk(subdir)
+                    for f in filenames
                 )
 
                 if len(subdirs) >= max_num or total_size > MAX_SIZE:

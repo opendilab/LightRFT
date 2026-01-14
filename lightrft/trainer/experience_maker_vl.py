@@ -58,8 +58,6 @@ class ExperienceVL:
         - pixel_values: (B * h, w) - image pixels processed by HF processor
         - image_grid_thws: (B, 3) - image grid thw
         - raw_images: Optional[List[Image.Image]] - raw images before processing
-        - pixel_values_intern: InternVL pixel values
-        - image_flags: InternVL image flags
         - action_log_probs: (B, A) where A is number of actions
         - base_action_log_probs: (B, A)
         - values: (B, A)
@@ -77,10 +75,6 @@ class ExperienceVL:
     :type image_grid_thws: Optional[torch.Tensor]
     :param raw_images: Raw images before processing, defaults to None.
     :type raw_images: Optional[List[Image.Image]]
-    :param pixel_values_intern: InternVL pixel values, defaults to None.
-    :type pixel_values_intern: Optional[torch.Tensor]
-    :param image_flags: InternVL image flags, defaults to None.
-    :type image_flags: Optional[torch.Tensor]
     :param action_log_probs: Log probabilities of actions from the current policy, defaults to None.
     :type action_log_probs: torch.Tensor
     :param base_action_log_probs: Log probabilities from the reference policy, defaults to None.
@@ -106,9 +100,6 @@ class ExperienceVL:
     pixel_values: Optional[torch.Tensor] = None  # image pixel processed by HF processor
     image_grid_thws: Optional[torch.Tensor] = None  # image grid thw
     raw_images: Optional[List[Image.Image]] = None  # raw images before processing
-    # InternVL image_info
-    pixel_values_intern: Optional[torch.Tensor] = None
-    image_flags: Optional[torch.Tensor] = None
 
     action_log_probs: torch.Tensor = None
     base_action_log_probs: torch.Tensor = None
@@ -139,9 +130,6 @@ class ExperienceVL:
             self.pixel_values = to(self.pixel_values, device)
         if self.image_grid_thws is not None:
             self.image_grid_thws = to(self.image_grid_thws, device)
-        if self.pixel_values_intern is not None:
-            self.pixel_values_intern = to(self.pixel_values_intern, device)
-            self.image_flags = to(self.image_flags, device)
         self.values = to(self.values, device)
         self.attention_mask = to(self.attention_mask, device)
         self.action_mask = to(self.action_mask, device)
@@ -165,9 +153,6 @@ class ExperienceVL:
             self.pixel_values = pin_memory(self.pixel_values)
         if self.image_grid_thws is not None:
             self.image_grid_thws = pin_memory(self.image_grid_thws)
-        if self.pixel_values_intern is not None:
-            self.pixel_values_intern = pin_memory(self.pixel_values_intern)
-            self.image_flags = pin_memory(self.image_flags)
         self.values = pin_memory(self.values)
         self.attention_mask = pin_memory(self.attention_mask)
         self.action_mask = pin_memory(self.action_mask)
@@ -192,8 +177,6 @@ class SamplesVL:
         - pixel_values: Optional[torch.Tensor] - image pixels processed by HF processor
         - image_grid_thws: Optional[torch.Tensor] - image grid thw
         - raw_images: Optional[List[Image.Image]] - raw image data list
-        - pixel_values_intern: Optional[torch.Tensor] - InternVL pixel values
-        - image_flags: Optional[torch.Tensor] - InternVL image flags
         - num_actions: int or (B,) - number of actions (tokens) in the response
         - packed_seq_lens: None or (B,) - length of each sample in packed format
         - response_length: (B,) - number of tokens in the response
@@ -216,10 +199,6 @@ class SamplesVL:
     :type image_grid_thws: Optional[torch.Tensor]
     :param raw_images: Raw image data list, defaults to None.
     :type raw_images: Optional[List[Image.Image]]
-    :param pixel_values_intern: InternVL pixel values, defaults to None.
-    :type pixel_values_intern: Optional[torch.Tensor]
-    :param image_flags: InternVL image flags, defaults to None.
-    :type image_flags: Optional[torch.Tensor]
     :param num_actions: Number of actions per sample, defaults to None.
     :type num_actions: Union[int, torch.Tensor]
     :param packed_seq_lens: Sequence lengths for packed format, defaults to None.
@@ -247,10 +226,6 @@ class SamplesVL:
     pixel_values: Optional[torch.Tensor] = None  # image pixel processed by HF processor
     image_grid_thws: Optional[torch.Tensor] = None  # image grid thw
     raw_images: Optional[List[Image.Image]] = None  # raw image data list
-
-    # InternVL image_info
-    pixel_values_intern: Optional[torch.Tensor] = None
-    image_flags: Optional[torch.Tensor] = None
 
     num_actions: Union[int, torch.Tensor] = None
     packed_seq_lens: Optional[torch.Tensor] = None
@@ -470,37 +445,21 @@ class NaiveExperienceMakerVL(ABC):
             labels = all_labels[i:i + args.micro_rollout_batch_size]
             inputs = self.processor_fn(prompts, images, self.prompt_max_len, device="cuda")
             sequences, attention_mask, action_mask = self.actor.generate(**inputs, **generate_kwargs)
-            if "internvl" in self.actor.pretrain_or_model.lower():
-                samples = SamplesVL(
-                    sequences=sequences,
-                    attention_mask=attention_mask,
-                    action_mask=action_mask,
-                    pixel_values_intern=inputs["pixel_values"],
-                    image_flags=inputs["image_flags"],
-                    raw_images=images,
-                    num_actions=action_mask.size(1),
-                    packed_seq_lens=None,
-                    response_length=action_mask.float().sum(dim=-1),
-                    total_length=attention_mask.float().sum(dim=-1),
-                    references=references,
-                    labels=labels,
-                    prompts=prompts,
-                )
-            else:
-                samples = SamplesVL(
-                    sequences=sequences,
-                    attention_mask=attention_mask,
-                    action_mask=action_mask,
-                    pixel_values=inputs["pixel_values"],
-                    image_grid_thws=inputs["image_grid_thw"],
-                    raw_images=images,
-                    num_actions=action_mask.size(1),
-                    packed_seq_lens=None,
-                    response_length=action_mask.float().sum(dim=-1),
-                    total_length=attention_mask.float().sum(dim=-1),
-                    references=references,
-                    labels=labels,
-                )
+            samples = SamplesVL(
+                sequences=sequences,
+                attention_mask=attention_mask,
+                action_mask=action_mask,
+                pixel_values=inputs["pixel_values"],
+                image_grid_thws=inputs["image_grid_thw"],
+                raw_images=images,
+                num_actions=action_mask.size(1),
+                packed_seq_lens=None,
+                response_length=action_mask.float().sum(dim=-1),
+                total_length=attention_mask.float().sum(dim=-1),
+                references=references,
+                labels=labels,
+                prompts=prompts,
+            )
             samples_list.append(samples)
         return samples_list
 
@@ -529,100 +488,43 @@ class NaiveExperienceMakerVL(ABC):
         pixel_values = samples.pixel_values
         image_grid_thws = samples.image_grid_thws
         raw_images = samples.raw_images
-        pixel_values_intern = samples.pixel_values_intern
-        image_flags = samples.image_flags
         num_actions = samples.num_actions
 
-        if "internvl" in self.actor.pretrain_or_model.lower():
-            # Log probabilities from current policy
-            action_log_probs = self.actor(
-                sequences,
-                num_actions,
-                attention_mask,
-                pixel_values_intern=pixel_values_intern,
-                image_flags=image_flags
+        # Log probabilities from current policy
+        action_log_probs = self.actor(sequences, num_actions, attention_mask, pixel_values, image_grid_thws)
+
+        # Log probabilities from initial/reference policy
+        if self.initial_model is not None:
+            base_action_log_probs = self.initial_model(
+                sequences, num_actions, attention_mask, pixel_values, image_grid_thws
             )
-
-            # Log probabilities from initial/reference policy
-            if self.initial_model is not None:
-                base_action_log_probs = self.initial_model(
-                    sequences,
-                    num_actions,
-                    attention_mask,
-                    pixel_values_intern=pixel_values_intern,
-                    image_flags=image_flags
-                )
-            else:
-                base_action_log_probs = None
-
-            # Values from critic
-            if self.critic is not None:
-                value = self.critic(
-                    sequences,
-                    num_actions,
-                    attention_mask,
-                    pixel_values_intern=pixel_values_intern,
-                    image_flags=image_flags
-                )
-            else:
-                value = None
-
-            # Rewards
-            if self.remote_rm_url is not None:
-                # Remote reward model
-                queries = self.tokenizer.batch_decode(sequences.cpu(), skip_special_tokens=False)
-                references = samples.references if hasattr(samples, "references") else None
-                if self.custom_reward_func:
-                    r = self.custom_reward_func(queries, samples.prompts, references).to(device=action_log_probs.device)
-                else:
-                    r = remote_rm_fn(
-                        api_url=self.remote_rm_url,
-                        queries=queries,
-                        prompts=samples.prompts,
-                        references=references,
-                        raw_images=raw_images
-                    ).to(device=action_log_probs.device)
-            else:
-                # Local reward model
-                r = self.reward_model(
-                    sequences, attention_mask, pixel_values_intern=pixel_values_intern, image_flags=image_flags
-                )
         else:
-            # Log probabilities from current policy
-            action_log_probs = self.actor(sequences, num_actions, attention_mask, pixel_values, image_grid_thws)
+            base_action_log_probs = None
 
-            # Log probabilities from initial/reference policy
-            if self.initial_model is not None:
-                base_action_log_probs = self.initial_model(
-                    sequences, num_actions, attention_mask, pixel_values, image_grid_thws
-                )
-            else:
-                base_action_log_probs = None
+        # Values from critic
+        if self.critic is not None:
+            value = self.critic(sequences, num_actions, attention_mask, pixel_values, image_grid_thws)
+        else:
+            value = None
 
-            # Values from critic
-            if self.critic is not None:
-                value = self.critic(sequences, num_actions, attention_mask, pixel_values, image_grid_thws)
+        # Rewards
+        if self.remote_rm_url is not None:
+            # Remote reward model
+            queries = self.tokenizer.batch_decode(sequences.cpu(), skip_special_tokens=False)
+            references = samples.references if hasattr(samples, "references") else None
+            if self.custom_reward_func:
+                r = self.custom_reward_func(queries, samples.prompts, references).to(device=action_log_probs.device)
             else:
-                value = None
-
-            # Rewards
-            if self.remote_rm_url is not None:
-                # Remote reward model
-                queries = self.tokenizer.batch_decode(sequences.cpu(), skip_special_tokens=False)
-                references = samples.references if hasattr(samples, "references") else None
-                if self.custom_reward_func:
-                    r = self.custom_reward_func(queries, samples.prompts, references).to(device=action_log_probs.device)
-                else:
-                    r = remote_rm_fn(
-                        api_url=self.remote_rm_url,
-                        queries=queries,
-                        prompts=samples.prompts,
-                        references=references,
-                        raw_images=raw_images
-                    ).to(device=action_log_probs.device)
-            else:
-                # Local reward model
-                r = self.reward_model(sequences, attention_mask, pixel_values, image_grid_thws)
+                r = remote_rm_fn(
+                    api_url=self.remote_rm_url,
+                    queries=queries,
+                    prompts=samples.prompts,
+                    references=references,
+                    raw_images=raw_images
+                ).to(device=action_log_probs.device)
+        else:
+            # Local reward model
+            r = self.reward_model(sequences, attention_mask, pixel_values, image_grid_thws)
 
         if (self.initial_model is not None) and (not self.strategy.args.use_kl_loss):
             kl = compute_approx_kl(
@@ -651,8 +553,6 @@ class NaiveExperienceMakerVL(ABC):
             pixel_values,
             image_grid_thws,
             raw_images,
-            pixel_values_intern,  # InternVL image_info
-            image_flags,
             action_log_probs,
             base_action_log_probs,
             value,

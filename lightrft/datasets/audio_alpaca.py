@@ -15,6 +15,14 @@ class AudioAlpacaHandler(BaseDataHandler):
     Dataset Repo: https://huggingface.co/datasets/declare-lab/audio-alpaca
     """
     def load_data(self, path: str) -> List[Dict[str, Any]]:
+        """
+        Load and validate Audio Alpaca data from parquet files.
+
+        :param path: Path to the data file or directory containing parquet files.
+        :type path: str
+        :return: List of data items with audio bytes.
+        :rtype: List[Dict[str, Any]]
+        """
         # If path is a directory, look for parquet files
         if os.path.isdir(path):
             search_pattern = os.path.join(path, "*.parquet")
@@ -59,6 +67,19 @@ class AudioAlpacaHandler(BaseDataHandler):
 
     def parse_item(self, item: Dict[str, Any], media_content: Dict[str, Any],
                    config: Dict[str, Any]) -> Tuple[List[Dict], List[Dict], Dict]:
+        """
+        Parse a single Audio Alpaca item into message pairs for ranking.
+
+        :param item: Raw data item from Audio Alpaca dataset.
+        :type item: Dict[str, Any]
+        :param media_content: Loaded audio content with 'chosen_audio' and 'rejected_audio' keys.
+        :type media_content: Dict[str, Any]
+        :param config: Configuration dict with task_instruction template.
+        :type config: Dict[str, Any]
+        :return: Tuple of (messages0, messages1, other_info).
+        :rtype: Tuple[List[Dict], List[Dict], Dict]
+        :raises ValueError: If required audio content is missing.
+        """
 
         chosen_audio = media_content['chosen_audio']
         rejected_audio = media_content['rejected_audio']

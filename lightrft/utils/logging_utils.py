@@ -1,55 +1,39 @@
-# Adapted from
-# https://github.com/skypilot-org/skypilot/blob/86dc0f6283a335e4aa37b3c10716f90999f48ab6/sky/sky_logging.py
-"""Logging configuration for vLLM."""
-import logging
+"""Logging configuration using loguru."""
+from typing import TYPE_CHECKING
+from loguru import logger
 import sys
 
-_FORMAT = "%(levelname)s %(asctime)s %(filename)s:%(lineno)d] %(message)s"
-_DATE_FORMAT = "%m-%d %H:%M:%S"
+if TYPE_CHECKING:
+    from loguru import Logger
+
+# Configure loguru with format similar to the old logging configuration
+_FORMAT = (
+    "<level>{level: <8}</level> <green>{time:MM-DD HH:mm:ss}</green> "
+    "<cyan>{name}</cyan>:<cyan>{line}</cyan>] {message}"
+)
+
+# Remove default handler and add custom one
+logger.remove()
 
 
-class NewLineFormatter(logging.Formatter):
-    """Adds logging prefix to newlines to align multi-line messages."""
-    def __init__(self, fmt, datefmt=None):
-        logging.Formatter.__init__(self, fmt, datefmt)
+def init_logger(name: str, level: str = "DEBUG") -> "Logger":
+    """
+    Return the loguru logger instance.
 
-    def format(self, record):
-        msg = logging.Formatter.format(self, record)
-        if record.message != "":
-            parts = msg.split(record.message)
-            msg = msg.replace("\n", "\r\n" + parts[0])
-        return msg
+    Note: loguru uses a singleton pattern, so all loggers share the same configuration.
+    The 'name' parameter is kept for backward compatibility but is not used by loguru.
 
-
-_root_logger = logging.getLogger("lightrft")
-_default_handler = None
-
-
-def _setup_logger():
-    _root_logger.setLevel(logging.DEBUG)
-    global _default_handler
-    if _default_handler is None:
-        _default_handler = logging.StreamHandler(sys.stdout)
-        _default_handler.flush = sys.stdout.flush  # type: ignore
-        _default_handler.setLevel(logging.INFO)
-        _root_logger.addHandler(_default_handler)
-    fmt = NewLineFormatter(_FORMAT, datefmt=_DATE_FORMAT)
-    _default_handler.setFormatter(fmt)
-    # Setting this will avoid the message
-    # being propagated to the parent logger.
-    _root_logger.propagate = False
-
-
-# The logger is initialized when the module is imported.
-# This is thread-safe as the module is only imported once,
-# guaranteed by the Python GIL.
-_setup_logger()
-
-
-def init_logger(name: str):
-    # Use the same settings as above for root logger
-    logger = logging.getLogger(name)
-    logger.setLevel(logging.DEBUG)
-    logger.addHandler(_default_handler)
-    logger.propagate = False
+    :param name: Logger name (kept for backward compatibility)
+    :type name: str
+    :param level: Logging level (kept for backward compatibility)
+    :type level: str
+    :return: The loguru logger instance
+    :rtype: loguru.Logger
+    """
+    logger.add(
+        sys.stdout,
+        format=_FORMAT,
+        level=level,
+        colorize=True,
+    )
     return logger

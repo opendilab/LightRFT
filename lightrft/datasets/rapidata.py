@@ -1,6 +1,6 @@
 import os
 import copy
-from typing import List, Dict, Any, Tuple, Union
+from typing import List, Dict, Any, Tuple
 from loguru import logger
 
 from .utils import BaseDataHandler
@@ -9,14 +9,16 @@ from .utils import BaseDataHandler
 class RapidataT2VHandler(BaseDataHandler):
     """
     Data Handler for Rapidata text-to-video human preferences dataset.
+
     Support datasets:
-        - Rapidata/text-2-video-human-preferences-pika2.2
-        - Rapidata/text-2-image-human-preferences-veo3:
-        - Rapidata/text-2-video-human-preferences-wan2.1:
-    
+
+    - Rapidata/text-2-video-human-preferences-pika2.2
+    - Rapidata/text-2-image-human-preferences-veo3
+    - Rapidata/text-2-video-human-preferences-wan2.1
+
     This dataset contains pairs of videos (video1, video2) generated from a prompt.
     It includes weighted scores for Preference, Coherence, and Alignment.
-    
+
     - 'A' means video1 (messages0) is preferred.
     - 'B' means video2 (messages1) is preferred.
     - 'C' means they are equal or tied.
@@ -30,8 +32,10 @@ class RapidataT2VHandler(BaseDataHandler):
         raw_data = []
         import pyarrow.parquet as pq
         data_table = pq.read_table(path)
-        raw_data = [{name: col[i].as_py()
-                     for name, col in zip(data_table.column_names, data_table.itercolumns())}
+        raw_data = [{
+            name: col[i].as_py()
+            for name, col in zip(data_table.column_names, data_table.itercolumns())
+        }
                     for i in range(data_table.num_rows)]
 
         data_root = os.path.dirname(os.path.dirname(path))
@@ -47,10 +51,10 @@ class RapidataT2VHandler(BaseDataHandler):
         """
         data_root = item["data_root"]
         if not data_root:
-            raise ValueError(f"Missing 'data_root' in item. Cannot resolve video paths.")
+            raise ValueError("Missing 'data_root' in item. Cannot resolve video paths.")
 
         if 'file_name1' not in item or 'file_name2' not in item:
-            raise ValueError(f"Item missing 'file_name1' or 'file_name2'.")
+            raise ValueError("Item missing 'file_name1' or 'file_name2'.")
 
         full_path1 = os.path.join(data_root, "videos", item['file_name1'])
         full_path2 = os.path.join(data_root, "videos", item['file_name2'])
@@ -71,12 +75,25 @@ class RapidataT2VHandler(BaseDataHandler):
 
     def parse_item(self, item: Dict[str, Any], media_content: Dict[str, Any],
                    config: Dict[str, Any]) -> Tuple[List[Dict], List[Dict], Dict]:
+        """
+        Parse a single Rapidata T2V item into message pairs for ranking.
 
+        :param item: Raw data item from Rapidata T2V dataset.
+        :type item: Dict[str, Any]
+        :param media_content: Loaded media content with 'video1' and 'video2' keys.
+        :type media_content: Dict[str, Any]
+        :param config: Configuration dict with task_instruction template and video_fps.
+        :type config: Dict[str, Any]
+        :return: Tuple of (messages0, messages1, other_info) where messages are
+            formatted for the reward model and other_info contains preference labels.
+        :rtype: Tuple[List[Dict], List[Dict], Dict]
+        :raises ValueError: If required visual content is missing.
+        """
         video1 = media_content['video1']
         video2 = media_content['video2']
 
         if not all([video1, video2]):
-            raise ValueError(f"Missing visual content for 'video1' or 'video2'.")
+            raise ValueError("Missing visual content for 'video1' or 'video2'.")
 
         # Get generation prompt from data item
         video_gen_prompt = item["prompt"]
@@ -100,9 +117,9 @@ class RapidataT2VHandler(BaseDataHandler):
                     "type": "video",
                     "video": video1,
                     "fps": fps,
+                    # 480p limit to reduce memory
                     "max_pixels": 720 * 480
-                }  # 480p limit to reduce memory
-                            ]
+                }]
             }
         ]
 
@@ -137,9 +154,11 @@ class RapidataT2VHandler(BaseDataHandler):
 class RapidataI2VHandler(RapidataT2VHandler):
     """
     Data Handler for Rapidata image-to-video human preferences dataset.
+
     Support datasets:
-        - Rapidata/image-2-video-human-preferences-seedance-1-pro
-    
+
+    - Rapidata/image-2-video-human-preferences-seedance-1-pro
+
     Dataset Repo: https://huggingface.co/Rapidata/datasets
     """
     def __init__(self):
@@ -151,13 +170,23 @@ class RapidataI2VHandler(RapidataT2VHandler):
         """
         data_root = item["data_root"]
         if not data_root:
-            raise ValueError(f"Missing 'data_root' in item. Cannot resolve video paths.")
+            raise ValueError("Missing 'data_root' in item. Cannot resolve video paths.")
 
         # Get video paths
         if 'file_name1' not in item or 'file_name2' not in item:
-            raise ValueError(f"Item missing 'file_name1' or 'file_name2'.")
+            raise ValueError("Item missing 'file_name1' or 'file_name2'.")
 
         def process_path(fname, root_path):
+            """
+            Process filename to construct local path from URL or relative path.
+
+            :param fname: Filename or URL.
+            :type fname: str
+            :param root_path: Root directory path.
+            :type root_path: str
+            :return: Local file path.
+            :rtype: str
+            """
             if fname.startswith("https"):
                 fname = fname.split("/")
                 model_name = fname[-2]
@@ -189,7 +218,20 @@ class RapidataI2VHandler(RapidataT2VHandler):
 
     def parse_item(self, item: Dict[str, Any], media_content: Dict[str, Any],
                    config: Dict[str, Any]) -> Tuple[List[Dict], List[Dict], Dict]:
+        """
+        Parse a single Rapidata I2V item into message pairs for ranking.
 
+        :param item: Raw data item from Rapidata I2V dataset.
+        :type item: Dict[str, Any]
+        :param media_content: Loaded media content with 'video1', 'video2', and 'init_image' keys.
+        :type media_content: Dict[str, Any]
+        :param config: Configuration dict with task_instruction template and video_fps.
+        :type config: Dict[str, Any]
+        :return: Tuple of (messages0, messages1, other_info) where messages are
+            formatted for the reward model and other_info contains preference labels.
+        :rtype: Tuple[List[Dict], List[Dict], Dict]
+        :raises ValueError: If required visual content is missing.
+        """
         video1 = media_content['video1']
         video2 = media_content['video2']
         init_image = media_content['init_image']

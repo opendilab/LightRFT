@@ -7,8 +7,10 @@ from lightrft.models.actor_vl import ActorVL
 
 
 class TestActorVL(unittest.TestCase):
+    """Test case for ActorVL model with fused linear logprob."""
     @classmethod
     def setUpClass(cls):
+        """Set up test fixtures shared across all test methods."""
         # prepare args
         parser = argparse.ArgumentParser()
         parser.add_argument("--local_rank", type=int, default=-1, help="local_rank for deepspeed")

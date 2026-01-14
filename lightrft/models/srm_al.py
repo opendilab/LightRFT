@@ -81,7 +81,7 @@ class ScalarRewardModelAL(nn.Module):
             if ds_config is not None and ds_config["zero_optimization"]["stage"] == 3:
                 dschf = HfDeepSpeedConfig(ds_config)
             else:
-                dschf = None
+                dschf = None  # noqa: F841
 
             # Load backbone model
             self.model = Qwen2AudioForConditionalGeneration.from_pretrained(
@@ -181,7 +181,10 @@ class ScalarRewardModelAL(nn.Module):
         :return: A dictionary containing reward scores from different heads
         :rtype: Dict
 
-        Example::
+        **Example:**
+
+        .. code-block:: python
+
             # Compute reward scores from sequences and audio inputs
             # Suppose `reward_model` has two heads: "preference" and "alignment"
             scores = reward_model(

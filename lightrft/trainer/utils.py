@@ -145,7 +145,12 @@ def compute_clip_fraction(values: torch.Tensor, clip_max: float, clip_min: float
              clipped values in the input tensor.
     :rtype: torch.Tensor
 
-    Example::
+    **Example:**
+
+
+
+    .. code-block:: python
+
 
         >>> values = torch.tensor([[1.0, 2.0, 3.0], [0.5, 1.5, 2.5]])
         >>> clip_fraction = compute_clip_fraction(values, clip_max=2.0, clip_min=1.0)
@@ -181,7 +186,12 @@ class RunningMoments:
 
     Adapted from https://github.com/alibaba/ROLL
 
-    Example::
+    **Example:**
+
+
+
+    .. code-block:: python
+
 
         >>> moments = RunningMoments()
         >>> batch1 = torch.randn(100)
@@ -218,7 +228,12 @@ class RunningMoments:
         :return: A tuple of (mean, std) for the current batch `xs`.
         :rtype: Tuple[float, float]
 
-        Example::
+        **Example:**
+
+
+
+        .. code-block:: python
+
 
             >>> moments = RunningMoments()
             >>> new_data = torch.tensor([1.0, 2.0, 3.0, 4.0, 5.0])
@@ -277,12 +292,15 @@ def get_cpgd_advantages_returns(
         The mask is used so that only response tokens contribute to the
         final advantages / returns.
     :type action_mask: torch.Tensor
-    :param weight_factor: Determines how the per-sample scalar scores are normalized.
+    :param weight_factor: Determines how the per-sample scalar scores are normalized:
+
         - "STD_weight": z-score normalization: score_i = (score_i − mean) / (std + ε)
         - "clip_filter_like_weight": a simplified version of the Clip-Filter weight
           used in early RLHF repos: score_i = (score_i − mean) * clamp(num_actions / nz, max=3)
         - any other value: mean-centering only: score_i = score_i − mean
+
         Defaults to "STD_weight".
+
     :type weight_factor: str
     :param epsilon: Small constant added to the denominator to avoid division by zero, defaults to 1e-6.
     :type epsilon: float
@@ -291,11 +309,11 @@ def get_cpgd_advantages_returns(
         - returns: Identical to `advantages` in CPGD; returned separately for API symmetry.
     :rtype: Tuple[torch.Tensor, torch.Tensor]
 
-    Notes:
-        - Both `advantages` and `returns` are masked so that non-response tokens
-          are always zero.
-        - The function performs no gradient-tracking operations and is intended
-          to be called outside the optimization graph.
+    .. note::
+
+        Both `advantages` and `returns` are masked so that non-response tokens
+        are always zero. The function performs no gradient-tracking operations and is intended
+        to be called outside the optimization graph.
     """
 
     # ------------------------------------------------------------------
