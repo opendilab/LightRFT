@@ -334,23 +334,23 @@ class PPOTrainerVL(ABC):
         if args.train_batch_size < args.rollout_batch_size:
             updates_per_rollout = samples_per_rollout / samples_per_train
             self.strategy.print(
-                f"\n{'='*80}\n"
+                f"\n{'=' * 80}\n"
                 f"HIGH FREQUENCY UPDATE MODE: train_batch_size ({args.train_batch_size}) < rollout_batch_size ({args.rollout_batch_size})\n"  # noqa
-                f"{'='*80}\n"
+                f"{'=' * 80}\n"
                 f"Behavior:\n"
                 f"  - Each rollout generates {samples_per_rollout} samples.\n"
                 f"  - Each rollout will trigger {updates_per_rollout:.2f} optimizer updates.\n"
                 f"  - Total updates will be HIGHER than standard mode for the same amount of data.\n"
-                f"{'='*80}\n"
+                f"{'=' * 80}\n"
             )
         elif args.train_batch_size > args.rollout_batch_size:
             self.strategy.print(
-                f"\n{'='*80}\n"
+                f"\n{'=' * 80}\n"
                 f"ACCUMULATION MODE: train_batch_size ({args.train_batch_size}) > rollout_batch_size ({args.rollout_batch_size})\n"  # noqa
-                f"{'='*80}\n"
+                f"{'=' * 80}\n"
                 f"Behavior:\n"
                 f"  - Multiple rollouts needed for one update.\n"
-                f"{'='*80}\n"
+                f"{'=' * 80}\n"
             )
 
         # Calculate number of rollouts per episode.
@@ -665,7 +665,6 @@ class PPOTrainerVL(ABC):
 
             pixel_values = experience.pixel_values
             image_grid_thws = experience.image_grid_thws
-            image_flags = experience.image_flags
 
             old_action_log_probs = torch.cat(experience.action_log_probs, dim=0).unsqueeze(0)
             advantages = torch.cat(experience.advantages, dim=0).unsqueeze(0)
@@ -680,7 +679,6 @@ class PPOTrainerVL(ABC):
 
             pixel_values = experience.pixel_values
             image_grid_thws = experience.image_grid_thws
-            image_flags = experience.image_flags
 
             old_action_log_probs = experience.action_log_probs
             advantages = experience.advantages
@@ -698,7 +696,6 @@ class PPOTrainerVL(ABC):
             advantages = torch.clamp(advantages, min=-10.0, max=10.0)
 
         # Actor loss
-        # TODO: Adaptation required to support InternVL model
         action_log_probs, output = self.actor(
             sequences,
             num_actions,
@@ -707,7 +704,6 @@ class PPOTrainerVL(ABC):
             image_grid_thw=image_grid_thws,
             return_output=True,
             packed_seq_lens=packed_seq_lens,
-            image_flags=image_flags,
         )
 
         # NOTE: Explicit masking in log-space is incorrect - removed
@@ -769,7 +765,7 @@ class PPOTrainerVL(ABC):
 
         self.strategy.backward(loss, self.actor, self.actor_optim)
 
-        # TODO: Support InternVL for PTX loss
+        # PTX loss for supervised fine-tuning
         if self.pretrain_dataloader is not None:
             data = next(self.pretrain_dataloader)
             inputs = data[1].squeeze(1).to(torch.cuda.current_device())
@@ -904,8 +900,6 @@ class PPOTrainerVL(ABC):
         # Layer 3: Apply defensive device placement to all multimodal tensors
         pixel_values = ensure_device_and_contiguous(experience.pixel_values, "pixel_values")
         image_grid_thws = ensure_device_and_contiguous(experience.image_grid_thws, "image_grid_thws")
-        pixel_values_intern = ensure_device_and_contiguous(experience.pixel_values_intern, "pixel_values_intern")
-        image_flags = ensure_device_and_contiguous(experience.image_flags, "image_flags")
 
         # TODO: This is a bad indicator to say that data is packed...
         if isinstance(experience.sequences, list):
@@ -937,8 +931,6 @@ class PPOTrainerVL(ABC):
             image_grid_thw=image_grid_thws,
             return_output=True,
             packed_seq_lens=packed_seq_lens,
-            pixel_values_intern=pixel_values_intern,
-            image_flags=image_flags,
         )
         # Loss function
         critic_loss = self.critic_loss_fn(
@@ -1076,9 +1068,9 @@ class PPOTrainerVL(ABC):
         if eval_dataloader is None:
             return {}
 
-        self.strategy.print(f"\n{'='*60}")
+        self.strategy.print(f"\n{'=' * 60}")
         self.strategy.print(f"Starting evaluation at step {global_step}")
-        self.strategy.print(f"{'='*60}")
+        self.strategy.print(f"{'=' * 60}")
 
         self.actor.eval()
         if self.critic is not None:
@@ -1187,12 +1179,12 @@ class PPOTrainerVL(ABC):
         eval_metrics["eval_num_samples"] = len(all_rewards)
 
         # Print evaluation results
-        self.strategy.print(f"\n{'='*60}")
+        self.strategy.print(f"\n{'=' * 60}")
         self.strategy.print(f"Evaluation Results (Step {global_step}):")
-        self.strategy.print(f"{'='*60}")
+        self.strategy.print(f"{'=' * 60}")
         for k, v in eval_metrics.items():
             self.strategy.print(f"  {k}: {v:.4f}")
-        self.strategy.print(f"{'='*60}\n")
+        self.strategy.print(f"{'=' * 60}\n")
 
         # Set models back to train mode
         self.actor.train()

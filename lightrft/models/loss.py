@@ -79,6 +79,20 @@ class PolicyLoss(nn.Module):
         advantages: torch.Tensor,
         action_mask: Optional[torch.Tensor] = None,
     ) -> torch.Tensor:
+        """
+        Compute PPO policy loss with optional clipping or CPG variant.
+
+        :param log_probs: Log probabilities of actions under current policy.
+        :type log_probs: torch.Tensor
+        :param old_log_probs: Log probabilities of actions under old policy.
+        :type old_log_probs: torch.Tensor
+        :param advantages: Estimated advantages for each action.
+        :type advantages: torch.Tensor
+        :param action_mask: Optional mask for valid actions (1 = valid, 0 = ignore).
+        :type action_mask: Optional[torch.Tensor]
+        :return: Scalar policy loss.
+        :rtype: torch.Tensor
+        """
         if self.use_cpg_loss:
             clipped_log_probs = torch.where(
                 advantages > 0, torch.clamp(log_probs, max=torch.log(torch.tensor(1 + self.clip_eps)) + old_log_probs),
@@ -113,6 +127,20 @@ class ValueLoss(nn.Module):
         returns: torch.Tensor,
         action_mask: Optional[torch.Tensor] = None,
     ) -> torch.Tensor:
+        """
+        Compute PPO value function loss with optional clipping.
+
+        :param values: Current value predictions.
+        :type values: torch.Tensor
+        :param old_values: Value predictions from old policy (for clipping).
+        :type old_values: torch.Tensor
+        :param returns: Target return values (e.g., GAE returns).
+        :type returns: torch.Tensor
+        :param action_mask: Optional mask for valid timesteps (1 = valid, 0 = ignore).
+        :type action_mask: Optional[torch.Tensor]
+        :return: Scalar value loss (0.5 * MSE).
+        :rtype: torch.Tensor
+        """
         if self.clip_eps is not None:
             values_clipped = old_values + (values - old_values).clamp(-self.clip_eps, self.clip_eps)
             surr1 = (values_clipped - returns) ** 2
@@ -132,6 +160,18 @@ class PairWiseLoss(nn.Module):
     def forward(
         self, chosen_reward: torch.Tensor, reject_reward: torch.Tensor, margin: torch.Tensor = None
     ) -> torch.Tensor:
+        """
+        Compute pairwise ranking loss.
+
+        :param chosen_reward: Reward scores for chosen/preferred samples.
+        :type chosen_reward: torch.Tensor
+        :param reject_reward: Reward scores for rejected samples.
+        :type reject_reward: torch.Tensor
+        :param margin: Optional margin value to enforce separation.
+        :type margin: Optional[torch.Tensor]
+        :return: Mean negative log-sigmoid loss.
+        :rtype: torch.Tensor
+        """
         if margin is not None:
             loss = -F.logsigmoid(chosen_reward - reject_reward - margin)
         else:
@@ -156,6 +196,20 @@ class DPOLoss(nn.Module):
         reference_chosen_logps: torch.Tensor,
         reference_rejected_logps: torch.Tensor,
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        """
+        Compute DPO (Direct Preference Optimization) loss.
+
+        :param policy_chosen_logps: Log probabilities under policy for chosen samples.
+        :type policy_chosen_logps: torch.Tensor
+        :param policy_rejected_logps: Log probabilities under policy for rejected samples.
+        :type policy_rejected_logps: torch.Tensor
+        :param reference_chosen_logps: Log probabilities under reference model for chosen samples.
+        :type reference_chosen_logps: torch.Tensor
+        :param reference_rejected_logps: Log probabilities under reference model for rejected samples.
+        :type reference_rejected_logps: torch.Tensor
+        :return: Tuple of (loss, chosen_rewards, rejected_rewards).
+        :rtype: Tuple[torch.Tensor, torch.Tensor, torch.Tensor]
+        """
         pi_logratios = policy_chosen_logps - policy_rejected_logps
         ref_logratios = reference_chosen_logps - reference_rejected_logps
         logits = pi_logratios - ref_logratios
@@ -193,6 +247,20 @@ class VanillaKTOLoss(nn.Module):
         reference_chosen_logps: torch.FloatTensor,
         reference_rejected_logps: torch.FloatTensor,
     ) -> Tuple[torch.FloatTensor, torch.FloatTensor, torch.FloatTensor]:
+        """
+        Compute vanilla KTO loss for evenly sampled chosen/rejected pairs.
+
+        :param policy_chosen_logps: Log probabilities under policy for chosen samples.
+        :type policy_chosen_logps: torch.FloatTensor
+        :param policy_rejected_logps: Log probabilities under policy for rejected samples.
+        :type policy_rejected_logps: torch.FloatTensor
+        :param reference_chosen_logps: Log probabilities under reference model for chosen samples.
+        :type reference_chosen_logps: torch.FloatTensor
+        :param reference_rejected_logps: Log probabilities under reference model for rejected samples.
+        :type reference_rejected_logps: torch.FloatTensor
+        :return: Tuple of (losses, chosen_rewards, rejected_rewards).
+        :rtype: Tuple[torch.FloatTensor, torch.FloatTensor, torch.FloatTensor]
+        """
         chosen_KL = (policy_chosen_logps - reference_chosen_logps).mean().clamp(min=0)
         rejected_KL = (policy_rejected_logps - reference_rejected_logps).mean().clamp(min=0)
 
@@ -236,6 +304,24 @@ class KTOLoss(nn.Module):
         reference_rejected_logps: torch.FloatTensor,
         reference_KL_logps: torch.FloatTensor,
     ) -> Tuple[torch.FloatTensor, torch.FloatTensor, torch.FloatTensor]:
+        """
+        Compute KTO loss for unevenly sampled chosen/rejected pairs with distributed KL estimation.
+
+        :param policy_chosen_logps: Log probabilities under policy for chosen samples.
+        :type policy_chosen_logps: torch.FloatTensor
+        :param policy_rejected_logps: Log probabilities under policy for rejected samples.
+        :type policy_rejected_logps: torch.FloatTensor
+        :param policy_KL_logps: Log probabilities under policy for KL estimation samples.
+        :type policy_KL_logps: torch.FloatTensor
+        :param reference_chosen_logps: Log probabilities under reference model for chosen samples.
+        :type reference_chosen_logps: torch.FloatTensor
+        :param reference_rejected_logps: Log probabilities under reference model for rejected samples.
+        :type reference_rejected_logps: torch.FloatTensor
+        :param reference_KL_logps: Log probabilities under reference model for KL estimation samples.
+        :type reference_KL_logps: torch.FloatTensor
+        :return: Tuple of (losses, chosen_rewards, rejected_rewards, KL).
+        :rtype: Tuple[torch.FloatTensor, torch.FloatTensor, torch.FloatTensor, torch.FloatTensor]
+        """
         KL = (policy_KL_logps - reference_KL_logps).mean().detach()
         # all_reduce sums up the KL estimates across all devices (gradient will also be scaled by world size)
         dist.all_reduce(KL, op=dist.ReduceOp.SUM)
@@ -274,6 +360,18 @@ class KDLoss(nn.Module):
         self.IGNORE_INDEX = -100
 
     def forward(self, logits: torch.Tensor, teacher_logits: torch.Tensor, label: torch.Tensor) -> torch.Tensor:
+        """
+        Compute knowledge distillation loss.
+
+        :param logits: Student model logits.
+        :type logits: torch.Tensor
+        :param teacher_logits: Teacher model logits (detached).
+        :type teacher_logits: torch.Tensor
+        :param label: Ground truth labels (tokens to ignore set to IGNORE_INDEX).
+        :type label: torch.Tensor
+        :return: Scalar KD loss.
+        :rtype: torch.Tensor
+        """
         teacher_probs = F.softmax(teacher_logits, dim=-1, dtype=torch.float32)
         inf_mask = torch.isinf(logits)
         logprobs = F.log_softmax(logits, dim=-1, dtype=torch.float32)
@@ -297,6 +395,20 @@ class PRMLoss(nn.Module):
         self.reward_token_ids = reward_token_ids
 
     def forward(self, inputs: torch.Tensor, logits: torch.Tensor, labels: torch.Tensor, *, return_acc: bool = False):
+        """
+        Compute process reward model loss.
+
+        :param inputs: Input token IDs (used to locate placeholder tokens).
+        :type inputs: torch.Tensor
+        :param logits: Model output logits.
+        :type logits: torch.Tensor
+        :param labels: Target labels (hard or soft labels for reward tokens).
+        :type labels: torch.Tensor
+        :param return_acc: If True, also return accuracy.
+        :type return_acc: bool
+        :return: Loss tensor or tuple of (loss, accuracy) if return_acc=True.
+        :rtype: Union[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]
+        """
         placeholder_mask = inputs == self.placeholder_token_id
         logits = logits[placeholder_mask]
         labels = labels[placeholder_mask]

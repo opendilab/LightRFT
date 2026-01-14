@@ -1,0 +1,89 @@
+name: 📚 Documentation
+description: Report documentation issues or suggest improvements
+title: "[Docs]: "
+labels: ["documentation"]
+
+body:
+- type: markdown
+  attributes:
+    value: >
+      #### Before submitting an issue, please make sure the issue hasn't been already addressed by searching through [the existing and past issues](https://github.com/opendilab/LightRFT/issues?q=is%3Aissue+sort%3Acreated-desc+).
+
+- type: dropdown
+  id: doc-type
+  attributes:
+    label: Documentation Type
+    description: What type of documentation issue is this?
+    options:
+      - Missing Documentation
+      - Incorrect/Outdated Information
+      - Typo/Grammar
+      - Unclear Explanation
+      - Missing Example
+      - API Documentation
+      - Installation Guide
+      - Tutorial/Guide
+      - FAQ
+      - Other
+  validations:
+    required: true
+
+- type: textarea
+  id: location
+  attributes:
+    label: Documentation Location
+    description: Where is the documentation issue located?
+    placeholder: |
+      - File path: docs/source/quick_start/algorithms.md
+      - URL: https://github.com/opendilab/LightRFT/tree/main/docs/...
+      - Section: "GRPO Training" under Quick Start
+  validations:
+    required: true
+
+- type: textarea
+  id: issue
+  attributes:
+    label: Issue Description
+    description: |
+      What is wrong or missing? If applicable, copy the current text and explain what needs to be changed.
+    placeholder: |
+      Current documentation says: "..."
+
+      Issue: The documentation states [...] but actually [...]
+      Or: Missing information about [...]
+      Or: Example doesn't work because [...]
+  validations:
+    required: true
+
+- type: textarea
+  id: suggested
+  attributes:
+    label: Suggested Improvement
+    description: How should the documentation be improved?
+    placeholder: |
+      The documentation should:
+      - Clarify that [...]
+      - Add example showing [...]
+      - Update the command to [...]
+      - Include note about [...]
+  validations:
+    required: true
+
+- type: textarea
+  id: additional
+  attributes:
+    label: Additional Context
+    description: Any other information that would be helpful (screenshots, related docs, etc.)
+
+- type: markdown
+  attributes:
+    value: >
+      Thanks for contributing 🎉!
+
+- type: checkboxes
+  id: confirmation
+  attributes:
+    label: Before submitting a new issue...
+    options:
+      - label: Make sure you already searched for relevant issues in the [documentation repository](https://github.com/opendilab/LightRFT/issues?q=is%3Aissue+label%3Adocumentation).
+        required: true

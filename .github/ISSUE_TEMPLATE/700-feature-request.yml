@@ -1,0 +1,168 @@
+name: 🚀 Feature Request
+description: Submit a proposal/request for a new LightRFT feature
+title: "[Feature]: "
+labels: ["enhancement"]
+
+body:
+- type: markdown
+  attributes:
+    value: >
+      #### Before submitting an issue, please make sure the issue hasn't been already addressed by searching through [the existing and past issues](https://github.com/opendilab/LightRFT/issues?q=is%3Aissue+sort%3Acreated-desc+) and [discussions](https://github.com/opendilab/LightRFT/discussions).
+
+- type: dropdown
+  id: feature-type
+  attributes:
+    label: Feature Type
+    description: What type of feature are you requesting?
+    options:
+      - New Algorithm (RLHF/RLVR)
+      - Model Support (LLM/VLM/ALM)
+      - Training Strategy Enhancement
+      - Inference Engine Feature
+      - Distributed Training Feature
+      - Dataset/Data Processing
+      - Performance Optimization
+      - API Enhancement
+      - Monitoring/Logging
+      - Documentation
+      - Testing/CI
+      - Other
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: 🚀 The feature, motivation and pitch
+    description: >
+      A clear and concise description of the feature proposal.
+
+      Please outline:
+      - What feature you want to add
+      - Why this feature is important/useful
+      - What problem it solves or what capability it enables
+      - Who would benefit from this feature
+
+      e.g., *"I'm working on X and would like Y to be possible because Z"*
+
+      If this is related to a GitHub issue or paper, please link here too.
+    placeholder: |
+      **Feature Description:**
+      I would like LightRFT to support [feature].
+
+      **Motivation:**
+      This feature is needed because ...
+
+      **Use Case:**
+      This would enable users to ...
+
+      **Benefits:**
+      - Benefit 1
+      - Benefit 2
+
+      **References:**
+      - Paper: [Title](link)
+      - Related Issue: #123
+  validations:
+    required: true
+
+- type: textarea
+  attributes:
+    label: Proposed Implementation
+    description: >
+      If you have ideas about how to implement this feature, please share.
+
+      Include:
+      - High-level approach
+      - Which components would need changes
+      - API design if applicable
+      - Potential challenges
+    placeholder: |
+      **Implementation Approach:**
+      - Modify [component] to support [feature]
+      - Add new [class/function] to handle [functionality]
+      - Update [configuration] to expose [parameter]
+
+      **API Design (if applicable):**
+      ```python
+      # Example API usage
+      trainer = SPMDPPOTrainer(
+          new_parameter=...,
+      )
+      ```
+
+      **Challenges:**
+      - Challenge 1: ...
+      - Challenge 2: ...
+
+- type: textarea
+  attributes:
+    label: Alternatives
+    description: >
+      A description of any alternative solutions or features you've considered.
+
+      Why is your proposed solution better than alternatives?
+    placeholder: |
+      **Alternative 1:** ...
+        - Pros: ...
+        - Cons: ...
+
+      **Alternative 2:** ...
+        - Pros: ...
+        - Cons: ...
+
+      **Why proposed solution is better:** ...
+
+- type: textarea
+  attributes:
+    label: Impact on Existing Features
+    description: >
+      Would this feature affect existing functionality?
+
+      - Breaking changes?
+      - Backward compatibility?
+      - Performance implications?
+    placeholder: |
+      - [ ] No impact on existing features
+      - [ ] Minor changes required to existing code
+      - [ ] Breaking changes (please describe)
+      - [ ] Performance impact (positive/negative)
+
+- type: textarea
+  attributes:
+    label: Prior Art / References
+    description: >
+      Links to papers, similar implementations in other frameworks, or related issues.
+    placeholder: |
+      - Paper: [Title](arxiv link)
+      - Implementation in [other framework]: [link]
+      - Related GitHub issue: #123
+      - Discussion thread: [link]
+
+- type: textarea
+  attributes:
+    label: Additional Context
+    description: >
+      Add any other context, screenshots, examples, or mockups about the feature request.
+
+- type: checkboxes
+  id: contribution
+  attributes:
+    label: Contribution
+    description: Are you willing to contribute to this feature?
+    options:
+      - label: I am willing to submit a pull request to implement this feature
+      - label: I can help with testing and validation
+      - label: I can help with documentation
+
+- type: markdown
+  attributes:
+    value: >
+      Thanks for contributing 🎉!
+
+- type: checkboxes
+  id: confirmation
+  attributes:
+    label: Before submitting a new issue...
+    options:
+      - label: Make sure you already searched for relevant issues and discussions, and this feature hasn't been requested before.
+        required: true
