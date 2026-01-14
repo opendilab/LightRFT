@@ -17,7 +17,6 @@ class LossWeighting(ABC):
     Weightings compute per-sample weights that modulate the contribution
     of each sample to the loss function.
     """
-
     @abstractmethod
     def compute_weights(
         self,
@@ -46,7 +45,6 @@ class ResponseLengthWeighting(LossWeighting):
     - Give more weight to shorter responses (mode="inverse")
     - Balance weights by length (mode="sqrt", "log")
     """
-
     def __init__(
         self,
         mode: str = "linear",
@@ -123,13 +121,8 @@ class EntropyWeighting(LossWeighting):
 
     This can encourage exploration (favor high entropy) or exploitation (favor low entropy).
     """
-
     def __init__(
-        self,
-        mode: str = "favor_high",
-        temperature: float = 1.0,
-        normalize: bool = True,
-        epsilon: float = 1e-6
+        self, mode: str = "favor_high", temperature: float = 1.0, normalize: bool = True, epsilon: float = 1e-6
     ):
         """
         Initialize entropy weighting.
@@ -199,14 +192,7 @@ class DifficultyWeighting(LossWeighting):
     This implements prioritized experience replay (PER) style weighting or
     curriculum learning approaches.
     """
-
-    def __init__(
-        self,
-        mode: str = "prioritized",
-        alpha: float = 0.6,
-        normalize: bool = True,
-        epsilon: float = 1e-6
-    ):
+    def __init__(self, mode: str = "prioritized", alpha: float = 0.6, normalize: bool = True, epsilon: float = 1e-6):
         """
         Initialize difficulty weighting.
 
@@ -276,13 +262,7 @@ class StalenessWeighting(LossWeighting):
     Older samples may be less relevant due to policy shift, so they
     receive exponentially decaying weights.
     """
-
-    def __init__(
-        self,
-        decay_factor: float = 0.95,
-        normalize: bool = True,
-        epsilon: float = 1e-6
-    ):
+    def __init__(self, decay_factor: float = 0.95, normalize: bool = True, epsilon: float = 1e-6):
         """
         Initialize staleness weighting.
 
@@ -335,13 +315,8 @@ class RewardMagnitudeWeighting(LossWeighting):
 
     This can be used to focus on high-reward or low-reward samples.
     """
-
     def __init__(
-        self,
-        mode: str = "favor_high",
-        temperature: float = 1.0,
-        normalize: bool = True,
-        epsilon: float = 1e-6
+        self, mode: str = "favor_high", temperature: float = 1.0, normalize: bool = True, epsilon: float = 1e-6
     ):
         """
         Initialize reward magnitude weighting.
@@ -402,7 +377,6 @@ class CompositeWeighting(LossWeighting):
 
     This allows building complex weighting strategies by composing simple weightings.
     """
-
     def __init__(
         self,
         weightings: List[Tuple[LossWeighting, float]],
@@ -498,7 +472,6 @@ class UniformWeighting(LossWeighting):
 
     This is a no-op weighting for baseline comparisons.
     """
-
     def __init__(self):
         """Initialize uniform weighting."""
         pass
@@ -517,6 +490,3 @@ class UniformWeighting(LossWeighting):
         total_samples = sum(len(exp.sequences) for exp in experiences)
         device = experiences[0].sequences.device if experiences else 'cuda'
         return torch.ones(total_samples, device=device)
-
-
-

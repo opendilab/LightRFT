@@ -54,7 +54,6 @@ class MetricsComputer:
     :param packing_samples: Whether samples are packed (affects unpacking logic)
     :type packing_samples: bool
     """
-
     def __init__(self, packing_samples: bool = False):
         """
         Initialize metrics computer.
@@ -131,10 +130,7 @@ class MetricsComputer:
         reference_log_probs = torch.log_softmax(reference_logits, dim=-1)
 
         # KL(current || reference) = sum(p_curr * (log p_curr - log p_ref))
-        kl_per_token = torch.sum(
-            torch.exp(current_log_probs) * (current_log_probs - reference_log_probs),
-            dim=-1
-        )
+        kl_per_token = torch.sum(torch.exp(current_log_probs) * (current_log_probs - reference_log_probs), dim=-1)
 
         # Handle packed vs unpacked samples
         if self.packing_samples and num_actions is not None:
@@ -144,10 +140,7 @@ class MetricsComputer:
             return masked_mean(kl_per_token, action_mask, dim=-1)
 
     def compute_difficulty(
-        self,
-        rewards: torch.Tensor,
-        values: Optional[torch.Tensor] = None,
-        mode: str = "td_error"
+        self, rewards: torch.Tensor, values: Optional[torch.Tensor] = None, mode: str = "td_error"
     ) -> torch.Tensor:
         """
         Compute sample difficulty.
@@ -194,10 +187,7 @@ class MetricsComputer:
             raise ValueError(f"Unknown difficulty mode: {mode}")
 
     def compute_staleness(
-        self,
-        generation_steps: torch.Tensor,
-        current_step: int,
-        mode: str = "linear"
+        self, generation_steps: torch.Tensor, current_step: int, mode: str = "linear"
     ) -> torch.Tensor:
         """
         Compute sample staleness based on age.
@@ -284,9 +274,7 @@ class MetricsComputer:
                 action_mask = torch.cat(action_mask_list, dim=0)
 
                 if self.packing_samples:
-                    entropy = self.compute_entropy(
-                        action_log_probs, action_mask, num_actions_list
-                    )
+                    entropy = self.compute_entropy(action_log_probs, action_mask, num_actions_list)
                 else:
                     entropy = self.compute_entropy(action_log_probs, action_mask)
 
@@ -325,6 +313,3 @@ class MetricsComputer:
             n_samples_per_prompt=None,  # Can be set externally
             micro_batch_size=None,  # Can be set externally
         )
-
-
-

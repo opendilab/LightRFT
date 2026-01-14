@@ -70,7 +70,6 @@ from .manager import (
     FilterWeightManagerBuilder,
 )
 
-
 __all__ = [
     # ========== Metrics ==========
     "SampleMetrics",
@@ -99,16 +98,6 @@ __all__ = [
     "FilterWeightManager",
     "FilterWeightManagerBuilder",
 ]
-
-
-def get_version():
-    """
-    Get the version of the filter_weight module.
-
-    :return: Version string
-    :rtype: str
-    """
-    return __version__
 
 
 # Quick access functions for common use cases
@@ -158,11 +147,7 @@ def create_manager_from_args(args, packing_samples: bool = False):
 
 # Add convenience imports at module level
 __all__.extend([
-    "get_version",
     "create_length_filter",
     "create_difficulty_weighting",
     "create_manager_from_args",
 ])
-
-
-

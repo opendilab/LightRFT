@@ -17,7 +17,6 @@ class SampleFilter(ABC):
     Filters determine which samples should be kept for training. They return
     a boolean mask where True indicates the sample should be kept.
     """
-
     @abstractmethod
     def filter(
         self,
@@ -44,7 +43,6 @@ class ResponseLengthFilter(SampleFilter):
     This filter can enforce minimum/maximum length constraints or use a buffer-based
     approach (e.g., expected_length ± buffer_length).
     """
-
     def __init__(
         self,
         min_length: Optional[int] = None,
@@ -113,7 +111,6 @@ class RewardValueFilter(SampleFilter):
     This filter detects and removes groups of samples where all rewards are identical
     (e.g., all 0s or all 1s), which provides no learning signal.
     """
-
     def __init__(
         self,
         filter_all_zeros: bool = True,
@@ -195,12 +192,7 @@ class EntropyFilter(SampleFilter):
     Entropy measures the uncertainty/diversity of the policy. Low entropy indicates
     confident/deterministic generation, high entropy indicates uncertain/exploratory generation.
     """
-
-    def __init__(
-        self,
-        min_entropy: Optional[float] = None,
-        max_entropy: Optional[float] = None
-    ):
+    def __init__(self, min_entropy: Optional[float] = None, max_entropy: Optional[float] = None):
         """
         Initialize entropy filter.
 
@@ -250,7 +242,6 @@ class DifficultyFilter(SampleFilter):
     This can be used to implement curriculum learning (filter out hard samples early)
     or focus training (filter out easy samples).
     """
-
     def __init__(
         self,
         min_difficulty: Optional[float] = None,
@@ -317,7 +308,6 @@ class CompositeFilter(SampleFilter):
 
     This allows building complex filtering logic by composing simple filters.
     """
-
     def __init__(self, filters: List[SampleFilter], logic: str = "AND"):
         """
         Initialize composite filter.
@@ -371,12 +361,8 @@ class PercentileFilter(SampleFilter):
 
     This is useful for keeping top-k% or bottom-k% samples according to some metric.
     """
-
     def __init__(
-        self,
-        metric_name: str,
-        top_percentile: Optional[float] = None,
-        bottom_percentile: Optional[float] = None
+        self, metric_name: str, top_percentile: Optional[float] = None, bottom_percentile: Optional[float] = None
     ):
         """
         Initialize percentile filter.
@@ -428,6 +414,3 @@ class PercentileFilter(SampleFilter):
             mask |= (metric_value <= threshold)
 
         return mask
-
-
-

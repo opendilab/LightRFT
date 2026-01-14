@@ -1027,12 +1027,10 @@ class FastExperienceMaker(NaiveExperienceMaker):
             # Compute metrics from outputs
             current_step = getattr(self.strategy, "global_step", None)
             metrics = self.filter_weight_manager.compute_metrics(outputs, current_step=current_step)
-            
+
             # Apply filters and weights
-            experiences, sample_weights = self.filter_weight_manager.apply_to_experiences(
-                experiences, metrics
-            )
-            
+            experiences, sample_weights = self.filter_weight_manager.apply_to_experiences(experiences, metrics)
+
             # Store sample weights in experience info for later use
             sample_idx = 0
             for exp in experiences:
@@ -1370,11 +1368,10 @@ class FastExperienceMaker(NaiveExperienceMaker):
         # Use new filter_weight framework if enabled, otherwise use legacy logic
         from .filter_weight import ResponseLengthFilter
         use_filter_weight = (
-            self.filter_weight_manager is not None
-            and self.filter_weight_manager.filters
+            self.filter_weight_manager is not None and self.filter_weight_manager.filters
             and any(isinstance(f, ResponseLengthFilter) for f in self.filter_weight_manager.filters)
         )
-        
+
         if config.overlong_buffer and not use_filter_weight:
             # Legacy overlong buffer penalty (only if not using filter_weight framework)
             expected_len = max_new_tokens - config.overlong_buffer_len
@@ -1412,11 +1409,10 @@ class FastExperienceMaker(NaiveExperienceMaker):
             # Use new filter_weight framework if enabled, otherwise use legacy logic
             from .filter_weight import RewardValueFilter
             use_dynamic_filter = (
-                self.filter_weight_manager is not None
-                and self.filter_weight_manager.filters
+                self.filter_weight_manager is not None and self.filter_weight_manager.filters
                 and any(isinstance(f, RewardValueFilter) for f in self.filter_weight_manager.filters)
             )
-            
+
             if config.dynamic_sampling and not use_dynamic_filter:
                 # Legacy dynamic sampling (only if not using filter_weight framework)
                 step_size = config.n_samples_per_prompt // config.micro_train_batch_size

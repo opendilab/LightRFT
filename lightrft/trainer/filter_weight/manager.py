@@ -57,7 +57,6 @@ class FilterWeightManager:
     :param packing_samples: Whether samples are packed
     :type packing_samples: bool
     """
-
     def __init__(
         self,
         metrics_computer: Optional[MetricsComputer] = None,
@@ -144,11 +143,7 @@ class FilterWeightManager:
         :return: SampleMetrics with computed metrics
         :rtype: SampleMetrics
         """
-        return self.metrics_computer.compute_all_metrics(
-            outputs,
-            self.enable_metrics,
-            current_step
-        )
+        return self.metrics_computer.compute_all_metrics(outputs, self.enable_metrics, current_step)
 
     def apply_filters(
         self,
@@ -235,7 +230,7 @@ class FilterWeightManager:
             sample_idx = 0
             for exp in experiences:
                 batch_size = len(exp.sequences)
-                batch_mask = keep_mask[sample_idx : sample_idx + batch_size]
+                batch_mask = keep_mask[sample_idx:sample_idx + batch_size]
 
                 # Zero out action_mask for filtered samples
                 # This effectively removes them from loss computation
@@ -357,7 +352,6 @@ class FilterWeightManagerBuilder:
         manager = builder.from_args(args)
         ```
     """
-
     @staticmethod
     def from_args(args, packing_samples: bool = False) -> FilterWeightManager:
         """
@@ -385,33 +379,26 @@ class FilterWeightManagerBuilder:
         if getattr(args, "overlong_buffer", False):
             expected_len = getattr(args, "max_new_tokens", 1024) - getattr(args, "overlong_buffer_len", 0)
             buffer_len = getattr(args, "overlong_buffer_len", 0)
-            filters.append(ResponseLengthFilter(
-                expected_length=expected_len,
-                buffer_length=buffer_len
-            ))
+            filters.append(ResponseLengthFilter(expected_length=expected_len, buffer_length=buffer_len))
 
         # Reward value filter (for dynamic sampling)
         if getattr(args, "dynamic_sampling", False) and getattr(args, "advantage_estimator", "") == "group_norm":
-            filters.append(RewardValueFilter(
-                n_samples_per_prompt=getattr(args, "n_samples_per_prompt", 1)
-            ))
+            filters.append(RewardValueFilter(n_samples_per_prompt=getattr(args, "n_samples_per_prompt", 1)))
 
         # Entropy filter
         if getattr(args, "enable_entropy_filter", False):
-            filters.append(EntropyFilter(
-                min_entropy=getattr(args, "min_entropy", None),
-                max_entropy=getattr(args, "max_entropy", None)
-            ))
+            filters.append(
+                EntropyFilter(
+                    min_entropy=getattr(args, "min_entropy", None), max_entropy=getattr(args, "max_entropy", None)
+                )
+            )
 
         # Build weights
         weights = []
 
         # Response length weighting
         if getattr(args, "enable_length_weighting", False):
-            weight = ResponseLengthWeighting(
-                mode=getattr(args, "length_weight_mode", "inverse"),
-                normalize=True
-            )
+            weight = ResponseLengthWeighting(mode=getattr(args, "length_weight_mode", "inverse"), normalize=True)
             coef = getattr(args, "length_weight_coef", 1.0)
             weights.append((weight, coef))
 
@@ -437,16 +424,14 @@ class FilterWeightManagerBuilder:
 
         # Staleness weighting
         if getattr(args, "enable_staleness_weighting", False):
-            weight = StalenessWeighting(
-                decay_factor=getattr(args, "staleness_decay_factor", 0.95),
-                normalize=True
-            )
+            weight = StalenessWeighting(decay_factor=getattr(args, "staleness_decay_factor", 0.95), normalize=True)
             coef = getattr(args, "staleness_weight_coef", 1.0)
             weights.append((weight, coef))
 
         # Build enable_metrics dict
         enable_metrics = {
-            "entropy": getattr(args, "compute_entropy", False) or getattr(args, "enable_entropy_filter", False) or getattr(args, "enable_entropy_weighting", False),
+            "entropy": getattr(args, "compute_entropy", False) or getattr(args, "enable_entropy_filter", False)
+            or getattr(args, "enable_entropy_weighting", False),
             "difficulty": getattr(args, "enable_difficulty_weighting", False),
             "difficulty_mode": getattr(args, "difficulty_mode", "td_error"),
             "staleness": getattr(args, "enable_staleness_weighting", False),
@@ -454,11 +439,5 @@ class FilterWeightManagerBuilder:
         }
 
         return FilterWeightManager(
-            filters=filters,
-            weights=weights,
-            enable_metrics=enable_metrics,
-            packing_samples=packing_samples
+            filters=filters, weights=weights, enable_metrics=enable_metrics, packing_samples=packing_samples
         )
-
-
-
