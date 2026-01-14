@@ -772,26 +772,22 @@ class StrategyBase(ABC):
             ]
         elif self.inference_engine_type == "sglang":
 
-
-
             if multi_modal_inputs is not None:  # VLM case
                 # print(f"multi_modal_inputs:{multi_modal_inputs}")
 
                 prompt = [p["prompt"] for p in multi_modal_inputs]
-                
+
                 # image = [p["multi_modal_data"]["image"] for p in multi_modal_inputs]
 
                 # Handle cases where some prompts might not have images
                 # Flatten nested list format if needed: [[PIL.Image]] -> [PIL.Image]
-                image = [
-                    (img[0] if isinstance(img, list) and len(img) > 0 else img)
-                    for img in (p.get("multi_modal_data", {}).get("image") for p in multi_modal_inputs)
-                ]
+                image = [(img[0] if isinstance(img, list) and len(img) > 0 else img)
+                         for img in (p.get("multi_modal_data", {}).get("image") for p in multi_modal_inputs)]
 
                 sglang_outputs = self.inference_engine.generate(
                     sampling_params=sampling_params,
                     # input_ids=prompt,
-                    prompt=prompt, # skip_tokenizer_init: bool = False
+                    prompt=prompt,  # skip_tokenizer_init: bool = False
                     image_data=image,
                 )
             else:
@@ -863,7 +859,7 @@ class StrategyBase(ABC):
         self.wakeup_inference_engine()
 
         # is_multimodal = all_images is not None
-       # 修复逻辑：不仅检查 all_images 是否为 None，还要检查其中是否包含非 None 的元素
+        # 修复逻辑：不仅检查 all_images 是否为 None，还要检查其中是否包含非 None 的元素
         # 如果 all_images 是 [None, None, ...]，any(img is not None for img in all_images) 将返回 False
         is_multimodal = (all_images is not None) and any(img is not None for img in all_images)
 
@@ -876,7 +872,7 @@ class StrategyBase(ABC):
             assert inputs is not None
 
         # 在本文件开始，通过全局变量来控制是否处于调试状态
-        # global DEBUG_ENABLED;DEBUG_ENABLED = True 
+        # global DEBUG_ENABLED;DEBUG_ENABLED = True
         # import torch.distributed as dist
         # if dist.get_rank() == 0 and DEBUG_ENABLED:
         #     print(f"rank {dist.get_rank()} 进入调试模式，输入interact，可以键入整段的python代码调试。通过设置 DEBUG_ENABLED = False, 可以跳过调试状态")

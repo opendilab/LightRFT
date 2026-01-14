@@ -585,14 +585,10 @@ class PPOTrainerVL(ABC):
             status.update(self.training_step_critic(experience))
         return status
 
-
     def _validate_qwen_vl_tensors(
-            self,
-            sequences: torch.Tensor,
-            pixel_values: Optional[torch.Tensor],
-            context: str = "training"
-        ) -> bool:
-            """
+        self, sequences: torch.Tensor, pixel_values: Optional[torch.Tensor], context: str = "training"
+    ) -> bool:
+        """
             Validates the consistency between image tokens in sequences and pixel_values features.
 
             :param sequences: Token sequence tensor.
@@ -604,29 +600,29 @@ class PPOTrainerVL(ABC):
             :return: True if data is consistent, False otherwise.
             :rtype: bool
             """
-            if pixel_values is None or pixel_values.numel() == 0:
-                # This is a text-only batch, no validation needed.
-                return True
-
-            config = self.strategy.unwrap_model(self.actor.model).config
-            image_token_id = getattr(config, "image_token_id", None)
-
-            if image_token_id is None:
-                # Model does not use special image tokens.
-                return True
-
-            num_tokens = (sequences == image_token_id).sum().item()
-            num_patches = pixel_values.shape[0] // 4
-
-            if num_tokens != num_patches:
-                self.strategy.print(
-                    f"[CRITICAL WARNING] Skipping batch in '{context}'. "
-                    f"Image features and image tokens do not match: tokens: {num_tokens}, features: {num_patches}. "
-                    "This batch will be discarded to prevent a crash."
-                )
-                return False
-
+        if pixel_values is None or pixel_values.numel() == 0:
+            # This is a text-only batch, no validation needed.
             return True
+
+        config = self.strategy.unwrap_model(self.actor.model).config
+        image_token_id = getattr(config, "image_token_id", None)
+
+        if image_token_id is None:
+            # Model does not use special image tokens.
+            return True
+
+        num_tokens = (sequences == image_token_id).sum().item()
+        num_patches = pixel_values.shape[0] // 4
+
+        if num_tokens != num_patches:
+            self.strategy.print(
+                f"[CRITICAL WARNING] Skipping batch in '{context}'. "
+                f"Image features and image tokens do not match: tokens: {num_tokens}, features: {num_patches}. "
+                "This batch will be discarded to prevent a crash."
+            )
+            return False
+
+        return True
 
     def training_step_actor(self, experience: ExperienceVL) -> Dict[str, float]:
         """
@@ -677,7 +673,7 @@ class PPOTrainerVL(ABC):
 
         # [ROBUST FIX] Validate RL data before actor forward pass
         if not self._validate_qwen_vl_tensors(sequences, pixel_values, context="actor_rl_update"):
-            return {} # Skip this entire training step for this batch
+            return {}  # Skip this entire training step for this batch
 
         # Actor loss
         action_log_probs, output = self.actor(

@@ -1648,7 +1648,6 @@ class FastExperienceMaker(NaiveExperienceMaker):
             prompt_and_output=([p + (o or "") for p, o in zip(prompts, output_texts)] if output_texts else None),
         )
 
-
     def _fix_qwen_vl_image_tokens(
         self,
         sequences: torch.Tensor,
@@ -1678,7 +1677,9 @@ class FastExperienceMaker(NaiveExperienceMaker):
         num_patches = sample.pixel_values.shape[0] // 4
 
         if num_tokens != num_patches:
-            self.strategy.print(f"[Warning] Mismatch found during rollout step. Fixing sequences. Tokens: {num_tokens}, Patches: {num_patches}")
+            self.strategy.print(
+                f"[Warning] Mismatch found during rollout step. Fixing sequences. Tokens: {num_tokens}, Patches: {num_patches}"
+            )
 
             pad_token_id = self.tokenizer.pad_token_id
             diff = num_tokens - num_patches

@@ -184,18 +184,17 @@ class RLGenerationEngine:
                 input_ids = gather_inputs_object_for_inference(input_ids, group=self.tp_group_cpu)
             if image_data is not None:
                 image_data = gather_inputs_object_for_inference(image_data, group=self.tp_group_cpu)
-        
+
         if self._tp_rank == 0:
 
             # print(f"rank {dist.get_rank()} input_ids:{input_ids}")
             # # 在本文件开始，通过全局变量来控制是否处于调试状态
-            # global DEBUG_ENABLED;DEBUG_ENABLED = True 
+            # global DEBUG_ENABLED;DEBUG_ENABLED = True
             # if dist.get_rank() == 0 and DEBUG_ENABLED:
             #     print(f"rank {dist.get_rank()} 进入调试模式，输入interact，可以键入整段的python代码调试。通过设置 DEBUG_ENABLED = False, 可以跳过调试状态")
             #     import ipdb; ipdb.set_trace()
             # # 同步点，防止其它进程早跑
             # dist.barrier()
-
 
             output = self._engine.generate(
                 prompt=prompt,
@@ -218,7 +217,6 @@ class RLGenerationEngine:
 
             # IMPORTANT: broadcast_pyobj expects global rank, not local rank within group
             global_rank = dist.get_rank()
-
 
             try:
                 [output] = broadcast_pyobj(
