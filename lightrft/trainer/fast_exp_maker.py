@@ -1370,7 +1370,7 @@ class FastExperienceMaker(NaiveExperienceMaker):
             # the original sequence-level rewards without group normalization.
             # The normalization will be handled in the loss function if needed.
             rewards = rewards.reshape(-1, config.n_samples_per_prompt).to("cuda")
-            
+
             # Store sequence-level rewards in experience info for GSPO loss computation
             # For GSPO, we use the raw sequence rewards (may be normalized later in loss function)
             # but we don't do group normalization here - that's different from group_norm
@@ -1381,14 +1381,14 @@ class FastExperienceMaker(NaiveExperienceMaker):
                 # Store the sequence-level reward (scalar value) for this experience
                 # This will be used later in _compute_advantages_and_returns to set advantages
                 exp.info["sequence_reward"] = rewards[group_idx, sample_idx].item()
-            
+
             # For GSPO, we return the rewards as-is without group normalization
             # The rewards are already sequence-level (scalar per experience)
             # Convert back to list format
             rewards_list = rewards.flatten().to("cpu").chunk(len(experiences))
-            
+
             return experiences, rewards_list
-            
+
         elif config.advantage_estimator in ["group_norm", "grpo"]:
             # Group normalization with optional dynamic filtering
             if config.dynamic_sampling:
@@ -1496,9 +1496,7 @@ class FastExperienceMaker(NaiveExperienceMaker):
                     seq_reward_value = experience.info["sequence_reward"]
                     # Convert scalar to tensor on the same device as final_reward
                     seq_reward_tensor = torch.tensor(
-                        seq_reward_value, 
-                        dtype=final_reward.dtype, 
-                        device=final_reward.device
+                        seq_reward_value, dtype=final_reward.dtype, device=final_reward.device
                     )
                     # Create a sequence-level advantage tensor (same value for all tokens in sequence)
                     # Shape: [batch_size, seq_len] - all tokens in a sequence have the same advantage
@@ -1513,14 +1511,14 @@ class FastExperienceMaker(NaiveExperienceMaker):
                         seq_reward = final_reward.sum(dim=-1, keepdim=True)
                     # Expand to all tokens (same value for all tokens in sequence)
                     experience.advantages = seq_reward.expand_as(final_reward)
-                
+
                 # For GSPO, returns are the same as advantages (sequence-level)
                 experience.returns = experience.advantages.clone()
-                
+
                 # Note: GSPO normalization is handled in the loss function, not here
                 # The loss function will normalize sequence-level advantages if normalize_advantages is enabled
                 # according to the GSPO paper specifications
-                
+
             elif self.advantage_estimator in ["reinforce", "rloo", "reinforce_baseline", "group_norm"]:
                 # Compute cumulative returns
                 experience.returns = self.get_cumulative_returns(

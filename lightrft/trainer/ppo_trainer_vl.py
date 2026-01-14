@@ -186,7 +186,7 @@ class PPOTrainerVL(ABC):
         normalize_advantages = getattr(self.args, 'normalize_advantages', True) if use_gspo else False
         use_sequence_rewards = getattr(self.args, 'use_sequence_rewards', True) if use_gspo else False
         max_tokens = getattr(self.args, 'max_tokens', 4096) if loss_agg_mode == 'seq-mean-token-sum-norm' else 4096
-        
+
         self.actor_loss_fn = PolicyLoss(
             clip_eps=eps_clip,
             use_cpg_loss=self.args.use_cpg_loss,
