@@ -10,6 +10,24 @@ from .utils import zero_pad_sequences
 def preprocess_data(
     data, input_template=None, input_key="input", output_key=None, apply_chat_template=None, multiturn=False
 ):
+    """
+    Preprocess data sample into prompt and response strings.
+
+    :param data: Raw data sample dictionary.
+    :type data: dict
+    :param input_template: Optional template string to format the input.
+    :type input_template: Optional[str]
+    :param input_key: Key for input field in data.
+    :type input_key: str
+    :param output_key: Key for output field in data (None for pretrain mode).
+    :type output_key: Optional[str]
+    :param apply_chat_template: Optional chat template function.
+    :type apply_chat_template: Optional[Callable]
+    :param multiturn: Whether to handle multi-turn conversations.
+    :type multiturn: bool
+    :return: Tuple of (prompt, response) strings.
+    :rtype: Tuple[str, str]
+    """
     if apply_chat_template:
         if output_key:
             prompt = apply_chat_template(data[input_key], tokenize=False, add_generation_prompt=True)
@@ -77,6 +95,14 @@ class SFTDataset(Dataset):
         self.response_ranges = processed_dataset["response_ranges"] if self.multiturn else None
 
     def process_data(self, data):
+        """
+        Process a single data sample for SFT training.
+
+        :param data: Raw data sample dictionary.
+        :type data: dict
+        :return: Processed data with prompt, response, and metadata.
+        :rtype: dict
+        """
         if self.multiturn and self.output_key:
             data[self.input_key].append(data[self.output_key])
             data[self.output_key] = None
@@ -183,6 +209,14 @@ class SFTDataset(Dataset):
         return prompt_ids_len, input_token["input_ids"], input_token["attention_mask"], info
 
     def collate_fn(self, item_list):
+        """
+        Collate function to batch samples with padding.
+
+        :param item_list: List of tuples (prompt_ids_len, input_id, attention_mask, info).
+        :type item_list: list
+        :return: Batched tensors (prompt_ids_lens, input_ids, attention_masks, infos).
+        :rtype: tuple
+        """
         prompt_ids_lens = []
         input_ids = []
         attention_masks = []
@@ -200,6 +234,14 @@ class SFTDataset(Dataset):
         return prompt_ids_lens, input_ids, attention_masks, infos
 
     def packing_collate_fn(self, item_list):
+        """
+        Collate function for packing multiple samples into a single sequence.
+
+        :param item_list: List of tuples (prompt_ids_len, input_id, _, info).
+        :type item_list: list
+        :return: Packed tensors (packed_input_ids, packed_attention_masks, prompt_ids_lens, infos).
+        :rtype: tuple
+        """
         packed_input_ids = []
         packed_attention_masks = []
         prompt_ids_lens = []

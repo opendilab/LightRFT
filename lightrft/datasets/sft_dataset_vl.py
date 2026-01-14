@@ -10,6 +10,24 @@ from .utils import zero_pad_sequences
 def preprocess_data(
     data, input_template=None, input_key="input", output_key=None, images_key="images", apply_chat_template=None
 ):
+    """
+    Preprocess vision-language data sample into prompt, response, and images.
+
+    :param data: Raw data sample dictionary.
+    :type data: dict
+    :param input_template: Optional template string to format the input.
+    :type input_template: Optional[str]
+    :param input_key: Key for input field in data.
+    :type input_key: str
+    :param output_key: Key for output field in data (None for pretrain mode).
+    :type output_key: Optional[str]
+    :param images_key: Key for images field in data.
+    :type images_key: str
+    :param apply_chat_template: Optional chat template function.
+    :type apply_chat_template: Optional[Callable]
+    :return: Tuple of (prompt, response, images).
+    :rtype: Tuple[Optional[str], Optional[str], Any]
+    """
     prompt, response = None, None
     if apply_chat_template:
         if output_key:
@@ -123,6 +141,14 @@ class SFTDatasetVL(Dataset):
         self.response_ranges = processed_dataset["response_ranges"] if self.multiturn else None
 
     def process_data(self, data):
+        """
+        Process a single vision-language data sample for SFT training.
+
+        :param data: Raw data sample dictionary.
+        :type data: dict
+        :return: Processed data with prompt, response, images, and metadata.
+        :rtype: dict
+        """
         # TODO support VLM multiturn
         prompt, response, images = preprocess_data(
             data,
@@ -198,6 +224,16 @@ class SFTDatasetVL(Dataset):
         )
 
     def collate_fn(self, item_list):
+        """
+        Collate function to batch vision-language samples with padding.
+
+        :param item_list: List of tuples (prompt_ids_len, input_id, attention_mask,
+            pixel_value, image_grid_thw, info).
+        :type item_list: list
+        :return: Batched tensors (prompt_ids_lens, input_ids, attention_masks,
+            pixel_values, image_grid_thws, infos).
+        :rtype: tuple
+        """
         prompt_ids_lens = []
         input_ids = []
         attention_masks = []
@@ -221,6 +257,16 @@ class SFTDatasetVL(Dataset):
                                                                       dim=0), torch.cat(image_grid_thws, dim=0), infos
 
     def packing_collate_fn(self, item_list):
+        """
+        Collate function for packing multiple vision-language samples into a single sequence.
+
+        :param item_list: List of tuples (prompt_ids_len, input_id, _, pixel_value,
+            image_grid_thw, info).
+        :type item_list: list
+        :return: Packed tensors (packed_input_ids, packed_attention_masks, prompt_ids_lens,
+            pixel_values, image_grid_thws, infos).
+        :rtype: tuple
+        """
         packed_input_ids = []
         packed_attention_masks = []
         prompt_ids_lens = []

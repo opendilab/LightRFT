@@ -9,10 +9,12 @@ from .utils import BaseDataHandler
 class RapidataT2VHandler(BaseDataHandler):
     """
     Data Handler for Rapidata text-to-video human preferences dataset.
+
     Support datasets:
-        - Rapidata/text-2-video-human-preferences-pika2.2
-        - Rapidata/text-2-image-human-preferences-veo3:
-        - Rapidata/text-2-video-human-preferences-wan2.1:
+
+    - Rapidata/text-2-video-human-preferences-pika2.2
+    - Rapidata/text-2-image-human-preferences-veo3
+    - Rapidata/text-2-video-human-preferences-wan2.1
 
     This dataset contains pairs of videos (video1, video2) generated from a prompt.
     It includes weighted scores for Preference, Coherence, and Alignment.
@@ -73,7 +75,20 @@ class RapidataT2VHandler(BaseDataHandler):
 
     def parse_item(self, item: Dict[str, Any], media_content: Dict[str, Any],
                    config: Dict[str, Any]) -> Tuple[List[Dict], List[Dict], Dict]:
+        """
+        Parse a single Rapidata T2V item into message pairs for ranking.
 
+        :param item: Raw data item from Rapidata T2V dataset.
+        :type item: Dict[str, Any]
+        :param media_content: Loaded media content with 'video1' and 'video2' keys.
+        :type media_content: Dict[str, Any]
+        :param config: Configuration dict with task_instruction template and video_fps.
+        :type config: Dict[str, Any]
+        :return: Tuple of (messages0, messages1, other_info) where messages are
+            formatted for the reward model and other_info contains preference labels.
+        :rtype: Tuple[List[Dict], List[Dict], Dict]
+        :raises ValueError: If required visual content is missing.
+        """
         video1 = media_content['video1']
         video2 = media_content['video2']
 
@@ -139,8 +154,10 @@ class RapidataT2VHandler(BaseDataHandler):
 class RapidataI2VHandler(RapidataT2VHandler):
     """
     Data Handler for Rapidata image-to-video human preferences dataset.
+
     Support datasets:
-        - Rapidata/image-2-video-human-preferences-seedance-1-pro
+
+    - Rapidata/image-2-video-human-preferences-seedance-1-pro
 
     Dataset Repo: https://huggingface.co/Rapidata/datasets
     """
@@ -160,6 +177,16 @@ class RapidataI2VHandler(RapidataT2VHandler):
             raise ValueError("Item missing 'file_name1' or 'file_name2'.")
 
         def process_path(fname, root_path):
+            """
+            Process filename to construct local path from URL or relative path.
+
+            :param fname: Filename or URL.
+            :type fname: str
+            :param root_path: Root directory path.
+            :type root_path: str
+            :return: Local file path.
+            :rtype: str
+            """
             if fname.startswith("https"):
                 fname = fname.split("/")
                 model_name = fname[-2]
@@ -191,7 +218,20 @@ class RapidataI2VHandler(RapidataT2VHandler):
 
     def parse_item(self, item: Dict[str, Any], media_content: Dict[str, Any],
                    config: Dict[str, Any]) -> Tuple[List[Dict], List[Dict], Dict]:
+        """
+        Parse a single Rapidata I2V item into message pairs for ranking.
 
+        :param item: Raw data item from Rapidata I2V dataset.
+        :type item: Dict[str, Any]
+        :param media_content: Loaded media content with 'video1', 'video2', and 'init_image' keys.
+        :type media_content: Dict[str, Any]
+        :param config: Configuration dict with task_instruction template and video_fps.
+        :type config: Dict[str, Any]
+        :return: Tuple of (messages0, messages1, other_info) where messages are
+            formatted for the reward model and other_info contains preference labels.
+        :rtype: Tuple[List[Dict], List[Dict], Dict]
+        :raises ValueError: If required visual content is missing.
+        """
         video1 = media_content['video1']
         video2 = media_content['video2']
         init_image = media_content['init_image']

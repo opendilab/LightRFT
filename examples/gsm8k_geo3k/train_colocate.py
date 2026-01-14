@@ -30,31 +30,30 @@ For more details on arguments, see the argument parser at the bottom of this fil
 """
 import argparse
 import itertools
-import math
-import re
-import os
-import sys
 import json
+import math
+import os
+import re
+import sys
 from datetime import datetime
 from typing import Callable, Dict, List, Tuple, Union
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-
 from lightrft.utils import add_arguments, ensure_video_input_available
+
 ensure_video_input_available()
 
 from lightrft.datasets import PromptDatasetVL, SFTDatasetVL
-from lightrft.utils import blending_datasets, get_tokenizer_processor_vl
 from lightrft.models.actor_language import ActorLanguage
 from lightrft.models.actor_vl import ActorVL
-
 from lightrft.strategy import get_strategy
 from lightrft.trainer.spmd_ppo_trainer import SPMDPPOTrainerVL
+from lightrft.utils import blending_datasets, get_tokenizer_processor_vl
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-from reward_models_utils import load_reward_models, reward_fn, RECIPE
+from reward_models_utils import RECIPE, load_reward_models, reward_fn
 
 
 def train(args):
@@ -200,7 +199,7 @@ def train(args):
 
     # configure tokenizer and processor
     tokenizer, processor = get_tokenizer_processor_vl(
-        args.pretrain, actor.model, "left", strategy, use_fast=not strategy.args.disable_fast_tokenizer
+        args.pretrain, actor.model, "left", use_fast=not strategy.args.disable_fast_tokenizer
     )
     assert processor is not None, "processor is None"
 
@@ -431,6 +430,7 @@ if __name__ == "__main__":
     parser.add_argument("--save_trajectories", action="store_true", default=False, help="Save experience trajectories to JSON for debugging")
     parser.add_argument("--num_trajectories_to_save", type=int, default=10, help="Number of trajectories to save per checkpoint")
     parser.add_argument("--mark_high_entropy_tokens", action="store_true", default=False, help="Create token arrays with high-entropy information for HTML rendering (requires --save_trajectories). When enabled, generates structured token data for visualization.")
+    parser.add_argument("--trajectory_analysis", action="store_true", default=False, help="Enable trajectory analysis metrics (repeat_score, reflection_pattern, policy_entropy) and log to wandb")
     parser.add_argument("--print_replay_buffer_stats", action="store_true", default=False, help="Print detailed replay buffer statistics during training")
     parser.add_argument("--logging_steps", type=int, default=1)
     parser.add_argument("--eval_steps", type=int, default=-1)

@@ -143,6 +143,7 @@ class TestActorLanguageWithRealModel:
     """Optional integration tests for ActorLanguage with a real model (if available)."""
     @pytest.fixture
     def model_path(self):
+        """Fixture providing the test model path."""
         return "test_text_model"
 
     @pytest.mark.skipif(not os.path.exists("test_text_model"), reason="Real model path not available")

@@ -54,7 +54,19 @@ class ImageGenCoTRewardHandler(BaseDataHandler):
         media_content: Dict[str, Any],
         config: Dict[str, Any] | None,
     ) -> Tuple[List[Dict], List[Dict], Dict]:
+        """
+        Parse a single ImageGen CoT reward item into message pairs.
 
+        :param item: Raw data item from ImageGen CoT reward dataset.
+        :type item: Dict[str, Any]
+        :param media_content: Loaded media content with 'image0' and 'image1' keys.
+        :type media_content: Dict[str, Any]
+        :param config: Configuration dict (optional).
+        :type config: Optional[Dict[str, Any]]
+        :return: Tuple of (messages0, messages1, other_info).
+        :rtype: Tuple[List[Dict], List[Dict], Dict]
+        :raises ValueError: If required content is missing.
+        """
         image0 = media_content['image0']
         image1 = media_content['image1']
 

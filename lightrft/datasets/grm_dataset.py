@@ -19,10 +19,8 @@ class GRMDataset(Dataset):
     and covers both understanding tasks (image-to-text, video-to-text) and
     generation tasks (text-to-image, text-to-video).
 
-    :param dataset_paths: List of dataset file paths or directories. The
-        handler is determined by the source keyword (e.g. "hpdv3",
-        "imagegen-cot-reward", "omnirewardbench"). The format is "source:path".
-        e.g. "hpdv3:/path/to/train.json"
+    :param dataset_paths: List of dataset file paths or directories, in the format ``source:path`` where
+        the handler is determined by the source keyword such as hpdv3, imagegen-cot-reward, or omnirewardbench.
     :type dataset_paths: List[str]
     :param processor: Multimodal processor used for tokenization and visual
         processing.
@@ -43,11 +41,11 @@ class GRMDataset(Dataset):
         labels) or evaluation (no labels returned).
     :type is_training: bool
 
-    :example:
+    **Example:**
 
-        >>> dataset = GRMDataset([
-        ...     'imagegen-cot-reward-5k:/data/imagegen-cot-reward-5k/train.json'
-        ... ], processor=proc, tokenizer=tok, max_length=4096, is_training=True)
+    >>> dataset = GRMDataset([
+    ...     'imagegen-cot-reward-5k:/data/imagegen-cot-reward-5k/train.json'
+    ... ], processor=proc, tokenizer=tok, max_length=4096, is_training=True)
 
     """
     def __init__(
@@ -213,6 +211,14 @@ class GRMDataset(Dataset):
         return input_token
 
     def collate_fn(self, batch):
+        """
+        Collate function for generative reward model samples.
+
+        :param batch: List of data samples.
+        :type batch: list
+        :return: Dictionary with batched tensors for GRM training.
+        :rtype: dict
+        """
         batch = [b for b in batch if b is not None]
         if not batch:
             return None
