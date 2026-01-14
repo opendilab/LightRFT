@@ -9,10 +9,7 @@ import torch.distributed as dist
 
 
 def get_tokenizer(
-    pretrain: str,
-    model: PreTrainedModel,
-    padding_side: str = "left",
-    use_fast: bool = True
+    pretrain: str, model: PreTrainedModel, padding_side: str = "left", use_fast: bool = True
 ) -> PreTrainedTokenizer:
     """
     Load and configure a tokenizer for language models.
@@ -299,7 +296,10 @@ def get_current_device(num_device_per_node: int = 8) -> torch.device:
     return torch.device(f"cuda:{torch.distributed.get_rank() % num_device_per_node}")
 
 
-def get_torch_profiler(output_file: str, warmup: int = 1, active: int = 1, repeat: int = 1) -> Union[torch.profiler.profile, "DummyProfile"]:
+def get_torch_profiler(output_file: str,
+                       warmup: int = 1,
+                       active: int = 1,
+                       repeat: int = 1) -> Union[torch.profiler.profile, "DummyProfile"]:
     """
     Creates and returns a PyTorch profiler configured for distributed training.
 
