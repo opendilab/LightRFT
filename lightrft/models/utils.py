@@ -76,19 +76,19 @@ def find_all_linear_modules(model: "nn.Module", freeze_vision_tower: bool) -> Li
 def entropy_from_logits(logits: torch.Tensor) -> torch.Tensor:
     """
     Compute entropy from logits using Categorical distribution for efficient calculation.
-    
+
     This function calculates the entropy of the probability distribution over the vocabulary
     for each token position. Higher entropy indicates more uncertainty in token prediction,
     which corresponds to "forking tokens" that determine reasoning directions.
-    
+
     :param logits: Logits tensor of shape (batch_size, sequence_length, vocab_size)
                   or (batch_size, vocab_size)
     :type logits: torch.Tensor
-    
+
     :return: Entropy values for each token position, of shape (batch_size, sequence_length)
             or (batch_size,)
     :rtype: torch.Tensor
-    
+
     Example::
         >>> logits = torch.randn(2, 10, 50000)  # batch_size=2, seq_len=10, vocab_size=50000
         >>> entropy = entropy_from_logits(logits)
@@ -107,26 +107,26 @@ def create_high_entropy_mask(
 ) -> torch.Tensor:
     """
     Create a binary mask for high-entropy tokens based on the specified ratio.
-    
+
     This function identifies the top-k highest entropy tokens (forking tokens) within each sequence
     and creates a binary mask. Only tokens with high entropy will be used for gradient updates,
-    following the approach in "Beyond the 80/20 Rule: High-Entropy Minority Tokens Drive Effective 
+    following the approach in "Beyond the 80/20 Rule: High-Entropy Minority Tokens Drive Effective
     Reinforcement Learning for LLM Reasoning" (https://arxiv.org/abs/2506.01939).
-    
+
     The paper shows that utilizing only 20% of high-entropy tokens can maintain performance comparable
     to full-gradient updates, with common value of 0.2 (top 20% highest entropy tokens).
-    
+
     :param entropy: Entropy values for each token, shape (batch_size, sequence_length)
     :type entropy: torch.Tensor
     :param action_mask: Binary mask indicating valid tokens (1 for valid, 0 for padding)
     :type action_mask: Optional[torch.Tensor]
-    :param high_entropy_ratio: Ratio of high-entropy tokens to keep (e.g., 0.2 means top 20%). 
+    :param high_entropy_ratio: Ratio of high-entropy tokens to keep (e.g., 0.2 means top 20%).
                                Common value: 0.2. Based on https://arxiv.org/abs/2506.01939, defaults to 0.2
     :type high_entropy_ratio: float
-    
+
     :return: Binary mask for high-entropy tokens, shape (batch_size, sequence_length)
     :rtype: torch.Tensor
-    
+
     Example::
         >>> entropy = torch.tensor([[1.0, 5.0, 2.0, 6.0, 3.0], [2.0, 4.0, 1.0, 5.0, 0.0]])
         >>> action_mask = torch.tensor([[1, 1, 1, 1, 1], [1, 1, 1, 1, 0]])

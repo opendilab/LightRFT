@@ -176,9 +176,11 @@ class TrajectorySaver:
     :type save_images_separately: bool
     :param max_image_size: Maximum dimension for saved images (to reduce file size). Default to 512
     :type max_image_size: int
-    :param mark_high_entropy_tokens: If True, create token arrays with high-entropy information for HTML rendering. Default to False
+    :param mark_high_entropy_tokens: If True, create token arrays with high-entropy information for HTML rendering.
+        Default to False
     :type mark_high_entropy_tokens: bool
-    :param high_entropy_token_ratio: Ratio of high-entropy tokens to mark (e.g., 0.2 means top 20%). Only used if mark_high_entropy_tokens is True. Default to 0.2
+    :param high_entropy_token_ratio: Ratio of high-entropy tokens to mark (e.g., 0.2 means top 20%).
+        Only used if mark_high_entropy_tokens is True. Default to 0.2
     :type high_entropy_token_ratio: float
     """
     def __init__(
@@ -235,12 +237,6 @@ class TrajectorySaver:
 
         if not experiences:
             return None, None
-
-        # Check if any experience has action_entropy (silently)
-        if self.mark_high_entropy_tokens:
-            has_entropy_count = sum(
-                1 for exp in experiences if hasattr(exp, 'action_entropy') and exp.action_entropy is not None
-            )
 
         all_trajectories = []
         # Iterate through experience objects (micro-batches) until we have enough samples.
