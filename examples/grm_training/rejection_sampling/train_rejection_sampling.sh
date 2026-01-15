@@ -15,7 +15,7 @@ unset HTTPS_PROXY
 MODEL_PATH="/mnt/shared-storage-user/puyuan/wanzunian/models/lightrlhf-grm-lr1e5-imagegen_cot_reward-qwen2.5vl3B-gs3000"
 
 # Training data path (already converted rejection sampling data)
-TRAINING_DATA_PATH="/mnt/shared-storage-user/sunjiaxuan/dec/LightRFT/results/rejection_sampling_20260102_022303/rejection_sampling_train.json"
+TRAINING_DATA_PATH="/mnt/shared-storage-user/sunjiaxuan/dec/LightRFT/results/rejection_sampling_20251226_185045/filtered_samples.json"
 
 # Output directory for checkpoints
 OUTPUT_DIR="/mnt/shared-storage-user/sunjiaxuan/dec/LightRFT/results/rejection_sampling_20260102_022303/checkpoint"

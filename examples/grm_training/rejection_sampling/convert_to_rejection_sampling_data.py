@@ -89,7 +89,7 @@ Text Caption: {prompt}"""
         
         # For training data, we always use: Image 1 = preferred, Image 2 = rejected
         # This ensures consistency
-        answer = "Image 1 is better"
+        answer = "Image 1 is better" if preference == "A" else "Image 2 is better"
         image1_path = path1  # preferred
         image2_path = path2  # rejected
         

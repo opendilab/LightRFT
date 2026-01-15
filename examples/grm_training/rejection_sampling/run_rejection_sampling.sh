@@ -20,7 +20,7 @@ MODEL_PATH="/mnt/shared-storage-user/puyuan/wanzunian/models/lightrlhf-grm-lr1e5
 
 # Dataset configuration
 # Please set your dataset path here (format: "source:path")
-DATA_PATH="hpdv3:/mnt/shared-storage-user/puyuan/wanzunian/datasets/HPDv3/train_subset_5percent.json"
+DATA_PATH="hpdv3:/mnt/shared-storage-user/puyuan/wanzunian/datasets/HPDv3/train_sub5k.json"
 # Please set your dataset root directory here
 DATA_ROOT="/mnt/shared-storage-user/puyuan/wanzunian/datasets/HPDv3"
 
