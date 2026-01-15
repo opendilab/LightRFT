@@ -331,6 +331,7 @@
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">lightrft.trainer.replay_buffer</span><span class="w"> </span><span class="kn">import</span> <span class="n">make_experience_batch</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">lightrft.trainer.replay_buffer_vl</span><span class="w"> </span><span class="kn">import</span> <span class="n">make_experience_batch</span> <span class="k">as</span> <span class="n">make_experience_batch_vl</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">lightrft.models.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">create_high_entropy_mask</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">lightrft.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">init_logger</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">init_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
@@ -434,6 +435,9 @@
             <span class="n">processor</span><span class="o">=</span><span class="n">processor</span><span class="p">,</span>
         <span class="p">)</span>
 
+        <span class="c1"># Extract high_entropy_token_ratio for entropy-based token filtering</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">high_entropy_token_ratio</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;high_entropy_token_ratio&quot;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+
         <span class="c1"># Initialize loss function based on mode</span>
         <span class="n">policy_loss_kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;loss_agg_mode&quot;</span><span class="p">:</span> <span class="n">loss_agg_mode</span><span class="p">,</span> <span class="s2">&quot;use_gspo&quot;</span><span class="p">:</span> <span class="n">use_gspo</span><span class="p">}</span>
         <span class="k">if</span> <span class="n">use_gspo</span><span class="p">:</span>
@@ -512,8 +516,16 @@
                     <span class="n">experience</span> <span class="o">=</span> <span class="n">make_experience_batch</span><span class="p">(</span><span class="n">items</span><span class="p">,</span> <span class="n">packing_samples</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">packing_samples</span><span class="p">)</span>
                 <span class="n">experience</span><span class="o">.</span><span class="n">to_device</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
 
+                <span class="c1"># Create entropy_mask if high_entropy_token_ratio &gt; 0 and action_entropy is available</span>
+                <span class="n">entropy_mask</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">experience</span><span class="p">,</span> <span class="s1">&#39;action_entropy&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">experience</span><span class="o">.</span><span class="n">action_entropy</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">high_entropy_token_ratio</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">:</span>
+                        <span class="n">entropy_mask</span> <span class="o">=</span> <span class="n">create_high_entropy_mask</span><span class="p">(</span>
+                            <span class="n">experience</span><span class="o">.</span><span class="n">action_entropy</span><span class="p">,</span> <span class="n">experience</span><span class="o">.</span><span class="n">action_mask</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">high_entropy_token_ratio</span>
+                        <span class="p">)</span>
+
                 <span class="c1"># Call training_step which will handle both GSPO and standard modes</span>
-                <span class="n">status</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">training_step</span><span class="p">(</span><span class="n">experience</span><span class="p">,</span> <span class="n">global_steps</span><span class="p">)</span>
+                <span class="n">status</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">training_step</span><span class="p">(</span><span class="n">experience</span><span class="p">,</span> <span class="n">global_steps</span><span class="p">,</span> <span class="n">entropy_mask</span><span class="o">=</span><span class="n">entropy_mask</span><span class="p">)</span>
 
                 <span class="c1"># for DP</span>
                 <span class="c1"># weighted mean for kl</span>

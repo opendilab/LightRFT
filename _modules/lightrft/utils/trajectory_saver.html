@@ -478,6 +478,12 @@
 <span class="sd">    :type save_images_separately: bool</span>
 <span class="sd">    :param max_image_size: Maximum dimension for saved images (to reduce file size). Default to 512</span>
 <span class="sd">    :type max_image_size: int</span>
+<span class="sd">    :param mark_high_entropy_tokens: If True, create token arrays with high-entropy information for HTML rendering.</span>
+<span class="sd">        Default to False</span>
+<span class="sd">    :type mark_high_entropy_tokens: bool</span>
+<span class="sd">    :param high_entropy_token_ratio: Ratio of high-entropy tokens to mark (e.g., 0.2 means top 20%).</span>
+<span class="sd">        Only used if mark_high_entropy_tokens is True. Default to 0.2</span>
+<span class="sd">    :type high_entropy_token_ratio: float</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -485,11 +491,15 @@
         <span class="n">tokenizer</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
         <span class="n">save_images_separately</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">max_image_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">512</span><span class="p">,</span>
+        <span class="n">mark_high_entropy_tokens</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">high_entropy_token_ratio</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.2</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">save_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">save_dir</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tokenizer</span> <span class="o">=</span> <span class="n">tokenizer</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">save_images_separately</span> <span class="o">=</span> <span class="n">save_images_separately</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">max_image_size</span> <span class="o">=</span> <span class="n">max_image_size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mark_high_entropy_tokens</span> <span class="o">=</span> <span class="n">mark_high_entropy_tokens</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">high_entropy_token_ratio</span> <span class="o">=</span> <span class="n">high_entropy_token_ratio</span>
 
         <span class="c1"># Create directory structure only on rank 0</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">torch</span><span class="o">.</span><span class="n">distributed</span><span class="o">.</span><span class="n">is_initialized</span><span class="p">()</span> <span class="ow">or</span> <span class="n">torch</span><span class="o">.</span><span class="n">distributed</span><span class="o">.</span><span class="n">get_rank</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
@@ -577,9 +587,6 @@
         <span class="c1"># Validate sequences shape before processing</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sequences</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="c1"># Scalar tensor - skip this experience</span>
-            <span class="nb">print</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;[TrajectorySaver] Warning: sequences is a scalar tensor at step </span><span class="si">{</span><span class="n">step</span><span class="si">}</span><span class="s2">, exp_idx </span><span class="si">{</span><span class="n">exp_idx</span><span class="si">}</span><span class="s2">. Skipping.&quot;</span>
-            <span class="p">)</span>
             <span class="k">return</span> <span class="p">[]</span>
         <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">sequences</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
             <span class="c1"># 1D tensor - reshape to (1, seq_len)</span>
@@ -650,19 +657,43 @@
                         <span class="n">adjusted_indices</span> <span class="o">=</span> <span class="n">gen_indices</span> <span class="o">+</span> <span class="n">offset</span>
                         <span class="n">gen_tokens</span> <span class="o">=</span> <span class="n">sequences</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">adjusted_indices</span><span class="p">]</span>
 
+                        <span class="c1"># Check if we should mark high-entropy tokens</span>
+                        <span class="n">high_entropy_info</span> <span class="o">=</span> <span class="kc">None</span>
+                        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mark_high_entropy_tokens</span><span class="p">:</span>
+                            <span class="c1"># Extract single sample&#39;s action_mask (1D)</span>
+                            <span class="n">sample_action_mask</span> <span class="o">=</span> <span class="n">action_mask</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">action_mask</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span> <span class="k">else</span> <span class="n">action_mask</span>
+                            <span class="n">high_entropy_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_high_entropy_mask</span><span class="p">(</span><span class="n">exp</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">sample_action_mask</span><span class="p">)</span>
+
                         <span class="c1"># generated_text includes the last prompt token (for RL state-action pairing)</span>
                         <span class="n">generated_text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tokenizer</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="n">gen_tokens</span><span class="p">,</span> <span class="n">skip_special_tokens</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                        <span class="n">generated_tokens</span> <span class="o">=</span> <span class="kc">None</span>
+                        <span class="k">if</span> <span class="n">high_entropy_info</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                            <span class="n">high_entropy_mask</span><span class="p">,</span> <span class="n">sample_entropy</span> <span class="o">=</span> <span class="n">high_entropy_info</span>
+                            <span class="n">generated_tokens</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_token_array</span><span class="p">(</span>
+                                <span class="n">gen_tokens</span><span class="p">,</span> <span class="n">gen_indices</span><span class="p">,</span> <span class="n">high_entropy_mask</span><span class="p">,</span> <span class="n">sample_entropy</span>
+                            <span class="p">)</span>
 
                         <span class="c1"># pure_generated_text excludes the last prompt token (only model&#39;s output)</span>
+                        <span class="n">pure_generated_tokens</span> <span class="o">=</span> <span class="kc">None</span>
                         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">adjusted_indices</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
                             <span class="n">pure_gen_tokens</span> <span class="o">=</span> <span class="n">sequences</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">adjusted_indices</span><span class="p">[</span><span class="mi">1</span><span class="p">:]]</span>
+                            <span class="n">pure_gen_indices</span> <span class="o">=</span> <span class="n">gen_indices</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
                             <span class="n">pure_generated_text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tokenizer</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="n">pure_gen_tokens</span><span class="p">,</span> <span class="n">skip_special_tokens</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                            <span class="k">if</span> <span class="n">high_entropy_info</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                                <span class="n">high_entropy_mask</span><span class="p">,</span> <span class="n">sample_entropy</span> <span class="o">=</span> <span class="n">high_entropy_info</span>
+                                <span class="c1"># pure_gen_indices already correspond to the correct positions in high_entropy_mask</span>
+                                <span class="c1"># since they are just gen_indices[1:], which still map to action_mask positions</span>
+                                <span class="n">pure_generated_tokens</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_token_array</span><span class="p">(</span>
+                                    <span class="n">pure_gen_tokens</span><span class="p">,</span> <span class="n">pure_gen_indices</span><span class="p">,</span> <span class="n">high_entropy_mask</span><span class="p">,</span> <span class="n">sample_entropy</span>
+                                <span class="p">)</span>
                         <span class="k">else</span><span class="p">:</span>
                             <span class="n">pure_gen_tokens</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">sequences</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
                             <span class="n">pure_generated_text</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">generated_text</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
                     <span class="n">pure_generated_text</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+                    <span class="n">generated_tokens</span> <span class="o">=</span> <span class="kc">None</span>
+                    <span class="n">pure_generated_tokens</span> <span class="o">=</span> <span class="kc">None</span>
                     <span class="n">pure_gen_tokens</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">sequences</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
             <span class="k">except</span> <span class="p">(</span><span class="ne">IndexError</span><span class="p">,</span> <span class="ne">RuntimeError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                 <span class="nb">print</span><span class="p">(</span>
@@ -670,6 +701,8 @@
                 <span class="p">)</span>
                 <span class="n">generated_text</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
                 <span class="n">pure_generated_text</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+                <span class="n">generated_tokens</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="n">pure_generated_tokens</span> <span class="o">=</span> <span class="kc">None</span>
                 <span class="n">pure_gen_tokens</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">sequences</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
 
             <span class="c1"># Calculate analysis metrics for this sample</span>
@@ -727,6 +760,12 @@
                 <span class="s2">&quot;policy_entropy&quot;</span><span class="p">:</span> <span class="n">policy_entropy</span><span class="p">,</span>
                 <span class="s2">&quot;response_token_count&quot;</span><span class="p">:</span> <span class="n">response_token_count</span><span class="p">,</span>
             <span class="p">}</span>
+
+            <span class="c1"># Add token arrays if available</span>
+            <span class="k">if</span> <span class="n">generated_tokens</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">traj_dict</span><span class="p">[</span><span class="s2">&quot;generated_tokens&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">generated_tokens</span>
+            <span class="k">if</span> <span class="n">pure_generated_tokens</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">traj_dict</span><span class="p">[</span><span class="s2">&quot;pure_generated_tokens&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pure_generated_tokens</span>
 
             <span class="c1"># Add optional fields for this sample</span>
             <span class="k">if</span> <span class="n">advantages</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -969,7 +1008,179 @@
                 <span class="n">base64_images</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">img_base64</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">base64_images</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">base64_images</span></div>
+        <span class="k">return</span> <span class="n">base64_images</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_get_high_entropy_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exp</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">sample_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">action_mask</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">tuple</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get high-entropy token mask and entropy values for a specific sample.</span>
+
+<span class="sd">        :param exp: Experience object</span>
+<span class="sd">        :type exp: Any</span>
+<span class="sd">        :param sample_idx: Index of the sample in the batch</span>
+<span class="sd">        :type sample_idx: int</span>
+<span class="sd">        :param action_mask: Action mask tensor for the sample</span>
+<span class="sd">        :type action_mask: torch.Tensor</span>
+<span class="sd">        :return: Tuple of (high_entropy_mask, sample_entropy) for the sample, or None if not available</span>
+<span class="sd">        :rtype: Optional[tuple]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Check if action_entropy exists (without using getattr)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">exp</span><span class="p">,</span> <span class="s1">&#39;action_entropy&#39;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">action_entropy</span> <span class="o">=</span> <span class="n">exp</span><span class="o">.</span><span class="n">action_entropy</span>
+        <span class="k">if</span> <span class="n">action_entropy</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="c1"># Move to CPU and extract sample</span>
+        <span class="n">action_entropy</span> <span class="o">=</span> <span class="n">action_entropy</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>
+
+        <span class="c1"># Get action_mask length for this sample</span>
+        <span class="n">action_mask_len</span> <span class="o">=</span> <span class="n">action_mask</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">action_mask</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mi">0</span>
+
+        <span class="c1"># Handle different tensor shapes</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">action_entropy</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">action_entropy</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="c1"># 1D tensor - could be:</span>
+            <span class="c1"># 1. Single sample&#39;s entropy (matches action_mask length)</span>
+            <span class="c1"># 2. Packed batch&#39;s entropy (concatenated from multiple samples)</span>
+            <span class="k">if</span> <span class="n">action_entropy</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">action_mask_len</span><span class="p">:</span>
+                <span class="c1"># Case 1: Direct match - use as is</span>
+                <span class="n">sample_entropy</span> <span class="o">=</span> <span class="n">action_entropy</span>
+            <span class="k">elif</span> <span class="n">action_entropy</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">action_mask_len</span><span class="p">:</span>
+                <span class="c1"># Case 2: Packed batch - need to extract the correct slice</span>
+                <span class="c1"># Try to find the correct slice by checking if action_mask lengths can be inferred</span>
+                <span class="c1"># from the full action_mask in the experience</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">exp</span><span class="p">,</span> <span class="s1">&#39;action_mask&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">exp</span><span class="o">.</span><span class="n">action_mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">full_action_mask</span> <span class="o">=</span> <span class="n">exp</span><span class="o">.</span><span class="n">action_mask</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">full_action_mask</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                        <span class="c1"># 2D action_mask: (batch_size, max_actions)</span>
+                        <span class="c1"># Calculate cumulative lengths to find the slice</span>
+                        <span class="n">batch_size</span> <span class="o">=</span> <span class="n">full_action_mask</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                        <span class="n">cumulative_lengths</span> <span class="o">=</span> <span class="p">[]</span>
+                        <span class="n">current_length</span> <span class="o">=</span> <span class="mi">0</span>
+                        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">batch_size</span><span class="p">):</span>
+                            <span class="c1"># Count non-padding tokens (assuming padding is False/0)</span>
+                            <span class="n">mask_row</span> <span class="o">=</span> <span class="n">full_action_mask</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                            <span class="n">num_actions</span> <span class="o">=</span> <span class="n">mask_row</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span> <span class="k">if</span> <span class="n">mask_row</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="n">torch</span><span class="o">.</span><span class="n">bool</span> <span class="k">else</span> <span class="p">(</span><span class="n">mask_row</span>
+                                                                                                      <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+                            <span class="n">cumulative_lengths</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">current_length</span><span class="p">,</span> <span class="n">current_length</span> <span class="o">+</span> <span class="n">num_actions</span><span class="p">))</span>
+                            <span class="n">current_length</span> <span class="o">+=</span> <span class="n">num_actions</span>
+
+                        <span class="c1"># Check if the total matches action_entropy length</span>
+                        <span class="k">if</span> <span class="n">current_length</span> <span class="o">==</span> <span class="n">action_entropy</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">and</span> <span class="n">sample_idx</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">cumulative_lengths</span><span class="p">):</span>
+                            <span class="n">start_idx</span><span class="p">,</span> <span class="n">end_idx</span> <span class="o">=</span> <span class="n">cumulative_lengths</span><span class="p">[</span><span class="n">sample_idx</span><span class="p">]</span>
+                            <span class="n">sample_entropy</span> <span class="o">=</span> <span class="n">action_entropy</span><span class="p">[</span><span class="n">start_idx</span><span class="p">:</span><span class="n">end_idx</span><span class="p">]</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="k">return</span> <span class="kc">None</span>
+                    <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">full_action_mask</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                        <span class="c1"># 1D action_mask: single sample, but action_entropy is longer</span>
+                        <span class="c1"># Use the passed action_mask length (which is for this specific sample)</span>
+                        <span class="k">if</span> <span class="n">action_mask_len</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                            <span class="n">sample_entropy</span> <span class="o">=</span> <span class="n">action_entropy</span><span class="p">[:</span><span class="n">action_mask_len</span><span class="p">]</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="k">return</span> <span class="kc">None</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">return</span> <span class="kc">None</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c1"># No action_mask to infer from, try to use the first action_mask_len elements</span>
+                    <span class="k">if</span> <span class="n">action_mask_len</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">action_entropy</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">action_mask_len</span><span class="p">:</span>
+                        <span class="n">sample_entropy</span> <span class="o">=</span> <span class="n">action_entropy</span><span class="p">[:</span><span class="n">action_mask_len</span><span class="p">]</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">return</span> <span class="kc">None</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># action_entropy is shorter than action_mask - this shouldn&#39;t happen</span>
+                <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">action_entropy</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="c1"># 2D tensor (batch, num_actions)</span>
+            <span class="k">if</span> <span class="n">sample_idx</span> <span class="o">&gt;=</span> <span class="n">action_entropy</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+                <span class="k">return</span> <span class="kc">None</span>
+            <span class="n">sample_entropy</span> <span class="o">=</span> <span class="n">action_entropy</span><span class="p">[</span><span class="n">sample_idx</span><span class="p">]</span>
+            <span class="c1"># If the extracted entropy is longer than action_mask, truncate it</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sample_entropy</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">sample_entropy</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">action_mask_len</span><span class="p">:</span>
+                <span class="n">sample_entropy</span> <span class="o">=</span> <span class="n">sample_entropy</span><span class="p">[:</span><span class="n">action_mask_len</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="c1"># Verify that sample_entropy length matches action_mask length</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sample_entropy</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">sample_entropy</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">action_mask_len</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="c1"># Create high-entropy mask using the utility function</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">lightrft.models.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">create_high_entropy_mask</span>
+
+        <span class="c1"># Reshape to (1, num_actions) for create_high_entropy_mask</span>
+        <span class="c1"># action_mask is already for a single sample (1D), so we need to add batch dimension</span>
+        <span class="n">sample_entropy_2d</span> <span class="o">=</span> <span class="n">sample_entropy</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="c1"># Ensure action_mask is 1D and add batch dimension</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">action_mask</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">sample_action_mask</span> <span class="o">=</span> <span class="n">action_mask</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">action_mask</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="c1"># If it&#39;s 2D, take the first row (should be the sample we&#39;re processing)</span>
+            <span class="n">sample_action_mask</span> <span class="o">=</span> <span class="n">action_mask</span><span class="p">[:</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">high_entropy_mask</span> <span class="o">=</span> <span class="n">create_high_entropy_mask</span><span class="p">(</span>
+            <span class="n">sample_entropy_2d</span><span class="p">,</span> <span class="n">sample_action_mask</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">high_entropy_token_ratio</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Return the mask and entropy values for this sample (remove batch dimension)</span>
+        <span class="n">result_mask</span> <span class="o">=</span> <span class="n">high_entropy_mask</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">result_mask</span><span class="p">,</span> <span class="n">sample_entropy</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_create_token_array</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">tokens</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">action_indices</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">high_entropy_mask</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">sample_entropy</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create a token-level structured array for visualization.</span>
+
+<span class="sd">        Each token is represented as an object with text, high_entropy flag, and optional entropy_score.</span>
+
+<span class="sd">        :param tokens: Token IDs tensor</span>
+<span class="sd">        :type tokens: torch.Tensor</span>
+<span class="sd">        :param action_indices: Indices in action_mask space corresponding to tokens</span>
+<span class="sd">        :type action_indices: torch.Tensor</span>
+<span class="sd">        :param high_entropy_mask: Binary mask indicating high-entropy tokens (1 for high-entropy)</span>
+<span class="sd">        :type high_entropy_mask: torch.Tensor</span>
+<span class="sd">        :param sample_entropy: Entropy values for each token</span>
+<span class="sd">        :type sample_entropy: torch.Tensor</span>
+<span class="sd">        :return: List of token objects</span>
+<span class="sd">        :rtype: List[Dict[str, Any]]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">high_entropy_mask</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">tokens</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[]</span>
+
+        <span class="c1"># Convert to lists for easier processing</span>
+        <span class="n">tokens_list</span> <span class="o">=</span> <span class="n">tokens</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="n">action_indices_list</span> <span class="o">=</span> <span class="n">action_indices</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="n">entropy_list</span> <span class="o">=</span> <span class="n">sample_entropy</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sample_entropy</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="p">[]</span>
+
+        <span class="n">token_array</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">token_id</span><span class="p">,</span> <span class="n">action_idx</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">tokens_list</span><span class="p">,</span> <span class="n">action_indices_list</span><span class="p">):</span>
+            <span class="c1"># Decode this token</span>
+            <span class="n">token_text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tokenizer</span><span class="o">.</span><span class="n">decode</span><span class="p">([</span><span class="n">token_id</span><span class="p">],</span> <span class="n">skip_special_tokens</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+            <span class="c1"># Check if this token is high-entropy</span>
+            <span class="n">token_obj</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="n">token_text</span><span class="p">,</span> <span class="s2">&quot;high_entropy&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span>
+
+            <span class="k">if</span> <span class="n">action_idx</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">high_entropy_mask</span><span class="p">)</span> <span class="ow">and</span> <span class="n">action_idx</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">is_high_entropy</span> <span class="o">=</span> <span class="n">high_entropy_mask</span><span class="p">[</span><span class="n">action_idx</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mf">0.5</span>
+                <span class="n">token_obj</span><span class="p">[</span><span class="s2">&quot;high_entropy&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">is_high_entropy</span>
+
+                <span class="c1"># Add entropy_score if it&#39;s a high-entropy token</span>
+                <span class="k">if</span> <span class="n">is_high_entropy</span> <span class="ow">and</span> <span class="n">action_idx</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">entropy_list</span><span class="p">):</span>
+                    <span class="n">token_obj</span><span class="p">[</span><span class="s2">&quot;entropy_score&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">entropy_list</span><span class="p">[</span><span class="n">action_idx</span><span class="p">])</span>
+
+            <span class="n">token_array</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">token_obj</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">token_array</span></div>
 
 
 <div class="viewcode-block" id="create_trajectory_saver"><a class="viewcode-back" href="../../../api_doc/utils/trajectory_saver.html#lightrft.utils.trajectory_saver.create_trajectory_saver">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">create_trajectory_saver</span><span class="p">(</span><span class="n">args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">tokenizer</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">TrajectorySaver</span><span class="p">]:</span>
@@ -983,16 +1194,28 @@
 <span class="sd">    :return: TrajectorySaver instance or None if not enabled</span>
 <span class="sd">    :rtype: Optional[TrajectorySaver]</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="s1">&#39;save_trajectories&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+    <span class="c1"># Check if save_trajectories is enabled (without using getattr)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="s1">&#39;save_trajectories&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">args</span><span class="o">.</span><span class="n">save_trajectories</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">None</span>
 
     <span class="n">save_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">save_path</span><span class="p">,</span> <span class="s2">&quot;trajectories&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Extract configuration options (without using getattr)</span>
+    <span class="n">mark_high_entropy</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">high_entropy_ratio</span> <span class="o">=</span> <span class="mf">0.2</span>
+
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="s1">&#39;mark_high_entropy_tokens&#39;</span><span class="p">):</span>
+        <span class="n">mark_high_entropy</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">mark_high_entropy_tokens</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="s1">&#39;high_entropy_token_ratio&#39;</span><span class="p">):</span>
+        <span class="n">high_entropy_ratio</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">high_entropy_token_ratio</span>
 
     <span class="k">return</span> <span class="n">TrajectorySaver</span><span class="p">(</span>
         <span class="n">save_dir</span><span class="o">=</span><span class="n">save_dir</span><span class="p">,</span>
         <span class="n">tokenizer</span><span class="o">=</span><span class="n">tokenizer</span><span class="p">,</span>
         <span class="n">save_images_separately</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
         <span class="n">max_image_size</span><span class="o">=</span><span class="mi">512</span><span class="p">,</span>
+        <span class="n">mark_high_entropy_tokens</span><span class="o">=</span><span class="n">mark_high_entropy</span><span class="p">,</span>
+        <span class="n">high_entropy_token_ratio</span><span class="o">=</span><span class="n">high_entropy_ratio</span><span class="p">,</span>
     <span class="p">)</span></div>
 </pre></div>
 

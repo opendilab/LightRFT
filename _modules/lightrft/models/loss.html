@@ -303,12 +303,32 @@
 <span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">Loss functions used across LightRFT models.</span>
 
-<span class="sd">This module implements:</span>
+<span class="sd">This module implements a comprehensive collection of loss functions for reinforcement learning</span>
+<span class="sd">from human feedback (RLHF) and related training paradigms:</span>
 
-<span class="sd">- GPTLMLoss:  Next-token prediction for generative reward model training.</span>
+<span class="sd">**Policy Optimization Losses:**</span>
+<span class="sd">- PolicyLoss: Multi-purpose policy loss supporting PPO, CPGD (via use_cpg_loss), DAPO-style</span>
+<span class="sd">  decoupled clipping, and high-entropy token filtering for efficient training.</span>
+<span class="sd">- ValueLoss: Value function loss for PPO with optional value clipping.</span>
+
+<span class="sd">**Reward Model Losses:**</span>
+<span class="sd">- GPTLMLoss: Next-token prediction loss for generative reward model training.</span>
 <span class="sd">- LogSigmoidLoss: Log-sigmoid pairwise loss for scalar reward model training.</span>
 <span class="sd">- LogExpLoss: Log-exp pairwise loss for scalar reward model training.</span>
 <span class="sd">- HPSLoss: Human Preference Score loss for scalar reward model training.</span>
+<span class="sd">- PairWiseLoss: Generic pairwise preference loss for reward models.</span>
+<span class="sd">- PRMLoss: Process Reward Model loss for token-level reward prediction.</span>
+
+<span class="sd">**Preference Learning Losses:**</span>
+<span class="sd">- DPOLoss: Direct Preference Optimization loss for aligning language models with preferences.</span>
+<span class="sd">- KTOLoss: Kahneman-Tversky Optimization loss for uneven sampling scenarios.</span>
+<span class="sd">- VanillaKTOLoss: Simplified KTO loss for even sampling scenarios.</span>
+
+<span class="sd">**Knowledge Distillation:**</span>
+<span class="sd">- KDLoss: Knowledge Distillation loss for transferring knowledge from teacher to student models.</span>
+
+<span class="sd">All loss functions are designed to work seamlessly with the LightRFT training framework,</span>
+<span class="sd">supporting distributed training, mixed precision, and various optimization strategies.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span>
@@ -366,13 +386,98 @@
 
 <div class="viewcode-block" id="PolicyLoss"><a class="viewcode-back" href="../../../api_doc/models/loss.html#lightrft.models.loss.PolicyLoss">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">PolicyLoss</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Policy Loss for PPO</span>
+<span class="sd">    Multi-purpose policy loss function supporting multiple reinforcement learning algorithms.</span>
+
+<span class="sd">    This class implements a unified policy loss that can be configured to support various</span>
+<span class="sd">    policy optimization algorithms including PPO, CPGD, and high-entropy token filtering</span>
+<span class="sd">    strategies. The loss function computes clipped policy gradients with optional masking</span>
+<span class="sd">    for efficient training.</span>
+
+<span class="sd">    **Supported Algorithms:**</span>
+
+<span class="sd">    - **PPO (Proximal Policy Optimization)**: Default mode using standard clipped surrogate</span>
+<span class="sd">      objective. The loss is computed as ``-min(ratio * advantages, clipped_ratio * advantages)``</span>
+<span class="sd">      where ``ratio = exp(log_probs - old_log_probs)`` and clipping is applied to prevent</span>
+<span class="sd">      large policy updates.</span>
+
+<span class="sd">    - **Clipped Policy Gradient Optimization with Policy Drift (CPGD)**: Enabled via ``use_cpg_loss=True``. Uses</span>
+<span class="sd">      asymmetric clipping bounds for positive and negative advantages, providing better</span>
+<span class="sd">      stability for constrained policy optimization. See: https://arxiv.org/abs/2505.12504</span>
+
+<span class="sd">    - **High-Entropy Token Filtering**: Enabled via ``high_entropy_token_ratio &gt; 0`` or by</span>
+<span class="sd">      providing an ``entropy_mask`` in the forward pass. This feature allows training only on</span>
+<span class="sd">      high-entropy tokens (forking tokens that determine reasoning directions), significantly</span>
+<span class="sd">      improving training efficiency. Based on: https://arxiv.org/abs/2506.01939</span>
+
+<span class="sd">    :param clip_eps: Clipping epsilon for PPO-style policy updates. Determines the maximum</span>
+<span class="sd">        allowed ratio between new and old policy probabilities. Typical values range from</span>
+<span class="sd">        0.1 to 0.3. Default: 0.2</span>
+<span class="sd">    :type clip_eps: float</span>
+<span class="sd">    :param use_dapo: Flag for DAPO (Decoupled Clip and Dynamic sAmpling Policy Optimization).</span>
+<span class="sd">        Currently reserved for future implementation. Default: False</span>
+<span class="sd">    :type use_dapo: bool</span>
+<span class="sd">    :param use_cpg_loss: If True, uses CPGD-style clipped policy gradient loss with</span>
+<span class="sd">        asymmetric clipping bounds. When False, uses standard PPO clipping. Default: False</span>
+<span class="sd">    :type use_cpg_loss: bool</span>
+<span class="sd">    :param high_entropy_token_ratio: Ratio of high-entropy tokens to keep for training</span>
+<span class="sd">        (e.g., 0.2 means top 20% highest entropy tokens). When &gt; 0, enables high-entropy</span>
+<span class="sd">        token filtering. Set to 0.0 to disable. Default: 0.0</span>
+<span class="sd">    :type high_entropy_token_ratio: float</span>
+
+<span class="sd">    **Loss Computation:**</span>
+
+<span class="sd">    The loss is computed as follows:</span>
+
+<span class="sd">    1. **Mask Application**: Combines ``action_mask`` (valid tokens) with ``entropy_mask``</span>
+<span class="sd">       (high-entropy tokens) to create a final mask for loss computation.</span>
+
+<span class="sd">    2. **PPO Mode** (default, ``use_cpg_loss=False``):</span>
+<span class="sd">       - Computes policy ratio: ``ratio = exp(log_probs - old_log_probs)``</span>
+<span class="sd">       - Clips ratio: ``clipped_ratio = clamp(ratio, 1 - clip_eps, 1 + clip_eps)``</span>
+<span class="sd">       - Loss: ``-min(ratio * advantages, clipped_ratio * advantages)``</span>
+
+<span class="sd">    3. **CPGD Mode** (``use_cpg_loss=True``):</span>
+<span class="sd">       - Uses asymmetric clipping: upper bound ``log(1 + clip_eps)`` for positive advantages,</span>
+<span class="sd">         lower bound ``log(1 - clip_eps)`` for negative advantages</span>
+<span class="sd">       - Loss: ``-clipped_log_probs * advantages``</span>
+
+<span class="sd">    4. **Masking**: The computed loss is masked using ``final_mask`` and averaged only over</span>
+<span class="sd">       valid, high-entropy tokens (if enabled).</span>
+
+<span class="sd">    **Example Usage:**</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        # Standard PPO loss</span>
+<span class="sd">        policy_loss = PolicyLoss(clip_eps=0.2)</span>
+<span class="sd">        loss = policy_loss(log_probs, old_log_probs, advantages, action_mask)</span>
+
+<span class="sd">        # CPGD loss</span>
+<span class="sd">        policy_loss = PolicyLoss(clip_eps=0.2, use_cpg_loss=True)</span>
+<span class="sd">        loss = policy_loss(log_probs, old_log_probs, advantages, action_mask)</span>
+
+<span class="sd">        # PPO with high-entropy token filtering (top 20%)</span>
+<span class="sd">        policy_loss = PolicyLoss(clip_eps=0.2, high_entropy_token_ratio=0.2)</span>
+<span class="sd">        loss = policy_loss(log_probs, old_log_probs, advantages, action_mask, entropy_mask)</span>
+
+<span class="sd">    **References:**</span>
+
+<span class="sd">    - PPO: https://arxiv.org/abs/1707.06347</span>
+<span class="sd">    - CPGD: https://arxiv.org/abs/2505.12504</span>
+<span class="sd">    - High-Entropy Token Filtering: https://arxiv.org/abs/2506.01939</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">clip_eps</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.2</span><span class="p">,</span> <span class="n">use_dapo</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">use_cpg_loss</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">clip_eps</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.2</span><span class="p">,</span>
+        <span class="n">use_dapo</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">use_cpg_loss</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">high_entropy_token_ratio</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">clip_eps</span> <span class="o">=</span> <span class="n">clip_eps</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">use_dapo</span> <span class="o">=</span> <span class="n">use_dapo</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">use_cpg_loss</span> <span class="o">=</span> <span class="n">use_cpg_loss</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">high_entropy_token_ratio</span> <span class="o">=</span> <span class="n">high_entropy_token_ratio</span>
 
 <div class="viewcode-block" id="PolicyLoss.forward"><a class="viewcode-back" href="../../../api_doc/models/loss.html#lightrft.models.loss.PolicyLoss.forward">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -380,28 +485,66 @@
         <span class="n">old_log_probs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
         <span class="n">advantages</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
         <span class="n">action_mask</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">entropy_mask</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Compute PPO policy loss with optional clipping or CPG variant.</span>
+<span class="sd">        Compute policy loss with optional masking and algorithm-specific clipping.</span>
 
-<span class="sd">        :param log_probs: Log probabilities of actions under current policy.</span>
+<span class="sd">        This method computes the policy loss based on the configured algorithm (PPO or CPGD)</span>
+<span class="sd">        and applies masking for valid tokens and optionally high-entropy tokens.</span>
+
+<span class="sd">        :param log_probs: Log probabilities of actions under the current policy.</span>
+<span class="sd">            Shape: ``(batch_size, num_actions)``</span>
 <span class="sd">        :type log_probs: torch.Tensor</span>
-<span class="sd">        :param old_log_probs: Log probabilities of actions under old policy.</span>
+<span class="sd">        :param old_log_probs: Log probabilities of actions under the old/reference policy.</span>
+<span class="sd">            Shape: ``(batch_size, num_actions)``</span>
 <span class="sd">        :type old_log_probs: torch.Tensor</span>
-<span class="sd">        :param advantages: Estimated advantages for each action.</span>
+<span class="sd">        :param advantages: Advantage estimates for each action. Positive values indicate</span>
+<span class="sd">            better-than-average actions. Shape: ``(batch_size, num_actions)``</span>
 <span class="sd">        :type advantages: torch.Tensor</span>
-<span class="sd">        :param action_mask: Optional mask for valid actions (1 = valid, 0 = ignore).</span>
+<span class="sd">        :param action_mask: Binary mask indicating valid action tokens (1 for valid, 0 for padding).</span>
+<span class="sd">            If None, all tokens are considered valid. Shape: ``(batch_size, num_actions)``</span>
 <span class="sd">        :type action_mask: Optional[torch.Tensor]</span>
-<span class="sd">        :return: Scalar policy loss.</span>
+<span class="sd">        :param entropy_mask: Binary mask for high-entropy tokens to keep for training.</span>
+<span class="sd">            If provided, overrides the instance-level ``entropy_mask``. Shape: ``(batch_size, num_actions)``</span>
+<span class="sd">        :type entropy_mask: Optional[torch.Tensor]</span>
+
+<span class="sd">        :returns: Scalar policy loss averaged over valid (and optionally high-entropy) tokens.</span>
 <span class="sd">        :rtype: torch.Tensor</span>
+
+<span class="sd">        **Masking Strategy:**</span>
+
+<span class="sd">        The final mask is computed as:</span>
+<span class="sd">        - If ``entropy_mask`` is provided: ``final_mask = entropy_mask``</span>
+<span class="sd">          (Note: ``entropy_mask`` is already created considering ``action_mask`` in</span>
+<span class="sd">          ``create_high_entropy_mask``, so padding positions are already excluded)</span>
+<span class="sd">        - Else: ``final_mask = action_mask``</span>
+
+<span class="sd">        Only tokens where ``final_mask == 1`` contribute to the loss computation.</span>
+
+<span class="sd">        **Algorithm Details:**</span>
+
+<span class="sd">        - **PPO**: Uses symmetric clipping ``[1 - clip_eps, 1 + clip_eps]`` on the policy ratio.</span>
+<span class="sd">        - **CPGD**: Uses asymmetric clipping with log-space bounds for better stability.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Apply entropy mask if provided (for high-entropy token filtering)</span>
+        <span class="c1"># action_mask shape: (batch_size, num_actions) - binary mask indicating valid tokens</span>
+        <span class="c1"># entropy_mask shape: (batch_size, num_actions) - binary mask for high-entropy tokens</span>
+        <span class="c1"># Note: entropy_mask is already created considering action_mask in create_high_entropy_mask,</span>
+        <span class="c1"># so it already excludes padding positions. No need to multiply with action_mask again.</span>
+        <span class="k">if</span> <span class="n">entropy_mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># entropy_mask already respects action_mask boundaries (padding positions are 0)</span>
+            <span class="n">final_mask</span> <span class="o">=</span> <span class="n">entropy_mask</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># No entropy masking, use action_mask only</span>
+            <span class="n">final_mask</span> <span class="o">=</span> <span class="n">action_mask</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_cpg_loss</span><span class="p">:</span>
             <span class="n">clipped_log_probs</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
                 <span class="n">advantages</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">log_probs</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">clip_eps</span><span class="p">))</span> <span class="o">+</span> <span class="n">old_log_probs</span><span class="p">),</span>
                 <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">log_probs</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">clip_eps</span><span class="p">))</span> <span class="o">+</span> <span class="n">old_log_probs</span><span class="p">)</span>
             <span class="p">)</span>
             <span class="n">loss</span> <span class="o">=</span> <span class="o">-</span><span class="n">clipped_log_probs</span> <span class="o">*</span> <span class="n">advantages</span>
-            <span class="n">loss</span> <span class="o">=</span> <span class="p">(</span><span class="n">loss</span> <span class="o">*</span> <span class="n">action_mask</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="n">action_mask</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+            <span class="n">loss</span> <span class="o">=</span> <span class="n">masked_mean</span><span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="n">final_mask</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
             <span class="k">return</span> <span class="n">loss</span>
 
         <span class="c1"># PPO loss</span>
@@ -409,7 +552,7 @@
         <span class="n">surr1</span> <span class="o">=</span> <span class="n">ratio</span> <span class="o">*</span> <span class="n">advantages</span>
         <span class="n">surr2</span> <span class="o">=</span> <span class="n">ratio</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">clip_eps</span><span class="p">,</span> <span class="mi">1</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">clip_eps</span><span class="p">)</span> <span class="o">*</span> <span class="n">advantages</span>
         <span class="n">loss</span> <span class="o">=</span> <span class="o">-</span><span class="n">torch</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">surr1</span><span class="p">,</span> <span class="n">surr2</span><span class="p">)</span>
-        <span class="n">loss</span> <span class="o">=</span> <span class="n">masked_mean</span><span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="n">action_mask</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+        <span class="n">loss</span> <span class="o">=</span> <span class="n">masked_mean</span><span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="n">final_mask</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
 
         <span class="k">return</span> <span class="n">loss</span></div></div>
 

@@ -324,7 +324,7 @@
 <span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">transformers.integrations.deepspeed</span><span class="w"> </span><span class="kn">import</span> <span class="n">HfDeepSpeedConfig</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">apply_lora_configuration</span><span class="p">,</span> <span class="n">log_probs_from_logits</span><span class="p">,</span> <span class="n">reset_position_ids</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">apply_lora_configuration</span><span class="p">,</span> <span class="n">log_probs_from_logits</span><span class="p">,</span> <span class="n">reset_position_ids</span><span class="p">,</span> <span class="n">entropy_from_logits</span>
 
 
 <div class="viewcode-block" id="ActorLanguage"><a class="viewcode-back" href="../../../api_doc/models/actor_language.html#lightrft.models.actor_language.ActorLanguage">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">ActorLanguage</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
@@ -386,6 +386,7 @@
         <span class="n">ds_config</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">device_map</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">packing_samples</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">high_entropy_token_ratio</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -395,6 +396,7 @@
 <span class="sd">        and configures the model for training or inference.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">high_entropy_token_ratio</span> <span class="o">=</span> <span class="n">high_entropy_token_ratio</span>
 
         <span class="c1"># ------------------------------------------------</span>
         <span class="c1"># 1. Directly pass in a pre-built model</span>
@@ -586,19 +588,45 @@
 
         <span class="n">log_probs</span> <span class="o">=</span> <span class="n">log_probs_from_logits</span><span class="p">(</span><span class="n">output</span><span class="p">[</span><span class="s2">&quot;logits&quot;</span><span class="p">][:,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:],</span> <span class="n">sequences</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">:])</span>
 
+        <span class="c1"># Calculate entropy for action tokens (for high-entropy token identification)</span>
+        <span class="c1"># Only compute entropy when high_entropy_token_ratio is not 0</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">high_entropy_token_ratio</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="n">action_logits</span> <span class="o">=</span> <span class="n">output</span><span class="p">[</span><span class="s2">&quot;logits&quot;</span><span class="p">][:,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span>  <span class="c1"># Shape: (batch, seq_len-1, vocab_size)</span>
+            <span class="n">action_entropy</span> <span class="o">=</span> <span class="n">entropy_from_logits</span><span class="p">(</span><span class="n">action_logits</span><span class="p">)</span>  <span class="c1"># Shape: (batch, seq_len-1)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">action_entropy</span> <span class="o">=</span> <span class="kc">None</span>
+
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">packing_samples</span><span class="p">:</span>
             <span class="n">action_log_probs</span> <span class="o">=</span> <span class="n">log_probs</span><span class="p">[:,</span> <span class="o">-</span><span class="n">num_actions</span><span class="p">:]</span>
+            <span class="k">if</span> <span class="n">action_entropy</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">action_entropy</span> <span class="o">=</span> <span class="n">action_entropy</span><span class="p">[:,</span> <span class="o">-</span><span class="n">num_actions</span><span class="p">:]</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">num_actions</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">num_actions</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">packed_seq_lens</span><span class="p">)</span>
             <span class="n">action_log_probs</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">action_entropy_list</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="n">offset</span> <span class="o">=</span> <span class="mi">0</span>
             <span class="k">for</span> <span class="n">na</span><span class="p">,</span> <span class="n">sl</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">num_actions</span><span class="p">,</span> <span class="n">packed_seq_lens</span><span class="p">):</span>
                 <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">offset</span> <span class="o">+</span> <span class="n">sl</span> <span class="o">-</span> <span class="n">na</span> <span class="o">-</span> <span class="mi">1</span><span class="p">),</span> <span class="n">offset</span> <span class="o">+</span> <span class="n">sl</span> <span class="o">-</span> <span class="mi">1</span>
                 <span class="n">action_log_probs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">log_probs</span><span class="p">[:,</span> <span class="n">start</span><span class="p">:</span><span class="n">end</span><span class="p">])</span>
+                <span class="k">if</span> <span class="n">action_entropy</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">action_entropy_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">action_entropy</span><span class="p">[:,</span> <span class="n">start</span><span class="p">:</span><span class="n">end</span><span class="p">])</span>
                 <span class="n">offset</span> <span class="o">+=</span> <span class="n">sl</span>
             <span class="n">action_log_probs</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">action_log_probs</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">action_entropy</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">action_entropy</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">action_entropy_list</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="p">(</span><span class="n">action_log_probs</span><span class="p">,</span> <span class="n">output</span><span class="p">)</span> <span class="k">if</span> <span class="n">return_output</span> <span class="k">else</span> <span class="n">action_log_probs</span></div>
+        <span class="k">if</span> <span class="n">return_output</span><span class="p">:</span>
+            <span class="c1"># Include action_entropy in output if computed</span>
+            <span class="k">if</span> <span class="n">action_entropy</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="c1"># Convert ModelOutput (dataclass) to dict to allow adding new fields</span>
+                <span class="c1"># output type: ModelOutput (e.g., CausalLMOutputWithPast) - supports dict-like access</span>
+                <span class="c1"># but cannot directly add new keys. Converting to dict enables adding action_entropy.</span>
+                <span class="n">output_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>  <span class="c1"># Type: dict[str, torch.Tensor]</span>
+                <span class="n">output_dict</span><span class="p">[</span><span class="s2">&quot;action_entropy&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">action_entropy</span>
+                <span class="k">return</span> <span class="p">(</span><span class="n">action_log_probs</span><span class="p">,</span> <span class="n">output_dict</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">(</span><span class="n">action_log_probs</span><span class="p">,</span> <span class="n">output</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">action_log_probs</span></div>
 
 <div class="viewcode-block" id="ActorLanguage.gradient_checkpointing_enable"><a class="viewcode-back" href="../../../api_doc/models/actor_language.html#lightrft.models.actor_language.ActorLanguage.gradient_checkpointing_enable">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">gradient_checkpointing_enable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gradient_checkpointing_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;use_reentrant&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>

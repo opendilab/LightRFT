@@ -321,6 +321,7 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">torch.nn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nn</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">torch.nn.functional</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">F</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch.distributions</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">dist</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">peft</span><span class="w"> </span><span class="kn">import</span> <span class="n">LoraConfig</span><span class="p">,</span> <span class="n">TaskType</span><span class="p">,</span> <span class="n">get_peft_model</span>
 
 
@@ -372,6 +373,118 @@
         <span class="k">if</span> <span class="s2">&quot;Linear&quot;</span> <span class="ow">in</span> <span class="n">module</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span> <span class="ow">and</span> <span class="s2">&quot;Embedding&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">module</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">:</span>
             <span class="n">module_names</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
     <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">module_names</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">entropy_from_logits</span><span class="p">(</span><span class="n">logits</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute entropy from logits using Categorical distribution for efficient calculation.</span>
+
+<span class="sd">    This function calculates the entropy of the probability distribution over the vocabulary</span>
+<span class="sd">    for each token position. Higher entropy indicates more uncertainty in token prediction,</span>
+<span class="sd">    which corresponds to &quot;forking tokens&quot; that determine reasoning directions.</span>
+
+<span class="sd">    :param logits: Logits tensor of shape (batch_size, sequence_length, vocab_size)</span>
+<span class="sd">                  or (batch_size, vocab_size)</span>
+<span class="sd">    :type logits: torch.Tensor</span>
+
+<span class="sd">    :return: Entropy values for each token position, of shape (batch_size, sequence_length)</span>
+<span class="sd">            or (batch_size,)</span>
+<span class="sd">    :rtype: torch.Tensor</span>
+
+<span class="sd">    Example::</span>
+<span class="sd">        &gt;&gt;&gt; logits = torch.randn(2, 10, 50000)  # batch_size=2, seq_len=10, vocab_size=50000</span>
+<span class="sd">        &gt;&gt;&gt; entropy = entropy_from_logits(logits)</span>
+<span class="sd">        &gt;&gt;&gt; entropy.shape</span>
+<span class="sd">        torch.Size([2, 10])</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Use Categorical distribution for efficient entropy calculation</span>
+    <span class="n">categorical</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">Categorical</span><span class="p">(</span><span class="n">logits</span><span class="o">=</span><span class="n">logits</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">categorical</span><span class="o">.</span><span class="n">entropy</span><span class="p">()</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">create_high_entropy_mask</span><span class="p">(</span>
+    <span class="n">entropy</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">action_mask</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span>
+    <span class="n">high_entropy_ratio</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.2</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create a binary mask for high-entropy tokens based on the specified ratio.</span>
+
+<span class="sd">    This function identifies the top-k highest entropy tokens (forking tokens) within each sequence</span>
+<span class="sd">    and creates a binary mask. Only tokens with high entropy will be used for gradient updates,</span>
+<span class="sd">    following the approach in &quot;Beyond the 80/20 Rule: High-Entropy Minority Tokens Drive Effective</span>
+<span class="sd">    Reinforcement Learning for LLM Reasoning&quot; (https://arxiv.org/abs/2506.01939).</span>
+
+<span class="sd">    The paper shows that utilizing only 20% of high-entropy tokens can maintain performance comparable</span>
+<span class="sd">    to full-gradient updates, with common value of 0.2 (top 20% highest entropy tokens).</span>
+
+<span class="sd">    :param entropy: Entropy values for each token, shape (batch_size, sequence_length)</span>
+<span class="sd">    :type entropy: torch.Tensor</span>
+<span class="sd">    :param action_mask: Binary mask indicating valid tokens (1 for valid, 0 for padding)</span>
+<span class="sd">    :type action_mask: Optional[torch.Tensor]</span>
+<span class="sd">    :param high_entropy_ratio: Ratio of high-entropy tokens to keep (e.g., 0.2 means top 20%).</span>
+<span class="sd">                               Common value: 0.2. Based on https://arxiv.org/abs/2506.01939, defaults to 0.2</span>
+<span class="sd">    :type high_entropy_ratio: float</span>
+
+<span class="sd">    :return: Binary mask for high-entropy tokens, shape (batch_size, sequence_length)</span>
+<span class="sd">    :rtype: torch.Tensor</span>
+
+<span class="sd">    Example::</span>
+<span class="sd">        &gt;&gt;&gt; entropy = torch.tensor([[1.0, 5.0, 2.0, 6.0, 3.0], [2.0, 4.0, 1.0, 5.0, 0.0]])</span>
+<span class="sd">        &gt;&gt;&gt; action_mask = torch.tensor([[1, 1, 1, 1, 1], [1, 1, 1, 1, 0]])</span>
+<span class="sd">        &gt;&gt;&gt; mask = create_high_entropy_mask(entropy, action_mask, high_entropy_ratio=0.4)</span>
+<span class="sd">        &gt;&gt;&gt; mask</span>
+<span class="sd">        tensor([[0, 1, 0, 1, 0], [0, 1, 0, 1, 0]])  # Top 40% (2 out of 5 valid tokens)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">high_entropy_ratio</span> <span class="o">&lt;=</span> <span class="mf">0.0</span> <span class="ow">or</span> <span class="n">high_entropy_ratio</span> <span class="o">&gt;=</span> <span class="mf">1.0</span><span class="p">:</span>
+        <span class="c1"># Return all-ones mask if ratio is invalid</span>
+        <span class="k">if</span> <span class="n">action_mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">action_mask</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">entropy</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+
+    <span class="c1"># Validate shapes</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">entropy</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;entropy must be 2D tensor (batch_size, seq_len), got shape </span><span class="si">{</span><span class="n">entropy</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="n">batch_size</span><span class="p">,</span> <span class="n">seq_len</span> <span class="o">=</span> <span class="n">entropy</span><span class="o">.</span><span class="n">shape</span>
+
+    <span class="k">if</span> <span class="n">action_mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">action_mask</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;action_mask must be 2D tensor (batch_size, seq_len), got shape </span><span class="si">{</span><span class="n">action_mask</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">action_mask</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="n">entropy</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;action_mask shape </span><span class="si">{</span><span class="n">action_mask</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2"> must match entropy shape </span><span class="si">{</span><span class="n">entropy</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="n">high_entropy_mask</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">entropy</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">batch_size</span><span class="p">):</span>
+        <span class="c1"># Get valid entropy values for this sequence</span>
+        <span class="k">if</span> <span class="n">action_mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># Ensure both are 1D tensors of the same length</span>
+            <span class="n">entropy_i</span> <span class="o">=</span> <span class="n">entropy</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>  <span class="c1"># Shape: (seq_len,)</span>
+            <span class="n">mask_i</span> <span class="o">=</span> <span class="n">action_mask</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>  <span class="c1"># Shape: (seq_len,)</span>
+
+            <span class="c1"># Convert to float if needed for multiplication</span>
+            <span class="k">if</span> <span class="n">mask_i</span><span class="o">.</span><span class="n">dtype</span> <span class="o">!=</span> <span class="n">entropy_i</span><span class="o">.</span><span class="n">dtype</span><span class="p">:</span>
+                <span class="n">mask_i</span> <span class="o">=</span> <span class="n">mask_i</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">entropy_i</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+
+            <span class="n">valid_entropy</span> <span class="o">=</span> <span class="n">entropy_i</span> <span class="o">*</span> <span class="n">mask_i</span>
+            <span class="n">valid_indices</span> <span class="o">=</span> <span class="n">mask_i</span><span class="o">.</span><span class="n">bool</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">valid_entropy</span> <span class="o">=</span> <span class="n">entropy</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">valid_indices</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">seq_len</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">bool</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">entropy</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">valid_indices</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+            <span class="k">continue</span>
+
+        <span class="c1"># Calculate number of high-entropy tokens to keep</span>
+        <span class="n">num_valid</span> <span class="o">=</span> <span class="n">valid_indices</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+        <span class="n">num_high_entropy</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">num_valid</span> <span class="o">*</span> <span class="n">high_entropy_ratio</span><span class="p">))</span>
+
+        <span class="c1"># Get top-k highest entropy tokens</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">top_indices</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">topk</span><span class="p">(</span><span class="n">valid_entropy</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">num_high_entropy</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">high_entropy_mask</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">top_indices</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
+
+    <span class="k">return</span> <span class="n">high_entropy_mask</span>
 
 
 <div class="viewcode-block" id="log_probs_from_logits"><a class="viewcode-back" href="../../../api_doc/models/utils.html#lightrft.models.utils.log_probs_from_logits">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">log_probs_from_logits</span><span class="p">(</span>

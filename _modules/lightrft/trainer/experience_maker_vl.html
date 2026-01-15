@@ -370,6 +370,7 @@
 <span class="sd">        - attention_mask: (B, S)</span>
 <span class="sd">        - action_mask: (B, A)</span>
 <span class="sd">        - kl: (B, A)</span>
+<span class="sd">        - action_entropy: (B, A) - Entropy values for high-entropy token filtering</span>
 
 <span class="sd">    :param sequences: Token sequences including both prompt and response.</span>
 <span class="sd">    :type sequences: torch.Tensor</span>
@@ -401,6 +402,11 @@
 <span class="sd">    :type info: Optional[dict]</span>
 <span class="sd">    :param kl: KL divergence between current and reference policy, defaults to None.</span>
 <span class="sd">    :type kl: Optional[torch.Tensor]</span>
+<span class="sd">    :param action_entropy: Entropy values for each action token, used for high-entropy token</span>
+<span class="sd">        filtering. When provided, enables training only on high-entropy tokens (forking tokens</span>
+<span class="sd">        that determine reasoning directions), improving training efficiency. Shape: (B, A).</span>
+<span class="sd">        See: https://arxiv.org/abs/2506.01939</span>
+<span class="sd">    :type action_entropy: Optional[torch.Tensor]</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="n">sequences</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span>
@@ -422,6 +428,7 @@
     <span class="n">action_mask</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">BoolTensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">info</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">kl</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">action_entropy</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># Entropy for high-entropy token filtering</span>
 
     <span class="nd">@torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">()</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">to_device</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">):</span>
@@ -450,6 +457,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">attention_mask</span> <span class="o">=</span> <span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">attention_mask</span><span class="p">,</span> <span class="n">device</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">action_mask</span> <span class="o">=</span> <span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">action_mask</span><span class="p">,</span> <span class="n">device</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">kl</span> <span class="o">=</span> <span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kl</span><span class="p">,</span> <span class="n">device</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">action_entropy</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">action_entropy</span> <span class="o">=</span> <span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">action_entropy</span><span class="p">,</span> <span class="n">device</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">info</span> <span class="o">=</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">to</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">device</span><span class="p">)</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
         <span class="k">return</span> <span class="bp">self</span>
 
@@ -477,6 +486,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">attention_mask</span> <span class="o">=</span> <span class="n">pin_memory</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">attention_mask</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">action_mask</span> <span class="o">=</span> <span class="n">pin_memory</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">action_mask</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">kl</span> <span class="o">=</span> <span class="n">pin_memory</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">kl</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">action_entropy</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">action_entropy</span> <span class="o">=</span> <span class="n">pin_memory</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">action_entropy</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">info</span> <span class="o">=</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">pin_memory</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
         <span class="k">return</span> <span class="bp">self</span></div></div>
 
