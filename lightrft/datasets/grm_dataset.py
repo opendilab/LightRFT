@@ -8,6 +8,7 @@ from transformers import AutoTokenizer, AutoProcessor
 from .omnirewardbench import OmniRewardBenchT2IGRMHandler
 from .imagegen_cot_reward import ImageGenCoTRewardHandler
 from .hpdv3 import HPDv3GRMHandler
+from .rejection_sampling_t2v import RejectionSamplingT2VHandler
 from .utils import zero_pad_sequences, load_multimodal_content, find_subsequence
 
 
@@ -86,6 +87,7 @@ class GRMDataset(Dataset):
             "imagegen-cot-reward-5k": ImageGenCoTRewardHandler(),
             "omnirewardbench-t2i": OmniRewardBenchT2IGRMHandler(),
             "hpdv3": HPDv3GRMHandler(),
+            "rejection-sampling-t2v": RejectionSamplingT2VHandler(),
         }
 
         # Load data from all specified dataset paths
