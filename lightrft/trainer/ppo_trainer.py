@@ -160,7 +160,24 @@ class PPOTrainer(ABC):
         self.actor_scheduler = actor_scheduler
         self.critic_scheduler = critic_scheduler
 
-        self.actor_loss_fn = PolicyLoss(eps_clip)
+        # Check if advantage_estimator is gmpo to enable GMPO loss
+        use_gmpo = getattr(self.args, 'advantage_estimator', None) == 'gmpo'
+        # Check if GSPO is enabled (from SPMD trainer or args)
+        use_gspo = getattr(self.args, 'use_gspo', False)
+        loss_agg_mode = getattr(self.args, 'loss_agg_mode', 'seq-mean-token-mean')
+        normalize_advantages = getattr(self.args, 'normalize_advantages', True) if use_gspo else False
+        use_sequence_rewards = getattr(self.args, 'use_sequence_rewards', True) if use_gspo else False
+        max_tokens = getattr(self.args, 'max_tokens', 4096) if loss_agg_mode == 'seq-mean-token-sum-norm' else 4096
+
+        self.actor_loss_fn = PolicyLoss(
+            clip_eps=eps_clip,
+            use_gmpo=use_gmpo,
+            loss_agg_mode=loss_agg_mode,
+            use_gspo=use_gspo,
+            normalize_advantages=normalize_advantages,
+            use_sequence_rewards=use_sequence_rewards,
+            max_tokens=max_tokens
+        )
         self.critic_loss_fn = ValueLoss(value_clip)
         self.ptx_loss_fn = GPTLMLoss()
 
