@@ -30,6 +30,8 @@ def fire_sampling(
     all_prompts: Optional[List[str]] = None,
     all_images: Optional[List] = None,
     all_images_num: Optional[List[int]] = None,
+    all_videos: Optional[List] = None,
+    all_videos_num: Optional[List[int]] = None,
     sampling_params: Optional[Union[dict, object]] = None,
 ) -> List:
     """
@@ -87,7 +89,9 @@ def fire_sampling(
         all_prompt_token_ids=all_prompt_token_ids,
         all_prompts=all_prompts if is_multimodal else None,
         all_images=all_images,
+        all_videos=all_videos,
         images_num=all_images_num if is_multimodal else None,
+        videos_num=all_videos_num if is_multimodal else None,
     )
 
     # Concatenate the first token to the prompt
@@ -112,7 +116,9 @@ def fire_sampling(
         all_prompt_token_ids=new_prompt_token_ids,
         all_prompts=all_prompts if is_multimodal else None,
         all_images=all_images,
+        all_videos=all_videos,
         images_num=all_images_num if is_multimodal else None,
+        videos_num=all_videos_num if is_multimodal else None,
     )
 
     # Merge the first token with the remaining tokens

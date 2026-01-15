@@ -59,6 +59,7 @@ dependencies = [
     "mathruler",
     "loguru",
     "librosa",
+    "qwen-vl-utils"
 ]
 
 [project.optional-dependencies]

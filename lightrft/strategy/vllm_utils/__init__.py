@@ -44,12 +44,18 @@ def get_vllm_engine_for_rollout(args: Any) -> LLM:
 
     Note:
         The construction of tensor-parallel (TP) group is implemented in the strategy part.
-        Multimodal image limits are automatically configured when applicable.
+        Multimodal image and video limits are automatically configured when applicable.
     """
-    if hasattr(args, "limit_mm_image_per_prompt") and not args.text_only:
-        kwargs = {"limit_mm_per_prompt": {"image": args.limit_mm_image_per_prompt}}
-    else:
-        kwargs = {}
+    kwargs = {}
+    if not args.text_only:
+        limit_mm_per_prompt = {}
+        if hasattr(args, "limit_mm_image_per_prompt"):
+            limit_mm_per_prompt["image"] = args.limit_mm_image_per_prompt
+        if hasattr(args, "limit_mm_video_per_prompt"):
+            limit_mm_per_prompt["video"] = args.limit_mm_video_per_prompt
+
+        if limit_mm_per_prompt:
+            kwargs["limit_mm_per_prompt"] = limit_mm_per_prompt
 
     vllm_engine = get_vllm_engine(
         args.pretrain,

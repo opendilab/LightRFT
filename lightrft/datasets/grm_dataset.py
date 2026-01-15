@@ -2,11 +2,11 @@ import random
 import torch
 from torch.utils.data import Dataset
 from loguru import logger
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Tuple, Optional
 from transformers import AutoTokenizer, AutoProcessor
 
 from .omnirewardbench import OmniRewardBenchT2IGRMHandler
-from .imagegen_cot_reward import ImageGenCoTRewardHandler
+from .imagegen_cot_reward import ImageGenCoTRewardGRMHandler
 from .hpdv3 import HPDv3GRMHandler
 from .utils import zero_pad_sequences, load_multimodal_content, find_subsequence
 
@@ -43,10 +43,11 @@ class GRMDataset(Dataset):
 
     **Example:**
 
-    >>> dataset = GRMDataset([
-    ...     'imagegen-cot-reward-5k:/data/imagegen-cot-reward-5k/train.json'
-    ... ], processor=proc, tokenizer=tok, max_length=4096, is_training=True)
+        .. code-block:: python
 
+            dataset = GRMDataset([
+                'imagegen-cot-reward-5k:/data/imagegen-cot-reward-5k/train.json'
+            ], processor=proc, tokenizer=tok, max_length=4096, is_training=True)
     """
     def __init__(
         self,
@@ -81,7 +82,7 @@ class GRMDataset(Dataset):
             raise NotImplementedError(f"Processor type {self.processor.__class__.__name__} not supported yet.")
 
         self.handlers = {
-            "imagegen-cot-reward-5k": ImageGenCoTRewardHandler(),
+            "imagegen-cot-reward-5k": ImageGenCoTRewardGRMHandler(),
             "omnirewardbench-t2i": OmniRewardBenchT2IGRMHandler(),
             "hpdv3": HPDv3GRMHandler(),
         }
@@ -111,10 +112,32 @@ class GRMDataset(Dataset):
         logger.info(f"Loaded {len(self.data)} items in total, sources: {list(dataset_paths)}")
         random.shuffle(self.data)
 
-    def __len__(self):
+    def __len__(self) -> int:
+        """
+        Get the total number of items in the dataset.
+
+        :return: Total number of items
+        :rtype: int
+        """
         return len(self.data)
 
-    def __getitem__(self, idx):
+    def __getitem__(self, idx: int) -> Tuple[Dict[str, torch.Tensor], Optional[torch.Tensor], Dict[str, Any]]:
+        """
+        Get a single item from the dataset by index.
+
+        :param idx: Index of the item to retrieve
+        :type idx: int
+
+        :return: A tuple of (tokens, labels, metadata). tokens is a dictionary of tensors,
+                 labels is a tensor (or None), and metadata is a dictionary.
+        :rtype: Tuple[Dict[str, torch.Tensor], Optional[torch.Tensor], Dict[str, Any]]
+
+        **Example:**
+
+        .. code-block:: python
+
+            tokens, labels, meta = dataset[0]
+        """
         item = self.data[idx]
         source = item["source"]
 
@@ -139,7 +162,16 @@ class GRMDataset(Dataset):
             input_token = self._tokenize_msg_for_eval(messages)
             return input_token, None, other
 
-    def _tokenize_msg_for_training(self, messages):
+    def _tokenize_msg_for_training(self, messages: List[Dict]) -> Tuple[Dict[str, torch.Tensor], torch.Tensor]:
+        """
+        Tokenize messages for training, including labels for the assistant's response.
+
+        :param messages: List of message dictionaries following the OpenAI format
+        :type messages: List[Dict]
+
+        :return: A tuple of (tokenized_input, labels)
+        :rtype: Tuple[Dict[str, torch.Tensor], torch.Tensor]
+        """
         input_text = self.processor.apply_chat_template(
             messages,
             tokenize=False,
@@ -188,7 +220,16 @@ class GRMDataset(Dataset):
 
         return tokenized, labels
 
-    def _tokenize_msg_for_eval(self, messages):
+    def _tokenize_msg_for_eval(self, messages: List[Dict]) -> Dict[str, torch.Tensor]:
+        """
+        Tokenize messages for evaluation (prompt-only).
+
+        :param messages: List of message dictionaries following the OpenAI format
+        :type messages: List[Dict]
+
+        :return: Tokenized input dictionary
+        :rtype: Dict[str, torch.Tensor]
+        """
         # Remove the last assistant response if present
         if messages and messages[-1]['role'] == 'assistant':
             messages = messages[:-1]
@@ -210,14 +251,22 @@ class GRMDataset(Dataset):
 
         return input_token
 
-    def collate_fn(self, batch):
+    def collate_fn(self, batch: List[Tuple]) -> Optional[Tuple]:
         """
-        Collate function for generative reward model samples.
+        Collate a batch of items into a single batch for model processing.
 
-        :param batch: List of data samples.
-        :type batch: list
-        :return: Dictionary with batched tensors for GRM training.
-        :rtype: dict
+        :param batch: A list of items returned by __getitem__
+        :type batch: List[Tuple]
+
+        :return: A tuple containing batched input_ids, attention_mask, pixel_values,
+                 grid_sizes, labels, and extras.
+        :rtype: Optional[Tuple]
+
+        **Example:**
+
+        .. code-block:: python
+
+            batch = dataset.collate_fn([dataset[i] for i in range(4)])
         """
         batch = [b for b in batch if b is not None]
         if not batch:

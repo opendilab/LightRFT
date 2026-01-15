@@ -1,6 +1,6 @@
 import io
 import random
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Tuple, Optional
 
 import librosa
 from loguru import logger
@@ -49,10 +49,11 @@ class RankDatasetVL(Dataset):
 
     **Example:**
 
-    >>> dataset = RMRankDataset([
-    ...     'hpdv3:/data/hpdv3/train.json'
-    ... ], processor=proc, tokenizer=tok, max_length=4096)
+        .. code-block:: python
 
+            dataset = RankDatasetVL([
+                'hpdv3:/data/hpdv3/train.json'
+            ], processor=proc, tokenizer=tok, max_length=4096)
     """
     def __init__(
         self,
@@ -116,10 +117,31 @@ class RankDatasetVL(Dataset):
         logger.info(f"Loaded {len(self.data)} items in total, sources: {list(dataset_paths)}")
         random.shuffle(self.data)
 
-    def __len__(self):
+    def __len__(self) -> int:
+        """
+        Get the total number of items in the dataset.
+
+        :return: Total number of items
+        :rtype: int
+        """
         return len(self.data)
 
-    def __getitem__(self, idx):
+    def __getitem__(self, idx: int) -> Tuple[Dict[str, torch.Tensor], Dict[str, torch.Tensor], Dict[str, Any]]:
+        """
+        Get a single item pair from the dataset by index.
+
+        :param idx: Index of the item to retrieve
+        :type idx: int
+
+        :return: A tuple of (input0_token, input1_token, metadata)
+        :rtype: Tuple[Dict[str, torch.Tensor], Dict[str, torch.Tensor], Dict[str, Any]]
+
+        **Example:**
+
+        .. code-block:: python
+
+            tokens0, tokens1, meta = dataset[0]
+        """
         item = self.data[idx]
         source = item["source"]
 
@@ -141,7 +163,19 @@ class RankDatasetVL(Dataset):
 
         return input0_token, input1_token, other
 
-    def _tokenize_pair(self, messages0, messages1):
+    def _tokenize_pair(self, messages0: List[Dict],
+                       messages1: List[Dict]) -> Tuple[Dict[str, torch.Tensor], Dict[str, torch.Tensor]]:
+        """
+        Tokenize a pair of messages.
+
+        :param messages0: First message sequence
+        :type messages0: List[Dict]
+        :param messages1: Second message sequence
+        :type messages1: List[Dict]
+
+        :return: A tuple of (input0_token, input1_token)
+        :rtype: Tuple[Dict[str, torch.Tensor], Dict[str, torch.Tensor]]
+        """
         input0_text = self.processor.apply_chat_template(messages0, tokenize=False, add_generation_prompt=True)
         input1_text = self.processor.apply_chat_template(messages1, tokenize=False, add_generation_prompt=True)
         if not input0_text.endswith(self.tokenizer.eos_token):
@@ -182,14 +216,21 @@ class RankDatasetVL(Dataset):
 
         return input0_token, input1_token
 
-    def collate_fn(self, batch):
+    def collate_fn(self, batch: List[Tuple]) -> Optional[Tuple]:
         """
-        Collate function to batch vision-language scalar reward model samples.
+        Collate a batch of items into a single batch for model processing.
 
-        :param batch: List of tuples (input0_token, input1_token, extra).
-        :type batch: list
-        :return: Dictionary with batched tensors for VL reward model training.
-        :rtype: dict
+        :param batch: A list of items returned by __getitem__
+        :type batch: List[Tuple]
+
+        :return: A tuple containing batched inputs for both samples in the pair and extras.
+        :rtype: Optional[Tuple]
+
+        **Example:**
+
+        .. code-block:: python
+
+            batch = dataset.collate_fn([dataset[i] for i in range(4)])
         """
         batch = [b for b in batch if b is not None]
         if not batch:
@@ -278,6 +319,14 @@ class RankDatasetAL(Dataset):
         - ``system_prompt_template`` (str): Template for the system prompt
           with a ``{prompt}`` placeholder.
     :type config: Dict[str, Any]
+
+    :example:
+
+        .. code-block:: python
+
+            dataset = RankDatasetAL([
+                'audio-alpaca:/path/to/file.parquet'
+            ], processor=proc, tokenizer=tok, max_length=4096)
     """
     def __init__(
         self,
@@ -327,10 +376,31 @@ class RankDatasetAL(Dataset):
         logger.info(f"Loaded {len(self.data)} items in total, sources: {list(dataset_paths)}")
         random.shuffle(self.data)
 
-    def __len__(self):
+    def __len__(self) -> int:
+        """
+        Get the total number of items in the dataset.
+
+        :return: Total number of items
+        :rtype: int
+        """
         return len(self.data)
 
-    def __getitem__(self, idx):
+    def __getitem__(self, idx: int) -> Tuple[Dict[str, torch.Tensor], Dict[str, torch.Tensor], Dict[str, Any]]:
+        """
+        Get a single item pair from the dataset by index.
+
+        :param idx: Index of the item to retrieve
+        :type idx: int
+
+        :return: A tuple of (input0_token, input1_token, metadata)
+        :rtype: Tuple[Dict[str, torch.Tensor], Dict[str, torch.Tensor], Dict[str, Any]]
+
+        **Example:**
+
+        .. code-block:: python
+
+            tokens0, tokens1, meta = dataset[0]
+        """
         item = self.data[idx]
         source = item["source"]
 
@@ -352,7 +422,19 @@ class RankDatasetAL(Dataset):
 
         return input0_token, input1_token, other
 
-    def _tokenize_pair(self, messages0, messages1):
+    def _tokenize_pair(self, messages0: List[Dict],
+                       messages1: List[Dict]) -> Tuple[Dict[str, torch.Tensor], Dict[str, torch.Tensor]]:
+        """
+        Tokenize a pair of messages including audio content.
+
+        :param messages0: First message sequence
+        :type messages0: List[Dict]
+        :param messages1: Second message sequence
+        :type messages1: List[Dict]
+
+        :return: A tuple of (input0_token, input1_token)
+        :rtype: Tuple[Dict[str, torch.Tensor], Dict[str, torch.Tensor]]
+        """
         # Get audio data from messages
         audio0, audio1 = None, None
         for msg in messages0:
@@ -418,14 +500,21 @@ class RankDatasetAL(Dataset):
 
         return input0_token, input1_token
 
-    def collate_fn(self, batch):
+    def collate_fn(self, batch: List[Tuple]) -> Optional[Tuple]:
         """
-        Collate function to batch audio-language scalar reward model samples.
+        Collate a batch of items into a single batch for model processing.
 
-        :param batch: List of tuples (input0_token, input1_token, extra).
-        :type batch: list
-        :return: Dictionary with batched tensors for AL reward model training.
-        :rtype: dict
+        :param batch: A list of items returned by __getitem__
+        :type batch: List[Tuple]
+
+        :return: A tuple containing batched inputs for both samples in the pair and extras.
+        :rtype: Optional[Tuple]
+
+        **Example:**
+
+        .. code-block:: python
+
+            batch = dataset.collate_fn([dataset[i] for i in range(4)])
         """
         batch = [b for b in batch if b is not None]
         if not batch:

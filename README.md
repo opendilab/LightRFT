@@ -170,21 +170,27 @@ LightRFT/
 │   │   ├── replay_buffer_vl.py    # VLM replay buffer
 │   │   ├── replay_buffer_utils.py # Replay buffer utilities
 │   │   ├── kl_controller.py       # KL divergence controller
+│   │   ├── image_utils.py         # Image utilities
+│   │   ├── video_utils.py         # Video utilities
 │   │   └── utils.py               # Trainer utilities
 │   ├── datasets/                  # Dataset processing
-│   │   ├── audio_alpaca.py        # Audio Alpaca dataset
+│   │   ├── audio_alpaca.py        # Data Handler for Audio Alpaca dataset
+│   │   ├── genai_bench.py         # Data Handler for GenAI Bench dataset
 │   │   ├── grm_dataset.py         # Generative reward model dataset
-│   │   ├── hpdv3.py               # HPDv3 reward model dataset
-│   │   ├── image_reward_db.py     # Image reward database
-│   │   ├── imagegen_cot_reward.py # Image generation CoT generative reward
-│   │   ├── omnirewardbench.py     # OmniRewardBench dataset
+│   │   ├── hpdv3.py               # Data Handler for HPDv3 reward model dataset
+│   │   ├── image_reward_db.py     # Data Handler for ImageRewardDB dataset
+│   │   ├── imagegen_cot_reward.py # Data Handler for ImageGen-CoT-Reward dataset
+│   │   ├── omnirewardbench.py     # Data Handler for OmniRewardBench dataset
 │   │   ├── process_reward_dataset.py # Reward dataset processing
 │   │   ├── prompts_dataset.py     # LLM Prompts dataset
 │   │   ├── prompts_dataset_vl.py  # Vision-language prompts dataset
-│   │   ├── rapidata.py            # Rapidata reward modeldataset
+│   │   ├── rapidata.py            # Data Handler for Rapidata T2I/T2V dataset
+│   │   ├── rft_dataset.py         # Reinforcement Fine-Tuning (RFT) dataset
 │   │   ├── sft_dataset.py         # SFT dataset
 │   │   ├── sft_dataset_vl.py      # VLM SFT dataset
 │   │   ├── srm_dataset.py         # Scalar reward model base dataset
+│   │   ├── videodpo.py            # Data Handler for VideoDPO dataset
+│   │   ├── videogen_rewardbench.py # Data Handler for VideoGen-RewardBench dataset
 │   │   └── utils.py               # Dataset utilities
 │   └── utils/                     # Utility functions
 │       ├── ckpt_scripts/          # Checkpoint processing scripts
@@ -200,6 +206,7 @@ LightRFT/
 ├── examples/                      # Usage examples
 │   ├── gsm8k_geo3k/               # GSM8K/Geo3K math reasoning training examples
 │   ├── grm_training/              # Generative reward model training examples
+│   ├── grm_vl_rl/                 # Reinforcement fine-tuning for generative reward model training examples
 │   ├── srm_training/              # Scalar reward model training examples
 │   ├── chat/                      # Model dialogue examples
 │
@@ -233,6 +240,7 @@ LightRFT/
 - **`examples/`**: Complete training examples and scripts
   - `gsm8k_geo3k/`: GSM8K and Geo3K math reasoning training examples
   - `grm_training/`: Generative reward model training examples
+  - `grm_vl_rl/`: Reinforcement fine-tuning generative reward model training examples
   - `srm_training/`: Scalar reward model training examples
   - `chat/`: Model dialogue examples
 - **`docs/`**: Sphinx documentation with complete user guides and API documentation

@@ -30,6 +30,7 @@ from dataclasses import dataclass
 from copy import deepcopy
 
 import torch
+import numpy as np
 from PIL import Image
 from easydict import EasyDict
 from vllm import SamplingParams
@@ -53,6 +54,8 @@ from lightrft.trainer.experience_maker_vl import (
 from lightrft.utils.remote_rm_utils import remote_rm_fn
 from lightrft.utils import Timer, get_current_device
 from .utils import RunningMoments, compute_clip_fraction, get_cpgd_advantages_returns, fire_sampling
+from .image_utils import normalize_images, get_images_num, to_pil
+from .video_utils import normalize_videos, get_videos_num, to_video_tensor
 
 # ============================================================================
 # Data Structures
@@ -81,10 +84,12 @@ class _SamplesOutput:
 
         # Vision-Language Model (VLM) specific fields
         pixel_values: Processed pixel values for images (Qwen-VL format)
+        pixel_values_videos: Processed pixel values for videos (Qwen-VL format)
         image_grid_thw: Image grid dimensions [temporal, height, width]
+        video_grid_thw: Video grid dimensions [temporal, height, width]
         raw_images: Original PIL images
         references: Reference texts for evaluation
-        img_num: Number of images per sample
+        image_num: Number of images per sample
 
         # Model inference outputs
         action_log_probs: Log probabilities from actor model
@@ -109,9 +114,12 @@ class _SamplesOutput:
     # Vision-Language Model fields
     pixel_values: Optional[torch.Tensor] = None
     image_grid_thw: Optional[torch.Tensor] = None
+    pixel_values_videos: Optional[torch.Tensor] = None
+    video_grid_thw: Optional[torch.Tensor] = None
     raw_images: Optional[list] = None
     references: Optional[list] = None
-    img_num: Optional[List[int]] = None
+    image_num: Optional[List[int]] = None
+    video_num: Optional[List[int]] = None
 
     # Model outputs
     action_log_probs: Optional[torch.Tensor] = None
@@ -165,84 +173,6 @@ class MultimodalDataProcessor:
         self.processor = processor
         self.prompt_max_len = prompt_max_len
 
-    def normalize_images(self, raw_images: List) -> List:
-        """
-        Recursively normalize image inputs to PIL.Image format.
-
-        Handles various input formats:
-            - PIL.Image: returned unchanged
-            - dict with 'image' key: extracts image value
-            - str/pathlib.Path: loads from file path (supports file:// prefix)
-            - bytes/bytearray: loads from binary data
-            - list: recursively normalizes each element
-
-        :param raw_images: List of image inputs in various formats
-        :type raw_images: List[Union[PIL.Image.Image, dict, str, pathlib.Path, bytes, bytearray, List]]
-        :return: List of normalized PIL.Image objects (or lists of PIL.Images for multi-image samples)
-        :rtype: List[Union[PIL.Image.Image, List[PIL.Image.Image]]]
-        """
-        normalized = []
-        for item in raw_images:
-            if isinstance(item, list):
-                # Multi-image case: recursively normalize each image
-                normalized.append([self._to_pil(img) for img in item])
-            else:
-                # Single image case
-                normalized.append(self._to_pil(item))
-        return normalized
-
-    def _to_pil(self, img) -> Image.Image:
-        """
-        Convert a single image input to PIL.Image format.
-
-        :param img: Image input (PIL.Image, dict, str, Path, bytes, or bytearray)
-        :type img: Union[PIL.Image.Image, dict, str, pathlib.Path, bytes, bytearray]
-        :return: PIL.Image in RGB mode
-        :rtype: PIL.Image.Image
-        :raises ValueError: If input type is not supported
-        """
-        # Extract from dict if needed
-        if isinstance(img, dict):
-            img = img.get("image", img)
-
-        # Load from file path
-        if isinstance(img, (str, pathlib.Path)):
-            img = str(img)
-            if img.startswith("file://"):
-                img = img[7:]
-            img = os.path.expanduser(img)
-            img = Image.open(img).convert("RGB")
-
-        # Load from binary data
-        if isinstance(img, (bytes, bytearray)):
-            from io import BytesIO
-            img = Image.open(BytesIO(img)).convert("RGB")
-
-        return img
-
-    def get_images_num(self, all_images: Optional[List]) -> Optional[List[int]]:
-        """
-        Extract the number of images for each sample.
-
-        IMPORTANT: Text-only samples (None) return 1 as placeholder, not 0.
-        This maintains compatibility with the grid_thw slicing logic where
-        text-only samples have [0,0,0] grids.
-
-        :param all_images: List of images (can be None, single images, or lists of images)
-        :type all_images: Optional[List[Union[None, PIL.Image.Image, List[PIL.Image.Image]]]]
-        :return: List of image counts per sample, or None if no images
-        :rtype: Optional[List[int]]
-        """
-        if all_images is None:
-            return None
-
-        if isinstance(all_images[0], list):
-            # Multi-image case: use 1 for None (text-only) as placeholder
-            return [len(img) if img is not None else 1 for img in all_images]
-        else:
-            # Single image case
-            return [1 for _ in all_images]
-
     def process_multimodal_batch(
         self,
         all_prompts: List[str],
@@ -250,6 +180,8 @@ class MultimodalDataProcessor:
         all_references: Optional[List[str]],
         images_num: List[int],
         n_samples_per_prompt: int,
+        all_videos: Optional[List],
+        videos_num: Optional[List[int]],
     ) -> EasyDict:
         """
         Process multimodal batch - following original implementation exactly.
@@ -267,32 +199,44 @@ class MultimodalDataProcessor:
         :type images_num: List[int]
         :param n_samples_per_prompt: Number of samples to generate per prompt
         :type n_samples_per_prompt: int
+        :param all_videos: List of videos (List[str] or None)
+        :type all_videos: Optional[List[Union[List[str], None]]]
+        :param videos_num: Number of videos per sample
+        :type videos_num: Optional[List[int]]
         :return: Dictionary containing processed data
         :rtype: EasyDict
         """
         N = n_samples_per_prompt
         L = len(all_prompts)
 
+        # Ensure all_images and all_videos are iterable even if None
+        if all_images is None:
+            all_images = [None] * L
+        if all_videos is None:
+            all_videos = [None] * L
+
         # ===== Stage 1: Separation =====
-        all_prompts_text, all_prompts_image_text = [], []
+        all_prompts_text, all_prompts_multimodal = [], []
         all_images_valid = []
+        all_videos_valid = []
         text_idx = []
 
-        for idx, (prompt, image) in enumerate(zip(all_prompts, all_images)):
-            if image is None:
+        for idx, (prompt, image, video) in enumerate(zip(all_prompts, all_images, all_videos)):
+            if image is None and video is None:
                 all_prompts_text.append(prompt)
                 text_idx.append(idx)
-            elif isinstance(image, list):
-                all_prompts_image_text.append(prompt)
-                all_images_valid.append(image)
             else:
-                raise ValueError(f"Invalid image type: {type(image)}")
+                all_prompts_multimodal.append(prompt)
+                all_images_valid.append(image)
+                all_videos_valid.append(video)
 
         # ===== Stage 2: Expansion =====
         all_prompts_text = sum([[p] * N for p in all_prompts_text], [])
-        all_prompts_image_text = sum([[p] * N for p in all_prompts_image_text], [])
+        all_prompts_multimodal = sum([[p] * N for p in all_prompts_multimodal], [])
         all_images_valid = [img for img in all_images_valid for _ in range(N)]
-        all_images_num = sum([[num] * N for num in images_num], [])
+        all_videos_valid = [vid for vid in all_videos_valid for _ in range(N)]
+        all_images_num = sum([[num] * N for num in images_num], []) if images_num is not None else [0] * (L * N)
+        all_videos_num = sum([[num] * N for num in videos_num], []) if videos_num is not None else [0] * (L * N)
 
         # ===== Stage 3-A: Text-only processing =====
         if len(all_prompts_text) > 0:
@@ -303,39 +247,55 @@ class MultimodalDataProcessor:
                 add_special_tokens=False,
             )
             all_prompt_token_ids_text = inputs_text["input_ids"]
-            all_images_grid_thw_text = torch.cat(
-                [torch.tensor([[0, 0, 0]]) for _ in range(len(all_prompt_token_ids_text))],
-                dim=0,
-            )
         else:
             all_prompt_token_ids_text = []
-            all_images_grid_thw_text = torch.empty((0, 3), dtype=torch.long)
 
-        # ===== Stage 3-B: Image-text processing =====
-        if len(all_prompts_image_text) > 0:
+        # ===== Stage 3-B: Multimodal processing =====
+        if len(all_prompts_multimodal) > 0:
             assert self.processor is not None, "Processor required for multimodal data"
-            inputs_image_text = self.processor(
-                text=all_prompts_image_text.copy(),
-                images=all_images_valid,
-                add_special_tokens=False,
-                max_length=self.prompt_max_len,
-                truncation=True,
-            )
 
-            all_prompt_token_ids_image_text = inputs_image_text["input_ids"]
-            all_images_pixel_values_image_txt = inputs_image_text["pixel_values"]
-            all_images_grid_thw_image_text = inputs_image_text["image_grid_thw"]
-        else:
-            all_prompt_token_ids_image_text = []
-            all_images_pixel_values_image_txt = torch.empty(0, 1176)
-            all_images_grid_thw_image_text = torch.empty((0, 3), dtype=torch.long)
+            flat_images = []
+            for img_item in all_images_valid:
+                if isinstance(img_item, list):
+                    flat_images.extend(img_item)
+                elif img_item is not None:
+                    flat_images.append(img_item)
+
+            flat_videos = []
+            for vid_item in all_videos_valid:
+                if isinstance(vid_item, list):
+                    flat_videos.extend(vid_item)
+                elif vid_item is not None:
+                    flat_videos.append(vid_item)
+
+            processor_kwargs = {
+                "text": all_prompts_multimodal.copy(),
+                "add_special_tokens": False,
+                "max_length": self.prompt_max_len,
+                "truncation": True,
+            }
+            if flat_images:
+                processor_kwargs["images"] = flat_images
+            if flat_videos:
+                processor_kwargs["videos"] = flat_videos
+
+            inputs_multimodal = self.processor(**processor_kwargs)
+
+            all_prompt_token_ids_multimodal = inputs_multimodal["input_ids"]
+            all_images_pixel_values_multimodal = inputs_multimodal.get("pixel_values", None)
+            all_videos_pixel_values_multimodal = inputs_multimodal.get("pixel_values_videos", None)
+
+            all_images_grid_thw_multimodal = inputs_multimodal.get("image_grid_thw", None)
+            all_videos_grid_thw_multimodal = inputs_multimodal.get("video_grid_thw", None)
 
         # ===== Stage 4: Merge back in original order =====
         total_samples = L * N
         all_prompts_out = [None] * total_samples
         all_images_out = [None] * total_samples
+        all_videos_out = [None] * total_samples
         all_prompt_token_ids_out = [None] * total_samples
         all_images_grid_thw_list = [None] * total_samples
+        all_videos_grid_thw_list = [None] * total_samples
 
         # 4-A: Fill text-only
         text_ptr = 0
@@ -344,26 +304,53 @@ class MultimodalDataProcessor:
                 gid = orig_idx * N + n
                 all_prompts_out[gid] = all_prompts_text[text_ptr]
                 all_prompt_token_ids_out[gid] = all_prompt_token_ids_text[text_ptr]
-                all_images_grid_thw_list[gid] = all_images_grid_thw_text[text_ptr]
+                # Ensure (0, 3) shape for cat
+                all_images_grid_thw_list[gid] = torch.empty((0, 3), dtype=torch.long)
+                all_videos_grid_thw_list[gid] = torch.empty((0, 3), dtype=torch.long)
                 text_ptr += 1
 
-        # 4-B: Fill image-text
-        img_ptr = 0
+        # 4-B: Fill multimodal
+        multi_ptr = 0
+        image_grid_ptr = 0
+        video_grid_ptr = 0
         for orig_idx in range(L):
             if orig_idx in text_idx:
                 continue
             for n in range(N):
                 gid = orig_idx * N + n
-                all_prompts_out[gid] = all_prompts_image_text[img_ptr]
-                all_images_out[gid] = all_images_valid[img_ptr]
-                all_prompt_token_ids_out[gid] = all_prompt_token_ids_image_text[img_ptr]
-                all_images_grid_thw_list[gid] = all_images_grid_thw_image_text[img_ptr]
-                img_ptr += 1
+                all_prompts_out[gid] = all_prompts_multimodal[multi_ptr]
+                all_images_out[gid] = all_images_valid[multi_ptr]
+                all_videos_out[gid] = all_videos_valid[multi_ptr]
+                all_prompt_token_ids_out[gid] = all_prompt_token_ids_multimodal[multi_ptr]
 
-        # Stack grid_thw
+                # Handle image_grid_thw: extract rows based on all_images_num
+                num_images = all_images_num[gid]
+                if num_images > 0 and all_images_grid_thw_multimodal is not None:
+                    all_images_grid_thw_list[gid] = all_images_grid_thw_multimodal[image_grid_ptr:image_grid_ptr +
+                                                                                   num_images]
+                    image_grid_ptr += num_images
+                else:
+                    all_images_grid_thw_list[gid] = torch.empty((0, 3), dtype=torch.long)
+
+                # Handle video_grid_thw: extract rows based on all_videos_num
+                num_videos = all_videos_num[gid]
+                if num_videos > 0 and all_videos_grid_thw_multimodal is not None:
+                    all_videos_grid_thw_list[gid] = all_videos_grid_thw_multimodal[video_grid_ptr:video_grid_ptr +
+                                                                                   num_videos]
+                    video_grid_ptr += num_videos
+                else:
+                    all_videos_grid_thw_list[gid] = torch.empty((0, 3), dtype=torch.long)
+
+                multi_ptr += 1
+
+        # Concatenate grid_thw (using cat instead of stack to support multi-image/video)
         all_images_grid_thw = (
-            torch.stack(all_images_grid_thw_list, dim=0)
+            torch.cat(all_images_grid_thw_list, dim=0)
             if len(all_images_grid_thw_list) > 0 else torch.empty((0, 3), dtype=torch.long)
+        )
+        all_videos_grid_thw = (
+            torch.cat(all_videos_grid_thw_list, dim=0)
+            if len(all_videos_grid_thw_list) > 0 else torch.empty((0, 3), dtype=torch.long)
         )
 
         # Expand references
@@ -374,9 +361,13 @@ class MultimodalDataProcessor:
             all_prompt_token_ids=all_prompt_token_ids_out,
             all_prompts=all_prompts_out,
             all_images=all_images_out,
+            all_videos=all_videos_out,
             all_images_num=all_images_num,
-            all_images_pixel_values=all_images_pixel_values_image_txt,
+            all_videos_num=all_videos_num,
+            all_images_pixel_values=all_images_pixel_values_multimodal,
+            all_videos_pixel_values=all_videos_pixel_values_multimodal,
             all_images_grid_thw=all_images_grid_thw,
+            all_videos_grid_thw=all_videos_grid_thw,
             all_references=all_references,
         )
 
@@ -657,7 +648,7 @@ class RewardComputationEngine:
         flat_data = {
             "prompt_and_output": [],
             "raw_images": [],
-            "img_num": [],
+            "image_num": [],
             "references": [],
             "labels": [],
         }
@@ -675,7 +666,7 @@ class RewardComputationEngine:
                     needed_positions.append((mb_idx, samp_idx))
                     flat_data["prompt_and_output"].append(output.prompt_and_output[samp_idx])
                     flat_data["raw_images"].append(output.raw_images[samp_idx])
-                    flat_data["img_num"].append(output.img_num[samp_idx])
+                    flat_data["image_num"].append(output.image_num[samp_idx])
                     flat_data["references"].append(output.references[samp_idx])
                     flat_data["labels"].append(output.labels[samp_idx])
 
@@ -690,7 +681,7 @@ class RewardComputationEngine:
             None,
             prompt_and_outputs=flat_data["prompt_and_output"],
             raw_images=flat_data["raw_images"],
-            img_num=flat_data["img_num"],
+            img_num=flat_data["image_num"],
             references=flat_data["references"],
             labels=flat_data["labels"],
         )
@@ -728,7 +719,7 @@ class RewardComputationEngine:
         flat_data = {
             "prompt_and_output": [],
             "raw_images": [],
-            "img_num": [],
+            "image_num": [],
             "references": [],
             "labels": [],
         }
@@ -736,7 +727,7 @@ class RewardComputationEngine:
         for output in outputs:
             flat_data["prompt_and_output"].extend(output.prompt_and_output)
             flat_data["raw_images"].extend(output.raw_images)
-            flat_data["img_num"].extend(output.img_num)
+            flat_data["image_num"].extend(output.image_num)
             flat_data["references"].extend(output.references)
             flat_data["labels"].extend(output.labels)
 
@@ -746,7 +737,7 @@ class RewardComputationEngine:
             None,
             prompt_and_outputs=flat_data["prompt_and_output"],
             raw_images=flat_data["raw_images"],
-            img_num=flat_data["img_num"],
+            img_num=flat_data["image_num"],
             references=flat_data["references"],
             labels=flat_data["labels"],
         )
@@ -794,7 +785,7 @@ class RewardComputationEngine:
                 output.attention_mask,
                 prompt_and_output=output.prompt_and_output,
                 raw_images=output.raw_images,
-                img_num=output.img_num,
+                img_num=output.image_num,
                 **output.inputs_extra_kwargs,
             )
 
@@ -941,6 +932,7 @@ class FastExperienceMaker(NaiveExperienceMaker):
         self,
         all_prompts: List[str],
         all_images: Optional[List] = None,
+        all_videos: Optional[List] = None,
         all_references: Optional[List[str]] = None,
         all_labels: Optional[List] = None,
         **generate_kwargs,
@@ -959,6 +951,8 @@ class FastExperienceMaker(NaiveExperienceMaker):
         :type all_references: Optional[List[str]]
         :param all_labels: Optional labels for samples
         :type all_labels: Optional[List]
+        :param all_videos: Optional videos for multimodal generation
+        :type all_videos: Optional[List]
         :param generate_kwargs: Generation parameters (temperature, max_new_tokens, etc.)
         :type generate_kwargs: dict
         :return: List of Experience or ExperienceVL objects with computed advantages and returns
@@ -973,13 +967,22 @@ class FastExperienceMaker(NaiveExperienceMaker):
                     "Multimodal data (images) provided but processor was not initialized. "
                     "Please provide a processor when initializing FastExperienceMaker for VLM support."
                 )
-            all_images = self.multimodal_processor.normalize_images(all_images)
+            all_images = normalize_images(all_images)
+
+        # Normalize videos if provided
+        if all_videos is not None:
+            if self.multimodal_processor is None:
+                raise ValueError(
+                    "Multimodal data (videos) provided but processor was not initialized. "
+                    "Please provide a processor when initializing FastExperienceMaker for VLM support."
+                )
+            all_videos = normalize_videos(all_videos)
 
         # Get image counts
-        images_num = (
-            self.multimodal_processor.get_images_num(all_images)
-            if self.multimodal_processor and all_images is not None else None
-        )
+        images_num = (get_images_num(all_images) if self.multimodal_processor and all_images is not None else None)
+
+        # Get video counts
+        videos_num = (get_videos_num(all_videos) if self.multimodal_processor and all_videos is not None else None)
 
         # ========== Stage 1: Sample Generation ==========
         Timer.start('  generate_samples')
@@ -987,6 +990,8 @@ class FastExperienceMaker(NaiveExperienceMaker):
             all_prompts,
             all_images=all_images,
             images_num=images_num,
+            all_videos=all_videos,
+            videos_num=videos_num,
             all_references=all_references,
             all_labels=all_labels,
             **generate_kwargs,
@@ -1012,11 +1017,17 @@ class FastExperienceMaker(NaiveExperienceMaker):
             experiences, generate_kwargs.get("max_new_tokens", 1024)
         )
 
-        # ========== Stage 6: Multi-Image Handling ==========
-        if images_num is not None and not all(num == 1 for num in images_num):
+        # ========== Stage 6: Multi-Image/Video Handling ==========
+        if (images_num is not None and not all(num == 1 for num in images_num)) or \
+           (videos_num is not None and not all(num == 1 for num in videos_num)):
             # Expand image_num by n_samples_per_prompt
-            expanded_images_num = sum([[num] * config.n_samples_per_prompt for num in images_num], [])
-            self._process_multi_image_thws(experiences, expanded_images_num)
+            expanded_images_num = sum([[num] * config.n_samples_per_prompt
+                                       for num in images_num], []) if images_num is not None else None
+
+            expanded_videos_num = sum([[num] * config.n_samples_per_prompt
+                                       for num in videos_num], []) if videos_num is not None else None
+
+            self._process_multi_image_video_thws(experiences, expanded_images_num, expanded_videos_num)
 
         # ========== Stage 7: Advantage Computation ==========
         experiences = self._compute_advantages_and_returns(experiences, rewards, generate_kwargs)
@@ -1028,7 +1039,9 @@ class FastExperienceMaker(NaiveExperienceMaker):
         self,
         all_prompts: List[str],
         all_images: Optional[List] = None,
+        all_videos: Optional[List] = None,
         images_num: Optional[List[int]] = None,
+        videos_num: Optional[List[int]] = None,
         all_references: Optional[List[str]] = None,
         all_labels: Optional[List] = None,
         **generate_kwargs,
@@ -1052,6 +1065,10 @@ class FastExperienceMaker(NaiveExperienceMaker):
         :type all_references: Optional[List[str]]
         :param all_labels: Sample labels
         :type all_labels: Optional[List]
+        :param all_videos: Optional videos for VLM
+        :type all_videos: Optional[List]
+        :param videos_num: Number of videos per prompt
+        :type videos_num: Optional[List[int]]
         :param generate_kwargs: Generation parameters (temperature, max_new_tokens, etc.)
         :type generate_kwargs: dict
         :return: List of Samples or SamplesVL objects
@@ -1063,8 +1080,16 @@ class FastExperienceMaker(NaiveExperienceMaker):
         start_time = time.time()
 
         config = self.strategy.config
-        is_multimodal = all_images is not None
+        is_multimodal = all_images is not None or all_videos is not None
         n_samples = config.n_samples_per_prompt
+
+        # Initialize multimodal-specific variables to None
+        all_images_num = None
+        all_videos_num = None
+        all_images_pixel_values = None
+        all_videos_pixel_values = None
+        all_images_grid_thw = None
+        all_videos_grid_thw = None
 
         # ========== Configure Sampling Parameters ==========
         if config.engine_type == "vllm":
@@ -1108,14 +1133,20 @@ class FastExperienceMaker(NaiveExperienceMaker):
                 all_references=all_references,
                 images_num=images_num,
                 n_samples_per_prompt=n_samples,
+                all_videos=all_videos,
+                videos_num=videos_num,
             )
             all_prompt_token_ids = processed_data["all_prompt_token_ids"]
             all_prompts = processed_data["all_prompts"]
             all_images = processed_data["all_images"]
+            all_videos = processed_data["all_videos"]
             all_images_num = processed_data["all_images_num"]
-            all_images_pixel_values = processed_data["all_images_pixel_values"]
+            all_videos_num = processed_data["all_videos_num"]
             all_images_grid_thw = processed_data["all_images_grid_thw"]
-            all_references = processed_data["all_references"]
+            all_videos_grid_thw = processed_data["all_videos_grid_thw"]
+            all_images_pixel_values = processed_data["all_images_pixel_values"]
+            all_videos_pixel_values = processed_data["all_videos_pixel_values"]
+            all_references = processed_data.get("all_references", None)
         else:
             # Text-only processing
             tokenized = self.tokenize_fn(all_prompts, self.prompt_max_len, padding=False)
@@ -1141,7 +1172,9 @@ class FastExperienceMaker(NaiveExperienceMaker):
                     is_multimodal=is_multimodal,
                     all_prompts=all_prompts,
                     all_images=all_images,
+                    all_videos=all_videos,
                     all_images_num=all_images_num,
+                    all_videos_num=all_videos_num,
                     sampling_params=sampling_params,
                 )
             else:
@@ -1151,9 +1184,10 @@ class FastExperienceMaker(NaiveExperienceMaker):
                     sampling_params=sampling_params,
                     all_prompt_token_ids=all_prompt_token_ids,
                     all_prompts=all_prompts if is_multimodal else None,
-                    all_images=all_images,
-                    sleep_engine=True,
+                    all_images=all_images if is_multimodal else None,
+                    all_videos=all_videos if is_multimodal else None,
                     images_num=all_images_num if is_multimodal else None,
+                    videos_num=all_videos_num if is_multimodal else None,
                 )
         except ValueError as e:
             if "prompt" in str(e) and "too long" in str(e):
@@ -1165,39 +1199,55 @@ class FastExperienceMaker(NaiveExperienceMaker):
         # ========== Process Outputs into Samples ==========
         samples_list = []
         image_patch_idx = 0
+        video_patch_idx = 0
         image_start_idx = 0
+        video_start_idx = 0
 
         for i in range(0, len(all_outputs), config.micro_rollout_batch_size):
             micro_batch_outputs = all_outputs[i:i + config.micro_rollout_batch_size]
             micro_batch_prompts = all_prompts[i:i + config.micro_rollout_batch_size]
 
             # Extract micro-batch data
+            micro_batch_grid_thw = None
+            micro_batch_video_grid_thw = None
+            micro_batch_raw_images = None
+
             if is_multimodal:
                 rollout_image_count = sum(all_images_num[i:i + config.micro_rollout_batch_size])
                 micro_batch_grid_thw = all_images_grid_thw[image_start_idx:image_start_idx + rollout_image_count]
-                micro_batch_raw_images = all_images[image_start_idx:image_start_idx + rollout_image_count]
+                micro_batch_raw_images = all_images[i:i + config.micro_rollout_batch_size]
                 image_start_idx += rollout_image_count
+
+                rollout_video_count = sum(all_videos_num[i:i + config.micro_rollout_batch_size])
+                micro_batch_video_grid_thw = all_videos_grid_thw[video_start_idx:video_start_idx + rollout_video_count]
+                video_start_idx += rollout_video_count
 
             micro_batch_references = (all_references[i:i + config.micro_rollout_batch_size] if all_references else None)
             micro_batch_labels = (all_labels[i:i + config.micro_rollout_batch_size] if all_labels else None)
 
             # Build samples
             if not self.packing_samples:
-                sample, updated_patch_idx = self._build_unpacked_sample(
+                sample, updated_patch_idx, updated_video_patch_idx = self._build_unpacked_sample(
                     outputs=micro_batch_outputs,
                     prompts=micro_batch_prompts,
                     labels=micro_batch_labels,
                     references=micro_batch_references,
                     is_multimodal=is_multimodal,
-                    grid_thw=micro_batch_grid_thw if is_multimodal else None,
-                    raw_images=micro_batch_raw_images if is_multimodal else None,
+                    grid_thw=micro_batch_grid_thw,
+                    video_grid_thw=micro_batch_video_grid_thw,
+                    raw_images=micro_batch_raw_images,
                     pixel_values=all_images_pixel_values if is_multimodal else None,
+                    pixel_values_videos=all_videos_pixel_values if is_multimodal else None,
                     images_num=all_images_num[i:i + config.micro_rollout_batch_size] if is_multimodal else None,
+                    videos_num=all_videos_num[i:i + config.micro_rollout_batch_size] if is_multimodal else None,
                     image_patch_idx=image_patch_idx,
+                    video_patch_idx=video_patch_idx,
                 )
-                # Update image_patch_idx from the returned value
+                # Update patch indices from the returned values
                 if updated_patch_idx is not None:
                     image_patch_idx = updated_patch_idx
+                if updated_video_patch_idx is not None:
+                    video_patch_idx = updated_video_patch_idx
                 samples_list.append(sample)
             else:
                 # Packed samples
@@ -1268,13 +1318,14 @@ class FastExperienceMaker(NaiveExperienceMaker):
     # Private Helper Methods
     # ========================================================================
 
-    def _process_multi_image_thws(
+    def _process_multi_image_video_thws(
         self,
         experiences: List[ExperienceVL],
-        images_num: List[int],
+        images_num: Optional[List[int]] = None,
+        videos_num: Optional[List[int]] = None,
     ) -> None:
         """
-        Process image_grid_thws for multi-image scenarios.
+        Process image_grid_thws and video_grid_thws for multi-image/video scenarios.
 
         Ensures len(experience.sequences) == len(experience.image_grid_thws) by
         converting the stacked tensor into a list of per-sequence tensors.
@@ -1282,33 +1333,55 @@ class FastExperienceMaker(NaiveExperienceMaker):
         :param experiences: List of experiences to modify in-place
         :type experiences: List[ExperienceVL]
         :param images_num: Number of images per sample (expanded by n_samples_per_prompt)
-        :type images_num: List[int]
+        :type images_num: Optional[List[int]]
+        :param videos_num: Number of videos per sample (expanded by n_samples_per_prompt)
+        :type videos_num: Optional[List[int]]
         """
         config = self.strategy.config
 
         for i, experience in enumerate(experiences):
-            # Get image counts for this micro-batch
+            # Get image and video counts for this micro-batch
             start_idx = i * config.micro_rollout_batch_size
             end_idx = (i + 1) * config.micro_rollout_batch_size
-            micro_images_num = images_num[start_idx:end_idx]
 
-            # Split image_grid_thws tensor
-            image_grid_thw_list = []
-            image_grid_thws = experience.image_grid_thws
-            assert isinstance(image_grid_thws, torch.Tensor)
-            image_grid_thws = torch.unbind(image_grid_thws)
+            if images_num is not None:
+                micro_images_num = images_num[start_idx:end_idx]
+                if sum(micro_images_num) > 0 and experience.image_grid_thws is not None:
+                    image_grid_thw_list = []
+                    image_grid_thws = experience.image_grid_thws
+                    image_grid_thws_unbind = torch.unbind(image_grid_thws)
 
-            # Verify total image count matches
-            assert sum(micro_images_num) == len(image_grid_thws)
+                    thw_idx = 0
+                    for num in micro_images_num:
+                        if num > 0:
+                            stacked_thw = torch.stack(image_grid_thws_unbind[thw_idx:thw_idx + num], dim=0).to("cuda")
+                            image_grid_thw_list.append(stacked_thw)
+                            thw_idx += num
+                        else:
+                            image_grid_thw_list.append(None)
+                    experience.image_grid_thws = image_grid_thw_list
+                else:
+                    experience.image_grid_thws = [None] * len(micro_images_num)
 
-            # Group by sequence
-            thw_idx = 0
-            for num in micro_images_num:
-                stacked_thw = torch.stack(image_grid_thws[thw_idx:thw_idx + num], dim=0).to("cuda")
-                image_grid_thw_list.append(stacked_thw)
-                thw_idx += num
+            if videos_num is not None:
+                micro_videos_num = videos_num[start_idx:end_idx]
+                if sum(micro_videos_num) > 0 and experience.video_grid_thws is not None:
+                    video_grid_thw_list = []
+                    video_grid_thws = experience.video_grid_thws
+                    video_grid_thws_unbind = torch.unbind(video_grid_thws)
 
-            experience.image_grid_thws = image_grid_thw_list
+                    v_thw_idx = 0
+                    for num in micro_videos_num:
+                        if num > 0:
+                            v_stacked_thw = torch.stack(video_grid_thws_unbind[v_thw_idx:v_thw_idx + num],
+                                                        dim=0).to("cuda")
+                            video_grid_thw_list.append(v_stacked_thw)
+                            v_thw_idx += num
+                        else:
+                            video_grid_thw_list.append(None)
+                    experience.video_grid_thws = video_grid_thw_list
+                else:
+                    experience.video_grid_thws = [None] * len(micro_videos_num)
 
     def _process_experiences(
         self,
@@ -1394,7 +1467,7 @@ class FastExperienceMaker(NaiveExperienceMaker):
             # Ensure rewards are float32. If rewards are float16 or bfloat16, 1e-9 may
             # underflow to 0, causing division by zero (NaN).
             # Normalize within groups
-            rewards = rewards.reshape(-1, config.n_samples_per_prompt).to("cuda")
+            rewards = rewards.reshape(-1, config.n_samples_per_prompt).to("cuda").float()
             baseline = rewards.mean(-1, keepdim=True)
             rewards = (rewards - baseline) / (rewards.std(1, keepdim=True) + 1e-9)
             rewards = rewards.flatten().to("cpu").chunk(len(experiences))
@@ -1636,6 +1709,8 @@ class FastExperienceMaker(NaiveExperienceMaker):
             extra_kwargs = dict(
                 pixel_values=sample.pixel_values,
                 image_grid_thw=sample.image_grid_thws,
+                pixel_values_videos=sample.pixel_values_videos,
+                video_grid_thw=sample.video_grid_thws,
             )
 
         # Fix Qwen-VL image token count bug
@@ -1653,8 +1728,11 @@ class FastExperienceMaker(NaiveExperienceMaker):
             labels=labels,
             pixel_values=getattr(sample, "pixel_values", None),
             image_grid_thw=getattr(sample, "image_grid_thws", None),
+            pixel_values_videos=getattr(sample, "pixel_values_videos", None),
+            video_grid_thw=getattr(sample, "video_grid_thws", None),
             raw_images=getattr(sample, "raw_images", None),
-            img_num=getattr(sample, "img_num", None),
+            image_num=getattr(sample, "image_num", None),
+            video_num=getattr(sample, "video_num", None),
             references=references,
             inputs_extra_kwargs=extra_kwargs,
             prompt_and_output=([p + (o or "") for p, o in zip(prompts, output_texts)] if output_texts else None),
@@ -1754,38 +1832,38 @@ class FastExperienceMaker(NaiveExperienceMaker):
 
         # Create Experience object
         if vlm:
-            exp = ExperienceVL(
-                output.sequences,
-                output.pixel_values,
-                output.image_grid_thw,
-                output.raw_images,
-                output.action_log_probs,
-                output.base_action_log_probs,
-                output.value,
-                None,  # advantages (filled later)
-                None,  # returns (filled later)
-                output.attention_mask,
-                output.action_mask,
-                info,
-                kl,
+            return ExperienceVL(
+                sequences=output.sequences,
+                pixel_values=output.pixel_values,
+                image_grid_thws=output.image_grid_thw,
+                raw_images=output.raw_images,
+                pixel_values_videos=output.pixel_values_videos,
+                video_grid_thws=output.video_grid_thw,
+                action_log_probs=output.action_log_probs,
+                base_action_log_probs=output.base_action_log_probs,
+                values=output.value,
+                returns=None,  # returns (filled later)
+                advantages=None,  # advantages (filled later)
+                attention_mask=output.attention_mask,
+                action_mask=output.action_mask,
+                info=info,
+                kl=kl,
                 action_entropy=output.action_entropy,
             )
-            return exp
         else:
-            exp = Experience(
-                output.sequences,
-                output.action_log_probs,
-                output.base_action_log_probs,
-                output.value,
-                None,  # advantages
-                None,  # returns
-                output.attention_mask,
-                output.action_mask,
-                info,
-                kl,
+            return Experience(
+                sequences=output.sequences,
+                action_log_probs=output.action_log_probs,
+                base_action_log_probs=output.base_action_log_probs,
+                values=output.value,
+                returns=None,  # returns (filled later)
+                advantages=None,  # advantages (filled later)
+                attention_mask=output.attention_mask,
+                action_mask=output.action_mask,
+                info=info,
+                kl=kl,
                 action_entropy=output.action_entropy,
             )
-            return exp
 
     def _build_unpacked_sample(
         self,
@@ -1795,7 +1873,7 @@ class FastExperienceMaker(NaiveExperienceMaker):
         references: Optional[List],
         is_multimodal: bool,
         **kwargs,
-    ) -> Tuple[Union[Samples, SamplesVL], Optional[int]]:
+    ) -> Tuple[Union[Samples, SamplesVL], Optional[int], Optional[int]]:
         """
         Build unpacked sample (one sequence per row with padding).
 
@@ -1814,8 +1892,8 @@ class FastExperienceMaker(NaiveExperienceMaker):
         :type is_multimodal: bool
         :param kwargs: Additional VLM-specific arguments
         :type kwargs: dict
-        :return: Tuple of (Samples/SamplesVL object, updated image_patch_idx or None)
-        :rtype: Tuple[Union[Samples, SamplesVL], Optional[int]]
+        :return: Tuple of (Samples/SamplesVL object, updated image_patch_idx, updated video_patch_idx)
+        :rtype: Tuple[Union[Samples, SamplesVL], Optional[int], Optional[int]]
         """
         # Find max lengths
         max_input_len = max(len(out.prompt_token_ids) for out in outputs)
@@ -1833,13 +1911,23 @@ class FastExperienceMaker(NaiveExperienceMaker):
             image_grid_thw_list = []
             all_img_num = []
 
+            pixel_values_videos = []
+            video_grid_thw_list = []
+            all_vid_num = []
+
             grid_thw = kwargs["grid_thw"]
             raw_images = kwargs["raw_images"]
             pixel_values_tensor = kwargs["pixel_values"]
             images_num = kwargs["images_num"]
             image_patch_idx = kwargs["image_patch_idx"]
 
+            video_grid_thw = kwargs["video_grid_thw"]
+            pixel_values_videos_tensor = kwargs["pixel_values_videos"]
+            videos_num = kwargs["videos_num"]
+            video_patch_idx = kwargs["video_patch_idx"]
+
             local_grid_idx = 0
+            local_video_grid_idx = 0
 
         # Process each output
         for j, output in enumerate(outputs):
@@ -1852,23 +1940,39 @@ class FastExperienceMaker(NaiveExperienceMaker):
             output_ids = list(output.output_token_ids) + [pad_token_id] * (max_output_len - output_len)
             all_output_ids.append(output.output_token_ids)
 
-            # Process images for this sample
+            # Process images/videos for this sample
             if is_multimodal:
-                image_num = images_num[j]
-                all_img_num.append(image_num)
+                if images_num is not None:
+                    image_num = images_num[j]
+                    all_img_num.append(image_num)
 
-                for img_idx in range(image_num):
-                    grid = grid_thw[local_grid_idx + img_idx]
-                    num_patch = grid[0] * grid[1] * grid[2]
-                    image_grid_thw_list.append(grid.clone().unsqueeze(0))
+                    for img_idx in range(image_num):
+                        grid = grid_thw[local_grid_idx + img_idx]
+                        num_patch = grid[0] * grid[1] * grid[2]
+                        image_grid_thw_list.append(grid.clone().unsqueeze(0))
 
-                    pixel_slice = pixel_values_tensor[image_patch_idx:image_patch_idx + num_patch]
-                    pixel_values.append(pixel_slice.clone())
-                    image_patch_idx += num_patch
+                        if num_patch > 0:
+                            pixel_slice = pixel_values_tensor[image_patch_idx:image_patch_idx + num_patch]
+                            pixel_values.append(pixel_slice.clone())
+                        image_patch_idx += num_patch
 
-                local_grid_idx += image_num
+                    local_grid_idx += image_num
 
-            # Concatenate input and output
+                if videos_num is not None:
+                    video_num = videos_num[j]
+                    all_vid_num.append(video_num)
+
+                    for vid_idx in range(video_num):
+                        grid = video_grid_thw[local_video_grid_idx + vid_idx]
+                        num_patch = grid[0] * grid[1] * grid[2]
+                        video_grid_thw_list.append(grid.clone().unsqueeze(0))
+
+                        if num_patch > 0:
+                            pixel_slice = pixel_values_videos_tensor[video_patch_idx:video_patch_idx + num_patch]
+                            pixel_values_videos.append(pixel_slice.clone())
+                        video_patch_idx += num_patch
+
+                    local_video_grid_idx += video_num  # Concatenate input and output
             sequences.append(input_ids + output_ids)
 
         # Decode output texts
@@ -1883,7 +1987,6 @@ class FastExperienceMaker(NaiveExperienceMaker):
         attention_mask = attention_mask.to("cuda")
         action_mask = action_mask.to("cuda")
 
-        # Build Samples object
         if not is_multimodal:
             return Samples(
                 sequences=sequences,
@@ -1897,18 +2000,26 @@ class FastExperienceMaker(NaiveExperienceMaker):
                 labels=labels,
                 references=references,
                 pad_len=None,
-            ), None  # Return None for image_patch_idx when no images
+            ), None, None  # Return None for patch indices
         else:
             # Process VLM pixel values
-            pixel_values = (torch.cat(pixel_values, dim=0).cuda() if pixel_values[0].shape[0] > 0 else None)
+            pixel_values = (
+                torch.cat(pixel_values, dim=0).cuda() if pixel_values and pixel_values[0].shape[0] > 0 else None
+            )
+            pixel_values_videos = (
+                torch.cat(pixel_values_videos, dim=0).cuda()
+                if pixel_values_videos and pixel_values_videos[0].shape[0] > 0 else None
+            )
 
             return SamplesVL(
                 sequences=sequences,
                 attention_mask=attention_mask,
                 action_mask=action_mask,
-                image_grid_thws=(torch.cat(image_grid_thw_list, dim=0).to("cuda")),
+                image_grid_thws=(torch.cat(image_grid_thw_list, dim=0).to("cuda") if image_grid_thw_list else None),
+                video_grid_thws=(torch.cat(video_grid_thw_list, dim=0).to("cuda") if video_grid_thw_list else None),
                 raw_images=raw_images,
                 pixel_values=pixel_values,
+                pixel_values_videos=pixel_values_videos,
                 num_actions=action_mask.size(1),
                 packed_seq_lens=None,
                 response_length=action_mask.float().sum(dim=-1),
@@ -1917,8 +2028,9 @@ class FastExperienceMaker(NaiveExperienceMaker):
                 labels=labels,
                 prompts=prompts,
                 output_texts=output_texts,
-                img_num=all_img_num,
-            ), image_patch_idx  # Return updated image_patch_idx
+                image_num=all_img_num,
+                video_num=all_vid_num,
+            ), image_patch_idx, video_patch_idx
 
     def _build_packed_sample(
         self,
