@@ -10,7 +10,6 @@ Key Features:
     - Rule-based verifiable rewards (Format checking and Accuracy verification)
     - Flexible strategy: DeepSpeed ZeRO or FSDP
     - Meta device initialization for memory optimization
-    - EMA (Exponential Moving Average) model support
     - Dynamic sampling and overlong buffer penalties (DAPO)
 
 Main Components:
@@ -299,7 +298,6 @@ def train(args: argparse.Namespace) -> None:
         lambd=args.lambd,
         init_kl_coef=args.init_kl_coef,
         kl_target=args.kl_target,
-        ema_beta=0.992,
         ptx_coef=args.ptx_coef,
         max_norm=args.max_norm,
         # for GPT generation
