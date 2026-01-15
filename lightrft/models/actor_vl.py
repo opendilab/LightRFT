@@ -27,7 +27,7 @@ import torch.nn as nn
 from transformers import AutoModel, AutoModelForVision2Seq
 from transformers.integrations.deepspeed import HfDeepSpeedConfig
 
-from .utils import apply_lora_configuration, log_probs_from_logits, reset_position_ids
+from .utils import apply_lora_configuration, log_probs_from_logits, reset_position_ids, entropy_from_logits
 
 
 class ActorVL(nn.Module):
@@ -93,9 +93,11 @@ class ActorVL(nn.Module):
         ds_config=None,
         device_map=None,
         packing_samples=False,
+        high_entropy_token_ratio=0.0,
         **kwargs,
     ) -> None:
         super().__init__()
+        self.high_entropy_token_ratio = high_entropy_token_ratio
 
         if isinstance(pretrain_or_model, str):
             self.pretrain_or_model = pretrain_or_model
@@ -316,19 +318,39 @@ class ActorVL(nn.Module):
 
         log_probs = log_probs_from_logits(output["logits"][:, :-1, :], sequences[:, 1:])
 
+        # Calculate entropy for action tokens (for high-entropy token identification)
+        # Only compute entropy when high_entropy_token_ratio is not 0
+        if self.high_entropy_token_ratio > 0.0:
+            action_logits = output["logits"][:, :-1, :]  # Shape: (batch, seq_len-1, vocab_size)
+            action_entropy = entropy_from_logits(action_logits)  # Shape: (batch, seq_len-1)
+        else:
+            action_entropy = None
+
         if not self.packing_samples:
             action_log_probs = log_probs[:, -num_actions:]
+            if action_entropy is not None:
+                action_entropy = action_entropy[:, -num_actions:]
         else:
             assert isinstance(num_actions, list) and len(num_actions) == len(packed_seq_lens)
             action_log_probs = []
+            action_entropy_list = []
             offset = 0
             for num_action, seq_len in zip(num_actions, packed_seq_lens):
                 start, end = max(0, offset + seq_len - num_action - 1), offset + seq_len - 1
                 action_log_probs.append(log_probs[:, start:end])
+                if action_entropy is not None:
+                    action_entropy_list.append(action_entropy[:, start:end])
                 offset += seq_len
             action_log_probs = torch.cat(action_log_probs, dim=1)
+            if action_entropy is not None:
+                action_entropy = torch.cat(action_entropy_list, dim=1)
 
         if return_output:
+            # Include action_entropy in output if computed
+            if action_entropy is not None:
+                output_dict = dict(output)
+                output_dict["action_entropy"] = action_entropy
+                return (action_log_probs, output_dict)
             return (action_log_probs, output)
         else:
             return action_log_probs

@@ -113,6 +113,7 @@ def train(args):
             packing_samples=args.packing_samples,
             disable_logprobs_flashattn=args.disable_logprobs_flashattn,
             fused_linear_logprob=args.fused_linear_logprob,
+            high_entropy_token_ratio=args.high_entropy_token_ratio,
         )
 
     if args.actor_init_on_gpu:
@@ -428,6 +429,7 @@ if __name__ == "__main__":
     parser.add_argument("--disable_ds_ckpt", action="store_true", default=False)
     parser.add_argument("--save_trajectories", action="store_true", default=False, help="Save experience trajectories to JSON for debugging")
     parser.add_argument("--num_trajectories_to_save", type=int, default=10, help="Number of trajectories to save per checkpoint")
+    parser.add_argument("--mark_high_entropy_tokens", action="store_true", default=False, help="Create token arrays with high-entropy information for HTML rendering (requires --save_trajectories). When enabled, generates structured token data for visualization.")
     parser.add_argument("--trajectory_analysis", action="store_true", default=False, help="Enable trajectory analysis metrics (repeat_score, reflection_pattern, policy_entropy) and log to wandb")
     parser.add_argument("--print_replay_buffer_stats", action="store_true", default=False, help="Print detailed replay buffer statistics during training")
     parser.add_argument("--logging_steps", type=int, default=1)
@@ -602,6 +604,9 @@ if __name__ == "__main__":
 
     # CPGD
     parser.add_argument("--use_cpg_loss", action="store_true", default=False, help="whether to use the clipped policy gradient loss from CPGD")
+    
+    # High-entropy token filtering (from "Beyond the 80/20 Rule" paper)
+    parser.add_argument("--high_entropy_token_ratio", type=float, default=0.0, help="Ratio of high-entropy tokens to use for gradient updates (0.0 means use all tokens, 0.2 means use top 20% highest entropy tokens). Common value when enabled: 0.2. Based on 'Beyond the 80/20 Rule: High-Entropy Minority Tokens Drive Effective Reinforcement Learning for LLM Reasoning' (https://arxiv.org/abs/2506.01939)")
 
     add_arguments(parser)
 

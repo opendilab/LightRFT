@@ -36,6 +36,7 @@ class BufferItem:
     advantages: (1)
     attention_mask: (S)
     action_mask: (A)
+    action_entropy: (A) - Entropy values for high-entropy token filtering
 
     "A" is the number of actions.
     """
@@ -49,6 +50,7 @@ class BufferItem:
     attention_mask: Optional[torch.LongTensor]
     action_mask: Optional[torch.BoolTensor]
     info: Optional[dict]
+    action_entropy: Optional[torch.Tensor] = None  # Entropy for high-entropy token filtering
 
 
 @dataclass
@@ -67,6 +69,7 @@ class BufferItemVL:
     advantages: (1)
     attention_mask: (S)
     action_mask: (A)
+    action_entropy: (A) - Entropy values for high-entropy token filtering
 
     "A" is the number of actions.
     """
@@ -87,6 +90,7 @@ class BufferItemVL:
     attention_mask: Optional[torch.LongTensor] = None
     action_mask: Optional[torch.BoolTensor] = None
     info: Optional[dict] = None
+    action_entropy: Optional[torch.Tensor] = None  # Entropy for high-entropy token filtering
 
 
 def is_vl_experience(experience: Union[Experience, ExperienceVL]) -> bool:
@@ -178,9 +182,11 @@ def _split_experience_batch(experience: Experience) -> List:
         "advantages",
         "attention_mask",
         "action_mask",
+        "action_entropy",
     )
     for key in keys:
-        value = getattr(experience, key)
+        # Use getattr with default None to handle optional attributes like action_entropy
+        value = getattr(experience, key, None)
         if value is None:
             for i in range(batch_size):
                 batch_kwargs[i][key] = None
@@ -275,9 +281,11 @@ def _split_experience_batch_vl(experience: ExperienceVL) -> List:
         "advantages",
         "attention_mask",
         "action_mask",
+        "action_entropy",
     )
     for key in keys:
-        value = getattr(experience, key)
+        # Use getattr with default None to handle optional attributes like action_entropy
+        value = getattr(experience, key, None)
         if value is None:
             for i in range(batch_size):
                 batch_kwargs[i][key] = None
@@ -527,6 +535,27 @@ def _make_experience_batch(items: List, packing_samples: bool = False) -> Experi
             batch_data = vals if vals[0] is not None else None
         kwargs[key] = batch_data
 
+    # Handle action_entropy if it exists in any item
+    # action_entropy has shape (A,) per item, handle it like action_mask
+    if items and hasattr(items[0], 'action_entropy') and items[0].action_entropy is not None:
+        entropy_vals = [getattr(item, 'action_entropy', None) for item in items]
+        if all(v is not None for v in entropy_vals):
+            if not packing_samples:
+                # For padded batches, pad action_entropy to match action_mask
+                kwargs["action_entropy"] = zero_pad_sequences(entropy_vals, "left")
+            else:
+                # For packed batches, check if all have the same length
+                lengths = [len(v) for v in entropy_vals]
+                if len(set(lengths)) == 1:
+                    kwargs["action_entropy"] = torch.stack(entropy_vals, dim=0)
+                else:
+                    # If lengths differ, pad to max length
+                    kwargs["action_entropy"] = zero_pad_sequences(entropy_vals, "left")
+        else:
+            kwargs["action_entropy"] = None
+    else:
+        kwargs["action_entropy"] = None
+
     kwargs["info"] = {}
     if items and items[0].info:
         for key in items[0].info.keys():
@@ -598,6 +627,27 @@ def _make_experience_batch_vl(items: List, packing_samples: bool = False) -> Exp
         else:
             batch_data = vals if vals[0] is not None else None
         kwargs[key] = batch_data
+
+    # Handle action_entropy if it exists in any item
+    # action_entropy has shape (A,) per item, handle it like action_mask
+    if items and hasattr(items[0], 'action_entropy') and items[0].action_entropy is not None:
+        entropy_vals = [getattr(item, 'action_entropy', None) for item in items]
+        if all(v is not None for v in entropy_vals):
+            if not packing_samples:
+                # For padded batches, pad action_entropy to match action_mask
+                kwargs["action_entropy"] = zero_pad_sequences(entropy_vals, "left")
+            else:
+                # For packed batches, check if all have the same length
+                lengths = [len(v) for v in entropy_vals]
+                if len(set(lengths)) == 1:
+                    kwargs["action_entropy"] = torch.stack(entropy_vals, dim=0)
+                else:
+                    # If lengths differ, pad to max length
+                    kwargs["action_entropy"] = zero_pad_sequences(entropy_vals, "left")
+        else:
+            kwargs["action_entropy"] = None
+    else:
+        kwargs["action_entropy"] = None
 
     # Image data processing
     pixel_values_list = [
@@ -748,6 +798,9 @@ def _remove_padding_in_sequences(items: List) -> List:
             item.attention_mask,
             item.action_mask,
         )
+        # Get action_entropy if it exists
+        action_entropy = getattr(item, 'action_entropy', None)
+
         right_pad = (1 - act_mask.long()).sum()
         right_pad = None if right_pad == 0 else -right_pad
 
@@ -772,6 +825,9 @@ def _remove_padding_in_sequences(items: List) -> List:
             att_mask[left_pad:right_pad],
             act_mask[:right_pad],
         )
+        # Remove padding from action_entropy if it exists
+        if action_entropy is not None:
+            item.action_entropy = action_entropy[:right_pad]
     return items
 
 
@@ -814,6 +870,9 @@ def _remove_padding_in_sequences_vl(items: List) -> List:
             item.attention_mask,
             item.action_mask,
         )
+        # Get action_entropy if it exists
+        action_entropy = getattr(item, 'action_entropy', None)
+
         right_pad = (1 - act_mask.long()).sum()
         right_pad = None if right_pad == 0 else -right_pad
 
@@ -838,4 +897,7 @@ def _remove_padding_in_sequences_vl(items: List) -> List:
             att_mask[left_pad:right_pad],
             act_mask[:right_pad],
         )
+        # Remove padding from action_entropy if it exists
+        if action_entropy is not None:
+            item.action_entropy = action_entropy[:right_pad]
     return items
