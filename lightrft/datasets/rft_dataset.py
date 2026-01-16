@@ -186,7 +186,7 @@ class RFTDatasetVL(Dataset):
 
         input_text = self.processor.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
 
-        image_inputs, video_inputs = self.process_vision_info(messages, return_video_kwargs=False)
+        image_inputs, video_inputs = self.process_vision_info(messages, return_video_kwargs=False, return_video_metadata=False)
 
         return input_text, image_inputs, video_inputs
 
