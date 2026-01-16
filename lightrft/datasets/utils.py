@@ -188,6 +188,29 @@ def load_multimodal_content(media_info: Dict) -> Dict:
     return loaded_content
 
 
+def get_task_instructions(handler: Any, config: Dict[str, Any]) -> str:
+    """
+    Select task instruction based on task type from handler and config.
+
+    :param handler: Data handler instance.
+    :param config: Configuration dictionary which contains 'task_instruction'.
+    :return: The selected task instruction.
+    """
+    task_instruction_raw = config.get("task_instruction")
+    if isinstance(task_instruction_raw, dict):
+        if hasattr(handler, "task_type"):
+            prompt = task_instruction_raw.get(handler.task_type)
+            if prompt is None:
+                raise ValueError(f"Task instruction for {handler.task_type} not found.")
+        else:
+            raise ValueError(f"Handler {handler.__class__.__name__} does not specify a task_type.")
+        return prompt
+    elif isinstance(task_instruction_raw, str):
+        return task_instruction_raw
+    else:
+        raise ValueError("task_instruction in config must be either a dict or a str.")
+
+
 class BaseDataHandler(ABC):
     """
     Base class for data handlers.
@@ -232,14 +255,23 @@ class BaseDataHandler(ABC):
 
         :param item: The raw data item.
         :type item: Dict[str, Any]
-        :param media_content: A dict containing loaded content.
+        :param media_content: A dict containing loaded content (e.g. PIL Images, Video paths).
         :type media_content: Dict[str, Any]
-        :param config: A dict of additional configuration options.
+        :param config: A dict of additional configuration options (e.g. prompt templates, max_pixels).
         :type config: Dict[str, Any]
 
-        :return: A tuple containing lists of dictionaries and one dictionary.
-                 For pointwise scoring data: (messages_chosen, messages_rejected, other)
-                 For pairwise ranking data: (messages, other)
+        :return: A tuple containing message lists and a metadata dictionary.
+                 - For point-wise scoring data (e.g., Scalar Reward Model training/evaluation):
+                   Return (messages_chosen, messages_rejected, other)
+                 - For pair-wise ranking data (e.g., Generative Reward Model training/evaluation):
+                   Return (messages, other)
+
+                 The `other` dictionary contains metadata, and can optionally include:
+                 - "preference": (str) Indicates the ground truth preferred choice ("A", "B", or "C").
+                 - "task_type": (str) The type of task (e.g., "text-to-video").
+                 - "reward_rule_label": (str) A label used in RL to identify which reward
+                   function or reward model to apply to this specific sample when performing
+                   reinforcement fine-tuning.
         :rtype: Union[Tuple[List[Dict], List[Dict], Dict], Tuple[List[Dict], Dict]]
         """
         raise NotImplementedError

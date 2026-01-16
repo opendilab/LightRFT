@@ -34,7 +34,10 @@ from .imagegen_cot_reward import *
 from .rapidata import *
 from .image_reward_db import *
 from .hpdv3 import *
-
+from .videodpo import *
+from .videogen_rewardbench import *
+from .genai_bench import *
+from .rft_dataset import RFTDatasetVL
 from .utils import (
     extract_answer,
     zero_pad_sequences,
@@ -51,4 +54,5 @@ __all__ = [
     "PromptDatasetVL",
     "SFTDataset",
     "SFTDatasetVL",
+    "RFTDatasetVL",
 ]

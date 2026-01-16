@@ -3,7 +3,7 @@ Vision-Language Actor Model Module for Reinforcement Learning.
 
 This module provides the ActorVL class, which implements an actor model specifically designed
 for vision-language tasks in reinforcement learning scenarios. The actor is responsible for
-generating actions (text sequences) based on both visual inputs (images) and textual prompts.
+generating actions (text sequences) based on visual inputs (images and videos) and textual prompts.
 
 The module supports various optimization techniques including:
 - LoRA (Low-Rank Adaptation) for parameter-efficient fine-tuning
@@ -27,7 +27,7 @@ import torch.nn as nn
 from transformers import AutoModel, AutoModelForVision2Seq
 from transformers.integrations.deepspeed import HfDeepSpeedConfig
 
-from .utils import apply_lora_configuration, log_probs_from_logits, reset_position_ids
+from .utils import apply_lora_configuration, log_probs_from_logits, reset_position_ids, entropy_from_logits
 
 
 class ActorVL(nn.Module):
@@ -35,9 +35,9 @@ class ActorVL(nn.Module):
     Vision-Language Actor model for reinforcement learning applications.
 
     This class serves as a foundation for implementing vision-language actor models in RL,
-    which are responsible for generating text sequences (actions) based on both visual and
-    textual inputs. The model supports various optimization techniques including LoRA
-    adaptation, quantization, and distributed training.
+    which are responsible for generating text sequences (actions) based on visual
+    (images and videos) and textual inputs. The model supports various optimization
+    techniques including LoRA adaptation, quantization, and distributed training.
 
     The actor model can be initialized either from a pretrained model path or from an
     existing model instance, providing flexibility in model deployment scenarios.
@@ -93,9 +93,11 @@ class ActorVL(nn.Module):
         ds_config=None,
         device_map=None,
         packing_samples=False,
+        high_entropy_token_ratio=0.0,
         **kwargs,
     ) -> None:
         super().__init__()
+        self.high_entropy_token_ratio = high_entropy_token_ratio
 
         if isinstance(pretrain_or_model, str):
             self.pretrain_or_model = pretrain_or_model
@@ -154,7 +156,13 @@ class ActorVL(nn.Module):
 
     @torch.no_grad()
     def generate(
-        self, input_ids: torch.Tensor, pixel_values: torch.Tensor, image_grid_thw: torch.Tensor, **kwargs
+        self,
+        input_ids: torch.Tensor,
+        pixel_values: Optional[torch.Tensor] = None,
+        image_grid_thw: Optional[torch.Tensor] = None,
+        pixel_values_videos: Optional[torch.Tensor] = None,
+        video_grid_thw: Optional[torch.Tensor] = None,
+        **kwargs
     ) -> Union[
         Tuple[torch.LongTensor, torch.LongTensor],
         Tuple[torch.LongTensor, torch.LongTensor, torch.BoolTensor], ]:
@@ -168,9 +176,13 @@ class ActorVL(nn.Module):
         :param input_ids: Input token IDs representing the text prompt
         :type input_ids: torch.Tensor
         :param pixel_values: Preprocessed pixel values of input images
-        :type pixel_values: torch.Tensor
+        :type pixel_values: Optional[torch.Tensor]
         :param image_grid_thw: Image grid dimensions (time, height, width)
-        :type image_grid_thw: torch.Tensor
+        :type image_grid_thw: Optional[torch.Tensor]
+        :param pixel_values_videos: Preprocessed pixel values of input videos
+        :type pixel_values_videos: Optional[torch.Tensor]
+        :param video_grid_thw: Video grid dimensions
+        :type video_grid_thw: Optional[torch.Tensor]
         :param kwargs: Additional generation parameters (top_k, top_p, temperature, etc.)
         :type kwargs: dict
 
@@ -192,6 +204,8 @@ class ActorVL(nn.Module):
             "input_ids": input_ids,
             "pixel_values": pixel_values,
             "image_grid_thw": image_grid_thw,
+            "pixel_values_videos": pixel_values_videos,
+            "video_grid_thw": video_grid_thw,
             "top_k": kwargs.get("top_k", None),
             "top_p": kwargs.get("top_p", None),
             "do_sample": kwargs.get("do_sample", True),
@@ -224,8 +238,10 @@ class ActorVL(nn.Module):
         sequences: torch.LongTensor,
         num_actions: Optional[Union[int, list[int]]] = None,
         attention_mask: Optional[torch.Tensor] = None,
-        pixel_values: torch.Tensor = None,
-        image_grid_thw: torch.Tensor = None,
+        pixel_values: Optional[torch.Tensor] = None,
+        image_grid_thw: Optional[torch.Tensor] = None,
+        pixel_values_videos: Optional[torch.Tensor] = None,
+        video_grid_thw: Optional[torch.Tensor] = None,
         return_output=False,
         packed_seq_lens: Optional[list[int]] = None,
     ) -> torch.Tensor:
@@ -243,9 +259,13 @@ class ActorVL(nn.Module):
         :param attention_mask: Attention mask for the sequences
         :type attention_mask: Optional[torch.Tensor]
         :param pixel_values: Preprocessed pixel values of input images
-        :type pixel_values: torch.Tensor
+        :type pixel_values: Optional[torch.Tensor]
         :param image_grid_thw: Image grid dimensions (time, height, width)
-        :type image_grid_thw: torch.Tensor
+        :type image_grid_thw: Optional[torch.Tensor]
+        :param pixel_values_videos: Preprocessed pixel values of input videos
+        :type pixel_values_videos: Optional[torch.Tensor]
+        :param video_grid_thw: Video grid dimensions
+        :type video_grid_thw: Optional[torch.Tensor]
         :param return_output: Whether to return the full model output along with log probs
         :type return_output: bool
         :param packed_seq_lens: Sequence lengths for packed samples
@@ -288,6 +308,8 @@ class ActorVL(nn.Module):
             position_ids=position_ids,
             pixel_values=pixel_values,
             image_grid_thw=image_grid_thw,
+            pixel_values_videos=pixel_values_videos,
+            video_grid_thw=video_grid_thw,
         )
 
         if num_actions is None:  # defult
@@ -296,19 +318,39 @@ class ActorVL(nn.Module):
 
         log_probs = log_probs_from_logits(output["logits"][:, :-1, :], sequences[:, 1:])
 
+        # Calculate entropy for action tokens (for high-entropy token identification)
+        # Only compute entropy when high_entropy_token_ratio is not 0
+        if self.high_entropy_token_ratio > 0.0:
+            action_logits = output["logits"][:, :-1, :]  # Shape: (batch, seq_len-1, vocab_size)
+            action_entropy = entropy_from_logits(action_logits)  # Shape: (batch, seq_len-1)
+        else:
+            action_entropy = None
+
         if not self.packing_samples:
             action_log_probs = log_probs[:, -num_actions:]
+            if action_entropy is not None:
+                action_entropy = action_entropy[:, -num_actions:]
         else:
             assert isinstance(num_actions, list) and len(num_actions) == len(packed_seq_lens)
             action_log_probs = []
+            action_entropy_list = []
             offset = 0
             for num_action, seq_len in zip(num_actions, packed_seq_lens):
                 start, end = max(0, offset + seq_len - num_action - 1), offset + seq_len - 1
                 action_log_probs.append(log_probs[:, start:end])
+                if action_entropy is not None:
+                    action_entropy_list.append(action_entropy[:, start:end])
                 offset += seq_len
             action_log_probs = torch.cat(action_log_probs, dim=1)
+            if action_entropy is not None:
+                action_entropy = torch.cat(action_entropy_list, dim=1)
 
         if return_output:
+            # Include action_entropy in output if computed
+            if action_entropy is not None:
+                output_dict = dict(output)
+                output_dict["action_entropy"] = action_entropy
+                return (action_log_probs, output_dict)
             return (action_log_probs, output)
         else:
             return action_log_probs

@@ -50,19 +50,12 @@ WANDB_RUN_NAME="${SAVE_MODEL_NAME}"
 export WANDB_MODE="offline"
 
 ############################### env settings #####################
-# Single-Node Distributed Setup
-export MLP_WORKER_NUM=1 
-export MLP_WORKER_GPU=8      # Number of GPUs per node
-export MLP_ROLE_INDEX=0
-export MLP_WORKER_0_PORT=20092
-export MLP_WORKER_0_HOST=localhost # or 127.0.0.1
-
 # PyTorch Distributed Environment Variables
-export MASTER_ADDR=$MLP_WORKER_0_HOST
-export NNODES=$MLP_WORKER_NUM
-export NODE_RANK=$MLP_ROLE_INDEX
-export GPUS_PER_NODE=$MLP_WORKER_GPU
-export MASTER_PORT=$MLP_WORKER_0_PORT
+export MASTER_ADDR=localhost  # Address of the master node, alternatively set to 127.0.0.1
+export NNODES=1               # Number of nodes
+export NODE_RANK=0            # Rank of this node
+export GPUS_PER_NODE=8        # Number of GPUs per node
+export MASTER_PORT=20091      # Port for communication
 
 # export NCCL_DEBUG=INFO
 

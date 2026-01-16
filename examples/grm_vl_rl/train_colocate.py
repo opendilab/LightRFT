@@ -1,11 +1,13 @@
 """
-GRPO Training with Co-located Reward Models
+GRPO Training with Verifiable Rewards (RLVR) for Vision-Language Tasks
+Supported Modalities: Text, Image, and Video.
 
-This script implements Group Relative Policy Optimization (GRPO) training
-with co-located reward models for reinforcement learning with verifiable rewards (RLVR) and reinforcement learning from human feedback (RLHF).
+This script implements Group Relative Policy Optimization (GRPO) for Vision-Language Models (VLMs). 
+It integrates rule-based reward functions to enable Reinforcement Learning from Verifiable Rewards (RLVR), 
 
 Key Features:
     - Supports both text-only and vision-language models
+    - Rule-based verifiable rewards (Format checking and Accuracy verification)
     - Flexible strategy: DeepSpeed ZeRO or FSDP
     - Meta device initialization for memory optimization
     - EMA (Exponential Moving Average) model support
@@ -14,71 +16,71 @@ Key Features:
 Main Components:
     - Actor: Policy model being trained
     - Critic: Value model for advantage estimation (optional for GRPO)
-    - Reward Models: Multiple models for evaluating different aspects
     - Initial Model: Reference model for KL divergence
 
 Training Pipeline:
-    1. Load and initialize models (actor, critic, reward models)
+    1. Load and initialize models (actor, initial model, critic)
     2. Setup data loaders (prompts + optional pretrain data)
     3. Configure optimizers and schedulers
     4. Run PPO/GRPO training loop via SPMDPPOTrainerVL
 
 Usage:
-    python train_colocate.py --pretrain <model_path> --reward_pretrain <rm_config> ...
+    python train_colocate.py --pretrain <model_path> ...
 
 For more details on arguments, see the argument parser at the bottom of this file.
 """
+import os
+import sys
+import math
+import torch
 import argparse
 import itertools
-import json
-import math
-import os
-import re
-import sys
 from datetime import datetime
-from typing import Callable, Dict, List, Tuple, Union
 
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
-from lightrft.utils import add_arguments, ensure_video_input_available
-
-ensure_video_input_available()
-
-from lightrft.datasets import DatasetConfig, DatasetLoader
+from lightrft.strategy import get_strategy
+from lightrft.datasets import RFTDatasetVL
 from lightrft.models.actor_language import ActorLanguage
 from lightrft.models.actor_vl import ActorVL
-from lightrft.strategy import get_strategy
-from lightrft.trainer.spmd_ppo_trainer import SPMDPPOTrainerVL
-from lightrft.utils import get_tokenizer_processor_vl
+from lightrft.trainer import SPMDPPOTrainerVL
+from lightrft.utils import add_arguments, ensure_video_input_available, get_tokenizer_processor_vl
+ensure_video_input_available()
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-from reward_models_utils import RECIPE
-from lightrft.reward import RewardManager
+from reward_fn_utils import reward_fn, RECIPE
 
 
-def train(args):
+def train(args: argparse.Namespace) -> None:
     """
-    Main training function for GRPO with co-located reward models.
+    Main training function for GRPO with Rule-based function.
+    Support vision-language models for image and video inputs.
 
     Training workflow:
         1. Initialize strategy (DeepSpeed or FSDP)
         2. Initialize models with meta_init option for memory efficiency
-        3. Load reward models (multiple types supported)
-        4. Setup dataloaders for prompts and optional pretrain data
-        5. Configure optimizers and schedulers
-        6. Setup inference engine (vLLM or SGLang)
-        7. Run training loop via SPMDPPOTrainerVL
-        8. Save final model
+        3. Setup dataloaders for prompts (supporting images and videos) and optional pretrain data
+        4. Configure optimizers and schedulers
+        5. Setup inference engine (vLLM or SGLang)
+        6. Run training loop via SPMDPPOTrainerVL
+        7. Save final model
 
-    Args:
-        args: Parsed command-line arguments containing all training configuration
+    :param args: Parsed command-line arguments containing all training configuration
+    :type args: argparse.Namespace
 
-    Key configurations:
-        - meta_init: Initialize models on meta device to save CPU RAM
-        - freeze_prefix: Freeze vision encoder during training
-        - fsdp: Use FSDP instead of DeepSpeed
-        - rm_use_engine: Use SGLang engine for reward models
+    :return: None
+    :rtype: None
+
+    **Key configurations:**
+
+    - meta_init: Initialize models on meta device to save CPU RAM
+    - freeze_prefix: Freeze vision encoder during training
+    - fsdp: Use FSDP instead of DeepSpeed
+
+    **Example:**
+
+    .. code-block:: python
+
+        # Assuming args is already defined via argparse
+        train(args)
     """
     # configure strategy
     strategy = get_strategy(args)
@@ -86,7 +88,6 @@ def train(args):
     ds_train_cfg = strategy.get_ds_train_config(is_actor=True) if not args.fsdp else None
     ds_eval_cfg = strategy.get_ds_eval_config(offload=False)  if not args.fsdp else None
 
-    # configure model
     # ==================== Model Initialization ====================
     # Initialize all models within init_model_context for memory efficiency.
     # When meta_init=True, models are created on "meta" device as empty shells,
@@ -114,7 +115,6 @@ def train(args):
             packing_samples=args.packing_samples,
             disable_logprobs_flashattn=args.disable_logprobs_flashattn,
             fused_linear_logprob=args.fused_linear_logprob,
-            high_entropy_token_ratio=args.high_entropy_token_ratio,
         )
 
     if args.actor_init_on_gpu:
@@ -174,158 +174,56 @@ def train(args):
         )
 
         if args.fsdp:
-            initial_model = strategy.prepare_model(initial_model, is_training=False, shard_size=8)
+            initial_model = strategy.prepare_model(initial_model, is_training=False)
             strategy.offload_model(initial_model)
-
-    if args.enable_ema:
-        ema_model = Actor(
-            args.pretrain,
-            use_flash_attention_2=args.flash_attn,
-            bf16=args.bf16,
-            load_in_4bit=args.load_in_4bit,
-            ds_config=ds_eval_cfg,
-        )
-    else:
-        ema_model = None
 
     # configure tokenizer and processor
     tokenizer, processor = get_tokenizer_processor_vl(
-        args.pretrain, actor.model, "left", use_fast=not strategy.args.disable_fast_tokenizer
+        args.pretrain, actor.model, "left", strategy, use_fast=not strategy.args.disable_fast_tokenizer
     )
     assert processor is not None, "processor is None"
 
-    # Initialize reward manager (using rule-based rewards for gsm8k/geo3k)
-    strategy.report_memory(f"before loaded reward models in main entry")
-    
-    # For gsm8k/geo3k, we use rule-based rewards, so no neural models are needed
-    # Create a wrapper function for compatibility with trainer
-    def reward_fn(
-        model_reward_list,
-        labels,
-        queries,
-        refs,
-        label_map,
-    ):
-        """
-        Wrapper function for RewardManager to match trainer's expected interface.
-        
-        For rule-based rewards, model_reward_list will be empty.
-        The reward manager will compute rewards based on labels and queries.
-        """
-        # Determine rule type from labels (geo3k or gsm8k)
-        # Use the first label to determine rule type, or default to geo3k_combined
-        if labels:
-            first_label = labels[0]
-            if "gsm8k" in first_label.lower():
-                rule_type = "gsm8k_combined"
-            elif "geo3k" in first_label.lower():
-                rule_type = "geo3k_combined"
-            else:
-                rule_type = "geo3k_combined"  # Default
-        else:
-            rule_type = "geo3k_combined"
-        
-        # Create a temporary reward manager with the correct rule type
-        # Note: We could optimize this by caching managers per rule type
-        # For rule-based rewards, tokenizer and strategy are not required
-        temp_reward_manager = RewardManager(
-            reward_type="rule",
-            rule_type=rule_type,
-        )
-        
-        # Compute rewards using the reward manager
-        rewards, metrics = temp_reward_manager.compute(
-            queries=queries,
-            references=refs,
-            labels=labels,
-        )
-        
-        return rewards, metrics
-    
-    label_map = {}  # Empty for rule-based rewards
-    reward_models = []  # Empty for rule-based rewards
-    reward_tokenizers = []  # Empty for rule-based rewards
-    
-    strategy.print(f"Initialized rule-based reward manager for gsm8k/geo3k")
-    strategy.report_memory(f"after loaded reward models in main entry")
+   # ==================== Data Loading Optimization ====================
+    # The following sections now rely on the robust `blending_datasets` function.
+    # We add more logging for clarity.
 
-    # ==================== Data Loading with New API ====================
-    # Use DatasetConfig and DatasetLoader for unified dataset loading
-    
-    # Initialize dataset loader
-    dataset_loader = DatasetLoader(
-        tokenizer=tokenizer,
-        processor=processor,
-        strategy=strategy,
-    )
-    
     # Prepare prompts dataset
-    train_config = DatasetConfig.for_train(
-        data_path=args.prompt_data,
-        data_probs=args.prompt_data_probs,
-        split=args.prompt_split,
-        max_samples=args.max_samples,
-        seed=args.seed,
+    strategy.print(f"Loading prompts dataset from: {args.prompt_data}")
+
+    # Parse system prompt path if provided. We keep a `system_prompt` variable
+    # which contains either the loaded YAML (if path ends with .yaml/.yml) or
+    # the string passed directly.
+    system_prompt = None
+    if getattr(args, "system_prompt_path", None):
+        system_prompt_path = args.system_prompt_path
+        # If it's a YAML file, load it; otherwise treat as literal prompt string
+        if system_prompt_path.endswith(".yaml") or system_prompt_path.endswith(".yml"):
+            try:
+                import yaml
+                with open(system_prompt_path, "r") as f:
+                    system_prompt = yaml.safe_load(f)
+            except Exception as e:
+                strategy.print(f"Error loading system prompt from YAML: {e}")
+        else:
+            system_prompt = system_prompt_path
+
+    prompts_dataset = RFTDatasetVL(
+        args.prompt_data, 
+        processor,
+        tokenizer, 
+        strategy, 
+        args.prompt_max_len,
+        config={
+            "task_instruction": system_prompt,
+            "video_fps": args.fps,
+            "max_pixels": args.max_pixels,
+        },
     )
-    prompts_dataset = dataset_loader.load_train_dataset(
-        config=train_config,
-        prompt_max_len=args.prompt_max_len,
-        input_template=args.input_template,
-    )
-    
+    strategy.print(f"Loaded {len(prompts_dataset)} samples for prompts.")
+
+    # TODO: Implement evaluation dataset and dataloader
     # Prepare evaluation dataset
     eval_dataloader = None
-    if args.eval_data or args.eval_split:
-        eval_data_path = args.eval_data if args.eval_data else args.prompt_data
-        if eval_data_path:
-            eval_config = DatasetConfig.for_eval(
-                data_path=eval_data_path,
-                data_probs="1.0",
-                split=args.eval_split,
-                max_samples=args.max_eval_samples,
-                seed=args.seed,
-            )
-            eval_dataset = dataset_loader.load_eval_dataset(
-                config=eval_config,
-                prompt_max_len=args.prompt_max_len,
-                input_template=args.input_template,
-            )
-            if eval_dataset is not None:
-                eval_dataloader = strategy.setup_dataloader(
-                    eval_dataset, args.rollout_batch_size // strategy.world_size, False, False, collate_fn=eval_dataset.collate_fn
-                )
-        else:
-            strategy.print("Warning: eval_split specified but no data path available for evaluation.")
-
-    # Prepare pretrain dataset
-    pretrain_dataloader = None
-    if args.pretrain_data:
-        pretrain_max_len = args.max_len if args.max_len else args.prompt_max_len + args.generate_max_len
-        # Calculate total samples needed for pretraining
-        total_pretrain_samples = args.max_epochs * len(prompts_dataset) * args.n_samples_per_prompt
-        
-        pretrain_config = DatasetConfig.for_pretrain(
-            data_path=args.pretrain_data,
-            data_probs=args.pretrain_data_probs,
-            split=args.pretrain_split,
-            max_samples=total_pretrain_samples,
-            seed=args.seed,
-        )
-        pretrain_dataset = dataset_loader.load_pretrain_dataset(
-            config=pretrain_config,
-            pretrain_max_len=pretrain_max_len,
-        )
-        
-        if pretrain_dataset is not None:
-            pretrain_dataloader = itertools.cycle(
-                iter(
-                    strategy.setup_dataloader(
-                        pretrain_dataset, args.micro_train_batch_size, True, True, pretrain_dataset.collate_fn,
-                    )
-                )
-            )
-    else:
-        pretrain_dataloader = None
 
     # Prepare prompts dataloader
     prompts_dataloader = strategy.setup_dataloader(
@@ -353,13 +251,7 @@ def train(args):
         (critic, critic_optim, critic_scheduler),
         reward_models,
         initial_model,
-    ) = strategy.prepare_models_and_optimizers(actor, critic, reward_models, initial_model, args, max_steps)
-
-    strategy.print(reward_models)
-
-    if ema_model:
-        ema_model._offload = True
-        ema_model = strategy.prepare(ema_model, is_rlhf=True)
+    ) = strategy.prepare_models_and_optimizers(actor, critic, [], initial_model, args, max_steps)
 
     # load checkpoint
     consumed_samples = 0
@@ -385,7 +277,7 @@ def train(args):
         critic,
         reward_models,
         initial_model,
-        ema_model,
+        None,
         actor_optim,
         critic_optim,
         actor_scheduler,
@@ -420,9 +312,7 @@ def train(args):
         eos_token_id=tokenizer.eos_token_id,
         # reward model
         reward_fn=reward_fn,
-        reward_fn_label_map=label_map,
         reward_recipe=RECIPE,
-        reward_tokenizers=reward_tokenizers,
         save_hf_ckpt=args.save_hf_ckpt,
         disable_ds_ckpt=args.disable_ds_ckpt,
         packing_samples=args.packing_samples,
@@ -434,15 +324,17 @@ def train(args):
         print_replay_buffer_stats=args.print_replay_buffer_stats,
     )
 
-    trainer.fit(args, prompts_dataloader=prompts_dataloader, pretrain_dataloader=pretrain_dataloader, eval_dataloader=eval_dataloader, consumed_samples=0, num_update_steps_per_episodes=num_update_steps_per_episodes)
-
-    # save model checkpoint after fitting on only rank0
-    strategy.save_model(
-        ema_model if args.enable_ema else actor,
-        tokenizer,
-        args.save_path,
+    # None is eval_dataloader placehoder
+    trainer.fit(
+        args, 
+        prompts_dataloader=prompts_dataloader, 
+        pretrain_dataloader=None, 
+        eval_dataloader=None, 
+        consumed_samples=0, 
+        num_update_steps_per_episodes=num_update_steps_per_episodes
     )
 
+    # save model checkpoint after fitting on only rank0
     if args.critic_pretrain and args.save_value_network:
         strategy.save_model(
             critic,
@@ -464,8 +356,6 @@ if __name__ == "__main__":
     parser.add_argument("--disable_ds_ckpt", action="store_true", default=False)
     parser.add_argument("--save_trajectories", action="store_true", default=False, help="Save experience trajectories to JSON for debugging")
     parser.add_argument("--num_trajectories_to_save", type=int, default=10, help="Number of trajectories to save per checkpoint")
-    parser.add_argument("--mark_high_entropy_tokens", action="store_true", default=False, help="Create token arrays with high-entropy information for HTML rendering (requires --save_trajectories). When enabled, generates structured token data for visualization.")
-    parser.add_argument("--trajectory_analysis", action="store_true", default=False, help="Enable trajectory analysis metrics (repeat_score, reflection_pattern, policy_entropy) and log to wandb")
     parser.add_argument("--print_replay_buffer_stats", action="store_true", default=False, help="Print detailed replay buffer statistics during training")
     parser.add_argument("--logging_steps", type=int, default=1)
     parser.add_argument("--eval_steps", type=int, default=-1)
@@ -493,7 +383,7 @@ if __name__ == "__main__":
     parser.add_argument("--l2", type=float, default=0.0, help="weight decay loss")
     parser.add_argument("--ptx_coef", type=float, default=0.05, help="PPO-ptx loss coef")
     parser.add_argument("--eps_clip", type=float, default=0.2, help="PPO clip range")
-    parser.add_argument("--loss_agg_mode", type=str, default='seq-mean-token-mean',
+    parser.add_argument("--loss_agg_mode", type=str, default='seq-mean-token-sum',
         help="Loss aggregation mode. Options: ['token-mean', 'seq-mean-token-sum', 'seq-mean-token-mean', 'seq-mean-token-sum-norm']")
     parser.add_argument("--use_gspo", action="store_true", default=False, help="Enable GSPO (Group Sequence Policy Optimization) mode")
     parser.add_argument("--normalize_advantages", action="store_true", default=True, help="Enable advantage normalization in GSPO")
@@ -541,7 +431,6 @@ if __name__ == "__main__":
     parser.add_argument("--zero_stage", type=int, default=2, help="DeepSpeed ZeRO stage")
     parser.add_argument("--gradient_checkpointing", action="store_true", default=False)
     parser.add_argument("--bf16", action="store_true", default=False, help="Enable bfloat16")
-    parser.add_argument("--enable_ema", action="store_true", help="Enable EMA checkpoint for the model.")
     parser.add_argument("--zpg", type=int, default=1, help="ZeRO++ max partition size")
     parser.add_argument("--adam_offload", action="store_true", default=False, help="Offload Adam Optimizer")
     parser.add_argument("--actor_init_on_gpu", action="store_true", default=False)
@@ -591,37 +480,21 @@ if __name__ == "__main__":
         help="sampling probs for datasets",
     )
     parser.add_argument("--prompt_split", type=str, default="train")
+    parser.add_argument("--fps", type=float, default=2.0, help="Frames per second for sampling video data.")
+    parser.add_argument("--max_pixels", type=int, default=360*28*28, help="Maximum pixels for each image frame.")
 
     # Evaluation dataset
     parser.add_argument("--eval_data", type=str, default=None, help="HF evaluation dataset name or path (default: use prompt_data)")
     parser.add_argument("--eval_split", type=str, default="test", help="Evaluation data split (default: test)")
-    parser.add_argument("--max_eval_samples", type=int, default=500, help="Maximum number of samples to evaluate (default: 500)")
-    
-    parser.add_argument("--pretrain_data", type=str, default=None, help="HF dataset name or path")
-    parser.add_argument(
-        "--pretrain_data_probs",
-        type=str,
-        default="1.0",
-        help="sampling probs for datasets",
-    )
+
     parser.add_argument("--pretrain_split", type=str, default="train")
-    parser.add_argument("--input_key", type=str, default="input", help="JSON dataset key")
-    parser.add_argument("--images_key", type=str, default="image", help="JSON dataser key for images")
-    parser.add_argument("--reference_key", type=str, default="reference", help="JSON dataset key for reference answers")
-    parser.add_argument("--label_key", type=str, default="label", help="JSON dataset key")
-    parser.add_argument("--input_template", type=str, default=None)
-    parser.add_argument(
-        "--apply_chat_template", action="store_true", default=False, help="Use HF tokenizer chat template"
-    )
-
-    parser.add_argument("--system_prompt", type=str, default=None, help="HF System Prompt")
-
+    parser.add_argument("--system_prompt_path", type=str, default=None, help="Path to Prompt YAML or a literal system prompt string")
 
     # wandb parameters
     parser.add_argument("--use_wandb", type=str, default=None)
     parser.add_argument("--wandb_org", type=str, default=None)
     parser.add_argument("--wandb_group", type=str, default=None)
-    parser.add_argument("--wandb_project", type=str, default="lightrft_train_ppo")
+    parser.add_argument("--wandb_project", type=str, default="openrlhf_train_ppo")
     parser.add_argument(
         "--wandb_run_name",
         type=str,
@@ -631,22 +504,19 @@ if __name__ == "__main__":
     # TensorBoard parameters
     parser.add_argument("--use_tensorboard", type=str, default=None, help="TensorBoard logging path")
 
-    # ModelScope parameters
-    parser.add_argument("--use_ms", action="store_true", default=False)
-
     # MultiModal
     parser.add_argument("--limit_mm_image_per_prompt", type=int, default=-1, help="the max image number of each text in multi model for inference backend")
+    parser.add_argument("--limit_mm_video_per_prompt", type=int, default=-1, help="the max video number of each text in multi model for inference backend")
 
     # CPGD
     parser.add_argument("--use_cpg_loss", action="store_true", default=False, help="whether to use the clipped policy gradient loss from CPGD")
-    
-    # High-entropy token filtering (from "Beyond the 80/20 Rule" paper)
-    parser.add_argument("--high_entropy_token_ratio", type=float, default=0.0, help="Ratio of high-entropy tokens to use for gradient updates (0.0 means use all tokens, 0.2 means use top 20% highest entropy tokens). Common value when enabled: 0.2. Based on 'Beyond the 80/20 Rule: High-Entropy Minority Tokens Drive Effective Reinforcement Learning for LLM Reasoning' (https://arxiv.org/abs/2506.01939)")
 
     add_arguments(parser)
 
     args = parser.parse_args()
 
+    if args.prompt_data:
+        args.prompt_data = args.prompt_data.split(",")
 
     if args.advantage_estimator not in ["gae"]:
         args.critic_pretrain = None
@@ -662,28 +532,5 @@ if __name__ == "__main__":
     else:
         if args.kl_estimator not in ["k1"]:
             print(f"Recommend setting {args.kl_estimator} to 'k1' when not using KL as a loss.")
-
-    if args.advantage_estimator in ["gae", "cpgd"] and args.use_kl_loss:
-        warnings.warn(
-            "Using use_kl_loss=True with non-normalized advantage estimator "
-            "may result in double KL penalty. Consider disabling --use_kl_loss "
-            "or using --advantage_estimator group_norm"
-        )
-
-    if args.input_template and "{}" not in args.input_template:
-        print("[Warning] {} not in args.input_template, set to None")
-        args.input_template = None
-
-    if args.input_template and "\\n" in args.input_template:
-        print(
-            "[Warning] input_template contains \\n chracters instead of newline. "
-            "You likely want to pass $'\\n' in Bash or \"`n\" in PowerShell."
-        )
-
-    if args.use_ms:
-        from modelscope.utils.hf_util import patch_hub
-
-        # Patch hub to download models from modelscope to speed up.
-        patch_hub()
 
     train(args)
