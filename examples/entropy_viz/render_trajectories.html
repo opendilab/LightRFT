@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trajectory Token 可视化</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 30px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+            border-bottom: 3px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+
+        .controls {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 6px;
+            margin-bottom: 30px;
+            border: 1px solid #ddd;
+        }
+
+        .controls h2 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #555;
+        }
+
+        .control-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .control-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .control-item label {
+            font-size: 14px;
+            color: #666;
+            cursor: pointer;
+        }
+
+        .control-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .file-input {
+            margin-top: 15px;
+        }
+
+        .file-input input[type="file"] {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .trajectory {
+            margin-bottom: 40px;
+            padding: 20px;
+            background: #fafafa;
+            border-radius: 6px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .trajectory-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #ddd;
+        }
+
+        .trajectory-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .trajectory-meta {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .token-display {
+            background: white;
+            padding: 20px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            margin-bottom: 15px;
+            line-height: 2;
+            word-wrap: break-word;
+        }
+
+        .token-display h3 {
+            font-size: 16px;
+            margin-bottom: 10px;
+            color: #555;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+        }
+
+        .token {
+            display: inline;
+            padding: 2px 4px;
+            margin: 0 1px;
+            border-radius: 3px;
+            transition: all 0.2s;
+        }
+
+        .token.high-entropy {
+            background: #ffebee;
+            border: 1px solid #f44336;
+            color: #c62828;
+            font-weight: 500;
+        }
+
+        .token.high-entropy:hover {
+            background: #ffcdd2;
+            box-shadow: 0 2px 4px rgba(244, 67, 54, 0.3);
+        }
+
+        .token.normal {
+            color: #333;
+        }
+
+        .token-info {
+            display: none;
+            position: absolute;
+            background: #333;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            z-index: 1000;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            margin-top: 5px;
+        }
+
+        .token.high-entropy:hover .token-info {
+            display: block;
+        }
+
+        .metadata {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .metadata-item {
+            background: white;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+
+        .metadata-label {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 5px;
+        }
+
+        .metadata-value {
+            font-size: 14px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .stats {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            background: #e3f2fd;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+
+        .stat-label {
+            color: #1976d2;
+            font-weight: 500;
+        }
+
+        .stat-value {
+            color: #333;
+            margin-left: 5px;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+            font-size: 16px;
+        }
+
+        .legend {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+        }
+
+        .legend h3 {
+            font-size: 14px;
+            margin-bottom: 10px;
+            color: #555;
+        }
+
+        .legend-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-right: 20px;
+            font-size: 13px;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 3px;
+            border: 1px solid #ddd;
+        }
+
+        .legend-color.high-entropy {
+            background: #ffebee;
+            border-color: #f44336;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Trajectory Token 可视化工具</h1>
+
+        <div class="controls">
+            <h2>显示选项</h2>
+            <div class="control-group">
+                <div class="control-item">
+                    <input type="checkbox" id="showEntropyScore" checked>
+                    <label for="showEntropyScore">显示熵值分数</label>
+                </div>
+                <div class="control-item">
+                    <input type="checkbox" id="showMetadata" checked>
+                    <label for="showMetadata">显示元数据</label>
+                </div>
+                <div class="control-item">
+                    <input type="checkbox" id="showStats" checked>
+                    <label for="showStats">显示统计信息</label>
+                </div>
+                <div class="control-item">
+                    <input type="checkbox" id="showGeneratedText" checked>
+                    <label for="showGeneratedText">显示 generated_text</label>
+                </div>
+                <div class="control-item">
+                    <input type="checkbox" id="showPureGeneratedText" checked>
+                    <label for="showPureGeneratedText">显示 pure_generated_text</label>
+                </div>
+            </div>
+            <div class="file-input">
+                <input type="file" id="jsonFile" accept=".json">
+            </div>
+        </div>
+
+        <div class="legend">
+            <h3>图例</h3>
+            <div class="legend-item">
+                <div class="legend-color high-entropy"></div>
+                <span>高熵 Token</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color normal"></div>
+                <span>普通 Token</span>
+            </div>
+        </div>
+
+        <div id="content"></div>
+    </div>
+
+    <script>
+        let trajectories = [];
+        let options = {
+            showEntropyScore: true,
+            showMetadata: true,
+            showStats: true,
+            showGeneratedText: true,
+            showPureGeneratedText: true
+        };
+
+        // 绑定文件输入
+        document.getElementById('jsonFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        trajectories = JSON.parse(e.target.result);
+                        render();
+                    } catch (error) {
+                        alert('解析JSON文件失败: ' + error.message);
+                    }
+                };
+                reader.readAsText(file);
+            }
+        });
+
+        // 绑定选项控制
+        document.getElementById('showEntropyScore').addEventListener('change', function(e) {
+            options.showEntropyScore = e.target.checked;
+            render();
+        });
+
+        document.getElementById('showMetadata').addEventListener('change', function(e) {
+            options.showMetadata = e.target.checked;
+            render();
+        });
+
+        document.getElementById('showStats').addEventListener('change', function(e) {
+            options.showStats = e.target.checked;
+            render();
+        });
+
+        document.getElementById('showGeneratedText').addEventListener('change', function(e) {
+            options.showGeneratedText = e.target.checked;
+            render();
+        });
+
+        document.getElementById('showPureGeneratedText').addEventListener('change', function(e) {
+            options.showPureGeneratedText = e.target.checked;
+            render();
+        });
+
+        function renderTokenArray(tokens, title) {
+            if (!tokens || tokens.length === 0) {
+                return '';
+            }
+
+            let html = `<div class="token-display"><h3>${title}</h3><div>`;
+            
+            tokens.forEach((token, index) => {
+                const classes = token.high_entropy ? 'token high-entropy' : 'token normal';
+                let titleAttr = '';
+                
+                if (token.high_entropy && options.showEntropyScore && token.entropy_score !== undefined) {
+                    titleAttr = `title="熵值: ${token.entropy_score.toFixed(4)}"`;
+                }
+                
+                // 转义HTML特殊字符
+                const text = token.text
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#039;');
+                
+                html += `<span class="${classes}" ${titleAttr}>${text}</span>`;
+            });
+            
+            html += '</div></div>';
+            return html;
+        }
+
+        function renderMetadata(traj) {
+            if (!options.showMetadata) return '';
+
+            let html = '<div class="metadata">';
+            
+            if (traj.global_step !== undefined) {
+                html += `<div class="metadata-item">
+                    <div class="metadata-label">训练步数</div>
+                    <div class="metadata-value">${traj.global_step}</div>
+                </div>`;
+            }
+            
+            if (traj.advantages !== undefined) {
+                html += `<div class="metadata-item">
+                    <div class="metadata-label">Advantages</div>
+                    <div class="metadata-value">${typeof traj.advantages === 'number' ? traj.advantages.toFixed(4) : JSON.stringify(traj.advantages)}</div>
+                </div>`;
+            }
+            
+            if (traj.return !== undefined) {
+                html += `<div class="metadata-item">
+                    <div class="metadata-label">Return</div>
+                    <div class="metadata-value">${typeof traj.return === 'number' ? traj.return.toFixed(4) : JSON.stringify(traj.return)}</div>
+                </div>`;
+            }
+            
+            if (traj.info) {
+                if (traj.info.reward !== undefined) {
+                    html += `<div class="metadata-item">
+                        <div class="metadata-label">Reward</div>
+                        <div class="metadata-value">${traj.info.reward.toFixed(4)}</div>
+                    </div>`;
+                }
+                
+                if (traj.info.response_length !== undefined) {
+                    html += `<div class="metadata-item">
+                        <div class="metadata-label">响应长度</div>
+                        <div class="metadata-value">${traj.info.response_length}</div>
+                    </div>`;
+                }
+            }
+            
+            html += '</div>';
+            return html;
+        }
+
+        function calculateStats(tokens) {
+            if (!tokens || tokens.length === 0) {
+                return { total: 0, highEntropy: 0, ratio: 0, avgEntropy: 0 };
+            }
+            
+            const total = tokens.length;
+            const highEntropy = tokens.filter(t => t.high_entropy).length;
+            const ratio = total > 0 ? (highEntropy / total * 100).toFixed(2) : 0;
+            
+            const highEntropyTokens = tokens.filter(t => t.high_entropy && t.entropy_score !== undefined);
+            const avgEntropy = highEntropyTokens.length > 0
+                ? (highEntropyTokens.reduce((sum, t) => sum + t.entropy_score, 0) / highEntropyTokens.length).toFixed(4)
+                : 0;
+            
+            return { total, highEntropy, ratio, avgEntropy };
+        }
+
+        function renderStats(tokens, title) {
+            if (!options.showStats || !tokens || tokens.length === 0) return '';
+            
+            const stats = calculateStats(tokens);
+            
+            return `<div class="stats">
+                <div class="stat-item">
+                    <span class="stat-label">${title} - 总Token数:</span>
+                    <span class="stat-value">${stats.total}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">高熵Token数:</span>
+                    <span class="stat-value">${stats.highEntropy}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">高熵比例:</span>
+                    <span class="stat-value">${stats.ratio}%</span>
+                </div>
+                ${stats.avgEntropy > 0 ? `<div class="stat-item">
+                    <span class="stat-label">平均熵值:</span>
+                    <span class="stat-value">${stats.avgEntropy}</span>
+                </div>` : ''}
+            </div>`;
+        }
+
+        function render() {
+            const content = document.getElementById('content');
+            
+            if (!trajectories || trajectories.length === 0) {
+                content.innerHTML = '<div class="no-data">请选择一个JSON文件</div>';
+                return;
+            }
+            
+            let html = '';
+            
+            trajectories.forEach((traj, index) => {
+                html += `<div class="trajectory">`;
+                html += `<div class="trajectory-header">
+                    <div class="trajectory-title">轨迹 #${index + 1}</div>
+                    <div class="trajectory-meta">
+                        Step: ${traj.global_step || 'N/A'} | 
+                        Exp: ${traj.experience_index || 'N/A'} | 
+                        Sample: ${traj.sample_in_exp || 'N/A'}
+                    </div>
+                </div>`;
+                
+                // 渲染 generated_tokens
+                if (options.showGeneratedText && traj.generated_tokens) {
+                    html += renderTokenArray(traj.generated_tokens, 'Generated Tokens');
+                    html += renderStats(traj.generated_tokens, 'Generated');
+                }
+                
+                // 渲染 pure_generated_tokens
+                if (options.showPureGeneratedText && traj.pure_generated_tokens) {
+                    html += renderTokenArray(traj.pure_generated_tokens, 'Pure Generated Tokens');
+                    html += renderStats(traj.pure_generated_tokens, 'Pure Generated');
+                }
+                
+                // 渲染元数据
+                html += renderMetadata(traj);
+                
+                html += `</div>`;
+            });
+            
+            content.innerHTML = html;
+        }
+
+        // 初始化
+        render();
+    </script>
+</body>
+</html>
+
