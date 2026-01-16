@@ -905,7 +905,6 @@ class FastExperienceMaker(NaiveExperienceMaker):
         # Initialize advantage calculator
         advantage_estimator = self.strategy.config.advantage_estimator
         self.advantage_calculator = get_advantage_calculator(advantage_estimator, strategy=self.strategy)
-        self.advantage_calculator.reward_running_moments = self.reward_running_moments
 
         # Initialize helper modules
         if self.processor is not None:
@@ -1430,8 +1429,7 @@ class FastExperienceMaker(NaiveExperienceMaker):
 
         # ========== Advantage Estimator-Specific Shaping ==========
         # Use calculator's preprocess_rewards method
-        experiences, rewards = self.advantage_calculator.preprocess_rewards(rewards, experiences, max_new_tokens)
-        return experiences, rewards
+        return self.advantage_calculator.preprocess_rewards(rewards, experiences, max_new_tokens)
 
     def _compute_advantages_and_returns(
         self,
@@ -1486,23 +1484,15 @@ class FastExperienceMaker(NaiveExperienceMaker):
             )
 
             # ========== Advantage Estimation ==========
-            # Prepare helper functions for calculator
-            get_gae_fn = (self.get_advantages_and_returns if config.advantage_estimator == "gae" else None)
-            get_cumulative_fn = (
-                self.get_cumulative_returns if config.advantage_estimator
-                in ["reinforce", "rloo", "reinforce_baseline", "group_norm", "grpo"] else None
-            )
-
             # Compute advantages and returns using calculator
-            experience.advantages, experience.returns, info_dict = (
-                self.advantage_calculator.compute(
-                    experience,
-                    final_reward,
-                    generate_kwargs,
-                    self.reward_running_moments,
-                    get_advantages_and_returns_fn=get_gae_fn,
-                    get_cumulative_returns_fn=get_cumulative_fn,
-                )
+            # The calculator will automatically select which function to use based on config.advantage_estimator
+            gamma = generate_kwargs.get("gamma", 1.0)
+            experience.advantages, experience.returns, info_dict = self.advantage_calculator.compute(
+                experience,
+                final_reward,
+                generate_kwargs,
+                advantages_and_returns_fn=self.get_advantages_and_returns,
+                cumulative_returns_fn=self.get_cumulative_returns,
             )
 
             # Update experience info with calculator's info dict
