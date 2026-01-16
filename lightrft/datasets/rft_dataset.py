@@ -186,10 +186,8 @@ class RFTDatasetVL(Dataset):
 
         input_text = self.processor.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
 
-        # Support Qwen3-VL video metadata
-        # Setting return_video_metadata=True will return video_inputs as a list of (video, metadata)
         image_inputs, video_inputs = self.process_vision_info(
-            messages, return_video_kwargs=False, return_video_metadata=True
+            messages, return_video_kwargs=False, return_video_metadata=False
         )
 
         return input_text, image_inputs, video_inputs

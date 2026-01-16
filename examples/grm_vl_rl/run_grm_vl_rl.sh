@@ -130,4 +130,5 @@ torchrun --nnodes $NNODES --nproc-per-node $GPUS_PER_NODE --node_rank $NODE_RANK
    --wandb_run_name "${WANDB_RUN_NAME}" \
    --fps $video_fps \
    --max_pixels $max_pixels \
+   --trajectory_analysis \
    2>&1 | tee "log/lightrft_grm_vl_rl_${NODE_RANK}_$(date +%Y%m%d_%H%M%S).log"

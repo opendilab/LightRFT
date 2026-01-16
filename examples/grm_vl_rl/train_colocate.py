@@ -10,7 +10,6 @@ Key Features:
     - Rule-based verifiable rewards (Format checking and Accuracy verification)
     - Flexible strategy: DeepSpeed ZeRO or FSDP
     - Meta device initialization for memory optimization
-    - EMA (Exponential Moving Average) model support
     - Dynamic sampling and overlong buffer penalties (DAPO)
 
 Main Components:
@@ -179,7 +178,7 @@ def train(args: argparse.Namespace) -> None:
 
     # configure tokenizer and processor
     tokenizer, processor = get_tokenizer_processor_vl(
-        args.pretrain, actor.model, "left", strategy, use_fast=not strategy.args.disable_fast_tokenizer
+        args.pretrain, actor.model, "left", use_fast=not strategy.args.disable_fast_tokenizer
     )
     assert processor is not None, "processor is None"
 
@@ -299,7 +298,6 @@ def train(args: argparse.Namespace) -> None:
         lambd=args.lambd,
         init_kl_coef=args.init_kl_coef,
         kl_target=args.kl_target,
-        ema_beta=0.992,
         ptx_coef=args.ptx_coef,
         max_norm=args.max_norm,
         # for GPT generation
@@ -356,6 +354,7 @@ if __name__ == "__main__":
     parser.add_argument("--disable_ds_ckpt", action="store_true", default=False)
     parser.add_argument("--save_trajectories", action="store_true", default=False, help="Save experience trajectories to JSON for debugging")
     parser.add_argument("--num_trajectories_to_save", type=int, default=10, help="Number of trajectories to save per checkpoint")
+    parser.add_argument("--trajectory_analysis", action="store_true", default=False, help="Enable trajectory analysis metrics (repeat_score, reflection_pattern, policy_entropy) and log to wandb")
     parser.add_argument("--print_replay_buffer_stats", action="store_true", default=False, help="Print detailed replay buffer statistics during training")
     parser.add_argument("--logging_steps", type=int, default=1)
     parser.add_argument("--eval_steps", type=int, default=-1)
