@@ -138,6 +138,7 @@ class AdvantageCalculator(ABC):
         generate_kwargs: Dict,
         advantages_and_returns_fn=None,
         cumulative_returns_fn=None,
+        gamma=None,
     ) -> Tuple[torch.Tensor, torch.Tensor, Dict]:
         """
         Compute advantages and returns for a single experience.
@@ -159,6 +160,8 @@ class AdvantageCalculator(ABC):
         :type advantages_and_returns_fn: Optional[Callable]
         :param cumulative_returns_fn: Function for computing cumulative returns
         :type cumulative_returns_fn: Optional[Callable]
+        :param gamma: Discount factor. If None, will be taken from generate_kwargs.
+        :type gamma: Optional[float]
         :return: Tuple of (advantages, returns, info_dict). info_dict may contain
                  additional metrics like advantage_clip_frac.
         :rtype: Tuple[torch.Tensor, torch.Tensor, Dict]
@@ -275,6 +278,7 @@ class GAECalculator(AdvantageCalculator):
         generate_kwargs: Dict,
         advantages_and_returns_fn=None,
         cumulative_returns_fn=None,
+        gamma=None,
     ) -> Tuple[torch.Tensor, torch.Tensor, Dict]:
         """
         Compute advantages using GAE.
@@ -289,6 +293,8 @@ class GAECalculator(AdvantageCalculator):
         :type advantages_and_returns_fn: Optional[Callable]
         :param cumulative_returns_fn: Unused for GAE
         :type cumulative_returns_fn: Optional[Callable]
+        :param gamma: Discount factor. If None, will be taken from generate_kwargs.
+        :type gamma: Optional[float]
         :return: Tuple of (advantages, returns, info_dict)
         :rtype: Tuple[torch.Tensor, torch.Tensor, Dict]
         """
@@ -298,7 +304,7 @@ class GAECalculator(AdvantageCalculator):
                 experience.values,
                 final_reward,
                 experience.action_mask,
-                generate_kwargs["gamma"],
+                gamma,
                 generate_kwargs["lambd"],
             )
         else:
@@ -306,7 +312,7 @@ class GAECalculator(AdvantageCalculator):
                 experience.values,
                 final_reward,
                 experience.action_mask,
-                generate_kwargs["gamma"],
+                gamma,
                 generate_kwargs["lambd"],
             )
         return advantages, returns, {"advantage_clip_frac": advantage_clip_frac}
@@ -413,6 +419,7 @@ class CPGDCalculator(AdvantageCalculator):
         generate_kwargs: Dict,
         advantages_and_returns_fn=None,
         cumulative_returns_fn=None,
+        gamma=None,
     ) -> Tuple[torch.Tensor, torch.Tensor, Dict]:
         """
         Compute advantages using CPGD method.
@@ -430,6 +437,8 @@ class CPGDCalculator(AdvantageCalculator):
         :type advantages_and_returns_fn: Optional[Callable]
         :param cumulative_returns_fn: Unused for CPGD
         :type cumulative_returns_fn: Optional[Callable]
+        :param gamma: Discount factor. Unused for CPGD.
+        :type gamma: Optional[float]
         :return: Tuple of (advantages, returns, empty_info_dict)
         :rtype: Tuple[torch.Tensor, torch.Tensor, Dict]
         """
@@ -462,6 +471,7 @@ class REINFORCECalculator(AdvantageCalculator):
         generate_kwargs: Dict,
         advantages_and_returns_fn=None,
         cumulative_returns_fn=None,
+        gamma=None,
     ) -> Tuple[torch.Tensor, torch.Tensor, Dict]:
         """
         Compute advantages using REINFORCE (cumulative returns).
@@ -476,6 +486,8 @@ class REINFORCECalculator(AdvantageCalculator):
         :type advantages_and_returns_fn: Optional[Callable]
         :param cumulative_returns_fn: Function for computing cumulative returns
         :type cumulative_returns_fn: Optional[Callable]
+        :param gamma: Discount factor. If None, will be taken from generate_kwargs.
+        :type gamma: Optional[float]
         :return: Tuple of (advantages, returns, info_dict)
         :rtype: Tuple[torch.Tensor, torch.Tensor, Dict]
         """
@@ -484,9 +496,9 @@ class REINFORCECalculator(AdvantageCalculator):
             cumulative_returns_fn is not None
             and self.config.advantage_estimator in ["reinforce", "rloo", "reinforce_baseline", "group_norm", "grpo"]
         ):
-            returns = cumulative_returns_fn(final_reward, experience.action_mask, generate_kwargs["gamma"])
+            returns = cumulative_returns_fn(final_reward, experience.action_mask, gamma)
         else:
-            returns = self.get_cumulative_returns(final_reward, experience.action_mask, generate_kwargs["gamma"])
+            returns = self.get_cumulative_returns(final_reward, experience.action_mask, gamma)
         advantages = deepcopy(returns)
 
         # Advantage whitening
@@ -557,6 +569,7 @@ class RLOOCalculator(AdvantageCalculator):
         generate_kwargs: Dict,
         advantages_and_returns_fn=None,
         cumulative_returns_fn=None,
+        gamma=None,
     ) -> Tuple[torch.Tensor, torch.Tensor, Dict]:
         """
         Compute advantages using REINFORCE after RLOO preprocessing.
@@ -571,6 +584,8 @@ class RLOOCalculator(AdvantageCalculator):
         :type advantages_and_returns_fn: Optional[Callable]
         :param cumulative_returns_fn: Function for computing cumulative returns
         :type cumulative_returns_fn: Optional[Callable]
+        :param gamma: Discount factor. If None, will be taken from generate_kwargs.
+        :type gamma: Optional[float]
         :return: Tuple of (advantages, returns, info_dict)
         :rtype: Tuple[torch.Tensor, torch.Tensor, Dict]
         """
@@ -579,9 +594,9 @@ class RLOOCalculator(AdvantageCalculator):
             cumulative_returns_fn is not None
             and self.config.advantage_estimator in ["reinforce", "rloo", "reinforce_baseline", "group_norm", "grpo"]
         ):
-            returns = cumulative_returns_fn(final_reward, experience.action_mask, generate_kwargs["gamma"])
+            returns = cumulative_returns_fn(final_reward, experience.action_mask, gamma)
         else:
-            returns = self.get_cumulative_returns(final_reward, experience.action_mask, generate_kwargs["gamma"])
+            returns = self.get_cumulative_returns(final_reward, experience.action_mask, gamma)
         advantages = deepcopy(returns)
 
         # Advantage whitening
@@ -648,6 +663,7 @@ class REINFORCEBaselineCalculator(AdvantageCalculator):
         generate_kwargs: Dict,
         advantages_and_returns_fn=None,
         cumulative_returns_fn=None,
+        gamma=None,
     ) -> Tuple[torch.Tensor, torch.Tensor, Dict]:
         """
         Compute advantages using REINFORCE after baseline subtraction.
@@ -662,6 +678,8 @@ class REINFORCEBaselineCalculator(AdvantageCalculator):
         :type advantages_and_returns_fn: Optional[Callable]
         :param cumulative_returns_fn: Function for computing cumulative returns
         :type cumulative_returns_fn: Optional[Callable]
+        :param gamma: Discount factor. If None, will be taken from generate_kwargs.
+        :type gamma: Optional[float]
         :return: Tuple of (advantages, returns, info_dict)
         :rtype: Tuple[torch.Tensor, torch.Tensor, Dict]
         """
@@ -670,9 +688,9 @@ class REINFORCEBaselineCalculator(AdvantageCalculator):
             cumulative_returns_fn is not None
             and self.config.advantage_estimator in ["reinforce", "rloo", "reinforce_baseline", "group_norm", "grpo"]
         ):
-            returns = cumulative_returns_fn(final_reward, experience.action_mask, generate_kwargs["gamma"])
+            returns = cumulative_returns_fn(final_reward, experience.action_mask, gamma)
         else:
-            returns = self.get_cumulative_returns(final_reward, experience.action_mask, generate_kwargs["gamma"])
+            returns = self.get_cumulative_returns(final_reward, experience.action_mask, gamma)
         advantages = deepcopy(returns)
 
         # Advantage whitening
@@ -748,6 +766,7 @@ class GroupNormCalculator(AdvantageCalculator):
         generate_kwargs: Dict,
         advantages_and_returns_fn=None,
         cumulative_returns_fn=None,
+        gamma=None,
     ) -> Tuple[torch.Tensor, torch.Tensor, Dict]:
         """
         Compute advantages using REINFORCE after group normalization.
@@ -762,6 +781,8 @@ class GroupNormCalculator(AdvantageCalculator):
         :type advantages_and_returns_fn: Optional[Callable]
         :param cumulative_returns_fn: Function for computing cumulative returns
         :type cumulative_returns_fn: Optional[Callable]
+        :param gamma: Discount factor. If None, will be taken from generate_kwargs.
+        :type gamma: Optional[float]
         :return: Tuple of (advantages, returns, info_dict)
         :rtype: Tuple[torch.Tensor, torch.Tensor, Dict]
         """
@@ -770,9 +791,9 @@ class GroupNormCalculator(AdvantageCalculator):
             cumulative_returns_fn is not None
             and self.config.advantage_estimator in ["reinforce", "rloo", "reinforce_baseline", "group_norm", "grpo"]
         ):
-            returns = cumulative_returns_fn(final_reward, experience.action_mask, generate_kwargs["gamma"])
+            returns = cumulative_returns_fn(final_reward, experience.action_mask, gamma)
         else:
-            returns = self.get_cumulative_returns(final_reward, experience.action_mask, generate_kwargs["gamma"])
+            returns = self.get_cumulative_returns(final_reward, experience.action_mask, gamma)
         advantages = deepcopy(returns)
 
         # Advantage whitening

@@ -1493,6 +1493,7 @@ class FastExperienceMaker(NaiveExperienceMaker):
                 generate_kwargs,
                 advantages_and_returns_fn=self.get_advantages_and_returns,
                 cumulative_returns_fn=self.get_cumulative_returns,
+                gamma=gamma,
             )
 
             # Update experience info with calculator's info dict
