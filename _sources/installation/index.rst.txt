@@ -241,7 +241,7 @@ For Additional Support
 If you encounter issues not covered here:
 
 * Check the project's `GitHub Issues <https://github.com/opendilab/LightRFT/issues>`_
-* Review the :doc:`../best_practice/strategy_usage` guide for training configuration
+* Review the :doc:`../best_practice/strategy` guide for training configuration
 * Consult the example scripts in the `examples <https://github.com/opendilab/LightRFT/tree/main/examples>`_ directory
 
 Next Steps
@@ -250,7 +250,7 @@ Next Steps
 After successful installation:
 
 1. Review the :doc:`../quick_start/index` guide to understand basic usage
-2. Explore :doc:`../best_practice/strategy_usage` for distributed training strategies
+2. Explore :doc:`../best_practice/strategy` for distributed training strategies
 3. Check out the `examples <https://github.com/opendilab/LightRFT/tree/main/examples>`_ directory for complete training examples
 4. Read the algorithm documentation for specific implementation details
 
