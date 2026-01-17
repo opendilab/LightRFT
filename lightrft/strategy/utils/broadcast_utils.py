@@ -7,6 +7,8 @@ Data Parallel v2). It handles the complexities of gathering sharded
 parameters and efficiently transferring them to inference engines like vllm and sglang.
 """
 
+from typing import Any
+
 import deepspeed
 import torch
 from torch.distributed.tensor import DTensor
@@ -26,7 +28,7 @@ class BroadcastManager:
     :param strategy: The training strategy object containing configuration and methods
     :param inference_engine: The inference engine (vllm or sglang) to receive the weights
     """
-    def __init__(self, actor, strategy, inference_engine) -> None:
+    def __init__(self, actor: torch.nn.Module, strategy: Any, inference_engine: Any) -> None:
         """
         Initialize the BroadcastManager with the necessary components.
 

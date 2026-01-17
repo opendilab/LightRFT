@@ -11,6 +11,7 @@ The main components are:
 - Helper functions for collecting and analyzing output lengths in distributed environments
 """
 
+from typing import List, Dict, Any, Optional
 import os
 
 import matplotlib.pyplot as plt
@@ -54,7 +55,13 @@ class GenLenAnalyser:
         >>> # Use during training loop
         >>> stats = analyzer.collect(generation_outputs, step=100, is_rank_0=True)
     """
-    def __init__(self, engine_dp_group, plot_every=2, percentiles=[50, 80], plot_out_dir=None):
+    def __init__(
+        self,
+        engine_dp_group: dist.ProcessGroup,
+        plot_every: int = 2,
+        percentiles: List[int] = [50, 80],
+        plot_out_dir: Optional[str] = None
+    ) -> None:
         self.engine_dp_group = engine_dp_group
 
         self.plot_out_dir = plot_out_dir
@@ -69,7 +76,7 @@ class GenLenAnalyser:
 
             print(f"GenLenAnalyser is initialized and will log to {plot_out_dir} every {self.plot_every}")
 
-    def collect(self, gen_outputs, cur_step, is_rank_0):
+    def collect(self, gen_outputs: List[Dict[str, Any]], cur_step: int, is_rank_0: bool) -> Optional[Dict[str, Any]]:
         """
         Collect and analyze generation length data at the current step.
 
@@ -78,7 +85,7 @@ class GenLenAnalyser:
         happens at intervals specified by plot_every parameter.
 
         :param gen_outputs: List of generation outputs to analyze, each containing 'output_token_ids'
-        :type gen_outputs: list
+        :type gen_outputs: List[Dict[str, Any]]
 
         :param cur_step: Current training/generation step
         :type cur_step: int
@@ -136,7 +143,13 @@ class GenLenAnalyser:
         return infos
 
 
-def analyse_output_lengths(gen_outputs, engine_dp_group, percentiles=[50, 80], plot_out_dir=None, prefix=""):
+def analyse_output_lengths(
+    gen_outputs: List[Dict[str, Any]],
+    engine_dp_group: dist.ProcessGroup,
+    percentiles: List[int] = [50, 80],
+    plot_out_dir: Optional[str] = None,
+    prefix: str = ""
+) -> Dict[str, Any]:
     """
     Analyze the length distribution of generated outputs.
 
@@ -181,7 +194,7 @@ def analyse_output_lengths(gen_outputs, engine_dp_group, percentiles=[50, 80], p
     return analyse_info
 
 
-def collect_local_output_lengths(outputs):
+def collect_local_output_lengths(outputs: List[Dict[str, Any]]) -> List[int]:
     """
     Collect the lengths of generated outputs from the local process.
 
@@ -214,7 +227,7 @@ def collect_local_output_lengths(outputs):
     return output_lengths
 
 
-def gather_all_lengths(local_lengths, group):
+def gather_all_lengths(local_lengths: List[int], group: dist.ProcessGroup) -> List[int]:
     """
     Gather output lengths from all processes in the distributed group.
 
@@ -252,7 +265,7 @@ def gather_all_lengths(local_lengths, group):
     return all_lengths
 
 
-def analyze_output_lengths(all_lengths, percentiles):
+def analyze_output_lengths(all_lengths: List[int], percentiles: List[int]) -> Dict[str, Any]:
     """
     Analyze the distribution of output lengths and compute statistics.
 
@@ -262,13 +275,13 @@ def analyze_output_lengths(all_lengths, percentiles):
     optimization and monitoring.
 
     :param all_lengths: List of output lengths from all processes
-    :type all_lengths: list
+    :type all_lengths: List[int]
 
     :param percentiles: List of percentiles to compute (e.g., [25, 50, 75, 90])
-    :type percentiles: list
+    :type percentiles: List[int]
 
     :return: Dictionary containing statistics about the length distribution
-    :rtype: dict
+    :rtype: Dict[str, Any]
 
     Example::
 

@@ -16,7 +16,7 @@ These utilities ensure video data is correctly formatted in [T, H, W, C] for mod
 import torch
 import numpy as np
 from PIL import Image
-from typing import List, Union, Optional
+from typing import List, Union, Optional, Any
 
 
 def frames_to_tensor(frames: List[Image.Image]) -> torch.Tensor:
@@ -43,7 +43,7 @@ def frames_to_tensor(frames: List[Image.Image]) -> torch.Tensor:
     return torch.from_numpy(video_np)
 
 
-def single_video_to_tensor(v) -> torch.Tensor:
+def single_video_to_tensor(v: Union[torch.Tensor, np.ndarray, List[Image.Image]]) -> torch.Tensor:
     """
     Convert a single video (list of frames, ndarray, or tensor) to a torch.Tensor.
 
@@ -74,7 +74,9 @@ def single_video_to_tensor(v) -> torch.Tensor:
     raise ValueError(f"Unsupported video type: {type(v)}")
 
 
-def to_video_tensor(item) -> Union[None, torch.Tensor, List[torch.Tensor]]:
+def to_video_tensor(
+    item: Union[None, torch.Tensor, np.ndarray, List[Image.Image], List[Any]]
+) -> Union[None, torch.Tensor, List[torch.Tensor]]:
     """
     Convert a single sample's video data to normalized tensor format.
 
@@ -117,7 +119,9 @@ def to_video_tensor(item) -> Union[None, torch.Tensor, List[torch.Tensor]]:
     return single_video_to_tensor(item)
 
 
-def normalize_videos(raw_videos: List) -> List:
+def normalize_videos(
+    raw_videos: List[Union[torch.Tensor, np.ndarray, List]]
+) -> List[Union[None, torch.Tensor, List[torch.Tensor]]]:
     """
     Normalize video inputs to torch.Tensor format.
 

@@ -30,11 +30,11 @@ def _calculate_repeatness(s: str) -> float:
     :return: Repeatness score between 0 and 1
     :rtype: float
     """
-    def ranks(l):  # noqa: E741
+    def ranks(l: List[int]) -> List[int]:  # noqa: E741
         index = {v: i for i, v in enumerate(sorted(set(l)))}
         return [index[v] for v in l]
 
-    def suffix_array(s):
+    def suffix_array(s: List[int]) -> Tuple[List[int], List[int]]:
         line = ranks(s)
         n, k, ans, sa = len(s), 1, line, [0] * len(s)
         while k < n - 1:
@@ -44,7 +44,7 @@ def _calculate_repeatness(s: str) -> float:
             sa[k] = i
         return ans, sa
 
-    def lcp(arr, suffix_arr, inv_suff):
+    def lcp(arr: List[int], suffix_arr: List[int], inv_suff: List[int]) -> List[int]:
         n, ans, k = len(arr), [0] * len(arr), 0
 
         for i in range(n):

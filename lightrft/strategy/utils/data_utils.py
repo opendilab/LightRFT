@@ -179,7 +179,7 @@ class DistributedSampler(Sampler[_T_co]):
         """
         return self.num_samples - self.consumed_indicies
 
-    def set_epoch(self, epoch: int, consumed_samples=0) -> None:
+    def set_epoch(self, epoch: int, consumed_samples: int = 0) -> None:
         """
         Set the epoch for this sampler.
 

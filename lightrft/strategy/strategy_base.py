@@ -15,7 +15,7 @@ from collections import defaultdict
 from contextlib import contextmanager
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union, Callable
 
 import deepspeed
 import numpy as np
@@ -77,7 +77,7 @@ class StrategyBase(ABC):
     """
 
     def __init__(  # pylint: disable=R0917
-        self, seed: int, max_norm: float, micro_train_batch_size: int, train_batch_size: int, args=None
+        self, seed: int, max_norm: float, micro_train_batch_size: int, train_batch_size: int, args: Optional[Any] = None
     ) -> None:
         """
         Initialize strategy with common parameters.
@@ -91,7 +91,7 @@ class StrategyBase(ABC):
         :param train_batch_size: Total batch size for training
         :type train_batch_size: int
         :param args: Additional configuration arguments
-        :type args: Any
+        :type args: Any (usually argparse.Namespace)
         """
         self.seed = seed
         self.max_norm = max_norm
@@ -143,12 +143,14 @@ class StrategyBase(ABC):
         torch.manual_seed(seed)
         torch.cuda.manual_seed_all(seed)
 
-    def setup_distributed(self, timeout=None, num_gpu_per_node=8) -> None:
+    def setup_distributed(self, timeout: Optional[timedelta] = None, num_gpu_per_node: int = 8) -> None:
         """
         Initialize distributed training environment.
 
         :param timeout: Maximum time to wait for initialization
         :type timeout: timedelta, optional
+        :param num_gpu_per_node: Number of GPUs per node
+        :type num_gpu_per_node: int
         :raises RuntimeError: If required environment variables are missing
         :raises ValueError: If unsupported engine type is specified
         """
@@ -269,7 +271,9 @@ class StrategyBase(ABC):
         raise NotImplementedError()
 
     @abstractmethod
-    def optimizer_step(self, optimizer: optim.Optimizer, model: nn.Module, scheduler, name="model", **kwargs) -> None:
+    def optimizer_step(
+        self, optimizer: optim.Optimizer, model: nn.Module, scheduler: Any, name: str = "model", **kwargs
+    ) -> None:
         """
         Take optimizer step.
 
@@ -289,12 +293,12 @@ class StrategyBase(ABC):
         replay_buffer,
         batch_size: int,
         pin_memory: bool = False,
-        shuffle=True,
-        collate_fn=None,
-        drop_last=True,
-        sampler=None,
-        consumed_samples=0,
-    ):
+        shuffle: bool = True,
+        collate_fn: Optional[Callable] = None,
+        drop_last: bool = True,
+        sampler: Optional[Any] = None,
+        consumed_samples: int = 0,
+    ) -> DataLoader:
         """
         Set up data loader for training.
 
@@ -306,6 +310,7 @@ class StrategyBase(ABC):
         :param shuffle: Whether to shuffle data
         :type shuffle: bool
         :param collate_fn: Function to collate samples
+        :type collate_fn: Optional[Callable]
         :param drop_last: Whether to drop last incomplete batch
         :type drop_last: bool
         :param sampler: Custom sampler
@@ -338,7 +343,14 @@ class StrategyBase(ABC):
 
     @abstractmethod
     def save_ckpt(  # pylint: disable=R0917, W0102
-        self, model, save_dir: str, tag=None, max_num=3, max_mem=1000, client_state={}, save_latest=True
+        self,
+        model: nn.Module,
+        save_dir: str,
+        tag: Optional[str] = None,
+        max_num: int = 3,
+        max_mem: int = 1000,
+        client_state: Optional[Dict[str, Any]] = None,
+        save_latest: bool = True
     ) -> None:
         """
         Save training checkpoint with additional metadata.
@@ -361,14 +373,14 @@ class StrategyBase(ABC):
     @abstractmethod
     def load_ckpt(  # pylint: disable=R0917
         self,
-        model,
+        model: nn.Module,
         load_dir: str,
-        tag=None,
-        load_module_strict=True,
-        load_optimizer_states=True,
-        load_lr_scheduler_states=True,
-        load_module_only=False,
-    ):
+        tag: Optional[str] = None,
+        load_module_strict: bool = True,
+        load_optimizer_states: bool = True,
+        load_lr_scheduler_states: bool = True,
+        load_module_only: bool = False,
+    ) -> Any:
         """
         Load training checkpoint with various options.
 
@@ -387,17 +399,19 @@ class StrategyBase(ABC):
         """
         raise NotImplementedError()
 
-    def all_reduce(self, data, op="mean"):
+    def all_reduce(self,
+                   data: Union[torch.Tensor, Dict[str, torch.Tensor]],
+                   op: str = "mean") -> Union[torch.Tensor, Dict[str, torch.Tensor], float, int]:
         """
         Perform all-reduce operation across distributed processes.
 
         :param data: Data to be reduced, can be a tensor or dictionary of tensors
-        :type data: Union[torch.Tensor, dict]
+        :type data: Union[torch.Tensor, Dict[str, torch.Tensor]]
         :param op: Reduction operation ('mean', 'max', 'sum')
         :type op: str
 
         :return: Reduced data in the same format as input
-        :rtype: Union[torch.Tensor, dict]
+        :rtype: Union[torch.Tensor, Dict[str, torch.Tensor], float, int]
         :raises AssertionError: If op is not one of 'mean', 'max', 'sum'
         """
         assert op in ("mean", "max", "sum")
@@ -422,7 +436,8 @@ class StrategyBase(ABC):
                 data = data.cpu()
             return data.item() if not is_tensor else data
 
-    def all_gather(self, data):
+    def all_gather(self, data: Union[torch.Tensor, Dict[str,
+                                                        torch.Tensor]]) -> Union[torch.Tensor, Dict[str, torch.Tensor]]:
         """
         Gather data from all distributed processes.
 
@@ -452,7 +467,6 @@ class StrategyBase(ABC):
         Print messages with timestamp, but only on rank 0.
 
         :param msg: Messages to print
-        :type msg: tuple
         """
         current_time = datetime.now()
         time_str = current_time.strftime("%m-%d %H:%M:%S")
