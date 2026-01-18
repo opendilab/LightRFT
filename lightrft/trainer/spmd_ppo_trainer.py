@@ -226,11 +226,18 @@ class SPMDPPOTrainerBase:
                 status = self.training_step(experience, global_steps, entropy_mask=entropy_mask)
 
                 # for DP
-                # weighted mean for kl
-                if "kl" in status:
+                # weighted mean for kl (ensure all ranks enter collective)
+                if self.strategy.world_size > 1:
+                    if "kl" not in status:
+                        status["kl"] = 0.0
+                    if "response_length" not in status:
+                        status["response_length"] = 0.0
                     status["kl"] *= status["response_length"]
                     status = self.strategy.all_reduce(status)
-                    status["kl"] /= status["response_length"]
+                    if status["response_length"] != 0:
+                        status["kl"] /= status["response_length"]
+                    else:
+                        status["kl"] = 0.0
 
                 # Training epoch progress bar: show per-batch metrics for detailed monitoring
                 short_status = {}
@@ -266,10 +273,20 @@ class SPMDPPOTrainerBase:
         # "kl": KL divergence
         # "act_lr": actor_lr
         if status_list:
-            status_mean = status_list[0]
-            for m in status_list[1:]:
+            # Collect all unique keys from all status dicts
+            all_keys = set()
+            for m in status_list:
+                all_keys.update(m.keys())
+
+            # Initialize status_mean with all keys set to 0
+            status_mean = {k: 0.0 for k in all_keys}
+
+            # Sum up values from all status dicts
+            for m in status_list:
                 for k, v in m.items():
                     status_mean[k] += v
+
+            # Compute mean
             for k in status_mean.keys():
                 status_mean[k] /= len(status_list)
 

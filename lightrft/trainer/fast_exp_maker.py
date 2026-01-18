@@ -30,6 +30,7 @@ from dataclasses import dataclass
 from copy import deepcopy
 
 import torch
+import torch.distributed as dist
 import numpy as np
 from PIL import Image
 from easydict import EasyDict
@@ -50,10 +51,12 @@ from lightrft.trainer.experience_maker_vl import (
     ExperienceVL,
     SamplesVL,
 )
+from lightrft.trainer.replay_buffer_utils import make_experience_batch, split_experience_batch
 
 from lightrft.utils.remote_rm_utils import remote_rm_fn
 from lightrft.utils import Timer, get_current_device
 from .utils import RunningMoments, compute_clip_fraction, get_cpgd_advantages_returns, fire_sampling
+from .filter_weight import FilterWeightManagerBuilder
 from .image_utils import normalize_images, get_images_num
 from .video_utils import normalize_videos, get_videos_num
 
@@ -923,6 +926,19 @@ class FastExperienceMaker(NaiveExperienceMaker):
             packing_samples=self.packing_samples,
         )
 
+        # Initialize filter-weight manager
+        self.filter_weight_manager = self._init_filter_weight_manager()
+
+    def _init_filter_weight_manager(self):
+        """
+        Initialize filter-weight manager from strategy args.
+
+        :return: FilterWeightManager instance
+        :rtype: FilterWeightManager
+        """
+        args = self.strategy.args
+        return FilterWeightManagerBuilder.from_args(args, packing_samples=self.packing_samples)
+
     # ========================================================================
     # Public API Methods
     # ========================================================================
@@ -1006,11 +1022,29 @@ class FastExperienceMaker(NaiveExperienceMaker):
 
         # ========== Stage 3: Model Inference ==========
         Timer.start('  make_experience')
-        experiences = self._make_experience_list_by_model(all_samples)
+        experiences, outputs = self._make_experience_list_by_model(all_samples)
         Timer.stop('  make_experience')
 
         # ========== Stage 4: Shard-Parallel Postprocessing ==========
         experiences = self.strategy.sp_data_processor.postprocess(experiences)
+
+        # ========== Stage 4.5: Apply Filter-Weight Framework ==========
+        if self.filter_weight_manager is not None and (
+            self.filter_weight_manager.filters or self.filter_weight_manager.weights
+        ):
+            # Compute metrics from outputs
+            current_step = getattr(self.strategy, "global_step", None)
+            metrics = self.filter_weight_manager.compute_metrics(outputs, current_step=current_step)
+
+            # Apply filters and weights
+            experiences, sample_weights = self.filter_weight_manager.apply_to_experiences(experiences, metrics)
+
+            # Store sample weights in experience info for later use
+            sample_idx = 0
+            for exp in experiences:
+                batch_size = len(exp.sequences)
+                exp.info["sample_weights"] = sample_weights[sample_idx:sample_idx + batch_size]
+                sample_idx += batch_size
 
         # ========== Stage 5: Reward Processing ==========
         experiences, rewards = self._process_experiences(  # GRPO's -mean / std operation is performed in this method
@@ -1407,7 +1441,15 @@ class FastExperienceMaker(NaiveExperienceMaker):
         rewards = torch.cat([exp.info["reward"] for exp in experiences])
 
         # ========== Overlong Sequence Penalty ==========
-        if config.overlong_buffer:
+        # Use new filter_weight framework if enabled, otherwise use legacy logic
+        from .filter_weight import ResponseLengthFilter
+        use_filter_weight = (
+            self.filter_weight_manager is not None and self.filter_weight_manager.filters
+            and any(isinstance(f, ResponseLengthFilter) for f in self.filter_weight_manager.filters)
+        )
+
+        if config.overlong_buffer and not use_filter_weight:
+            # Legacy overlong buffer penalty (only if not using filter_weight framework)
             expected_len = max_new_tokens - config.overlong_buffer_len
             actual_lens = torch.cat([exp.action_mask.sum(dim=1) for exp in experiences])
             exceed_len = actual_lens - expected_len
@@ -1440,16 +1482,90 @@ class FastExperienceMaker(NaiveExperienceMaker):
 
         elif config.advantage_estimator in ["group_norm", "grpo"]:
             # Group normalization with optional dynamic filtering
-            if config.dynamic_sampling:
-                step_size = config.n_samples_per_prompt // config.micro_train_batch_size
-                for i in range(0, len(experiences), step_size):
-                    chunk = experiences[i:i + step_size]
-                    chunk_rewards = torch.cat([exp.info["reward"] for exp in chunk])
+            # Use new filter_weight framework if enabled, otherwise use legacy logic
+            from .filter_weight import RewardValueFilter
+            use_dynamic_filter = (
+                self.filter_weight_manager is not None and self.filter_weight_manager.filters
+                and any(isinstance(f, RewardValueFilter) for f in self.filter_weight_manager.filters)
+            )
 
-                    # Filter out degenerate cases (all 0s or all 1s)
-                    if torch.all(chunk_rewards == 0) or torch.all(chunk_rewards == 1):
-                        for exp in chunk:
-                            exp.action_mask = torch.zeros_like(exp.action_mask, dtype=torch.bool)
+            if config.dynamic_sampling and not use_dynamic_filter:
+                # Legacy dynamic sampling (only if not using filter_weight framework)
+                group_size = config.n_samples_per_prompt
+                tolerance = 1e-6
+                if rewards.numel() % group_size != 0:
+                    warnings.warn(
+                        f"Number of samples ({rewards.numel()}) not divisible by group_size ({group_size}). "
+                        f"Skipping dynamic sampling filtering."
+                    )
+                else:
+                    grouped_rewards = rewards.reshape(-1, group_size)
+                    all_zeros = torch.all(torch.abs(grouped_rewards) < tolerance, dim=1)
+                    all_ones = torch.all(torch.abs(grouped_rewards - 1.0) < tolerance, dim=1)
+                    keep_group_mask = ~(all_zeros | all_ones)
+                    keep_mask = keep_group_mask.repeat_interleave(group_size)
+
+                    # In distributed training, keep sample counts aligned across ranks.
+                    # We apply filtering by masking (no removal) to avoid NCCL hangs.
+                    is_distributed = dist.is_available() and dist.is_initialized() and dist.get_world_size() > 1
+                    if is_distributed:
+                        if keep_mask.sum().item() == 0:
+                            self.strategy.print(
+                                "[Warning] No sample kept after filtering on this rank; skip filtering this step."
+                            )
+                            keep_mask = torch.ones_like(keep_mask, dtype=torch.bool)
+
+                        if keep_mask.sum().item() < keep_mask.numel():
+                            offset = 0
+                            for exp in experiences:
+                                batch_size = len(exp.sequences)
+                                exp_mask = keep_mask[offset:offset + batch_size]
+                                offset += batch_size
+                                if exp.action_mask is not None:
+                                    exp.action_mask = exp.action_mask & exp_mask.unsqueeze(-1).to(
+                                        exp.action_mask.device
+                                    )
+                                exp_rewards = exp.info["reward"]
+                                exp.info["reward"] = exp_rewards * exp_mask.to(exp_rewards.device).float()
+
+                            rewards = rewards * keep_mask.to(rewards.device).float()
+                    else:
+                        if keep_mask.sum().item() == 0:
+                            raise RuntimeError("No sample is kept after filtering. Please check your data.")
+
+                        if keep_mask.sum().item() < keep_mask.numel():
+                            filtered_experiences = []
+                            filtered_rewards = []
+                            offset = 0
+                            for exp in experiences:
+                                batch_size = len(exp.sequences)
+                                exp_mask = keep_mask[offset:offset + batch_size]
+                                offset += batch_size
+                                if exp_mask.sum().item() == 0:
+                                    continue
+
+                                # Filter rewards for this batch
+                                exp_rewards = exp.info["reward"]
+                                filtered_rewards.append(exp_rewards[exp_mask.to(exp_rewards.device)])
+
+                                if exp_mask.all():
+                                    filtered_experiences.append(exp)
+                                    continue
+
+                                # Rebuild experience batch to keep shapes consistent (esp. pixel_values)
+                                items = split_experience_batch(exp)
+                                kept_items = [item for item, keep in zip(items, exp_mask.cpu().tolist()) if keep]
+                                if not kept_items:
+                                    continue
+                                filtered_experiences.append(
+                                    make_experience_batch(kept_items, packing_samples=self.packing_samples)
+                                )
+
+                            if not filtered_experiences:
+                                raise RuntimeError("No sample is kept after filtering. Please check your data.")
+
+                            experiences = filtered_experiences
+                            rewards = torch.cat(filtered_rewards)
 
             # # Normalize within groups
             # rewards = rewards.reshape(-1, config.n_samples_per_prompt).to("cuda")
@@ -1592,7 +1708,7 @@ class FastExperienceMaker(NaiveExperienceMaker):
     def _make_experience_list_by_model(
         self,
         all_samples: List[Union[Samples, SamplesVL]],
-    ) -> List[Union[Experience, ExperienceVL]]:
+    ) -> Tuple[List[Union[Experience, ExperienceVL]], List[_SamplesOutput]]:
         """
         Batch forward pass through all models to create experiences.
 
@@ -1670,7 +1786,8 @@ class FastExperienceMaker(NaiveExperienceMaker):
         self.reward_engine.compute_rewards(outputs, vlm_mode, device)
 
         # ========== Stage 5: Assemble Experiences ==========
-        return [self._pack_experience(output, vlm_mode) for output in outputs]
+        experiences = [self._pack_experience(output, vlm_mode) for output in outputs]
+        return experiences, outputs
 
     def _preprocess_sample(
         self,
