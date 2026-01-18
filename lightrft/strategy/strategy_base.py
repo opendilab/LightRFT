@@ -805,7 +805,7 @@ class StrategyBase(ABC):
 
                 sglang_outputs = self.inference_engine.generate(
                     sampling_params=sampling_params,
-                    input_ids=prompt,
+                    input_ids=prompt, 
                     image_data=image,
                 )
             return [
@@ -908,6 +908,14 @@ class StrategyBase(ABC):
         if self.inference_engine_type == "sglang":
             for i, output in enumerate(local_outputs):
                 output.prompt_token_ids = all_prompt_token_ids[i]
+
+        # TODO
+        # NOTE(Fix for SGLang/Distributed):
+        # We must ensure that ALL ranks have finished generation before ANY rank attempts to sleep the engine.
+        # If one rank finishes early and calls sleep() while another is still generating,
+        # the SGLang scheduler will throw "AssertionError: release_memory_occupation should be called only when no ongoing request".
+        if dist.is_initialized():
+            dist.barrier()
 
         if sleep_engine is True:
             self.maybe_sleep_inference_engine()

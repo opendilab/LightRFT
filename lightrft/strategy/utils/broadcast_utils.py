@@ -108,16 +108,19 @@ class BroadcastManager:
                 if self.strategy.engine_type == "vllm":
                     self.inference_engine.llm_engine.model_executor.collective_rpc("update_weight", kwargs=kwargs)
                 elif self.strategy.engine_type == "sglang":
-                    # self.inference_engine.update_weights_from_tensor(
-                    #     name, param.data, flush_cache=(count == num_params)
-                    # )
-                    # Map weight names from training model to SGLang format
-                    # Training model: model.visual.xxx, model.language_model.xxx
-                    # SGLang expects: visual.xxx, model.xxx (for language model), lm_head
-                    sglang_name = self._map_weight_name_for_sglang(name)
-                    self.inference_engine.update_weights_from_tensor(
-                        sglang_name, param.data, flush_cache=(count == num_params)
-                    )
+                    if not self.strategy.args.text_only:
+                        # Map weight names from training model to SGLang format
+                        # Training model: model.visual.xxx, model.language_model.xxx
+                        # SGLang expects: visual.xxx, model.xxx (for language model), lm_head
+                        sglang_name = self._map_weight_name_for_sglang(name)
+                        self.inference_engine.update_weights_from_tensor(
+                            sglang_name, param.data, flush_cache=(count == num_params)
+                        )
+                    else: # TODO=====
+                        # for gsm8k
+                        self.inference_engine.update_weights_from_tensor(
+                            name, param.data, flush_cache=(count == num_params)
+                        )
 
     def _fsdp_v2_broadcast(self):
         """
@@ -150,15 +153,18 @@ class BroadcastManager:
                 )
                 self.inference_engine.llm_engine.model_executor.collective_rpc("update_weight", kwargs=kwargs)
             elif self.strategy.engine_type == "sglang":
-                    # self.inference_engine.update_weights_from_tensor(
-                    #     name, param.data, flush_cache=(count == num_params)
-                    # )
+                if not self.strategy.args.text_only:
                     # Map weight names from training model to SGLang format
                     # Training model: model.visual.xxx, model.language_model.xxx
                     # SGLang expects: visual.xxx, model.xxx (for language model), lm_head
                     sglang_name = self._map_weight_name_for_sglang(name)
                     self.inference_engine.update_weights_from_tensor(
                         sglang_name, param.data, flush_cache=(count == num_params)
+                    )
+                else: # TODO=====
+                    # for gsm8k
+                    self.inference_engine.update_weights_from_tensor(
+                        name, param.data, flush_cache=(count == num_params)
                     )
             del param_on_device
             del full_param
