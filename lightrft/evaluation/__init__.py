@@ -17,4 +17,3 @@ __all__ = [
     "compare_answers",
     "evaluate_predictions",
 ]
-
