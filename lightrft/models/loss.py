@@ -1,15 +1,35 @@
 """
 Loss functions used across LightRFT models.
 
-This module implements:
+This module implements a comprehensive collection of loss functions for reinforcement learning
+from human feedback (RLHF) and related training paradigms:
 
-- GPTLMLoss:  Next-token prediction for generative reward model training.
+**Policy Optimization Losses:**
+- PolicyLoss: Multi-purpose policy loss supporting PPO, CPGD (via use_cpg_loss), DAPO-style
+  decoupled clipping, and high-entropy token filtering for efficient training.
+- ValueLoss: Value function loss for PPO with optional value clipping.
+
+**Reward Model Losses:**
+- GPTLMLoss: Next-token prediction loss for generative reward model training.
 - LogSigmoidLoss: Log-sigmoid pairwise loss for scalar reward model training.
 - LogExpLoss: Log-exp pairwise loss for scalar reward model training.
 - HPSLoss: Human Preference Score loss for scalar reward model training.
+- PairWiseLoss: Generic pairwise preference loss for reward models.
+- PRMLoss: Process Reward Model loss for token-level reward prediction.
+
+**Preference Learning Losses:**
+- DPOLoss: Direct Preference Optimization loss for aligning language models with preferences.
+- KTOLoss: Kahneman-Tversky Optimization loss for uneven sampling scenarios.
+- VanillaKTOLoss: Simplified KTO loss for even sampling scenarios.
+
+**Knowledge Distillation:**
+- KDLoss: Knowledge Distillation loss for transferring knowledge from teacher to student models.
+
+All loss functions are designed to work seamlessly with the LightRFT training framework,
+supporting distributed training, mixed precision, and various optimization strategies.
 """
 
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Union
 
 import torch
 import torch.distributed as dist
@@ -64,13 +84,98 @@ class GPTLMLoss(nn.Module):
 
 class PolicyLoss(nn.Module):
     """
-    Policy Loss for PPO
+    Multi-purpose policy loss function supporting multiple reinforcement learning algorithms.
+
+    This class implements a unified policy loss that can be configured to support various
+    policy optimization algorithms including PPO, CPGD, and high-entropy token filtering
+    strategies. The loss function computes clipped policy gradients with optional masking
+    for efficient training.
+
+    **Supported Algorithms:**
+
+    - **PPO (Proximal Policy Optimization)**: Default mode using standard clipped surrogate
+      objective. The loss is computed as ``-min(ratio * advantages, clipped_ratio * advantages)``
+      where ``ratio = exp(log_probs - old_log_probs)`` and clipping is applied to prevent
+      large policy updates.
+
+    - **Clipped Policy Gradient Optimization with Policy Drift (CPGD)**: Enabled via ``use_cpg_loss=True``. Uses
+      asymmetric clipping bounds for positive and negative advantages, providing better
+      stability for constrained policy optimization. See: https://arxiv.org/abs/2505.12504
+
+    - **High-Entropy Token Filtering**: Enabled via ``high_entropy_token_ratio > 0`` or by
+      providing an ``entropy_mask`` in the forward pass. This feature allows training only on
+      high-entropy tokens (forking tokens that determine reasoning directions), significantly
+      improving training efficiency. Based on: https://arxiv.org/abs/2506.01939
+
+    :param clip_eps: Clipping epsilon for PPO-style policy updates. Determines the maximum
+        allowed ratio between new and old policy probabilities. Typical values range from
+        0.1 to 0.3. Default: 0.2
+    :type clip_eps: float
+    :param use_dapo: Flag for DAPO (Decoupled Clip and Dynamic sAmpling Policy Optimization).
+        Currently reserved for future implementation. Default: False
+    :type use_dapo: bool
+    :param use_cpg_loss: If True, uses CPGD-style clipped policy gradient loss with
+        asymmetric clipping bounds. When False, uses standard PPO clipping. Default: False
+    :type use_cpg_loss: bool
+    :param high_entropy_token_ratio: Ratio of high-entropy tokens to keep for training
+        (e.g., 0.2 means top 20% highest entropy tokens). When > 0, enables high-entropy
+        token filtering. Set to 0.0 to disable. Default: 0.0
+    :type high_entropy_token_ratio: float
+
+    **Loss Computation:**
+
+    The loss is computed as follows:
+
+    1. **Mask Application**: Combines ``action_mask`` (valid tokens) with ``entropy_mask``
+       (high-entropy tokens) to create a final mask for loss computation.
+
+    2. **PPO Mode** (default, ``use_cpg_loss=False``):
+       - Computes policy ratio: ``ratio = exp(log_probs - old_log_probs)``
+       - Clips ratio: ``clipped_ratio = clamp(ratio, 1 - clip_eps, 1 + clip_eps)``
+       - Loss: ``-min(ratio * advantages, clipped_ratio * advantages)``
+
+    3. **CPGD Mode** (``use_cpg_loss=True``):
+       - Uses asymmetric clipping: upper bound ``log(1 + clip_eps)`` for positive advantages,
+         lower bound ``log(1 - clip_eps)`` for negative advantages
+       - Loss: ``-clipped_log_probs * advantages``
+
+    4. **Masking**: The computed loss is masked using ``final_mask`` and averaged only over
+       valid, high-entropy tokens (if enabled).
+
+    **Example Usage:**
+
+    .. code-block:: python
+
+        # Standard PPO loss
+        policy_loss = PolicyLoss(clip_eps=0.2)
+        loss = policy_loss(log_probs, old_log_probs, advantages, action_mask)
+
+        # CPGD loss
+        policy_loss = PolicyLoss(clip_eps=0.2, use_cpg_loss=True)
+        loss = policy_loss(log_probs, old_log_probs, advantages, action_mask)
+
+        # PPO with high-entropy token filtering (top 20%)
+        policy_loss = PolicyLoss(clip_eps=0.2, high_entropy_token_ratio=0.2)
+        loss = policy_loss(log_probs, old_log_probs, advantages, action_mask, entropy_mask)
+
+    **References:**
+
+    - PPO: https://arxiv.org/abs/1707.06347
+    - CPGD: https://arxiv.org/abs/2505.12504
+    - High-Entropy Token Filtering: https://arxiv.org/abs/2506.01939
     """
-    def __init__(self, clip_eps: float = 0.2, use_dapo: bool = False, use_cpg_loss: bool = False) -> None:
+    def __init__(
+        self,
+        clip_eps: float = 0.2,
+        use_dapo: bool = False,
+        use_cpg_loss: bool = False,
+        high_entropy_token_ratio: float = 0.0,
+    ) -> None:
         super().__init__()
         self.clip_eps = clip_eps
         self.use_dapo = use_dapo
         self.use_cpg_loss = use_cpg_loss
+        self.high_entropy_token_ratio = high_entropy_token_ratio
 
     def forward(
         self,
@@ -78,28 +183,66 @@ class PolicyLoss(nn.Module):
         old_log_probs: torch.Tensor,
         advantages: torch.Tensor,
         action_mask: Optional[torch.Tensor] = None,
+        entropy_mask: Optional[torch.Tensor] = None,
     ) -> torch.Tensor:
         """
-        Compute PPO policy loss with optional clipping or CPG variant.
+        Compute policy loss with optional masking and algorithm-specific clipping.
 
-        :param log_probs: Log probabilities of actions under current policy.
+        This method computes the policy loss based on the configured algorithm (PPO or CPGD)
+        and applies masking for valid tokens and optionally high-entropy tokens.
+
+        :param log_probs: Log probabilities of actions under the current policy.
+            Shape: ``(batch_size, num_actions)``
         :type log_probs: torch.Tensor
-        :param old_log_probs: Log probabilities of actions under old policy.
+        :param old_log_probs: Log probabilities of actions under the old/reference policy.
+            Shape: ``(batch_size, num_actions)``
         :type old_log_probs: torch.Tensor
-        :param advantages: Estimated advantages for each action.
+        :param advantages: Advantage estimates for each action. Positive values indicate
+            better-than-average actions. Shape: ``(batch_size, num_actions)``
         :type advantages: torch.Tensor
-        :param action_mask: Optional mask for valid actions (1 = valid, 0 = ignore).
+        :param action_mask: Binary mask indicating valid action tokens (1 for valid, 0 for padding).
+            If None, all tokens are considered valid. Shape: ``(batch_size, num_actions)``
         :type action_mask: Optional[torch.Tensor]
-        :return: Scalar policy loss.
+        :param entropy_mask: Binary mask for high-entropy tokens to keep for training.
+            If provided, overrides the instance-level ``entropy_mask``. Shape: ``(batch_size, num_actions)``
+        :type entropy_mask: Optional[torch.Tensor]
+
+        :returns: Scalar policy loss averaged over valid (and optionally high-entropy) tokens.
         :rtype: torch.Tensor
+
+        **Masking Strategy:**
+
+        The final mask is computed as:
+        - If ``entropy_mask`` is provided: ``final_mask = entropy_mask``
+          (Note: ``entropy_mask`` is already created considering ``action_mask`` in
+          ``create_high_entropy_mask``, so padding positions are already excluded)
+        - Else: ``final_mask = action_mask``
+
+        Only tokens where ``final_mask == 1`` contribute to the loss computation.
+
+        **Algorithm Details:**
+
+        - **PPO**: Uses symmetric clipping ``[1 - clip_eps, 1 + clip_eps]`` on the policy ratio.
+        - **CPGD**: Uses asymmetric clipping with log-space bounds for better stability.
         """
+        # Apply entropy mask if provided (for high-entropy token filtering)
+        # action_mask shape: (batch_size, num_actions) - binary mask indicating valid tokens
+        # entropy_mask shape: (batch_size, num_actions) - binary mask for high-entropy tokens
+        # Note: entropy_mask is already created considering action_mask in create_high_entropy_mask,
+        # so it already excludes padding positions. No need to multiply with action_mask again.
+        if entropy_mask is not None:
+            # entropy_mask already respects action_mask boundaries (padding positions are 0)
+            final_mask = entropy_mask
+        else:
+            # No entropy masking, use action_mask only
+            final_mask = action_mask
         if self.use_cpg_loss:
             clipped_log_probs = torch.where(
                 advantages > 0, torch.clamp(log_probs, max=torch.log(torch.tensor(1 + self.clip_eps)) + old_log_probs),
                 torch.clamp(log_probs, min=torch.log(torch.tensor(1 - self.clip_eps)) + old_log_probs)
             )
             loss = -clipped_log_probs * advantages
-            loss = (loss * action_mask).sum() / action_mask.sum()
+            loss = masked_mean(loss, final_mask, dim=-1).mean()
             return loss
 
         # PPO loss
@@ -107,7 +250,7 @@ class PolicyLoss(nn.Module):
         surr1 = ratio * advantages
         surr2 = ratio.clamp(1 - self.clip_eps, 1 + self.clip_eps) * advantages
         loss = -torch.min(surr1, surr2)
-        loss = masked_mean(loss, action_mask, dim=-1).mean()
+        loss = masked_mean(loss, final_mask, dim=-1).mean()
 
         return loss
 
@@ -394,7 +537,12 @@ class PRMLoss(nn.Module):
         self.placeholder_token_id = placeholder_token_id
         self.reward_token_ids = reward_token_ids
 
-    def forward(self, inputs: torch.Tensor, logits: torch.Tensor, labels: torch.Tensor, *, return_acc: bool = False):
+    def forward(self,
+                inputs: torch.Tensor,
+                logits: torch.Tensor,
+                labels: torch.Tensor,
+                *,
+                return_acc: bool = False) -> Union[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]:
         """
         Compute process reward model loss.
 
@@ -446,7 +594,10 @@ class LogSigmoidLoss(nn.Module):
     sample. Optionally supports a non-negative margin.
     """
     def forward(
-        self, chosen_reward: torch.Tensor, reject_reward: torch.Tensor, margin: torch.Tensor = None
+        self,
+        chosen_reward: torch.Tensor,
+        reject_reward: torch.Tensor,
+        margin: Optional[torch.Tensor] = None
     ) -> torch.Tensor:
         """
         Compute log-sigmoid pairwise loss.
@@ -478,7 +629,10 @@ class LogExpLoss(nn.Module):
     the batch. See: https://arxiv.org/abs/2204.05862
     """
     def forward(
-        self, chosen_reward: torch.Tensor, reject_reward: torch.Tensor, margin: torch.Tensor = None
+        self,
+        chosen_reward: torch.Tensor,
+        reject_reward: torch.Tensor,
+        margin: Optional[torch.Tensor] = None
     ) -> torch.Tensor:
         """
         Compute log-exp pairwise loss.
@@ -508,7 +662,10 @@ class HPSLoss(nn.Module):
     Paper: https://arxiv.org/abs/2303.14420
     """
     def forward(
-        self, chosen_reward: torch.Tensor, reject_reward: torch.Tensor, margin: torch.Tensor = None
+        self,
+        chosen_reward: torch.Tensor,
+        reject_reward: torch.Tensor,
+        margin: Optional[torch.Tensor] = None
     ) -> torch.Tensor:
         """
         Compute HPS loss.

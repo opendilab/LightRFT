@@ -18,8 +18,11 @@ class ImageRewardDBHandler(BaseDataHandler):
     Paper: https://arxiv.org/abs/2304.05977
     Dataset Repo: https://huggingface.co/datasets/zai-org/ImageRewardDB
     """
+    task_type = "text-to-image"
+
     def load_data(self, path: str) -> List[Dict[str, Any]]:
-        """Load ImageRewardDB shards and build preference pairs.
+        """
+        Load ImageRewardDB shards and build preference pairs.
 
         This method scans the given dataset root for ImageRewardDB JSON shards and
         aggregates image entries by ``prompt_id``. For each prompt group, it
@@ -31,16 +34,12 @@ class ImageRewardDBHandler(BaseDataHandler):
 
         :return: List of preference pair dictionaries.
         :rtype: List[Dict[str, Any]]
-            - ``prompt_id`` (str): Unique identifier for the prompt group.
-            - ``prompt`` (str): The text prompt used to generate images.
-            - ``classification`` (str): Optional category label; ``"Unknown"`` if missing.
-            - ``data_root`` (str): Echo of the provided ``path`` for later path resolution.
-            - ``chosen_img`` (str): Relative path of the preferred image.
-            - ``rank_chosen`` (int): Rank of the preferred image.
-            - ``overall_rating_chosen`` (Optional[float|int]): Optional quality score of the preferred image.
-            - ``rejected_img`` (str): Relative path of the non-preferred image.
-            - ``rank_rejected`` (int): Rank of the non-preferred image.
-            - ``overall_rating_rejected`` (Optional[float|int]): Optional quality score of the non-preferred image.
+
+        **Example:**
+
+        .. code-block:: python
+
+            data = handler.load_data("path/to/ImageRewardDB")
         """
 
         # Locate all JSON shard files
@@ -136,10 +135,17 @@ class ImageRewardDBHandler(BaseDataHandler):
         """
         Extract path info for chosen and rejected images.
 
-        :param item: Data item containing image paths.
+        :param item: A data item from load_data
         :type item: Dict[str, Any]
-        :return: Dictionary with 'preferred_image' and 'rejected_image' keys, or None if files don't exist.
-        :rtype: Optional[Dict[str, Dict[str, str]]]
+
+        :return: Dict containing local paths for 'preferred_image' and 'rejected_image'
+        :rtype: Dict[str, Dict[str, str]]
+
+        **Example:**
+
+        .. code-block:: python
+
+            info = handler.get_media_info(item)
         """
         data_root = item['data_root']
 
@@ -169,11 +175,17 @@ class ImageRewardDBHandler(BaseDataHandler):
         :type item: Dict[str, Any]
         :param media_content: Loaded media content with 'preferred_image' and 'rejected_image' keys.
         :type media_content: Dict[str, Any]
-        :param config: Configuration dict with task_instruction template.
+        :param config: Configuration dict with task instructions and max_pixels
         :type config: Dict[str, Any]
-        :return: Tuple of (messages0, messages1, other_info).
+
+        :return: A tuple of (messages0, messages1, metadata)
         :rtype: Tuple[List[Dict], List[Dict], Dict]
-        :raises ValueError: If required content is missing.
+
+        **Example:**
+
+        .. code-block:: python
+
+            msg0, msg1, other = handler.parse_item(item, media_content, config)
         """
         # Get loaded visual content
         preferred_image = media_content['preferred_image']
@@ -191,6 +203,9 @@ class ImageRewardDBHandler(BaseDataHandler):
         task_instruction_template = config["task_instruction"]
         task_instruction = task_instruction_template.format(prompt=prompt_text)
 
+        # Get max_pixels from config
+        max_pixels = config["max_pixels"]
+
         # Random pick from "A" or "B" to avoid positional bias
         preference = random.choice(["A", "B"])
         if preference == "A":  # "A" means image0 is preferred
@@ -199,17 +214,21 @@ class ImageRewardDBHandler(BaseDataHandler):
             image0, image1 = rejected_image, preferred_image
 
         # Build messages
-        messages0 = [{
-            "role": "system",
-            "content": copy.deepcopy(task_instruction)
-        }, {
-            "role": "user",
-            "content": [{
-                "type": "image",
-                "image": image0,
-                "max_pixels": 1280 * 720
-            }]
-        }]
+        messages0 = [
+            {
+                "role": "system",
+                "content": copy.deepcopy(task_instruction)
+            },
+            {
+                "role": "user",
+                "content": [{
+                    "type": "image",
+                    "image": image0,
+                    "max_pixels": max_pixels
+                }  # to save memory
+                            ]
+            }
+        ]
 
         messages1 = [{
             "role": "system",
@@ -219,12 +238,13 @@ class ImageRewardDBHandler(BaseDataHandler):
             "content": [{
                 "type": "image",
                 "image": image1,
-                "max_pixels": 1280 * 720
+                "max_pixels": max_pixels
             }]
         }]
 
         other = {
             "preference": preference,  # used for reward head labeling
+            "task_type": self.task_type,
             "source": item["source"],
             "prompt_id": item["prompt_id"],
             "prompt": prompt_text,

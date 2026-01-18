@@ -17,7 +17,7 @@ Supported Tasks:
 Note:
     This is a simplified version that does NOT load neural reward models.
     For multi-modal training with neural reward models, see the full version
-    in examples/safework_t1/reward_models_utils.py
+    in examples/gsm8k_geo3k/reward_models_utils.py
 """
 from __future__ import annotations
 

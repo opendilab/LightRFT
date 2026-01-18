@@ -122,7 +122,7 @@ torchrun \
     --node_rank $NODE_RANK \
     --master-port $MASTER_PORT \
     --master-addr $MASTER_ADDR \
-    examples/safework_t1/train_colocate.py \
+    examples/gsm8k_geo3k/train_colocate.py \
     --pretrain "${PATH_TO_YOUR_BASE_MODEL}" \
     --save_trajectories \
     --print_replay_buffer_stats \

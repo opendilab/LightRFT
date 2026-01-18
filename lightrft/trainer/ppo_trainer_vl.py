@@ -404,7 +404,14 @@ class PPOTrainerVL(ABC):
                 disable=not self.strategy.is_rank_0(),
             )
 
-            for rand_prompts, rand_images, rand_references, rand_labels in self.prompts_dataloader:
+            for batch in self.prompts_dataloader:
+                # Compatible with both image-only (4 args) and video (5 args) dataloaders
+                if len(batch) == 5:
+                    rand_prompts, rand_images, rand_videos, rand_references, rand_labels = batch
+                else:
+                    rand_prompts, rand_images, rand_references, rand_labels = batch
+                    rand_videos = None
+
                 # TODO: Remove debug print
                 self.strategy.print(
                     f"rand_prompts:\n {rand_prompts}\n , rand_images:{rand_images}\n , rand_references:{rand_references}\n, rand_labels:{rand_labels}\n "  # noqa
@@ -412,7 +419,12 @@ class PPOTrainerVL(ABC):
 
                 for i, experience in enumerate(
                     self.experience_maker.make_experience_list(
-                        rand_prompts, rand_images, rand_references, rand_labels, **self.generate_kwargs
+                        rand_prompts,
+                        rand_images,
+                        all_videos=rand_videos,
+                        all_references=rand_references,
+                        all_labels=rand_labels,
+                        **self.generate_kwargs
                     )
                 ):
                     if i == 0:
@@ -630,7 +642,10 @@ class PPOTrainerVL(ABC):
         torch.cuda.empty_cache()
         return status_mean
 
-    def training_step(self, experience: ExperienceVL, global_steps) -> Dict[str, float]:
+    def training_step(self,
+                      experience: ExperienceVL,
+                      global_steps,
+                      entropy_mask: Optional[torch.Tensor] = None) -> Dict[str, float]:
         """
         Single training step combining actor and critic updates.
 
@@ -638,17 +653,21 @@ class PPOTrainerVL(ABC):
         :type experience: ExperienceVL
         :param global_steps: Current global step count.
         :type global_steps: int
+        :param entropy_mask: Optional mask for high-entropy tokens.
+        :type entropy_mask: Optional[torch.Tensor]
         :return: Dictionary of training statistics.
         :rtype: Dict[str, float]
         """
         status = {}
         if global_steps > self.freezing_actor_steps:
-            status = self.training_step_actor(experience)
+            status = self.training_step_actor(experience, entropy_mask=entropy_mask)
         if self.critic is not None:
             status.update(self.training_step_critic(experience))
         return status
 
-    def training_step_actor(self, experience: ExperienceVL) -> Dict[str, float]:
+    def training_step_actor(self,
+                            experience: ExperienceVL,
+                            entropy_mask: Optional[torch.Tensor] = None) -> Dict[str, float]:
         """
         Actor training step.
 
@@ -665,6 +684,8 @@ class PPOTrainerVL(ABC):
 
             pixel_values = experience.pixel_values
             image_grid_thws = experience.image_grid_thws
+            pixel_values_videos = getattr(experience, "pixel_values_videos", None)
+            video_grid_thws = getattr(experience, "video_grid_thws", None)
 
             old_action_log_probs = torch.cat(experience.action_log_probs, dim=0).unsqueeze(0)
             advantages = torch.cat(experience.advantages, dim=0).unsqueeze(0)
@@ -679,6 +700,8 @@ class PPOTrainerVL(ABC):
 
             pixel_values = experience.pixel_values
             image_grid_thws = experience.image_grid_thws
+            pixel_values_videos = getattr(experience, "pixel_values_videos", None)
+            video_grid_thws = getattr(experience, "video_grid_thws", None)
 
             old_action_log_probs = experience.action_log_probs
             advantages = experience.advantages
@@ -707,6 +730,8 @@ class PPOTrainerVL(ABC):
             attention_mask=attention_mask,
             pixel_values=pixel_values,
             image_grid_thw=image_grid_thws,
+            pixel_values_videos=pixel_values_videos,
+            video_grid_thw=video_grid_thws,
             return_output=True,
             packed_seq_lens=packed_seq_lens,
         )
@@ -726,6 +751,7 @@ class PPOTrainerVL(ABC):
                 old_action_log_probs,
                 advantages,
                 action_mask=experience.action_mask,
+                entropy_mask=entropy_mask,
             )
 
         if self.args.use_kl_loss:
@@ -868,7 +894,7 @@ class PPOTrainerVL(ABC):
             # General handling for other keys
             if isinstance(v, torch.Tensor):
                 # If it's a tensor, it's safe to call .mean()
-                status[k] = v.mean().item()
+                status[k] = v.float().mean().item()
             elif isinstance(v, list):
                 # If it's a list, only compute mean if it contains numbers
                 if v and isinstance(v[0], (int, float)):
@@ -925,6 +951,10 @@ class PPOTrainerVL(ABC):
         # Layer 3: Apply defensive device placement to all multimodal tensors
         pixel_values = ensure_device_and_contiguous(experience.pixel_values, "pixel_values")
         image_grid_thws = ensure_device_and_contiguous(experience.image_grid_thws, "image_grid_thws")
+        pixel_values_videos = ensure_device_and_contiguous(
+            getattr(experience, "pixel_values_videos", None), "pixel_values_videos"
+        )
+        video_grid_thws = ensure_device_and_contiguous(getattr(experience, "video_grid_thws", None), "video_grid_thws")
 
         # TODO: This is a bad indicator to say that data is packed...
         if isinstance(experience.sequences, list):
@@ -977,6 +1007,8 @@ class PPOTrainerVL(ABC):
             attention_mask=attention_mask,
             pixel_values=pixel_values,
             image_grid_thw=image_grid_thws,
+            pixel_values_videos=pixel_values_videos,
+            video_grid_thw=video_grid_thws,
             return_output=True,
             packed_seq_lens=packed_seq_lens,
         )
@@ -1141,11 +1173,17 @@ class PPOTrainerVL(ABC):
         num_eval_batches = 0
 
         with torch.no_grad():
-            for eval_prompts, eval_images, eval_references, eval_labels in eval_dataloader:
+            for batch in eval_dataloader:
+                if len(batch) == 5:
+                    eval_prompts, eval_images, eval_videos, eval_references, eval_labels = batch
+                else:
+                    eval_prompts, eval_images, eval_references, eval_labels = batch
+                    eval_videos = None
+
                 # Generate responses using experience maker (but don't train on them)
                 # We reuse the experience maker but only for generation
                 for experience in self.experience_maker.make_experience_list(
-                    eval_prompts, eval_images, eval_references, eval_labels, **self.generate_kwargs
+                    eval_prompts, eval_images, eval_videos, eval_references, eval_labels, **self.generate_kwargs
                 ):
                     # Extract metrics from experience
                     if hasattr(experience, 'info') and experience.info is not None:

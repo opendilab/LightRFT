@@ -15,7 +15,7 @@ from collections import defaultdict
 from contextlib import contextmanager
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union, Callable
 
 import deepspeed
 import numpy as np
@@ -77,7 +77,7 @@ class StrategyBase(ABC):
     """
 
     def __init__(  # pylint: disable=R0917
-        self, seed: int, max_norm: float, micro_train_batch_size: int, train_batch_size: int, args=None
+        self, seed: int, max_norm: float, micro_train_batch_size: int, train_batch_size: int, args: Optional[Any] = None
     ) -> None:
         """
         Initialize strategy with common parameters.
@@ -91,7 +91,7 @@ class StrategyBase(ABC):
         :param train_batch_size: Total batch size for training
         :type train_batch_size: int
         :param args: Additional configuration arguments
-        :type args: Any
+        :type args: Any (usually argparse.Namespace)
         """
         self.seed = seed
         self.max_norm = max_norm
@@ -143,12 +143,14 @@ class StrategyBase(ABC):
         torch.manual_seed(seed)
         torch.cuda.manual_seed_all(seed)
 
-    def setup_distributed(self, timeout=None, num_gpu_per_node=8) -> None:
+    def setup_distributed(self, timeout: Optional[timedelta] = None, num_gpu_per_node: int = 8) -> None:
         """
         Initialize distributed training environment.
 
         :param timeout: Maximum time to wait for initialization
         :type timeout: timedelta, optional
+        :param num_gpu_per_node: Number of GPUs per node
+        :type num_gpu_per_node: int
         :raises RuntimeError: If required environment variables are missing
         :raises ValueError: If unsupported engine type is specified
         """
@@ -269,7 +271,9 @@ class StrategyBase(ABC):
         raise NotImplementedError()
 
     @abstractmethod
-    def optimizer_step(self, optimizer: optim.Optimizer, model: nn.Module, scheduler, name="model", **kwargs) -> None:
+    def optimizer_step(
+        self, optimizer: optim.Optimizer, model: nn.Module, scheduler: Any, name: str = "model", **kwargs
+    ) -> None:
         """
         Take optimizer step.
 
@@ -289,12 +293,12 @@ class StrategyBase(ABC):
         replay_buffer,
         batch_size: int,
         pin_memory: bool = False,
-        shuffle=True,
-        collate_fn=None,
-        drop_last=True,
-        sampler=None,
-        consumed_samples=0,
-    ):
+        shuffle: bool = True,
+        collate_fn: Optional[Callable] = None,
+        drop_last: bool = True,
+        sampler: Optional[Any] = None,
+        consumed_samples: int = 0,
+    ) -> DataLoader:
         """
         Set up data loader for training.
 
@@ -306,6 +310,7 @@ class StrategyBase(ABC):
         :param shuffle: Whether to shuffle data
         :type shuffle: bool
         :param collate_fn: Function to collate samples
+        :type collate_fn: Optional[Callable]
         :param drop_last: Whether to drop last incomplete batch
         :type drop_last: bool
         :param sampler: Custom sampler
@@ -338,7 +343,14 @@ class StrategyBase(ABC):
 
     @abstractmethod
     def save_ckpt(  # pylint: disable=R0917, W0102
-        self, model, save_dir: str, tag=None, max_num=3, max_mem=1000, client_state={}, save_latest=True
+        self,
+        model: nn.Module,
+        save_dir: str,
+        tag: Optional[str] = None,
+        max_num: int = 3,
+        max_mem: int = 1000,
+        client_state: Optional[Dict[str, Any]] = None,
+        save_latest: bool = True
     ) -> None:
         """
         Save training checkpoint with additional metadata.
@@ -361,14 +373,14 @@ class StrategyBase(ABC):
     @abstractmethod
     def load_ckpt(  # pylint: disable=R0917
         self,
-        model,
+        model: nn.Module,
         load_dir: str,
-        tag=None,
-        load_module_strict=True,
-        load_optimizer_states=True,
-        load_lr_scheduler_states=True,
-        load_module_only=False,
-    ):
+        tag: Optional[str] = None,
+        load_module_strict: bool = True,
+        load_optimizer_states: bool = True,
+        load_lr_scheduler_states: bool = True,
+        load_module_only: bool = False,
+    ) -> Any:
         """
         Load training checkpoint with various options.
 
@@ -387,17 +399,19 @@ class StrategyBase(ABC):
         """
         raise NotImplementedError()
 
-    def all_reduce(self, data, op="mean"):
+    def all_reduce(self,
+                   data: Union[torch.Tensor, Dict[str, torch.Tensor]],
+                   op: str = "mean") -> Union[torch.Tensor, Dict[str, torch.Tensor], float, int]:
         """
         Perform all-reduce operation across distributed processes.
 
         :param data: Data to be reduced, can be a tensor or dictionary of tensors
-        :type data: Union[torch.Tensor, dict]
+        :type data: Union[torch.Tensor, Dict[str, torch.Tensor]]
         :param op: Reduction operation ('mean', 'max', 'sum')
         :type op: str
 
         :return: Reduced data in the same format as input
-        :rtype: Union[torch.Tensor, dict]
+        :rtype: Union[torch.Tensor, Dict[str, torch.Tensor], float, int]
         :raises AssertionError: If op is not one of 'mean', 'max', 'sum'
         """
         assert op in ("mean", "max", "sum")
@@ -433,7 +447,8 @@ class StrategyBase(ABC):
                 data = data.cpu()
             return data.item() if not is_tensor else data
 
-    def all_gather(self, data):
+    def all_gather(self, data: Union[torch.Tensor, Dict[str,
+                                                        torch.Tensor]]) -> Union[torch.Tensor, Dict[str, torch.Tensor]]:
         """
         Gather data from all distributed processes.
 
@@ -463,7 +478,6 @@ class StrategyBase(ABC):
         Print messages with timestamp, but only on rank 0.
 
         :param msg: Messages to print
-        :type msg: tuple
         """
         current_time = datetime.now()
         time_str = current_time.strftime("%m-%d %H:%M:%S")
@@ -804,30 +818,78 @@ class StrategyBase(ABC):
             raise ValueError(f"Unsupported engine type: {self.inference_engine_type}")
 
     @classmethod
-    def _build_multimodal_inputs(cls, all_prompts, all_images, images_num):
+    def _build_multimodal_inputs(cls, all_prompts, all_images, images_num, all_videos, videos_num):
         """
-        In this function, we build multimodal inputs for inference engine.
+        Build multimodal inputs for inference engine (vLLM/SGLang).
+
+        This function supports two input formats for images and videos to accommodate
+        different data preprocessing approaches:
+
+        Format 1 - Nested List (multi-image/video per prompt already grouped):
+            all_images = [[img1_a, img1_b], [img2_a], [img3_a, img3_b, img3_c]]
+            images_num = [2, 1, 3]
+            -> all_images[i] is directly used as the image list for prompt i
+
+        Format 2 - Flattened List (all images/videos in a single flat list):
+            all_images = [img1_a, img1_b, img2_a, img3_a, img3_b, img3_c]
+            images_num = [2, 1, 3]
+            -> images are sliced based on images_num: [0:2], [2:3], [3:6]
+
+        :param all_prompts: List of text prompts
+        :param all_images: Images in nested or flattened format, or None
+        :param images_num: Number of images per prompt
+        :param all_videos: Videos in nested or flattened format, or None
+        :param videos_num: Number of videos per prompt
+        :return: List of dicts with 'prompt' and optional 'multi_modal_data' keys
         """
         inputs = []
         img_start_idx = 0
+        vid_start_idx = 0
         for i, prompt in enumerate(all_prompts):
-            img_num = images_num[i]
-            img_list = all_images[img_start_idx:img_start_idx + img_num]
-            if img_list is None or len(img_list) == 0 or img_list[0] is None:
+            img_num = images_num[i] if images_num is not None else 0
+            vid_num = videos_num[i] if videos_num is not None else 0
+
+            # Support two input formats:
+            # 1. Nested list: all_images[i] is already a list of images for this prompt
+            # 2. Flattened list: all_images is a flat list, slice by img_num
+            if all_images is not None:
+                if i < len(all_images) and isinstance(all_images[i], list) and len(all_images[i]) == img_num:
+                    img_list = all_images[i]
+                else:
+                    img_list = all_images[img_start_idx:img_start_idx + img_num]
+            else:
+                img_list = []
+
+            # Same logic for videos
+            if all_videos is not None:
+                if i < len(all_videos) and isinstance(all_videos[i], list) and len(all_videos[i]) == vid_num:
+                    vid_list = all_videos[i]
+                else:
+                    vid_list = all_videos[vid_start_idx:vid_start_idx + vid_num]
+            else:
+                vid_list = []
+
+            multi_modal_data = {}
+            if len(img_list) > 0 and img_list[0] is not None:
+                multi_modal_data["image"] = img_list
+            if len(vid_list) > 0 and vid_list[0] is not None:
+                multi_modal_data["video"] = vid_list
+
+            if not multi_modal_data:
                 # remove the vision start and end tokens for data after apply chat template.
                 # Use regex to handle multiple <|image_pad|> tokens (e.g., for high-res images)
                 prompt = re.sub(r'<\|vision_start\|>(<\|image_pad\|>)+<\|vision_end\|>', '', prompt)
+                prompt = re.sub(r'<\|vision_start\|>(<\|video_pad\|>)+<\|vision_end\|>', '', prompt)
                 inputs.append({
                     "prompt": prompt,
                 })
             else:
                 inputs.append({
                     "prompt": prompt,
-                    "multi_modal_data": {
-                        "image": img_list
-                    },
+                    "multi_modal_data": multi_modal_data,
                 })
             img_start_idx += img_num
+            vid_start_idx += vid_num
         return inputs
 
     def gather_and_generate(
@@ -838,26 +900,59 @@ class StrategyBase(ABC):
         all_images=None,
         sleep_engine=True,
         images_num=None,
+        all_videos=None,
+        videos_num=None,
     ):
         """
-        1. Gather prompts within a vllm tp_group and do generation together.
-        2. split the generated outputs and return to each rank.
-        3. conditinally sleep inference engine.
+        Gather prompts across distributed ranks and perform text/multimodal generation.
 
-        In multi-modal case, the input for inference engine could be very different:
-        1. one prompt = one text + one image
-        2. one prompt = one text + multi image
+        This method coordinates distributed generation by:
+        1. Gathering prompts from all ranks within a vLLM tensor parallel group
+        2. Performing batched generation using the inference engine
+        3. Splitting generated outputs and returning each rank's portion
+        4. Optionally putting the inference engine to sleep to conserve memory
 
+        For multimodal inputs, supports flexible input formats:
+        - One prompt with one image
+        - One prompt with multiple images
+        - One prompt with video(s) only (no images)
+        - One prompt with one or more videos
+        - Mixed image and video inputs
+
+        :param sampling_params: Parameters controlling generation (e.g., temperature, top_k, max_tokens)
+        :type sampling_params: Any
+        :param all_prompt_token_ids: Token IDs for text-only prompts, defaults to None
+        :type all_prompt_token_ids: Optional[List[List[int]]]
+        :param all_prompts: Raw text prompts for multimodal generation, defaults to None
+        :type all_prompts: Optional[List[str]]
+        :param all_images: Images corresponding to prompts for VLM generation, defaults to None
+        :type all_images: Optional[List]
+        :param sleep_engine: Whether to sleep the inference engine after generation, defaults to True
+        :type sleep_engine: bool
+        :param images_num: Number of images per prompt (for multi-image scenarios), defaults to None
+        :type images_num: Optional[List[int]]
+        :param all_videos: Videos corresponding to prompts for video generation, defaults to None
+        :type all_videos: Optional[List]
+        :param videos_num: Number of videos per prompt, defaults to None
+        :type videos_num: Optional[List[int]]
+
+        :return: List of generation outputs for the current rank, each containing prompt_token_ids and output_token_ids
+        :rtype: List[EasyDict]
+        :raises NotImplementedError: If inference engine is not initialized
         """
         if self.inference_engine is None:
             raise NotImplementedError("Inference engine is not initialized.")
         self.wakeup_inference_engine()
 
-        is_multimodal = all_images is not None
+        is_multimodal = all_images is not None or all_videos is not None
 
         if is_multimodal:
             inputs = self._build_multimodal_inputs(
-                all_prompts=all_prompts, all_images=all_images, images_num=images_num
+                all_prompts=all_prompts,
+                all_images=all_images,
+                images_num=images_num,
+                all_videos=all_videos,
+                videos_num=videos_num,
             )
         else:
             inputs = all_prompt_token_ids

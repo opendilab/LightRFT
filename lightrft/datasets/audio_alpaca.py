@@ -18,10 +18,17 @@ class AudioAlpacaHandler(BaseDataHandler):
         """
         Load and validate Audio Alpaca data from parquet files.
 
-        :param path: Path to the data file or directory containing parquet files.
+        :param path: Path to the directory containing parquet files
         :type path: str
-        :return: List of data items with audio bytes.
+
+        :return: A list of data items
         :rtype: List[Dict[str, Any]]
+
+        **Example:**
+
+        .. code-block:: python
+
+            data = handler.load_data("path/to/audio-alpaca")
         """
         # If path is a directory, look for parquet files
         if os.path.isdir(path):
@@ -55,6 +62,18 @@ class AudioAlpacaHandler(BaseDataHandler):
     def get_media_info(self, item: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:
         """
         Extract audio bytes info for chosen and rejected audios.
+
+        :param item: A data item from load_data
+        :type item: Dict[str, Any]
+
+        :return: Dict containing audio bytes for 'chosen_audio' and 'rejected_audio'
+        :rtype: Dict[str, Dict[str, Any]]
+
+        **Example:**
+
+        .. code-block:: python
+
+            info = handler.get_media_info(item)
         """
         return {
             'chosen_audio': {
@@ -76,9 +95,15 @@ class AudioAlpacaHandler(BaseDataHandler):
         :type media_content: Dict[str, Any]
         :param config: Configuration dict with task_instruction template.
         :type config: Dict[str, Any]
-        :return: Tuple of (messages0, messages1, other_info).
+
+        :return: A tuple of (messages0, messages1, metadata)
         :rtype: Tuple[List[Dict], List[Dict], Dict]
-        :raises ValueError: If required audio content is missing.
+
+        **Example:**
+
+        .. code-block:: python
+
+            msg0, msg1, other = handler.parse_item(item, media_content, config)
         """
 
         chosen_audio = media_content['chosen_audio']

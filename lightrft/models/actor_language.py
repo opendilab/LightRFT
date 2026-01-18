@@ -22,7 +22,7 @@ from transformers import (
 )
 from transformers.integrations.deepspeed import HfDeepSpeedConfig
 
-from .utils import apply_lora_configuration, log_probs_from_logits, reset_position_ids
+from .utils import apply_lora_configuration, log_probs_from_logits, reset_position_ids, entropy_from_logits
 
 
 class ActorLanguage(nn.Module):
@@ -84,6 +84,7 @@ class ActorLanguage(nn.Module):
         ds_config: Optional[dict] = None,
         device_map: Optional[dict] = None,
         packing_samples: bool = False,
+        high_entropy_token_ratio: float = 0.0,
         **kwargs,
     ) -> None:
         """
@@ -93,6 +94,7 @@ class ActorLanguage(nn.Module):
         and configures the model for training or inference.
         """
         super().__init__()
+        self.high_entropy_token_ratio = high_entropy_token_ratio
 
         # ------------------------------------------------
         # 1. Directly pass in a pre-built model
@@ -284,19 +286,45 @@ class ActorLanguage(nn.Module):
 
         log_probs = log_probs_from_logits(output["logits"][:, :-1, :], sequences[:, 1:])
 
+        # Calculate entropy for action tokens (for high-entropy token identification)
+        # Only compute entropy when high_entropy_token_ratio is not 0
+        if self.high_entropy_token_ratio > 0.0:
+            action_logits = output["logits"][:, :-1, :]  # Shape: (batch, seq_len-1, vocab_size)
+            action_entropy = entropy_from_logits(action_logits)  # Shape: (batch, seq_len-1)
+        else:
+            action_entropy = None
+
         if not self.packing_samples:
             action_log_probs = log_probs[:, -num_actions:]
+            if action_entropy is not None:
+                action_entropy = action_entropy[:, -num_actions:]
         else:
             assert isinstance(num_actions, list) and len(num_actions) == len(packed_seq_lens)
             action_log_probs = []
+            action_entropy_list = []
             offset = 0
             for na, sl in zip(num_actions, packed_seq_lens):
                 start, end = max(0, offset + sl - na - 1), offset + sl - 1
                 action_log_probs.append(log_probs[:, start:end])
+                if action_entropy is not None:
+                    action_entropy_list.append(action_entropy[:, start:end])
                 offset += sl
             action_log_probs = torch.cat(action_log_probs, dim=1)
+            if action_entropy is not None:
+                action_entropy = torch.cat(action_entropy_list, dim=1)
 
-        return (action_log_probs, output) if return_output else action_log_probs
+        if return_output:
+            # Include action_entropy in output if computed
+            if action_entropy is not None:
+                # Convert ModelOutput (dataclass) to dict to allow adding new fields
+                # output type: ModelOutput (e.g., CausalLMOutputWithPast) - supports dict-like access
+                # but cannot directly add new keys. Converting to dict enables adding action_entropy.
+                output_dict = dict(output)  # Type: dict[str, torch.Tensor]
+                output_dict["action_entropy"] = action_entropy
+                return (action_log_probs, output_dict)
+            return (action_log_probs, output)
+        else:
+            return action_log_probs
 
     def gradient_checkpointing_enable(self, gradient_checkpointing_kwargs={"use_reentrant": False}):
         """

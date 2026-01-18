@@ -30,11 +30,11 @@ def _calculate_repeatness(s: str) -> float:
     :return: Repeatness score between 0 and 1
     :rtype: float
     """
-    def ranks(l):  # noqa: E741
+    def ranks(l: List[int]) -> List[int]:  # noqa: E741
         index = {v: i for i, v in enumerate(sorted(set(l)))}
         return [index[v] for v in l]
 
-    def suffix_array(s):
+    def suffix_array(s: List[int]) -> Tuple[List[int], List[int]]:
         line = ranks(s)
         n, k, ans, sa = len(s), 1, line, [0] * len(s)
         while k < n - 1:
@@ -44,7 +44,7 @@ def _calculate_repeatness(s: str) -> float:
             sa[k] = i
         return ans, sa
 
-    def lcp(arr, suffix_arr, inv_suff):
+    def lcp(arr: List[int], suffix_arr: List[int], inv_suff: List[int]) -> List[int]:
         n, ans, k = len(arr), [0] * len(arr), 0
 
         for i in range(n):
@@ -176,6 +176,12 @@ class TrajectorySaver:
     :type save_images_separately: bool
     :param max_image_size: Maximum dimension for saved images (to reduce file size). Default to 512
     :type max_image_size: int
+    :param mark_high_entropy_tokens: If True, create token arrays with high-entropy information for HTML rendering.
+        Default to False
+    :type mark_high_entropy_tokens: bool
+    :param high_entropy_token_ratio: Ratio of high-entropy tokens to mark (e.g., 0.2 means top 20%).
+        Only used if mark_high_entropy_tokens is True. Default to 0.2
+    :type high_entropy_token_ratio: float
     """
     def __init__(
         self,
@@ -183,11 +189,15 @@ class TrajectorySaver:
         tokenizer: Any,
         save_images_separately: bool = True,
         max_image_size: int = 512,
+        mark_high_entropy_tokens: bool = False,
+        high_entropy_token_ratio: float = 0.2,
     ) -> None:
         self.save_dir = Path(save_dir)
         self.tokenizer = tokenizer
         self.save_images_separately = save_images_separately
         self.max_image_size = max_image_size
+        self.mark_high_entropy_tokens = mark_high_entropy_tokens
+        self.high_entropy_token_ratio = high_entropy_token_ratio
 
         # Create directory structure only on rank 0
         if not torch.distributed.is_initialized() or torch.distributed.get_rank() == 0:
@@ -275,9 +285,6 @@ class TrajectorySaver:
         # Validate sequences shape before processing
         if len(sequences.shape) == 0:
             # Scalar tensor - skip this experience
-            print(
-                f"[TrajectorySaver] Warning: sequences is a scalar tensor at step {step}, exp_idx {exp_idx}. Skipping."
-            )
             return []
         elif len(sequences.shape) == 1:
             # 1D tensor - reshape to (1, seq_len)
@@ -348,19 +355,43 @@ class TrajectorySaver:
                         adjusted_indices = gen_indices + offset
                         gen_tokens = sequences[i][adjusted_indices]
 
+                        # Check if we should mark high-entropy tokens
+                        high_entropy_info = None
+                        if self.mark_high_entropy_tokens:
+                            # Extract single sample's action_mask (1D)
+                            sample_action_mask = action_mask[i] if len(action_mask.shape) == 2 else action_mask
+                            high_entropy_info = self._get_high_entropy_mask(exp, i, sample_action_mask)
+
                         # generated_text includes the last prompt token (for RL state-action pairing)
                         generated_text = self.tokenizer.decode(gen_tokens, skip_special_tokens=True)
+                        generated_tokens = None
+                        if high_entropy_info is not None:
+                            high_entropy_mask, sample_entropy = high_entropy_info
+                            generated_tokens = self._create_token_array(
+                                gen_tokens, gen_indices, high_entropy_mask, sample_entropy
+                            )
 
                         # pure_generated_text excludes the last prompt token (only model's output)
+                        pure_generated_tokens = None
                         if len(adjusted_indices) > 1:
                             pure_gen_tokens = sequences[i][adjusted_indices[1:]]
+                            pure_gen_indices = gen_indices[1:]
                             pure_generated_text = self.tokenizer.decode(pure_gen_tokens, skip_special_tokens=True)
+                            if high_entropy_info is not None:
+                                high_entropy_mask, sample_entropy = high_entropy_info
+                                # pure_gen_indices already correspond to the correct positions in high_entropy_mask
+                                # since they are just gen_indices[1:], which still map to action_mask positions
+                                pure_generated_tokens = self._create_token_array(
+                                    pure_gen_tokens, pure_gen_indices, high_entropy_mask, sample_entropy
+                                )
                         else:
                             pure_gen_tokens = torch.tensor([], dtype=sequences.dtype)
                             pure_generated_text = ""
                 else:
                     generated_text = ""
                     pure_generated_text = ""
+                    generated_tokens = None
+                    pure_generated_tokens = None
                     pure_gen_tokens = torch.tensor([], dtype=sequences.dtype)
             except (IndexError, RuntimeError) as e:
                 print(
@@ -368,6 +399,8 @@ class TrajectorySaver:
                 )
                 generated_text = ""
                 pure_generated_text = ""
+                generated_tokens = None
+                pure_generated_tokens = None
                 pure_gen_tokens = torch.tensor([], dtype=sequences.dtype)
 
             # Calculate analysis metrics for this sample
@@ -425,6 +458,12 @@ class TrajectorySaver:
                 "policy_entropy": policy_entropy,
                 "response_token_count": response_token_count,
             }
+
+            # Add token arrays if available
+            if generated_tokens is not None:
+                traj_dict["generated_tokens"] = generated_tokens
+            if pure_generated_tokens is not None:
+                traj_dict["pure_generated_tokens"] = pure_generated_tokens
 
             # Add optional fields for this sample
             if advantages[i] is not None:
@@ -669,6 +708,178 @@ class TrajectorySaver:
                 base64_images.append(None)
         return base64_images
 
+    def _get_high_entropy_mask(self, exp: Any, sample_idx: int, action_mask: torch.Tensor) -> Optional[tuple]:
+        """
+        Get high-entropy token mask and entropy values for a specific sample.
+
+        :param exp: Experience object
+        :type exp: Any
+        :param sample_idx: Index of the sample in the batch
+        :type sample_idx: int
+        :param action_mask: Action mask tensor for the sample
+        :type action_mask: torch.Tensor
+        :return: Tuple of (high_entropy_mask, sample_entropy) for the sample, or None if not available
+        :rtype: Optional[tuple]
+        """
+        # Check if action_entropy exists (without using getattr)
+        if not hasattr(exp, 'action_entropy'):
+            return None
+
+        action_entropy = exp.action_entropy
+        if action_entropy is None:
+            return None
+
+        # Move to CPU and extract sample
+        action_entropy = action_entropy.cpu()
+
+        # Get action_mask length for this sample
+        action_mask_len = action_mask.shape[0] if len(action_mask.shape) > 0 else 0
+
+        # Handle different tensor shapes
+        if len(action_entropy.shape) == 0:
+            return None
+        elif len(action_entropy.shape) == 1:
+            # 1D tensor - could be:
+            # 1. Single sample's entropy (matches action_mask length)
+            # 2. Packed batch's entropy (concatenated from multiple samples)
+            if action_entropy.shape[0] == action_mask_len:
+                # Case 1: Direct match - use as is
+                sample_entropy = action_entropy
+            elif action_entropy.shape[0] > action_mask_len:
+                # Case 2: Packed batch - need to extract the correct slice
+                # Try to find the correct slice by checking if action_mask lengths can be inferred
+                # from the full action_mask in the experience
+                if hasattr(exp, 'action_mask') and exp.action_mask is not None:
+                    full_action_mask = exp.action_mask.cpu()
+                    if len(full_action_mask.shape) == 2:
+                        # 2D action_mask: (batch_size, max_actions)
+                        # Calculate cumulative lengths to find the slice
+                        batch_size = full_action_mask.shape[0]
+                        cumulative_lengths = []
+                        current_length = 0
+                        for i in range(batch_size):
+                            # Count non-padding tokens (assuming padding is False/0)
+                            mask_row = full_action_mask[i]
+                            num_actions = mask_row.sum().item() if mask_row.dtype == torch.bool else (mask_row
+                                                                                                      != 0).sum().item()
+                            cumulative_lengths.append((current_length, current_length + num_actions))
+                            current_length += num_actions
+
+                        # Check if the total matches action_entropy length
+                        if current_length == action_entropy.shape[0] and sample_idx < len(cumulative_lengths):
+                            start_idx, end_idx = cumulative_lengths[sample_idx]
+                            sample_entropy = action_entropy[start_idx:end_idx]
+                        else:
+                            return None
+                    elif len(full_action_mask.shape) == 1:
+                        # 1D action_mask: single sample, but action_entropy is longer
+                        # Use the passed action_mask length (which is for this specific sample)
+                        if action_mask_len > 0:
+                            sample_entropy = action_entropy[:action_mask_len]
+                        else:
+                            return None
+                    else:
+                        return None
+                else:
+                    # No action_mask to infer from, try to use the first action_mask_len elements
+                    if action_mask_len > 0 and action_entropy.shape[0] >= action_mask_len:
+                        sample_entropy = action_entropy[:action_mask_len]
+                    else:
+                        return None
+            else:
+                # action_entropy is shorter than action_mask - this shouldn't happen
+                return None
+        elif len(action_entropy.shape) == 2:
+            # 2D tensor (batch, num_actions)
+            if sample_idx >= action_entropy.shape[0]:
+                return None
+            sample_entropy = action_entropy[sample_idx]
+            # If the extracted entropy is longer than action_mask, truncate it
+            if len(sample_entropy.shape) > 0 and sample_entropy.shape[0] > action_mask_len:
+                sample_entropy = sample_entropy[:action_mask_len]
+        else:
+            return None
+
+        # Verify that sample_entropy length matches action_mask length
+        if len(sample_entropy.shape) > 0 and sample_entropy.shape[0] != action_mask_len:
+            return None
+
+        # Create high-entropy mask using the utility function
+        from lightrft.models.utils import create_high_entropy_mask
+
+        # Reshape to (1, num_actions) for create_high_entropy_mask
+        # action_mask is already for a single sample (1D), so we need to add batch dimension
+        sample_entropy_2d = sample_entropy.unsqueeze(0)
+
+        # Ensure action_mask is 1D and add batch dimension
+        if len(action_mask.shape) == 1:
+            sample_action_mask = action_mask.unsqueeze(0)
+        elif len(action_mask.shape) == 2:
+            # If it's 2D, take the first row (should be the sample we're processing)
+            sample_action_mask = action_mask[:1]
+        else:
+            return None
+
+        high_entropy_mask = create_high_entropy_mask(
+            sample_entropy_2d, sample_action_mask, self.high_entropy_token_ratio
+        )
+
+        # Return the mask and entropy values for this sample (remove batch dimension)
+        result_mask = high_entropy_mask[0]
+        return (result_mask, sample_entropy)
+
+    def _create_token_array(
+        self,
+        tokens: torch.Tensor,
+        action_indices: torch.Tensor,
+        high_entropy_mask: torch.Tensor,
+        sample_entropy: torch.Tensor,
+    ) -> List[Dict[str, Any]]:
+        """
+        Create a token-level structured array for visualization.
+
+        Each token is represented as an object with text, high_entropy flag, and optional entropy_score.
+
+        :param tokens: Token IDs tensor
+        :type tokens: torch.Tensor
+        :param action_indices: Indices in action_mask space corresponding to tokens
+        :type action_indices: torch.Tensor
+        :param high_entropy_mask: Binary mask indicating high-entropy tokens (1 for high-entropy)
+        :type high_entropy_mask: torch.Tensor
+        :param sample_entropy: Entropy values for each token
+        :type sample_entropy: torch.Tensor
+        :return: List of token objects
+        :rtype: List[Dict[str, Any]]
+        """
+        if high_entropy_mask is None or len(tokens) == 0:
+            return []
+
+        # Convert to lists for easier processing
+        tokens_list = tokens.tolist()
+        action_indices_list = action_indices.tolist()
+        entropy_list = sample_entropy.tolist() if len(sample_entropy.shape) > 0 else []
+
+        token_array = []
+
+        for token_id, action_idx in zip(tokens_list, action_indices_list):
+            # Decode this token
+            token_text = self.tokenizer.decode([token_id], skip_special_tokens=True)
+
+            # Check if this token is high-entropy
+            token_obj = {"text": token_text, "high_entropy": False}
+
+            if action_idx < len(high_entropy_mask) and action_idx >= 0:
+                is_high_entropy = high_entropy_mask[action_idx].item() > 0.5
+                token_obj["high_entropy"] = is_high_entropy
+
+                # Add entropy_score if it's a high-entropy token
+                if is_high_entropy and action_idx < len(entropy_list):
+                    token_obj["entropy_score"] = float(entropy_list[action_idx])
+
+            token_array.append(token_obj)
+
+        return token_array
+
 
 def create_trajectory_saver(args: Any, tokenizer: Any) -> Optional[TrajectorySaver]:
     """
@@ -681,14 +892,26 @@ def create_trajectory_saver(args: Any, tokenizer: Any) -> Optional[TrajectorySav
     :return: TrajectorySaver instance or None if not enabled
     :rtype: Optional[TrajectorySaver]
     """
-    if not getattr(args, 'save_trajectories', False):
+    # Check if save_trajectories is enabled (without using getattr)
+    if not hasattr(args, 'save_trajectories') or not args.save_trajectories:
         return None
 
     save_dir = os.path.join(args.save_path, "trajectories")
+
+    # Extract configuration options (without using getattr)
+    mark_high_entropy = False
+    high_entropy_ratio = 0.2
+
+    if hasattr(args, 'mark_high_entropy_tokens'):
+        mark_high_entropy = args.mark_high_entropy_tokens
+    if hasattr(args, 'high_entropy_token_ratio'):
+        high_entropy_ratio = args.high_entropy_token_ratio
 
     return TrajectorySaver(
         save_dir=save_dir,
         tokenizer=tokenizer,
         save_images_separately=True,
         max_image_size=512,
+        mark_high_entropy_tokens=mark_high_entropy,
+        high_entropy_token_ratio=high_entropy_ratio,
     )

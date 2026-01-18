@@ -36,6 +36,7 @@ class BufferItem:
     advantages: (1)
     attention_mask: (S)
     action_mask: (A)
+    action_entropy: (A) - Entropy values for high-entropy token filtering
 
     "A" is the number of actions.
     """
@@ -49,6 +50,7 @@ class BufferItem:
     attention_mask: Optional[torch.LongTensor]
     action_mask: Optional[torch.BoolTensor]
     info: Optional[dict]
+    action_entropy: Optional[torch.Tensor] = None  # Entropy for high-entropy token filtering
 
 
 @dataclass
@@ -67,6 +69,7 @@ class BufferItemVL:
     advantages: (1)
     attention_mask: (S)
     action_mask: (A)
+    action_entropy: (A) - Entropy values for high-entropy token filtering
 
     "A" is the number of actions.
     """
@@ -75,6 +78,8 @@ class BufferItemVL:
 
     pixel_values: Optional[torch.Tensor] = None  # image pixel processed by HF processor
     image_grid_thws: Optional[torch.Tensor] = None  # image grid thw
+    pixel_values_videos: Optional[torch.Tensor] = None  # video pixel processed by HF processor
+    video_grid_thws: Optional[torch.Tensor] = None  # video grid thw
     raw_images: Optional[List[Image.Image]] = None  # raw images before processing
 
     action_log_probs: torch.Tensor = None
@@ -85,6 +90,7 @@ class BufferItemVL:
     attention_mask: Optional[torch.LongTensor] = None
     action_mask: Optional[torch.BoolTensor] = None
     info: Optional[dict] = None
+    action_entropy: Optional[torch.Tensor] = None  # Entropy for high-entropy token filtering
 
 
 def is_vl_experience(experience: Union[Experience, ExperienceVL]) -> bool:
@@ -176,9 +182,11 @@ def _split_experience_batch(experience: Experience) -> List:
         "advantages",
         "attention_mask",
         "action_mask",
+        "action_entropy",
     )
     for key in keys:
-        value = getattr(experience, key)
+        # Use getattr with default None to handle optional attributes like action_entropy
+        value = getattr(experience, key, None)
         if value is None:
             for i in range(batch_size):
                 batch_kwargs[i][key] = None
@@ -222,36 +230,50 @@ def _split_experience_batch_vl(experience: ExperienceVL) -> List:
     """
     Split a batch of vision-language experiences into individual items.
 
-    This function processes a batch of vision-language experiences and splits them
-    into individual BufferItemVL objects. It handles both text and vision data
-    including pixel values, image grids, and additional vision-specific attributes.
+    This function handles the complex logic of de-stacking vision-language data.
+    Unlike text-only data, vision components (images/videos) are often flattened
+    into a single continuous tensor for efficiency during rollout. This function
+    uses metadata in `experience.info` (`image_num` and `video_num`) to correctly
+    slice these flattened tensors back into their per-sample components.
+
+    Splitting Logic:
+    1. Standard Tensors: `sequences`, `values`, etc. are split using `torch.unbind`.
+    2. Grid Metadata: `image_grid_thws` (N, 3) is sliced based on `experience.info["image_num"]`.
+       For example, if `image_num` is [2, 1], the first sample gets the first 2 rows of grids.
+    3. Pixel Values: `pixel_values` (Total_Patches, patches) is sliced based on the sum
+       of tokens calculated from the sample's corresponding `image_grid_thws`.
 
     :param experience: Batch of vision-language experiences to split
     :type experience: ExperienceVL
     :return: List of individual BufferItemVL objects
     :rtype: List
-    :raises AssertionError: If batch size consistency check fails
 
     Example::
 
-        # Create a batch of vision-language experiences
+        # Multi-image scenario: Batch size 2
+        # Sample 0 has 2 images, Sample 1 has 1 image.
+        # Total 3 images in image_grid_thws
         batch_exp = ExperienceVL(
-            sequences=torch.tensor([[1,2,3],[4,5,6]]),
-            pixel_values=torch.randn(2, 3, 224, 224),
-            image_grid_thws=torch.tensor([[1,1,1],[1,1,1]]),
-            # ... other attributes
+            sequences=torch.zeros(2, 10),
+            image_grid_thws=torch.tensor([[1, 10, 10], [1, 20, 20], [1, 15, 15]]),
+            pixel_values=torch.randn(100+400+225, 1152), # flattened patches
+            info={
+                "image_num": torch.tensor([2, 1], dtype=torch.float32)
+            }
         )
 
-        # Split into individual items
         items = _split_experience_batch_vl(batch_exp)
-        print(f"Split {len(items)} vision-language items from batch")
+        # items[0].image_grid_thws: Shape [2, 3] (First two rows)
+        # items[0].pixel_values: Shape [10*10 + 20*20, 1152]
+        # items[1].image_grid_thws: Shape [1, 3] (Last row)
+        # items[1].pixel_values: Shape [15*15, 1152]
     """
 
     batch_size = len(experience.sequences)
     batch_kwargs = [{} for _ in range(batch_size)]
+    # First, split standard tensors that always match batch_size
     keys = (
         "sequences",
-        "image_grid_thws",  # 3
         "action_log_probs",
         "base_action_log_probs",
         "values",
@@ -259,9 +281,11 @@ def _split_experience_batch_vl(experience: ExperienceVL) -> List:
         "advantages",
         "attention_mask",
         "action_mask",
+        "action_entropy",
     )
     for key in keys:
-        value = getattr(experience, key)
+        # Use getattr with default None to handle optional attributes like action_entropy
+        value = getattr(experience, key, None)
         if value is None:
             for i in range(batch_size):
                 batch_kwargs[i][key] = None
@@ -269,9 +293,50 @@ def _split_experience_batch_vl(experience: ExperienceVL) -> List:
         vals = value
         if isinstance(vals, torch.Tensor):
             vals = torch.unbind(vals)
-        assert batch_size == len(vals)
+        assert batch_size == len(vals), f"Key {key} size mismatch: {len(vals)} vs {batch_size}"
         for i, v in enumerate(vals):
             batch_kwargs[i][key] = v
+
+    # Split image_grid_thws and video_grid_thws accurately using metadata
+    for grid_key, num_key in [("image_grid_thws", "image_num"), ("video_grid_thws", "video_num")]:
+        grid_data = getattr(experience, grid_key, None)
+        if grid_data is not None:
+            # If it's already a list, it was pre-split by _process_multi_image_video_thws in FastExperienceMaker
+            if isinstance(grid_data, list):
+                for i in range(batch_size):
+                    batch_kwargs[i][grid_key] = grid_data[i]
+                continue
+
+            # Try to get number of components per sample from info
+            nums = experience.info.get(num_key) if experience.info else None
+            if nums is not None:
+                if isinstance(nums, torch.Tensor):
+                    nums = nums.tolist()
+
+                curr_idx = 0
+                for i, n in enumerate(nums):
+                    if n > 0:
+                        batch_kwargs[i][grid_key] = grid_data[curr_idx:curr_idx + n]
+                        curr_idx += n
+                    else:
+                        batch_kwargs[i][grid_key] = None
+            else:
+                # Fallback for simple case: 1-to-1 mapping
+                if isinstance(grid_data, torch.Tensor) and grid_data.size(0) == batch_size:
+                    vals = torch.unbind(grid_data)
+                    for i, v in enumerate(vals):
+                        batch_kwargs[i][grid_key] = v
+                elif isinstance(grid_data, list):
+                    for i, v in enumerate(grid_data):
+                        batch_kwargs[i][grid_key] = v
+                else:
+                    raise ValueError(
+                        f"Ambiguous {grid_key} split: Total {grid_data.size(0)} vs Batch {batch_size}. "
+                        f"Missing '{num_key}' in info."
+                    )
+        else:
+            for i in range(batch_size):
+                batch_kwargs[i][grid_key] = None
 
     # Split image data
     if experience.pixel_values is not None:
@@ -279,10 +344,31 @@ def _split_experience_batch_vl(experience: ExperienceVL) -> List:
         if isinstance(pixel_values, torch.Tensor):
             index = 0
             for i in range(len(batch_kwargs)):
-                num_images = torch.prod(batch_kwargs[i]["image_grid_thws"]
-                                        ) if batch_kwargs[i]["image_grid_thws"] is not None else 0
-                batch_kwargs[i]["pixel_values"] = pixel_values[index:index + num_images]
-                index += num_images
+                if batch_kwargs[i]["image_grid_thws"] is not None:
+                    grid = batch_kwargs[i]["image_grid_thws"]
+                    # grid is already [N, 3] for this sample
+                    num_image_tokens = torch.sum(torch.prod(grid, dim=-1)).item()
+                else:
+                    num_image_tokens = 0
+
+                # Slice from the flattened pixel_values
+                batch_kwargs[i]["pixel_values"] = pixel_values[index:index + num_image_tokens]
+                index += num_image_tokens
+
+    # Split video data
+    if experience.pixel_values_videos is not None:
+        pixel_values_videos = experience.pixel_values_videos
+        if isinstance(pixel_values_videos, torch.Tensor):
+            index = 0
+            for i in range(len(batch_kwargs)):
+                if batch_kwargs[i]["video_grid_thws"] is not None:
+                    grid = batch_kwargs[i]["video_grid_thws"]
+                    num_video_tokens = torch.sum(torch.prod(grid, dim=-1)).item()
+                else:
+                    num_video_tokens = 0
+
+                batch_kwargs[i]["pixel_values_videos"] = pixel_values_videos[index:index + num_video_tokens]
+                index += num_video_tokens
 
     # Split raw images
     if experience.raw_images is not None:
@@ -449,6 +535,27 @@ def _make_experience_batch(items: List, packing_samples: bool = False) -> Experi
             batch_data = vals if vals[0] is not None else None
         kwargs[key] = batch_data
 
+    # Handle action_entropy if it exists in any item
+    # action_entropy has shape (A,) per item, handle it like action_mask
+    if items and hasattr(items[0], 'action_entropy') and items[0].action_entropy is not None:
+        entropy_vals = [getattr(item, 'action_entropy', None) for item in items]
+        if all(v is not None for v in entropy_vals):
+            if not packing_samples:
+                # For padded batches, pad action_entropy to match action_mask
+                kwargs["action_entropy"] = zero_pad_sequences(entropy_vals, "left")
+            else:
+                # For packed batches, check if all have the same length
+                lengths = [len(v) for v in entropy_vals]
+                if len(set(lengths)) == 1:
+                    kwargs["action_entropy"] = torch.stack(entropy_vals, dim=0)
+                else:
+                    # If lengths differ, pad to max length
+                    kwargs["action_entropy"] = zero_pad_sequences(entropy_vals, "left")
+        else:
+            kwargs["action_entropy"] = None
+    else:
+        kwargs["action_entropy"] = None
+
     kwargs["info"] = {}
     if items and items[0].info:
         for key in items[0].info.keys():
@@ -472,10 +579,10 @@ def _make_experience_batch_vl(items: List, packing_samples: bool = False) -> Exp
     """
     Create a batch of vision-language experiences from individual items.
 
-    This function aggregates individual vision-language experience items into a batched
-    ExperienceVL object. It handles both text and vision data, including pixel values,
-    image grids, and other vision-specific attributes. For text sequences, it applies
-    padding for unpacked samples to ensure consistent tensor shapes.
+    This function aggregates individual `BufferItemVL` objects into a single `ExperienceVL`
+    batch. It concatenates visual data (pixels and grids) into flattened tensors
+    and automatically records the count per sample (`image_num`, `video_num`) in
+    the `info` dictionary to enable later splitting.
 
     :param items: List of individual vision-language experience items
     :type items: List
@@ -486,23 +593,21 @@ def _make_experience_batch_vl(items: List, packing_samples: bool = False) -> Exp
 
     Example::
 
-        vl_items = [
-            BufferItemVL(
-                sequences=torch.tensor([1,2,3]),
-                pixel_values=torch.randn(1, 3, 224, 224),
-                image_grid_thws=torch.tensor([1,1,1]),
-                ...
-            ),
-            BufferItemVL(
-                sequences=torch.tensor([4,5,6,7]),
-                pixel_values=torch.randn(1, 3, 224, 224),
-                image_grid_thws=torch.tensor([1,1,1]),
-                ...
-            )
-        ]
+        # Create a batch from two items
+        item1 = BufferItemVL(
+            sequences=torch.zeros(5),
+            image_grid_thws=torch.tensor([[1, 5, 5], [1, 8, 8]]), # 2 images
+            pixel_values=torch.randn(25+64, 1152)
+        )
+        item2 = BufferItemVL(
+            sequences=torch.zeros(8),
+            image_grid_thws=torch.tensor([[1, 10, 10]]), # 1 image
+            pixel_values=torch.randn(100, 1152)
+        )
 
-        # Create batched vision-language experience
-        batch_vl_exp = _make_experience_batch_vl(vl_items, packing_samples=False)
+        batch = _make_experience_batch_vl([item1, item2])
+        # batch.image_grid_thws: Shape [3, 3] (2 + 1 rows concatenated)
+        # batch.info["image_num"]: tensor([2., 1.], dtype=float32)
     """
     kwargs = {}
     keys = (
@@ -523,20 +628,84 @@ def _make_experience_batch_vl(items: List, packing_samples: bool = False) -> Exp
             batch_data = vals if vals[0] is not None else None
         kwargs[key] = batch_data
 
+    # Handle action_entropy if it exists in any item
+    # action_entropy has shape (A,) per item, handle it like action_mask
+    if items and hasattr(items[0], 'action_entropy') and items[0].action_entropy is not None:
+        entropy_vals = [getattr(item, 'action_entropy', None) for item in items]
+        if all(v is not None for v in entropy_vals):
+            if not packing_samples:
+                # For padded batches, pad action_entropy to match action_mask
+                kwargs["action_entropy"] = zero_pad_sequences(entropy_vals, "left")
+            else:
+                # For packed batches, check if all have the same length
+                lengths = [len(v) for v in entropy_vals]
+                if len(set(lengths)) == 1:
+                    kwargs["action_entropy"] = torch.stack(entropy_vals, dim=0)
+                else:
+                    # If lengths differ, pad to max length
+                    kwargs["action_entropy"] = zero_pad_sequences(entropy_vals, "left")
+        else:
+            kwargs["action_entropy"] = None
+    else:
+        kwargs["action_entropy"] = None
+
     # Image data processing
     pixel_values_list = [
         item.pixel_values for item in items if item.pixel_values is not None and item.pixel_values.numel() > 0
     ]
     kwargs["pixel_values"] = torch.cat(pixel_values_list, dim=0) if pixel_values_list else None
 
-    image_grid_thws_list = [item.image_grid_thws for item in items]
-    kwargs["image_grid_thws"] = torch.stack(image_grid_thws_list, dim=0
-                                            ) if image_grid_thws_list and image_grid_thws_list[0] is not None else None
+    image_grid_thws_list = [
+        item.image_grid_thws.unsqueeze(0) if
+        (item.image_grid_thws is not None and item.image_grid_thws.dim() == 1) else item.image_grid_thws
+        for item in items
+        if item.image_grid_thws is not None
+    ]
+    if image_grid_thws_list:
+        kwargs["image_grid_thws"] = torch.cat(image_grid_thws_list, dim=0)
+    else:
+        kwargs["image_grid_thws"] = None
+
+    # Video data processing
+    pixel_values_videos_list = [
+        item.pixel_values_videos
+        for item in items
+        if item.pixel_values_videos is not None and item.pixel_values_videos.numel() > 0
+    ]
+    kwargs["pixel_values_videos"] = torch.cat(pixel_values_videos_list, dim=0) if pixel_values_videos_list else None
+
+    video_grid_thws_list = [
+        item.video_grid_thws.unsqueeze(0) if
+        (item.video_grid_thws is not None and item.video_grid_thws.dim() == 1) else item.video_grid_thws
+        for item in items
+        if item.video_grid_thws is not None
+    ]
+    if video_grid_thws_list:
+        kwargs["video_grid_thws"] = torch.cat(video_grid_thws_list, dim=0)
+    else:
+        kwargs["video_grid_thws"] = None
 
     raw_images_list = [item.raw_images for item in items]
     kwargs["raw_images"] = raw_images_list if raw_images_list and raw_images_list[0] is not None else None
 
+    # Record the number of components (images/videos) per sample into info dictionary.
+    # This ensures accuracy when splitting the batch back into individual items.
     kwargs["info"] = {}
+    image_nums = []
+    video_nums = []
+    for item in items:
+        # Determine number of image components
+        if item.image_grid_thws is not None:
+            image_nums.append(item.image_grid_thws.size(0) if item.image_grid_thws.dim() > 1 else 1)
+        else:
+            image_nums.append(0)
+
+        # Determine number of video components
+        if item.video_grid_thws is not None:
+            video_nums.append(item.video_grid_thws.size(0) if item.video_grid_thws.dim() > 1 else 1)
+        else:
+            video_nums.append(0)
+
     if items and items[0].info:
         for key in items[0].info.keys():
             vals = [item.info[key] for item in items]
@@ -629,6 +798,9 @@ def _remove_padding_in_sequences(items: List) -> List:
             item.attention_mask,
             item.action_mask,
         )
+        # Get action_entropy if it exists
+        action_entropy = getattr(item, 'action_entropy', None)
+
         right_pad = (1 - act_mask.long()).sum()
         right_pad = None if right_pad == 0 else -right_pad
 
@@ -653,6 +825,9 @@ def _remove_padding_in_sequences(items: List) -> List:
             att_mask[left_pad:right_pad],
             act_mask[:right_pad],
         )
+        # Remove padding from action_entropy if it exists
+        if action_entropy is not None:
+            item.action_entropy = action_entropy[:right_pad]
     return items
 
 
@@ -695,6 +870,9 @@ def _remove_padding_in_sequences_vl(items: List) -> List:
             item.attention_mask,
             item.action_mask,
         )
+        # Get action_entropy if it exists
+        action_entropy = getattr(item, 'action_entropy', None)
+
         right_pad = (1 - act_mask.long()).sum()
         right_pad = None if right_pad == 0 else -right_pad
 
@@ -719,4 +897,7 @@ def _remove_padding_in_sequences_vl(items: List) -> List:
             att_mask[left_pad:right_pad],
             act_mask[:right_pad],
         )
+        # Remove padding from action_entropy if it exists
+        if action_entropy is not None:
+            item.action_entropy = action_entropy[:right_pad]
     return items

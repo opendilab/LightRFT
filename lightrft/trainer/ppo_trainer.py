@@ -2,7 +2,7 @@ import os
 import sys
 import os.path
 from abc import ABC
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional, Union
 
 import torch
 import torch.nn as nn
@@ -90,7 +90,7 @@ class PPOTrainer(ABC):
         strategy,
         actor: ActorLanguage,
         critic: nn.Module,
-        reward_model: nn.Module,
+        reward_model: Union[nn.Module, List[nn.Module]],
         initial_model: ActorLanguage,
         ema_model: ActorLanguage,
         actor_optim: Optimizer,
@@ -99,7 +99,7 @@ class PPOTrainer(ABC):
         critic_scheduler,
         ema_beta: float = 0.992,
         init_kl_coef: float = 0.001,
-        kl_target: float = None,
+        kl_target: Optional[float] = None,
         kl_horizon: int = 10000,
         ptx_coef: float = 0,
         micro_train_batch_size: int = 8,
@@ -114,8 +114,8 @@ class PPOTrainer(ABC):
         tokenizer: Optional[Callable[[Any], dict]] = None,
         prompt_max_len: int = 128,
         dataloader_pin_memory: bool = True,
-        remote_rm_url: str = None,
-        reward_fn: Callable[[List[torch.Tensor]], torch.Tensor] = None,
+        remote_rm_url: Optional[str] = None,
+        reward_fn: Optional[Callable[[List[torch.Tensor]], torch.Tensor]] = None,
         save_hf_ckpt: bool = False,
         disable_ds_ckpt: bool = False,
         **generate_kwargs,
@@ -384,7 +384,10 @@ class PPOTrainer(ABC):
         torch.cuda.empty_cache()
         return status_mean
 
-    def training_step(self, experience: Experience, global_steps) -> Dict[str, float]:
+    def training_step(self,
+                      experience: Experience,
+                      global_steps,
+                      entropy_mask: Optional[torch.Tensor] = None) -> Dict[str, float]:
         """
         Single training step combining actor and critic updates.
 
@@ -392,17 +395,21 @@ class PPOTrainer(ABC):
         :type experience: Experience
         :param global_steps: Current global step count.
         :type global_steps: int
+        :param entropy_mask: Optional mask for high-entropy tokens.
+        :type entropy_mask: Optional[torch.Tensor]
         :return: Dictionary of training statistics.
         :rtype: Dict[str, float]
         """
         status = {}
         if global_steps > self.freezing_actor_steps:
-            status = self.training_step_actor(experience)
+            status = self.training_step_actor(experience, entropy_mask=entropy_mask)
         if self.critic is not None:
             status.update(self.training_step_critic(experience))
         return status
 
-    def training_step_actor(self, experience: Experience) -> Dict[str, float]:
+    def training_step_actor(self,
+                            experience: Experience,
+                            entropy_mask: Optional[torch.Tensor] = None) -> Dict[str, float]:
         """
         Actor training step.
 
@@ -449,6 +456,7 @@ class PPOTrainer(ABC):
             old_action_log_probs,
             advantages,
             action_mask=experience.action_mask,
+            entropy_mask=entropy_mask,
         )
 
         if self.args.use_kl_loss:
