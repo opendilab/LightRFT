@@ -30,6 +30,7 @@ from dataclasses import dataclass
 from copy import deepcopy
 
 import torch
+import torch.distributed as dist
 from PIL import Image
 from easydict import EasyDict
 from vllm import SamplingParams
@@ -49,6 +50,7 @@ from lightrft.trainer.experience_maker_vl import (
     ExperienceVL,
     SamplesVL,
 )
+from lightrft.trainer.replay_buffer_utils import make_experience_batch, split_experience_batch
 
 from lightrft.utils.remote_rm_utils import remote_rm_fn
 from lightrft.utils import Timer, get_current_device
@@ -1415,15 +1417,81 @@ class FastExperienceMaker(NaiveExperienceMaker):
 
             if config.dynamic_sampling and not use_dynamic_filter:
                 # Legacy dynamic sampling (only if not using filter_weight framework)
-                step_size = config.n_samples_per_prompt // config.micro_train_batch_size
-                for i in range(0, len(experiences), step_size):
-                    chunk = experiences[i:i + step_size]
-                    chunk_rewards = torch.cat([exp.info["reward"] for exp in chunk])
+                group_size = config.n_samples_per_prompt
+                tolerance = 1e-6
+                if rewards.numel() % group_size != 0:
+                    warnings.warn(
+                        f"Number of samples ({rewards.numel()}) not divisible by group_size ({group_size}). "
+                        f"Skipping dynamic sampling filtering."
+                    )
+                else:
+                    grouped_rewards = rewards.reshape(-1, group_size)
+                    all_zeros = torch.all(torch.abs(grouped_rewards) < tolerance, dim=1)
+                    all_ones = torch.all(torch.abs(grouped_rewards - 1.0) < tolerance, dim=1)
+                    keep_group_mask = ~(all_zeros | all_ones)
+                    keep_mask = keep_group_mask.repeat_interleave(group_size)
 
-                    # Filter out degenerate cases (all 0s or all 1s)
-                    if torch.all(chunk_rewards == 0) or torch.all(chunk_rewards == 1):
-                        for exp in chunk:
-                            exp.action_mask = torch.zeros_like(exp.action_mask, dtype=torch.bool)
+                    # In distributed training, keep sample counts aligned across ranks.
+                    # We apply filtering by masking (no removal) to avoid NCCL hangs.
+                    is_distributed = dist.is_available() and dist.is_initialized() and dist.get_world_size() > 1
+                    if is_distributed:
+                        if keep_mask.sum().item() == 0:
+                            self.strategy.print(
+                                "[Warning] No sample kept after filtering on this rank; skip filtering this step."
+                            )
+                            keep_mask = torch.ones_like(keep_mask, dtype=torch.bool)
+
+                        if keep_mask.sum().item() < keep_mask.numel():
+                            offset = 0
+                            for exp in experiences:
+                                batch_size = len(exp.sequences)
+                                exp_mask = keep_mask[offset:offset + batch_size]
+                                offset += batch_size
+                                if exp.action_mask is not None:
+                                    exp.action_mask = exp.action_mask & exp_mask.unsqueeze(-1).to(
+                                        exp.action_mask.device
+                                    )
+                                exp_rewards = exp.info["reward"]
+                                exp.info["reward"] = exp_rewards * exp_mask.to(exp_rewards.device).float()
+
+                            rewards = rewards * keep_mask.to(rewards.device).float()
+                    else:
+                        if keep_mask.sum().item() == 0:
+                            raise RuntimeError("No sample is kept after filtering. Please check your data.")
+
+                        if keep_mask.sum().item() < keep_mask.numel():
+                            filtered_experiences = []
+                            filtered_rewards = []
+                            offset = 0
+                            for exp in experiences:
+                                batch_size = len(exp.sequences)
+                                exp_mask = keep_mask[offset:offset + batch_size]
+                                offset += batch_size
+                                if exp_mask.sum().item() == 0:
+                                    continue
+
+                                # Filter rewards for this batch
+                                exp_rewards = exp.info["reward"]
+                                filtered_rewards.append(exp_rewards[exp_mask.to(exp_rewards.device)])
+
+                                if exp_mask.all():
+                                    filtered_experiences.append(exp)
+                                    continue
+
+                                # Rebuild experience batch to keep shapes consistent (esp. pixel_values)
+                                items = split_experience_batch(exp)
+                                kept_items = [item for item, keep in zip(items, exp_mask.cpu().tolist()) if keep]
+                                if not kept_items:
+                                    continue
+                                filtered_experiences.append(
+                                    make_experience_batch(kept_items, packing_samples=self.packing_samples)
+                                )
+
+                            if not filtered_experiences:
+                                raise RuntimeError("No sample is kept after filtering. Please check your data.")
+
+                            experiences = filtered_experiences
+                            rewards = torch.cat(filtered_rewards)
 
             # # Normalize within groups
             # rewards = rewards.reshape(-1, config.n_samples_per_prompt).to("cuda")

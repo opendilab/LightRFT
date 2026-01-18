@@ -689,11 +689,16 @@ class PPOTrainerVL(ABC):
                 base_action_log_probs = experience.base_action_log_probs
 
         if advantages is not None:
-            # Log max advantage before clipping for debugging (optional)
-            max_adv = advantages.max().item()
-            if max_adv > 10.0:
-                self.strategy.print(f"[Warning] Huge advantage detected: {max_adv}")
-            advantages = torch.clamp(advantages, min=-10.0, max=10.0)
+            # Check if advantages is empty (e.g., after dynamic sampling filtering)
+            if advantages.numel() == 0:
+                self.strategy.print("[Warning] Empty advantages after filtering; using zero-loss step.")
+                advantages = None
+            else:
+                # Log max advantage before clipping for debugging (optional)
+                max_adv = advantages.max().item()
+                if max_adv > 10.0:
+                    self.strategy.print(f"[Warning] Huge advantage detected: {max_adv}")
+                advantages = torch.clamp(advantages, min=-10.0, max=10.0)
 
         # Actor loss
         action_log_probs, output = self.actor(
@@ -712,23 +717,33 @@ class PPOTrainerVL(ABC):
         #     action_log_probs = action_log_probs * experience.action_mask
 
         # Loss function
-        actor_loss = self.actor_loss_fn(
-            action_log_probs,
-            old_action_log_probs,
-            advantages,
-            action_mask=experience.action_mask,
-        )
+        if experience.action_mask is not None and experience.action_mask.sum().item() == 0:
+            # No valid actions; use zero loss to keep distributed steps in sync.
+            actor_loss = action_log_probs.sum() * 0.0
+        else:
+            actor_loss = self.actor_loss_fn(
+                action_log_probs,
+                old_action_log_probs,
+                advantages,
+                action_mask=experience.action_mask,
+            )
 
         if self.args.use_kl_loss:
             if self.initial_model is not None:
                 # TODO(pu): Text-only action mask for KL calculation
-
-                kl = compute_approx_kl(
-                    action_log_probs,
-                    base_action_log_probs,
-                    experience.action_mask,
-                    kl_estimator=self.args.kl_estimator,
-                )
+                # If no valid actions or base log-probs are empty, skip KL safely.
+                if ((experience.action_mask is not None and experience.action_mask.sum().item() == 0)
+                        or (base_action_log_probs is not None and base_action_log_probs.numel() == 0)):
+                    kl = torch.zeros_like(
+                        action_log_probs, dtype=action_log_probs.dtype, device=action_log_probs.device
+                    )
+                else:
+                    kl = compute_approx_kl(
+                        action_log_probs,
+                        base_action_log_probs,
+                        experience.action_mask,
+                        kl_estimator=self.args.kl_estimator,
+                    )
 
                 # [Protection measure 2] Per-token KL Clamping
                 # NOTE: Adding this causes svkng training to not converge
@@ -738,12 +753,22 @@ class PPOTrainerVL(ABC):
                 kl = torch.zeros_like(action_log_probs, dtype=action_log_probs.dtype, device=action_log_probs.device)
 
             if not self.args.packing_samples:
-                kl_mean = masked_mean(kl, experience.action_mask, dim=-1)
+                # Guard against empty or mismatched masks (can happen after filtering)
+                if (
+                    experience.action_mask is None or experience.action_mask.numel() == 0
+                    or experience.action_mask.size(-1) != kl.size(-1) or experience.action_mask.sum().item() == 0
+                ):
+                    kl_mean = torch.zeros(kl.size(0), device=kl.device, dtype=kl.dtype)
+                else:
+                    kl_mean = masked_mean(kl, experience.action_mask, dim=-1)
             # Not supported for packed samples
             else:
                 # Convert tensor into list of tensors for easier manipulation within dataset
                 kl = unpacking_samples(kl, num_actions)
-                kl_mean = torch.tensor([each_kl.mean() for each_kl in kl], device=action_log_probs.device)
+                if not kl:
+                    kl_mean = torch.zeros(0, device=action_log_probs.device)
+                else:
+                    kl_mean = torch.tensor([each_kl.mean() for each_kl in kl], device=action_log_probs.device)
 
             kl_loss = kl_mean.mean()
             experience.info["kl"] = kl_loss.item()
@@ -903,6 +928,18 @@ class PPOTrainerVL(ABC):
 
         # TODO: This is a bad indicator to say that data is packed...
         if isinstance(experience.sequences, list):
+            # Check if sequences list is empty after filtering
+            if len(experience.sequences) == 0 or all(s.numel() == 0 for s in experience.sequences):
+                self.strategy.print("[Warning] No valid samples for critic after filtering, using zero-loss step")
+                # Create zero loss to keep distributed steps in sync
+                dummy = sum([s.sum() for s in experience.sequences]) * 0.0
+                self.strategy.backward(dummy, self.critic, self.critic_optim)
+                self.strategy.optimizer_step(self.critic_optim, self.critic, self.critic_scheduler, name="critic")
+                return {
+                    "critic_loss": 0.0,
+                    "values": 0.0,
+                    "critic_lr": self.critic_scheduler.get_last_lr()[0] if self.critic_scheduler else 0.0,
+                }
             sequences = torch.cat(experience.sequences, dim=0).unsqueeze(0)
             old_values = torch.cat(experience.values, dim=0).unsqueeze(0)
             returns = torch.cat(experience.returns, dim=0).unsqueeze(0)
@@ -917,6 +954,17 @@ class PPOTrainerVL(ABC):
             num_actions = experience.action_mask.size(1)
             packed_seq_lens = None
             attention_mask = experience.attention_mask
+            # Check if sequences is empty after filtering
+            if sequences.numel() == 0:
+                self.strategy.print("[Warning] No valid samples for critic after filtering, using zero-loss step")
+                dummy = sequences.sum() * 0.0
+                self.strategy.backward(dummy, self.critic, self.critic_optim)
+                self.strategy.optimizer_step(self.critic_optim, self.critic, self.critic_scheduler, name="critic")
+                return {
+                    "critic_loss": 0.0,
+                    "values": 0.0,
+                    "critic_lr": self.critic_scheduler.get_last_lr()[0] if self.critic_scheduler else 0.0,
+                }
 
         # Ensure sequences and attention_mask are also on device and contiguous
         sequences = ensure_device_and_contiguous(sequences, "sequences")
@@ -933,12 +981,16 @@ class PPOTrainerVL(ABC):
             packed_seq_lens=packed_seq_lens,
         )
         # Loss function
-        critic_loss = self.critic_loss_fn(
-            values,
-            old_values,
-            returns,
-            action_mask=experience.action_mask,
-        )
+        if experience.action_mask is not None and experience.action_mask.sum().item() == 0:
+            # No valid actions; use zero loss to keep distributed steps in sync.
+            critic_loss = values.sum() * 0.0
+        else:
+            critic_loss = self.critic_loss_fn(
+                values,
+                old_values,
+                returns,
+                action_mask=experience.action_mask,
+            )
         # Mixtral auxiliary loss
         if self.aux_loss:
             aux_loss = output.aux_loss
@@ -949,9 +1001,13 @@ class PPOTrainerVL(ABC):
         self.strategy.optimizer_step(self.critic_optim, self.critic, self.critic_scheduler, name="critic")
 
         # Status
+        if experience.action_mask is not None and experience.action_mask.sum().item() == 0:
+            values_mean = 0.0
+        else:
+            values_mean = masked_mean(values, experience.action_mask).item()
         status = {
             "critic_loss": critic_loss.item(),
-            "values": masked_mean(values, experience.action_mask).item(),
+            "values": values_mean,
             "critic_lr": self.critic_scheduler.get_last_lr()[0],
         }
         return status
