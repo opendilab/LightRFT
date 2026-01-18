@@ -787,10 +787,19 @@ class StrategyBase(ABC):
                 sglang_outputs = self.inference_engine.generate(
                     sampling_params=sampling_params,
                     # input_ids=prompt,
-                    prompt=prompt,  # skip_tokenizer_init: bool = False
+                    prompt=prompt, # skip_tokenizer_init: bool = False
                     image_data=image,
                 )
-            else:
+            else: # text-only case
+                # print(f"rank {dist.get_rank()}")
+                # # 在本文件开始，通过全局变量来控制是否处于调试状态
+                # global DEBUG_ENABLED;DEBUG_ENABLED = True
+                # if dist.get_rank() == 0 and DEBUG_ENABLED:
+                #     print(f"rank {dist.get_rank()} 进入调试模式，输入interact，可以键入整段的python代码调试。通过设置 DEBUG_ENABLED = False, 可以跳过调试状态")
+                #     import ipdb; ipdb.set_trace()
+                # # 同步点，防止其它进程早跑
+                # dist.barrier()
+
                 prompt = prompt_token_ids
                 image = None
 

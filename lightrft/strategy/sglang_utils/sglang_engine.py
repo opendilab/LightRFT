@@ -225,7 +225,8 @@ class RLGenerationEngine:
                     rank=global_rank,
                     dist_group=self.tp_group_cpu,
                     src=self._leader_rank,
-                    force_cpu_device=True,
+                    # force_cpu_device=False,
+                    force_cpu_device=False,
                 )
             except TypeError:
                 # Older versions don't support force_cpu_device parameter

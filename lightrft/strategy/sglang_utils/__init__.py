@@ -67,7 +67,7 @@ def get_sglang_engine(
     enable_engine_sleep: bool = True,
     tp_size: int = 1,
     # skip_tokenizer_init: bool = True,
-    skip_tokenizer_init: bool = False,
+    skip_tokenizer_init: bool = True,
     dtype: str = "bfloat16",
     disable_cuda_graph: bool = False,
 ):
