@@ -54,6 +54,7 @@ from lightrft.utils import blending_datasets, get_tokenizer_processor_vl
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from reward_models_utils import RECIPE, load_reward_models, reward_fn
+import torch.distributed as dist
 
 
 def train(args):
@@ -339,6 +340,22 @@ def train(args):
     strategy.report_memory("after models init")
 
     strategy.report_memory("before setup_inference_engine")
+
+    # # === 新增代码开始 ===
+    # # [FIX] Ensure FSDP weights are properly initialized before first broadcast
+    # if args.fsdp:
+    #     strategy.print("[FIX] Triggering FSDP weight initialization before engine setup...")
+    #     # 触发一次全参数gather，确保FSDP状态正确初始化
+    #     with torch.no_grad():
+    #         for name, param in actor.named_parameters():
+    #             if hasattr(param, "full_tensor"):
+    #                 _ = param.full_tensor()  # 触发gather
+    #                 break  # 只需要触发一次即可初始化FSDP状态
+    #     # 同步所有ranks
+    #     dist.barrier()
+    #     strategy.print("[FIX] FSDP weight initialization completed")
+    # # === 新增代码结束 ===
+
     strategy.setup_inference_engine(args, engine_type=args.engine_type, actor=actor)
     strategy.report_memory("after setup_inference_engine")
 
