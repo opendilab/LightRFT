@@ -366,7 +366,7 @@ class PPOTrainerVL(ABC):
                         )
                         self.strategy.print("collect phase: experience.sequences w skip_special_tokens: ", output)
                         self.strategy.print(
-                            f"collect phase: rand_prompts:\n {rand_prompts[0]}\n , rand_images:{rand_images[0]}\n , rand_references:{rand_references[0]}\n, rand_labels:{rand_labels[0]}\n "  # noqa
+                            f"collect phase: rand_prompts:\n {rand_prompts[0:2]}\n , rand_images:{rand_images[0:2]}\n , rand_references:{rand_references[0:2]}\n, rand_labels:{rand_labels[0:2]}\n "  # noqa
                         )
                         # self.strategy.print(
                         #     f"rand_prompts:\n {rand_prompts}\n , rand_images:{rand_images}\n , rand_references:{rand_references}\n, rand_labels:{rand_labels}\n "  # noqa
