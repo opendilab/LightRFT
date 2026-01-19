@@ -774,6 +774,7 @@ class StrategyBase(ABC):
 
             if multi_modal_inputs is not None:  # VLM case
                 # print(f"multi_modal_inputs:{multi_modal_inputs}")
+                print(f"rank {dist.get_rank()} VLM branch")
 
                 prompt = [p["prompt"] for p in multi_modal_inputs]
 
@@ -790,8 +791,19 @@ class StrategyBase(ABC):
                     prompt=prompt, # skip_tokenizer_init must be False
                     image_data=image,
                 )
+
+                # VLM case: prompt_token_ids should be provided separately or extracted from sglang output
+                # Since sglang doesn't return prompt_token_ids in VLM mode, we set it to None here
+                # and expect the caller to fill it in if needed
+                return [
+                    EasyDict(
+                        prompt_token_ids=None,  # Will be filled by caller if needed
+                        output_token_ids=sglang_outputs[i]["output_ids"],
+                    ) for i in range(len(sglang_outputs))
+                ]
             else: # text-only case
-                # print(f"rank {dist.get_rank()}")
+                print(f"rank {dist.get_rank()} text-only branch")
+
                 # # 在本文件开始，通过全局变量来控制是否处于调试状态
                 # global DEBUG_ENABLED;DEBUG_ENABLED = True
                 # if dist.get_rank() == 0 and DEBUG_ENABLED:
@@ -800,20 +812,22 @@ class StrategyBase(ABC):
                 # # 同步点，防止其它进程早跑
                 # dist.barrier()
 
-                prompt = prompt_token_ids
                 image = None
+                prompt = prompt_token_ids
 
                 sglang_outputs = self.inference_engine.generate(
                     sampling_params=sampling_params,
-                    input_ids=prompt, 
+                    input_ids=prompt,
                     image_data=image,
                 )
-            return [
-                EasyDict(
-                    prompt_token_ids=prompt[i],
-                    output_token_ids=sglang_outputs[i]["output_ids"],
-                ) for i, output in enumerate(sglang_outputs)
-            ]
+
+                # Text-only case: prompt_token_ids is available from input
+                return [
+                    EasyDict(
+                        prompt_token_ids=prompt[i],
+                        output_token_ids=sglang_outputs[i]["output_ids"],
+                    ) for i in range(len(sglang_outputs))
+                ]
         else:
             raise ValueError(f"Unsupported engine type: {self.inference_engine_type}")
 
@@ -906,8 +920,11 @@ class StrategyBase(ABC):
         local_outputs = all_outputs[cur_rank * num_prompts_per_rank:(cur_rank + 1) * num_prompts_per_rank]
 
         if self.inference_engine_type == "sglang":
+            # For SGLang VLM case, prompt_token_ids is set to None in engine_generate_local
+            # We need to fill it with the actual token_ids here
             for i, output in enumerate(local_outputs):
-                output.prompt_token_ids = all_prompt_token_ids[i]
+                if output.prompt_token_ids is None:
+                    output.prompt_token_ids = all_prompt_token_ids[i]
 
         # TODO
         # NOTE(Fix for SGLang/Distributed):

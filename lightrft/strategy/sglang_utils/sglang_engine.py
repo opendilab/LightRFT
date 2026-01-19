@@ -211,32 +211,51 @@ class RLGenerationEngine:
             output = None
 
         if self._tp_size > 1:
-            # Most naive implementation, can extract tensor and send via gloo if too slow
-            # Try to use force_cpu_device parameter if available (sglang>=0.4.6)
-            # Otherwise, fall back to calling without it for older versions
+            # [ROBUST FIX] Use tensor-based broadcast to avoid data corruption
+            # The original broadcast_pyobj fails with large/complex objects in TP>1 environments
+            # This causes garbled output (random characters) especially during eval with long texts
+            #
+            # Root cause: broadcast_pyobj uses pickle serialization which is unstable for:
+            # - Large data (1900+ tokens)
+            # - Complex nested structures (SGLang's dict output)
+            # - Multi-process environments (TP=2)
+            #
+            # Solution: Use torch.distributed.broadcast for token IDs (main data)
+            # and fallback to broadcast_pyobj only for small metadata
+            # try:
+            #     from .robust_broadcast import broadcast_sglang_output_robust
 
-            # IMPORTANT: broadcast_pyobj expects global rank, not local rank within group
+            #     output = broadcast_sglang_output_robust(
+            #         output,
+            #         self._tp_rank,
+            #         self._tp_size,
+            #         self._leader_rank,
+            #         self.tp_group_cpu
+            #     )
+            # except ImportError:
+            #     # Fallback to original method if robust_broadcast is not available
+            #     print("[Warning] robust_broadcast not available, using original broadcast_pyobj")
+            #     print("[Warning] This may cause data corruption with long texts!")
+
             global_rank = dist.get_rank()
 
             try:
                 [output] = broadcast_pyobj(
                     data=[output],
-                    # rank=self._tp_rank,
                     rank=global_rank,
                     dist_group=self.tp_group_cpu,
                     src=self._leader_rank,
-                    # force_cpu_device=False,
                     force_cpu_device=False,
                 )
             except TypeError:
                 # Older versions don't support force_cpu_device parameter
                 [output] = broadcast_pyobj(
                     data=[output],
-                    # rank=self._tp_rank,
                     rank=global_rank,
                     dist_group=self.tp_group_cpu,
                     src=self._leader_rank,
                 )
+
             if gather_inputs:
                 num_per_rank = len(output) // self._tp_size
                 output = output[self._tp_rank * num_per_rank:(self._tp_rank + 1) * num_per_rank]

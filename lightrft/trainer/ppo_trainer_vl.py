@@ -208,6 +208,7 @@ class PPOTrainerVL(ABC):
         # Initialize wandb/tensorboard for logging
         self._wandb = None
         self._tensorboard = None
+        self.eval_step_counter = 0  # [FIX] Independent step counter for eval to avoid mixing with train
         if self.strategy.args.use_wandb and self.strategy.is_rank_0():
             import wandb
 
@@ -223,9 +224,16 @@ class PPOTrainerVL(ABC):
                 reinit=True,
             )
 
+            # [FIX] Define separate metric namespaces for clarity:
+            # - rollout/*: Metrics from experience generation phase
+            # - train/*: Metrics from policy optimization phase
+            # - eval/*: Metrics from evaluation phase
+            wandb.define_metric("rollout/global_step")
+            wandb.define_metric("rollout/*", step_metric="rollout/global_step", step_sync=True)
+
             wandb.define_metric("train/global_step")
             wandb.define_metric("train/*", step_metric="train/global_step", step_sync=True)
-            # Use eval/global_step as step_metric to match what we actually log
+
             wandb.define_metric("eval/global_step")
             wandb.define_metric("eval/*", step_metric="eval/global_step", step_sync=True)
 
@@ -482,9 +490,15 @@ class PPOTrainerVL(ABC):
                 # Update Episode pbar with ROLLOUT statistics (not training statistics!)
                 pbar.set_postfix(rollout_status)
 
-                # Logs/checkpoints: save TRAINING statistics to wandb
+                # Logs/checkpoints: save BOTH ROLLOUT and TRAINING statistics to wandb
+                # [FIX] Merge rollout_status (from inference) and status (from training)
+                # to ensure wandb logs contain both types of metrics
                 client_states = {"consumed_samples": steps * args.rollout_batch_size}
-                self.save_logs_and_checkpoints(args, steps, pbar, status, client_states, episode=episode)
+                logs_dict_combined = {**rollout_status, **status}  # Merge: rollout first, training second
+
+                self.save_logs_and_checkpoints(
+                    args, steps, pbar, logs_dict_combined, client_states, episode=episode
+                )
 
                 pbar.update()
                 steps = steps + 1
@@ -813,6 +827,8 @@ class PPOTrainerVL(ABC):
         # self.strategy.print(f"experience.info:{experience.info}")
 
         # Robustly handle various data types in experience.info for logging
+        # Note: We keep all metrics in status dict for internal use (e.g., KL weighting, progress bar)
+        # but will filter out rollout-only metrics when logging to wandb to avoid duplication
         for k, v in experience.info.items():
             # Special handling for KL divergence, which is already a scalar item
             if k == "kl":
@@ -964,7 +980,12 @@ class PPOTrainerVL(ABC):
         :type global_step: int
         :param step_bar: Progress bar object.
         :type step_bar: tqdm
-        :param logs_dict: Dictionary of metrics to log, defaults to {}.
+        :param logs_dict: Dictionary of metrics to log. Should contain both:
+                          - Rollout statistics (rollout_reward, rollout_response_length, etc.)
+                            from inference/generation phase
+                          - Training statistics (policy_loss, critic_loss, kl, etc.)
+                            from optimization phase
+                          Defaults to {}.
         :type logs_dict: dict
         :param client_states: Client state for checkpoint recovery, defaults to {}.
         :type client_states: dict
@@ -972,22 +993,69 @@ class PPOTrainerVL(ABC):
         :type episode: int
         """
         if global_step % args.logging_steps == 0:
+            # [FIX] Define which metrics should be excluded from train/ logs to avoid duplication
+            # These metrics are already logged in the rollout/ namespace
+            ROLLOUT_ONLY_METRICS = {
+                'reward',           # Already logged as rollout/reward
+                'response_length',  # Already logged as rollout/response_length
+                'total_length',     # Rollout-specific metric
+                'num_actions',      # Rollout-specific metric
+                'return',           # Rollout-specific metric (computed from rewards)
+            }
+
+            # Also exclude reward_metrics sub-keys (format_reward, accuracy_reward)
+            # They are already logged as rollout/format_reward, rollout/accuracy_reward
+            ROLLOUT_ONLY_METRIC_PREFIXES = {'reward_metrics/'}
+
+            # [FIX] Separate rollout and training metrics for clarity
+            # Rollout metrics: from experience generation (rollout_reward, rollout_response_length, etc.)
+            # Training metrics: from policy optimization (policy_loss, kl, actor_lr, etc.)
+            rollout_metrics = {}
+            train_metrics = {}
+
+            for k, v in logs_dict.items():
+                if k.startswith('rollout_'):
+                    # Remove 'rollout_' prefix and log under rollout/ namespace
+                    clean_key = k.replace('rollout_', '', 1)
+                    rollout_metrics[clean_key] = v
+                elif k in ROLLOUT_ONLY_METRICS:
+                    # Skip metrics that are already in rollout/ namespace
+                    # These are kept in logs_dict for internal use (progress bar, KL weighting)
+                    # but should not be logged again under train/ namespace
+                    continue
+                elif any(k.startswith(prefix) for prefix in ROLLOUT_ONLY_METRIC_PREFIXES):
+                    # Skip reward_metrics/* sub-keys
+                    continue
+                else:
+                    # Training-specific metrics go under train/ namespace
+                    train_metrics[k] = v
+
             # Wandb logging
             if self._wandb is not None and self.strategy.is_rank_0():
-                logs = {
-                    "train/%s" % k: v
-                    for k, v in {
-                        **logs_dict,
-                        "global_step": global_step,
-                        "episode": episode,
-                    }.items()
-                }
+                # Log rollout metrics with rollout/ prefix
+                if rollout_metrics:
+                    rollout_logs = {f"rollout/{k}": v for k, v in rollout_metrics.items()}
+                    rollout_logs["rollout/global_step"] = global_step
+                    rollout_logs["rollout/episode"] = episode
+                    self._wandb.log(rollout_logs)
+
+                # Log training metrics with train/ prefix
+                if train_metrics:
+                    train_logs = {f"train/{k}": v for k, v in train_metrics.items()}
+                    train_logs["train/global_step"] = global_step
+                    train_logs["train/episode"] = episode
+                    self._wandb.log(train_logs)
+
+                # Log performance stats
                 if self.experience_maker.perf_stats is not None:
-                    logs.update({f"perf/experience_maker/{k}": v for k, v in self.experience_maker.perf_stats.items()})
-                self._wandb.log(logs)
+                    perf_logs = {f"perf/experience_maker/{k}": v for k, v in self.experience_maker.perf_stats.items()}
+                    self._wandb.log(perf_logs)
+
             # TensorBoard logging
             elif self._tensorboard is not None and self.strategy.is_rank_0():
-                for k, v in logs_dict.items():
+                for k, v in rollout_metrics.items():
+                    self._tensorboard.add_scalar(f"rollout/{k}", v, global_step)
+                for k, v in train_metrics.items():
                     self._tensorboard.add_scalar(f"train/{k}", v, global_step)
                 if self.experience_maker.perf_stats is not None:
                     for k, v in self.experience_maker.perf_stats.items():
@@ -1006,8 +1074,11 @@ class PPOTrainerVL(ABC):
                     clean_key = k.replace("eval_", "") if k.startswith("eval_") else k
                     eval_logs[f"eval/{clean_key}"] = v
 
-                # Add step and episode info for X-axis options in wandb
-                eval_logs["eval/global_step"] = global_step
+                # [FIX] Use independent eval step counter to avoid mixing with train steps
+                # This ensures eval metrics have their own x-axis and won't overlap with train
+                self.eval_step_counter += 1
+                eval_logs["eval/global_step"] = self.eval_step_counter
+                eval_logs["eval/train_step"] = global_step  # Keep reference to train step
                 eval_logs["eval/episode"] = episode
                 eval_logs["eval/epoch"] = episode  # Alias for episode (common convention)
 
