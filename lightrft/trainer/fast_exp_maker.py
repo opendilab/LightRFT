@@ -1157,8 +1157,6 @@ class FastExperienceMaker(NaiveExperienceMaker):
                     all_prompt_token_ids=all_prompt_token_ids,
                     all_prompts=all_prompts if is_multimodal else None,
                     all_images=all_images,
-                    # sleep_engine=True,
-                    # sleep_engine=False,
                     sleep_engine=self.strategy.args.enable_engine_sleep, # TODO
                     images_num=all_images_num if is_multimodal else None,
                 )

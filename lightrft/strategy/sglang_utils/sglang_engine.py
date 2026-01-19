@@ -319,27 +319,57 @@ class RLGenerationEngine:
                 flush_cache=flush_cache,
             )
 
-    def sleep(self):
+    def sleep(self, release_weights: bool = False):
         """
         Release memory resources temporarily to free up GPU memory.
 
-        This method can be used to temporarily reduce memory usage when the engine
-        is not actively generating text. It's particularly useful in scenarios where
-        multiple models or processes need to share GPU memory resources efficiently.
+        This method releases KV cache and CUDA graph memory to free up GPU resources
+        during idle periods. By default, model weights are kept in memory to avoid
+        the overhead and risk of saving/restoring them.
+
+        :param release_weights: Whether to also release weights memory. Default is False.
+                               Set to True only if you need maximum memory savings and
+                               understand the risks (SGLang may not properly restore weights).
+        :type release_weights: bool
 
         Note:
-            After calling sleep(), you must call wake_up() before using the engine again.
+            - By default, only KV cache and CUDA graph are released (recommended)
+            - Weights are kept in memory unless explicitly requested
+            - After calling sleep(), you must call wake_up() before using the engine again
+            - ⚠️ WARNING: Releasing weights may cause generation issues due to SGLang limitations
 
         Example::
 
-            >>> engine.sleep()  # Free up memory during idle periods
-            >>> # ... other operations that need GPU memory ...
-            >>> engine.wake_up()  # Resume before next generation
+            >>> # Standard usage: keep weights in memory (recommended)
+            >>> engine.sleep()
+            >>> # ... other operations ...
+            >>> engine.wake_up()
+            >>>
+            >>> # Maximum memory savings: also release weights (use with caution)
+            >>> engine.sleep(release_weights=True)
+            >>> engine.wake_up(release_weights=True)
         """
         if self._tp_rank == 0:
-            self._engine.release_memory_occupation()
+            # Determine which memory types to release
+            if release_weights:
+                # Release all memory types (not recommended due to SGLang limitations)
+                tags = None  # Will default to GPU_MEMORY_ALL_TYPES in SGLang
+            else:
+                # Only release KV cache and CUDA graph, keep weights (recommended)
+                from sglang.srt.constants import (
+                    GPU_MEMORY_TYPE_CUDA_GRAPH,
+                    GPU_MEMORY_TYPE_KV_CACHE,
+                )
+                tags = [GPU_MEMORY_TYPE_KV_CACHE, GPU_MEMORY_TYPE_CUDA_GRAPH]
 
-    def wake_up(self):
+            # Import required classes
+            from sglang.srt.managers.io_struct import ReleaseMemoryOccupationReqInput
+
+            # Create request with specified tags
+            req = ReleaseMemoryOccupationReqInput(tags=tags)
+            self._engine.release_memory_occupation(req)
+
+    def wake_up(self, release_weights: bool = False):
         """
         Resume memory occupation after a call to sleep().
 
@@ -347,15 +377,45 @@ class RLGenerationEngine:
         after a previous call to sleep(). It restores the engine to its fully
         operational state with all necessary memory allocations.
 
+        :param release_weights: Must match the value used in sleep(). Default is False.
+        :type release_weights: bool
+
+        Important:
+            - The release_weights parameter must match what was used in sleep()
+            - If you called sleep(release_weights=False), call wake_up(release_weights=False)
+            - If you called sleep(release_weights=True), call wake_up(release_weights=True)
+
         Example::
 
-            >>> engine.sleep()    # Free memory
+            >>> # Standard usage (recommended)
+            >>> engine.sleep()              # Only KV cache & CUDA graph released
             >>> # ... do other work ...
-            >>> engine.wake_up()  # Prepare engine for generation
+            >>> engine.wake_up()            # Only KV cache & CUDA graph restored
             >>> result = engine.generate("Hello world")
+            >>>
+            >>> # If weights were released (use with caution)
+            >>> engine.sleep(release_weights=True)
+            >>> engine.wake_up(release_weights=True)  # Must match!
         """
         if self._tp_rank == 0:
-            self._engine.resume_memory_occupation()
+            # Determine which memory types to resume
+            if release_weights:
+                # Resume all memory types
+                tags = None  # Will default to GPU_MEMORY_ALL_TYPES in SGLang
+            else:
+                # Only resume KV cache and CUDA graph (recommended)
+                from sglang.srt.constants import (
+                    GPU_MEMORY_TYPE_CUDA_GRAPH,
+                    GPU_MEMORY_TYPE_KV_CACHE,
+                )
+                tags = [GPU_MEMORY_TYPE_KV_CACHE, GPU_MEMORY_TYPE_CUDA_GRAPH]
+
+            # Import required classes
+            from sglang.srt.managers.io_struct import ResumeMemoryOccupationReqInput
+
+            # Create request with specified tags
+            req = ResumeMemoryOccupationReqInput(tags=tags)
+            self._engine.resume_memory_occupation(req)
 
     def shutdown(self):
         """
