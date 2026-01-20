@@ -1485,14 +1485,11 @@ class FastExperienceMaker(NaiveExperienceMaker):
 
             # ========== Advantage Estimation ==========
             # Compute advantages and returns using calculator
-            # The calculator will automatically select which function to use based on config.advantage_estimator
             gamma = generate_kwargs.get("gamma", 1.0)
             experience.advantages, experience.returns, info_dict = self.advantage_calculator.compute(
                 experience,
                 final_reward,
                 generate_kwargs,
-                advantages_and_returns_fn=self.get_advantages_and_returns,
-                cumulative_returns_fn=self.get_cumulative_returns,
                 gamma=gamma,
             )
 
