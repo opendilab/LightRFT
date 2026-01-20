@@ -1,0 +1,492 @@
+"""
+Loss Weighting Module
+
+Provides unified interface for computing sample-level loss weights.
+"""
+
+from abc import ABC, abstractmethod
+from typing import List, Optional, Tuple
+import torch
+import warnings
+
+
+class LossWeighting(ABC):
+    """
+    Base class for loss weighting.
+
+    Weightings compute per-sample weights that modulate the contribution
+    of each sample to the loss function.
+    """
+    @abstractmethod
+    def compute_weights(
+        self,
+        metrics,  # SampleMetrics
+        experiences: List  # List[ExperienceVL]
+    ) -> torch.Tensor:
+        """
+        Compute per-sample weights.
+
+        :param metrics: SampleMetrics containing computed metrics
+        :type metrics: SampleMetrics
+        :param experiences: List of Experience/ExperienceVL objects
+        :type experiences: List
+        :return: FloatTensor (total_samples,) with loss weights
+        :rtype: torch.Tensor
+        """
+        pass
+
+
+class ResponseLengthWeighting(LossWeighting):
+    """
+    Weight samples by response length.
+
+    This can be used to:
+    - Give more weight to longer responses (mode="linear")
+    - Give more weight to shorter responses (mode="inverse")
+    - Balance weights by length (mode="sqrt", "log")
+    """
+    def __init__(
+        self,
+        mode: str = "linear",
+        normalize: bool = True,
+        clip_min: Optional[float] = None,
+        clip_max: Optional[float] = None,
+        epsilon: float = 1e-6
+    ):
+        """
+        Initialize response length weighting.
+
+        :param mode: Weighting mode ("linear", "inverse", "sqrt", or "log")
+        :type mode: str
+        :param normalize: Whether to normalize weights to mean=1
+        :type normalize: bool
+        :param clip_min: Minimum weight value
+        :type clip_min: Optional[float]
+        :param clip_max: Maximum weight value
+        :type clip_max: Optional[float]
+        :param epsilon: Small constant to avoid division by zero
+        :type epsilon: float
+        """
+        self.mode = mode
+        self.normalize = normalize
+        self.clip_min = clip_min
+        self.clip_max = clip_max
+        self.epsilon = epsilon
+
+        valid_modes = ["linear", "inverse", "sqrt", "log"]
+        if mode not in valid_modes:
+            raise ValueError(f"Invalid mode: {mode}. Must be one of {valid_modes}")
+
+    def compute_weights(self, metrics, experiences):
+        """
+        Compute length-based weights.
+
+        :param metrics: SampleMetrics with response_length
+        :type metrics: SampleMetrics
+        :param experiences: List of experiences (unused)
+        :type experiences: List
+        :return: FloatTensor of per-sample weights
+        :rtype: torch.Tensor
+        """
+        lengths = metrics.response_length.float()
+
+        # Compute weights according to mode
+        if self.mode == "linear":
+            weights = lengths
+        elif self.mode == "inverse":
+            weights = 1.0 / (lengths + self.epsilon)
+        elif self.mode == "sqrt":
+            weights = torch.sqrt(lengths + self.epsilon)
+        elif self.mode == "log":
+            weights = torch.log(1.0 + lengths)
+        else:
+            raise ValueError(f"Unknown mode: {self.mode}")
+
+        # Clip if specified
+        if self.clip_min is not None:
+            weights = torch.clamp(weights, min=self.clip_min)
+        if self.clip_max is not None:
+            weights = torch.clamp(weights, max=self.clip_max)
+
+        # Normalize to mean=1
+        if self.normalize:
+            weights = weights / (weights.mean() + self.epsilon)
+
+        return weights
+
+
+class EntropyWeighting(LossWeighting):
+    """
+    Weight samples by policy entropy.
+
+    This can encourage exploration (favor high entropy) or exploitation (favor low entropy).
+    """
+    def __init__(
+        self, mode: str = "favor_high", temperature: float = 1.0, normalize: bool = True, epsilon: float = 1e-6
+    ):
+        """
+        Initialize entropy weighting.
+
+        :param mode: Weighting mode ("favor_high", "favor_low", "linear", or "inverse")
+        :type mode: str
+        :param temperature: Temperature for softmax weighting (used in favor_high/favor_low modes)
+        :type temperature: float
+        :param normalize: Normalize to mean=1
+        :type normalize: bool
+        :param epsilon: Small constant to avoid numerical issues
+        :type epsilon: float
+        """
+        self.mode = mode
+        self.temperature = temperature
+        self.normalize = normalize
+        self.epsilon = epsilon
+
+        valid_modes = ["favor_high", "favor_low", "linear", "inverse"]
+        if mode not in valid_modes:
+            raise ValueError(f"Invalid mode: {mode}. Must be one of {valid_modes}")
+
+    def compute_weights(self, metrics, experiences):
+        """
+        Compute entropy-based weights.
+
+        :param metrics: SampleMetrics with entropy
+        :type metrics: SampleMetrics
+        :param experiences: List of experiences
+        :type experiences: List
+        :return: FloatTensor of per-sample weights
+        :rtype: torch.Tensor
+        """
+        if metrics.entropy is None:
+            # Entropy not available, return uniform weights
+            total_samples = sum(len(exp.sequences) for exp in experiences)
+            device = experiences[0].sequences.device if experiences else 'cuda'
+            return torch.ones(total_samples, device=device)
+
+        entropy = metrics.entropy
+
+        # Compute weights according to mode
+        if self.mode == "favor_high":
+            # Softmax over entropy (higher entropy → higher weight)
+            weights = torch.softmax(entropy / self.temperature, dim=0) * len(entropy)
+        elif self.mode == "favor_low":
+            # Inverse softmax (lower entropy → higher weight)
+            weights = torch.softmax(-entropy / self.temperature, dim=0) * len(entropy)
+        elif self.mode == "linear":
+            weights = entropy
+        elif self.mode == "inverse":
+            weights = 1.0 / (entropy + self.epsilon)
+        else:
+            raise ValueError(f"Unknown mode: {self.mode}")
+
+        # Normalize to mean=1
+        if self.normalize:
+            weights = weights / (weights.mean() + self.epsilon)
+
+        return weights
+
+
+class DifficultyWeighting(LossWeighting):
+    """
+    Weight samples by difficulty.
+
+    This implements prioritized experience replay (PER) style weighting or
+    curriculum learning approaches.
+    """
+    def __init__(self, mode: str = "prioritized", alpha: float = 0.6, normalize: bool = True, epsilon: float = 1e-6):
+        """
+        Initialize difficulty weighting.
+
+        :param mode: Weighting mode ("prioritized", "curriculum", "linear", or "inverse")
+        :type mode: str
+        :param alpha: Exponent for prioritization (typical range: 0.4-0.8)
+        :type alpha: float
+        :param normalize: Normalize to mean=1
+        :type normalize: bool
+        :param epsilon: Small constant to avoid numerical issues
+        :type epsilon: float
+        """
+        self.mode = mode
+        self.alpha = alpha
+        self.normalize = normalize
+        self.epsilon = epsilon
+
+        valid_modes = ["prioritized", "curriculum", "linear", "inverse"]
+        if mode not in valid_modes:
+            raise ValueError(f"Invalid mode: {mode}. Must be one of {valid_modes}")
+
+    def compute_weights(self, metrics, experiences):
+        """
+        Compute difficulty-based weights.
+
+        :param metrics: SampleMetrics with difficulty
+        :type metrics: SampleMetrics
+        :param experiences: List of experiences
+        :type experiences: List
+        :return: FloatTensor of per-sample weights
+        :rtype: torch.Tensor
+        """
+        if metrics.difficulty is None:
+            # Difficulty not available, return uniform weights
+            total_samples = sum(len(exp.sequences) for exp in experiences)
+            device = experiences[0].sequences.device if experiences else 'cuda'
+            return torch.ones(total_samples, device=device)
+
+        difficulty = metrics.difficulty
+
+        # Compute weights according to mode
+        if self.mode == "prioritized":
+            # Higher difficulty → higher weight (PER-style)
+            weights = torch.pow(difficulty + self.epsilon, self.alpha)
+        elif self.mode == "curriculum":
+            # Lower difficulty → higher weight (curriculum learning)
+            # Use inverse with alpha exponent
+            weights = torch.pow(1.0 / (difficulty + self.epsilon), self.alpha)
+        elif self.mode == "linear":
+            weights = difficulty
+        elif self.mode == "inverse":
+            weights = 1.0 / (difficulty + self.epsilon)
+        else:
+            raise ValueError(f"Unknown mode: {self.mode}")
+
+        # Normalize to mean=1
+        if self.normalize:
+            weights = weights / (weights.mean() + self.epsilon)
+
+        return weights
+
+
+class StalenessWeighting(LossWeighting):
+    """
+    Weight samples by staleness (age).
+
+    Older samples may be less relevant due to policy shift, so they
+    receive exponentially decaying weights.
+    """
+    def __init__(self, decay_factor: float = 0.95, normalize: bool = True, epsilon: float = 1e-6):
+        """
+        Initialize staleness weighting.
+
+        :param decay_factor: Exponential decay factor (0 < decay_factor < 1)
+        :type decay_factor: float
+        :param normalize: Normalize to mean=1
+        :type normalize: bool
+        :param epsilon: Small constant
+        :type epsilon: float
+        """
+        self.decay_factor = decay_factor
+        self.normalize = normalize
+        self.epsilon = epsilon
+
+        if not 0 < decay_factor <= 1:
+            raise ValueError(f"decay_factor must be in (0, 1], got {decay_factor}")
+
+    def compute_weights(self, metrics, experiences):
+        """
+        Compute staleness-based weights.
+
+        :param metrics: SampleMetrics with staleness
+        :type metrics: SampleMetrics
+        :param experiences: List of experiences
+        :type experiences: List
+        :return: FloatTensor of per-sample weights
+        :rtype: torch.Tensor
+        """
+        if metrics.staleness is None:
+            # Staleness not available, return uniform weights
+            total_samples = sum(len(exp.sequences) for exp in experiences)
+            device = experiences[0].sequences.device if experiences else 'cuda'
+            return torch.ones(total_samples, device=device)
+
+        staleness = metrics.staleness
+
+        # Exponential decay: weight = decay_factor^staleness
+        weights = torch.pow(self.decay_factor, staleness)
+
+        # Normalize to mean=1
+        if self.normalize:
+            weights = weights / (weights.mean() + self.epsilon)
+
+        return weights
+
+
+class RewardMagnitudeWeighting(LossWeighting):
+    """
+    Weight samples by reward magnitude.
+
+    This can be used to focus on high-reward or low-reward samples.
+    """
+    def __init__(
+        self, mode: str = "favor_high", temperature: float = 1.0, normalize: bool = True, epsilon: float = 1e-6
+    ):
+        """
+        Initialize reward magnitude weighting.
+
+        :param mode: Weighting mode ("favor_high", "favor_low", or "absolute")
+        :type mode: str
+        :param temperature: Temperature for softmax (used in favor_high/favor_low)
+        :type temperature: float
+        :param normalize: Normalize to mean=1
+        :type normalize: bool
+        :param epsilon: Small constant
+        :type epsilon: float
+        """
+        self.mode = mode
+        self.temperature = temperature
+        self.normalize = normalize
+        self.epsilon = epsilon
+
+    def compute_weights(self, metrics, experiences):
+        """
+        Compute reward-based weights.
+
+        :param metrics: SampleMetrics with reward_value
+        :type metrics: SampleMetrics
+        :param experiences: List of experiences
+        :type experiences: List
+        :return: FloatTensor of per-sample weights
+        :rtype: torch.Tensor
+        """
+        if metrics.reward_value is None:
+            # Reward not available, return uniform weights
+            total_samples = sum(len(exp.sequences) for exp in experiences)
+            device = experiences[0].sequences.device if experiences else 'cuda'
+            return torch.ones(total_samples, device=device)
+
+        rewards = metrics.reward_value
+
+        # Compute weights according to mode
+        if self.mode == "favor_high":
+            weights = torch.softmax(rewards / self.temperature, dim=0) * len(rewards)
+        elif self.mode == "favor_low":
+            weights = torch.softmax(-rewards / self.temperature, dim=0) * len(rewards)
+        elif self.mode == "absolute":
+            weights = torch.abs(rewards)
+        else:
+            raise ValueError(f"Unknown mode: {self.mode}")
+
+        # Normalize to mean=1
+        if self.normalize:
+            weights = weights / (weights.mean() + self.epsilon)
+
+        return weights
+
+
+class CompositeWeighting(LossWeighting):
+    """
+    Combine multiple weighting schemes.
+
+    This allows building complex weighting strategies by composing simple weightings.
+    """
+    def __init__(
+        self,
+        weightings: List[Tuple[LossWeighting, float]],
+        mode: str = "product",
+        normalize: bool = True,
+        epsilon: float = 1e-6
+    ):
+        """
+        Initialize composite weighting.
+
+        :param weightings: List of (weighting, coefficient) pairs
+        :type weightings: List[Tuple[LossWeighting, float]]
+        :param mode: Combination mode ("product", "sum", "weighted_sum", or "weighted_product")
+        :type mode: str
+        :param normalize: Normalize final weights to mean=1
+        :type normalize: bool
+        :param epsilon: Small constant
+        :type epsilon: float
+        """
+        self.weightings = weightings
+        self.mode = mode
+        self.normalize = normalize
+        self.epsilon = epsilon
+
+        valid_modes = ["product", "sum", "weighted_sum", "weighted_product"]
+        if mode not in valid_modes:
+            raise ValueError(f"Invalid mode: {mode}. Must be one of {valid_modes}")
+
+        if not weightings:
+            warnings.warn("CompositeWeighting initialized with empty weightings list")
+
+    def compute_weights(self, metrics, experiences):
+        """
+        Combine multiple weights.
+
+        :param metrics: SampleMetrics
+        :type metrics: SampleMetrics
+        :param experiences: List of experiences
+        :type experiences: List
+        :return: Combined FloatTensor of per-sample weights
+        :rtype: torch.Tensor
+        """
+        if not self.weightings:
+            # No weightings, return uniform weights
+            total_samples = sum(len(exp.sequences) for exp in experiences)
+            device = experiences[0].sequences.device if experiences else 'cuda'
+            return torch.ones(total_samples, device=device)
+
+        # Compute first weight
+        first_weighting, first_coef = self.weightings[0]
+        combined = first_weighting.compute_weights(metrics, experiences)
+
+        # Combine with rest
+        if self.mode == "product":
+            # Multiply all weights
+            for weighting, _ in self.weightings[1:]:
+                w = weighting.compute_weights(metrics, experiences)
+                combined = combined * w
+
+        elif self.mode == "sum":
+            # Sum all weights
+            for weighting, _ in self.weightings[1:]:
+                w = weighting.compute_weights(metrics, experiences)
+                combined = combined + w
+
+        elif self.mode == "weighted_sum":
+            # Weighted sum using coefficients
+            combined = combined * first_coef
+            for weighting, coef in self.weightings[1:]:
+                w = weighting.compute_weights(metrics, experiences)
+                combined = combined + coef * w
+
+        elif self.mode == "weighted_product":
+            # Product of (weight^coefficient)
+            combined = torch.pow(combined + self.epsilon, first_coef)
+            for weighting, coef in self.weightings[1:]:
+                w = weighting.compute_weights(metrics, experiences)
+                combined = combined * torch.pow(w + self.epsilon, coef)
+
+        else:
+            raise ValueError(f"Unknown mode: {self.mode}")
+
+        # Normalize to mean=1
+        if self.normalize:
+            combined = combined / (combined.mean() + self.epsilon)
+
+        return combined
+
+
+class UniformWeighting(LossWeighting):
+    """
+    Uniform weighting (all weights = 1).
+
+    This is a no-op weighting for baseline comparisons.
+    """
+    def __init__(self):
+        """Initialize uniform weighting."""
+        pass
+
+    def compute_weights(self, metrics, experiences):
+        """
+        Return uniform weights.
+
+        :param metrics: SampleMetrics (unused)
+        :type metrics: SampleMetrics
+        :param experiences: List of experiences
+        :type experiences: List
+        :return: FloatTensor of ones
+        :rtype: torch.Tensor
+        """
+        total_samples = sum(len(exp.sequences) for exp in experiences)
+        device = experiences[0].sequences.device if experiences else 'cuda'
+        return torch.ones(total_samples, device=device)

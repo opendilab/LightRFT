@@ -30,6 +30,7 @@ from dataclasses import dataclass
 from copy import deepcopy
 
 import torch
+import torch.distributed as dist
 import numpy as np
 from PIL import Image
 from easydict import EasyDict
@@ -50,10 +51,12 @@ from lightrft.trainer.experience_maker_vl import (
     ExperienceVL,
     SamplesVL,
 )
+from lightrft.trainer.replay_buffer_utils import make_experience_batch, split_experience_batch
 
 from lightrft.utils.remote_rm_utils import remote_rm_fn
 from lightrft.utils import Timer, get_current_device
 from .utils import RunningMoments, compute_clip_fraction, get_cpgd_advantages_returns, fire_sampling
+from .filter_weight import FilterWeightManagerBuilder
 from .image_utils import normalize_images, get_images_num
 from .video_utils import normalize_videos, get_videos_num
 
@@ -923,6 +926,19 @@ class FastExperienceMaker(NaiveExperienceMaker):
             packing_samples=self.packing_samples,
         )
 
+        # Initialize filter-weight manager
+        self.filter_weight_manager = self._init_filter_weight_manager()
+
+    def _init_filter_weight_manager(self):
+        """
+        Initialize filter-weight manager from strategy args.
+
+        :return: FilterWeightManager instance
+        :rtype: FilterWeightManager
+        """
+        args = self.strategy.args
+        return FilterWeightManagerBuilder.from_args(args, packing_samples=self.packing_samples)
+
     # ========================================================================
     # Public API Methods
     # ========================================================================
@@ -1006,11 +1022,24 @@ class FastExperienceMaker(NaiveExperienceMaker):
 
         # ========== Stage 3: Model Inference ==========
         Timer.start('  make_experience')
-        experiences = self._make_experience_list_by_model(all_samples)
+        experiences, outputs = self._make_experience_list_by_model(all_samples)
         Timer.stop('  make_experience')
 
         # ========== Stage 4: Shard-Parallel Postprocessing ==========
         experiences = self.strategy.sp_data_processor.postprocess(experiences)
+
+        # ========== Stage 4.5: Apply Filter-Weight Framework ==========
+        if self.filter_weight_manager is not None and (
+            self.filter_weight_manager.filters or self.filter_weight_manager.weights
+        ):
+            # Compute metrics from outputs
+            current_step = getattr(self.strategy, "global_step", None)
+            metrics = self.filter_weight_manager.compute_metrics(outputs, current_step=current_step)
+
+            # Apply filters and weights (with distributed training support)
+            experiences, _ = self.filter_weight_manager.apply_to_experiences(
+                experiences, metrics, strategy=self.strategy
+            )
 
         # ========== Stage 5: Reward Processing ==========
         experiences, rewards = self._process_experiences(  # GRPO's -mean / std operation is performed in this method
@@ -1406,21 +1435,25 @@ class FastExperienceMaker(NaiveExperienceMaker):
         config = self.strategy.config
         rewards = torch.cat([exp.info["reward"] for exp in experiences])
 
-        # ========== Overlong Sequence Penalty ==========
-        if config.overlong_buffer:
-            expected_len = max_new_tokens - config.overlong_buffer_len
-            actual_lens = torch.cat([exp.action_mask.sum(dim=1) for exp in experiences])
-            exceed_len = actual_lens - expected_len
-
-            # Penalty: clamp(-exceed_len / buffer_len * penalty_factor, max=0)
-            penalty = torch.clamp(
-                -exceed_len / config.overlong_buffer_len * config.overlong_buffer_penalty_factor, max=0.0
-            )
-            rewards += penalty
-
         # ========== Dynamic Sampling Warning ==========
-        if config.dynamic_sampling and config.advantage_estimator in ["rloo", "reinforce_baseline"]:
-            warnings.warn(f"dynamic_sampling not implemented for {config.advantage_estimator}, ignoring", UserWarning)
+        if config.dynamic_sampling:
+            if config.advantage_estimator in ["rloo", "reinforce_baseline"]:
+                warnings.warn(
+                    f"dynamic_sampling not implemented for {config.advantage_estimator}, ignoring", UserWarning
+                )
+            elif config.advantage_estimator in ["group_norm", "grpo"]:
+                # Check if filter_weight_manager is properly configured
+                from .filter_weight import RewardValueFilter
+                has_reward_filter = (
+                    self.filter_weight_manager is not None and self.filter_weight_manager.filters
+                    and any(isinstance(f, RewardValueFilter) for f in self.filter_weight_manager.filters)
+                )
+                if not has_reward_filter:
+                    warnings.warn(
+                        "dynamic_sampling is enabled but FilterWeightManager is not configured with "
+                        "RewardValueFilter. Dynamic sampling will not be applied. "
+                        "Please ensure filter_weight_manager is properly initialized.", UserWarning
+                    )
 
         # ========== Advantage Estimator-Specific Shaping ==========
         if config.advantage_estimator == "rloo":
@@ -1439,18 +1472,7 @@ class FastExperienceMaker(NaiveExperienceMaker):
             return experiences, rewards
 
         elif config.advantage_estimator in ["group_norm", "grpo"]:
-            # Group normalization with optional dynamic filtering
-            if config.dynamic_sampling:
-                step_size = config.n_samples_per_prompt // config.micro_train_batch_size
-                for i in range(0, len(experiences), step_size):
-                    chunk = experiences[i:i + step_size]
-                    chunk_rewards = torch.cat([exp.info["reward"] for exp in chunk])
-
-                    # Filter out degenerate cases (all 0s or all 1s)
-                    if torch.all(chunk_rewards == 0) or torch.all(chunk_rewards == 1):
-                        for exp in chunk:
-                            exp.action_mask = torch.zeros_like(exp.action_mask, dtype=torch.bool)
-
+            # Group normalization
             # # Normalize within groups
             # rewards = rewards.reshape(-1, config.n_samples_per_prompt).to("cuda")
             # rewards = (rewards - rewards.mean(-1, keepdim=True)) / (rewards.std(-1, keepdim=True) + 1e-9)
@@ -1592,7 +1614,7 @@ class FastExperienceMaker(NaiveExperienceMaker):
     def _make_experience_list_by_model(
         self,
         all_samples: List[Union[Samples, SamplesVL]],
-    ) -> List[Union[Experience, ExperienceVL]]:
+    ) -> Tuple[List[Union[Experience, ExperienceVL]], List[_SamplesOutput]]:
         """
         Batch forward pass through all models to create experiences.
 
@@ -1670,7 +1692,8 @@ class FastExperienceMaker(NaiveExperienceMaker):
         self.reward_engine.compute_rewards(outputs, vlm_mode, device)
 
         # ========== Stage 5: Assemble Experiences ==========
-        return [self._pack_experience(output, vlm_mode) for output in outputs]
+        experiences = [self._pack_experience(output, vlm_mode) for output in outputs]
+        return experiences, outputs
 
     def _preprocess_sample(
         self,

@@ -416,6 +416,17 @@ class StrategyBase(ABC):
         """
         assert op in ("mean", "max", "sum")
         if isinstance(data, dict):
+            # Ensure consistent key order and presence across ranks to avoid NCCL hangs.
+            if dist.is_available() and dist.is_initialized() and self.world_size > 1:
+                local_keys = list(data.keys())
+                gathered_keys = [None for _ in range(self.world_size)]
+                dist.all_gather_object(gathered_keys, local_keys)
+                all_keys = sorted({k for keys in gathered_keys for k in keys})
+                ret = {}
+                for k in all_keys:
+                    ret[k] = self.all_reduce(data.get(k, 0.0), op)
+                return ret
+
             ret = {}
             for k, v in data.items():
                 ret[k] = self.all_reduce(v, op)
