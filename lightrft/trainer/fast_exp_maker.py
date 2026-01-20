@@ -904,7 +904,7 @@ class FastExperienceMaker(NaiveExperienceMaker):
 
         # Initialize advantage calculator
         advantage_estimator = self.strategy.config.advantage_estimator
-        self.advantage_calculator = get_advantage_calculator(advantage_estimator, strategy=self.strategy)
+        self.advantage_calculator = get_advantage_calculator(advantage_estimator, self.strategy.config)
 
         # Initialize helper modules
         if self.processor is not None:

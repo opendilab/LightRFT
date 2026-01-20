@@ -45,17 +45,16 @@ class AdvantageCalculator(ABC):
         2. compute: Main computation of advantages and returns
 
     Attributes:
-        strategy: Training strategy object containing configuration and models
+        config: Configuration object containing training parameters
     """
-    def __init__(self, strategy):
+    def __init__(self, config):
         """
         Initialize the advantage calculator.
 
-        :param strategy: Training strategy object containing configuration
-        :type strategy: object
+        :param config: Configuration object containing training parameters
+        :type config: object
         """
-        self.strategy = strategy
-        self.config = strategy.config
+        self.config = config
 
     def get_cumulative_returns(
         self,
@@ -458,9 +457,9 @@ class REINFORCECalculator(AdvantageCalculator):
     Reference: REINFORCE: Williams, R. J. (1992). Simple statistical gradient-following
     algorithms for connectionist reinforcement learning. Machine learning, 8(3-4), 229-256.
     """
-    def __init__(self, strategy):
+    def __init__(self, config):
         """Initialize REINFORCE calculator."""
-        super().__init__(strategy)
+        super().__init__(config)
         # Get the cumulative returns method from parent class
         # We'll need access to the experience maker instance
 
@@ -818,7 +817,7 @@ class GroupNormCalculator(AdvantageCalculator):
 # ============================================================================
 
 
-def get_advantage_calculator(estimator_name: str, strategy) -> AdvantageCalculator:
+def get_advantage_calculator(estimator_name: str, config) -> AdvantageCalculator:
     """
     Factory function to create an advantage calculator instance.
 
@@ -826,8 +825,8 @@ def get_advantage_calculator(estimator_name: str, strategy) -> AdvantageCalculat
                           Options: "gae", "cpgd", "reinforce", "rloo",
                                    "reinforce_baseline", "group_norm", "grpo"
     :type estimator_name: str
-    :param strategy: Training strategy object containing configuration
-    :type strategy: object
+    :param config: Configuration object containing training parameters
+    :type config: object
     :return: Instance of the appropriate AdvantageCalculator subclass
     :rtype: AdvantageCalculator
     :raises ValueError: If estimator_name is not recognized
@@ -849,4 +848,4 @@ def get_advantage_calculator(estimator_name: str, strategy) -> AdvantageCalculat
             f"Supported options: {list(calculator_map.keys())}"
         )
 
-    return calculator_class(strategy)
+    return calculator_class(config)
