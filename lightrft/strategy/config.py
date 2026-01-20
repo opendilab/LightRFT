@@ -133,6 +133,58 @@ class StrategyConfig:
     # (bool): Use TensorBoard for logging, defaults to False
     use_tensorboard: bool = False
 
+    # Filter and weight parameters
+    # (int): Maximum number of new tokens to generate, defaults to 1024
+    max_new_tokens: int = 1024
+
+    # Entropy-based filtering and weighting
+    # (bool): Enable entropy-based filtering, defaults to False
+    enable_entropy_filter: bool = False
+    # (Optional[float]): Minimum entropy threshold for filtering, defaults to None
+    min_entropy: Optional[float] = None
+    # (Optional[float]): Maximum entropy threshold for filtering, defaults to None
+    max_entropy: Optional[float] = None
+    # (bool): Compute entropy metrics, defaults to False
+    compute_entropy: bool = False
+    # (bool): Enable entropy-based loss weighting, defaults to False
+    enable_entropy_weighting: bool = False
+    # (str): Entropy weighting mode ("favor_high", "favor_low"), defaults to "favor_high"
+    entropy_weight_mode: str = "favor_high"
+    # (float): Temperature parameter for entropy weighting, defaults to 1.0
+    entropy_weight_temperature: float = 1.0
+    # (float): Coefficient for entropy weighting, defaults to 1.0
+    entropy_weight_coef: float = 1.0
+
+    # Length-based weighting
+    # (bool): Enable response length-based loss weighting, defaults to False
+    enable_length_weighting: bool = False
+    # (str): Length weighting mode ("inverse", "linear", "squared"), defaults to "inverse"
+    length_weight_mode: str = "inverse"
+    # (float): Coefficient for length weighting, defaults to 1.0
+    length_weight_coef: float = 1.0
+
+    # Difficulty-based weighting
+    # (bool): Enable difficulty-based loss weighting, defaults to False
+    enable_difficulty_weighting: bool = False
+    # (str): Difficulty weighting mode ("prioritized", "linear"), defaults to "prioritized"
+    difficulty_weight_mode: str = "prioritized"
+    # (str): Difficulty computation mode ("td_error", "abs_advantage"), defaults to "td_error"
+    difficulty_mode: str = "td_error"
+    # (float): Alpha parameter for prioritized difficulty weighting, defaults to 0.6
+    difficulty_alpha: float = 0.6
+    # (float): Coefficient for difficulty weighting, defaults to 1.0
+    difficulty_weight_coef: float = 1.0
+
+    # Staleness-based weighting
+    # (bool): Enable staleness-based loss weighting, defaults to False
+    enable_staleness_weighting: bool = False
+    # (float): Decay factor for staleness weighting, defaults to 0.95
+    staleness_decay_factor: float = 0.95
+    # (str): Staleness computation mode ("linear", "exponential"), defaults to "linear"
+    staleness_mode: str = "linear"
+    # (float): Coefficient for staleness weighting, defaults to 1.0
+    staleness_weight_coef: float = 1.0
+
     # Additional arguments for backward compatibility
     # (Dict[str, Any]): Extra arguments for backward compatibility, defaults to {}
     extra_args: Dict[str, Any] = field(default_factory=dict)
@@ -305,6 +357,20 @@ class StrategyConfig:
         # Analysis and Monitoring Parameters
         print("\nAnalysis and Monitoring Parameters:")
         for attr in ['plot_every', 'use_tensorboard']:
+            current = getattr(self, attr)
+            default = getattr(default_config, attr)
+            status = "Overridden" if current != default else "Default"
+            print(f"  {attr}: {current} ({status})")
+
+        # Filter and Weight Parameters
+        print("\nFilter and Weight Parameters:")
+        for attr in [
+            'max_new_tokens', 'enable_entropy_filter', 'min_entropy', 'max_entropy', 'compute_entropy',
+            'enable_entropy_weighting', 'entropy_weight_mode', 'entropy_weight_temperature', 'entropy_weight_coef',
+            'enable_length_weighting', 'length_weight_mode', 'length_weight_coef', 'enable_difficulty_weighting',
+            'difficulty_weight_mode', 'difficulty_mode', 'difficulty_alpha', 'difficulty_weight_coef',
+            'enable_staleness_weighting', 'staleness_decay_factor', 'staleness_mode', 'staleness_weight_coef'
+        ]:
             current = getattr(self, attr)
             default = getattr(default_config, attr)
             status = "Overridden" if current != default else "Default"

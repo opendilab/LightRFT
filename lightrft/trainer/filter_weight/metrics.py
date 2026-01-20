@@ -303,12 +303,13 @@ class MetricsComputer:
             # In practice, you'd need to add generation_step to _SamplesOutput
             pass
 
+        # NOTE: The following metrics have not been fully tested yet
         return SampleMetrics(
-            response_length=response_lengths,
-            entropy=entropy,
-            logit_kl=logit_kl,
-            difficulty=difficulty,
-            staleness=staleness,
+            response_length=response_lengths,  # Not tested
+            entropy=entropy,  # Not tested
+            logit_kl=logit_kl,  # Not tested
+            difficulty=difficulty,  # Not tested
+            staleness=staleness,  # Not tested
             reward_value=rewards,
             n_samples_per_prompt=None,  # Can be set externally
             micro_batch_size=None,  # Can be set externally

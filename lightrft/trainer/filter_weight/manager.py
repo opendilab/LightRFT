@@ -200,16 +200,20 @@ class FilterWeightManager:
         experiences: List,  # List[ExperienceVL]
         metrics: SampleMetrics,
         apply_filter_to_mask: bool = True,
-        apply_filter_to_weights: bool = True
+        apply_filter_to_weights: bool = True,
+        handle_distributed: bool = True,
+        strategy=None
     ) -> Tuple[List, torch.Tensor]:
         """
         Apply filtering and weighting to experiences.
 
         This method:
         1. Computes filter mask
-        2. Updates action_mask to exclude filtered samples (if apply_filter_to_mask=True)
-        3. Computes loss weights
-        4. Zeros out weights for filtered samples (if apply_filter_to_weights=True)
+        2. Handles distributed training edge cases (e.g., all samples filtered)
+        3. Updates action_mask to exclude filtered samples (if apply_filter_to_mask=True)
+        4. Optionally updates exp.info["reward"] for filtered samples
+        5. Computes loss weights
+        6. Zeros out weights for filtered samples (if apply_filter_to_weights=True)
 
         :param experiences: List of Experience/ExperienceVL objects to process
         :type experiences: List
@@ -219,14 +223,38 @@ class FilterWeightManager:
         :type apply_filter_to_mask: bool
         :param apply_filter_to_weights: If True, zero out weights for filtered samples
         :type apply_filter_to_weights: bool
+        :param handle_distributed: If True, handle distributed training edge cases
+        :type handle_distributed: bool
+        :param strategy: Strategy object for logging (optional)
+        :type strategy: Optional[Any]
         :return: Modified experiences and per-sample weights
         :rtype: Tuple[List, torch.Tensor]
         """
+        import torch.distributed as dist
+
         # Apply filters
         keep_mask = self.apply_filters(metrics, experiences)
 
+        # Handle distributed training edge cases
+        if handle_distributed:
+            is_distributed = dist.is_available() and dist.is_initialized() and dist.get_world_size() > 1
+
+            if is_distributed and keep_mask.sum().item() == 0:
+                # All samples filtered on this rank - reset mask to avoid NCCL issues
+                if strategy is not None:
+                    strategy.print(
+                        "[Warning] FilterWeightManager: No sample kept after filtering on this rank; "
+                        "skipping filtering this step to maintain synchronization."
+                    )
+                else:
+                    warnings.warn(
+                        "FilterWeightManager: No sample kept after filtering on this rank; "
+                        "skipping filtering this step."
+                    )
+                keep_mask = torch.ones_like(keep_mask, dtype=torch.bool)
+
         # Update action masks if requested
-        if apply_filter_to_mask:
+        if apply_filter_to_mask and keep_mask.sum().item() < keep_mask.numel():
             sample_idx = 0
             for exp in experiences:
                 batch_size = len(exp.sequences)
@@ -236,6 +264,11 @@ class FilterWeightManager:
                 # This effectively removes them from loss computation
                 if exp.action_mask is not None:
                     exp.action_mask = exp.action_mask & batch_mask.unsqueeze(-1).to(exp.action_mask.device)
+
+                # Also mask rewards in exp.info for consistency with legacy behavior
+                if "reward" in exp.info:
+                    exp_rewards = exp.info["reward"]
+                    exp.info["reward"] = exp_rewards * batch_mask.to(exp_rewards.device).float()
 
                 sample_idx += batch_size
 
@@ -357,7 +390,7 @@ class FilterWeightManagerBuilder:
         """
         Build FilterWeightManager from training arguments.
 
-        :param args: Training arguments object
+        :param args: Training arguments object with filter/weight configuration
         :type args: Any
         :param packing_samples: Whether samples are packed
         :type packing_samples: bool
@@ -376,66 +409,55 @@ class FilterWeightManagerBuilder:
         filters = []
 
         # Response length filter (from overlong_buffer settings)
-        if getattr(args, "overlong_buffer", False):
-            expected_len = getattr(args, "max_new_tokens", 1024) - getattr(args, "overlong_buffer_len", 0)
-            buffer_len = getattr(args, "overlong_buffer_len", 0)
+        if args.overlong_buffer:
+            expected_len = args.max_new_tokens - args.overlong_buffer_len
+            buffer_len = args.overlong_buffer_len
             filters.append(ResponseLengthFilter(expected_length=expected_len, buffer_length=buffer_len))
 
         # Reward value filter (for dynamic sampling)
-        if getattr(args, "dynamic_sampling", False) and getattr(args, "advantage_estimator", "") == "group_norm":
-            filters.append(RewardValueFilter(n_samples_per_prompt=getattr(args, "n_samples_per_prompt", 1)))
+        if args.dynamic_sampling and args.advantage_estimator == "group_norm":
+            filters.append(RewardValueFilter(n_samples_per_prompt=args.n_samples_per_prompt))
 
         # Entropy filter
-        if getattr(args, "enable_entropy_filter", False):
-            filters.append(
-                EntropyFilter(
-                    min_entropy=getattr(args, "min_entropy", None), max_entropy=getattr(args, "max_entropy", None)
-                )
-            )
+        if args.enable_entropy_filter:
+            filters.append(EntropyFilter(min_entropy=args.min_entropy, max_entropy=args.max_entropy))
 
         # Build weights
         weights = []
 
         # Response length weighting
-        if getattr(args, "enable_length_weighting", False):
-            weight = ResponseLengthWeighting(mode=getattr(args, "length_weight_mode", "inverse"), normalize=True)
-            coef = getattr(args, "length_weight_coef", 1.0)
+        if args.enable_length_weighting:
+            weight = ResponseLengthWeighting(mode=args.length_weight_mode, normalize=True)
+            coef = args.length_weight_coef
             weights.append((weight, coef))
 
         # Entropy weighting
-        if getattr(args, "enable_entropy_weighting", False):
+        if args.enable_entropy_weighting:
             weight = EntropyWeighting(
-                mode=getattr(args, "entropy_weight_mode", "favor_high"),
-                temperature=getattr(args, "entropy_weight_temperature", 1.0),
-                normalize=True
+                mode=args.entropy_weight_mode, temperature=args.entropy_weight_temperature, normalize=True
             )
-            coef = getattr(args, "entropy_weight_coef", 1.0)
+            coef = args.entropy_weight_coef
             weights.append((weight, coef))
 
         # Difficulty weighting
-        if getattr(args, "enable_difficulty_weighting", False):
-            weight = DifficultyWeighting(
-                mode=getattr(args, "difficulty_weight_mode", "prioritized"),
-                alpha=getattr(args, "difficulty_alpha", 0.6),
-                normalize=True
-            )
-            coef = getattr(args, "difficulty_weight_coef", 1.0)
+        if args.enable_difficulty_weighting:
+            weight = DifficultyWeighting(mode=args.difficulty_weight_mode, alpha=args.difficulty_alpha, normalize=True)
+            coef = args.difficulty_weight_coef
             weights.append((weight, coef))
 
         # Staleness weighting
-        if getattr(args, "enable_staleness_weighting", False):
-            weight = StalenessWeighting(decay_factor=getattr(args, "staleness_decay_factor", 0.95), normalize=True)
-            coef = getattr(args, "staleness_weight_coef", 1.0)
+        if args.enable_staleness_weighting:
+            weight = StalenessWeighting(decay_factor=args.staleness_decay_factor, normalize=True)
+            coef = args.staleness_weight_coef
             weights.append((weight, coef))
 
         # Build enable_metrics dict
         enable_metrics = {
-            "entropy": getattr(args, "compute_entropy", False) or getattr(args, "enable_entropy_filter", False)
-            or getattr(args, "enable_entropy_weighting", False),
-            "difficulty": getattr(args, "enable_difficulty_weighting", False),
-            "difficulty_mode": getattr(args, "difficulty_mode", "td_error"),
-            "staleness": getattr(args, "enable_staleness_weighting", False),
-            "staleness_mode": getattr(args, "staleness_mode", "linear"),
+            "entropy": args.compute_entropy or args.enable_entropy_filter or args.enable_entropy_weighting,
+            "difficulty": args.enable_difficulty_weighting,
+            "difficulty_mode": args.difficulty_mode,
+            "staleness": args.enable_staleness_weighting,
+            "staleness_mode": args.staleness_mode,
         }
 
         return FilterWeightManager(
