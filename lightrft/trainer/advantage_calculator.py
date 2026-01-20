@@ -2,7 +2,8 @@
 Advantage Calculator Module
 
 This module provides a unified interface for computing advantages and returns
-in reinforcement learning from human feedback (RLHF) workflows. It abstracts
+in reinforcement learning from human feedback (RLHF) and reinforcement
+learning with verifiable rewards (RLVR) workflows. It abstracts
 different advantage estimation methods (GAE, CPGD, REINFORCE, etc.) into a
 common interface, making it easy to add new methods and maintain existing ones.
 
@@ -293,7 +294,7 @@ class GAECalculator(AdvantageCalculator):
 
 class CPGDCalculator(AdvantageCalculator):
     """
-    CPGD (Clipped Policy Gradient Optimization) calculator.
+    CPGD (Clipped Policy Gradient Optimization with Policy Drift) calculator.
 
     Aggregates token-level rewards into episode-level scores, normalizes
     them group-wise, and broadcasts back to token dimension.
@@ -415,21 +416,32 @@ class CPGDCalculator(AdvantageCalculator):
         return advantages, returns, {}
 
 
-class REINFORCECalculator(AdvantageCalculator):
+class BaseREINFORCECalculator(AdvantageCalculator):
     """
-    Standard REINFORCE calculator.
+    Base class for all methods that use cumulative returns as the advantage estimator.
 
-    Computes cumulative returns and uses them as advantages.
-    Supports advantage whitening and clipping.
+    This class consolidates the common compute logic for REINFORCE-based methods:
+    1. Compute cumulative returns (Monte Carlo returns)
+    2. Normalize advantages (if configured)
+    3. Clip advantages (if configured)
 
-    Reference: REINFORCE: Williams, R. J. (1992). Simple statistical gradient-following
-    algorithms for connectionist reinforcement learning. Machine learning, 8(3-4), 229-256.
+    Subclasses only need to override preprocess_rewards() to implement different
+    baseline strategies (e.g., RLOO, group mean, group normalization).
     """
-    def __init__(self, config):
-        """Initialize REINFORCE calculator."""
-        super().__init__(config)
-        # Get the cumulative returns method from parent class
-        # We'll need access to the experience maker instance
+    def _get_gamma(self, gamma: Optional[float], generate_kwargs: Dict) -> float:
+        """
+        Get the discount factor gamma.
+
+        This method can be overridden by subclasses to enforce specific gamma values.
+
+        :param gamma: Discount factor passed to compute()
+        :type gamma: Optional[float]
+        :param generate_kwargs: Generation parameters containing 'gamma'
+        :type generate_kwargs: Dict
+        :return: The gamma value to use
+        :rtype: float
+        """
+        return gamma if gamma is not None else generate_kwargs.get("gamma", 1.0)
 
     def compute(
         self,
@@ -439,7 +451,7 @@ class REINFORCECalculator(AdvantageCalculator):
         gamma=None,
     ) -> Tuple[torch.Tensor, torch.Tensor, Dict]:
         """
-        Compute advantages using REINFORCE (cumulative returns).
+        Compute advantages using cumulative returns (REINFORCE-style).
 
         :param experience: Experience object
         :type experience: object
@@ -452,10 +464,14 @@ class REINFORCECalculator(AdvantageCalculator):
         :return: Tuple of (advantages, returns, info_dict)
         :rtype: Tuple[torch.Tensor, torch.Tensor, Dict]
         """
+        # Get gamma (subclasses can override this behavior)
+        gamma = self._get_gamma(gamma, generate_kwargs)
+
+        # Compute cumulative returns
         returns = self.get_cumulative_returns(final_reward, experience.action_mask, gamma)
         advantages = deepcopy(returns)
 
-        # Advantage whitening
+        # Advantage whitening (normalization)
         info_dict = {}
         if self.config.advantages_norm:
             masked_adv = torch.masked_select(advantages, experience.action_mask)
@@ -472,7 +488,20 @@ class REINFORCECalculator(AdvantageCalculator):
         return advantages, returns, info_dict
 
 
-class RLOOCalculator(AdvantageCalculator):
+class REINFORCECalculator(BaseREINFORCECalculator):
+    """
+    Standard REINFORCE calculator.
+
+    Computes cumulative returns and uses them as advantages.
+    Supports advantage whitening and clipping.
+
+    Reference: REINFORCE: Williams, R. J. (1992). Simple statistical gradient-following
+    algorithms for connectionist reinforcement learning. Machine learning, 8(3-4), 229-256.
+    """
+    pass
+
+
+class RLOOCalculator(BaseREINFORCECalculator):
     """
     Reward Leave-One-Out (RLOO) calculator.
 
@@ -516,55 +545,30 @@ class RLOOCalculator(AdvantageCalculator):
         rewards = rewards.flatten().to("cpu").chunk(len(experiences))
         return experiences, list(rewards)
 
-    def compute(
-        self,
-        experience,
-        final_reward: torch.Tensor,
-        generate_kwargs: Dict,
-        gamma=None,
-    ) -> Tuple[torch.Tensor, torch.Tensor, Dict]:
-        """
-        Compute advantages using REINFORCE after RLOO preprocessing.
 
-        :param experience: Experience object
-        :type experience: object
-        :param final_reward: Processed reward (already has RLOO baseline subtracted)
-        :type final_reward: torch.Tensor
-        :param generate_kwargs: Must contain 'gamma' key
-        :type generate_kwargs: Dict
-        :param gamma: Discount factor. If None, will be taken from generate_kwargs.
-        :type gamma: Optional[float]
-        :return: Tuple of (advantages, returns, info_dict)
-        :rtype: Tuple[torch.Tensor, torch.Tensor, Dict]
-        """
-        returns = self.get_cumulative_returns(final_reward, experience.action_mask, gamma)
-        advantages = deepcopy(returns)
-
-        # Advantage whitening
-        info_dict = {}
-        if self.config.advantages_norm:
-            masked_adv = torch.masked_select(advantages, experience.action_mask)
-            adv_mean = masked_adv.mean()
-            adv_std = masked_adv.std()
-            advantages = (advantages - adv_mean) / (adv_std + 1e-8)
-
-        # Advantage clipping
-        if self.config.advantage_clip > 0:
-            clip_val = self.config.advantage_clip
-            info_dict["advantage_clip_frac"] = compute_clip_fraction(advantages, clip_val, -clip_val)
-            advantages = torch.clamp(advantages, -clip_val, clip_val)
-
-        return advantages, returns, info_dict
-
-
-class REINFORCEBaselineCalculator(AdvantageCalculator):
+class REINFORCEBaselineCalculator(BaseREINFORCECalculator):
     """
-    REINFORCE with baseline calculator.
+    REINFORCE++ with baseline calculator.
 
-    Subtracts the mean reward within each group as baseline.
+    Subtracts the mean reward within each group as baseline. This method is robust
+    to different reward scales and particularly suitable for reasoning tasks (RLVR).
 
-    Reference: REINFORCE: Williams, R. J. (1992). Simple statistical gradient-following
-    algorithms for connectionist reinforcement learning. Machine learning, 8(3-4), 229-256.
+    Advantage computation equation:
+        A_t = R_t - mean(R)
+
+    where:
+        - A_t: advantage at time step t
+        - R_t: reward at time step t (with gamma=1.0)
+        - mean(R): mean reward within the group
+
+    Key differences from GRPO (group_norm):
+    - Does NOT divide by std (/ std is not needed in RL variance reduction theory)
+    - Forces gamma=1.0 for advantage computation
+    - Performs cross-batch advantage normalization
+
+    Reference:
+    - REINFORCE++: https://www.researchgate.net/publication/387487679
+    - OpenRLHF implementation: https://github.com/OpenRLHF/OpenRLHF
     """
     def preprocess_rewards(
         self,
@@ -574,6 +578,11 @@ class REINFORCEBaselineCalculator(AdvantageCalculator):
     ) -> Tuple[List, List[torch.Tensor]]:
         """
         Preprocess rewards by subtracting group mean baseline.
+
+        This follows the REINFORCE++-baseline approach:
+        rewards = rewards - rewards.mean(-1, keepdim=True)
+
+        Note: Unlike GRPO, we do NOT divide by std.
 
         :param rewards: Concatenated reward tensor
         :type rewards: torch.Tensor
@@ -590,57 +599,40 @@ class REINFORCEBaselineCalculator(AdvantageCalculator):
         # Reshape to (n_groups, n_samples_per_prompt)
         rewards = rewards.reshape(-1, n_samples).to("cuda")
 
-        # Subtract mean baseline
+        # REINFORCE++-baseline: subtract mean baseline (no division by std)
+        # This is different from GRPO which does (rewards - mean) / std
         rewards = rewards - rewards.mean(-1, keepdim=True)
 
         # Flatten and chunk back
         rewards = rewards.flatten().to("cpu").chunk(len(experiences))
         return experiences, list(rewards)
 
-    def compute(
-        self,
-        experience,
-        final_reward: torch.Tensor,
-        generate_kwargs: Dict,
-        gamma=None,
-    ) -> Tuple[torch.Tensor, torch.Tensor, Dict]:
+    def _get_gamma(self, gamma: Optional[float], generate_kwargs: Dict) -> float:
         """
-        Compute advantages using REINFORCE after baseline subtraction.
+        Force gamma=1.0 for REINFORCE++-baseline algorithm.
 
-        :param experience: Experience object
-        :type experience: object
-        :param final_reward: Processed reward (already has baseline subtracted)
-        :type final_reward: torch.Tensor
-        :param generate_kwargs: Must contain 'gamma' key
-        :type generate_kwargs: Dict
-        :param gamma: Discount factor. If None, will be taken from generate_kwargs.
+        :param gamma: Discount factor passed to compute()
         :type gamma: Optional[float]
-        :return: Tuple of (advantages, returns, info_dict)
-        :rtype: Tuple[torch.Tensor, torch.Tensor, Dict]
+        :param generate_kwargs: Generation parameters containing 'gamma'
+        :type generate_kwargs: Dict
+        :return: Always returns 1.0 (with warning if different value was provided)
+        :rtype: float
         """
-        returns = self.get_cumulative_returns(final_reward, experience.action_mask, gamma)
-        advantages = deepcopy(returns)
+        if gamma is None:
+            gamma = generate_kwargs.get("gamma", 1.0)
 
-        # Advantage whitening
-        info_dict = {}
-        if self.config.advantages_norm:
-            masked_adv = torch.masked_select(advantages, experience.action_mask)
-            adv_mean = masked_adv.mean()
-            adv_std = masked_adv.std()
-            advantages = (advantages - adv_mean) / (adv_std + 1e-8)
+        if gamma != 1.0:
+            warnings.warn(
+                f"gamma is set to 1.0 for reinforce_baseline (was {gamma}). "
+                "This is required by REINFORCE++-baseline algorithm."
+            )
 
-        # Advantage clipping
-        if self.config.advantage_clip > 0:
-            clip_val = self.config.advantage_clip
-            info_dict["advantage_clip_frac"] = compute_clip_fraction(advantages, clip_val, -clip_val)
-            advantages = torch.clamp(advantages, -clip_val, clip_val)
-
-        return advantages, returns, info_dict
+        return 1.0
 
 
-class GroupNormCalculator(AdvantageCalculator):
+class GroupNormCalculator(BaseREINFORCECalculator):
     """
-    Group normalization calculator.
+    Group normalization calculator (GRPO).
 
     Normalizes rewards within each group and optionally filters degenerate cases.
 
@@ -687,46 +679,6 @@ class GroupNormCalculator(AdvantageCalculator):
         rewards = rewards.flatten().to("cpu").chunk(len(experiences))
         return experiences, list(rewards)
 
-    def compute(
-        self,
-        experience,
-        final_reward: torch.Tensor,
-        generate_kwargs: Dict,
-        gamma=None,
-    ) -> Tuple[torch.Tensor, torch.Tensor, Dict]:
-        """
-        Compute advantages using REINFORCE after group normalization.
-
-        :param experience: Experience object
-        :type experience: object
-        :param final_reward: Processed reward (already normalized)
-        :type final_reward: torch.Tensor
-        :param generate_kwargs: Must contain 'gamma' key
-        :type generate_kwargs: Dict
-        :param gamma: Discount factor. If None, will be taken from generate_kwargs.
-        :type gamma: Optional[float]
-        :return: Tuple of (advantages, returns, info_dict)
-        :rtype: Tuple[torch.Tensor, torch.Tensor, Dict]
-        """
-        returns = self.get_cumulative_returns(final_reward, experience.action_mask, gamma)
-        advantages = deepcopy(returns)
-
-        # Advantage whitening
-        info_dict = {}
-        if self.config.advantages_norm:
-            masked_adv = torch.masked_select(advantages, experience.action_mask)
-            adv_mean = masked_adv.mean()
-            adv_std = masked_adv.std()
-            advantages = (advantages - adv_mean) / (adv_std + 1e-8)
-
-        # Advantage clipping
-        if self.config.advantage_clip > 0:
-            clip_val = self.config.advantage_clip
-            info_dict["advantage_clip_frac"] = compute_clip_fraction(advantages, clip_val, -clip_val)
-            advantages = torch.clamp(advantages, -clip_val, clip_val)
-
-        return advantages, returns, info_dict
-
 
 # ============================================================================
 # Factory Function
@@ -748,12 +700,12 @@ def get_advantage_calculator(estimator_name: str, config) -> AdvantageCalculator
     :raises ValueError: If estimator_name is not recognized
     """
     calculator_map = {
-        "gae": GAECalculator,
-        "cpgd": CPGDCalculator,
         "reinforce": REINFORCECalculator,
+        "gae": GAECalculator,
+        "group_norm": GroupNormCalculator,
         "rloo": RLOOCalculator,
         "reinforce_baseline": REINFORCEBaselineCalculator,
-        "group_norm": GroupNormCalculator,
+        "cpgd": CPGDCalculator,
         "grpo": GroupNormCalculator,  # Alias for group_norm
     }
 

@@ -402,6 +402,34 @@ class NaiveExperienceMaker(ABC):
             # Remove unnecessary info
             experience.kl = None
             del experience.info["num_actions"]
+
+        # Cross-batch advantage normalization for GAE, REINFORCE, and REINFORCE-baseline
+        # Reference: https://github.com/OpenRLHF/OpenRLHF/blob/main/openrlhf/trainer/ppo_utils/
+        # experience_maker.py#L794-L816
+        if self.advantage_estimator in ["gae", "reinforce", "reinforce_baseline"]:
+            all_advantages = []
+            all_action_masks = []
+            for exp in experiences:
+                all_advantages.append(exp.advantages.flatten())
+                all_action_masks.append(exp.action_mask.flatten())
+
+            advantages_vector = torch.cat(all_advantages, dim=0).float()
+            action_masks_vector = torch.cat(all_action_masks, dim=0)
+            num_actions = action_masks_vector.sum()
+
+            # mean
+            mean = (advantages_vector * action_masks_vector).sum() / num_actions
+            # std
+            if not getattr(args, "no_advantage_std_norm", False):
+                var = ((advantages_vector - mean).pow(2) * action_masks_vector).sum() / num_actions
+                rstd = var.clamp(min=1e-8).rsqrt()
+            else:
+                rstd = 1
+
+            # Apply normalization to each experience
+            for exp in experiences:
+                exp.advantages = (exp.advantages - mean) * rstd
+
         return experiences
 
     @torch.no_grad()

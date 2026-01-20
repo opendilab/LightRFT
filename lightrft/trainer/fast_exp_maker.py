@@ -1485,12 +1485,11 @@ class FastExperienceMaker(NaiveExperienceMaker):
 
             # ========== Advantage Estimation ==========
             # Compute advantages and returns using calculator
-            gamma = generate_kwargs.get("gamma", 1.0)
+            generate_kwargs.setdefault("gamma", 1.0)
             experience.advantages, experience.returns, info_dict = self.advantage_calculator.compute(
                 experience,
                 final_reward,
                 generate_kwargs,
-                gamma=gamma,
             )
 
             # Update experience info with calculator's info dict
@@ -1505,6 +1504,37 @@ class FastExperienceMaker(NaiveExperienceMaker):
             # Cleanup
             experience.kl = None
             del experience.info["num_actions"]
+
+        # ========== Cross-batch Advantage Normalization ==========
+        # For REINFORCE, REINFORCE-baseline, and GAE, OpenRLHF performs cross-batch normalization
+        # Reference: https://github.com/OpenRLHF/OpenRLHF/blob/main/openrlhf/trainer/ppo_utils/
+        # experience_maker.py#L794-L816
+        if config.advantage_estimator in ["gae", "reinforce", "reinforce_baseline"]:
+            # Collect all advantages and action masks
+            all_advantages = []
+            all_action_masks = []
+            for exp in experiences:
+                all_advantages.append(exp.advantages.flatten())
+                all_action_masks.append(exp.action_mask.flatten())
+
+            # Concatenate into vectors
+            advantages_vector = torch.cat(all_advantages, dim=0).float()
+            action_masks_vector = torch.cat(all_action_masks, dim=0)
+            num_actions = action_masks_vector.sum()
+
+            # Compute mean
+            mean = (advantages_vector * action_masks_vector).sum() / num_actions
+
+            # Compute std (if not disabled)
+            if not getattr(config, "no_advantage_std_norm", False):
+                var = ((advantages_vector - mean).pow(2) * action_masks_vector).sum() / num_actions
+                rstd = var.clamp(min=1e-8).rsqrt()
+            else:
+                rstd = 1
+
+            # Apply normalization to each experience
+            for exp in experiences:
+                exp.advantages = (exp.advantages - mean) * rstd
 
         return experiences
 
