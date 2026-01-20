@@ -8,6 +8,7 @@ from .hpdv3 import *
 from .videodpo import *
 from .videogen_rewardbench import *
 from .genai_bench import *
+from .math_reasoning_benchmarks import MathReasoningDataset, load_math_reasoning_benchmark
 from .utils import (
     extract_answer,
     zero_pad_sequences,
@@ -22,4 +23,13 @@ from .sft_dataset import SFTDataset
 from .sft_dataset_vl import SFTDatasetVL
 from .rft_dataset import RFTDatasetVL
 
-__all__ = ["ProcessRewardDataset", "PromptDataset", "PromptDatasetVL", "SFTDataset", "SFTDatasetVL", "RFTDatasetVL"]
+__all__ = [
+    "ProcessRewardDataset",
+    "PromptDataset",
+    "PromptDatasetVL",
+    "SFTDataset",
+    "SFTDatasetVL",
+    "RFTDatasetVL",
+    "MathReasoningDataset",
+    "load_math_reasoning_benchmark",
+]
