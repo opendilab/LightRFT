@@ -16,6 +16,34 @@ This directory provides evaluation tools for math reasoning benchmarks, supporti
 
 ## Quick Start
 
+### 0. Testing Data (Optional but Recommended)
+
+Before running the full evaluation, you can verify that your data files are correctly formatted:
+
+#### Quick Format Check (No Dependencies)
+
+```bash
+# Test all benchmarks (format validation only)
+python test_benchmarks.py --data_root ./eval_data --format_only
+
+# Test specific benchmarks
+python test_benchmarks.py --data_root ./eval_data --format_only --benchmarks math500 aime2024
+```
+
+This validates the JSON structure and displays sample data without requiring any dependencies.
+
+#### Full Dataset Loading Test (Requires lightrft)
+
+```bash
+# Test dataset loading with lightrft
+python test_benchmarks.py --data_root ./eval_data --loading_only
+
+# Test both format and loading (default)
+python test_benchmarks.py --data_root ./eval_data
+```
+
+This verifies that the datasets can be loaded correctly with the actual data loading pipeline.
+
 ### 1. Data Preparation
 
 The evaluation scripts read data from the local `eval_data` directory:

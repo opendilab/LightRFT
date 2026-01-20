@@ -54,23 +54,9 @@ from transformers import (
     Qwen2_5_VLForConditionalGeneration,
 )
 
-# Add parent directory to path
-sys.path.append(str(Path(__file__).parent.parent.parent))
-
 from lightrft.datasets import load_math_reasoning_benchmark
 from lightrft.evaluation import extract_answer, evaluate_predictions
-
-
-class DummyStrategy:
-    """Dummy strategy for dataset loading."""
-    
-    def __init__(self):
-        self.args = type('Args', (), {
-            'apply_chat_template': True,
-        })()
-    
-    def is_rank_0(self):
-        return True
+from lightrft.strategy import FakeStrategy
 
 
 class MathBenchmarkEvaluator:
@@ -127,7 +113,7 @@ class MathBenchmarkEvaluator:
                     max_tokens=max_tokens,
                     temperature=temperature,
                     top_p=top_p,
-                    repetition_penalty=1.1,  # 防止重复生成
+                    repetition_penalty=1.1,
                 )
                 self.tokenizer = AutoTokenizer.from_pretrained(model_path)
                 print(f"✓ vLLM model loaded with tensor_parallel_size={vllm_tensor_parallel_size}")
@@ -203,7 +189,7 @@ class MathBenchmarkEvaluator:
                         do_sample=self.temperature > 0,
                         pad_token_id=self.tokenizer.pad_token_id,
                         eos_token_id=self.tokenizer.eos_token_id,
-                        repetition_penalty=1.1,  # 防止重复生成
+                        repetition_penalty=1.1,
                     )
                 
                 # Decode
@@ -234,7 +220,7 @@ class MathBenchmarkEvaluator:
         print(f"{'='*70}\n")
         
         # Load dataset
-        strategy = DummyStrategy()
+        strategy = FakeStrategy()
         dataset = load_math_reasoning_benchmark(
             benchmark_name=benchmark_name,
             data_root=data_root,
@@ -337,7 +323,7 @@ def main():
     parser.add_argument(
         "--data_root",
         type=str,
-        default="/mnt/shared-storage-user/sunjiaxuan/oct/Open-Reasoner-Zero/data/eval_data",
+        default="./eval_data",
         help="Root directory containing benchmark data files",
     )
     

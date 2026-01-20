@@ -6,8 +6,5 @@ This package provides tools for evaluating models on mathematical reasoning benc
 - AIME 2024/2025: Competition math problems
 - GPQA Diamond: Graduate-level STEM questions
 
-For usage instructions, see README.md
+For usage instructions, see examples/math_benchmarks/README.md
 """
-
-__version__ = "1.0.0"
-
