@@ -759,7 +759,7 @@ class PPOTrainerVL(ABC):
                 # TODO(pu): Text-only action mask for KL calculation
                 # If no valid actions or base log-probs are empty, skip KL safely.
                 if ((experience.action_mask is not None and experience.action_mask.sum().item() == 0)
-                    or (base_action_log_probs is not None and base_action_log_probs.numel() == 0)):
+                        or (base_action_log_probs is not None and base_action_log_probs.numel() == 0)):
                     kl = torch.zeros_like(
                         action_log_probs, dtype=action_log_probs.dtype, device=action_log_probs.device
                     )
