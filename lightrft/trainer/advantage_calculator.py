@@ -135,8 +135,8 @@ class AdvantageCalculator(ABC):
         self,
         experience,
         final_reward: torch.Tensor,
+        gamma: Optional[float],
         generate_kwargs: Dict,
-        gamma=None,
     ) -> Tuple[torch.Tensor, torch.Tensor, Dict]:
         """
         Compute advantages and returns for a single experience.
@@ -148,10 +148,10 @@ class AdvantageCalculator(ABC):
         :type experience: object
         :param final_reward: Processed reward tensor (after normalization and KL penalty)
         :type final_reward: torch.Tensor
-        :param generate_kwargs: Generation parameters containing gamma, lambd, etc.
-        :type generate_kwargs: Dict
         :param gamma: Discount factor. If None, will be taken from generate_kwargs.
         :type gamma: Optional[float]
+        :param generate_kwargs: Generation parameters containing lambd, etc.
+        :type generate_kwargs: Dict
         :return: Tuple of (advantages, returns, info_dict). info_dict may contain
                  additional metrics like advantage_clip_frac.
         :rtype: Tuple[torch.Tensor, torch.Tensor, Dict]
@@ -265,8 +265,8 @@ class GAECalculator(AdvantageCalculator):
         self,
         experience,
         final_reward: torch.Tensor,
+        gamma: Optional[float],
         generate_kwargs: Dict,
-        gamma=None,
     ) -> Tuple[torch.Tensor, torch.Tensor, Dict]:
         """
         Compute advantages using GAE.
@@ -275,13 +275,16 @@ class GAECalculator(AdvantageCalculator):
         :type experience: object
         :param final_reward: Processed reward tensor
         :type final_reward: torch.Tensor
-        :param generate_kwargs: Must contain 'gamma' and 'lambd' keys
-        :type generate_kwargs: Dict
         :param gamma: Discount factor. If None, will be taken from generate_kwargs.
         :type gamma: Optional[float]
+        :param generate_kwargs: Must contain 'lambd' key
+        :type generate_kwargs: Dict
         :return: Tuple of (advantages, returns, info_dict)
         :rtype: Tuple[torch.Tensor, torch.Tensor, Dict]
         """
+        if gamma is None:
+            gamma = generate_kwargs.get("gamma", 1.0)
+
         advantages, returns, advantage_clip_frac = self.get_advantages_and_returns(
             experience.values,
             final_reward,
@@ -390,8 +393,8 @@ class CPGDCalculator(AdvantageCalculator):
         self,
         experience,
         final_reward: torch.Tensor,
+        gamma: Optional[float],
         generate_kwargs: Dict,
-        gamma=None,
     ) -> Tuple[torch.Tensor, torch.Tensor, Dict]:
         """
         Compute advantages using CPGD method.
@@ -403,10 +406,10 @@ class CPGDCalculator(AdvantageCalculator):
         :type experience: object
         :param final_reward: Unused for CPGD (uses original reward)
         :type final_reward: torch.Tensor
-        :param generate_kwargs: Unused
-        :type generate_kwargs: Dict
         :param gamma: Discount factor. Unused for CPGD.
         :type gamma: Optional[float]
+        :param generate_kwargs: Unused
+        :type generate_kwargs: Dict
         :return: Tuple of (advantages, returns, empty_info_dict)
         :rtype: Tuple[torch.Tensor, torch.Tensor, Dict]
         """
@@ -447,8 +450,8 @@ class BaseREINFORCECalculator(AdvantageCalculator):
         self,
         experience,
         final_reward: torch.Tensor,
+        gamma: Optional[float],
         generate_kwargs: Dict,
-        gamma=None,
     ) -> Tuple[torch.Tensor, torch.Tensor, Dict]:
         """
         Compute advantages using cumulative returns (REINFORCE-style).
@@ -457,10 +460,10 @@ class BaseREINFORCECalculator(AdvantageCalculator):
         :type experience: object
         :param final_reward: Processed reward tensor
         :type final_reward: torch.Tensor
-        :param generate_kwargs: Must contain 'gamma' key
-        :type generate_kwargs: Dict
         :param gamma: Discount factor. If None, will be taken from generate_kwargs.
         :type gamma: Optional[float]
+        :param generate_kwargs: Generation parameters
+        :type generate_kwargs: Dict
         :return: Tuple of (advantages, returns, info_dict)
         :rtype: Tuple[torch.Tensor, torch.Tensor, Dict]
         """

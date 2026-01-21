@@ -403,32 +403,8 @@ class NaiveExperienceMaker(ABC):
             experience.kl = None
             del experience.info["num_actions"]
 
-        # Cross-batch advantage normalization for GAE, REINFORCE, and REINFORCE-baseline
-        # Reference: https://github.com/OpenRLHF/OpenRLHF/blob/main/openrlhf/trainer/ppo_utils/
-        # experience_maker.py#L794-L816
-        if self.advantage_estimator in ["gae", "reinforce", "reinforce_baseline"]:
-            all_advantages = []
-            all_action_masks = []
-            for exp in experiences:
-                all_advantages.append(exp.advantages.flatten())
-                all_action_masks.append(exp.action_mask.flatten())
-
-            advantages_vector = torch.cat(all_advantages, dim=0).float()
-            action_masks_vector = torch.cat(all_action_masks, dim=0)
-            num_actions = action_masks_vector.sum()
-
-            # mean
-            mean = (advantages_vector * action_masks_vector).sum() / num_actions
-            # std
-            if not getattr(args, "no_advantage_std_norm", False):
-                var = ((advantages_vector - mean).pow(2) * action_masks_vector).sum() / num_actions
-                rstd = var.clamp(min=1e-8).rsqrt()
-            else:
-                rstd = 1
-
-            # Apply normalization to each experience
-            for exp in experiences:
-                exp.advantages = (exp.advantages - mean) * rstd
+        # Cross-batch advantage normalization
+        experiences = self.normalize_advantages_cross_batch(experiences)
 
         return experiences
 
@@ -714,3 +690,50 @@ class NaiveExperienceMaker(ABC):
             returns[:, t] = cumulative_return
 
         return returns
+
+    @torch.no_grad()
+    def normalize_advantages_cross_batch(self, experiences: List[Experience]) -> List[Experience]:
+        """
+        Apply cross-batch advantage normalization for GAE, REINFORCE, and REINFORCE-baseline.
+
+        This method normalizes advantages across all experiences in a batch using their action masks.
+        Reference: https://github.com/OpenRLHF/OpenRLHF/blob/main/openrlhf/trainer/ppo_utils/
+        experience_maker.py#L794-L816
+
+        :param experiences: List of Experience objects.
+        :type experiences: List[Experience]
+        :return: List of Experience objects with normalized advantages.
+        :rtype: List[Experience]
+        """
+        args = self.strategy.args
+
+        if self.advantage_estimator not in ["gae", "reinforce", "reinforce_baseline"]:
+            return experiences
+
+        # Collect all advantages and action masks
+        all_advantages = []
+        all_action_masks = []
+        for exp in experiences:
+            all_advantages.append(exp.advantages.flatten())
+            all_action_masks.append(exp.action_mask.flatten())
+
+        # Concatenate into vectors
+        advantages_vector = torch.cat(all_advantages, dim=0).float()
+        action_masks_vector = torch.cat(all_action_masks, dim=0)
+        num_actions = action_masks_vector.sum()
+
+        # Compute mean
+        mean = (advantages_vector * action_masks_vector).sum() / num_actions
+
+        # Compute std (if not disabled)
+        if not getattr(args, "no_advantage_std_norm", False):
+            var = ((advantages_vector - mean).pow(2) * action_masks_vector).sum() / num_actions
+            rstd = var.clamp(min=1e-8).rsqrt()
+        else:
+            rstd = 1
+
+        # Apply normalization to each experience
+        for exp in experiences:
+            exp.advantages = (exp.advantages - mean) * rstd
+
+        return experiences
