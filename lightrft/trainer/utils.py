@@ -145,16 +145,13 @@ def compute_clip_fraction(values: torch.Tensor, clip_max: float, clip_min: float
              clipped values in the input tensor.
     :rtype: torch.Tensor
 
-    **Example:**
+    Example::
 
+        .. code-block:: python
 
-
-    .. code-block:: python
-
-
-        >>> values = torch.tensor([[1.0, 2.0, 3.0], [0.5, 1.5, 2.5]])
-        >>> clip_fraction = compute_clip_fraction(values, clip_max=2.0, clip_min=1.0)
-        >>> print(clip_fraction)  # Should show fraction of values outside [1.0, 2.0]
+            >>> values = torch.tensor([[1.0, 2.0, 3.0], [0.5, 1.5, 2.5]])
+            >>> clip_fraction = compute_clip_fraction(values, clip_max=2.0, clip_min=1.0)
+            >>> print(clip_fraction)  # Should show fraction of values outside [1.0, 2.0]
     """
     numel = values.numel()
     if numel == 0:
@@ -186,19 +183,16 @@ class RunningMoments:
 
     Adapted from https://github.com/alibaba/ROLL
 
-    **Example:**
+    Example::
 
+        .. code-block:: python
 
-
-    .. code-block:: python
-
-
-        >>> moments = RunningMoments()
-        >>> batch1 = torch.randn(100)
-        >>> mean1, std1 = moments.update(batch1)
-        >>> batch2 = torch.randn(100)
-        >>> mean2, std2 = moments.update(batch2)
-        >>> print(f"Running mean: {moments.mean}, Running std: {moments.std}")
+            >>> moments = RunningMoments()
+            >>> batch1 = torch.randn(100)
+            >>> mean1, std1 = moments.update(batch1)
+            >>> batch2 = torch.randn(100)
+            >>> mean2, std2 = moments.update(batch2)
+            >>> print(f"Running mean: {moments.mean}, Running std: {moments.std}")
     """
     def __init__(self):
         """
@@ -228,17 +222,14 @@ class RunningMoments:
         :return: A tuple of (mean, std) for the current batch `xs`.
         :rtype: Tuple[float, float]
 
-        **Example:**
+        Example::
 
+            .. code-block:: python
 
-
-        .. code-block:: python
-
-
-            >>> moments = RunningMoments()
-            >>> new_data = torch.tensor([1.0, 2.0, 3.0, 4.0, 5.0])
-            >>> batch_mean, batch_std = moments.update(new_data)
-            >>> print(f"Batch mean: {batch_mean}, Batch std: {batch_std}")
+                >>> moments = RunningMoments()
+                >>> new_data = torch.tensor([1.0, 2.0, 3.0, 4.0, 5.0])
+                >>> batch_mean, batch_std = moments.update(new_data)
+                >>> print(f"Batch mean: {batch_mean}, Batch std: {batch_std}")
         """
         # 1. Get statistics for the new batch
         xs_count = xs.numel()

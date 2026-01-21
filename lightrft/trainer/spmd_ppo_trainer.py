@@ -210,8 +210,8 @@ class SPMDPPOTrainerBase:
                     experience = make_experience_batch(items, packing_samples=self.packing_samples)
                 experience.to_device(device)
 
-                # ========================= [ ROBUST FIX v3: PRE-VALIDATION ] =========================
-                # CRITICAL: Validate data BEFORE calling training_step to prevent execution path divergence
+                # ======================================================================================
+                # Validate data BEFORE calling training_step to prevent execution path divergence
                 # If validation is done inside training_step, different ranks may follow different code paths
                 # (some return early, others continue), causing deadlock in collective communication ops.
 
@@ -236,9 +236,7 @@ class SPMDPPOTrainerBase:
                 # Step 3: Collectively skip if ANY rank detected invalid data
                 if skip_flag.item() > 0:
                     if self.strategy.is_rank_0():
-                        pbar.set_description(
-                            f"Train epoch [{epoch + 1}/{self.max_epochs}] (skipping invalid batch)"
-                        )
+                        pbar.set_description(f"Train epoch [{epoch + 1}/{self.max_epochs}] (skipping invalid batch)")
                     continue  # All ranks skip together - no deadlock
                 # ======================================================================================
 

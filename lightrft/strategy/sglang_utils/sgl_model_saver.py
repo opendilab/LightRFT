@@ -13,6 +13,7 @@ The module automatically detects which approach to use based on the SGLang versi
 """
 
 import sglang
+import sglang.srt.managers.scheduler as scheduler_module
 from sglang.srt.managers.io_struct import (
     ReleaseMemoryOccupationReqInput,
     ReleaseMemoryOccupationReqOutput,
@@ -40,11 +41,24 @@ def release_memory_occupation(self, recv_req: ReleaseMemoryOccupationReqInput):
 
     Compatible with both old and new SGLang versions by detecting the model runner location.
 
+    The method performs the following operations:
+        1. Validates the memory saver adapter
+        2. Exports and stashes the model's static state
+        3. Clones model parameters to CPU memory if not already done
+        4. Pauses the memory saver adapter
+        5. Flushes the model cache
+
     :param recv_req: Request input for releasing memory occupation
     :type recv_req: ReleaseMemoryOccupationReqInput
 
     :return: Response indicating successful memory release
     :rtype: ReleaseMemoryOccupationReqOutput
+
+    Example::
+        >>> scheduler = Scheduler(...)
+        >>> req = ReleaseMemoryOccupationReqInput()
+        >>> response = scheduler.release_memory_occupation(req)
+        >>> # GPU memory is now freed for other uses
     """
     # Get model reference - compatible with different SGLang versions
     # Old version: self.tp_worker.worker.model_runner.model
@@ -78,11 +92,25 @@ def resume_memory_occupation(self, recv_req: ResumeMemoryOccupationReqInput):
 
     Compatible with both old and new SGLang versions by detecting the model runner location.
 
+    The method performs the following operations:
+        1. Validates the memory saver adapter
+        2. Resumes the memory saver adapter
+        3. Imports the previously stashed static state
+        4. Restores model parameters from CPU to GPU
+        5. Cleans up temporary static state storage
+
     :param recv_req: Request input for resuming memory occupation
     :type recv_req: ResumeMemoryOccupationReqInput
 
     :return: Response indicating successful memory restoration
     :rtype: ResumeMemoryOccupationReqOutput
+
+    Example::
+        >>> scheduler = Scheduler(...)
+        >>> # After previously calling release_memory_occupation()
+        >>> req = ResumeMemoryOccupationReqInput()
+        >>> response = scheduler.resume_memory_occupation(req)
+        >>> # Model is now ready for inference again
     """
     # Get model reference - compatible with different SGLang versions
     if hasattr(self.tp_worker, 'worker'):
@@ -112,8 +140,6 @@ def resume_memory_occupation(self, recv_req: ResumeMemoryOccupationReqInput):
 
 # Apply monkey patching only if the Scheduler class doesn't already have these methods
 # This ensures compatibility with both old versions (need patching) and new versions (already have methods)
-import sglang.srt.managers.scheduler as scheduler_module
-
 if not hasattr(scheduler_module.Scheduler, 'release_memory_occupation'):
     # Old version: need to add the methods via monkey patching
     scheduler_module.Scheduler.release_memory_occupation = release_memory_occupation

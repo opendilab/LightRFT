@@ -54,7 +54,6 @@ from lightrft.utils import blending_datasets, get_tokenizer_processor_vl
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from reward_models_utils import RECIPE, load_reward_models, reward_fn
-import torch.distributed as dist
 
 
 def train(args):
@@ -183,7 +182,8 @@ def train(args):
         )
 
         if args.fsdp:
-            initial_model = strategy.prepare_model(initial_model, is_training=False, shard_size=strategy.world_size)
+            shard_size = args.initial_model_shard_size if args.initial_model_shard_size is not None else strategy.world_size
+            initial_model = strategy.prepare_model(initial_model, is_training=False, shard_size=shard_size)
             strategy.offload_model(initial_model)
 
     if args.enable_ema:
@@ -340,22 +340,6 @@ def train(args):
     strategy.report_memory("after models init")
 
     strategy.report_memory("before setup_inference_engine")
-
-    # # === 新增代码开始 ===
-    # # [FIX] Ensure FSDP weights are properly initialized before first broadcast
-    # if args.fsdp:
-    #     strategy.print("[FIX] Triggering FSDP weight initialization before engine setup...")
-    #     # 触发一次全参数gather，确保FSDP状态正确初始化
-    #     with torch.no_grad():
-    #         for name, param in actor.named_parameters():
-    #             if hasattr(param, "full_tensor"):
-    #                 _ = param.full_tensor()  # 触发gather
-    #                 break  # 只需要触发一次即可初始化FSDP状态
-    #     # 同步所有ranks
-    #     dist.barrier()
-    #     strategy.print("[FIX] FSDP weight initialization completed")
-    # # === 新增代码结束 ===
-
     strategy.setup_inference_engine(args, engine_type=args.engine_type, actor=actor)
     strategy.report_memory("after setup_inference_engine")
 
@@ -536,6 +520,7 @@ if __name__ == "__main__":
     # FSDP
     parser.add_argument("--no_shard_vit", action="store_true", default=False, help="Disable sharding for vision transformer")
     parser.add_argument("--meta_init", action="store_true", default=False, help="Initialize models on meta device to save CPU memory")
+    parser.add_argument("--initial_model_shard_size", type=int, default=None, help="Shard size for initial model in FSDP mode (default: strategy.world_size)")
 
     # Reinforce
     parser.add_argument(

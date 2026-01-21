@@ -1157,7 +1157,7 @@ class FastExperienceMaker(NaiveExperienceMaker):
                     all_prompt_token_ids=all_prompt_token_ids,
                     all_prompts=all_prompts if is_multimodal else None,
                     all_images=all_images,
-                    sleep_engine=self.strategy.args.enable_engine_sleep, # TODO
+                    sleep_engine=self.strategy.args.enable_engine_sleep,
                     images_num=all_images_num if is_multimodal else None,
                 )
         except ValueError as e:
@@ -1678,7 +1678,8 @@ class FastExperienceMaker(NaiveExperienceMaker):
 
         if num_tokens != num_patches:
             self.strategy.print(
-                f"[Warning] Mismatch found during rollout step. Fixing sequences. Tokens: {num_tokens}, Patches: {num_patches}"
+                f"[Warning] Mismatch found during rollout step. Fixing sequences. "
+                f"Tokens: {num_tokens}, Patches: {num_patches}"
             )
 
             pad_token_id = self.tokenizer.pad_token_id

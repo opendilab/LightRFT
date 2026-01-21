@@ -351,11 +351,6 @@ class PPOTrainerVL(ABC):
             )
 
             for rand_prompts, rand_images, rand_references, rand_labels in self.prompts_dataloader:
-                # TODO: Remove debug print
-                # self.strategy.print(
-                #     f"rand_prompts:\n {rand_prompts}\n , rand_images:{rand_images}\n , rand_references:{rand_references}\n, rand_labels:{rand_labels}\n "  # noqa
-                # )
-
                 for i, experience in enumerate(
                     self.experience_maker.make_experience_list(
                         rand_prompts, rand_images, rand_references, rand_labels, **self.generate_kwargs
@@ -369,6 +364,7 @@ class PPOTrainerVL(ABC):
                         self.strategy.print(
                             f"collect phase: rand_prompts:\n {rand_prompts[0:2]}\n , rand_images:{rand_images[0:2]}\n , rand_references:{rand_references[0:2]}\n, rand_labels:{rand_labels[0:2]}\n "  # noqa
                         )
+                        # print all
                         # self.strategy.print(
                         #     f"rand_prompts:\n {rand_prompts}\n , rand_images:{rand_images}\n , rand_references:{rand_references}\n, rand_labels:{rand_labels}\n "  # noqa
                         # )
@@ -472,17 +468,6 @@ class PPOTrainerVL(ABC):
 
                 status = self.ppo_train(steps)
 
-                # # ========================= [ ROBUST FIX START ] =========================
-                # # 检查 training_step 是否返回了空字典。
-                # # 如果是，说明 ppo_trainer_vl.py 检测到了数据不匹配并决定跳过此批次。
-                # # 我们必须在这里 `continue`，以避免后续的分布式操作（如 all_reduce）
-                # # 因各 Rank 行为不一致而导致死锁。
-                # if not status:
-                #     if self.strategy.is_rank_0():
-                #         pbar.set_description(f"Train epoch [{epoch + 1}/{self.max_epochs}] (skipping a batch)")
-                #     continue # 直接跳到下一个 mini-batch
-                # # ========================== [ ROBUST FIX END ] ==========================
-
                 self.strategy.report_memory('before clear buffer')
                 self.replay_buffer.clear()
 
@@ -500,9 +485,7 @@ class PPOTrainerVL(ABC):
                 client_states = {"consumed_samples": steps * args.rollout_batch_size}
                 logs_dict_combined = {**rollout_status, **status}  # Merge: rollout first, training second
 
-                self.save_logs_and_checkpoints(
-                    args, steps, pbar, logs_dict_combined, client_states, episode=episode
-                )
+                self.save_logs_and_checkpoints(args, steps, pbar, logs_dict_combined, client_states, episode=episode)
 
                 pbar.update()
                 steps = steps + 1
@@ -1000,9 +983,7 @@ class PPOTrainerVL(ABC):
         # 1. LOGGING TRAIN & ROLLOUT METRICS
         if global_step % args.logging_steps == 0:
             # Metrics that are already logged in rollout/ namespace should not be duplicated in train/
-            ROLLOUT_ONLY_METRICS = {
-                'reward', 'response_length', 'total_length', 'num_actions', 'return'
-            }
+            ROLLOUT_ONLY_METRICS = {'reward', 'response_length', 'total_length', 'num_actions', 'return'}
             ROLLOUT_ONLY_PREFIXES = {'reward_metrics/'}
 
             rollout_metrics = {}
@@ -1054,7 +1035,7 @@ class PPOTrainerVL(ABC):
                 for k, v in train_metrics.items():
                     self._tensorboard.add_scalar(f"train/{k}", v, global_step)
 
-        # 2. EVALUATION (Independent Block)
+        # 2. EVALUATION
         if global_step % args.eval_steps == 0 and self.eval_dataloader is not None:
             # Run evaluation
             raw_eval_metrics = self.evaluate(self.eval_dataloader, global_step)
@@ -1062,7 +1043,7 @@ class PPOTrainerVL(ABC):
             # Only log if we have results
             if raw_eval_metrics and self.strategy.is_rank_0():
                 self.eval_step_counter += 1
-                
+
                 # Wandb Logging for Eval
                 if self._wandb is not None:
                     eval_logs = {}
@@ -1164,17 +1145,21 @@ class PPOTrainerVL(ABC):
 
         with torch.no_grad():
             for eval_prompts, eval_images, eval_references, eval_labels in eval_dataloader:
-                # Use experience maker for generation only
-                for i, experience in enumerate(self.experience_maker.make_experience_list(
-                    eval_prompts, eval_images, eval_references, eval_labels, **self.generate_kwargs
-                )):
+                # Generate responses using experience maker (but don't train on them)
+                # We reuse the experience maker but only for generation
+                # TODO: simplify this logic
+                for i, experience in enumerate(
+                    self.experience_maker.make_experience_list(
+                        eval_prompts, eval_images, eval_references, eval_labels, **self.generate_kwargs
+                    )
+                ):
                     if i == 0:
                         output = self.tokenizer.batch_decode(
                             experience.sequences[0].unsqueeze(0), skip_special_tokens=True
                         )
                         self.strategy.print("eval phase: experience.sequences w skip_special_tokens: ", output)
                         self.strategy.print(
-                                f"eval phase: eval_prompts:\n {eval_prompts[0:2]}\n , rand_images:{eval_images[0:2]}\n , eval_references:{eval_references[0:2]}\n, eval_labels:{eval_labels[0:2]}\n "  # noqa
+                            f"eval phase: eval_prompts:\n {eval_prompts[0:2]}\n , rand_images:{eval_images[0:2]}\n , eval_references:{eval_references[0:2]}\n, eval_labels:{eval_labels[0:2]}\n "  # noqa
                         )
                     if hasattr(experience, 'info') and experience.info:
                         info = experience.info
@@ -1182,7 +1167,7 @@ class PPOTrainerVL(ABC):
                             all_rewards.extend(extract_values(info['reward']))
                         if 'response_length' in info:
                             all_response_lengths.extend(extract_values(info['response_length']))
-                        
+
                         if 'reward_metrics' in info:
                             rm = info['reward_metrics']
                             if 'format_reward' in rm:
@@ -1199,7 +1184,8 @@ class PPOTrainerVL(ABC):
         device = torch.cuda.current_device()
 
         def compute_stats(name, values_list):
-            if not values_list: return
+            if not values_list:
+                return
             if isinstance(values_list[0], torch.Tensor):
                 t = torch.cat([x.to(device).float() for x in values_list])
             else:
@@ -1211,7 +1197,7 @@ class PPOTrainerVL(ABC):
         compute_stats("format_reward", all_format_rewards)
         compute_stats("accuracy_reward", all_accuracy_rewards)
         compute_stats("response_length", all_response_lengths)
-        
+
         metrics["num_samples"] = len(all_rewards)
 
         # Print results

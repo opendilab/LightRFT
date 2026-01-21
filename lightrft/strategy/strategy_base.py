@@ -10,6 +10,7 @@ import os
 import re
 import random
 import time
+from loguru import logger
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from contextlib import contextmanager
@@ -773,12 +774,8 @@ class StrategyBase(ABC):
         elif self.inference_engine_type == "sglang":
 
             if multi_modal_inputs is not None:  # VLM case
-                # print(f"multi_modal_inputs:{multi_modal_inputs}")
-                print(f"rank {dist.get_rank()} VLM branch")
-
+                logger.debug(f"rank {dist.get_rank()} VLM branch")
                 prompt = [p["prompt"] for p in multi_modal_inputs]
-
-                # image = [p["multi_modal_data"]["image"] for p in multi_modal_inputs]
 
                 # Handle cases where some prompts might not have images
                 # Flatten nested list format if needed: [[PIL.Image]] -> [PIL.Image]
@@ -787,8 +784,7 @@ class StrategyBase(ABC):
 
                 sglang_outputs = self.inference_engine.generate(
                     sampling_params=sampling_params,
-                    # input_ids=prompt,
-                    prompt=prompt, # skip_tokenizer_init must be False
+                    prompt=prompt,  # skip_tokenizer_init must be False
                     image_data=image,
                 )
 
@@ -801,30 +797,18 @@ class StrategyBase(ABC):
                         output_token_ids=sglang_outputs[i]["output_ids"],
                     ) for i in range(len(sglang_outputs))
                 ]
-            else: # text-only case
-                print(f"rank {dist.get_rank()} text-only branch")
-
-                # # 在本文件开始，通过全局变量来控制是否处于调试状态
-                # global DEBUG_ENABLED;DEBUG_ENABLED = True
-                # if dist.get_rank() == 0 and DEBUG_ENABLED:
-                #     print(f"rank {dist.get_rank()} 进入调试模式，输入interact，可以键入整段的python代码调试。通过设置 DEBUG_ENABLED = False, 可以跳过调试状态")
-                #     import ipdb; ipdb.set_trace()
-                # # 同步点，防止其它进程早跑
-                # dist.barrier()
-
+            else:  # text-only case
+                logger.debug(f"rank {dist.get_rank()} text-only branch")
                 image = None
-                prompt = prompt_token_ids
-
                 sglang_outputs = self.inference_engine.generate(
                     sampling_params=sampling_params,
-                    input_ids=prompt,
+                    input_ids=prompt_token_ids,
                     image_data=image,
                 )
-
                 # Text-only case: prompt_token_ids is available from input
                 return [
                     EasyDict(
-                        prompt_token_ids=prompt[i],
+                        prompt_token_ids=prompt_token_ids[i],
                         output_token_ids=sglang_outputs[i]["output_ids"],
                     ) for i in range(len(sglang_outputs))
                 ]
@@ -882,8 +866,8 @@ class StrategyBase(ABC):
         self.wakeup_inference_engine()
 
         # is_multimodal = all_images is not None
-        # 修复逻辑：不仅检查 all_images 是否为 None，还要检查其中是否包含非 None 的元素
-        # 如果 all_images 是 [None, None, ...]，any(img is not None for img in all_images) 将返回 False
+        # NOTE: not only check if all_images is None, but also check if it contains non-None elements
+        # If all_images is [None, None, ...], any(img is not None for img in all_images) will return False
         is_multimodal = (all_images is not None) and any(img is not None for img in all_images)
 
         if is_multimodal:
@@ -893,15 +877,6 @@ class StrategyBase(ABC):
         else:
             inputs = all_prompt_token_ids
             assert inputs is not None
-
-        # 在本文件开始，通过全局变量来控制是否处于调试状态
-        # global DEBUG_ENABLED;DEBUG_ENABLED = True
-        # import torch.distributed as dist
-        # if dist.get_rank() == 0 and DEBUG_ENABLED:
-        #     print(f"rank {dist.get_rank()} 进入调试模式，输入interact，可以键入整段的python代码调试。通过设置 DEBUG_ENABLED = False, 可以跳过调试状态")
-        #     import ipdb; ipdb.set_trace()
-        # # 同步点，防止其它进程早跑
-        # dist.barrier()
 
         inputs = gather_inputs_object_for_inference(input_data=inputs, group=self.engine_mp_group)
 
@@ -925,14 +900,6 @@ class StrategyBase(ABC):
             for i, output in enumerate(local_outputs):
                 if output.prompt_token_ids is None:
                     output.prompt_token_ids = all_prompt_token_ids[i]
-
-        # TODO
-        # NOTE(Fix for SGLang/Distributed):
-        # We must ensure that ALL ranks have finished generation before ANY rank attempts to sleep the engine.
-        # If one rank finishes early and calls sleep() while another is still generating,
-        # the SGLang scheduler will throw "AssertionError: release_memory_occupation should be called only when no ongoing request".
-        if dist.is_initialized():
-            dist.barrier()
 
         if sleep_engine is True:
             self.maybe_sleep_inference_engine()

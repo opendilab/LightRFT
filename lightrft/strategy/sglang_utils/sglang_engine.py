@@ -186,16 +186,6 @@ class RLGenerationEngine:
                 image_data = gather_inputs_object_for_inference(image_data, group=self.tp_group_cpu)
 
         if self._tp_rank == 0:
-
-            # print(f"rank {dist.get_rank()} input_ids:{input_ids}")
-            # # 在本文件开始，通过全局变量来控制是否处于调试状态
-            # global DEBUG_ENABLED;DEBUG_ENABLED = True
-            # if dist.get_rank() == 0 and DEBUG_ENABLED:
-            #     print(f"rank {dist.get_rank()} 进入调试模式，输入interact，可以键入整段的python代码调试。通过设置 DEBUG_ENABLED = False, 可以跳过调试状态")
-            #     import ipdb; ipdb.set_trace()
-            # # 同步点，防止其它进程早跑
-            # dist.barrier()
-
             output = self._engine.generate(
                 prompt=prompt,
                 sampling_params=sampling_params,
@@ -211,32 +201,6 @@ class RLGenerationEngine:
             output = None
 
         if self._tp_size > 1:
-            # [ROBUST FIX] Use tensor-based broadcast to avoid data corruption
-            # The original broadcast_pyobj fails with large/complex objects in TP>1 environments
-            # This causes garbled output (random characters) especially during eval with long texts
-            #
-            # Root cause: broadcast_pyobj uses pickle serialization which is unstable for:
-            # - Large data (1900+ tokens)
-            # - Complex nested structures (SGLang's dict output)
-            # - Multi-process environments (TP=2)
-            #
-            # Solution: Use torch.distributed.broadcast for token IDs (main data)
-            # and fallback to broadcast_pyobj only for small metadata
-            # try:
-            #     from .robust_broadcast import broadcast_sglang_output_robust
-
-            #     output = broadcast_sglang_output_robust(
-            #         output,
-            #         self._tp_rank,
-            #         self._tp_size,
-            #         self._leader_rank,
-            #         self.tp_group_cpu
-            #     )
-            # except ImportError:
-            #     # Fallback to original method if robust_broadcast is not available
-            #     print("[Warning] robust_broadcast not available, using original broadcast_pyobj")
-            #     print("[Warning] This may cause data corruption with long texts!")
-
             global_rank = dist.get_rank()
 
             try:
@@ -362,19 +326,8 @@ class RLGenerationEngine:
                 )
                 tags = [GPU_MEMORY_TYPE_KV_CACHE, GPU_MEMORY_TYPE_CUDA_GRAPH]
 
-            # --- 修改开始 ---
-            # 不需要导入 ReleaseMemoryOccupationReqInput
-            # 不需要创建 req 对象
-            # 直接将 tags 传给 engine
+            # Directly pass tags to engine
             self._engine.release_memory_occupation(tags=tags)
-            # --- 修改结束 ---
-
-            # # Import required classes
-            # from sglang.srt.managers.io_struct import ReleaseMemoryOccupationReqInput
-
-            # # Create request with specified tags
-            # req = ReleaseMemoryOccupationReqInput(tags=tags)
-            # self._engine.release_memory_occupation(req)
 
     def wake_up(self, release_weights: bool = False):
         """
@@ -417,19 +370,8 @@ class RLGenerationEngine:
                 )
                 tags = [GPU_MEMORY_TYPE_KV_CACHE, GPU_MEMORY_TYPE_CUDA_GRAPH]
 
-            # --- 修改开始 ---
-            # 不需要导入 ResumeMemoryOccupationReqInput
-            # 不需要创建 req 对象
-            # 直接将 tags 传给 engine
+            # Directly pass tags to engine
             self._engine.resume_memory_occupation(tags=tags)
-            # --- 修改结束 ---
-
-            # # Import required classes
-            # from sglang.srt.managers.io_struct import ResumeMemoryOccupationReqInput
-
-            # # Create request with specified tags
-            # req = ResumeMemoryOccupationReqInput(tags=tags)
-            # self._engine.resume_memory_occupation(req)
 
     def shutdown(self):
         """

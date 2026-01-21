@@ -109,6 +109,7 @@ class BroadcastManager:
                     self.inference_engine.llm_engine.model_executor.collective_rpc("update_weight", kwargs=kwargs)
                 elif self.strategy.engine_type == "sglang":
                     if not self.strategy.args.text_only:
+                        # for VLM
                         # Map weight names from training model to SGLang format
                         # Training model: model.visual.xxx, model.language_model.xxx
                         # SGLang expects: visual.xxx, model.xxx (for language model), lm_head
@@ -116,8 +117,8 @@ class BroadcastManager:
                         self.inference_engine.update_weights_from_tensor(
                             sglang_name, param.data, flush_cache=(count == num_params)
                         )
-                    else: # TODO=====
-                        # for gsm8k
+                    else:
+                        # for LLM
                         self.inference_engine.update_weights_from_tensor(
                             name, param.data, flush_cache=(count == num_params)
                         )
@@ -154,6 +155,7 @@ class BroadcastManager:
                 self.inference_engine.llm_engine.model_executor.collective_rpc("update_weight", kwargs=kwargs)
             elif self.strategy.engine_type == "sglang":
                 if not self.strategy.args.text_only:
+                    # for VLM
                     # Map weight names from training model to SGLang format
                     # Training model: model.visual.xxx, model.language_model.xxx
                     # SGLang expects: visual.xxx, model.xxx (for language model), lm_head
@@ -161,8 +163,8 @@ class BroadcastManager:
                     self.inference_engine.update_weights_from_tensor(
                         sglang_name, param.data, flush_cache=(count == num_params)
                     )
-                else: # TODO=====
-                    # for gsm8k
+                else:
+                    # for LLM
                     self.inference_engine.update_weights_from_tensor(
                         name, param.data, flush_cache=(count == num_params)
                     )

@@ -73,13 +73,18 @@ class ChatBot:
         """
         Initialize the chatbot.
 
-        Args:
-            model_path: Path to the trained model checkpoint
-            device: Device to run inference on (cuda/cpu)
-            max_tokens: Maximum tokens to generate
-            temperature: Sampling temperature
-            top_p: Top-p sampling parameter
-            system_prompt: Optional system prompt for the model
+        :param model_path: Path to the trained model checkpoint
+        :type model_path: str
+        :param device: Device to run inference on (cuda/cpu)
+        :type device: str
+        :param max_tokens: Maximum tokens to generate
+        :type max_tokens: int
+        :param temperature: Sampling temperature
+        :type temperature: float
+        :param top_p: Top-p sampling parameter
+        :type top_p: float
+        :param system_prompt: Optional system prompt for the model
+        :type system_prompt: Optional[str]
         """
         print(f"Loading model from {model_path}...")
 
@@ -88,7 +93,7 @@ class ChatBot:
         self.model_type = config.model_type
         print(f"✓ Detected model type: {self.model_type}")
 
-        # FIX: Initialize tokenizer and processor to None to ensure they are always defined
+        # Initialize tokenizer and processor to None to ensure they are always defined
         self.tokenizer = None
         self.processor = None
 
@@ -102,7 +107,7 @@ class ChatBot:
                 min_pixels=256 * 28 * 28,
                 max_pixels=1280 * 28 * 28,
             )
-            # FIX: Always assign the tokenizer to self.tokenizer for consistent access
+            # Always assign the tokenizer to self.tokenizer for consistent access
             self.tokenizer = self.processor.tokenizer
 
             self.model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
@@ -115,9 +120,9 @@ class ChatBot:
 
         else:
             # Text-only model (qwen2, qwen, etc.)
-            # FIX: Load tokenizer directly into self.tokenizer
+            # Load tokenizer directly into self.tokenizer
             self.tokenizer = AutoTokenizer.from_pretrained(model_path)
-            # FIX: The processor is None for text-only models
+            # The processor is None for text-only models
             self.processor = None
 
             self.model = AutoModelForCausalLM.from_pretrained(
@@ -165,16 +170,17 @@ class ChatBot:
         """
         Generate a response for the given query.
 
-        Args:
-            query: User query text
-            images: Optional list of image paths
-            add_to_history: Whether to add this exchange to history
-
-        Returns:
-            Generated response text
+        :param query: User query text
+        :type query: str
+        :param images: Optional list of image paths
+        :type images: Optional[List[str]]
+        :param add_to_history: Whether to add this exchange to history
+        :type add_to_history: bool
+        :return: Generated response text
+        :rtype: str
         """
         image_inputs = []
-        # FIX: Add a safeguard to handle image inputs with text-only models
+        # Add a safeguard to handle image inputs with text-only models
         if images:
             if not self.is_vision_model:
                 print("\nWarning: A text-only model is loaded. Ignoring provided images.")
@@ -206,14 +212,14 @@ class ChatBot:
         else:
             current_messages.append({"role": "user", "content": query})
 
-        # FIX: Always use self.tokenizer to apply the chat template
+        # Always use self.tokenizer to apply the chat template
         text = self.tokenizer.apply_chat_template(
             current_messages,
             tokenize=False,
             add_generation_prompt=True,
         )
 
-        # FIX: Conditionally prepare inputs based on model type and presence of images
+        # Conditionally prepare inputs based on model type and presence of images
         if self.is_vision_model and image_inputs:
             # Use the full processor for vision models with images
             inputs = self.processor(
@@ -238,14 +244,14 @@ class ChatBot:
                 temperature=self.temperature,
                 top_p=self.top_p,
                 do_sample=True if self.temperature > 0 else False,
-                # FIX: Consistently use self.tokenizer for token IDs
+                # Consistently use self.tokenizer for token IDs
                 pad_token_id=self.tokenizer.pad_token_id,
                 eos_token_id=self.tokenizer.eos_token_id,
             )
 
         # Decode response
         generated_ids = outputs[0][inputs.input_ids.shape[1]:]
-        # FIX: Consistently use self.tokenizer to decode
+        # Consistently use self.tokenizer to decode
         response = self.tokenizer.decode(
             generated_ids,
             skip_special_tokens=True,
@@ -265,8 +271,8 @@ def interactive_mode(chatbot: ChatBot):
     """
     Run interactive chat mode with command support.
 
-    Args:
-        chatbot: Initialized ChatBot instance
+    :param chatbot: Initialized ChatBot instance
+    :type chatbot: ChatBot
     """
     print("\n" + "="*70)
     print("Interactive Chat Mode")
@@ -357,20 +363,14 @@ def batch_mode(chatbot: ChatBot, batch_file: str, output_file: Optional[str] = N
     """
     Run batch testing from JSON file.
 
-    JSON format:
-    [
-        {
-            "query": "What is this?",
-            "images": ["path/to/image.jpg"],  // optional
-            "expected": "..."  // optional, for comparison
-        },
-        ...
-    ]
+    JSON format: [{"query": "...", "images": ["..."], "expected": "..."}]
 
-    Args:
-        chatbot: Initialized ChatBot instance
-        batch_file: Path to batch JSON file
-        output_file: Optional path to save results
+    :param chatbot: Initialized ChatBot instance
+    :type chatbot: ChatBot
+    :param batch_file: Path to batch JSON file
+    :type batch_file: str
+    :param output_file: Optional path to save results
+    :type output_file: Optional[str]
     """
     print(f"\nRunning batch mode from {batch_file}...")
 
@@ -431,21 +431,21 @@ def main():
         description="Interactive chat script for Qwen model testing",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
-Examples:
-  # Interactive chat with a text-only model
-  python test_chat.py --model_path ./path/to/qwen2-7b-instruct
+            Examples:
+            # Interactive chat with a text-only model
+            python test_chat.py --model_path ./path/to/qwen2-7b-instruct
 
-  # Interactive chat with a vision model
-  python test_chat.py --model_path ./path/to/qwen2.5-vl-instruct
+            # Interactive chat with a vision model
+            python test_chat.py --model_path ./path/to/qwen2.5-vl-instruct
 
-  # Interactive with initial image for a vision model
-  python test_chat.py --model_path ./path/to/qwen2.5-vl-instruct --image test.jpg
+            # Interactive with initial image for a vision model
+            python test_chat.py --model_path ./path/to/qwen2.5-vl-instruct --image test.jpg
 
-  # Batch testing (works with both model types)
-  python test_chat.py --model_path ./path/to/model --batch tests.json
+            # Batch testing (works with both model types)
+            python test_chat.py --model_path ./path/to/model --batch tests.json
 
-  # Custom generation parameters
-  python test_chat.py --model_path ./path/to/model --max_tokens 4096 --temperature 0.5
+            # Custom generation parameters
+            python test_chat.py --model_path ./path/to/model --max_tokens 4096 --temperature 0.5
         """
     )
 

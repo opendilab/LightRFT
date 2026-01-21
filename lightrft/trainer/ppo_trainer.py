@@ -209,7 +209,7 @@ class PPOTrainer(ABC):
                 reinit=True,
             )
 
-            # [FIX] Define separate metric namespaces for clarity:
+            # Define separate metric namespaces for clarity:
             # - rollout/*: Metrics from experience generation phase
             # - train/*: Metrics from policy optimization phase
             # - eval/*: Metrics from evaluation phase
@@ -613,20 +613,20 @@ class PPOTrainer(ABC):
         :type client_states: dict
         """
         if global_step % args.logging_steps == 0:
-            # [FIX] Define which metrics should be excluded from train/ logs to avoid duplication
+            # Define which metrics should be excluded from train/ logs to avoid duplication
             # These metrics are already logged in the rollout/ namespace
             ROLLOUT_ONLY_METRICS = {
-                'reward',           # Already logged as rollout/reward
+                'reward',  # Already logged as rollout/reward
                 'response_length',  # Already logged as rollout/response_length
-                'total_length',     # Rollout-specific metric
-                'num_actions',      # Rollout-specific metric
-                'return',           # Rollout-specific metric (computed from rewards)
+                'total_length',  # Rollout-specific metric
+                'num_actions',  # Rollout-specific metric
+                'return',  # Rollout-specific metric (computed from rewards)
             }
 
             # Also exclude reward_metrics sub-keys (format_reward, accuracy_reward)
             ROLLOUT_ONLY_METRIC_PREFIXES = {'reward_metrics/'}
 
-            # [FIX] Separate rollout and training metrics for clarity
+            # Separate rollout and training metrics for clarity
             rollout_metrics = {}
             train_metrics = {}
 
