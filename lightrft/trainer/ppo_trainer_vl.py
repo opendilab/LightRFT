@@ -658,7 +658,9 @@ class PPOTrainerVL(ABC):
 
         return True
 
-    def training_step_actor(self, experience: ExperienceVL) -> Dict[str, float]:
+    def training_step_actor(self,
+                            experience: ExperienceVL,
+                            entropy_mask: Optional[torch.Tensor] = None) -> Dict[str, float]:
         """
         Actor training step.
 
@@ -1191,7 +1193,7 @@ class PPOTrainerVL(ABC):
                 # TODO: simplify this logic
                 for i, experience in enumerate(
                     self.experience_maker.make_experience_list(
-                        eval_prompts, eval_images,  eval_videos, eval_references, eval_labels, **self.generate_kwargs
+                        eval_prompts, eval_images, eval_videos, eval_references, eval_labels, **self.generate_kwargs
                     )
                 ):
                     if i == 0:

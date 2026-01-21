@@ -243,7 +243,7 @@ class SPMDPPOTrainerBase:
                         pbar.set_description(f"Train epoch [{epoch + 1}/{self.max_epochs}] (skipping invalid batch)")
                     continue  # All ranks skip together - no deadlock
                 # ======================================================================================
-                
+
                 # Create entropy_mask if high_entropy_token_ratio > 0 and action_entropy is available
                 entropy_mask = None
                 if hasattr(experience, 'action_entropy') and experience.action_entropy is not None:
