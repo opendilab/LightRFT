@@ -11,6 +11,7 @@ from lightrft.models import ActorLanguage
 
 from lightrft.models.utils import compute_approx_kl, compute_reward, masked_mean
 from lightrft.utils import init_logger, remote_rm_fn
+from .advantage_calculator import normalize_advantages_cross_batch
 
 logger = init_logger(__name__)
 
@@ -404,7 +405,7 @@ class NaiveExperienceMaker(ABC):
             del experience.info["num_actions"]
 
         # Cross-batch advantage normalization
-        experiences = self.normalize_advantages_cross_batch(experiences)
+        experiences = normalize_advantages_cross_batch(experiences, self.advantage_estimator, self.strategy.args)
 
         return experiences
 
@@ -690,50 +691,3 @@ class NaiveExperienceMaker(ABC):
             returns[:, t] = cumulative_return
 
         return returns
-
-    @torch.no_grad()
-    def normalize_advantages_cross_batch(self, experiences: List[Experience]) -> List[Experience]:
-        """
-        Apply cross-batch advantage normalization for GAE, REINFORCE, and REINFORCE-baseline.
-
-        This method normalizes advantages across all experiences in a batch using their action masks.
-        Reference: https://github.com/OpenRLHF/OpenRLHF/blob/main/openrlhf/trainer/ppo_utils/
-        experience_maker.py#L794-L816
-
-        :param experiences: List of Experience objects.
-        :type experiences: List[Experience]
-        :return: List of Experience objects with normalized advantages.
-        :rtype: List[Experience]
-        """
-        args = self.strategy.args
-
-        if self.advantage_estimator not in ["gae", "reinforce", "reinforce_baseline"]:
-            return experiences
-
-        # Collect all advantages and action masks
-        all_advantages = []
-        all_action_masks = []
-        for exp in experiences:
-            all_advantages.append(exp.advantages.flatten())
-            all_action_masks.append(exp.action_mask.flatten())
-
-        # Concatenate into vectors
-        advantages_vector = torch.cat(all_advantages, dim=0).float()
-        action_masks_vector = torch.cat(all_action_masks, dim=0)
-        num_actions = action_masks_vector.sum()
-
-        # Compute mean
-        mean = (advantages_vector * action_masks_vector).sum() / num_actions
-
-        # Compute std (if not disabled)
-        if not getattr(args, "no_advantage_std_norm", False):
-            var = ((advantages_vector - mean).pow(2) * action_masks_vector).sum() / num_actions
-            rstd = var.clamp(min=1e-8).rsqrt()
-        else:
-            rstd = 1
-
-        # Apply normalization to each experience
-        for exp in experiences:
-            exp.advantages = (exp.advantages - mean) * rstd
-
-        return experiences

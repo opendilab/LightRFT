@@ -54,7 +54,7 @@ from lightrft.trainer.experience_maker_vl import (
 from lightrft.utils.remote_rm_utils import remote_rm_fn
 from lightrft.utils import Timer, get_current_device
 from .utils import RunningMoments, compute_clip_fraction, get_cpgd_advantages_returns, fire_sampling
-from .advantage_calculator import get_advantage_calculator
+from .advantage_calculator import get_advantage_calculator, normalize_advantages_cross_batch
 from .image_utils import normalize_images, get_images_num
 from .video_utils import normalize_videos, get_videos_num
 
@@ -1507,8 +1507,8 @@ class FastExperienceMaker(NaiveExperienceMaker):
             del experience.info["num_actions"]
 
         # ========== Cross-batch Advantage Normalization ==========
-        # Use the base class method for cross-batch normalization
-        experiences = self.normalize_advantages_cross_batch(experiences)
+        # Use the utility function for cross-batch normalization
+        experiences = normalize_advantages_cross_batch(experiences, self.advantage_estimator, self.strategy.args)
 
         return experiences
 
