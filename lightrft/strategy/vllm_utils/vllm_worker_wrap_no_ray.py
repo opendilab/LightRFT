@@ -9,20 +9,26 @@ inference scenarios where model weights need to be synchronized across multiple 
 import torch
 # vLLM version compatibility notes:
 # --------------------------------
-# In older versions of vLLM, the Worker class is located under:
+# In older versions of vLLM (< 0.13.0), the Worker class is located under:
 #     vllm.worker.worker.Worker
 #
-# However, in newer versions of vLLM (>= 0.4.x, where the package structure was refactored),
-# the Worker implementation was moved to:
+# In vLLM >= 0.13.0, the Worker implementation was moved to:
 #     vllm.v1.worker.gpu_worker.Worker
 #
 # To maintain compatibility across different vLLM versions, we try importing Worker
-# from the old path first. If the import fails (ModuleNotFoundError), we fall back
-# to importing from the new vLLM v1 API path.
+# from the new v1 path first (for vllm>=0.13.0). If the import fails (ModuleNotFoundError),
+# we fall back to importing from the old path (for vllm<0.13.0).
 try:
-    from vllm.worker.worker import Worker
-except ModuleNotFoundError:
     from vllm.v1.worker.gpu_worker import Worker
+except (ModuleNotFoundError, ImportError):
+    try:
+        from vllm.worker.worker import Worker
+    except (ModuleNotFoundError, ImportError):
+        raise ImportError(
+            "Could not import Worker from vllm. "
+            "Please ensure you have a compatible version of vllm installed. "
+            "Supported versions: vllm>=0.6.3 or vllm>=0.13.0"
+        )
 
 
 class WorkerWrap(Worker):

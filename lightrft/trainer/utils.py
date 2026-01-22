@@ -7,6 +7,7 @@ The main components are:
 - compute_clip_fraction: Calculates the fraction of tensor elements that fall outside specified bounds
 - RunningMoments: Maintains running mean and standard deviation statistics for streaming data
 - get_cpgd_advantages_returns: Computes advantages and returns for CPGD algorithm
+- vllm_ge_0130: Version checking utility for vLLM compatibility
 
 These utilities are particularly useful in RL algorithms like PPO where clipping statistics and
 normalization are important for training stability and monitoring.
@@ -16,6 +17,11 @@ import copy
 import torch
 from copy import deepcopy
 from typing import Callable, List, Tuple, Union, Optional
+
+try:
+    import vllm
+except ImportError:
+    vllm = None
 
 
 def fire_sampling(
@@ -151,16 +157,13 @@ def compute_clip_fraction(values: torch.Tensor, clip_max: float, clip_min: float
              clipped values in the input tensor.
     :rtype: torch.Tensor
 
-    **Example:**
+    Example::
 
+        .. code-block:: python
 
-
-    .. code-block:: python
-
-
-        >>> values = torch.tensor([[1.0, 2.0, 3.0], [0.5, 1.5, 2.5]])
-        >>> clip_fraction = compute_clip_fraction(values, clip_max=2.0, clip_min=1.0)
-        >>> print(clip_fraction)  # Should show fraction of values outside [1.0, 2.0]
+            >>> values = torch.tensor([[1.0, 2.0, 3.0], [0.5, 1.5, 2.5]])
+            >>> clip_fraction = compute_clip_fraction(values, clip_max=2.0, clip_min=1.0)
+            >>> print(clip_fraction)  # Should show fraction of values outside [1.0, 2.0]
     """
     numel = values.numel()
     if numel == 0:
@@ -192,19 +195,16 @@ class RunningMoments:
 
     Adapted from https://github.com/alibaba/ROLL
 
-    **Example:**
+    Example::
 
+        .. code-block:: python
 
-
-    .. code-block:: python
-
-
-        >>> moments = RunningMoments()
-        >>> batch1 = torch.randn(100)
-        >>> mean1, std1 = moments.update(batch1)
-        >>> batch2 = torch.randn(100)
-        >>> mean2, std2 = moments.update(batch2)
-        >>> print(f"Running mean: {moments.mean}, Running std: {moments.std}")
+            >>> moments = RunningMoments()
+            >>> batch1 = torch.randn(100)
+            >>> mean1, std1 = moments.update(batch1)
+            >>> batch2 = torch.randn(100)
+            >>> mean2, std2 = moments.update(batch2)
+            >>> print(f"Running mean: {moments.mean}, Running std: {moments.std}")
     """
     def __init__(self):
         """
@@ -234,17 +234,14 @@ class RunningMoments:
         :return: A tuple of (mean, std) for the current batch `xs`.
         :rtype: Tuple[float, float]
 
-        **Example:**
+        Example::
 
+            .. code-block:: python
 
-
-        .. code-block:: python
-
-
-            >>> moments = RunningMoments()
-            >>> new_data = torch.tensor([1.0, 2.0, 3.0, 4.0, 5.0])
-            >>> batch_mean, batch_std = moments.update(new_data)
-            >>> print(f"Batch mean: {batch_mean}, Batch std: {batch_std}")
+                >>> moments = RunningMoments()
+                >>> new_data = torch.tensor([1.0, 2.0, 3.0, 4.0, 5.0])
+                >>> batch_mean, batch_std = moments.update(new_data)
+                >>> print(f"Batch mean: {batch_mean}, Batch std: {batch_std}")
         """
         # 1. Get statistics for the new batch
         xs_count = xs.numel()
@@ -361,3 +358,25 @@ def get_cpgd_advantages_returns(
     returns = deepcopy(scores)
 
     return advantages, returns
+
+
+def vllm_ge_0130():
+    """
+    Check if vLLM version is greater than or equal to 0.13.0.
+
+    Starting from vLLM 0.13.0, truncate_prompt_tokens parameter must not exceed
+    max_model_len, requiring additional validation logic.
+
+    :return: True if vLLM version >= 0.13.0, False otherwise
+    :rtype: bool
+    """
+    if vllm is None:
+        # If vLLM is not installed, assume newer version for safety
+        return True
+
+    try:
+        version_digits = int("".join(list(filter(str.isdigit, vllm.__version__))))
+        return version_digits >= 130
+    except (AttributeError, ValueError):
+        # If version cannot be determined, assume newer version for safety
+        return True

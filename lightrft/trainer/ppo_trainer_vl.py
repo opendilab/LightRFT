@@ -172,7 +172,6 @@ class PPOTrainerVL(ABC):
         self.actor_scheduler = actor_scheduler
         self.critic_scheduler = critic_scheduler
 
-        # TODO: Investigate use_cpg_loss flag
         self.actor_loss_fn = PolicyLoss(eps_clip, use_cpg_loss=self.args.use_cpg_loss)
 
         self.critic_loss_fn = ValueLoss(value_clip)
@@ -208,6 +207,9 @@ class PPOTrainerVL(ABC):
         # Initialize wandb/tensorboard for logging
         self._wandb = None
         self._tensorboard = None
+        self.eval_step_counter = 0  # Independent counter for eval X-axis
+        self.wandb_log_counter = 0  # Global counter for unique wandb system steps
+
         if self.strategy.args.use_wandb and self.strategy.is_rank_0():
             import wandb
 
@@ -223,11 +225,18 @@ class PPOTrainerVL(ABC):
                 reinit=True,
             )
 
+            # Define custom metrics to allow different X-axes
+            # rollout/* and train/* use the main training step
+            wandb.define_metric("rollout/global_step")
+            wandb.define_metric("rollout/*", step_metric="rollout/global_step")
+
             wandb.define_metric("train/global_step")
-            wandb.define_metric("train/*", step_metric="train/global_step", step_sync=True)
-            # Use eval/global_step as step_metric to match what we actually log
+            wandb.define_metric("train/*", step_metric="train/global_step")
+
+            # eval/* uses its own counter, allowing it to be plotted sequentially
+            # even if evaluations happen rarely
             wandb.define_metric("eval/global_step")
-            wandb.define_metric("eval/*", step_metric="eval/global_step", step_sync=True)
+            wandb.define_metric("eval/*", step_metric="eval/global_step")
 
         # Initialize TensorBoard writer if wandb is not available
         if self.strategy.args.use_tensorboard and self._wandb is None and self.strategy.is_rank_0():
@@ -236,69 +245,6 @@ class PPOTrainerVL(ABC):
             os.makedirs(self.strategy.args.use_tensorboard, exist_ok=True)
             log_dir = os.path.join(self.strategy.args.use_tensorboard, strategy.args.wandb_run_name)
             self._tensorboard = SummaryWriter(log_dir=log_dir)
-
-    # def _ensure_model_buffers_on_device(self):
-    #     """
-    #     Ensure all model buffers are on GPU.
-
-    #     This is CRITICAL for preventing Triton kernel errors. Models with:
-    #     - RoPE caches (cos/sin tables)
-    #     - Normalization statistics (mean/std)
-    #     - Other persistent buffers
-
-    #     may have buffers initialized on CPU, especially with DeepSpeed Zero-3.
-    #     This method explicitly moves all buffers to the current GPU.
-
-    #     Called at the start of training to "warm up" models.
-    #     """
-    #     device = torch.cuda.current_device()
-
-    #     # Check Actor
-    #     if self.actor is not None:
-    #         self._ensure_single_model_buffers(self.actor, "Actor", device)
-
-    #     # Check Critic (most critical - often causes Triton errors)
-    #     if self.critic is not None:
-    #         self._ensure_single_model_buffers(self.critic, "Critic", device)
-
-    #     # Check Initial Model (for KL calculation)
-    #     if self.initial_model is not None:
-    #         self._ensure_single_model_buffers(self.initial_model, "InitialModel", device)
-
-    #     # Check Reward Model
-    #     if isinstance(self.reward_model, nn.Module):
-    #         self._ensure_single_model_buffers(self.reward_model, "RewardModel", device)
-
-    # def _ensure_single_model_buffers(self, model, model_name, device):
-    #     """
-    #     Move all buffers of a single model to the specified device.
-
-    #     :param model: The model whose buffers to move.
-    #     :type model: nn.Module
-    #     :param model_name: Name of the model for logging.
-    #     :type model_name: str
-    #     :param device: Target device.
-    #     :type device: torch.device
-    #     """
-    #     moved_buffers = []
-
-    #     for buffer_name, buffer in model.named_buffers():
-    #         if buffer is not None and buffer.device.type != 'cuda':
-    #             try:
-    #                 # Force buffer to GPU
-    #                 buffer.data = buffer.data.to(device)
-    #                 moved_buffers.append(buffer_name)
-    #             except Exception as e:
-    #                 self.strategy.print(
-    #                     f"[WARNING] Failed to move {model_name}.{buffer_name} to GPU: {e}"
-    #                 )
-
-    #     if moved_buffers and self.strategy.is_rank_0():
-    #         self.strategy.print(
-    #             f"[INFO] Moved {len(moved_buffers)} buffers of {model_name} to GPU: {moved_buffers[:5]}{'...' if len(moved_buffers) > 5 else ''}"  # noqa
-    #         )
-    #     elif self.strategy.is_rank_0():
-    #         self.strategy.print(f"[INFO] All buffers of {model_name} already on GPU")
 
     def fit(
         self,
@@ -431,10 +377,14 @@ class PPOTrainerVL(ABC):
                         output = self.tokenizer.batch_decode(
                             experience.sequences[0].unsqueeze(0), skip_special_tokens=True
                         )
-                        self.strategy.print("experience.sequences w skip_special_tokens: ", output)
+                        self.strategy.print("collect phase: experience.sequences w skip_special_tokens: ", output)
                         self.strategy.print(
-                            f"rand_prompts:\n {rand_prompts}\n , rand_images:{rand_images}\n , rand_references:{rand_references}\n, rand_labels:{rand_labels}\n "  # noqa
+                            f"collect phase: rand_prompts:\n {rand_prompts[0:2]}\n , rand_images:{rand_images[0:2]}\n , rand_references:{rand_references[0:2]}\n, rand_labels:{rand_labels[0:2]}\n "  # noqa
                         )
+                        # print all
+                        # self.strategy.print(
+                        #     f"rand_prompts:\n {rand_prompts}\n , rand_images:{rand_images}\n , rand_references:{rand_references}\n, rand_labels:{rand_labels}\n "  # noqa
+                        # )
 
                     self.replay_buffer.append(experience)
 
@@ -546,9 +496,13 @@ class PPOTrainerVL(ABC):
                 # Update Episode pbar with ROLLOUT statistics (not training statistics!)
                 pbar.set_postfix(rollout_status)
 
-                # Logs/checkpoints: save TRAINING statistics to wandb
+                # Logs/checkpoints: save BOTH ROLLOUT and TRAINING statistics to wandb
+                # [FIX] Merge rollout_status (from inference) and status (from training)
+                # to ensure wandb logs contain both types of metrics
                 client_states = {"consumed_samples": steps * args.rollout_batch_size}
-                self.save_logs_and_checkpoints(args, steps, pbar, status, client_states, episode=episode)
+                logs_dict_combined = {**rollout_status, **status}  # Merge: rollout first, training second
+
+                self.save_logs_and_checkpoints(args, steps, pbar, logs_dict_combined, client_states, episode=episode)
 
                 pbar.update()
                 steps = steps + 1
@@ -665,6 +619,45 @@ class PPOTrainerVL(ABC):
             status.update(self.training_step_critic(experience))
         return status
 
+    def _validate_qwen_vl_tensors(
+        self, sequences: torch.Tensor, pixel_values: Optional[torch.Tensor], context: str = "training"
+    ) -> bool:
+        """
+            Validates the consistency between image tokens in sequences and pixel_values features.
+
+            :param sequences: Token sequence tensor.
+            :type sequences: torch.Tensor
+            :param pixel_values: Processed pixel values tensor.
+            :type pixel_values: Optional[torch.Tensor]
+            :param context: A string indicating where the validation is called from (e.g., "actor_rl", "actor_ptx").
+            :type context: str
+            :return: True if data is consistent, False otherwise.
+            :rtype: bool
+            """
+        if pixel_values is None or pixel_values.numel() == 0:
+            # This is a text-only batch, no validation needed.
+            return True
+
+        config = self.strategy.unwrap_model(self.actor.model).config
+        image_token_id = getattr(config, "image_token_id", None)
+
+        if image_token_id is None:
+            # Model does not use special image tokens.
+            return True
+
+        num_tokens = (sequences == image_token_id).sum().item()
+        num_patches = pixel_values.shape[0] // 4
+
+        if num_tokens != num_patches:
+            self.strategy.print(
+                f"[CRITICAL WARNING] Skipping batch in '{context}'. "
+                f"Image features and image tokens do not match: tokens: {num_tokens}, features: {num_patches}. "
+                "This batch will be discarded to prevent a crash."
+            )
+            return False
+
+        return True
+
     def training_step_actor(self,
                             experience: ExperienceVL,
                             entropy_mask: Optional[torch.Tensor] = None) -> Dict[str, float]:
@@ -717,6 +710,17 @@ class PPOTrainerVL(ABC):
             if max_adv > 10.0:
                 self.strategy.print(f"[Warning] Huge advantage detected: {max_adv}")
             advantages = torch.clamp(advantages, min=-10.0, max=10.0)
+
+        # [DEFENSIVE CHECK] Validate RL data before actor forward pass
+        # NOTE: This validation is now primarily done in spmd_ppo_trainer.py BEFORE calling training_step
+        # to ensure all ranks make the same skip decision. This check remains as a safety fallback.
+        # If this triggers, it indicates a bug in the pre-validation logic.
+        if not self._validate_qwen_vl_tensors(sequences, pixel_values, context="actor_rl_update"):
+            self.strategy.print(
+                "[CRITICAL ERROR] Validation failed inside training_step_actor. "
+                "This should have been caught by pre-validation in spmd_ppo_trainer.py!"
+            )
+            return {}  # Emergency fallback - should not normally execute
 
         # Actor loss
         action_log_probs, output = self.actor(
@@ -841,6 +845,8 @@ class PPOTrainerVL(ABC):
         # self.strategy.print(f"experience.info:{experience.info}")
 
         # Robustly handle various data types in experience.info for logging
+        # Note: We keep all metrics in status dict for internal use (e.g., KL weighting, progress bar)
+        # but will filter out rollout-only metrics when logging to wandb to avoid duplication
         for k, v in experience.info.items():
             # Special handling for KL divergence, which is already a scalar item
             if k == "kl":
@@ -998,61 +1004,112 @@ class PPOTrainerVL(ABC):
         :type global_step: int
         :param step_bar: Progress bar object.
         :type step_bar: tqdm
-        :param logs_dict: Dictionary of metrics to log, defaults to {}.
+        :param logs_dict: Dictionary of metrics to log. Should contain both:
+                          - Rollout statistics (rollout_reward, rollout_response_length, etc.)
+                            from inference/generation phase
+                          - Training statistics (policy_loss, critic_loss, kl, etc.)
+                            from optimization phase
+                          Defaults to {}.
         :type logs_dict: dict
         :param client_states: Client state for checkpoint recovery, defaults to {}.
         :type client_states: dict
         :param episode: Current episode number, defaults to 0.
         :type episode: int
         """
+
+        # 1. LOGGING TRAIN & ROLLOUT METRICS
         if global_step % args.logging_steps == 0:
-            # Wandb logging
+            # Metrics that are already logged in rollout/ namespace should not be duplicated in train/
+            ROLLOUT_ONLY_METRICS = {'reward', 'response_length', 'total_length', 'num_actions', 'return'}
+            ROLLOUT_ONLY_PREFIXES = {'reward_metrics/'}
+
+            rollout_metrics = {}
+            train_metrics = {}
+
+            for k, v in logs_dict.items():
+                if k.startswith('rollout_'):
+                    # Clean key: rollout_reward -> reward
+                    clean_key = k.replace('rollout_', '', 1)
+                    rollout_metrics[clean_key] = v
+                elif k in ROLLOUT_ONLY_METRICS:
+                    continue
+                elif any(k.startswith(prefix) for prefix in ROLLOUT_ONLY_PREFIXES):
+                    continue
+                else:
+                    # Everything else is considered a training metric
+                    train_metrics[k] = v
+
+            # Wandb Logging
             if self._wandb is not None and self.strategy.is_rank_0():
-                logs = {
-                    "train/%s" % k: v
-                    for k, v in {
-                        **logs_dict,
-                        "global_step": global_step,
-                        "episode": episode,
-                    }.items()
-                }
-                if self.experience_maker.perf_stats is not None:
-                    logs.update({f"perf/experience_maker/{k}": v for k, v in self.experience_maker.perf_stats.items()})
-                self._wandb.log(logs)
-            # TensorBoard logging
-            elif self._tensorboard is not None and self.strategy.is_rank_0():
-                for k, v in logs_dict.items():
-                    self._tensorboard.add_scalar(f"train/{k}", v, global_step)
+                all_wandb_logs = {}
+
+                # Add Rollout Metrics
+                for k, v in rollout_metrics.items():
+                    all_wandb_logs[f"rollout/{k}"] = v
+                all_wandb_logs["rollout/global_step"] = global_step
+                all_wandb_logs["rollout/episode"] = episode
+
+                # Add Train Metrics
+                for k, v in train_metrics.items():
+                    all_wandb_logs[f"train/{k}"] = v
+                all_wandb_logs["train/global_step"] = global_step
+                all_wandb_logs["train/episode"] = episode
+
+                # Performance Stats
                 if self.experience_maker.perf_stats is not None:
                     for k, v in self.experience_maker.perf_stats.items():
-                        self._tensorboard.add_scalar(f"perf/experience_maker/{k}", v, global_step)
+                        all_wandb_logs[f"perf/experience_maker/{k}"] = v
 
-        # Evaluation
+                # Commit Train/Rollout logs with unique system step
+                if all_wandb_logs:
+                    self.wandb_log_counter += 1
+                    self._wandb.log(all_wandb_logs, step=self.wandb_log_counter, commit=True)
+
+            # TensorBoard Logging
+            elif self._tensorboard is not None and self.strategy.is_rank_0():
+                for k, v in rollout_metrics.items():
+                    self._tensorboard.add_scalar(f"rollout/{k}", v, global_step)
+                for k, v in train_metrics.items():
+                    self._tensorboard.add_scalar(f"train/{k}", v, global_step)
+
+        # 2. EVALUATION
         if global_step % args.eval_steps == 0 and self.eval_dataloader is not None:
-            eval_metrics = self.evaluate(self.eval_dataloader, global_step)
+            # Run evaluation
+            raw_eval_metrics = self.evaluate(self.eval_dataloader, global_step)
 
-            # Log to wandb
-            if eval_metrics and self._wandb is not None and self.strategy.is_rank_0():
-                # [FIX] Remove duplicate "eval_" prefix and add episode/epoch info
-                eval_logs = {}
-                for k, v in eval_metrics.items():
-                    # Remove "eval_" prefix if present (it will be added as "eval/" by wandb structure)
-                    clean_key = k.replace("eval_", "") if k.startswith("eval_") else k
-                    eval_logs[f"eval/{clean_key}"] = v
+            # Only log if we have results
+            if raw_eval_metrics and self.strategy.is_rank_0():
+                self.eval_step_counter += 1
 
-                # Add step and episode info for X-axis options in wandb
-                eval_logs["eval/global_step"] = global_step
-                eval_logs["eval/episode"] = episode
-                eval_logs["eval/epoch"] = episode  # Alias for episode (common convention)
+                # Wandb Logging for Eval
+                if self._wandb is not None:
+                    eval_logs = {}
+                    for k, v in raw_eval_metrics.items():
+                        # Remove "eval_" prefix if present to avoid "eval/eval_reward"
+                        clean_key = k.replace("eval_", "") if k.startswith("eval_") else k
+                        eval_logs[f"eval/{clean_key}"] = v
 
-                self._wandb.log(eval_logs)
-            # Log to TensorBoard
-            elif eval_metrics and self._tensorboard is not None and self.strategy.is_rank_0():
-                for k, v in eval_metrics.items():
-                    self._tensorboard.add_scalar(f"eval/{k}", v, global_step)
+                    # Custom X-axis for Eval
+                    eval_logs["eval/global_step"] = self.eval_step_counter
+                    # Reference to main training step
+                    eval_logs["eval/train_step"] = global_step
+                    eval_logs["eval/episode"] = episode
 
-        # Save checkpoint
-        # TODO: Save best model on dev, use loss/perplexity/others on whole dev dataset as metric
+                    # IMPORTANT:
+                    # Use wandb_log_counter to ensure eval has a unique system step
+                    # This prevents eval metrics from being overwritten by train metrics
+                    # The plots will still use eval/global_step as X-axis due to define_metric
+                    self.wandb_log_counter += 1
+                    self._wandb.log(eval_logs, step=self.wandb_log_counter, commit=True)
+
+                # TensorBoard Logging for Eval
+                elif self._tensorboard is not None:
+                    for k, v in raw_eval_metrics.items():
+                        # Clean key
+                        clean_key = k.replace("eval_", "") if k.startswith("eval_") else k
+                        self._tensorboard.add_scalar(f"eval/{clean_key}", v, global_step)
+
+        # 3. CHECKPOINTING
         if global_step % args.save_steps == 0:
             tag = f"global_step{global_step}"
             self._save_checkpoint(args, tag, client_states)
@@ -1108,13 +1165,20 @@ class PPOTrainerVL(ABC):
         if self.critic is not None:
             self.critic.eval()
 
-        # Collect evaluation metrics
         all_rewards = []
         all_format_rewards = []
         all_accuracy_rewards = []
         all_response_lengths = []
-
         num_eval_batches = 0
+
+        # Helper to extract values
+        def extract_values(val):
+            if isinstance(val, torch.Tensor):
+                return val.view(-1).cpu().tolist()
+            elif isinstance(val, (list, tuple)):
+                return list(val)
+            else:
+                return [float(val)]
 
         with torch.no_grad():
             for batch in eval_dataloader:
@@ -1126,107 +1190,67 @@ class PPOTrainerVL(ABC):
 
                 # Generate responses using experience maker (but don't train on them)
                 # We reuse the experience maker but only for generation
-                for experience in self.experience_maker.make_experience_list(
-                    eval_prompts, eval_images, eval_videos, eval_references, eval_labels, **self.generate_kwargs
+                # TODO: simplify this logic
+                for i, experience in enumerate(
+                    self.experience_maker.make_experience_list(
+                        eval_prompts, eval_images, eval_videos, eval_references, eval_labels, **self.generate_kwargs
+                    )
                 ):
-                    # Extract metrics from experience
-                    if hasattr(experience, 'info') and experience.info is not None:
-                        # Helper function to extract values robustly
-                        def extract_values(val):
-                            """
-                            Extract scalar values from tensor/list/scalar, handling any shape.
+                    if i == 0:
+                        output = self.tokenizer.batch_decode(
+                            experience.sequences[0].unsqueeze(0), skip_special_tokens=True
+                        )
+                        self.strategy.print("eval phase: experience.sequences w skip_special_tokens: ", output)
+                        self.strategy.print(
+                            f"eval phase: eval_prompts:\n {eval_prompts[0:2]}\n , rand_images:{eval_images[0:2]}\n , eval_references:{eval_references[0:2]}\n, eval_labels:{eval_labels[0:2]}\n "  # noqa
+                        )
+                    if hasattr(experience, 'info') and experience.info:
+                        info = experience.info
+                        if 'reward' in info:
+                            all_rewards.extend(extract_values(info['reward']))
+                        if 'response_length' in info:
+                            all_response_lengths.extend(extract_values(info['response_length']))
 
-                            :param val: Value to extract (tensor, list, or scalar).
-                            :type val: torch.Tensor or list or scalar
-                            :return: List of scalar values.
-                            :rtype: list
-                            """
-                            if isinstance(val, torch.Tensor):
-                                # Flatten tensor and convert to list (handles scalar, 1D, multi-D tensors)
-                                return val.view(-1).cpu().tolist()
-                            elif isinstance(val, (list, tuple)):
-                                return list(val)
-                            else:
-                                # Scalar value (int, float, etc.)
-                                return [float(val)]
-
-                        if 'reward' in experience.info:
-                            all_rewards.extend(extract_values(experience.info['reward']))
-
-                        if 'reward_metrics' in experience.info:
-                            reward_metrics = experience.info['reward_metrics']
-                            if 'format_reward' in reward_metrics:
-                                all_format_rewards.extend(extract_values(reward_metrics['format_reward']))
-                            if 'accuracy_reward' in reward_metrics:
-                                all_accuracy_rewards.extend(extract_values(reward_metrics['accuracy_reward']))
-
-                        if 'response_length' in experience.info:
-                            all_response_lengths.extend(extract_values(experience.info['response_length']))
+                        if 'reward_metrics' in info:
+                            rm = info['reward_metrics']
+                            if 'format_reward' in rm:
+                                all_format_rewards.extend(extract_values(rm['format_reward']))
+                            if 'accuracy_reward' in rm:
+                                all_accuracy_rewards.extend(extract_values(rm['accuracy_reward']))
 
                 num_eval_batches += 1
-
-                # Limit evaluation to avoid too long eval time
                 if num_eval_batches >= len(eval_dataloader):
                     break
 
         # Compute statistics
-        eval_metrics = {}
+        metrics = {}
+        device = torch.cuda.current_device()
 
-        if all_rewards:
-            # [TENSOR-FIX] Handle both tensor lists and scalar lists
-            if isinstance(all_rewards[0], torch.Tensor):
-                rewards_tensor = torch.cat([t.to(torch.cuda.current_device()).float() for t in all_rewards])
+        def compute_stats(name, values_list):
+            if not values_list:
+                return
+            if isinstance(values_list[0], torch.Tensor):
+                t = torch.cat([x.to(device).float() for x in values_list])
             else:
-                rewards_tensor = torch.tensor(all_rewards, dtype=torch.float32, device=torch.cuda.current_device())
-            eval_metrics["eval_reward_mean"] = rewards_tensor.mean().item()
-            eval_metrics["eval_reward_std"] = rewards_tensor.std().item()
-            eval_metrics["eval_reward_max"] = rewards_tensor.max().item()
-            eval_metrics["eval_reward_min"] = rewards_tensor.min().item()
+                t = torch.tensor(values_list, dtype=torch.float32, device=device)
+            metrics[f"{name}_mean"] = t.mean().item()
+            # metrics[f"{name}_std"] = t.std().item() # Optional
 
-        # Handle both tensor lists and scalar lists
-        if all_format_rewards:
-            # [TENSOR-FIX] Use torch.cat() for tensor lists, torch.tensor() for scalar lists
-            if all_format_rewards and isinstance(all_format_rewards[0], torch.Tensor):
-                format_tensor = torch.cat([t.to(torch.cuda.current_device()).float() for t in all_format_rewards])
-            else:
-                format_tensor = torch.tensor(
-                    all_format_rewards, dtype=torch.float32, device=torch.cuda.current_device()
-                )
-            eval_metrics["eval_format_reward"] = format_tensor.mean().item()
+        compute_stats("reward", all_rewards)
+        compute_stats("format_reward", all_format_rewards)
+        compute_stats("accuracy_reward", all_accuracy_rewards)
+        compute_stats("response_length", all_response_lengths)
 
-        if all_accuracy_rewards:
-            # [TENSOR-FIX] Use torch.cat() for tensor lists, torch.tensor() for scalar lists
-            if all_accuracy_rewards and isinstance(all_accuracy_rewards[0], torch.Tensor):
-                accuracy_tensor = torch.cat([t.to(torch.cuda.current_device()).float() for t in all_accuracy_rewards])
-            else:
-                accuracy_tensor = torch.tensor(
-                    all_accuracy_rewards, dtype=torch.float32, device=torch.cuda.current_device()
-                )
-            eval_metrics["eval_accuracy_reward"] = accuracy_tensor.mean().item()
+        metrics["num_samples"] = len(all_rewards)
 
-        if all_response_lengths:
-            # [TENSOR-FIX] Use torch.cat() for tensor lists, torch.tensor() for scalar lists
-            if all_response_lengths and isinstance(all_response_lengths[0], torch.Tensor):
-                lengths_tensor = torch.cat([t.to(torch.cuda.current_device()).float() for t in all_response_lengths])
-            else:
-                lengths_tensor = torch.tensor(
-                    all_response_lengths, dtype=torch.float32, device=torch.cuda.current_device()
-                )
-            eval_metrics["eval_response_length"] = lengths_tensor.mean().item()
-
-        eval_metrics["eval_num_samples"] = len(all_rewards)
-
-        # Print evaluation results
-        self.strategy.print(f"\n{'=' * 60}")
+        # Print results
         self.strategy.print(f"Evaluation Results (Step {global_step}):")
-        self.strategy.print(f"{'=' * 60}")
-        for k, v in eval_metrics.items():
+        for k, v in metrics.items():
             self.strategy.print(f"  {k}: {v:.4f}")
         self.strategy.print(f"{'=' * 60}\n")
 
-        # Set models back to train mode
         self.actor.train()
         if self.critic is not None:
             self.critic.train()
 
-        return eval_metrics
+        return metrics

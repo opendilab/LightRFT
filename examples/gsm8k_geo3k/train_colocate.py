@@ -183,7 +183,8 @@ def train(args):
         )
 
         if args.fsdp:
-            initial_model = strategy.prepare_model(initial_model, is_training=False, shard_size=8)
+            shard_size = args.initial_model_shard_size if args.initial_model_shard_size is not None else strategy.world_size
+            initial_model = strategy.prepare_model(initial_model, is_training=False, shard_size=shard_size)
             strategy.offload_model(initial_model)
 
     if args.enable_ema:
@@ -521,6 +522,7 @@ if __name__ == "__main__":
     # FSDP
     parser.add_argument("--no_shard_vit", action="store_true", default=False, help="Disable sharding for vision transformer")
     parser.add_argument("--meta_init", action="store_true", default=False, help="Initialize models on meta device to save CPU memory")
+    parser.add_argument("--initial_model_shard_size", type=int, default=None, help="Shard size for initial model in FSDP mode (default: strategy.world_size)")
 
     # Reinforce
     parser.add_argument(

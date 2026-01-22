@@ -53,7 +53,7 @@ from lightrft.trainer.experience_maker_vl import (
 
 from lightrft.utils.remote_rm_utils import remote_rm_fn
 from lightrft.utils import Timer, get_current_device
-from .utils import RunningMoments, compute_clip_fraction, get_cpgd_advantages_returns, fire_sampling
+from .utils import RunningMoments, compute_clip_fraction, get_cpgd_advantages_returns, fire_sampling, vllm_ge_0130
 from .image_utils import normalize_images, get_images_num
 from .video_utils import normalize_videos, get_videos_num
 
@@ -1093,6 +1093,14 @@ class FastExperienceMaker(NaiveExperienceMaker):
 
         # ========== Configure Sampling Parameters ==========
         if config.engine_type == "vllm":
+            # For vllm>=0.13.0, truncate_prompt_tokens must not exceed max_model_len
+            # For older versions, we can use 8192 directly without validation
+            if vllm_ge_0130():
+                max_model_len = self.strategy.inference_engine.llm_engine.model_config.max_model_len
+                truncate_tokens = min(8192, max_model_len)
+            else:
+                truncate_tokens = 8192
+
             sampling_params = SamplingParams(
                 temperature=generate_kwargs.get("temperature", 1.0),
                 top_p=generate_kwargs.get("top_p", 1.0),
@@ -1102,7 +1110,7 @@ class FastExperienceMaker(NaiveExperienceMaker):
                 skip_special_tokens=generate_kwargs.get("skip_special_tokens", False),
                 include_stop_str_in_output=True,
                 ignore_eos=os.environ.get("IGNORE_EOS", "0") == "1",
-                truncate_prompt_tokens=8192,
+                truncate_prompt_tokens=truncate_tokens,
             )
         elif config.engine_type == "sglang":
             sampling_params = dict(
@@ -1184,6 +1192,7 @@ class FastExperienceMaker(NaiveExperienceMaker):
                     sampling_params=sampling_params,
                     all_prompt_token_ids=all_prompt_token_ids,
                     all_prompts=all_prompts if is_multimodal else None,
+                    sleep_engine=self.strategy.args.enable_engine_sleep,
                     all_images=all_images if is_multimodal else None,
                     all_videos=all_videos if is_multimodal else None,
                     images_num=all_images_num if is_multimodal else None,
@@ -1767,6 +1776,11 @@ class FastExperienceMaker(NaiveExperienceMaker):
         num_patches = sample.pixel_values.shape[0] // 4
 
         if num_tokens != num_patches:
+            self.strategy.print(
+                f"[Warning] Mismatch found during rollout step. Fixing sequences. "
+                f"Tokens: {num_tokens}, Patches: {num_patches}"
+            )
+
             pad_token_id = self.tokenizer.pad_token_id
             diff = num_tokens - num_patches
             token_positions = (sequences == image_token_id).nonzero()
