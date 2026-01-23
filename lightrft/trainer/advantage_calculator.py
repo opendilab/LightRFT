@@ -672,6 +672,50 @@ class GroupNormCalculator(BaseREINFORCECalculator):
         rewards = rewards.flatten().to("cpu").chunk(len(experiences))
         return experiences, list(rewards)
 
+    def compute(
+        self,
+        experience,
+        final_reward: torch.Tensor,
+        gamma: Optional[float],
+        generate_kwargs: Dict,
+    ) -> Tuple[torch.Tensor, torch.Tensor, Dict]:
+        """
+        Compute advantages using cumulative returns (REINFORCE-style).
+
+        Note: For GroupNorm/GRPO, we skip the advantages_norm step because
+        rewards have already been normalized in preprocess_rewards() to avoid
+        duplicate normalization.
+
+        :param experience: Experience object
+        :type experience: object
+        :param final_reward: Processed reward tensor
+        :type final_reward: torch.Tensor
+        :param gamma: Discount factor. If None, will be taken from generate_kwargs.
+        :type gamma: Optional[float]
+        :param generate_kwargs: Generation parameters
+        :type generate_kwargs: Dict
+        :return: Tuple of (advantages, returns, info_dict)
+        :rtype: Tuple[torch.Tensor, torch.Tensor, Dict]
+        """
+        # Get gamma
+        gamma = self._get_gamma(gamma, generate_kwargs)
+
+        # Compute cumulative returns
+        returns = self.get_cumulative_returns(final_reward, experience.action_mask, gamma)
+        advantages = deepcopy(returns)
+
+        # Skip advantages_norm for GroupNorm/GRPO to avoid duplicate normalization
+        # (rewards are already normalized in preprocess_rewards)
+        info_dict = {}
+
+        # Advantage clipping (still apply if configured)
+        if self.config.advantage_clip > 0:
+            clip_val = self.config.advantage_clip
+            info_dict["advantage_clip_frac"] = compute_clip_fraction(advantages, clip_val, -clip_val)
+            advantages = torch.clamp(advantages, -clip_val, clip_val)
+
+        return advantages, returns, info_dict
+
 
 # ============================================================================
 # Factory Function
