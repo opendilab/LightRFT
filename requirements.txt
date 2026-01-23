@@ -3,7 +3,7 @@ flash-attn==2.8.3
 sglang>=0.5.6.post2
 transformers>=4.57.3
 vllm>=0.13.3
-deepspeed==0.18.3
+deepspeed>=0.18.3
 easydict
 decord
 orjson
