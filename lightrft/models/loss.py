@@ -29,7 +29,7 @@ All loss functions are designed to work seamlessly with the LightRFT training fr
 supporting distributed training, mixed precision, and various optimization strategies.
 """
 
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Union
 
 import torch
 import torch.distributed as dist
@@ -537,7 +537,12 @@ class PRMLoss(nn.Module):
         self.placeholder_token_id = placeholder_token_id
         self.reward_token_ids = reward_token_ids
 
-    def forward(self, inputs: torch.Tensor, logits: torch.Tensor, labels: torch.Tensor, *, return_acc: bool = False):
+    def forward(self,
+                inputs: torch.Tensor,
+                logits: torch.Tensor,
+                labels: torch.Tensor,
+                *,
+                return_acc: bool = False) -> Union[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]:
         """
         Compute process reward model loss.
 
@@ -589,7 +594,10 @@ class LogSigmoidLoss(nn.Module):
     sample. Optionally supports a non-negative margin.
     """
     def forward(
-        self, chosen_reward: torch.Tensor, reject_reward: torch.Tensor, margin: torch.Tensor = None
+        self,
+        chosen_reward: torch.Tensor,
+        reject_reward: torch.Tensor,
+        margin: Optional[torch.Tensor] = None
     ) -> torch.Tensor:
         """
         Compute log-sigmoid pairwise loss.
@@ -621,7 +629,10 @@ class LogExpLoss(nn.Module):
     the batch. See: https://arxiv.org/abs/2204.05862
     """
     def forward(
-        self, chosen_reward: torch.Tensor, reject_reward: torch.Tensor, margin: torch.Tensor = None
+        self,
+        chosen_reward: torch.Tensor,
+        reject_reward: torch.Tensor,
+        margin: Optional[torch.Tensor] = None
     ) -> torch.Tensor:
         """
         Compute log-exp pairwise loss.
@@ -651,7 +662,10 @@ class HPSLoss(nn.Module):
     Paper: https://arxiv.org/abs/2303.14420
     """
     def forward(
-        self, chosen_reward: torch.Tensor, reject_reward: torch.Tensor, margin: torch.Tensor = None
+        self,
+        chosen_reward: torch.Tensor,
+        reject_reward: torch.Tensor,
+        margin: Optional[torch.Tensor] = None
     ) -> torch.Tensor:
         """
         Compute HPS loss.

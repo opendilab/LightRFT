@@ -10,7 +10,7 @@ gradient clipping, and logging options.
 import argparse
 
 
-def add_arguments(parser: argparse.ArgumentParser):
+def add_arguments(parser: argparse.ArgumentParser) -> None:
     """
     Add training and inference related arguments to an ArgumentParser.
 

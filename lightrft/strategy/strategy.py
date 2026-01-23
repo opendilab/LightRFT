@@ -10,6 +10,8 @@ based on configuration arguments. It supports three types of strategies:
 The module automatically selects the appropriate strategy based on the provided arguments.
 """
 
+from typing import Any, Union
+
 from lightrft.strategy.deepspeed.deepspeed import DeepspeedStrategy
 from lightrft.strategy.fsdp.fsdpv2 import FSDPV2Strategy
 import torch.nn as nn
@@ -17,7 +19,7 @@ from lightrft.strategy.config import StrategyConfig
 
 
 # TODO: simplify the strategy creation
-def get_strategy(args):
+def get_strategy(args: Any) -> Union['FSDPV2Strategy', 'DeepspeedStrategy']:
     """
     Create and return the appropriate training strategy based on configuration arguments.
 
@@ -25,7 +27,7 @@ def get_strategy(args):
     or FSDP V2 strategy with the appropriate parameters.
 
     :param args: Configuration arguments containing strategy selection flags and parameters
-    :type args: object
+    :type args: Any (usually argparse.Namespace)
 
     :return: An instantiated strategy object
     :rtype: Union[FSDPV2Strategy, DeepspeedStrategy]

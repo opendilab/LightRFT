@@ -13,12 +13,12 @@ These utilities ensure consistent image formatting before processing by multimod
 
 import os
 import pathlib
-from typing import List, Union, Optional
+from typing import List, Union, Optional, Any
 from PIL import Image
 from io import BytesIO
 
 
-def to_pil(img) -> Image.Image:
+def to_pil(img: Union[Image.Image, dict, str, pathlib.Path, bytes, bytearray]) -> Image.Image:
     """
     Convert a single image input to PIL.Image format.
 
@@ -57,7 +57,7 @@ def to_pil(img) -> Image.Image:
     return img
 
 
-def normalize_images(raw_images: List) -> List:
+def normalize_images(raw_images: List[Any]) -> List[Union[Image.Image, List[Image.Image]]]:
     """
     Recursively normalize image inputs to PIL.Image format.
 

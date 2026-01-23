@@ -74,7 +74,7 @@ class DistributedSampler(Sampler[_T_co]):
         shuffle: bool = True,
         seed: int = 0,
         drop_last: bool = False,
-        consumed_samples=0,
+        consumed_samples: int = 0,
     ) -> None:
         if num_replicas is None:
             if not dist.is_available():

@@ -10,12 +10,13 @@ import os
 import re
 import random
 import time
+from loguru import logger
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from contextlib import contextmanager
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union, Callable
 
 import deepspeed
 import numpy as np
@@ -77,7 +78,7 @@ class StrategyBase(ABC):
     """
 
     def __init__(  # pylint: disable=R0917
-        self, seed: int, max_norm: float, micro_train_batch_size: int, train_batch_size: int, args=None
+        self, seed: int, max_norm: float, micro_train_batch_size: int, train_batch_size: int, args: Optional[Any] = None
     ) -> None:
         """
         Initialize strategy with common parameters.
@@ -91,7 +92,7 @@ class StrategyBase(ABC):
         :param train_batch_size: Total batch size for training
         :type train_batch_size: int
         :param args: Additional configuration arguments
-        :type args: Any
+        :type args: Any (usually argparse.Namespace)
         """
         self.seed = seed
         self.max_norm = max_norm
@@ -143,12 +144,14 @@ class StrategyBase(ABC):
         torch.manual_seed(seed)
         torch.cuda.manual_seed_all(seed)
 
-    def setup_distributed(self, timeout=None, num_gpu_per_node=8) -> None:
+    def setup_distributed(self, timeout: Optional[timedelta] = None, num_gpu_per_node: int = 8) -> None:
         """
         Initialize distributed training environment.
 
         :param timeout: Maximum time to wait for initialization
         :type timeout: timedelta, optional
+        :param num_gpu_per_node: Number of GPUs per node
+        :type num_gpu_per_node: int
         :raises RuntimeError: If required environment variables are missing
         :raises ValueError: If unsupported engine type is specified
         """
@@ -269,7 +272,9 @@ class StrategyBase(ABC):
         raise NotImplementedError()
 
     @abstractmethod
-    def optimizer_step(self, optimizer: optim.Optimizer, model: nn.Module, scheduler, name="model", **kwargs) -> None:
+    def optimizer_step(
+        self, optimizer: optim.Optimizer, model: nn.Module, scheduler: Any, name: str = "model", **kwargs
+    ) -> None:
         """
         Take optimizer step.
 
@@ -289,12 +294,12 @@ class StrategyBase(ABC):
         replay_buffer,
         batch_size: int,
         pin_memory: bool = False,
-        shuffle=True,
-        collate_fn=None,
-        drop_last=True,
-        sampler=None,
-        consumed_samples=0,
-    ):
+        shuffle: bool = True,
+        collate_fn: Optional[Callable] = None,
+        drop_last: bool = True,
+        sampler: Optional[Any] = None,
+        consumed_samples: int = 0,
+    ) -> DataLoader:
         """
         Set up data loader for training.
 
@@ -306,6 +311,7 @@ class StrategyBase(ABC):
         :param shuffle: Whether to shuffle data
         :type shuffle: bool
         :param collate_fn: Function to collate samples
+        :type collate_fn: Optional[Callable]
         :param drop_last: Whether to drop last incomplete batch
         :type drop_last: bool
         :param sampler: Custom sampler
@@ -338,7 +344,14 @@ class StrategyBase(ABC):
 
     @abstractmethod
     def save_ckpt(  # pylint: disable=R0917, W0102
-        self, model, save_dir: str, tag=None, max_num=3, max_mem=1000, client_state={}, save_latest=True
+        self,
+        model: nn.Module,
+        save_dir: str,
+        tag: Optional[str] = None,
+        max_num: int = 3,
+        max_mem: int = 1000,
+        client_state: Optional[Dict[str, Any]] = None,
+        save_latest: bool = True
     ) -> None:
         """
         Save training checkpoint with additional metadata.
@@ -361,14 +374,14 @@ class StrategyBase(ABC):
     @abstractmethod
     def load_ckpt(  # pylint: disable=R0917
         self,
-        model,
+        model: nn.Module,
         load_dir: str,
-        tag=None,
-        load_module_strict=True,
-        load_optimizer_states=True,
-        load_lr_scheduler_states=True,
-        load_module_only=False,
-    ):
+        tag: Optional[str] = None,
+        load_module_strict: bool = True,
+        load_optimizer_states: bool = True,
+        load_lr_scheduler_states: bool = True,
+        load_module_only: bool = False,
+    ) -> Any:
         """
         Load training checkpoint with various options.
 
@@ -387,17 +400,19 @@ class StrategyBase(ABC):
         """
         raise NotImplementedError()
 
-    def all_reduce(self, data, op="mean"):
+    def all_reduce(self,
+                   data: Union[torch.Tensor, Dict[str, torch.Tensor]],
+                   op: str = "mean") -> Union[torch.Tensor, Dict[str, torch.Tensor], float, int]:
         """
         Perform all-reduce operation across distributed processes.
 
         :param data: Data to be reduced, can be a tensor or dictionary of tensors
-        :type data: Union[torch.Tensor, dict]
+        :type data: Union[torch.Tensor, Dict[str, torch.Tensor]]
         :param op: Reduction operation ('mean', 'max', 'sum')
         :type op: str
 
         :return: Reduced data in the same format as input
-        :rtype: Union[torch.Tensor, dict]
+        :rtype: Union[torch.Tensor, Dict[str, torch.Tensor], float, int]
         :raises AssertionError: If op is not one of 'mean', 'max', 'sum'
         """
         assert op in ("mean", "max", "sum")
@@ -422,7 +437,8 @@ class StrategyBase(ABC):
                 data = data.cpu()
             return data.item() if not is_tensor else data
 
-    def all_gather(self, data):
+    def all_gather(self, data: Union[torch.Tensor, Dict[str,
+                                                        torch.Tensor]]) -> Union[torch.Tensor, Dict[str, torch.Tensor]]:
         """
         Gather data from all distributed processes.
 
@@ -452,7 +468,6 @@ class StrategyBase(ABC):
         Print messages with timestamp, but only on rank 0.
 
         :param msg: Messages to print
-        :type msg: tuple
         """
         current_time = datetime.now()
         time_str = current_time.strftime("%m-%d %H:%M:%S")
@@ -771,24 +786,45 @@ class StrategyBase(ABC):
                 ) for output in vllm_outputs
             ]
         elif self.inference_engine_type == "sglang":
-            if multi_modal_inputs is not None:  # VLM case
-                prompt = [p["prompt"] for p in multi_modal_inputs]
-                image = [p["multi_modal_data"]["image"] for p in multi_modal_inputs]
-            else:
-                prompt = prompt_token_ids
-                image = None
 
-            sglang_outputs = self.inference_engine.generate(
-                sampling_params=sampling_params,
-                input_ids=prompt,
-                image_data=image,
-            )
-            return [
-                EasyDict(
-                    prompt_token_ids=prompt[i],
-                    output_token_ids=sglang_outputs[i]["output_ids"],
-                ) for i, output in enumerate(sglang_outputs)
-            ]
+            if multi_modal_inputs is not None:  # VLM case
+                logger.debug(f"rank {dist.get_rank()} VLM branch")
+                prompt = [p["prompt"] for p in multi_modal_inputs]
+
+                # Handle cases where some prompts might not have images
+                # Flatten nested list format if needed: [[PIL.Image]] -> [PIL.Image]
+                image = [(img[0] if isinstance(img, list) and len(img) > 0 else img)
+                         for img in (p.get("multi_modal_data", {}).get("image") for p in multi_modal_inputs)]
+
+                sglang_outputs = self.inference_engine.generate(
+                    sampling_params=sampling_params,
+                    prompt=prompt,  # skip_tokenizer_init must be False
+                    image_data=image,
+                )
+
+                # VLM case: prompt_token_ids should be provided separately or extracted from sglang output
+                # Since sglang doesn't return prompt_token_ids in VLM mode, we set it to None here
+                # and expect the caller to fill it in if needed
+                return [
+                    EasyDict(
+                        prompt_token_ids=None,  # Will be filled by caller if needed
+                        output_token_ids=sglang_outputs[i]["output_ids"],
+                    ) for i in range(len(sglang_outputs))
+                ]
+            else:  # text-only case
+                logger.debug(f"rank {dist.get_rank()} text-only branch")
+                sglang_outputs = self.inference_engine.generate(
+                    sampling_params=sampling_params,
+                    input_ids=prompt_token_ids,
+                    image_data=None,
+                )
+                # Text-only case: prompt_token_ids is available from input
+                return [
+                    EasyDict(
+                        prompt_token_ids=prompt_token_ids[i],
+                        output_token_ids=sglang_outputs[i]["output_ids"],
+                    ) for i in range(len(sglang_outputs))
+                ]
         else:
             raise ValueError(f"Unsupported engine type: {self.inference_engine_type}")
 
@@ -919,7 +955,12 @@ class StrategyBase(ABC):
             raise NotImplementedError("Inference engine is not initialized.")
         self.wakeup_inference_engine()
 
-        is_multimodal = all_images is not None or all_videos is not None
+        # is_multimodal = all_images is not None
+        # NOTE: not only check if all_images is None, but also check if it contains non-None elements
+        # If all_images is [None, None, ...], any(img is not None for img in all_images) will return False
+        # Same logic applies to all_videos
+        is_multimodal = (((all_images is not None) and any(img is not None for img in all_images))
+                         or ((all_videos is not None) and any(vid is not None for vid in all_videos)))
 
         if is_multimodal:
             inputs = self._build_multimodal_inputs(
@@ -950,8 +991,11 @@ class StrategyBase(ABC):
         local_outputs = all_outputs[cur_rank * num_prompts_per_rank:(cur_rank + 1) * num_prompts_per_rank]
 
         if self.inference_engine_type == "sglang":
+            # For SGLang VLM case, prompt_token_ids is set to None in engine_generate_local
+            # We need to fill it with the actual token_ids here
             for i, output in enumerate(local_outputs):
-                output.prompt_token_ids = all_prompt_token_ids[i]
+                if output.prompt_token_ids is None:
+                    output.prompt_token_ids = all_prompt_token_ids[i]
 
         if sleep_engine is True:
             self.maybe_sleep_inference_engine()

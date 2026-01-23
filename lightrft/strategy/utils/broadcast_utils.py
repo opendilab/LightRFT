@@ -7,6 +7,8 @@ Data Parallel v2). It handles the complexities of gathering sharded
 parameters and efficiently transferring them to inference engines like vllm and sglang.
 """
 
+from typing import Any
+
 import deepspeed
 import torch
 from torch.distributed.tensor import DTensor
@@ -26,7 +28,7 @@ class BroadcastManager:
     :param strategy: The training strategy object containing configuration and methods
     :param inference_engine: The inference engine (vllm or sglang) to receive the weights
     """
-    def __init__(self, actor, strategy, inference_engine) -> None:
+    def __init__(self, actor: torch.nn.Module, strategy: Any, inference_engine: Any) -> None:
         """
         Initialize the BroadcastManager with the necessary components.
 
@@ -40,6 +42,46 @@ class BroadcastManager:
         self.actor = actor
         self.strategy = strategy
         self.inference_engine = inference_engine
+
+    def _map_weight_name_for_sglang(self, name: str) -> str:
+        """
+        Map weight names from training model format to SGLang format.
+
+        Training model (Qwen2.5-VL with wrapper):
+        - model.visual.xxx
+        - model.language_model.embed_tokens
+        - model.language_model.layers.xxx
+        - model.language_model.norm
+        - model.language_model.lm_head
+
+        SGLang expects:
+        - visual.xxx
+        - model.embed_tokens
+        - model.layers.xxx
+        - model.norm
+        - lm_head
+
+        :param name: Original weight name from training model
+        :return: Mapped weight name for SGLang
+        """
+        # Step 1: Remove outermost "model." prefix if present
+        if name.startswith("model."):
+            name = name[6:]  # Remove "model."
+
+        # Step 2: Handle language_model prefix mapping
+        if name.startswith("language_model."):
+            # Remove "language_model." prefix
+            name = name[15:]  # Remove "language_model."
+
+            # For lm_head, keep as is (no "model." prefix)
+            if name.startswith("lm_head"):
+                return name
+
+            # For other components (embed_tokens, layers, norm), add "model." prefix
+            return f"model.{name}"
+
+        # Step 3: Return as is for other cases (e.g., visual.xxx)
+        return name
 
     def _deepspeed_broadcast(self):
         """
@@ -68,9 +110,20 @@ class BroadcastManager:
                 if self.strategy.engine_type == "vllm":
                     self.inference_engine.llm_engine.model_executor.collective_rpc("update_weight", kwargs=kwargs)
                 elif self.strategy.engine_type == "sglang":
-                    self.inference_engine.update_weights_from_tensor(
-                        name, param.data, flush_cache=(count == num_params)
-                    )
+                    if self.strategy.args.text_only:
+                        # for LLM
+                        self.inference_engine.update_weights_from_tensor(
+                            name, param.data, flush_cache=(count == num_params)
+                        )
+                    else:
+                        # for VLM
+                        # Map weight names from training model to SGLang format
+                        # Training model: model.visual.xxx, model.language_model.xxx
+                        # SGLang expects: visual.xxx, model.xxx (for language model), lm_head
+                        sglang_name = self._map_weight_name_for_sglang(name)
+                        self.inference_engine.update_weights_from_tensor(
+                            sglang_name, param.data, flush_cache=(count == num_params)
+                        )
 
     def _fsdp_v2_broadcast(self):
         """
@@ -103,9 +156,21 @@ class BroadcastManager:
                 )
                 self.inference_engine.llm_engine.model_executor.collective_rpc("update_weight", kwargs=kwargs)
             elif self.strategy.engine_type == "sglang":
-                self.inference_engine.update_weights_from_tensor(
-                    name, full_param.data, flush_cache=(count == num_params)
-                )
+                if self.strategy.args.text_only:
+                    # for LLM
+                    self.inference_engine.update_weights_from_tensor(
+                        name, param.data, flush_cache=(count == num_params)
+                    )
+                else:
+                    # for VLM
+                    # Map weight names from training model to SGLang format
+                    # Training model: model.visual.xxx, model.language_model.xxx
+                    # SGLang expects: visual.xxx, model.xxx (for language model), lm_head
+                    sglang_name = self._map_weight_name_for_sglang(name)
+                    self.inference_engine.update_weights_from_tensor(
+                        sglang_name, param.data, flush_cache=(count == num_params)
+                    )
+
             del param_on_device
             del full_param
 

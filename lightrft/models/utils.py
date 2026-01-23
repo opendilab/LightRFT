@@ -13,7 +13,7 @@ The module is particularly useful for:
 - Handling position IDs in packed sequence scenarios for transformer models
 """
 
-from typing import List, Optional, Union, Tuple
+from typing import List, Optional, Union, Tuple, Dict, Callable
 
 from loguru import logger
 import torch
@@ -531,7 +531,7 @@ def masked_mean(tensor: torch.Tensor, mask: Optional[torch.Tensor], dim: int = N
     return (tensor * mask).sum(axis=dim) / mask.sum(axis=dim)
 
 
-def unpacking_samples(values: torch.Tensor, packed_seqlens: list[int]):
+def unpacking_samples(values: torch.Tensor, packed_seqlens: list[int]) -> list[torch.Tensor]:
     """
     Unpack concatenated sequences into individual sequences.
 
@@ -562,7 +562,7 @@ def unpacking_samples(values: torch.Tensor, packed_seqlens: list[int]):
     return unpacked_values
 
 
-def pad_to_length(tensor, length, pad_value, dim=-1):
+def pad_to_length(tensor: torch.Tensor, length: int, pad_value: Union[int, float], dim: int = -1) -> torch.Tensor:
     """
     Left-pad a tensor to a target length along a given dimension.
 
@@ -590,10 +590,12 @@ def pad_to_length(tensor, length, pad_value, dim=-1):
 
 
 def concatenated_forward(
-    model, input0_ids, input0_mask, input1_ids, input1_mask, input0_img_pixels, input0_img_grid_thws, input1_img_pixels,
-    input1_img_grid_thws, input0_video_pixels, input0_video_grid_thws, input1_video_pixels, input1_video_grid_thws,
-    pad_token_id: int
-):
+    model: Callable, input0_ids: torch.Tensor, input0_mask: torch.Tensor, input1_ids: torch.Tensor,
+    input1_mask: torch.Tensor, input0_img_pixels: Optional[torch.Tensor], input0_img_grid_thws: Optional[torch.Tensor],
+    input1_img_pixels: Optional[torch.Tensor], input1_img_grid_thws: Optional[torch.Tensor],
+    input0_video_pixels: Optional[torch.Tensor], input0_video_grid_thws: Optional[torch.Tensor],
+    input1_video_pixels: Optional[torch.Tensor], input1_video_grid_thws: Optional[torch.Tensor], pad_token_id: int
+) -> Tuple[Dict[str, torch.Tensor], Dict[str, torch.Tensor]]:
     """
     Concatenates paired candidate inputs and runs a forward pass for vision-language models.
 

@@ -8,9 +8,10 @@ scenarios where checkpoints are saved periodically with incremental step numbers
 
 import os
 import re
+from typing import Optional
 
 
-def find_latest_checkpoint_dir(load_dir, prefix="global_step"):
+def find_latest_checkpoint_dir(load_dir: str, prefix: str = "global_step") -> Optional[str]:
     """
     Finds the latest subdirectory within the specified directory whose name
     matches the '<prefix><number>' format.
