@@ -4,17 +4,20 @@ Advantage Calculator Module
 This module provides a unified interface for computing advantages and returns
 in reinforcement learning from human feedback (RLHF) and reinforcement
 learning with verifiable rewards (RLVR) workflows. It abstracts
-different advantage estimation methods (GAE, CPGD, REINFORCE, etc.) into a
-common interface, making it easy to add new methods and maintain existing ones.
+different advantage estimation methods (REINFORCE, GAE, Group Norm, RLOO,
+REINFORCE-Baseline, CPGD, etc.) into a common interface, making it easy to
+add new methods and maintain existing ones.
 
 The module includes:
     - AdvantageCalculator: Abstract base class defining the standard interface
-    - Concrete implementations for various advantage estimation methods
+    - BaseREINFORCECalculator: Base class for all cumulative return-based methods
+    - Concrete implementations: GAE, Group Norm (GRPO), RLOO,
+      REINFORCE-Baseline, and CPGD
     - Factory function for creating calculator instances
 
 Key Features:
     - Unified interface for all advantage computation methods
-    - Support for reward preprocessing (e.g., RLOO, Group Norm)
+    - Support for reward preprocessing (e.g., REINFORCE-Baseline, RLOO, Group Norm)
     - Configurable advantage whitening and clipping
     - Efficient batch processing
 """
@@ -491,22 +494,9 @@ class BaseREINFORCECalculator(AdvantageCalculator):
         return advantages, returns, info_dict
 
 
-class REINFORCECalculator(BaseREINFORCECalculator):
-    """
-    Standard REINFORCE calculator.
-
-    Computes cumulative returns and uses them as advantages.
-    Supports advantage whitening and clipping.
-
-    Reference: REINFORCE: Williams, R. J. (1992). Simple statistical gradient-following
-    algorithms for connectionist reinforcement learning. Machine learning, 8(3-4), 229-256.
-    """
-    pass
-
-
 class RLOOCalculator(BaseREINFORCECalculator):
     """
-    Reward Leave-One-Out (RLOO) calculator.
+    REINFORCE Leave-One-Out (RLOO) calculator.
 
     Uses leave-one-out baseline for variance reduction. Requires reward
     preprocessing to compute the baseline.
@@ -703,7 +693,7 @@ def get_advantage_calculator(estimator_name: str, config) -> AdvantageCalculator
     :raises ValueError: If estimator_name is not recognized
     """
     calculator_map = {
-        "reinforce": REINFORCECalculator,
+        "reinforce": BaseREINFORCECalculator,
         "gae": GAECalculator,
         "group_norm": GroupNormCalculator,
         "rloo": RLOOCalculator,
