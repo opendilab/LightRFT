@@ -21,11 +21,7 @@ WORKDIR /app
 COPY requirements.txt .
 
 # 1. 先安装基础依赖
-# 2. 安装 flash-attn (官方镜像通常已带，但指定版本安装更稳妥)
-# 3. 安装 vllm 和 sglang (LightRFT 的核心推理引擎)
-RUN pip install --no-cache-dir -r requirements.txt \
-    && pip install --no-cache-dir flash-attn==2.8.3 --no-build-isolation \
-    && pip install --no-cache-dir vllm>=0.13.3 sglang>=0.5.6.post2
+RUN pip install --no-cache-dir -r requirements.txt
 
 # 复制整个仓库代码
 COPY . .
