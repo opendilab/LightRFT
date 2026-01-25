@@ -1,49 +1,31 @@
-# 使用 NVIDIA 官方提供的 CUDA 12.8 开发镜像作为基础
-# 这确保了底层驱动和编译环境的兼容性
-FROM nvidia/cuda:12.8.0-devel-ubuntu22.04
+# 使用 NVIDIA 官方提供的 PyTorch 25.01 镜像 (包含 PyTorch 2.5+, CUDA 12.8)
+# 这是目前 CUDA 集群环境下最稳定、性能最好的基础镜像
+FROM nvcr.io/nvidia/pytorch:25.01-py3
 
-# 设置环境变量，避免交互式安装时的提示
+# 设置环境变量
 ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ=Asia/Shanghai
+ENV PYTHONUNBUFFERED=1
 
-# 安装 Python 3.12 和必要的基础工具
+# 安装 LightRFT 视觉任务和视频处理所需的系统库
 RUN apt-get update && apt-get install -y \
-    python3.12 \
-    python3.12-dev \
-    python3.12-distutils \
-    python3-pip \
-    git \
-    wget \
-    curl \
     libgl1 \
     libglib2.0-0 \
+    ffmpeg \
     && rm -rf /var/lib/apt/lists/*
-
-# 将 python3.12 设置为默认 python
-RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 1 \
-    && update-alternatives --set python3 /usr/bin/python3.12 \
-    && update-alternatives --install /usr/bin/python python /usr/bin/python3.12 1 \
-    && update-alternatives --set python /usr/bin/python3.12
-
-# 升级 pip
-RUN python -m pip install --upgrade pip
-
-# 安装 PyTorch 2.9.1 (针对 CUDA 12.8)
-# 注意：在 2026 年，请根据当时的官方指令调整 index-url
-RUN pip install torch==2.9.1 torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128
-
-# 安装 flash-attn (由于编译较慢，建议优先尝试官方预编译包)
-# 如果预编译包不可用，此步骤会尝试从源码编译
-RUN pip install flash-attn==2.8.3 --no-build-isolation
 
 # 设置工作目录
 WORKDIR /app
 
-# 先复制 requirements.txt 以利用 Docker 缓存
+# 复制依赖文件
 COPY requirements.txt .
 
-# 安装其他依赖
-RUN pip install -r requirements.txt
+# 1. 先安装基础依赖
+# 2. 安装 flash-attn (官方镜像通常已带，但指定版本安装更稳妥)
+# 3. 安装 vllm 和 sglang (LightRFT 的核心推理引擎)
+RUN pip install --no-cache-dir -r requirements.txt \
+    && pip install --no-cache-dir flash-attn==2.8.3 --no-build-isolation \
+    && pip install --no-cache-dir vllm>=0.13.3 sglang>=0.5.6.post2
 
 # 复制整个仓库代码
 COPY . .
@@ -51,9 +33,9 @@ COPY . .
 # 以开发模式安装 LightRFT
 RUN pip install -e .
 
-# 设置环境变量以优化 CUDA 集群下的性能
+# 集群环境性能优化环境变量
 ENV NCCL_DEBUG=INFO
-ENV PYTHONUNBUFFERED=1
+ENV TORCH_CUDA_ARCH_LIST="8.0;8.6;8.9;9.0"
 
-# 默认启动命令（可以根据实际需要修改）
+# 默认启动命令
 CMD ["/bin/bash"]
