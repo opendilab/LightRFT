@@ -31,6 +31,8 @@ RUN pip install vllm==0.13.0  --no-cache-dir --force-reinstall
 # 1. 先安装基础依赖
 # RUN pip install --no-cache-dir -r requirements.txt
 
+RUN apt install -y aria2
+
 # 复制整个仓库代码
 COPY . .
 
@@ -50,7 +52,7 @@ RUN \
     pip install mathruler && \
     pip install pylatexenc
 
-RUN apt install -y aria2
+
 RUN aria2c -x 16 -s 16 "https://github.com/Dao-AILab/flash-attention/releases/download/v2.8.3/flash_attn-2.8.3+cu12torch2.9cxx11abiTRUE-cp312-cp312-linux_x86_64.whl"
 RUN pip install  flash_attn-2.8.3+cu12torch2.9cxx11abiTRUE-cp312-cp312-linux_x86_64.whl
 
