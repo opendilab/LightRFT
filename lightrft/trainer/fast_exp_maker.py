@@ -252,6 +252,12 @@ class MultimodalDataProcessor:
             all_prompt_token_ids_text = []
 
         # ===== Stage 3-B: Multimodal processing =====
+        all_prompt_token_ids_multimodal = []
+        all_images_pixel_values_multimodal = None
+        all_videos_pixel_values_multimodal = None
+        all_images_grid_thw_multimodal = None
+        all_videos_grid_thw_multimodal = None
+
         if len(all_prompts_multimodal) > 0:
             assert self.processor is not None, "Processor required for multimodal data"
 
@@ -288,13 +294,6 @@ class MultimodalDataProcessor:
 
             all_images_grid_thw_multimodal = inputs_multimodal.get("image_grid_thw", None)
             all_videos_grid_thw_multimodal = inputs_multimodal.get("video_grid_thw", None)
-
-        else:
-            all_images_pixel_values_multimodal = None
-            all_videos_pixel_values_multimodal = None
-
-            all_images_grid_thw_multimodal = None
-            all_videos_grid_thw_multimodal = None
 
         # ===== Stage 4: Merge back in original order =====
         total_samples = L * N
