@@ -1,12 +1,8 @@
 torch>=2.9.1
 flash-attn==2.8.3
 sglang>=0.5.6.post2
-# sglang requires transformers==4.57.1
-# transformers>=4.57.3
-transformers>=4.57.1
-# slgang requires llguidance<0.8.0,>=0.7.11
-# but vllm requires llguidance<1.4.0,>=1.3.0
-# vllm>=0.13.3
+transformers>=4.57.3
+vllm>=0.13.3
 deepspeed>=0.18.3
 easydict
 decord
