@@ -1574,12 +1574,15 @@ class FastExperienceMaker(NaiveExperienceMaker):
                 if "action_entropy" in model_output:
                     output.action_entropy = model_output["action_entropy"]
             else:
+                _params = dict(output.inputs_extra_kwargs)
+                if 'pixel_values_video' in _params:
+                    del _params['pixel_values_video']
                 output.action_log_probs = self.actor(
                     output.sequences,
                     output.num_actions,
                     output.attention_mask,
                     packed_seq_lens=output.packed_seq_lens,
-                    **output.inputs_extra_kwargs
+                    **_params,
                 )
         Timer.stop('    actor_logprob')
 
