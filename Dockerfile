@@ -1,48 +1,49 @@
-# 使用 NVIDIA 官方提供的 PyTorch 25.01 镜像 (包含 PyTorch 2.5+, CUDA 12.8)
-# 这是目前 CUDA 集群环境下最稳定、性能最好的基础镜像
+# Use NVIDIA official PyTorch 25.01 image (includes PyTorch 2.5+, CUDA 12.8)
+# This is the most stable and performant base image for CUDA cluster environments
 FROM nvcr.io/nvidia/pytorch:25.01-py3
 
-# 设置环境变量
-ENV DEBIAN_FRONTEND=noninteractive
-ENV TZ=Asia/Shanghai
-ENV PYTHONUNBUFFERED=1
+# Set environment variables for non-interactive installation and optimization
+ENV DEBIAN_FRONTEND=noninteractive \
+    TZ=Asia/Shanghai \
+    PYTHONUNBUFFERED=1 \
+    NCCL_DEBUG=INFO \
+    PYTHONPATH=/app
 
-# 安装 LightRFT 视觉任务和视频处理所需的系统库
+# Install all system dependencies in a single layer
 RUN apt-get update && apt-get install -y \
     libgl1 \
     libglib2.0-0 \
     ffmpeg \
-    && rm -rf /var/lib/apt/lists/*
+    aria2 \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
 
-# 设置工作目录
+# Set working directory
 WORKDIR /app
 
-# 复制依赖文件
+# Copy requirements file first for better Docker layer caching
 COPY requirements.txt .
 
-
+# Install PyTorch packages - CRITICAL: Order must not be changed due to environment sensitivity
 RUN pip install torch==2.9.0 torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128
+
+# Install ninja for compilation support
 RUN pip install ninja
+
+# Install DeepSpeed with specific build configuration - CRITICAL: Order sensitive
 RUN pip install deepspeed==0.18.3 --no-binary deepspeed --no-cache-dir --force-reinstall
-RUN pip install vllm==0.13.0  --no-cache-dir --force-reinstall
 
+# Install vLLM - CRITICAL: Order sensitive
+RUN pip install vllm==0.13.0 --no-cache-dir --force-reinstall
 
-
-# 1. 先安装基础依赖
-# RUN pip install --no-cache-dir -r requirements.txt
-
-RUN apt-get update && apt install -y aria2 && rm -rf /var/lib/apt/lists/*
-
-# 复制整个仓库代码
+# Copy application code
 COPY . .
 
-# 以开发模式安装 LightRFT
-# RUN pip install -e .
-
+# Install LightRFT package without dependencies to avoid conflicts
 RUN pip install --no-deps .
 
-RUN \
-    pip install datasets && \
+# Install additional Python dependencies - CRITICAL: Order must be maintained
+RUN pip install datasets && \
     pip install librosa && \
     pip install peft && \
     pip install tensorboard && \
@@ -52,16 +53,14 @@ RUN \
     pip install mathruler && \
     pip install pylatexenc
 
+# Download and install Flash Attention wheel - CRITICAL: Must be after PyTorch installation
+RUN aria2c -x 16 -s 16 "https://github.com/Dao-AILab/flash-attention/releases/download/v2.8.3/flash_attn-2.8.3+cu12torch2.9cxx11abiTRUE-cp312-cp312-linux_x86_64.whl" \
+    && pip install flash_attn-2.8.3+cu12torch2.9cxx11abiTRUE-cp312-cp312-linux_x86_64.whl \
+    && rm -f flash_attn-2.8.3+cu12torch2.9cxx11abiTRUE-cp312-cp312-linux_x86_64.whl
 
-RUN aria2c -x 16 -s 16 "https://github.com/Dao-AILab/flash-attention/releases/download/v2.8.3/flash_attn-2.8.3+cu12torch2.9cxx11abiTRUE-cp312-cp312-linux_x86_64.whl"
-RUN pip install  flash_attn-2.8.3+cu12torch2.9cxx11abiTRUE-cp312-cp312-linux_x86_64.whl
-
+# Install SGLang - CRITICAL: Must be last in the installation sequence
 RUN pip install sglang==0.5.6.post2
 
-# 集群环境性能优化环境变量
-ENV NCCL_DEBUG=INFO
-ENV TORCH_CUDA_ARCH_LIST="8.0;8.6;8.9;9.0"
-ENV PYTHONPATH=/app
-
-# 默认启动命令
+# Default command
 CMD ["/bin/bash"]
+
