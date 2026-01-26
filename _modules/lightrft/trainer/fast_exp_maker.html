@@ -356,6 +356,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">lightrft.utils.remote_rm_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">remote_rm_fn</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">lightrft.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">Timer</span><span class="p">,</span> <span class="n">get_current_device</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">RunningMoments</span><span class="p">,</span> <span class="n">compute_clip_fraction</span><span class="p">,</span> <span class="n">get_cpgd_advantages_returns</span><span class="p">,</span> <span class="n">fire_sampling</span><span class="p">,</span> <span class="n">vllm_ge_0130</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.advantage_calculator</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_advantage_calculator</span><span class="p">,</span> <span class="n">normalize_advantages_cross_batch</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.image_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">normalize_images</span><span class="p">,</span> <span class="n">get_images_num</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.video_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">normalize_videos</span><span class="p">,</span> <span class="n">get_videos_num</span>
 
@@ -1203,6 +1204,10 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">reward_running_moments</span> <span class="o">=</span> <span class="kc">None</span>
 
+        <span class="c1"># Initialize advantage calculator</span>
+        <span class="n">advantage_estimator</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">advantage_estimator</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">advantage_calculator</span> <span class="o">=</span> <span class="n">get_advantage_calculator</span><span class="p">(</span><span class="n">advantage_estimator</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">config</span><span class="p">)</span>
+
         <span class="c1"># Initialize helper modules</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">processor</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">multimodal_processor</span> <span class="o">=</span> <span class="n">MultimodalDataProcessor</span><span class="p">(</span>
@@ -1734,62 +1739,8 @@
             <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;dynamic_sampling not implemented for </span><span class="si">{</span><span class="n">config</span><span class="o">.</span><span class="n">advantage_estimator</span><span class="si">}</span><span class="s2">, ignoring&quot;</span><span class="p">,</span> <span class="ne">UserWarning</span><span class="p">)</span>
 
         <span class="c1"># ========== Advantage Estimator-Specific Shaping ==========</span>
-        <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">advantage_estimator</span> <span class="o">==</span> <span class="s2">&quot;rloo&quot;</span><span class="p">:</span>
-            <span class="c1"># RLOO: Leave-one-out baseline</span>
-            <span class="n">rewards</span> <span class="o">=</span> <span class="n">rewards</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">n_samples_per_prompt</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;cuda&quot;</span><span class="p">)</span>
-            <span class="n">baseline</span> <span class="o">=</span> <span class="p">(</span><span class="n">rewards</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">-</span> <span class="n">rewards</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">n_samples_per_prompt</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
-            <span class="n">rewards</span> <span class="o">=</span> <span class="n">rewards</span> <span class="o">-</span> <span class="n">baseline</span>
-            <span class="n">rewards</span> <span class="o">=</span> <span class="n">rewards</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;cpu&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">chunk</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">experiences</span><span class="p">))</span>
-            <span class="k">return</span> <span class="n">experiences</span><span class="p">,</span> <span class="n">rewards</span>
-
-        <span class="k">elif</span> <span class="n">config</span><span class="o">.</span><span class="n">advantage_estimator</span> <span class="o">==</span> <span class="s2">&quot;reinforce_baseline&quot;</span><span class="p">:</span>
-            <span class="c1"># REINFORCE with baseline (mean subtraction)</span>
-            <span class="n">rewards</span> <span class="o">=</span> <span class="n">rewards</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">n_samples_per_prompt</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;cuda&quot;</span><span class="p">)</span>
-            <span class="n">rewards</span> <span class="o">=</span> <span class="n">rewards</span> <span class="o">-</span> <span class="n">rewards</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-            <span class="n">rewards</span> <span class="o">=</span> <span class="n">rewards</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;cpu&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">chunk</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">experiences</span><span class="p">))</span>
-            <span class="k">return</span> <span class="n">experiences</span><span class="p">,</span> <span class="n">rewards</span>
-
-        <span class="k">elif</span> <span class="n">config</span><span class="o">.</span><span class="n">advantage_estimator</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;group_norm&quot;</span><span class="p">,</span> <span class="s2">&quot;grpo&quot;</span><span class="p">]:</span>
-            <span class="c1"># Group normalization with optional dynamic filtering</span>
-            <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">dynamic_sampling</span><span class="p">:</span>
-                <span class="n">step_size</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">n_samples_per_prompt</span> <span class="o">//</span> <span class="n">config</span><span class="o">.</span><span class="n">micro_train_batch_size</span>
-                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">experiences</span><span class="p">),</span> <span class="n">step_size</span><span class="p">):</span>
-                    <span class="n">chunk</span> <span class="o">=</span> <span class="n">experiences</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">i</span> <span class="o">+</span> <span class="n">step_size</span><span class="p">]</span>
-                    <span class="n">chunk_rewards</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">exp</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;reward&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">exp</span> <span class="ow">in</span> <span class="n">chunk</span><span class="p">])</span>
-
-                    <span class="c1"># Filter out degenerate cases (all 0s or all 1s)</span>
-                    <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">chunk_rewards</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">or</span> <span class="n">torch</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">chunk_rewards</span> <span class="o">==</span> <span class="mi">1</span><span class="p">):</span>
-                        <span class="k">for</span> <span class="n">exp</span> <span class="ow">in</span> <span class="n">chunk</span><span class="p">:</span>
-                            <span class="n">exp</span><span class="o">.</span><span class="n">action_mask</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">exp</span><span class="o">.</span><span class="n">action_mask</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">bool</span><span class="p">)</span>
-
-            <span class="c1"># # Normalize within groups</span>
-            <span class="c1"># rewards = rewards.reshape(-1, config.n_samples_per_prompt).to(&quot;cuda&quot;)</span>
-            <span class="c1"># rewards = (rewards - rewards.mean(-1, keepdim=True)) / (rewards.std(-1, keepdim=True) + 1e-9)</span>
-            <span class="c1"># # rewards = rewards.flatten().to(&quot;cpu&quot;).chunk(len(experiences))</span>
-            <span class="c1"># rewards = rewards.reshape(-1).to(device=&quot;cpu&quot;).chunk(len(experiences))</span>
-
-            <span class="c1"># import torch.distributed as dist</span>
-            <span class="c1"># if dist.get_rank() == 0 and DEBUG_ENABLED:</span>
-            <span class="c1">#     print(f&quot;rank {dist.get_rank()} Entering debug mode, input &#39;interact&#39; to enter full Python debugging. Set DEBUG_ENABLED = False to skip debug mode&quot;)  # noqa</span>
-            <span class="c1">#     import ipdb; ipdb.set_trace()</span>
-            <span class="c1"># # Synchronization point to prevent other processes from running ahead</span>
-            <span class="c1"># dist.barrier()</span>
-
-            <span class="c1"># Ensure rewards are float32. If rewards are float16 or bfloat16, 1e-9 may</span>
-            <span class="c1"># underflow to 0, causing division by zero (NaN).</span>
-            <span class="c1"># Normalize within groups</span>
-            <span class="n">rewards</span> <span class="o">=</span> <span class="n">rewards</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">n_samples_per_prompt</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;cuda&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
-            <span class="n">baseline</span> <span class="o">=</span> <span class="n">rewards</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-            <span class="n">rewards</span> <span class="o">=</span> <span class="p">(</span><span class="n">rewards</span> <span class="o">-</span> <span class="n">baseline</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">rewards</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">+</span> <span class="mf">1e-9</span><span class="p">)</span>
-            <span class="n">rewards</span> <span class="o">=</span> <span class="n">rewards</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;cpu&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">chunk</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">experiences</span><span class="p">))</span>
-
-            <span class="k">return</span> <span class="n">experiences</span><span class="p">,</span> <span class="n">rewards</span>
-
-        <span class="k">elif</span> <span class="n">config</span><span class="o">.</span><span class="n">advantage_estimator</span> <span class="o">==</span> <span class="s2">&quot;cpgd&quot;</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">experiences</span><span class="p">,</span> <span class="p">[</span><span class="n">experience</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;reward&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">experience</span> <span class="ow">in</span> <span class="n">experiences</span><span class="p">]</span>
-
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown advantage_estimator: </span><span class="si">{</span><span class="n">config</span><span class="o">.</span><span class="n">advantage_estimator</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="c1"># Use calculator&#39;s preprocess_rewards method</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">advantage_calculator</span><span class="o">.</span><span class="n">preprocess_rewards</span><span class="p">(</span><span class="n">rewards</span><span class="p">,</span> <span class="n">experiences</span><span class="p">,</span> <span class="n">max_new_tokens</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_compute_advantages_and_returns</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -1844,48 +1795,17 @@
             <span class="p">)</span>
 
             <span class="c1"># ========== Advantage Estimation ==========</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">advantage_estimator</span> <span class="o">==</span> <span class="s2">&quot;cpgd&quot;</span><span class="p">:</span>
-                <span class="n">experience</span><span class="o">.</span><span class="n">advantages</span><span class="p">,</span> <span class="n">experience</span><span class="o">.</span><span class="n">returns</span> <span class="o">=</span> <span class="n">get_cpgd_advantages_returns</span><span class="p">(</span>
-                    <span class="n">final_reward</span><span class="p">,</span> <span class="n">experience</span><span class="o">.</span><span class="n">action_mask</span>
-                <span class="p">)</span>
+            <span class="c1"># Compute advantages and returns using calculator</span>
+            <span class="n">gamma</span> <span class="o">=</span> <span class="n">generate_kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;gamma&quot;</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+            <span class="n">experience</span><span class="o">.</span><span class="n">advantages</span><span class="p">,</span> <span class="n">experience</span><span class="o">.</span><span class="n">returns</span><span class="p">,</span> <span class="n">info_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">advantage_calculator</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span>
+                <span class="n">experience</span><span class="p">,</span>
+                <span class="n">final_reward</span><span class="p">,</span>
+                <span class="n">gamma</span><span class="o">=</span><span class="n">gamma</span><span class="p">,</span>
+                <span class="n">generate_kwargs</span><span class="o">=</span><span class="n">generate_kwargs</span><span class="p">,</span>
+            <span class="p">)</span>
 
-            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">advantage_estimator</span> <span class="o">==</span> <span class="s2">&quot;gae&quot;</span><span class="p">:</span>
-                <span class="n">experience</span><span class="o">.</span><span class="n">advantages</span><span class="p">,</span> <span class="n">experience</span><span class="o">.</span><span class="n">returns</span><span class="p">,</span> <span class="n">experience</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;advantage_clip_frac&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">get_advantages_and_returns</span><span class="p">(</span>
-                        <span class="n">experience</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
-                        <span class="n">final_reward</span><span class="p">,</span>
-                        <span class="n">experience</span><span class="o">.</span><span class="n">action_mask</span><span class="p">,</span>
-                        <span class="n">generate_kwargs</span><span class="p">[</span><span class="s2">&quot;gamma&quot;</span><span class="p">],</span>
-                        <span class="n">generate_kwargs</span><span class="p">[</span><span class="s2">&quot;lambd&quot;</span><span class="p">],</span>
-                    <span class="p">)</span>
-                <span class="p">)</span>
-
-            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">advantage_estimator</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;reinforce&quot;</span><span class="p">,</span> <span class="s2">&quot;rloo&quot;</span><span class="p">,</span> <span class="s2">&quot;reinforce_baseline&quot;</span><span class="p">,</span> <span class="s2">&quot;group_norm&quot;</span><span class="p">]:</span>
-                <span class="c1"># Compute cumulative returns</span>
-                <span class="n">experience</span><span class="o">.</span><span class="n">returns</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_cumulative_returns</span><span class="p">(</span>
-                    <span class="n">final_reward</span><span class="p">,</span> <span class="n">experience</span><span class="o">.</span><span class="n">action_mask</span><span class="p">,</span> <span class="n">generate_kwargs</span><span class="p">[</span><span class="s2">&quot;gamma&quot;</span><span class="p">]</span>
-                <span class="p">)</span>
-                <span class="n">experience</span><span class="o">.</span><span class="n">advantages</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="n">experience</span><span class="o">.</span><span class="n">returns</span><span class="p">)</span>
-
-                <span class="c1"># Advantage whitening</span>
-                <span class="c1"># Whether to apply normalization over the entire Batch in the Trainer&#39;s train_step</span>
-                <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">advantages_norm</span><span class="p">:</span>
-                    <span class="n">masked_adv</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">masked_select</span><span class="p">(</span><span class="n">experience</span><span class="o">.</span><span class="n">advantages</span><span class="p">,</span> <span class="n">experience</span><span class="o">.</span><span class="n">action_mask</span><span class="p">)</span>
-                    <span class="n">adv_mean</span> <span class="o">=</span> <span class="n">masked_adv</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
-                    <span class="n">adv_std</span> <span class="o">=</span> <span class="n">masked_adv</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
-                    <span class="n">experience</span><span class="o">.</span><span class="n">advantages</span> <span class="o">=</span> <span class="p">(</span><span class="n">experience</span><span class="o">.</span><span class="n">advantages</span> <span class="o">-</span> <span class="n">adv_mean</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">adv_std</span> <span class="o">+</span> <span class="mf">1e-9</span><span class="p">)</span>
-
-                <span class="c1"># Advantage clipping</span>
-                <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">advantage_clip</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-                    <span class="n">experience</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;advantage_clip_frac&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">compute_clip_fraction</span><span class="p">(</span>
-                        <span class="n">experience</span><span class="o">.</span><span class="n">advantages</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">advantage_clip</span><span class="p">,</span> <span class="o">-</span><span class="n">config</span><span class="o">.</span><span class="n">advantage_clip</span>
-                    <span class="p">)</span>
-                    <span class="n">experience</span><span class="o">.</span><span class="n">advantages</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span>
-                        <span class="n">experience</span><span class="o">.</span><span class="n">advantages</span><span class="p">,</span> <span class="o">-</span><span class="n">config</span><span class="o">.</span><span class="n">advantage_clip</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">advantage_clip</span>
-                    <span class="p">)</span>
-
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown advantage_estimator: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">advantage_estimator</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="c1"># Update experience info with calculator&#39;s info dict</span>
+            <span class="n">experience</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">info_dict</span><span class="p">)</span>
 
             <span class="c1"># ========== Store Episode Return ==========</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">packing_samples</span><span class="p">:</span>
@@ -1896,6 +1816,10 @@
             <span class="c1"># Cleanup</span>
             <span class="n">experience</span><span class="o">.</span><span class="n">kl</span> <span class="o">=</span> <span class="kc">None</span>
             <span class="k">del</span> <span class="n">experience</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;num_actions&quot;</span><span class="p">]</span>
+
+        <span class="c1"># ========== Cross-batch Advantage Normalization ==========</span>
+        <span class="c1"># Use the utility function for cross-batch normalization</span>
+        <span class="n">experiences</span> <span class="o">=</span> <span class="n">normalize_advantages_cross_batch</span><span class="p">(</span><span class="n">experiences</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">advantage_estimator</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">args</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">experiences</span>
 

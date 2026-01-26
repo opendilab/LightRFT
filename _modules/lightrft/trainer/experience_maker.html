@@ -313,6 +313,7 @@
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">lightrft.models.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">compute_approx_kl</span><span class="p">,</span> <span class="n">compute_reward</span><span class="p">,</span> <span class="n">masked_mean</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">lightrft.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">init_logger</span><span class="p">,</span> <span class="n">remote_rm_fn</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.advantage_calculator</span><span class="w"> </span><span class="kn">import</span> <span class="n">normalize_advantages_cross_batch</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">init_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
@@ -704,6 +705,10 @@
             <span class="c1"># Remove unnecessary info</span>
             <span class="n">experience</span><span class="o">.</span><span class="n">kl</span> <span class="o">=</span> <span class="kc">None</span>
             <span class="k">del</span> <span class="n">experience</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;num_actions&quot;</span><span class="p">]</span>
+
+        <span class="c1"># Cross-batch advantage normalization</span>
+        <span class="n">experiences</span> <span class="o">=</span> <span class="n">normalize_advantages_cross_batch</span><span class="p">(</span><span class="n">experiences</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">advantage_estimator</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">args</span><span class="p">)</span>
+
         <span class="k">return</span> <span class="n">experiences</span>
 
     <span class="nd">@torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">()</span>
