@@ -29,13 +29,31 @@ RUN pip install vllm==0.13.0  --no-cache-dir --force-reinstall
 
 
 # 1. 先安装基础依赖
-RUN pip install --no-cache-dir -r requirements.txt
+# RUN pip install --no-cache-dir -r requirements.txt
 
 # 复制整个仓库代码
 COPY . .
 
 # 以开发模式安装 LightRFT
-RUN pip install -e .
+# RUN pip install -e .
+
+RUN pip install --no-deps .
+
+RUN \
+    pip install datasets \
+    pip install librosa \
+    pip install peft \
+    pip install tensorboard \
+    pip install decord \
+    pip install easydict matplotlib \
+    pip install wandb \
+    pip install mathruler \
+    pip install pylatexenc
+
+RUN aria2c -x 16 -s 16 "https://github.com/Dao-AILab/flash-attention/releases/download/v2.8.3/flash_attn-2.8.3+cu12torch2.9cxx11abiTRUE-cp312-cp312-linux_x86_64.whl"
+RUN pip install  flash_attn-2.8.3+cu12torch2.9cxx11abiTRUE-cp312-cp312-linux_x86_64.whl
+
+RUN pip install sglang==0.5.6.post2
 
 # 集群环境性能优化环境变量
 ENV NCCL_DEBUG=INFO
