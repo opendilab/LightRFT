@@ -8,8 +8,6 @@ docker-compose.yaml
 # Exclude other unnecessary files
 .git
 .gitignore
-README.md
-*.md
 .DS_Store
 __pycache__
 *.pyc
