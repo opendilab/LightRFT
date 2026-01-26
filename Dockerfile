@@ -20,6 +20,14 @@ WORKDIR /app
 # 复制依赖文件
 COPY requirements.txt .
 
+
+RUN pip install torch==2.9.0 torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128
+RUN pip install ninja
+RUN pip install deepspeed==0.18.3 --no-binary deepspeed --no-cache-dir --force-reinstall
+RUN pip install vllm==0.13.0  --no-cache-dir --force-reinstall
+
+
+
 # 1. 先安装基础依赖
 RUN pip install --no-cache-dir -r requirements.txt
 
