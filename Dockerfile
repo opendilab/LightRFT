@@ -50,6 +50,7 @@ RUN \
     pip install mathruler && \
     pip install pylatexenc
 
+RUN apt install -y aria2
 RUN aria2c -x 16 -s 16 "https://github.com/Dao-AILab/flash-attention/releases/download/v2.8.3/flash_attn-2.8.3+cu12torch2.9cxx11abiTRUE-cp312-cp312-linux_x86_64.whl"
 RUN pip install  flash_attn-2.8.3+cu12torch2.9cxx11abiTRUE-cp312-cp312-linux_x86_64.whl
 
