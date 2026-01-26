@@ -31,7 +31,7 @@ RUN pip install vllm==0.13.0  --no-cache-dir --force-reinstall
 # 1. 先安装基础依赖
 # RUN pip install --no-cache-dir -r requirements.txt
 
-RUN apt install -y aria2
+RUN apt-get update && apt install -y aria2 && rm -rf /var/lib/apt/lists/*
 
 # 复制整个仓库代码
 COPY . .
