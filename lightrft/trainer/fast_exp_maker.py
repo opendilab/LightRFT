@@ -1575,8 +1575,9 @@ class FastExperienceMaker(NaiveExperienceMaker):
                     output.action_entropy = model_output["action_entropy"]
             else:
                 _params = dict(output.inputs_extra_kwargs)
-                if 'pixel_values_videos' in _params:
-                    del _params['pixel_values_videos']
+                for name in ['video_grid_thw', 'pixel_values_videos']:
+                    if name in _params:
+                        del _params[name]
                 output.action_log_probs = self.actor(
                     output.sequences,
                     output.num_actions,
