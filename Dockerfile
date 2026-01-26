@@ -40,14 +40,14 @@ COPY . .
 RUN pip install --no-deps .
 
 RUN \
-    pip install datasets \
-    pip install librosa \
-    pip install peft \
-    pip install tensorboard \
-    pip install decord \
-    pip install easydict matplotlib \
-    pip install wandb \
-    pip install mathruler \
+    pip install datasets && \
+    pip install librosa && \
+    pip install peft && \
+    pip install tensorboard && \
+    pip install decord && \
+    pip install easydict matplotlib && \
+    pip install wandb && \
+    pip install mathruler && \
     pip install pylatexenc
 
 RUN aria2c -x 16 -s 16 "https://github.com/Dao-AILab/flash-attention/releases/download/v2.8.3/flash_attn-2.8.3+cu12torch2.9cxx11abiTRUE-cp312-cp312-linux_x86_64.whl"
