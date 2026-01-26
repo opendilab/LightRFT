@@ -61,6 +61,7 @@ RUN pip install sglang==0.5.6.post2
 # 集群环境性能优化环境变量
 ENV NCCL_DEBUG=INFO
 ENV TORCH_CUDA_ARCH_LIST="8.0;8.6;8.9;9.0"
+ENV PYTHONPATH=/app
 
 # 默认启动命令
 CMD ["/bin/bash"]
