@@ -11,6 +11,7 @@ from lightrft.models import ActorLanguage
 
 from lightrft.models.utils import compute_approx_kl, compute_reward, masked_mean
 from lightrft.utils import init_logger, remote_rm_fn
+from .advantage_calculator import normalize_advantages_cross_batch
 
 logger = init_logger(__name__)
 
@@ -402,6 +403,10 @@ class NaiveExperienceMaker(ABC):
             # Remove unnecessary info
             experience.kl = None
             del experience.info["num_actions"]
+
+        # Cross-batch advantage normalization
+        experiences = normalize_advantages_cross_batch(experiences, self.advantage_estimator, self.strategy.args)
+
         return experiences
 
     @torch.no_grad()
