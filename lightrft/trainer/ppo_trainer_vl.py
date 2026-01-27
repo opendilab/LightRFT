@@ -12,6 +12,7 @@ from torch.utils.data import DataLoader
 from tqdm import tqdm
 
 from lightrft.models import ActorVL, GPTLMLoss, PolicyLoss, ValueLoss
+from lightrft.models.actor_modality import ActorModality, get_supported_parameters
 from lightrft.models.utils import masked_mean, unpacking_samples, compute_approx_kl
 from lightrft.utils.distributed_sampler import DistributedSampler
 from lightrft.trainer import AdaptiveKLController, ExperienceVL, FixedKLController, NaiveExperienceMakerVL, NaiveReplayBufferVL  # noqa
@@ -172,11 +173,10 @@ class PPOTrainerVL(ABC):
         self.actor_scheduler = actor_scheduler
         self.critic_scheduler = critic_scheduler
 
-        # Cache actor video support detection for efficiency
-        # ActorLanguage only supports images, ActorVL supports both images and videos
-        import inspect
-        actor_forward_params = inspect.signature(self.actor.forward).parameters
-        self._actor_supports_videos = 'pixel_values_videos' in actor_forward_params
+        # Cache actor's supported parameters based on its modality
+        # Default to VISION_LANGUAGE for backward compatibility with models without modality attribute
+        actor_modality = getattr(self.actor, 'modality', ActorModality.VISION_LANGUAGE)
+        self._actor_supported_params = get_supported_parameters(actor_modality)
 
         self.actor_loss_fn = PolicyLoss(eps_clip, use_cpg_loss=self.args.use_cpg_loss)
 
@@ -729,14 +729,18 @@ class PPOTrainerVL(ABC):
             return {}  # Emergency fallback - should not normally execute
 
         # Actor loss
-        # Build kwargs conditionally based on actor's video support
-        actor_kwargs = {
+        # Build kwargs based on actor's modality - only include supported parameters
+        candidate_params = {
             "pixel_values": pixel_values,
             "image_grid_thw": image_grid_thws,
+            "pixel_values_videos": pixel_values_videos,
+            "video_grid_thw": video_grid_thws,
         }
-        if self._actor_supports_videos:
-            actor_kwargs["pixel_values_videos"] = pixel_values_videos
-            actor_kwargs["video_grid_thw"] = video_grid_thws
+
+        actor_kwargs = {
+            key: value for key, value in candidate_params.items()
+            if key in self._actor_supported_params
+        }
 
         action_log_probs, output = self.actor(
             sequences,

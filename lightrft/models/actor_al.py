@@ -28,6 +28,7 @@ from transformers import Qwen2AudioForConditionalGeneration
 from transformers.integrations.deepspeed import HfDeepSpeedConfig
 
 from .utils import apply_lora_configuration, log_probs_from_logits, reset_position_ids
+from .actor_modality import ActorModality
 
 
 class ActorAL(nn.Module):
@@ -80,6 +81,9 @@ class ActorAL(nn.Module):
             max_new_tokens=100
         )
     """
+    # Model modality declaration - defines what types of inputs this model accepts
+    modality = ActorModality.AUDIO_LANGUAGE
+
     def __init__(
         self,
         pretrain_or_model,

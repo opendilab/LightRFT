@@ -41,6 +41,7 @@ from lightrft.models.utils import (
     masked_mean,
     unpacking_samples,
 )
+from lightrft.models.actor_modality import ActorModality, get_supported_parameters
 from lightrft.trainer.experience_maker import (
     Experience,
     NaiveExperienceMaker,
@@ -935,10 +936,10 @@ class FastExperienceMaker(NaiveExperienceMaker):
             packing_samples=self.packing_samples,
         )
 
-        # Cache actor video support detection for efficiency
-        import inspect
-        actor_forward_params = inspect.signature(self.actor.forward).parameters
-        self._actor_supports_videos = 'pixel_values_videos' in actor_forward_params
+        # Cache actor's supported parameters based on its modality
+        # Default to VISION_LANGUAGE for backward compatibility with models without modality attribute
+        actor_modality = getattr(self.actor, 'modality', ActorModality.VISION_LANGUAGE)
+        self._actor_supported_params = get_supported_parameters(actor_modality)
 
     # ========================================================================
     # Public API Methods
@@ -1648,25 +1649,23 @@ class FastExperienceMaker(NaiveExperienceMaker):
         references = sample.references
         output_texts = getattr(sample, "output_texts", None)
 
-        # Build extra kwargs for VLM
-        # Note: ActorLanguage.forward() only accepts pixel_values and image_grid_thw
-        # ActorVL.forward() supports video parameters as well
+        # Build extra kwargs for VLM based on actor's modality
+        # Only include parameters that the actor's modality supports
         extra_kwargs = {}
         if vlm:
-            if self._actor_supports_videos:
-                # ActorVL or other VL models that support videos
-                extra_kwargs = dict(
-                    pixel_values=sample.pixel_values,
-                    image_grid_thw=sample.image_grid_thws,
-                    pixel_values_videos=sample.pixel_values_videos,
-                    video_grid_thw=sample.video_grid_thws,
-                )
-            else:
-                # ActorLanguage or text-only models (only support images)
-                extra_kwargs = dict(
-                    pixel_values=sample.pixel_values,
-                    image_grid_thw=sample.image_grid_thws,
-                )
+            # Candidate parameters to pass
+            candidate_params = {
+                "pixel_values": sample.pixel_values,
+                "image_grid_thw": sample.image_grid_thws,
+                "pixel_values_videos": sample.pixel_values_videos,
+                "video_grid_thw": sample.video_grid_thws,
+            }
+
+            # Filter to only include supported parameters
+            extra_kwargs = {
+                key: value for key, value in candidate_params.items()
+                if key in self._actor_supported_params
+            }
 
         # Fix Qwen-VL image token count bug
         self._fix_qwen_vl_image_tokens(sequences, sample, vlm)
