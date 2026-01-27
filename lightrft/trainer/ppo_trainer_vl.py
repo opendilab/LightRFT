@@ -172,6 +172,12 @@ class PPOTrainerVL(ABC):
         self.actor_scheduler = actor_scheduler
         self.critic_scheduler = critic_scheduler
 
+        # Cache actor video support detection for efficiency
+        # ActorLanguage only supports images, ActorVL supports both images and videos
+        import inspect
+        actor_forward_params = inspect.signature(self.actor.forward).parameters
+        self._actor_supports_videos = 'pixel_values_videos' in actor_forward_params
+
         self.actor_loss_fn = PolicyLoss(eps_clip, use_cpg_loss=self.args.use_cpg_loss)
 
         self.critic_loss_fn = ValueLoss(value_clip)
@@ -723,16 +729,22 @@ class PPOTrainerVL(ABC):
             return {}  # Emergency fallback - should not normally execute
 
         # Actor loss
+        # Build kwargs conditionally based on actor's video support
+        actor_kwargs = {
+            "pixel_values": pixel_values,
+            "image_grid_thw": image_grid_thws,
+        }
+        if self._actor_supports_videos:
+            actor_kwargs["pixel_values_videos"] = pixel_values_videos
+            actor_kwargs["video_grid_thw"] = video_grid_thws
+
         action_log_probs, output = self.actor(
             sequences,
             num_actions,
             attention_mask=attention_mask,
-            pixel_values=pixel_values,
-            image_grid_thw=image_grid_thws,
-            pixel_values_videos=pixel_values_videos,
-            video_grid_thw=video_grid_thws,
             return_output=True,
             packed_seq_lens=packed_seq_lens,
+            **actor_kwargs
         )
 
         # NOTE: Explicit masking in log-space is incorrect - removed

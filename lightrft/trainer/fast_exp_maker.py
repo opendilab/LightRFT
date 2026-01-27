@@ -251,6 +251,13 @@ class MultimodalDataProcessor:
         else:
             all_prompt_token_ids_text = []
 
+        # Initialize multimodal variables for text-only compatibility
+        all_prompt_token_ids_multimodal = []
+        all_images_pixel_values_multimodal = None
+        all_videos_pixel_values_multimodal = None
+        all_images_grid_thw_multimodal = None
+        all_videos_grid_thw_multimodal = None
+
         # ===== Stage 3-B: Multimodal processing =====
         if len(all_prompts_multimodal) > 0:
             assert self.processor is not None, "Processor required for multimodal data"
@@ -927,6 +934,11 @@ class FastExperienceMaker(NaiveExperienceMaker):
             strategy=self.strategy,
             packing_samples=self.packing_samples,
         )
+
+        # Cache actor video support detection for efficiency
+        import inspect
+        actor_forward_params = inspect.signature(self.actor.forward).parameters
+        self._actor_supports_videos = 'pixel_values_videos' in actor_forward_params
 
     # ========================================================================
     # Public API Methods
@@ -1637,14 +1649,24 @@ class FastExperienceMaker(NaiveExperienceMaker):
         output_texts = getattr(sample, "output_texts", None)
 
         # Build extra kwargs for VLM
+        # Note: ActorLanguage.forward() only accepts pixel_values and image_grid_thw
+        # ActorVL.forward() supports video parameters as well
         extra_kwargs = {}
         if vlm:
-            extra_kwargs = dict(
-                pixel_values=sample.pixel_values,
-                image_grid_thw=sample.image_grid_thws,
-                pixel_values_videos=sample.pixel_values_videos,
-                video_grid_thw=sample.video_grid_thws,
-            )
+            if self._actor_supports_videos:
+                # ActorVL or other VL models that support videos
+                extra_kwargs = dict(
+                    pixel_values=sample.pixel_values,
+                    image_grid_thw=sample.image_grid_thws,
+                    pixel_values_videos=sample.pixel_values_videos,
+                    video_grid_thw=sample.video_grid_thws,
+                )
+            else:
+                # ActorLanguage or text-only models (only support images)
+                extra_kwargs = dict(
+                    pixel_values=sample.pixel_values,
+                    image_grid_thw=sample.image_grid_thws,
+                )
 
         # Fix Qwen-VL image token count bug
         self._fix_qwen_vl_image_tokens(sequences, sample, vlm)
