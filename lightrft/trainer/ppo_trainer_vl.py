@@ -737,10 +737,7 @@ class PPOTrainerVL(ABC):
             "video_grid_thw": video_grid_thws,
         }
 
-        actor_kwargs = {
-            key: value for key, value in candidate_params.items()
-            if key in self._actor_supported_params
-        }
+        actor_kwargs = {key: value for key, value in candidate_params.items() if key in self._actor_supported_params}
 
         action_log_probs, output = self.actor(
             sequences,

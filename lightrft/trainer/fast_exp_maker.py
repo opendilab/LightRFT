@@ -1663,7 +1663,8 @@ class FastExperienceMaker(NaiveExperienceMaker):
 
             # Filter to only include supported parameters
             extra_kwargs = {
-                key: value for key, value in candidate_params.items()
+                key: value
+                for key, value in candidate_params.items()
                 if key in self._actor_supported_params
             }
 
