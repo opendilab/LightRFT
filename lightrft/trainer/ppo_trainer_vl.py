@@ -175,7 +175,7 @@ class PPOTrainerVL(ABC):
 
         # Cache actor's supported parameters based on its modality
         # Default to VISION_LANGUAGE for backward compatibility with models without modality attribute
-        actor_modality = getattr(self.actor, 'modality', ActorModality.VISION_LANGUAGE)
+        actor_modality = self.actor.modality
         self._actor_supported_params = get_supported_parameters(actor_modality)
 
         self.actor_loss_fn = PolicyLoss(eps_clip, use_cpg_loss=self.args.use_cpg_loss)

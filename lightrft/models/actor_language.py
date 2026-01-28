@@ -74,7 +74,7 @@ class ActorLanguage(nn.Module):
         )
     """
     # Model modality declaration - defines what types of inputs this model accepts
-    modality = ActorModality.TEXT_ONLY
+    modality = ActorModality.LANGUAGE_ONLY
 
     def __init__(
         self,

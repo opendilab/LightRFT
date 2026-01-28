@@ -16,15 +16,15 @@ class ActorModality(Enum):
     This enum defines the different types of modalities that actor models
     can support, making it explicit what kind of inputs each model accepts.
     """
-    TEXT_ONLY = "text"  # Pure text model (e.g., ActorLanguage)
+    LANGUAGE_ONLY = "text"  # Pure text model (e.g., ActorLanguage)
     VISION_LANGUAGE = "vision"  # Vision-language model supporting images and videos (e.g., ActorVL)
     AUDIO_LANGUAGE = "audio"  # Audio-language model (future extension)
-    MULTIMODAL = "multimodal"  # Full multimodal model (future extension)
+    OMNI = "multimodal"  # Full multimodal model (future extension)
 
 
 # Mapping from modality to supported parameter names
 MODALITY_PARAMETERS = {
-    ActorModality.TEXT_ONLY: set(),  # No multimodal parameters
+    ActorModality.LANGUAGE_ONLY: set(),  # No multimodal parameters
     ActorModality.VISION_LANGUAGE: {
         "pixel_values",
         "image_grid_thw",
@@ -34,7 +34,7 @@ MODALITY_PARAMETERS = {
     ActorModality.AUDIO_LANGUAGE: {
         "audio_values",
     },
-    ActorModality.MULTIMODAL: {
+    ActorModality.OMNI: {
         "pixel_values",
         "image_grid_thw",
         "pixel_values_videos",
@@ -74,7 +74,7 @@ def supports_parameter(modality: ActorModality, param_name: str) -> bool:
 
     Example::
 
-        if supports_parameter(ActorModality.TEXT_ONLY, "pixel_values"):
+        if supports_parameter(ActorModality.LANGUAGE_ONLY, "pixel_values"):
             # This will be False
             pass
     """
