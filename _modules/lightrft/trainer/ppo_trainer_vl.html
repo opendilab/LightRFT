@@ -314,6 +314,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">tqdm</span><span class="w"> </span><span class="kn">import</span> <span class="n">tqdm</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">lightrft.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">ActorVL</span><span class="p">,</span> <span class="n">GPTLMLoss</span><span class="p">,</span> <span class="n">PolicyLoss</span><span class="p">,</span> <span class="n">ValueLoss</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">lightrft.models.actor_modality</span><span class="w"> </span><span class="kn">import</span> <span class="n">ActorModality</span><span class="p">,</span> <span class="n">get_supported_parameters</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">lightrft.models.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">masked_mean</span><span class="p">,</span> <span class="n">unpacking_samples</span><span class="p">,</span> <span class="n">compute_approx_kl</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">lightrft.utils.distributed_sampler</span><span class="w"> </span><span class="kn">import</span> <span class="n">DistributedSampler</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">lightrft.trainer</span><span class="w"> </span><span class="kn">import</span> <span class="n">AdaptiveKLController</span><span class="p">,</span> <span class="n">ExperienceVL</span><span class="p">,</span> <span class="n">FixedKLController</span><span class="p">,</span> <span class="n">NaiveExperienceMakerVL</span><span class="p">,</span> <span class="n">NaiveReplayBufferVL</span>  <span class="c1"># noqa</span>
@@ -473,6 +474,11 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">critic_optim</span> <span class="o">=</span> <span class="n">critic_optim</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">actor_scheduler</span> <span class="o">=</span> <span class="n">actor_scheduler</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">critic_scheduler</span> <span class="o">=</span> <span class="n">critic_scheduler</span>
+
+        <span class="c1"># Cache actor&#39;s supported parameters based on its modality</span>
+        <span class="c1"># Default to VISION_LANGUAGE for backward compatibility with models without modality attribute</span>
+        <span class="n">actor_modality</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">actor</span><span class="o">.</span><span class="n">modality</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_actor_supported_params</span> <span class="o">=</span> <span class="n">get_supported_parameters</span><span class="p">(</span><span class="n">actor_modality</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">actor_loss_fn</span> <span class="o">=</span> <span class="n">PolicyLoss</span><span class="p">(</span><span class="n">eps_clip</span><span class="p">,</span> <span class="n">use_cpg_loss</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">use_cpg_loss</span><span class="p">)</span>
 
@@ -1025,16 +1031,23 @@
             <span class="k">return</span> <span class="p">{}</span>  <span class="c1"># Emergency fallback - should not normally execute</span>
 
         <span class="c1"># Actor loss</span>
+        <span class="c1"># Build kwargs based on actor&#39;s modality - only include supported parameters</span>
+        <span class="n">candidate_params</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;pixel_values&quot;</span><span class="p">:</span> <span class="n">pixel_values</span><span class="p">,</span>
+            <span class="s2">&quot;image_grid_thw&quot;</span><span class="p">:</span> <span class="n">image_grid_thws</span><span class="p">,</span>
+            <span class="s2">&quot;pixel_values_videos&quot;</span><span class="p">:</span> <span class="n">pixel_values_videos</span><span class="p">,</span>
+            <span class="s2">&quot;video_grid_thw&quot;</span><span class="p">:</span> <span class="n">video_grid_thws</span><span class="p">,</span>
+        <span class="p">}</span>
+
+        <span class="n">actor_kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">value</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">candidate_params</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_actor_supported_params</span><span class="p">}</span>
+
         <span class="n">action_log_probs</span><span class="p">,</span> <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">actor</span><span class="p">(</span>
             <span class="n">sequences</span><span class="p">,</span>
             <span class="n">num_actions</span><span class="p">,</span>
             <span class="n">attention_mask</span><span class="o">=</span><span class="n">attention_mask</span><span class="p">,</span>
-            <span class="n">pixel_values</span><span class="o">=</span><span class="n">pixel_values</span><span class="p">,</span>
-            <span class="n">image_grid_thw</span><span class="o">=</span><span class="n">image_grid_thws</span><span class="p">,</span>
-            <span class="n">pixel_values_videos</span><span class="o">=</span><span class="n">pixel_values_videos</span><span class="p">,</span>
-            <span class="n">video_grid_thw</span><span class="o">=</span><span class="n">video_grid_thws</span><span class="p">,</span>
             <span class="n">return_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
             <span class="n">packed_seq_lens</span><span class="o">=</span><span class="n">packed_seq_lens</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">actor_kwargs</span>
         <span class="p">)</span>
 
         <span class="c1"># NOTE: Explicit masking in log-space is incorrect - removed</span>

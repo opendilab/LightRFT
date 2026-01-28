@@ -343,6 +343,7 @@
     <span class="n">masked_mean</span><span class="p">,</span>
     <span class="n">unpacking_samples</span><span class="p">,</span>
 <span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">lightrft.models.actor_modality</span><span class="w"> </span><span class="kn">import</span> <span class="n">ActorModality</span><span class="p">,</span> <span class="n">get_supported_parameters</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">lightrft.trainer.experience_maker</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">Experience</span><span class="p">,</span>
     <span class="n">NaiveExperienceMaker</span><span class="p">,</span>
@@ -552,6 +553,13 @@
             <span class="n">all_prompt_token_ids_text</span> <span class="o">=</span> <span class="n">inputs_text</span><span class="p">[</span><span class="s2">&quot;input_ids&quot;</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">all_prompt_token_ids_text</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c1"># Initialize multimodal variables for text-only compatibility</span>
+        <span class="n">all_prompt_token_ids_multimodal</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">all_images_pixel_values_multimodal</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">all_videos_pixel_values_multimodal</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">all_images_grid_thw_multimodal</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">all_videos_grid_thw_multimodal</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="c1"># ===== Stage 3-B: Multimodal processing =====</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">all_prompts_multimodal</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
@@ -1228,7 +1236,12 @@
             <span class="n">tokenizer</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tokenizer</span><span class="p">,</span>
             <span class="n">strategy</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="p">,</span>
             <span class="n">packing_samples</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">packing_samples</span><span class="p">,</span>
-        <span class="p">)</span></div>
+        <span class="p">)</span>
+
+        <span class="c1"># Cache actor&#39;s supported parameters based on its modality</span>
+        <span class="c1"># Default to VISION_LANGUAGE for backward compatibility with models without modality attribute</span>
+        <span class="n">actor_modality</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">actor</span><span class="o">.</span><span class="n">modality</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_actor_supported_params</span> <span class="o">=</span> <span class="n">get_supported_parameters</span><span class="p">(</span><span class="n">actor_modality</span><span class="p">)</span></div>
 
     <span class="c1"># ========================================================================</span>
     <span class="c1"># Public API Methods</span>
@@ -1938,15 +1951,24 @@
         <span class="n">references</span> <span class="o">=</span> <span class="n">sample</span><span class="o">.</span><span class="n">references</span>
         <span class="n">output_texts</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">sample</span><span class="p">,</span> <span class="s2">&quot;output_texts&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
 
-        <span class="c1"># Build extra kwargs for VLM</span>
+        <span class="c1"># Build extra kwargs for VLM based on actor&#39;s modality</span>
+        <span class="c1"># Only include parameters that the actor&#39;s modality supports</span>
         <span class="n">extra_kwargs</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">if</span> <span class="n">vlm</span><span class="p">:</span>
-            <span class="n">extra_kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
-                <span class="n">pixel_values</span><span class="o">=</span><span class="n">sample</span><span class="o">.</span><span class="n">pixel_values</span><span class="p">,</span>
-                <span class="n">image_grid_thw</span><span class="o">=</span><span class="n">sample</span><span class="o">.</span><span class="n">image_grid_thws</span><span class="p">,</span>
-                <span class="n">pixel_values_videos</span><span class="o">=</span><span class="n">sample</span><span class="o">.</span><span class="n">pixel_values_videos</span><span class="p">,</span>
-                <span class="n">video_grid_thw</span><span class="o">=</span><span class="n">sample</span><span class="o">.</span><span class="n">video_grid_thws</span><span class="p">,</span>
-            <span class="p">)</span>
+            <span class="c1"># Candidate parameters to pass</span>
+            <span class="n">candidate_params</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;pixel_values&quot;</span><span class="p">:</span> <span class="n">sample</span><span class="o">.</span><span class="n">pixel_values</span><span class="p">,</span>
+                <span class="s2">&quot;image_grid_thw&quot;</span><span class="p">:</span> <span class="n">sample</span><span class="o">.</span><span class="n">image_grid_thws</span><span class="p">,</span>
+                <span class="s2">&quot;pixel_values_videos&quot;</span><span class="p">:</span> <span class="n">sample</span><span class="o">.</span><span class="n">pixel_values_videos</span><span class="p">,</span>
+                <span class="s2">&quot;video_grid_thw&quot;</span><span class="p">:</span> <span class="n">sample</span><span class="o">.</span><span class="n">video_grid_thws</span><span class="p">,</span>
+            <span class="p">}</span>
+
+            <span class="c1"># Filter to only include supported parameters</span>
+            <span class="n">extra_kwargs</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="n">key</span><span class="p">:</span> <span class="n">value</span>
+                <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">candidate_params</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_actor_supported_params</span>
+            <span class="p">}</span>
 
         <span class="c1"># Fix Qwen-VL image token count bug</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_fix_qwen_vl_image_tokens</span><span class="p">(</span><span class="n">sequences</span><span class="p">,</span> <span class="n">sample</span><span class="p">,</span> <span class="n">vlm</span><span class="p">)</span>

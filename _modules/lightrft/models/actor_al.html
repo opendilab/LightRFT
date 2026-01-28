@@ -330,6 +330,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">transformers.integrations.deepspeed</span><span class="w"> </span><span class="kn">import</span> <span class="n">HfDeepSpeedConfig</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">apply_lora_configuration</span><span class="p">,</span> <span class="n">log_probs_from_logits</span><span class="p">,</span> <span class="n">reset_position_ids</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.actor_modality</span><span class="w"> </span><span class="kn">import</span> <span class="n">ActorModality</span>
 
 
 <div class="viewcode-block" id="ActorAL"><a class="viewcode-back" href="../../../api_doc/models/actor_al.html#lightrft.models.actor_al.ActorAL">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">ActorAL</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
@@ -382,6 +383,9 @@
 <span class="sd">            max_new_tokens=100</span>
 <span class="sd">        )</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Model modality declaration - defines what types of inputs this model accepts</span>
+    <span class="n">modality</span> <span class="o">=</span> <span class="n">ActorModality</span><span class="o">.</span><span class="n">AUDIO_LANGUAGE</span>
+
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">pretrain_or_model</span><span class="p">,</span>

@@ -325,6 +325,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">transformers.integrations.deepspeed</span><span class="w"> </span><span class="kn">import</span> <span class="n">HfDeepSpeedConfig</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">apply_lora_configuration</span><span class="p">,</span> <span class="n">log_probs_from_logits</span><span class="p">,</span> <span class="n">reset_position_ids</span><span class="p">,</span> <span class="n">entropy_from_logits</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.actor_modality</span><span class="w"> </span><span class="kn">import</span> <span class="n">ActorModality</span>
 
 
 <div class="viewcode-block" id="ActorLanguage"><a class="viewcode-back" href="../../../api_doc/models/actor_language.html#lightrft.models.actor_language.ActorLanguage">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">ActorLanguage</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
@@ -374,6 +375,9 @@
 <span class="sd">            temperature=0.7</span>
 <span class="sd">        )</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Model modality declaration - defines what types of inputs this model accepts</span>
+    <span class="n">modality</span> <span class="o">=</span> <span class="n">ActorModality</span><span class="o">.</span><span class="n">LANGUAGE_ONLY</span>
+
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">pretrain_or_model</span><span class="p">,</span>
@@ -529,8 +533,6 @@
         <span class="n">sequences</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">LongTensor</span><span class="p">,</span>
         <span class="n">num_actions</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">attention_mask</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">pixel_values</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">image_grid_thw</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">return_output</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">packed_seq_lens</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
@@ -540,16 +542,15 @@
 <span class="sd">        Computes action log probabilities for reinforcement learning training. Supports both</span>
 <span class="sd">        regular and packed sequence processing for efficient training.</span>
 
+<span class="sd">        NOTE: This is a text-only model. It does NOT accept pixel_values, image_grid_thw,</span>
+<span class="sd">        pixel_values_videos, or video_grid_thw parameters. Use ActorVL for multimodal inputs.</span>
+
 <span class="sd">        :param sequences: Input token sequences.</span>
 <span class="sd">        :type sequences: torch.LongTensor</span>
 <span class="sd">        :param num_actions: Number of action tokens to extract log probabilities for.</span>
 <span class="sd">        :type num_actions: Optional[Union[int, List[int]]]</span>
 <span class="sd">        :param attention_mask: Attention mask for the sequences.</span>
 <span class="sd">        :type attention_mask: Optional[torch.Tensor]</span>
-<span class="sd">        :param pixel_values: Pixel values for vision-language models (currently unused).</span>
-<span class="sd">        :type pixel_values: Optional[torch.Tensor]</span>
-<span class="sd">        :param image_grid_thw: Image grid dimensions for vision-language models (currently unused).</span>
-<span class="sd">        :type image_grid_thw: Optional[torch.Tensor]</span>
 <span class="sd">        :param return_output: Whether to return the full model output along with action log probabilities.</span>
 <span class="sd">        :type return_output: bool</span>
 <span class="sd">        :param packed_seq_lens: Sequence lengths for packed samples.</span>
