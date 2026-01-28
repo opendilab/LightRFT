@@ -42,6 +42,6 @@ format: yapf
 fcheck: flake8
 
 dbuild:
-	docker build -t lightrft:${IMAGE_NAME} .
+	docker build -t ${IMAGE_NAME} .
 dpush:
 	docker push ${IMAGE_NAME}
