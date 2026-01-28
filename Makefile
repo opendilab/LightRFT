@@ -16,7 +16,7 @@ RANGE_SRC_DIR  := ${SRC_DIR}/${RANGE_DIR}
 
 COV_TYPES ?= xml term-missing
 
-IMAGE_NAME ?= lightrft:v$(shell python show_version.py)
+IMAGE_NAME ?= opendilab/lightrft:v$(shell python show_version.py)
 
 package:
 	$(PYTHON) -m build --sdist --wheel --outdir ${DIST_DIR}
