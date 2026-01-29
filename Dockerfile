@@ -43,15 +43,15 @@ COPY . .
 RUN pip install --no-deps .
 
 # Install additional Python dependencies - CRITICAL: Order must be maintained
-RUN pip install datasets && \
-    pip install librosa && \
-    pip install peft && \
-    pip install tensorboard && \
-    pip install decord && \
-    pip install easydict matplotlib && \
-    pip install wandb && \
-    pip install mathruler && \
-    pip install pylatexenc
+RUN pip install --no-cache-dir datasets && \
+    pip install --no-cache-dir librosa && \
+    pip install --no-cache-dir peft && \
+    pip install --no-cache-dir tensorboard && \
+    pip install --no-cache-dir decord && \
+    pip install --no-cache-dir easydict matplotlib && \
+    pip install --no-cache-dir wandb && \
+    pip install --no-cache-dir mathruler && \
+    pip install --no-cache-dir pylatexenc
 
 # Download and install Flash Attention wheel - CRITICAL: Must be after PyTorch installation
 RUN aria2c -x 16 -s 16 "https://github.com/Dao-AILab/flash-attention/releases/download/v2.8.3/flash_attn-2.8.3+cu12torch2.9cxx11abiTRUE-cp312-cp312-linux_x86_64.whl" \
@@ -59,7 +59,7 @@ RUN aria2c -x 16 -s 16 "https://github.com/Dao-AILab/flash-attention/releases/do
     && rm -f flash_attn-2.8.3+cu12torch2.9cxx11abiTRUE-cp312-cp312-linux_x86_64.whl
 
 # Install SGLang - CRITICAL: Must be last in the installation sequence
-RUN pip install sglang==0.5.6.post2
+RUN pip install --no-cache-dir sglang==0.5.6.post2
 
 # Default command
 CMD ["/bin/bash"]

@@ -34,5 +34,5 @@ coverage.xml
 *.swp
 *.swo
 *~
-/show_version.py
+/tools
 /Makefile
