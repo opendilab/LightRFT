@@ -16,6 +16,8 @@ RANGE_SRC_DIR  := ${SRC_DIR}/${RANGE_DIR}
 
 COV_TYPES ?= xml term-missing
 
+IMAGE_NAME ?= opendilab/lightrft:v$(shell python -m tools.show_version)
+
 package:
 	$(PYTHON) -m build --sdist --wheel --outdir ${DIST_DIR}
 clean:
@@ -38,3 +40,8 @@ pylint:
 #format: black
 format: yapf
 fcheck: flake8
+
+dbuild:
+	docker build -t ${IMAGE_NAME} .
+dpush:
+	docker push ${IMAGE_NAME}

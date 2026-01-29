@@ -98,7 +98,44 @@
 
 ### Docker 镜像
 
-TO BE DONE
+我们提供预构建的 Docker 镜像，以便于快速部署并确保环境的一致性。您也可以使用项目中提供的 `Dockerfile` 和 `Makefile` 自行构建镜像。
+
+#### 使用预构建镜像
+
+官方 Docker 镜像托管在 [Docker Hub](https://hub.docker.com/r/opendilab/lightrft)。您可以使用以下命令获取最新版本：
+
+```shell
+docker pull opendilab/lightrft:v0.1.0
+```
+
+使用 GPU 支持运行容器：
+
+```shell
+docker run --gpus all -it --rm \
+    -v /path/to/your/data:/app/data \
+    -v /path/to/your/checkpoints:/app/checkpoints \
+    opendilab/lightrft:v0.1.0 /bin/bash
+```
+
+#### 自行构建镜像
+
+如果您需要自定义环境或基于特定分支进行构建，可以使用提供的 `Makefile` 在本地构建镜像。
+
+1. **前提条件**：确保您的系统已安装 Docker 和 NVIDIA Container Toolkit。
+2. **构建镜像**：
+   ```shell
+   # 使用默认名称构建镜像 (opendilab/lightrft:v${VERSION})
+   make dbuild
+   ```
+   `IMAGE_NAME` 将根据项目的当前版本自动确定。您也可以手动指定标签：
+   ```shell
+   make dbuild IMAGE_NAME=your-custom-tag:latest
+   ```
+
+3. **技术细节**：
+   - **基础镜像**：采用 `nvcr.io/nvidia/pytorch:25.01-py3`（包含 PyTorch 2.5+ 和 CUDA 12.8）。
+   - **依赖安装**：构建过程会按照严格的顺序安装 `vLLM`、`DeepSpeed`、`Flash-Attention` 和 `SGLang` 等核心组件，以确保环境稳定性。
+   - **优化策略**：`Dockerfile` 采用了多层构建优化，并配置了非交互式安装的环境变量。
 
 ### 安装步骤
 
