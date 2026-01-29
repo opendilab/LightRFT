@@ -25,10 +25,10 @@ WORKDIR /app
 COPY requirements.txt .
 
 # Install PyTorch packages - CRITICAL: Order must not be changed due to environment sensitivity
-RUN pip install torch==2.9.0 torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128
+RUN pip install --no-cache-dir torch==2.9.0 torchvision torchaudio --index-url https://download.pytorch.org/whl/cu128
 
 # Install ninja for compilation support
-RUN pip install ninja
+RUN pip install --no-cache-dir ninja
 
 # Install DeepSpeed with specific build configuration - CRITICAL: Order sensitive
 RUN pip install deepspeed==0.18.3 --no-binary deepspeed --no-cache-dir --force-reinstall
