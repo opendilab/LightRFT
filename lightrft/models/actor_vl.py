@@ -28,6 +28,7 @@ from transformers import AutoModel, AutoModelForVision2Seq
 from transformers.integrations.deepspeed import HfDeepSpeedConfig
 
 from .utils import apply_lora_configuration, log_probs_from_logits, reset_position_ids, entropy_from_logits
+from .actor_modality import ActorModality
 
 
 class ActorVL(nn.Module):
@@ -81,6 +82,9 @@ class ActorVL(nn.Module):
             max_new_tokens=100
         )
     """
+    # Model modality declaration - defines what types of inputs this model accepts
+    modality = ActorModality.VISION_LANGUAGE
+
     def __init__(
         self,
         pretrain_or_model,

@@ -48,8 +48,8 @@ EPISODE=30               # Total number of training episodes.
 WARMUP=0.03              # Learning rate warmup ratio.
 
 # --- Batch Size Configuration ---
-RBS=64                         # Rollout Batch Size.
-TBS=$((RBS * N_SAMPLES))       # Train Batch Size is derived from RBS and N_SAMPLES.
+RBS=128       # Rollout Batch Size.
+TBS=128       # Train Batch Size.
 
 # --- Learning and Model Settings ---
 KL=0.01                  # KL divergence coefficient.
@@ -150,13 +150,14 @@ torchrun \
     --prompt_data "${PATH_TO_YOUR_GSM8K_DATASET}" \
     --input_key "prompt" \
     --label_key "label" \
-    --eval_steps 10 \
+    --eval_steps 20 \
     --eval_split "${EVAL_SPLIT}" \
     --max_eval_samples $MAX_EVAL_SAMPLES \
     --apply_chat_template \
     --gradient_checkpointing \
     --save_steps 20 \
     --max_ckpt_num 3 \
+    --engine_type sglang \
     --engine_mem_util 0.6 \
     --engine_tp_size $ENGINE_TP \
     --enable_engine_sleep \

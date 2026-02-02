@@ -154,12 +154,14 @@ torchrun \
     --input_key "prompt" \
     --images_key "images" \
     --label_key "label" \
+    --eval_steps 20 \
     --eval_split "${EVAL_SPLIT}" \
     --apply_chat_template \
     --flash_attn \
     --gradient_checkpointing \
     --save_steps 20 \
     --max_ckpt_num 2 \
+    --engine_type sglang \
     --engine_mem_util 0.6 \
     --engine_tp_size $ENGINE_TP \
     --enable_engine_sleep \

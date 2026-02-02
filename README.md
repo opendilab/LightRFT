@@ -92,13 +92,50 @@ For detailed algorithm descriptions, implementation details, and usage guide, se
 
 ### Requirements
 
-- Python >= 3.10
+- Python >= 3.12
 - CUDA >= 12.8
-- PyTorch >= 2.5.1
+- PyTorch >= 2.9.1
 
 ### Docker Images
 
-TO BE DONE
+We provide pre-built Docker images for easy deployment and consistent environments. You can also build your own images using the provided `Dockerfile` and `Makefile`.
+
+#### Using Pre-built Images
+
+The official Docker images are available on [Docker Hub](https://hub.docker.com/r/opendilab/lightrft). You can pull the latest version using:
+
+```shell
+docker pull opendilab/lightrft:v0.1.0
+```
+
+To run a container with GPU support:
+
+```shell
+docker run --gpus all -it --rm \
+    -v /path/to/your/data:/app/data \
+    -v /path/to/your/checkpoints:/app/checkpoints \
+    opendilab/lightrft:v0.1.0 /bin/bash
+```
+
+#### Building Custom Images
+
+If you need to customize the environment or build from a specific branch, you can use the provided `Makefile` to build the image locally.
+
+1. **Prerequisites**: Ensure you have Docker and NVIDIA Container Toolkit installed.
+2. **Build the image**:
+   ```shell
+   # Build the image with the default name (opendilab/lightrft:v${VERSION})
+   make dbuild
+   ```
+   The `IMAGE_NAME` is automatically determined based on the current version of the project. You can also override it:
+   ```shell
+   make dbuild IMAGE_NAME=your-custom-tag:latest
+   ```
+
+3. **Technical Details**:
+   - **Base Image**: `nvcr.io/nvidia/pytorch:25.01-py3` (includes PyTorch 2.5+ and CUDA 12.8).
+   - **Dependencies**: The build process installs essential components including `vLLM`, `DeepSpeed`, `Flash-Attention`, and `SGLang` in a specific order to ensure stability.
+   - **Optimization**: The `Dockerfile` uses multi-layer optimization and environment variables for non-interactive installation.
 
 ### Installation
 
@@ -348,6 +385,12 @@ Live documentation preview:
 make docs-live
 # Visit http://localhost:8000
 ```
+
+## Roadmap
+
+- [v0.1.2](https://github.com/opendilab/LightRFT/issues/28)
+- [v0.1.1](https://github.com/opendilab/LightRFT/issues/19)
+
 
 ## 🤝 Contributing
 

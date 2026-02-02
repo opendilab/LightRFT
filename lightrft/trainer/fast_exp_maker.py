@@ -41,6 +41,7 @@ from lightrft.models.utils import (
     masked_mean,
     unpacking_samples,
 )
+from lightrft.models.actor_modality import ActorModality, get_supported_parameters
 from lightrft.trainer.experience_maker import (
     Experience,
     NaiveExperienceMaker,
@@ -53,7 +54,8 @@ from lightrft.trainer.experience_maker_vl import (
 
 from lightrft.utils.remote_rm_utils import remote_rm_fn
 from lightrft.utils import Timer, get_current_device
-from .utils import RunningMoments, compute_clip_fraction, get_cpgd_advantages_returns, fire_sampling
+from .utils import RunningMoments, compute_clip_fraction, get_cpgd_advantages_returns, fire_sampling, vllm_ge_0130
+from .advantage_calculator import get_advantage_calculator, normalize_advantages_cross_batch
 from .image_utils import normalize_images, get_images_num
 from .video_utils import normalize_videos, get_videos_num
 
@@ -249,6 +251,13 @@ class MultimodalDataProcessor:
             all_prompt_token_ids_text = inputs_text["input_ids"]
         else:
             all_prompt_token_ids_text = []
+
+        # Initialize multimodal variables for text-only compatibility
+        all_prompt_token_ids_multimodal = []
+        all_images_pixel_values_multimodal = None
+        all_videos_pixel_values_multimodal = None
+        all_images_grid_thw_multimodal = None
+        all_videos_grid_thw_multimodal = None
 
         # ===== Stage 3-B: Multimodal processing =====
         if len(all_prompts_multimodal) > 0:
@@ -901,6 +910,10 @@ class FastExperienceMaker(NaiveExperienceMaker):
         else:
             self.reward_running_moments = None
 
+        # Initialize advantage calculator
+        advantage_estimator = self.strategy.config.advantage_estimator
+        self.advantage_calculator = get_advantage_calculator(advantage_estimator, self.strategy.config)
+
         # Initialize helper modules
         if self.processor is not None:
             self.multimodal_processor = MultimodalDataProcessor(
@@ -922,6 +935,11 @@ class FastExperienceMaker(NaiveExperienceMaker):
             strategy=self.strategy,
             packing_samples=self.packing_samples,
         )
+
+        # Cache actor's supported parameters based on its modality
+        # Default to VISION_LANGUAGE for backward compatibility with models without modality attribute
+        actor_modality = self.actor.modality
+        self._actor_supported_params = get_supported_parameters(actor_modality)
 
     # ========================================================================
     # Public API Methods
@@ -1093,6 +1111,14 @@ class FastExperienceMaker(NaiveExperienceMaker):
 
         # ========== Configure Sampling Parameters ==========
         if config.engine_type == "vllm":
+            # For vllm>=0.13.0, truncate_prompt_tokens must not exceed max_model_len
+            # For older versions, we can use 8192 directly without validation
+            if vllm_ge_0130():
+                max_model_len = self.strategy.inference_engine.llm_engine.model_config.max_model_len
+                truncate_tokens = min(8192, max_model_len)
+            else:
+                truncate_tokens = 8192
+
             sampling_params = SamplingParams(
                 temperature=generate_kwargs.get("temperature", 1.0),
                 top_p=generate_kwargs.get("top_p", 1.0),
@@ -1102,7 +1128,7 @@ class FastExperienceMaker(NaiveExperienceMaker):
                 skip_special_tokens=generate_kwargs.get("skip_special_tokens", False),
                 include_stop_str_in_output=True,
                 ignore_eos=os.environ.get("IGNORE_EOS", "0") == "1",
-                truncate_prompt_tokens=8192,
+                truncate_prompt_tokens=truncate_tokens,
             )
         elif config.engine_type == "sglang":
             sampling_params = dict(
@@ -1183,6 +1209,7 @@ class FastExperienceMaker(NaiveExperienceMaker):
                     sampling_params=sampling_params,
                     all_prompt_token_ids=all_prompt_token_ids,
                     all_prompts=all_prompts if is_multimodal else None,
+                    sleep_engine=self.strategy.args.enable_engine_sleep,
                     all_images=all_images if is_multimodal else None,
                     all_videos=all_videos if is_multimodal else None,
                     images_num=all_images_num if is_multimodal else None,
@@ -1422,62 +1449,8 @@ class FastExperienceMaker(NaiveExperienceMaker):
             warnings.warn(f"dynamic_sampling not implemented for {config.advantage_estimator}, ignoring", UserWarning)
 
         # ========== Advantage Estimator-Specific Shaping ==========
-        if config.advantage_estimator == "rloo":
-            # RLOO: Leave-one-out baseline
-            rewards = rewards.reshape(-1, config.n_samples_per_prompt).to("cuda")
-            baseline = (rewards.sum(-1, keepdim=True) - rewards) / (config.n_samples_per_prompt - 1)
-            rewards = rewards - baseline
-            rewards = rewards.flatten().to("cpu").chunk(len(experiences))
-            return experiences, rewards
-
-        elif config.advantage_estimator == "reinforce_baseline":
-            # REINFORCE with baseline (mean subtraction)
-            rewards = rewards.reshape(-1, config.n_samples_per_prompt).to("cuda")
-            rewards = rewards - rewards.mean(-1, keepdim=True)
-            rewards = rewards.flatten().to("cpu").chunk(len(experiences))
-            return experiences, rewards
-
-        elif config.advantage_estimator in ["group_norm", "grpo"]:
-            # Group normalization with optional dynamic filtering
-            if config.dynamic_sampling:
-                step_size = config.n_samples_per_prompt // config.micro_train_batch_size
-                for i in range(0, len(experiences), step_size):
-                    chunk = experiences[i:i + step_size]
-                    chunk_rewards = torch.cat([exp.info["reward"] for exp in chunk])
-
-                    # Filter out degenerate cases (all 0s or all 1s)
-                    if torch.all(chunk_rewards == 0) or torch.all(chunk_rewards == 1):
-                        for exp in chunk:
-                            exp.action_mask = torch.zeros_like(exp.action_mask, dtype=torch.bool)
-
-            # # Normalize within groups
-            # rewards = rewards.reshape(-1, config.n_samples_per_prompt).to("cuda")
-            # rewards = (rewards - rewards.mean(-1, keepdim=True)) / (rewards.std(-1, keepdim=True) + 1e-9)
-            # # rewards = rewards.flatten().to("cpu").chunk(len(experiences))
-            # rewards = rewards.reshape(-1).to(device="cpu").chunk(len(experiences))
-
-            # import torch.distributed as dist
-            # if dist.get_rank() == 0 and DEBUG_ENABLED:
-            #     print(f"rank {dist.get_rank()} Entering debug mode, input 'interact' to enter full Python debugging. Set DEBUG_ENABLED = False to skip debug mode")  # noqa
-            #     import ipdb; ipdb.set_trace()
-            # # Synchronization point to prevent other processes from running ahead
-            # dist.barrier()
-
-            # Ensure rewards are float32. If rewards are float16 or bfloat16, 1e-9 may
-            # underflow to 0, causing division by zero (NaN).
-            # Normalize within groups
-            rewards = rewards.reshape(-1, config.n_samples_per_prompt).to("cuda").float()
-            baseline = rewards.mean(-1, keepdim=True)
-            rewards = (rewards - baseline) / (rewards.std(1, keepdim=True) + 1e-9)
-            rewards = rewards.flatten().to("cpu").chunk(len(experiences))
-
-            return experiences, rewards
-
-        elif config.advantage_estimator == "cpgd":
-            return experiences, [experience.info["reward"] for experience in experiences]
-
-        else:
-            raise ValueError(f"Unknown advantage_estimator: {config.advantage_estimator}")
+        # Use calculator's preprocess_rewards method
+        return self.advantage_calculator.preprocess_rewards(rewards, experiences, max_new_tokens)
 
     def _compute_advantages_and_returns(
         self,
@@ -1532,48 +1505,17 @@ class FastExperienceMaker(NaiveExperienceMaker):
             )
 
             # ========== Advantage Estimation ==========
-            if self.advantage_estimator == "cpgd":
-                experience.advantages, experience.returns = get_cpgd_advantages_returns(
-                    final_reward, experience.action_mask
-                )
+            # Compute advantages and returns using calculator
+            gamma = generate_kwargs.pop("gamma", 1.0)
+            experience.advantages, experience.returns, info_dict = self.advantage_calculator.compute(
+                experience,
+                final_reward,
+                gamma=gamma,
+                generate_kwargs=generate_kwargs,
+            )
 
-            elif self.advantage_estimator == "gae":
-                experience.advantages, experience.returns, experience.info["advantage_clip_frac"] = (
-                    self.get_advantages_and_returns(
-                        experience.values,
-                        final_reward,
-                        experience.action_mask,
-                        generate_kwargs["gamma"],
-                        generate_kwargs["lambd"],
-                    )
-                )
-
-            elif self.advantage_estimator in ["reinforce", "rloo", "reinforce_baseline", "group_norm"]:
-                # Compute cumulative returns
-                experience.returns = self.get_cumulative_returns(
-                    final_reward, experience.action_mask, generate_kwargs["gamma"]
-                )
-                experience.advantages = deepcopy(experience.returns)
-
-                # Advantage whitening
-                # Whether to apply normalization over the entire Batch in the Trainer's train_step
-                if config.advantages_norm:
-                    masked_adv = torch.masked_select(experience.advantages, experience.action_mask)
-                    adv_mean = masked_adv.mean()
-                    adv_std = masked_adv.std()
-                    experience.advantages = (experience.advantages - adv_mean) / (adv_std + 1e-9)
-
-                # Advantage clipping
-                if config.advantage_clip > 0:
-                    experience.info["advantage_clip_frac"] = compute_clip_fraction(
-                        experience.advantages, config.advantage_clip, -config.advantage_clip
-                    )
-                    experience.advantages = torch.clamp(
-                        experience.advantages, -config.advantage_clip, config.advantage_clip
-                    )
-
-            else:
-                raise ValueError(f"Unknown advantage_estimator: {self.advantage_estimator}")
+            # Update experience info with calculator's info dict
+            experience.info.update(info_dict)
 
             # ========== Store Episode Return ==========
             if not self.packing_samples:
@@ -1584,6 +1526,10 @@ class FastExperienceMaker(NaiveExperienceMaker):
             # Cleanup
             experience.kl = None
             del experience.info["num_actions"]
+
+        # ========== Cross-batch Advantage Normalization ==========
+        # Use the utility function for cross-batch normalization
+        experiences = normalize_advantages_cross_batch(experiences, self.advantage_estimator, self.strategy.args)
 
         return experiences
 
@@ -1702,15 +1648,24 @@ class FastExperienceMaker(NaiveExperienceMaker):
         references = sample.references
         output_texts = getattr(sample, "output_texts", None)
 
-        # Build extra kwargs for VLM
+        # Build extra kwargs for VLM based on actor's modality
+        # Only include parameters that the actor's modality supports
         extra_kwargs = {}
         if vlm:
-            extra_kwargs = dict(
-                pixel_values=sample.pixel_values,
-                image_grid_thw=sample.image_grid_thws,
-                pixel_values_videos=sample.pixel_values_videos,
-                video_grid_thw=sample.video_grid_thws,
-            )
+            # Candidate parameters to pass
+            candidate_params = {
+                "pixel_values": sample.pixel_values,
+                "image_grid_thw": sample.image_grid_thws,
+                "pixel_values_videos": sample.pixel_values_videos,
+                "video_grid_thw": sample.video_grid_thws,
+            }
+
+            # Filter to only include supported parameters
+            extra_kwargs = {
+                key: value
+                for key, value in candidate_params.items()
+                if key in self._actor_supported_params
+            }
 
         # Fix Qwen-VL image token count bug
         self._fix_qwen_vl_image_tokens(sequences, sample, vlm)
@@ -1766,6 +1721,11 @@ class FastExperienceMaker(NaiveExperienceMaker):
         num_patches = sample.pixel_values.shape[0] // 4
 
         if num_tokens != num_patches:
+            self.strategy.print(
+                f"[Warning] Mismatch found during rollout step. Fixing sequences. "
+                f"Tokens: {num_tokens}, Patches: {num_patches}"
+            )
+
             pad_token_id = self.tokenizer.pad_token_id
             diff = num_tokens - num_patches
             token_positions = (sequences == image_token_id).nonzero()

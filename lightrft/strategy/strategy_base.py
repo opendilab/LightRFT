@@ -10,6 +10,7 @@ import os
 import re
 import random
 import time
+from loguru import logger
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from contextlib import contextmanager
@@ -785,24 +786,45 @@ class StrategyBase(ABC):
                 ) for output in vllm_outputs
             ]
         elif self.inference_engine_type == "sglang":
-            if multi_modal_inputs is not None:  # VLM case
-                prompt = [p["prompt"] for p in multi_modal_inputs]
-                image = [p["multi_modal_data"]["image"] for p in multi_modal_inputs]
-            else:
-                prompt = prompt_token_ids
-                image = None
 
-            sglang_outputs = self.inference_engine.generate(
-                sampling_params=sampling_params,
-                input_ids=prompt,
-                image_data=image,
-            )
-            return [
-                EasyDict(
-                    prompt_token_ids=prompt[i],
-                    output_token_ids=sglang_outputs[i]["output_ids"],
-                ) for i, output in enumerate(sglang_outputs)
-            ]
+            if multi_modal_inputs is not None:  # VLM case
+                logger.debug(f"rank {dist.get_rank()} VLM branch")
+                prompt = [p["prompt"] for p in multi_modal_inputs]
+
+                # Handle cases where some prompts might not have images
+                # Flatten nested list format if needed: [[PIL.Image]] -> [PIL.Image]
+                image = [(img[0] if isinstance(img, list) and len(img) > 0 else img)
+                         for img in (p.get("multi_modal_data", {}).get("image") for p in multi_modal_inputs)]
+
+                sglang_outputs = self.inference_engine.generate(
+                    sampling_params=sampling_params,
+                    prompt=prompt,  # skip_tokenizer_init must be False
+                    image_data=image,
+                )
+
+                # VLM case: prompt_token_ids should be provided separately or extracted from sglang output
+                # Since sglang doesn't return prompt_token_ids in VLM mode, we set it to None here
+                # and expect the caller to fill it in if needed
+                return [
+                    EasyDict(
+                        prompt_token_ids=None,  # Will be filled by caller if needed
+                        output_token_ids=sglang_outputs[i]["output_ids"],
+                    ) for i in range(len(sglang_outputs))
+                ]
+            else:  # text-only case
+                logger.debug(f"rank {dist.get_rank()} text-only branch")
+                sglang_outputs = self.inference_engine.generate(
+                    sampling_params=sampling_params,
+                    input_ids=prompt_token_ids,
+                    image_data=None,
+                )
+                # Text-only case: prompt_token_ids is available from input
+                return [
+                    EasyDict(
+                        prompt_token_ids=prompt_token_ids[i],
+                        output_token_ids=sglang_outputs[i]["output_ids"],
+                    ) for i in range(len(sglang_outputs))
+                ]
         else:
             raise ValueError(f"Unsupported engine type: {self.inference_engine_type}")
 
@@ -933,7 +955,12 @@ class StrategyBase(ABC):
             raise NotImplementedError("Inference engine is not initialized.")
         self.wakeup_inference_engine()
 
-        is_multimodal = all_images is not None or all_videos is not None
+        # is_multimodal = all_images is not None
+        # NOTE: not only check if all_images is None, but also check if it contains non-None elements
+        # If all_images is [None, None, ...], any(img is not None for img in all_images) will return False
+        # Same logic applies to all_videos
+        is_multimodal = (((all_images is not None) and any(img is not None for img in all_images))
+                         or ((all_videos is not None) and any(vid is not None for vid in all_videos)))
 
         if is_multimodal:
             inputs = self._build_multimodal_inputs(
@@ -964,8 +991,11 @@ class StrategyBase(ABC):
         local_outputs = all_outputs[cur_rank * num_prompts_per_rank:(cur_rank + 1) * num_prompts_per_rank]
 
         if self.inference_engine_type == "sglang":
+            # For SGLang VLM case, prompt_token_ids is set to None in engine_generate_local
+            # We need to fill it with the actual token_ids here
             for i, output in enumerate(local_outputs):
-                output.prompt_token_ids = all_prompt_token_ids[i]
+                if output.prompt_token_ids is None:
+                    output.prompt_token_ids = all_prompt_token_ids[i]
 
         if sleep_engine is True:
             self.maybe_sleep_inference_engine()

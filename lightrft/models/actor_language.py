@@ -23,6 +23,7 @@ from transformers import (
 from transformers.integrations.deepspeed import HfDeepSpeedConfig
 
 from .utils import apply_lora_configuration, log_probs_from_logits, reset_position_ids, entropy_from_logits
+from .actor_modality import ActorModality
 
 
 class ActorLanguage(nn.Module):
@@ -72,6 +73,9 @@ class ActorLanguage(nn.Module):
             temperature=0.7
         )
     """
+    # Model modality declaration - defines what types of inputs this model accepts
+    modality = ActorModality.LANGUAGE_ONLY
+
     def __init__(
         self,
         pretrain_or_model,
@@ -227,8 +231,6 @@ class ActorLanguage(nn.Module):
         sequences: torch.LongTensor,
         num_actions: Optional[Union[int, list[int]]] = None,
         attention_mask: Optional[torch.Tensor] = None,
-        pixel_values: Optional[torch.Tensor] = None,
-        image_grid_thw: Optional[torch.Tensor] = None,
         return_output: bool = False,
         packed_seq_lens: Optional[list[int]] = None,
     ):
@@ -238,16 +240,15 @@ class ActorLanguage(nn.Module):
         Computes action log probabilities for reinforcement learning training. Supports both
         regular and packed sequence processing for efficient training.
 
+        NOTE: This is a text-only model. It does NOT accept pixel_values, image_grid_thw,
+        pixel_values_videos, or video_grid_thw parameters. Use ActorVL for multimodal inputs.
+
         :param sequences: Input token sequences.
         :type sequences: torch.LongTensor
         :param num_actions: Number of action tokens to extract log probabilities for.
         :type num_actions: Optional[Union[int, List[int]]]
         :param attention_mask: Attention mask for the sequences.
         :type attention_mask: Optional[torch.Tensor]
-        :param pixel_values: Pixel values for vision-language models (currently unused).
-        :type pixel_values: Optional[torch.Tensor]
-        :param image_grid_thw: Image grid dimensions for vision-language models (currently unused).
-        :type image_grid_thw: Optional[torch.Tensor]
         :param return_output: Whether to return the full model output along with action log probabilities.
         :type return_output: bool
         :param packed_seq_lens: Sequence lengths for packed samples.
