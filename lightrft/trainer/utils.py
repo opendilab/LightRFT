@@ -44,13 +44,13 @@ def fire_sampling(
     FIRE sampling (Flaming-hot Initiation with Regular Execution)
 
     FIRE sampling paper link: https://arxiv.org/abs/2410.21236
-    
+
     According to the paper, FIRE sampling:
     1. Samples the FIRST token at a very high temperature ("flaming-hot initiation")
     2. Proceeds with regular temperature for remaining tokens
     3. IMPORTANT: top_k, top_p, min_p, and other sampling parameters remain THE SAME
        for both first token and remaining tokens. Only temperature changes.
-    
+
     This implementation follows the paper's design: we only modify temperature between
     the first token and remaining tokens, keeping all other sampling parameters identical.
 
