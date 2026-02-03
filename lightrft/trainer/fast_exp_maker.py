@@ -1616,7 +1616,7 @@ class FastExperienceMaker(NaiveExperienceMaker):
                     output.sequences, output.num_actions, output.attention_mask, **output.inputs_extra_kwargs
                 )
             # self.strategy.offload_model(self.critic)
-        Timer.stop('    critic')    
+        Timer.stop('    critic')
 
         # ========== Stage 4: Reward Models ==========
         self.reward_engine.compute_rewards(outputs, vlm_mode, device)
