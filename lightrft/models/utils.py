@@ -13,14 +13,528 @@ The module is particularly useful for:
 - Handling position IDs in packed sequence scenarios for transformer models
 """
 
-from typing import List, Optional, Union, Tuple, Dict, Callable
+import logging
+from typing import Callable, Dict, List, Optional, Tuple, Union
 
-from loguru import logger
+import deepspeed
 import torch
+import torch.distributions as dist
 import torch.nn as nn
 import torch.nn.functional as F
-import torch.distributions as dist
+from flash_attn.utils.distributed import all_gather
+from lightrft.utils.logging_utils import init_logger
+from loguru import logger
 from peft import LoraConfig, TaskType, get_peft_model
+from peft.tuners.lora import LoraLayer
+from transformers import (AutoConfig, AutoModel, AutoModelForVision2Seq,
+                          BitsAndBytesConfig)
+from transformers.integrations.deepspeed import HfDeepSpeedConfig
+
+logger = init_logger(__name__)
+
+
+
+
+
+
+
+# Construct transformer with a value head for sequence classification.
+# https://github.com/huggingface/transformers/blob/405b56269812056d9593869e22b7b264d806cb1e/src/transformers/models/llama/modeling_llama.py#L1254
+def get_vlm_for_sequence_regression(
+    model_name_or_path: str,
+    model_type: str,
+    *,
+    bf16=True,
+    load_in_4bit=False,
+    lora_rank=0,
+    lora_alpha=16,
+    target_modules=None,
+    lora_dropout=0,
+    normalize_reward=False,
+    use_flash_attention_2=False,
+    ds_config: dict = None,
+    init_value_head: bool = False,
+    value_head_prefix="score",
+    device_map=None,
+    packing_samples=False,
+    **kwargs,
+) -> nn.Module:
+    """
+    Retrieve a transformer model with a sequence regression head on top.
+
+    This function loads a pretrained transformer model and attaches a linear layer for sequence regression.
+
+    :param model_name_or_path: Path to the pretrained model.
+    :type model_name_or_path: str
+    :param model_type: Type of the model, either "reward" or "critic".
+    :type model_type: str
+    :param bf16: Enable bfloat16 precision. Defaults to True.
+    :type bf16: bool
+    :param load_in_4bit: Load the model in 4-bit precision. Defaults to False.
+    :type load_in_4bit: bool
+    :param lora_rank: Rank for LoRA adaptation. Defaults to 0.
+    :type lora_rank: int
+    :param lora_alpha: Alpha parameter for LoRA. Defaults to 16.
+    :type lora_alpha: int
+    :param target_modules: List of target modules for LoRA. Defaults to None.
+    :type target_modules: Optional[List[str]]
+    :param lora_dropout: Dropout rate for LoRA layers. Defaults to 0.
+    :type lora_dropout: float
+    :param normalize_reward: Normalize reward values. Defaults to False.
+    :type normalize_reward: bool
+    :param use_flash_attention_2: Use Flash Attention 2.0. Defaults to False.
+    :type use_flash_attention_2: bool
+    :param ds_config: Deepspeed configuration for model partitioning across multiple GPUs when ZeRO-3 is enabled. Defaults to None.
+    :type ds_config: Optional[dict]
+    :param init_value_head: Initialize the value head. Defaults to False.
+    :type init_value_head: bool
+    :param value_head_prefix: Prefix for the value head. Defaults to "score".
+    :type value_head_prefix: str
+    :param device_map: Map of devices for model loading. Defaults to None.
+    :type device_map: Optional[dict]
+    :param packing_samples: Whether to pack samples during training. Defaults to False.
+    :type packing_samples: bool
+    :param kwargs: Additional keyword arguments passed to the model constructor.
+    :type kwargs: dict
+
+    :return: A pretrained transformer model with a sequence regression head.
+    :rtype: nn.Module
+    """
+    assert (
+        model_type == "critic" or model_type == "reward"
+    ), f"invalid model_type: {model_type}, should be critic or reward."
+
+    config = AutoConfig.from_pretrained(model_name_or_path, trust_remote_code=True)
+    config.normalize_reward = normalize_reward
+    config._attn_implementation = "flash_attention_2" if use_flash_attention_2 else "eager"
+
+    # Prioritize using the value_head_prefix in the model configuration.
+    value_head_prefix = getattr(config, "value_head_prefix", value_head_prefix)
+    logger.info(f"set value_head_prefix to `{value_head_prefix}`")
+    if "internvl" in model_name_or_path.lower():
+        _model = AutoModel.from_pretrained(model_name_or_path, trust_remote_code=True)
+        base_class = _model.__class__  
+        del _model  
+        torch.cuda.empty_cache()  
+    else:
+        base_class = AutoModelForVision2Seq._model_mapping[type(config)]
+    # base_pretrained_class = base_class.__base__
+    # print("base_class: ", base_class)
+    # print("base_pretrained_class: ", base_pretrained_class)
+    # TODO adapt to vlm
+    if model_type == "reward":
+        cls_class = _get_reward_model(base_class, value_head_prefix, packing_samples)
+    else:
+        cls_class = _get_critic_model(base_class, value_head_prefix, packing_samples)
+
+    # Note: dschf is defined in function scope to avoid global effects
+    # https://huggingface.co/docs/transformers/main_classes/deepspeed#nontrainer-deepspeed-integration
+    if ds_config is not None and ds_config["zero_optimization"]["stage"] == 3:
+        dschf = HfDeepSpeedConfig(ds_config)
+    else:
+        dschf = None
+
+    if load_in_4bit:
+        assert bf16, "we only support bnb_4bit_compute_dtype = bf16"
+        nf4_config = BitsAndBytesConfig(
+            load_in_4bit=True,
+            bnb_4bit_quant_type="nf4",
+            bnb_4bit_use_double_quant=True,
+            bnb_4bit_compute_dtype=torch.bfloat16,
+        )
+    else:
+        nf4_config = None
+
+    model = cls_class.from_pretrained(
+        model_name_or_path,
+        config=config,
+        trust_remote_code=True,
+        torch_dtype=torch.bfloat16 if bf16 else "auto",
+        quantization_config=nf4_config,
+        device_map=device_map,
+        **kwargs,
+    )
+
+    # LoRA
+    if lora_rank > 0:
+        model.enable_input_require_grads()
+        lora_config = LoraConfig(
+            r=lora_rank,
+            lora_alpha=lora_alpha,
+            target_modules=target_modules,
+            lora_dropout=lora_dropout,
+            bias="none",
+        )
+        model = get_peft_model(model, lora_config)
+
+        if load_in_4bit:
+            for name, module in model.named_modules():
+                if isinstance(module, LoraLayer):
+                    module = module.to(torch.bfloat16)
+                if "norm" in name:
+                    module = module.to(torch.float32)
+                if value_head_prefix in name or "embed_tokens" in name:
+                    if hasattr(module, "weight"):
+                        module = module.to(torch.bfloat16)
+
+    # MoE - balancing loss
+    model_config = model.config.to_dict()
+    if "output_router_logits" in model_config:
+        print("[MoE] set output_router_logits as True")
+        model.config.output_router_logits = True
+
+    # https://github.com/huggingface/transformers/issues/26877
+    model.config.use_cache = False
+
+    # NOTE: For reward model training only, intialize value_head manually
+    # because deepspeed.zero.Init() will not intialize them.
+    # TODO: Find a better way to clarify reward model training.
+    if init_value_head:
+        value_head = getattr(model, value_head_prefix)
+        if dschf is not None:
+            logger.info("initialize value_head for ZeRO-3 reward model training.")
+            with deepspeed.zero.GatheredParameters([value_head.weight], modifier_rank=0):
+                if torch.distributed.get_rank() == 0:
+                    value_head.weight.data.normal_(mean=0.0, std=1 / (config.hidden_size + 1))
+        else:
+            value_head.weight.data.normal_(mean=0.0, std=1 / (config.hidden_size + 1))
+
+    return model
+
+
+def _get_reward_model(base_vlm_model, value_head_prefix="score", packing_samples=False):
+    """
+    Create a RewardModel class that extends a base vision-language model.
+
+    This factory function dynamically creates a RewardModel class by inheriting from
+    the provided base VLM model and adding a value head for reward prediction.
+
+    :param base_vlm_model: The base vision-language model class to extend.
+    :type base_vlm_model: type
+    :param value_head_prefix: Prefix for the value head attribute name. Defaults to "score".
+    :type value_head_prefix: str
+    :param packing_samples: Whether to use packed sequence processing. Defaults to False.
+    :type packing_samples: bool
+
+    :return: A RewardModel class that extends the base model with reward prediction capability.
+    :rtype: type
+    """
+    class RewardModel(base_vlm_model):
+        supports_gradient_checkpointing = True
+
+        def __init__(self, config: AutoConfig):
+            """
+            Initialize the RewardModel with a value head for reward prediction.
+
+            :param config: Model configuration containing architecture and training parameters.
+            :type config: AutoConfig
+            """
+            super().__init__(config)
+            # setattr(self, self.base_model_prefix, base_vlm_model(config))
+
+            self.value_head_prefix = value_head_prefix
+            setattr(self, value_head_prefix, nn.Linear(config.hidden_size, 1, bias=False))
+
+            self.packing_samples = packing_samples
+
+            # mean std
+            self.normalize_reward = config.normalize_reward
+            self.register_buffer("mean", torch.zeros(1), persistent=False)
+            self.register_buffer("std", torch.ones(1), persistent=False)
+
+            # load mean/std from config.json
+            if hasattr(config, "mean"):
+                self.mean[0] = config.mean
+                self.std[0] = config.std
+
+        def forward(
+            self,
+            input_ids: torch.LongTensor = None,
+            attention_mask: Optional[torch.Tensor] = None,
+            pixel_values: torch.LongTensor = None,
+            image_grid_thw: torch.LongTensor = None,
+            pixel_values_videos: torch.LongTensor = None,
+            video_grid_thw: torch.LongTensor = None,
+            return_output=False,
+            ring_attn_group=None,
+            packed_seq_lens=None,
+            pixel_values_intern: torch.Tensor = None,
+            image_flags: torch.Tensor = None,
+        ) -> torch.Tensor:
+            """
+            Forward pass to compute reward scores for input sequences.
+
+            :param input_ids: Input token IDs.
+            :type input_ids: torch.LongTensor
+            :param attention_mask: Attention mask for input sequences.
+            :type attention_mask: Optional[torch.Tensor]
+            :param pixel_values: Pixel values for images.
+            :type pixel_values: torch.LongTensor
+            :param image_grid_thw: Image grid metadata (time, height, width).
+            :type image_grid_thw: torch.LongTensor
+            :param pixel_values_videos: Pixel values for videos.
+            :type pixel_values_videos: torch.LongTensor
+            :param video_grid_thw: Video grid metadata (time, height, width).
+            :type video_grid_thw: torch.LongTensor
+            :param return_output: Whether to return full model outputs along with rewards. Defaults to False.
+            :type return_output: bool
+            :param ring_attn_group: Process group for ring attention.
+            :type ring_attn_group: Optional[ProcessGroup]
+            :param packed_seq_lens: Lengths of packed sequences for batch processing.
+            :type packed_seq_lens: Optional[List[int]]
+            :param pixel_values_intern: Pixel values for InternVL models.
+            :type pixel_values_intern: Optional[torch.Tensor]
+            :param image_flags: Flags indicating image presence for InternVL models.
+            :type image_flags: Optional[torch.Tensor]
+
+            :return: Reward scores, or tuple of (rewards, outputs) if return_output is True.
+            :rtype: Union[torch.Tensor, Tuple[torch.Tensor, dict]]
+            """
+            if not self.packing_samples:
+                # https://github.com/OpenRLHF/OpenRLHF/issues/217
+                position_ids = attention_mask.long().cumsum(-1) - 1
+                position_ids.masked_fill_(attention_mask == 0, 1)
+            else:
+                position_ids = reset_position_ids(attention_mask)
+                # explicitly ignore attention_mask for packing_samples
+                attention_mask = None
+
+            # outputs = getattr(self, self.base_model_prefix)(
+            #     input_ids, attention_mask=attention_mask, position_ids=position_ids, pixel_values=pixel_values, image_grid_thw=image_grid_thw, output_hidden_states=True
+            # )
+            if pixel_values_intern is not None:
+                outputs = super().forward(
+                    pixel_values_intern,
+                    input_ids=input_ids,
+                    attention_mask=attention_mask,
+                    position_ids=position_ids,
+                    image_flags=image_flags,
+                    output_hidden_states=True
+                )
+            else:
+                outputs = super().forward(
+                    input_ids=input_ids,
+                    attention_mask=attention_mask,
+                    position_ids=position_ids,
+                    pixel_values=pixel_values,
+                    image_grid_thw=image_grid_thw,
+                    pixel_values_videos=pixel_values_videos,
+                    video_grid_thw=video_grid_thw,
+                    output_hidden_states=True
+                )  
+            # print(outputs.keys())
+            # print(outputs["hidden_states"][-1].shape)
+            last_hidden_states = outputs["hidden_states"][-1]
+            values = getattr(self, self.value_head_prefix)(last_hidden_states).squeeze(-1)
+
+            if self.packing_samples:
+                if ring_attn_group is not None:
+                    reward = all_gather(values, ring_attn_group).reshape(1, -1)
+                else:
+                    reward = values
+                # TODO: convert packed_seq_lens into torch tensor in advance
+                packed_seq_lens = torch.tensor(packed_seq_lens, device=values.device)
+                eos_indices = packed_seq_lens.cumsum(dim=0) - 1
+                reward = reward.squeeze(0).gather(dim=0, index=eos_indices)
+            else:
+                eos_indices = attention_mask.size(1) - 1 - attention_mask.long().fliplr().argmax(dim=1, keepdim=True)
+                reward = values.gather(dim=1, index=eos_indices).squeeze(1)
+
+            if not self.training and self.normalize_reward:
+                reward = (reward - self.mean) / self.std
+
+            return (reward, outputs) if return_output else reward
+
+    return RewardModel
+
+
+def _get_critic_model(base_vlm_model, value_head_prefix="score", packing_samples=False):
+    """
+    Create a CriticModel class that extends a base vision-language model.
+
+    This factory function dynamically creates a CriticModel class by inheriting from
+    the provided base VLM model and adding a value head for value function estimation.
+
+    :param base_vlm_model: The base vision-language model class to extend.
+    :type base_vlm_model: type
+    :param value_head_prefix: Prefix for the value head attribute name. Defaults to "score".
+    :type value_head_prefix: str
+    :param packing_samples: Whether to use packed sequence processing. Defaults to False.
+    :type packing_samples: bool
+
+    :return: A CriticModel class that extends the base model with value estimation capability.
+    :rtype: type
+    """
+    class CriticModel(base_vlm_model):
+        supports_gradient_checkpointing = True
+
+        def __init__(self, config: AutoConfig):
+            """
+            Initialize the CriticModel with a value head for value function estimation.
+
+            The critic model is used in PPO/GRPO training to estimate state values for
+            advantage calculation. It extends the base VLM with a linear value head that
+            outputs scalar value estimates for each token position.
+
+            :param config: Model configuration containing architecture and training parameters.
+                          Expected to have 'normalize_reward' attribute and optionally 'mean'/'std'
+                          for value normalization.
+            :type config: AutoConfig
+            """
+            super().__init__(config)
+            # setattr(self, self.base_model_prefix, base_vlm_model(config))
+
+            self.value_head_prefix = value_head_prefix
+            setattr(self, value_head_prefix, nn.Linear(config.hidden_size, 1, bias=False))
+
+            self.packing_samples = packing_samples
+
+            # mean std
+            self.normalize_reward = config.normalize_reward
+            self.register_buffer("mean", torch.zeros(1), persistent=False)
+            self.register_buffer("std", torch.ones(1), persistent=False)
+
+            # load mean/std from config.json
+            if hasattr(config, "mean"):
+                self.mean[0] = config.mean
+                self.std[0] = config.std
+
+        def forward(
+            self,
+            input_ids: torch.LongTensor = None,
+            num_actions: Optional[Union[int, list[int]]] = None,
+            attention_mask: Optional[torch.Tensor] = None,
+            pixel_values: torch.LongTensor = None,
+            image_grid_thw: torch.LongTensor = None,
+            pixel_values_videos: torch.LongTensor = None,
+            video_grid_thw: torch.LongTensor = None,
+            return_output=False,
+            packed_seq_lens=None,
+            pixel_values_intern: torch.Tensor = None,
+            image_flags: torch.Tensor = None,
+        ) -> torch.Tensor:
+            """
+            Forward pass to compute value estimates for action sequences.
+
+            This method computes state-value estimates for tokens in the action sequence,
+            which are used to calculate advantages in PPO/GRPO training. The values are
+            computed from the last hidden states of the base VLM, excluding the final token.
+
+            :param input_ids: Input token IDs including both prompt and generated actions.
+            :type input_ids: torch.LongTensor
+            :param num_actions: Number of action tokens to compute values for. Can be:
+                               - int: Same number of actions for all sequences in batch
+                               - list[int]: Different action counts per sequence (for packed samples)
+                               - None: Return full model outputs without extracting action values
+            :type num_actions: Optional[Union[int, list[int]]]
+            :param attention_mask: Attention mask for input sequences (1 for valid tokens, 0 for padding).
+            :type attention_mask: Optional[torch.Tensor]
+            :param pixel_values: Pixel values for images in the input.
+            :type pixel_values: torch.LongTensor
+            :param image_grid_thw: Image grid metadata (time, height, width) for image tokens.
+            :type image_grid_thw: torch.LongTensor
+            :param pixel_values_videos: Pixel values for videos in the input.
+            :type pixel_values_videos: torch.LongTensor
+            :param video_grid_thw: Video grid metadata (time, height, width) for video tokens.
+            :type video_grid_thw: torch.LongTensor
+            :param return_output: If True, return tuple of (values, model_outputs). Defaults to False.
+            :type return_output: bool
+            :param packed_seq_lens: Lengths of packed sequences for efficient batch processing.
+                                   Required when packing_samples is True.
+            :type packed_seq_lens: Optional[List[int]]
+            :param pixel_values_intern: Pixel values for InternVL-style models.
+            :type pixel_values_intern: Optional[torch.Tensor]
+            :param image_flags: Flags indicating image presence for InternVL models.
+            :type image_flags: Optional[torch.Tensor]
+
+            :return: Value estimates for action tokens. Shape depends on num_actions:
+                    - If num_actions is int: (batch_size, num_actions)
+                    - If num_actions is list: (batch_size, total_actions) with concatenated sequences
+                    - If num_actions is None and return_output is True: model outputs dict
+                    - If return_output is True: tuple of (action_values, model_outputs)
+            :rtype: Union[torch.Tensor, Tuple[torch.Tensor, dict], dict]
+
+            Example::
+
+                >>> # Single sequence case
+                >>> values = critic_model(
+                ...     input_ids=input_ids,
+                ...     num_actions=10,
+                ...     attention_mask=attention_mask,
+                ...     pixel_values=pixel_values,
+                ...     image_grid_thw=image_grid_thw
+                ... )
+                >>> values.shape  # (batch_size, 10)
+
+                >>> # Packed sequence case
+                >>> values = critic_model(
+                ...     input_ids=packed_input_ids,
+                ...     num_actions=[8, 10, 12],
+                ...     attention_mask=packed_attention_mask,
+                ...     packed_seq_lens=[50, 60, 55]
+                ... )
+                >>> values.shape  # (1, 30)  # 8+10+12=30
+            """
+            if not self.packing_samples:
+                # https://github.com/OpenRLHF/OpenRLHF/issues/217
+                position_ids = attention_mask.long().cumsum(-1) - 1
+                position_ids.masked_fill_(attention_mask == 0, 1)
+            else:
+                # convert attention_mask to position_ids
+                position_ids = reset_position_ids(attention_mask)
+                # explicitly ignore attention_mask for packing_samples
+                attention_mask = None
+
+            if pixel_values_intern != None:
+                outputs = super().forward(
+                    pixel_values_intern,
+                    input_ids=input_ids,
+                    attention_mask=attention_mask,
+                    position_ids=position_ids,
+                    image_flags=image_flags,
+                    output_hidden_states=True
+                )
+            else:
+                outputs = super().forward(
+                    input_ids=input_ids,
+                    attention_mask=attention_mask,
+                    position_ids=position_ids,
+                    pixel_values=pixel_values,
+                    image_grid_thw=image_grid_thw,
+                    pixel_values_videos=pixel_values_videos,
+                    video_grid_thw=video_grid_thw,
+                    output_hidden_states=True
+                )  
+            last_hidden_states = outputs["hidden_states"][-1]
+            values = getattr(self, self.value_head_prefix)(last_hidden_states).squeeze(-1)[:, :-1]
+
+            # normalize reward
+            if self.normalize_reward:
+                values = (values - self.mean) / self.std
+
+            if num_actions is None:
+                assert return_output
+                return outputs
+
+            if not self.packing_samples:
+                action_values = values[:, -num_actions:]
+            else:
+                assert isinstance(num_actions, list) and len(num_actions) == len(packed_seq_lens)
+                action_values = []
+                offset = 0
+                for num_action, seq_len in zip(num_actions, packed_seq_lens):
+                    start, end = max(0, offset + seq_len - num_action - 1), offset + seq_len - 1
+                    action_values.append(values[:, start:end])
+                    offset += seq_len
+                action_values = torch.cat(action_values, dim=1)
+
+            if return_output:
+                return (action_values, outputs)
+            else:
+                return action_values
+
+    return CriticModel
+
 
 
 def find_all_linear_modules(model: "nn.Module", freeze_vision_tower: bool) -> List[str]:
@@ -224,7 +738,8 @@ def log_probs_from_logits(
         flashattn_available = False
         if not disable_logprobs_flashattn:
             try:
-                from flash_attn.ops.triton.cross_entropy import cross_entropy_loss
+                from flash_attn.ops.triton.cross_entropy import \
+                    cross_entropy_loss
 
                 flashattn_available = True
             except ImportError:
