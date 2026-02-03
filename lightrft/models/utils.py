@@ -23,19 +23,12 @@ import torch.nn as nn
 import torch.nn.functional as F
 from flash_attn.utils.distributed import all_gather
 from lightrft.utils.logging_utils import init_logger
-from loguru import logger
 from peft import LoraConfig, TaskType, get_peft_model
 from peft.tuners.lora import LoraLayer
-from transformers import (AutoConfig, AutoModel, AutoModelForVision2Seq,
-                          BitsAndBytesConfig)
+from transformers import (AutoConfig, AutoModel, AutoModelForVision2Seq, BitsAndBytesConfig)
 from transformers.integrations.deepspeed import HfDeepSpeedConfig
 
 logger = init_logger(__name__)
-
-
-
-
-
 
 
 # Construct transformer with a value head for sequence classification.
@@ -84,7 +77,8 @@ def get_vlm_for_sequence_regression(
     :type normalize_reward: bool
     :param use_flash_attention_2: Use Flash Attention 2.0. Defaults to False.
     :type use_flash_attention_2: bool
-    :param ds_config: Deepspeed configuration for model partitioning across multiple GPUs when ZeRO-3 is enabled. Defaults to None.
+    :param ds_config: Deepspeed configuration for model partitioning across multiple GPUs when ZeRO-3 is enabled.
+        Defaults to None.
     :type ds_config: Optional[dict]
     :param init_value_head: Initialize the value head. Defaults to False.
     :type init_value_head: bool
@@ -284,7 +278,6 @@ def _get_reward_model(base_vlm_model, value_head_prefix="score", packing_samples
                 # explicitly ignore attention_mask for packing_samples
                 attention_mask = None
 
-
             outputs = super().forward(
                 input_ids=input_ids,
                 attention_mask=attention_mask,
@@ -294,7 +287,7 @@ def _get_reward_model(base_vlm_model, value_head_prefix="score", packing_samples
                 pixel_values_videos=pixel_values_videos,
                 video_grid_thw=video_grid_thw,
                 output_hidden_states=True
-            )  
+            )
             # print(outputs.keys())
             # print(outputs["hidden_states"][-1].shape)
             last_hidden_states = outputs["hidden_states"][-1]
@@ -461,7 +454,7 @@ def _get_critic_model(base_vlm_model, value_head_prefix="score", packing_samples
                 pixel_values_videos=pixel_values_videos,
                 video_grid_thw=video_grid_thw,
                 output_hidden_states=True
-            )  
+            )
             last_hidden_states = outputs["hidden_states"][-1]
             values = getattr(self, self.value_head_prefix)(last_hidden_states).squeeze(-1)[:, :-1]
 
@@ -491,7 +484,6 @@ def _get_critic_model(base_vlm_model, value_head_prefix="score", packing_samples
                 return action_values
 
     return CriticModel
-
 
 
 def find_all_linear_modules(model: "nn.Module", freeze_vision_tower: bool) -> List[str]:
