@@ -38,9 +38,8 @@ from lightrft.strategy.utils.parallel_utils import (
     set_sequence_parallel_group,
 )
 from lightrft.strategy.utils.statistic import GenLenAnalyser
-from .sglang_utils import get_sglang_engine_for_rollout
-from .vllm_utils import get_vllm_engine_for_rollout
 from lightrft.strategy.config import StrategyConfig
+from .sglang_utils import get_sglang_engine_for_rollout
 
 ModelOptimPair = Tuple[nn.Module, Optimizer]
 ModelOrModelOptimPair = Union[nn.Module, ModelOptimPair]
@@ -672,6 +671,7 @@ class StrategyBase(ABC):
         self.inference_engine_type = engine_type
 
         if engine_type == "vllm":
+            from .vllm_utils import get_vllm_engine_for_rollout
             self.inference_engine = get_vllm_engine_for_rollout(args)
             self.inference_engine_status = EngineStatus.WAKEUP
         elif engine_type == "sglang":

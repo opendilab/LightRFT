@@ -33,7 +33,6 @@ import torch
 import numpy as np
 from PIL import Image
 from easydict import EasyDict
-from vllm import SamplingParams
 
 from lightrft.models.utils import (
     compute_approx_kl,
@@ -1113,6 +1112,7 @@ class FastExperienceMaker(NaiveExperienceMaker):
         if config.engine_type == "vllm":
             # For vllm>=0.13.0, truncate_prompt_tokens must not exceed max_model_len
             # For older versions, we can use 8192 directly without validation
+            from vllm import SamplingParams
             if vllm_ge_0130():
                 max_model_len = self.strategy.inference_engine.llm_engine.model_config.max_model_len
                 truncate_tokens = min(8192, max_model_len)

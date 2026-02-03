@@ -26,18 +26,6 @@ setup(
         "Topic :: Software Development :: Libraries :: Python Modules",
     ],
     python_requires=">=3.10",
-    install_requires=[
-        "torch>=2.9.1",
-        "transformers>=4.51.3",
-        "vllm>=0.13.3",
-        "sglang>=0.5.6.post2",
-        "deepspeed>=0.18.3",
-        "accelerate",
-        "datasets",
-        "wandb",
-        "peft",
-        "easydict",
-    ],
     extras_require={
         "dev": [
             "pytest",
