@@ -48,6 +48,7 @@ ensure_video_input_available()
 from lightrft.datasets import PromptDatasetVL, SFTDatasetVL
 from lightrft.models.actor_language import ActorLanguage
 from lightrft.models.actor_vl import ActorVL
+from lightrft.models.utils import get_vlm_for_sequence_regression
 from lightrft.strategy import get_strategy
 from lightrft.trainer.spmd_ppo_trainer import SPMDPPOTrainerVL
 from lightrft.utils import blending_datasets, get_tokenizer_processor_vl
@@ -55,6 +56,13 @@ from lightrft.utils import blending_datasets, get_tokenizer_processor_vl
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from reward_models_utils import RECIPE, load_reward_models, reward_fn
 
+import torch.multiprocessing
+
+# Fix "multiprocessing.context.AuthenticationError: digest received was wrong" error
+# that can occur during PPO pipeline execution with multiprocessing.
+# Using 'file_system' sharing strategy instead of default 'file_descriptor' prevents
+# authentication errors when sharing tensors across processes in distributed training.
+torch.multiprocessing.set_sharing_strategy('file_system')
 
 def train(args):
     """

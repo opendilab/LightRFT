@@ -49,8 +49,8 @@ export WANDB_PROJECT="LightRFT-Geo3K-PPO"
 N_SAMPLES=2              # Number of samples per prompt (PPO typically uses 1-2).
 EPISODE=30               # Total number of training episodes.
 WARMUP=0.03              # Learning rate warmup ratio.
-RBS=64                   # Rollout Batch Size (prompts per rollout).
-TBS=$((RBS * N_SAMPLES)) # Training Batch Size (calculated automatically).
+RBS=128                  # Rollout Batch Size.
+TBS=128                  # Training Batch Size.
 
 # --- Learning Rates ---
 ACTOR_LR=1e-6            # Actor learning rate.
@@ -72,9 +72,9 @@ GENERATE_MAX_LEN=2048    # Max length of the generated response.
 limit_mm_image_per_prompt=10  # Max number of images per prompt.
 
 # --- Evaluation Settings ---
-EVAL_SPLIT="test"             # Dataset split to use for evaluation.
-MAX_EVAL_SAMPLES=700          # Max samples for evaluation.
-
+EVAL_SPLIT="test"             # Dataset split to use for evaluation ("test", "validation").
+MAX_EVAL_SAMPLES=700          # Max samples for evaluation to keep it fast.
+# Note: hiyouga/geometry3k dataset splits: train (2.1k), validation (300), test (601).
 
 ################################################################################
 #                    Part 3: Distributed Training Setup                        #
@@ -122,6 +122,15 @@ export WANDB_MODE="offline" # Set to "online" for real-time W&B logging.
 # --- Set execution verbosity ---
 set -x
 
+# PPO Training with GAE (Generalized Advantage Estimation)
+# Key differences from GRPO:
+# 1. --advantage_estimator gae (instead of group_norm)
+# 2. --critic_pretrain required (for value estimation)
+# 3. --critic_learning_rate specified (typically higher than actor)
+# 4. NO --use_kl_loss flag (KL is used as reward penalty, not loss)
+# 5. --kl_estimator k1 (standard KL divergence calculation)
+# 6. --eps_clip, --value_clip, --gamma, --lambd (PPO-specific hyperparameters)
+
 
 ################################################################################
 #                         Part 5: Main Training Command                        #
@@ -136,7 +145,7 @@ torchrun \
     --node_rank $NODE_RANK \
     --master-port $MASTER_PORT \
     --master-addr $MASTER_ADDR \
-    examples/openrlhf_v/train_grpo_rm_colocate.py \
+    examples/gsm8k_geo3k/train_colocate.py \
     --pretrain "${PATH_TO_YOUR_BASE_MODEL}" \
     --critic_pretrain "${PATH_TO_YOUR_CRITIC_MODEL}" \
     --reward_pretrain "{}" \
@@ -177,7 +186,8 @@ torchrun \
     --flash_attn \
     --gradient_checkpointing \
     --save_steps 20 \
-    --max_ckpt_num 3 \
+    --max_ckpt_num 2 \
+    --engine_type sglang \
     --engine_mem_util 0.6 \
     --engine_tp_size $ENGINE_TP \
     --enable_engine_sleep \
@@ -193,18 +203,60 @@ torchrun \
     2>&1 | tee "rft_logs/${EXPERIMENT_NAME}/node${NODE_RANK}_${current_time}.log"
 
 
+#############################  Usage Instructions  ##############################
+#
+# Step 1: Preprocess the geo3k dataset (if not already done)
+#   python examples/data_preprocess/geo3k.py --local_save_dir /mnt/shared-storage-user/puyuan/data/geo3k
+#
+# Step 2: Download the base model (optional, will auto-download if not present)
+#   export HF_HOME=/mnt/shared-storage-user/puyuan/model
+#   python3 -c "import transformers; transformers.pipeline(model='Qwen/Qwen2.5-VL-7B-Instruct')"
+#
+# Step 3: Run this PPO training script
+#   bash examples/openrlhf_v/run_ppo_geo3k_qwen2.5_vl_7b.sh
+#
+# Note: This script uses PURE RULE-BASED REWARD for geo3k dataset.
+# The critic model is initialized from the actor weights and trained to predict values.
+#
+#############################  PPO vs GRPO Comparison  ##########################
+#
+# PPO (this script):
+#   - Advantage Estimator: GAE (Generalized Advantage Estimation)
+#   - Requires: Critic model for value estimation
+#   - KL Usage: Reward penalty (init_kl_coef)
+#   - Samples: 1-2 per prompt (can be higher)
+#   - Hyperparameters: eps_clip, value_clip, gamma, lambd
+#   - Better for: Stable training, well-understood algorithm
+#
+# GRPO (run_grpo_geo3k_qwen2.5_vl_7b.sh):
+#   - Advantage Estimator: Group Normalization
+#   - Requires: Multiple samples (typically 5+)
+#   - KL Usage: Loss term (use_kl_loss)
+#   - Samples: 5+ per prompt (required)
+#   - Better for: Sample efficiency, simpler implementation
+#
 ################################################################################
-#                           Usage Instructions                                 #
-#                                                                              #
-# Step 1: Preprocess the Geo3K Dataset                                         #
-#   Ensure your dataset is preprocessed and points to `PATH_TO_YOUR_GEO3K_DATASET`.
-#   `python examples/data_preprocess/geo3k.py --local_save_dir /path/to/dataset`
-#                                                                              #
-# Step 2: Configure the Script                                                 #
-#   Edit "Part 1: User Configuration" to set your Model and Dataset paths.     #
-#   Ensure `PATH_TO_YOUR_CRITIC_MODEL` is set (usually same as base model).    #
-#                                                                              #
-# Step 3: Run the Training Script                                              #
-#   `bash /path/to/this/script.sh`                                             #
-#                                                                              #
+
+#############################  Advanced Configuration  ##########################
+#
+# For advanced users, you can customize the following:
+#
+# 1. Critic Learning Rate:
+#    --critic_learning_rate: Typically 3-10x higher than actor LR
+#    Default: 9e-6 (actor: 1e-6)
+#
+# 2. GAE Hyperparameters:
+#    --gamma: Discount factor (0.9-1.0)
+#    --lambd: TD-lambda for advantage estimation (0.9-0.99)
+#
+# 3. Clipping:
+#    --eps_clip: Policy clip range (0.1-0.3)
+#    --value_clip: Value clip range (0.1-0.3)
+#
+# 4. Samples per Prompt:
+#    --n_samples_per_prompt: 1 (vanilla PPO) or 2-4 (multi-sample PPO)
+#
+# 5. Save Critic Model:
+#    --save_value_network: Save the trained critic for future use
+#
 ################################################################################
