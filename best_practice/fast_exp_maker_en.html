@@ -1,0 +1,1315 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js" lang="en">
+<!--<![endif]-->
+
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>FastExperienceMaker Best Practice Guide &mdash; LightRFT v0.1.1 documentation</title>
+  
+
+  <link rel="shortcut icon" href="../_static/images/favicon.ico" />
+  
+  
+
+  
+
+  
+  
+  
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/readthedocs.css" type="text/css" />
+  <link rel="index" title="Index" href="../genindex.html" />
+  <link rel="search" title="Search" href="../search.html" />
+  <!-- Google Analytics -->
+  <script type="text/javascript">
+    var collapsedSections = [];
+  </script>
+  
+  <!-- End Google Analytics -->
+  
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+  <script>
+    MathJax = {
+        chtml: {
+            scale: 1,
+            minScale: 1,
+        },
+        svg: {
+            scale: 1,
+            minScale: 1,
+        }
+    }
+</script>
+
+  <!-- Preload the theme fonts -->
+
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-book.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/IBMPlexMono/IBMPlexMono-Medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-medium-italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/IBMPlexMono/IBMPlexMono-SemiBold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+
+<!-- Preload the katex fonts -->
+
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Math-Italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size1-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size4-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size2-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size3-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Caligraphic-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.2/css/all.css"
+    integrity="sha384-vSIIfh2YWi9wW0r9iZe7RJPrKwp6bG+s9QZMoITbCckVJqGCCRhc+ccxNcdpHuYu" crossorigin="anonymous">
+</head>
+
+<div class="container-fluid header-holder tutorials-header" id="header-holder">
+  <div class="container">
+    <div class="header-container">
+      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+        aria-label="OpenMMLab"></a>
+
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://github.com/opendilab/LightRFT" target="_blank">GitHub</a>
+          </li>
+          <li >
+            <div id="resourcesDropdownButton" data-toggle="resources-dropdown" class="resources-dropdown">
+              <a
+                class="resource-option with-down-arrow">
+                OpenDILab
+              </a>
+              <div class="resources-dropdown-menu">
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-engine" target="_blank">
+                  <span class="dropdown-title">DI-engine </span>
+                  <p>OpenDILab Decision AI Engine</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/LightZero" target="_blank">
+                  <span class="dropdown-title">LightZero </span>
+                  <p>OpenDILab Decision Monte Carlo Tree Search Framework</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/GenerativeRL" target="_blank">
+                  <span class="dropdown-title">GenerativeRL </span>
+                  <p>OpenDILab Generative AI Framework</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-star" target="_blank">
+                  <span class="dropdown-title">DI-star </span>
+                  <p>OpenDILab Decision AI in StarCraftII</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-drive" target="_blank">
+                  <span class="dropdown-title">DI-drive </span>
+                  <p>OpenDILab Auto-driving platform</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/GoBigger" target="_blank">
+                  <span class="dropdown-title">GoBigger </span>
+                  <p>OpenDILab Multi-Agent Environment</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-smartcross" target="_blank">
+                  <span class="dropdown-title">DI-smartcross </span>
+                  <p>Decision Intelligence Platform for Traffic Crossing Signal Control</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-treetensor" target="_blank">
+                  <span class="dropdown-title">DI-treetensor </span>
+                  <p>Tree Nested PyTorch Tensor Lib</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-sheep" target="_blank">
+                  <span class="dropdown-title">DI-sheep </span>
+                  <p>Deep Reinforcement Learning + 3 Tiles Game</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-model-based-RL" target="_blank">
+                  <span class="dropdown-title">awesome-model-based-RL </span>
+                  <p>A curated list of awesome model based RL resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-decision-transformer" target="_blank">
+                  <span class="dropdown-title">awesome-decision-transformer </span>
+                  <p>A curated list of Decision Transformer resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-exploration-rl" target="_blank">
+                  <span class="dropdown-title">awesome-exploration-rl </span>
+                  <p>A curated list of awesome exploration RL resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-multi-modal-reinforcement-learning" target="_blank">
+                  <span class="dropdown-title">awesome-multi-modal-reinforcement-learning </span>
+                  <p>A curated list of Multi-Modal Reinforcement Learning resources (continually updated)</p>
+                </a>
+              </div>
+          </li>
+        </ul>
+      </div>
+
+      <a class="main-menu-open-button" href="#" data-behavior="open-mobile-menu"></a>
+    </div>
+  </div>
+</div>
+
+<body class="pytorch-body">
+
+   
+
+  
+
+  <div class="table-of-contents-link-wrapper">
+    <span>Table of Contents</span>
+    <a href="#" class="toggle-table-of-contents" data-behavior="toggle-table-of-contents"></a>
+  </div>
+
+  <nav data-toggle="wy-nav-shift" class="pytorch-left-menu" id="pytorch-left-menu">
+    <div class="pytorch-side-scroll">
+      <div class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        <div class="pytorch-left-menu-search">
+          
+
+          
+          
+          
+          
+
+          
+
+
+
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search Docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        
+        
+        
+        
+        
+        <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../installation/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quick_start/index.html">Quick Start</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide &amp; Best Practices</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="index.html">Best Practices</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/utils/index.html">lightrft.utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/datasets/index.html">lightrft.datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/models/index.html">lightrft.models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/strategy/index.html">lightrft.strategy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/trainer/index.html">lightrft.trainer</a></li>
+</ul>
+
+        
+        
+      </div>
+    </div>
+  </nav>
+
+  <div class="pytorch-container">
+    <div class="pytorch-page-level-bar" id="pytorch-page-level-bar">
+      <div class="pytorch-breadcrumbs-wrapper">
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="pytorch-breadcrumbs">
+    
+      <li>
+        <a href="../index.html">
+            Docs
+        </a> &gt;
+      </li>
+
+        
+      <li>FastExperienceMaker Best Practice Guide</li>
+    
+    
+      <li class="pytorch-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/best_practice/fast_exp_maker_en.md.txt" rel="nofollow"><img src="../_static/images/view-page-source-icon.svg"></a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+</div>
+      </div>
+
+      <div class="pytorch-shortcuts-wrapper" id="pytorch-shortcuts-wrapper">
+        Shortcuts
+      </div>
+    </div>
+
+    <section data-toggle="wy-nav-shift" id="pytorch-content-wrap" class="pytorch-content-wrap">
+      <div class="pytorch-content-left">
+        
+          <div class="rst-content">
+            
+            <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
+              <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
+                
+  <section id="fastexperiencemaker-best-practice-guide">
+<h1>FastExperienceMaker Best Practice Guide<a class="headerlink" href="#fastexperiencemaker-best-practice-guide" title="Permalink to this heading">¶</a></h1>
+<section id="table-of-contents">
+<h2>Table of Contents<a class="headerlink" href="#table-of-contents" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="#overview"><span class="std std-ref">Overview</span></a></p></li>
+<li><p><a class="reference internal" href="#core-features"><span class="std std-ref">Core Features</span></a></p></li>
+<li><p><a class="reference internal" href="#architecture-components"><span class="std std-ref">Architecture Components</span></a></p></li>
+<li><p><a class="reference internal" href="#usage-guide"><span class="std std-ref">Usage Guide</span></a></p></li>
+<li><p><a class="reference internal" href="#configuration-parameters"><span class="std std-ref">Configuration Parameters</span></a></p></li>
+<li><p><a class="reference internal" href="#advantage-estimation-methods"><span class="std std-ref">Advantage Estimation Methods</span></a></p></li>
+<li><p><a class="reference internal" href="#best-practices"><span class="std std-ref">Best Practices</span></a></p></li>
+<li><p><a class="reference internal" href="#common-issues-and-solutions"><span class="std std-ref">Common Issues and Solutions</span></a></p></li>
+<li><p><a class="reference internal" href="#performance-tuning"><span class="std std-ref">Performance Tuning</span></a></p></li>
+</ul>
+</section>
+<section id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this heading">¶</a></h2>
+<section id="what-is-fastexperiencemaker">
+<h3>What is FastExperienceMaker?<a class="headerlink" href="#what-is-fastexperiencemaker" title="Permalink to this heading">¶</a></h3>
+<p>FastExperienceMaker is an optimized experience generation engine for RLHF (Reinforcement Learning from Human Feedback) training in LightRFT. It extends the base <code class="docutils literal notranslate"><span class="pre">NaiveExperienceMaker</span></code> with high-performance inference backends (VLLM/SGLang) and advanced RL features.</p>
+</section>
+<section id="key-capabilities">
+<h3>Key Capabilities<a class="headerlink" href="#key-capabilities" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>High-Performance Inference</strong>: VLLM and SGLang backend support for efficient text generation</p></li>
+<li><p><strong>Multimodal Support</strong>: Vision-language model (VLM) data processing with images and videos</p></li>
+<li><p><strong>Advanced Advantage Estimation</strong>: Multiple methods including GAE, RLOO, REINFORCE, and Group Normalization</p></li>
+<li><p><strong>Flexible Reward Composition</strong>: Support for multiple reward models with custom aggregation functions</p></li>
+<li><p><strong>Sample Packing</strong>: Improved training efficiency through sequence packing</p></li>
+<li><p><strong>Reward Normalization</strong>: Running reward statistics with normalization and clipping</p></li>
+</ul>
+</section>
+</section>
+<section id="core-features">
+<h2>Core Features<a class="headerlink" href="#core-features" title="Permalink to this heading">¶</a></h2>
+<section id="experience-generation-pipeline">
+<h3>1. Experience Generation Pipeline<a class="headerlink" href="#experience-generation-pipeline" title="Permalink to this heading">¶</a></h3>
+<p>The FastExperienceMaker implements a 7-stage pipeline for experience generation:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Stage 1: Sample Generation (VLLM/SGLang)
+    ↓
+Stage 2: Shard-Parallel Preprocessing
+    ↓
+Stage 3: Model Inference (Actor, Critic, Initial, Reward Models)
+    ↓
+Stage 4: Shard-Parallel Postprocessing
+    ↓
+Stage 5: Reward Processing (Normalization, Shaping, Filtering)
+    ↓
+Stage 6: Multi-Image/Video Handling
+    ↓
+Stage 7: Advantage Computation
+</pre></div>
+</div>
+</section>
+<section id="multimodal-data-processing">
+<h3>2. Multimodal Data Processing<a class="headerlink" href="#multimodal-data-processing" title="Permalink to this heading">¶</a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">MultimodalDataProcessor</span></code> class handles mixed text-only and image-text data:</p>
+<ul class="simple">
+<li><p><strong>Automatic Separation</strong>: Separates text-only and multimodal samples</p></li>
+<li><p><strong>Appropriate Processing</strong>: Routes samples through tokenizer or multimodal processor</p></li>
+<li><p><strong>Order Preservation</strong>: Maintains original batch ordering after processing</p></li>
+<li><p><strong>Multi-Image/Video Support</strong>: Handles multiple images or videos per sample</p></li>
+</ul>
+</section>
+<section id="reward-computation-engine">
+<h3>3. Reward Computation Engine<a class="headerlink" href="#reward-computation-engine" title="Permalink to this heading">¶</a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">RewardComputationEngine</span></code> manages reward model inference and aggregation:</p>
+<ul class="simple">
+<li><p><strong>Remote Reward Models</strong>: HTTP/gRPC reward model support</p></li>
+<li><p><strong>Local Reward Models</strong>: PyTorch-based reward models</p></li>
+<li><p><strong>Custom Reward Functions</strong>: Python functions for custom reward logic</p></li>
+<li><p><strong>Multi-Model Ensemble</strong>: Combine multiple reward models with custom aggregation</p></li>
+<li><p><strong>Optimized Batching</strong>: Efficient batch processing with optional sample filtering</p></li>
+</ul>
+</section>
+</section>
+<section id="architecture-components">
+<h2>Architecture Components<a class="headerlink" href="#architecture-components" title="Permalink to this heading">¶</a></h2>
+<section id="class-hierarchy">
+<h3>Class Hierarchy<a class="headerlink" href="#class-hierarchy" title="Permalink to this heading">¶</a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>NaiveExperienceMaker (Base Class)
+    ↓
+FastExperienceMaker
+    ├── MultimodalDataProcessor
+    ├── RewardComputationEngine
+    └── AdvantageCalculator (GAE/RLOO/REINFORCE/GroupNorm)
+</pre></div>
+</div>
+</section>
+<section id="key-classes">
+<h3>Key Classes<a class="headerlink" href="#key-classes" title="Permalink to this heading">¶</a></h3>
+<section id="fastexperiencemaker">
+<h4>1. FastExperienceMaker<a class="headerlink" href="#fastexperiencemaker" title="Permalink to this heading">¶</a></h4>
+<p><strong>Purpose</strong>: Main experience generation class with optimized inference and advanced RL features.</p>
+<p><strong>Initialization Parameters</strong>:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">packing_samples</span></code> (bool): Enable sample packing for efficiency</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">processor</span></code>: Multimodal processor for VLM models</p></li>
+<li><p>Other parameters inherited from <code class="docutils literal notranslate"><span class="pre">NaiveExperienceMaker</span></code></p></li>
+</ul>
+<p><strong>Key Methods</strong>:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">make_experience_list()</span></code>: Generate experiences from prompts</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">generate_samples()</span></code>: Generate samples using inference engine</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">get_advantages_and_returns()</span></code>: Compute advantages and returns</p></li>
+</ul>
+</section>
+<section id="multimodaldataprocessor">
+<h4>2. MultimodalDataProcessor<a class="headerlink" href="#multimodaldataprocessor" title="Permalink to this heading">¶</a></h4>
+<p><strong>Purpose</strong>: Handles preprocessing of mixed text-only and multimodal data.</p>
+<p><strong>Key Responsibilities</strong>:</p>
+<ul class="simple">
+<li><p>Normalize image/video inputs (file paths, PIL images, bytes)</p></li>
+<li><p>Separate text-only and multimodal samples</p></li>
+<li><p>Process through appropriate pipelines</p></li>
+<li><p>Expand samples by <code class="docutils literal notranslate"><span class="pre">n_samples_per_prompt</span></code> factor</p></li>
+</ul>
+</section>
+<section id="rewardcomputationengine">
+<h4>3. RewardComputationEngine<a class="headerlink" href="#rewardcomputationengine" title="Permalink to this heading">¶</a></h4>
+<p><strong>Purpose</strong>: Manages reward model inference and score aggregation.</p>
+<p><strong>Processing Pipeline</strong>:</p>
+<ol class="arabic simple">
+<li><p><strong>Gather</strong>: Collect or filter samples based on reward recipe</p></li>
+<li><p><strong>Process</strong>: Run forward pass through reward model(s)</p></li>
+<li><p><strong>Aggregate</strong>: Combine scores using reward_fn</p></li>
+</ol>
+</section>
+</section>
+</section>
+<section id="usage-guide">
+<h2>Usage Guide<a class="headerlink" href="#usage-guide" title="Permalink to this heading">¶</a></h2>
+<section id="basic-usage">
+<h3>Basic Usage<a class="headerlink" href="#basic-usage" title="Permalink to this heading">¶</a></h3>
+<section id="text-only-generation">
+<h4>Text-Only Generation<a class="headerlink" href="#text-only-generation" title="Permalink to this heading">¶</a></h4>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">lightrft.trainer.fast_exp_maker</span><span class="w"> </span><span class="kn">import</span> <span class="n">FastExperienceMaker</span>
+
+<span class="c1"># Initialize experience maker</span>
+<span class="n">exp_maker</span> <span class="o">=</span> <span class="n">FastExperienceMaker</span><span class="p">(</span>
+    <span class="n">actor</span><span class="o">=</span><span class="n">actor_model</span><span class="p">,</span>
+    <span class="n">critic</span><span class="o">=</span><span class="n">critic_model</span><span class="p">,</span>
+    <span class="n">reward_model</span><span class="o">=</span><span class="n">reward_model</span><span class="p">,</span>
+    <span class="n">initial_model</span><span class="o">=</span><span class="n">initial_model</span><span class="p">,</span>
+    <span class="n">tokenizer</span><span class="o">=</span><span class="n">tokenizer</span><span class="p">,</span>
+    <span class="n">prompt_max_len</span><span class="o">=</span><span class="mi">512</span><span class="p">,</span>
+    <span class="n">kl_controller</span><span class="o">=</span><span class="n">kl_controller</span><span class="p">,</span>
+    <span class="n">strategy</span><span class="o">=</span><span class="n">strategy</span><span class="p">,</span>
+    <span class="n">packing_samples</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="c1"># Generate experiences</span>
+<span class="n">prompts</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Explain quantum computing&quot;</span><span class="p">,</span> <span class="s2">&quot;What is machine learning?&quot;</span><span class="p">]</span>
+<span class="n">experiences</span> <span class="o">=</span> <span class="n">exp_maker</span><span class="o">.</span><span class="n">make_experience_list</span><span class="p">(</span>
+    <span class="n">all_prompts</span><span class="o">=</span><span class="n">prompts</span><span class="p">,</span>
+    <span class="n">temperature</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span>
+    <span class="n">max_new_tokens</span><span class="o">=</span><span class="mi">512</span><span class="p">,</span>
+    <span class="n">top_p</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="vision-language-generation">
+<h4>Vision-Language Generation<a class="headerlink" href="#vision-language-generation" title="Permalink to this heading">¶</a></h4>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">PIL</span><span class="w"> </span><span class="kn">import</span> <span class="n">Image</span>
+
+<span class="c1"># Initialize with processor for VLM support</span>
+<span class="n">exp_maker</span> <span class="o">=</span> <span class="n">FastExperienceMaker</span><span class="p">(</span>
+    <span class="n">actor</span><span class="o">=</span><span class="n">actor_model</span><span class="p">,</span>
+    <span class="n">critic</span><span class="o">=</span><span class="n">critic_model</span><span class="p">,</span>
+    <span class="n">reward_model</span><span class="o">=</span><span class="n">reward_model</span><span class="p">,</span>
+    <span class="n">initial_model</span><span class="o">=</span><span class="n">initial_model</span><span class="p">,</span>
+    <span class="n">tokenizer</span><span class="o">=</span><span class="n">tokenizer</span><span class="p">,</span>
+    <span class="n">processor</span><span class="o">=</span><span class="n">multimodal_processor</span><span class="p">,</span>  <span class="c1"># Required for VLM</span>
+    <span class="n">prompt_max_len</span><span class="o">=</span><span class="mi">512</span><span class="p">,</span>
+    <span class="n">kl_controller</span><span class="o">=</span><span class="n">kl_controller</span><span class="p">,</span>
+    <span class="n">strategy</span><span class="o">=</span><span class="n">strategy</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="c1"># Prepare multimodal data</span>
+<span class="n">prompts</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Describe this image&quot;</span><span class="p">,</span> <span class="s2">&quot;What&#39;s in this picture?&quot;</span><span class="p">]</span>
+<span class="n">images</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">[</span><span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">&quot;image1.jpg&quot;</span><span class="p">)],</span>  <span class="c1"># Single image</span>
+    <span class="p">[</span><span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">&quot;img2.jpg&quot;</span><span class="p">),</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">&quot;img3.jpg&quot;</span><span class="p">)],</span>  <span class="c1"># Multiple images</span>
+<span class="p">]</span>
+<span class="n">references</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;A cat on a sofa&quot;</span><span class="p">,</span> <span class="s2">&quot;Two dogs playing&quot;</span><span class="p">]</span>
+
+<span class="c1"># Generate experiences</span>
+<span class="n">experiences</span> <span class="o">=</span> <span class="n">exp_maker</span><span class="o">.</span><span class="n">make_experience_list</span><span class="p">(</span>
+    <span class="n">all_prompts</span><span class="o">=</span><span class="n">prompts</span><span class="p">,</span>
+    <span class="n">all_images</span><span class="o">=</span><span class="n">images</span><span class="p">,</span>
+    <span class="n">all_references</span><span class="o">=</span><span class="n">references</span><span class="p">,</span>
+    <span class="n">temperature</span><span class="o">=</span><span class="mf">0.7</span><span class="p">,</span>
+    <span class="n">max_new_tokens</span><span class="o">=</span><span class="mi">512</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="advanced-usage">
+<h3>Advanced Usage<a class="headerlink" href="#advanced-usage" title="Permalink to this heading">¶</a></h3>
+<section id="multiple-reward-models-with-custom-aggregation">
+<h4>Multiple Reward Models with Custom Aggregation<a class="headerlink" href="#multiple-reward-models-with-custom-aggregation" title="Permalink to this heading">¶</a></h4>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Define custom reward aggregation function</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">custom_reward_fn</span><span class="p">(</span><span class="n">model_reward_list</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">queries</span><span class="p">,</span> <span class="n">refs</span><span class="p">,</span> <span class="n">label_map</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Custom reward aggregation function.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        model_reward_list: List of reward tensors from each model</span>
+<span class="sd">        labels: Sample labels</span>
+<span class="sd">        queries: Generated text</span>
+<span class="sd">        refs: Reference texts</span>
+<span class="sd">        label_map: Mapping from reward model names to indices</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        aggregated_rewards: Combined reward tensor</span>
+<span class="sd">        reward_metrics: Dictionary of detailed metrics</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Example: Weighted average based on label</span>
+    <span class="n">weights</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">])</span>  <span class="c1"># Weights for two models</span>
+    <span class="n">aggregated</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">w</span> <span class="o">*</span> <span class="n">r</span> <span class="k">for</span> <span class="n">w</span><span class="p">,</span> <span class="n">r</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">weights</span><span class="p">,</span> <span class="n">model_reward_list</span><span class="p">))</span>
+
+    <span class="n">metrics</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;reward_model_1&quot;</span><span class="p">:</span> <span class="n">model_reward_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span>
+        <span class="s2">&quot;reward_model_2&quot;</span><span class="p">:</span> <span class="n">model_reward_list</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="n">aggregated</span><span class="p">,</span> <span class="n">metrics</span>
+
+<span class="c1"># Initialize with multiple reward models</span>
+<span class="n">exp_maker</span> <span class="o">=</span> <span class="n">FastExperienceMaker</span><span class="p">(</span>
+    <span class="n">actor</span><span class="o">=</span><span class="n">actor_model</span><span class="p">,</span>
+    <span class="n">critic</span><span class="o">=</span><span class="n">critic_model</span><span class="p">,</span>
+    <span class="n">reward_model</span><span class="o">=</span><span class="p">[</span><span class="n">reward_model_1</span><span class="p">,</span> <span class="n">reward_model_2</span><span class="p">],</span>  <span class="c1"># List of models</span>
+    <span class="n">reward_fn</span><span class="o">=</span><span class="n">custom_reward_fn</span><span class="p">,</span>
+    <span class="n">reward_fn_label_map</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;rm1&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;rm2&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">},</span>
+    <span class="n">initial_model</span><span class="o">=</span><span class="n">initial_model</span><span class="p">,</span>
+    <span class="n">tokenizer</span><span class="o">=</span><span class="n">tokenizer</span><span class="p">,</span>
+    <span class="n">strategy</span><span class="o">=</span><span class="n">strategy</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="sample-packing-for-efficiency">
+<h4>Sample Packing for Efficiency<a class="headerlink" href="#sample-packing-for-efficiency" title="Permalink to this heading">¶</a></h4>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Enable sample packing</span>
+<span class="n">exp_maker</span> <span class="o">=</span> <span class="n">FastExperienceMaker</span><span class="p">(</span>
+    <span class="n">actor</span><span class="o">=</span><span class="n">actor_model</span><span class="p">,</span>
+    <span class="n">critic</span><span class="o">=</span><span class="n">critic_model</span><span class="p">,</span>
+    <span class="n">reward_model</span><span class="o">=</span><span class="n">reward_model</span><span class="p">,</span>
+    <span class="n">initial_model</span><span class="o">=</span><span class="n">initial_model</span><span class="p">,</span>
+    <span class="n">tokenizer</span><span class="o">=</span><span class="n">tokenizer</span><span class="p">,</span>
+    <span class="n">strategy</span><span class="o">=</span><span class="n">strategy</span><span class="p">,</span>
+    <span class="n">packing_samples</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>  <span class="c1"># Enable packing</span>
+<span class="p">)</span>
+
+<span class="c1"># Packed format: | prompt1 response1 [EOS] | prompt2 response2 [EOS] | ...</span>
+<span class="c1"># Benefits:</span>
+<span class="c1"># - Reduced padding overhead</span>
+<span class="c1"># - Improved GPU utilization</span>
+<span class="c1"># - Faster training throughput</span>
+</pre></div>
+</div>
+</section>
+<section id="remote-reward-models">
+<h4>Remote Reward Models<a class="headerlink" href="#remote-reward-models" title="Permalink to this heading">¶</a></h4>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Use remote reward models via HTTP/gRPC</span>
+<span class="n">exp_maker</span> <span class="o">=</span> <span class="n">FastExperienceMaker</span><span class="p">(</span>
+    <span class="n">actor</span><span class="o">=</span><span class="n">actor_model</span><span class="p">,</span>
+    <span class="n">critic</span><span class="o">=</span><span class="n">critic_model</span><span class="p">,</span>
+    <span class="n">reward_model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>  <span class="c1"># No local reward model</span>
+    <span class="n">remote_rm_url</span><span class="o">=</span><span class="p">[</span>
+        <span class="s2">&quot;http://reward-server-1:8000/score&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;http://reward-server-2:8000/score&quot;</span><span class="p">,</span>
+    <span class="p">],</span>
+    <span class="n">initial_model</span><span class="o">=</span><span class="n">initial_model</span><span class="p">,</span>
+    <span class="n">tokenizer</span><span class="o">=</span><span class="n">tokenizer</span><span class="p">,</span>
+    <span class="n">strategy</span><span class="o">=</span><span class="n">strategy</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+<section id="configuration-parameters">
+<h2>Configuration Parameters<a class="headerlink" href="#configuration-parameters" title="Permalink to this heading">¶</a></h2>
+<section id="generation-parameters">
+<h3>Generation Parameters<a class="headerlink" href="#generation-parameters" title="Permalink to this heading">¶</a></h3>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Type</p></th>
+<th class="head"><p>Default</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">temperature</span></code></p></td>
+<td><p>float</p></td>
+<td><p>1.0</p></td>
+<td><p>Sampling temperature (higher = more random)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">top_p</span></code></p></td>
+<td><p>float</p></td>
+<td><p>1.0</p></td>
+<td><p>Nucleus sampling threshold</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">top_k</span></code></p></td>
+<td><p>int</p></td>
+<td><p>-1</p></td>
+<td><p>Top-k sampling (-1 = disabled)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">max_new_tokens</span></code></p></td>
+<td><p>int</p></td>
+<td><p>1024</p></td>
+<td><p>Maximum number of tokens to generate</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">min_new_tokens</span></code></p></td>
+<td><p>int</p></td>
+<td><p>1</p></td>
+<td><p>Minimum number of tokens to generate</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">skip_special_tokens</span></code></p></td>
+<td><p>bool</p></td>
+<td><p>False</p></td>
+<td><p>Skip special tokens in output</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="reward-processing-parameters">
+<h3>Reward Processing Parameters<a class="headerlink" href="#reward-processing-parameters" title="Permalink to this heading">¶</a></h3>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Type</p></th>
+<th class="head"><p>Default</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">reward_running_norm</span></code></p></td>
+<td><p>bool</p></td>
+<td><p>False</p></td>
+<td><p>Enable running reward normalization</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">reward_running_norm_minus_mean</span></code></p></td>
+<td><p>bool</p></td>
+<td><p>False</p></td>
+<td><p>Subtract mean in normalization</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">reward_clip</span></code></p></td>
+<td><p>float</p></td>
+<td><p>0</p></td>
+<td><p>Reward clipping threshold (0 = disabled)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">overlong_buffer</span></code></p></td>
+<td><p>bool</p></td>
+<td><p>False</p></td>
+<td><p>Enable overlong sequence penalty</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">overlong_buffer_len</span></code></p></td>
+<td><p>int</p></td>
+<td><p>50</p></td>
+<td><p>Buffer length for overlong penalty</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">overlong_buffer_penalty_factor</span></code></p></td>
+<td><p>float</p></td>
+<td><p>1.0</p></td>
+<td><p>Penalty factor for overlong sequences</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="advantage-estimation-parameters">
+<h3>Advantage Estimation Parameters<a class="headerlink" href="#advantage-estimation-parameters" title="Permalink to this heading">¶</a></h3>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Type</p></th>
+<th class="head"><p>Default</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">advantage_estimator</span></code></p></td>
+<td><p>str</p></td>
+<td><p>“gae”</p></td>
+<td><p>Method: “gae”, “rloo”, “reinforce”, “group_norm”</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">advantages_norm</span></code></p></td>
+<td><p>bool</p></td>
+<td><p>False</p></td>
+<td><p>Enable advantage normalization (whitening)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">advantage_clip</span></code></p></td>
+<td><p>float</p></td>
+<td><p>0</p></td>
+<td><p>Advantage clipping threshold (0 = disabled)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">gamma</span></code></p></td>
+<td><p>float</p></td>
+<td><p>1.0</p></td>
+<td><p>Discount factor for returns</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">lambd</span></code></p></td>
+<td><p>float</p></td>
+<td><p>0.95</p></td>
+<td><p>GAE lambda parameter</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="advantage-estimation-methods">
+<h2>Advantage Estimation Methods<a class="headerlink" href="#advantage-estimation-methods" title="Permalink to this heading">¶</a></h2>
+<section id="gae-generalized-advantage-estimation">
+<h3>1. GAE (Generalized Advantage Estimation)<a class="headerlink" href="#gae-generalized-advantage-estimation" title="Permalink to this heading">¶</a></h3>
+<p><strong>When to Use</strong>: Standard PPO training with critic model.</p>
+<p><strong>Advantages</strong>:</p>
+<ul class="simple">
+<li><p>Balances bias-variance tradeoff via lambda parameter</p></li>
+<li><p>Smooth advantage estimates</p></li>
+<li><p>Works well with value function</p></li>
+</ul>
+<p><strong>Configuration</strong>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">strategy</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">advantage_estimator</span> <span class="o">=</span> <span class="s2">&quot;gae&quot;</span>
+<span class="n">strategy</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">gamma</span> <span class="o">=</span> <span class="mf">1.0</span>
+<span class="n">strategy</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">lambd</span> <span class="o">=</span> <span class="mf">0.95</span>
+</pre></div>
+</div>
+</section>
+<section id="rloo-reinforce-leave-one-out">
+<h3>2. RLOO (REINFORCE Leave-One-Out)<a class="headerlink" href="#rloo-reinforce-leave-one-out" title="Permalink to this heading">¶</a></h3>
+<p><strong>When to Use</strong>: Training without critic model, multiple samples per prompt.</p>
+<p><strong>Advantages</strong>:</p>
+<ul class="simple">
+<li><p>No critic model required</p></li>
+<li><p>Reduces variance through baseline subtraction</p></li>
+<li><p>Efficient for multiple samples per prompt</p></li>
+</ul>
+<p><strong>Configuration</strong>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">strategy</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">advantage_estimator</span> <span class="o">=</span> <span class="s2">&quot;rloo&quot;</span>
+<span class="n">strategy</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">n_samples_per_prompt</span> <span class="o">=</span> <span class="mi">4</span>  <span class="c1"># Required &gt; 1</span>
+</pre></div>
+</div>
+</section>
+<section id="reinforce-with-baseline">
+<h3>3. REINFORCE with Baseline<a class="headerlink" href="#reinforce-with-baseline" title="Permalink to this heading">¶</a></h3>
+<p><strong>When to Use</strong>: Simple policy gradient with reward baseline.</p>
+<p><strong>Advantages</strong>:</p>
+<ul class="simple">
+<li><p>Simple and straightforward</p></li>
+<li><p>Works with single sample per prompt</p></li>
+<li><p>No critic model required</p></li>
+</ul>
+<p><strong>Configuration</strong>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">strategy</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">advantage_estimator</span> <span class="o">=</span> <span class="s2">&quot;reinforce&quot;</span>
+</pre></div>
+</div>
+</section>
+<section id="group-normalization-grpo">
+<h3>4. Group Normalization (GRPO)<a class="headerlink" href="#group-normalization-grpo" title="Permalink to this heading">¶</a></h3>
+<p><strong>When to Use</strong>: Group-based advantage normalization, multiple samples per prompt.</p>
+<p><strong>Advantages</strong>:</p>
+<ul class="simple">
+<li><p>Normalizes advantages within each prompt group</p></li>
+<li><p>Reduces variance across different prompts</p></li>
+<li><p>Effective for diverse prompt distributions</p></li>
+</ul>
+<p><strong>Configuration</strong>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">strategy</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">advantage_estimator</span> <span class="o">=</span> <span class="s2">&quot;group_norm&quot;</span>
+<span class="n">strategy</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">n_samples_per_prompt</span> <span class="o">=</span> <span class="mi">4</span>  <span class="c1"># Required &gt; 1</span>
+</pre></div>
+</div>
+</section>
+<section id="comparison-table">
+<h3>Comparison Table<a class="headerlink" href="#comparison-table" title="Permalink to this heading">¶</a></h3>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Method</p></th>
+<th class="head"><p>Critic Required</p></th>
+<th class="head"><p>Samples per Prompt</p></th>
+<th class="head"><p>Variance</p></th>
+<th class="head"><p>Bias</p></th>
+<th class="head"><p>Complexity</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>GAE</p></td>
+<td><p>Yes</p></td>
+<td><p>Any</p></td>
+<td><p>Low</p></td>
+<td><p>Low</p></td>
+<td><p>Medium</p></td>
+</tr>
+<tr class="row-odd"><td><p>RLOO</p></td>
+<td><p>No</p></td>
+<td><p>&gt; 1</p></td>
+<td><p>Medium</p></td>
+<td><p>Low</p></td>
+<td><p>Low</p></td>
+</tr>
+<tr class="row-even"><td><p>REINFORCE</p></td>
+<td><p>No</p></td>
+<td><p>Any</p></td>
+<td><p>High</p></td>
+<td><p>Low</p></td>
+<td><p>Low</p></td>
+</tr>
+<tr class="row-odd"><td><p>Group Norm</p></td>
+<td><p>No</p></td>
+<td><p>&gt; 1</p></td>
+<td><p>Medium</p></td>
+<td><p>Medium</p></td>
+<td><p>Low</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="best-practices">
+<h2>Best Practices<a class="headerlink" href="#best-practices" title="Permalink to this heading">¶</a></h2>
+<section id="choosing-inference-backend">
+<h3>1. Choosing Inference Backend<a class="headerlink" href="#choosing-inference-backend" title="Permalink to this heading">¶</a></h3>
+<p><strong>VLLM</strong>:</p>
+<ul class="simple">
+<li><p>✅ Best for: Large-scale deployment, high throughput</p></li>
+<li><p>✅ Supports: PagedAttention, continuous batching</p></li>
+<li><p>⚠️ Note: Requires CUDA-compatible GPU</p></li>
+</ul>
+<p><strong>SGLang</strong>:</p>
+<ul class="simple">
+<li><p>✅ Best for: Research, flexibility</p></li>
+<li><p>✅ Supports: Custom sampling, structured generation</p></li>
+<li><p>⚠️ Note: May have different performance characteristics</p></li>
+</ul>
+</section>
+<section id="multimodal-data-handling">
+<h3>2. Multimodal Data Handling<a class="headerlink" href="#multimodal-data-handling" title="Permalink to this heading">¶</a></h3>
+<p><strong>Image Normalization</strong>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Supported formats:</span>
+<span class="c1"># 1. PIL Image objects</span>
+<span class="n">images</span> <span class="o">=</span> <span class="p">[[</span><span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">&quot;img.jpg&quot;</span><span class="p">)]]</span>
+
+<span class="c1"># 2. File paths (will be loaded automatically)</span>
+<span class="n">images</span> <span class="o">=</span> <span class="p">[[</span><span class="s2">&quot;path/to/image.jpg&quot;</span><span class="p">]]</span>
+
+<span class="c1"># 3. Mixed formats</span>
+<span class="n">images</span> <span class="o">=</span> <span class="p">[[</span><span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">&quot;img1.jpg&quot;</span><span class="p">),</span> <span class="s2">&quot;path/to/img2.jpg&quot;</span><span class="p">]]</span>
+</pre></div>
+</div>
+<p><strong>Multi-Image Scenarios</strong>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Multiple images per sample</span>
+<span class="n">images</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">[</span><span class="n">img1</span><span class="p">,</span> <span class="n">img2</span><span class="p">,</span> <span class="n">img3</span><span class="p">],</span>  <span class="c1"># Sample 1: 3 images</span>
+    <span class="p">[</span><span class="n">img4</span><span class="p">],</span>              <span class="c1"># Sample 2: 1 image</span>
+    <span class="kc">None</span><span class="p">,</span>                <span class="c1"># Sample 3: No image (text-only)</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+</section>
+<section id="reward-model-configuration">
+<h3>3. Reward Model Configuration<a class="headerlink" href="#reward-model-configuration" title="Permalink to this heading">¶</a></h3>
+<p><strong>Single Reward Model</strong>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">exp_maker</span> <span class="o">=</span> <span class="n">FastExperienceMaker</span><span class="p">(</span>
+    <span class="n">reward_model</span><span class="o">=</span><span class="n">single_rm</span><span class="p">,</span>
+    <span class="c1"># ...</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Multiple Reward Models with Aggregation</strong>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">exp_maker</span> <span class="o">=</span> <span class="n">FastExperienceMaker</span><span class="p">(</span>
+    <span class="n">reward_model</span><span class="o">=</span><span class="p">[</span><span class="n">rm1</span><span class="p">,</span> <span class="n">rm2</span><span class="p">,</span> <span class="n">rm3</span><span class="p">],</span>
+    <span class="n">reward_fn</span><span class="o">=</span><span class="n">custom_aggregation_fn</span><span class="p">,</span>
+    <span class="n">reward_fn_label_map</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;quality&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;safety&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;helpfulness&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">},</span>
+    <span class="c1"># ...</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Custom Reward Function</strong>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">custom_reward</span><span class="p">(</span><span class="n">queries</span><span class="p">,</span> <span class="n">prompts</span><span class="p">,</span> <span class="n">labels</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Custom reward computation logic&quot;&quot;&quot;</span>
+    <span class="n">rewards</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">query</span><span class="p">,</span> <span class="n">prompt</span><span class="p">,</span> <span class="n">label</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">queries</span><span class="p">,</span> <span class="n">prompts</span><span class="p">,</span> <span class="n">labels</span><span class="p">):</span>
+        <span class="c1"># Your custom logic here</span>
+        <span class="n">score</span> <span class="o">=</span> <span class="n">compute_custom_score</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">prompt</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span>
+        <span class="n">rewards</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">score</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">rewards</span>
+
+<span class="n">exp_maker</span> <span class="o">=</span> <span class="n">FastExperienceMaker</span><span class="p">(</span>
+    <span class="n">custom_reward_func</span><span class="o">=</span><span class="n">custom_reward</span><span class="p">,</span>
+    <span class="c1"># ...</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="memory-optimization">
+<h3>4. Memory Optimization<a class="headerlink" href="#memory-optimization" title="Permalink to this heading">¶</a></h3>
+<p><strong>Enable Sample Packing</strong>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Reduces padding overhead by 30-50%</span>
+<span class="n">exp_maker</span> <span class="o">=</span> <span class="n">FastExperienceMaker</span><span class="p">(</span>
+    <span class="n">packing_samples</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="c1"># ...</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Adjust Micro Batch Size</strong>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Balance memory usage and throughput</span>
+<span class="n">strategy</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">micro_rollout_batch_size</span> <span class="o">=</span> <span class="mi">8</span>  <span class="c1"># Adjust based on GPU memory</span>
+</pre></div>
+</div>
+<p><strong>Gradient Checkpointing</strong>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Enable for large models</span>
+<span class="n">actor</span><span class="o">.</span><span class="n">gradient_checkpointing_enable</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+<section id="reward-normalization-strategy">
+<h3>5. Reward Normalization Strategy<a class="headerlink" href="#reward-normalization-strategy" title="Permalink to this heading">¶</a></h3>
+<p><strong>Running Normalization</strong> (Recommended for stable training):</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">strategy</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">reward_running_norm</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">strategy</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">reward_running_norm_minus_mean</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># Subtract mean</span>
+</pre></div>
+</div>
+<p><strong>Reward Clipping</strong> (Prevent outliers):</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">strategy</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">reward_clip</span> <span class="o">=</span> <span class="mf">10.0</span>  <span class="c1"># Clip to [-10, 10]</span>
+</pre></div>
+</div>
+<p><strong>Advantage Normalization</strong> (Stabilize policy updates):</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">strategy</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">advantages_norm</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">strategy</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">advantage_clip</span> <span class="o">=</span> <span class="mf">5.0</span>  <span class="c1"># Optional clipping</span>
+</pre></div>
+</div>
+</section>
+<section id="handling-overlong-sequences">
+<h3>6. Handling Overlong Sequences<a class="headerlink" href="#handling-overlong-sequences" title="Permalink to this heading">¶</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Penalize sequences that are too long</span>
+<span class="n">strategy</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">overlong_buffer</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">strategy</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">overlong_buffer_len</span> <span class="o">=</span> <span class="mi">50</span>  <span class="c1"># Buffer length</span>
+<span class="n">strategy</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">overlong_buffer_penalty_factor</span> <span class="o">=</span> <span class="mf">1.0</span>  <span class="c1"># Penalty strength</span>
+
+<span class="c1"># Example: If max_new_tokens=512 and buffer_len=50</span>
+<span class="c1"># Expected length = 512 - 50 = 462</span>
+<span class="c1"># Sequences longer than 462 tokens receive penalty</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="common-issues-and-solutions">
+<h2>Common Issues and Solutions<a class="headerlink" href="#common-issues-and-solutions" title="Permalink to this heading">¶</a></h2>
+<section id="issue-1-out-of-memory-oom">
+<h3>Issue 1: Out of Memory (OOM)<a class="headerlink" href="#issue-1-out-of-memory-oom" title="Permalink to this heading">¶</a></h3>
+<p><strong>Symptoms</strong>: CUDA out of memory error during experience generation.</p>
+<p><strong>Solutions</strong>:</p>
+<ol class="arabic simple">
+<li><p>Enable sample packing: <code class="docutils literal notranslate"><span class="pre">packing_samples=True</span></code></p></li>
+<li><p>Reduce micro batch size: <code class="docutils literal notranslate"><span class="pre">strategy.config.micro_rollout_batch_size</span> <span class="pre">=</span> <span class="pre">4</span></code></p></li>
+<li><p>Enable gradient checkpointing: <code class="docutils literal notranslate"><span class="pre">actor.gradient_checkpointing_enable()</span></code></p></li>
+<li><p>Reduce max sequence length: <code class="docutils literal notranslate"><span class="pre">max_new_tokens=256</span></code></p></li>
+<li><p>Use smaller model or quantization</p></li>
+</ol>
+</section>
+<section id="issue-2-slow-generation-speed">
+<h3>Issue 2: Slow Generation Speed<a class="headerlink" href="#issue-2-slow-generation-speed" title="Permalink to this heading">¶</a></h3>
+<p><strong>Symptoms</strong>: Experience generation takes too long.</p>
+<p><strong>Solutions</strong>:</p>
+<ol class="arabic simple">
+<li><p>Use VLLM backend: <code class="docutils literal notranslate"><span class="pre">strategy.args.engine_type</span> <span class="pre">=</span> <span class="pre">&quot;vllm&quot;</span></code></p></li>
+<li><p>Increase batch size: <code class="docutils literal notranslate"><span class="pre">strategy.config.micro_rollout_batch_size</span> <span class="pre">=</span> <span class="pre">16</span></code></p></li>
+<li><p>Enable sample packing: <code class="docutils literal notranslate"><span class="pre">packing_samples=True</span></code></p></li>
+<li><p>Check GPU utilization: Ensure GPU is fully utilized</p></li>
+<li><p>Reduce <code class="docutils literal notranslate"><span class="pre">max_new_tokens</span></code> if possible</p></li>
+</ol>
+</section>
+<section id="issue-3-unstable-training">
+<h3>Issue 3: Unstable Training<a class="headerlink" href="#issue-3-unstable-training" title="Permalink to this heading">¶</a></h3>
+<p><strong>Symptoms</strong>: Reward or loss fluctuates wildly during training.</p>
+<p><strong>Solutions</strong>:</p>
+<ol class="arabic">
+<li><p>Enable reward normalization:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">strategy</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">reward_running_norm</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">strategy</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">reward_running_norm_minus_mean</span> <span class="o">=</span> <span class="kc">True</span>
+</pre></div>
+</div>
+</li>
+<li><p>Enable advantage normalization:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">strategy</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">advantages_norm</span> <span class="o">=</span> <span class="kc">True</span>
+</pre></div>
+</div>
+</li>
+<li><p>Add reward clipping:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">strategy</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">reward_clip</span> <span class="o">=</span> <span class="mf">10.0</span>
+</pre></div>
+</div>
+</li>
+<li><p>Reduce learning rate</p></li>
+<li><p>Use GAE with appropriate lambda: <code class="docutils literal notranslate"><span class="pre">strategy.config.lambd</span> <span class="pre">=</span> <span class="pre">0.95</span></code></p></li>
+</ol>
+</section>
+<section id="issue-4-image-token-mismatch-vlm">
+<h3>Issue 4: Image Token Mismatch (VLM)<a class="headerlink" href="#issue-4-image-token-mismatch-vlm" title="Permalink to this heading">¶</a></h3>
+<p><strong>Symptoms</strong>: Warning message about token/patch mismatch during rollout.</p>
+<p><strong>Cause</strong>: Number of image tokens doesn’t match pixel value patches.</p>
+<p><strong>Solution</strong>: This is automatically fixed by FastExperienceMaker. The warning is informational only. If it occurs frequently:</p>
+<ol class="arabic simple">
+<li><p>Check image preprocessing pipeline</p></li>
+<li><p>Verify processor configuration</p></li>
+<li><p>Ensure consistent image format across samples</p></li>
+</ol>
+</section>
+<section id="issue-5-rloo-requires-multiple-samples">
+<h3>Issue 5: RLOO Requires Multiple Samples<a class="headerlink" href="#issue-5-rloo-requires-multiple-samples" title="Permalink to this heading">¶</a></h3>
+<p><strong>Symptoms</strong>: Error when using RLOO with <code class="docutils literal notranslate"><span class="pre">n_samples_per_prompt</span> <span class="pre">=</span> <span class="pre">1</span></code>.</p>
+<p><strong>Cause</strong>: RLOO requires multiple samples per prompt for baseline computation.</p>
+<p><strong>Solution</strong>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Set n_samples_per_prompt &gt; 1</span>
+<span class="n">strategy</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">n_samples_per_prompt</span> <span class="o">=</span> <span class="mi">4</span>
+<span class="n">strategy</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">advantage_estimator</span> <span class="o">=</span> <span class="s2">&quot;rloo&quot;</span>
+</pre></div>
+</div>
+<p>Or switch to another method:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Use GAE or REINFORCE instead</span>
+<span class="n">strategy</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">advantage_estimator</span> <span class="o">=</span> <span class="s2">&quot;gae&quot;</span>
+</pre></div>
+</div>
+</section>
+<section id="issue-6-remote-reward-model-timeout">
+<h3>Issue 6: Remote Reward Model Timeout<a class="headerlink" href="#issue-6-remote-reward-model-timeout" title="Permalink to this heading">¶</a></h3>
+<p><strong>Symptoms</strong>: Timeout errors when using remote reward models.</p>
+<p><strong>Solutions</strong>:</p>
+<ol class="arabic simple">
+<li><p>Check network connectivity to reward model server</p></li>
+<li><p>Increase timeout in remote_rm_fn configuration</p></li>
+<li><p>Reduce batch size to avoid long processing times</p></li>
+<li><p>Consider using local reward models for better performance</p></li>
+<li><p>Implement retry logic in custom reward function</p></li>
+</ol>
+</section>
+</section>
+<section id="performance-tuning">
+<h2>Performance Tuning<a class="headerlink" href="#performance-tuning" title="Permalink to this heading">¶</a></h2>
+<section id="throughput-optimization">
+<h3>Throughput Optimization<a class="headerlink" href="#throughput-optimization" title="Permalink to this heading">¶</a></h3>
+<p><strong>Recommended Configuration for Maximum Throughput</strong>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">strategy</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">engine_type</span> <span class="o">=</span> <span class="s2">&quot;vllm&quot;</span>
+<span class="n">strategy</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">micro_rollout_batch_size</span> <span class="o">=</span> <span class="mi">16</span>  <span class="c1"># Adjust based on GPU memory</span>
+<span class="n">exp_maker</span> <span class="o">=</span> <span class="n">FastExperienceMaker</span><span class="p">(</span>
+    <span class="n">packing_samples</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="c1"># ...</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Expected Performance</strong>:</p>
+<ul class="simple">
+<li><p>VLLM backend: 2-5x faster than HuggingFace generate</p></li>
+<li><p>Sample packing: 30-50% reduction in padding overhead</p></li>
+<li><p>Batch processing: Linear scaling with batch size (up to GPU memory limit)</p></li>
+</ul>
+</section>
+<section id="memory-efficiency">
+<h3>Memory Efficiency<a class="headerlink" href="#memory-efficiency" title="Permalink to this heading">¶</a></h3>
+<p><strong>Recommended Configuration for Memory-Constrained Environments</strong>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">strategy</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">micro_rollout_batch_size</span> <span class="o">=</span> <span class="mi">4</span>
+<span class="n">strategy</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">max_new_tokens</span> <span class="o">=</span> <span class="mi">256</span>
+<span class="n">exp_maker</span> <span class="o">=</span> <span class="n">FastExperienceMaker</span><span class="p">(</span>
+    <span class="n">packing_samples</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="c1"># ...</span>
+<span class="p">)</span>
+<span class="n">actor</span><span class="o">.</span><span class="n">gradient_checkpointing_enable</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="references">
+<h2>References<a class="headerlink" href="#references" title="Permalink to this heading">¶</a></h2>
+<section id="related-documentation">
+<h3>Related Documentation<a class="headerlink" href="#related-documentation" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><a class="reference internal" href="strategy_design_philosophy.html"><span class="std std-doc">Strategy Design Philosophy</span></a></p></li>
+<li><p><a class="reference internal" href="model.html"><span class="std std-doc">Model Design Document</span></a></p></li>
+<li><p><a class="reference internal" href="reward_model.html"><span class="std std-doc">Reward Model Best Practices</span></a></p></li>
+</ul>
+</section>
+<section id="code-references">
+<h3>Code References<a class="headerlink" href="#code-references" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>FastExperienceMaker: <code class="docutils literal notranslate"><span class="pre">lightrft/trainer/fast_exp_maker.py</span></code></p></li>
+<li><p>Base ExperienceMaker: <code class="docutils literal notranslate"><span class="pre">lightrft/trainer/experience_maker.py</span></code></p></li>
+<li><p>Advantage Calculators: <code class="docutils literal notranslate"><span class="pre">lightrft/trainer/advantage_calculator.py</span></code></p></li>
+<li><p>VLLM Utils: <code class="docutils literal notranslate"><span class="pre">lightrft/strategy/vllm_utils/</span></code></p></li>
+</ul>
+</section>
+<section id="research-papers">
+<h3>Research Papers<a class="headerlink" href="#research-papers" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>GAE</strong>: “High-Dimensional Continuous Control Using Generalized Advantage Estimation” (Schulman et al., 2016)</p></li>
+<li><p><strong>PPO</strong>: “Proximal Policy Optimization Algorithms” (Schulman et al., 2017)</p></li>
+<li><p><strong>RLOO</strong>: “Back to Basics: Revisiting REINFORCE Style Optimization for Learning from Human Feedback in LLMs” (Ahmadian et al., 2024)</p></li>
+</ul>
+<hr class="docutils" />
+<p><strong>Document Version</strong>: 1.0
+<strong>Last Updated</strong>: 2026-02-03
+<strong>Maintainer</strong>: LightRFT Team</p>
+</section>
+</section>
+</section>
+
+
+              </article>
+              
+            </div>
+            <footer>
+  
+
+  <hr>
+
+  <div role="contentinfo">
+    <p>
+      &copy; Copyright 2025, OpenDILab.
+
+    </p>
+  </div>
+  
+  <div>
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a
+      href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the
+      Docs</a>.
+  </div>
+   
+
+</footer>
+          </div>
+        </div>
+
+        <div class="pytorch-content-right" id="pytorch-content-right">
+          <div class="pytorch-right-menu" id="pytorch-right-menu">
+            <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
+              <ul>
+<li><a class="reference internal" href="#">FastExperienceMaker Best Practice Guide</a><ul>
+<li><a class="reference internal" href="#table-of-contents">Table of Contents</a></li>
+<li><a class="reference internal" href="#overview">Overview</a><ul>
+<li><a class="reference internal" href="#what-is-fastexperiencemaker">What is FastExperienceMaker?</a></li>
+<li><a class="reference internal" href="#key-capabilities">Key Capabilities</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#core-features">Core Features</a><ul>
+<li><a class="reference internal" href="#experience-generation-pipeline">1. Experience Generation Pipeline</a></li>
+<li><a class="reference internal" href="#multimodal-data-processing">2. Multimodal Data Processing</a></li>
+<li><a class="reference internal" href="#reward-computation-engine">3. Reward Computation Engine</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#architecture-components">Architecture Components</a><ul>
+<li><a class="reference internal" href="#class-hierarchy">Class Hierarchy</a></li>
+<li><a class="reference internal" href="#key-classes">Key Classes</a><ul>
+<li><a class="reference internal" href="#fastexperiencemaker">1. FastExperienceMaker</a></li>
+<li><a class="reference internal" href="#multimodaldataprocessor">2. MultimodalDataProcessor</a></li>
+<li><a class="reference internal" href="#rewardcomputationengine">3. RewardComputationEngine</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#usage-guide">Usage Guide</a><ul>
+<li><a class="reference internal" href="#basic-usage">Basic Usage</a><ul>
+<li><a class="reference internal" href="#text-only-generation">Text-Only Generation</a></li>
+<li><a class="reference internal" href="#vision-language-generation">Vision-Language Generation</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#advanced-usage">Advanced Usage</a><ul>
+<li><a class="reference internal" href="#multiple-reward-models-with-custom-aggregation">Multiple Reward Models with Custom Aggregation</a></li>
+<li><a class="reference internal" href="#sample-packing-for-efficiency">Sample Packing for Efficiency</a></li>
+<li><a class="reference internal" href="#remote-reward-models">Remote Reward Models</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#configuration-parameters">Configuration Parameters</a><ul>
+<li><a class="reference internal" href="#generation-parameters">Generation Parameters</a></li>
+<li><a class="reference internal" href="#reward-processing-parameters">Reward Processing Parameters</a></li>
+<li><a class="reference internal" href="#advantage-estimation-parameters">Advantage Estimation Parameters</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#advantage-estimation-methods">Advantage Estimation Methods</a><ul>
+<li><a class="reference internal" href="#gae-generalized-advantage-estimation">1. GAE (Generalized Advantage Estimation)</a></li>
+<li><a class="reference internal" href="#rloo-reinforce-leave-one-out">2. RLOO (REINFORCE Leave-One-Out)</a></li>
+<li><a class="reference internal" href="#reinforce-with-baseline">3. REINFORCE with Baseline</a></li>
+<li><a class="reference internal" href="#group-normalization-grpo">4. Group Normalization (GRPO)</a></li>
+<li><a class="reference internal" href="#comparison-table">Comparison Table</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#best-practices">Best Practices</a><ul>
+<li><a class="reference internal" href="#choosing-inference-backend">1. Choosing Inference Backend</a></li>
+<li><a class="reference internal" href="#multimodal-data-handling">2. Multimodal Data Handling</a></li>
+<li><a class="reference internal" href="#reward-model-configuration">3. Reward Model Configuration</a></li>
+<li><a class="reference internal" href="#memory-optimization">4. Memory Optimization</a></li>
+<li><a class="reference internal" href="#reward-normalization-strategy">5. Reward Normalization Strategy</a></li>
+<li><a class="reference internal" href="#handling-overlong-sequences">6. Handling Overlong Sequences</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#common-issues-and-solutions">Common Issues and Solutions</a><ul>
+<li><a class="reference internal" href="#issue-1-out-of-memory-oom">Issue 1: Out of Memory (OOM)</a></li>
+<li><a class="reference internal" href="#issue-2-slow-generation-speed">Issue 2: Slow Generation Speed</a></li>
+<li><a class="reference internal" href="#issue-3-unstable-training">Issue 3: Unstable Training</a></li>
+<li><a class="reference internal" href="#issue-4-image-token-mismatch-vlm">Issue 4: Image Token Mismatch (VLM)</a></li>
+<li><a class="reference internal" href="#issue-5-rloo-requires-multiple-samples">Issue 5: RLOO Requires Multiple Samples</a></li>
+<li><a class="reference internal" href="#issue-6-remote-reward-model-timeout">Issue 6: Remote Reward Model Timeout</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#performance-tuning">Performance Tuning</a><ul>
+<li><a class="reference internal" href="#throughput-optimization">Throughput Optimization</a></li>
+<li><a class="reference internal" href="#memory-efficiency">Memory Efficiency</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#references">References</a><ul>
+<li><a class="reference internal" href="#related-documentation">Related Documentation</a></li>
+<li><a class="reference internal" href="#code-references">Code References</a></li>
+<li><a class="reference internal" href="#research-papers">Research Papers</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            </div>
+          </div>
+        </div>
+    </section>
+  </div>
+
+  
+
+
+  
+
+  
+  <script type="text/javascript" id="documentation_options" data-url_root="../"
+    src="../_static/documentation_options.js"></script>
+  <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+  <script src="../_static/doctools.js"></script>
+  <script src="../_static/sphinx_highlight.js"></script>
+  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+  
+
+  
+
+  <script type="text/javascript" src="../_static/js/vendor/popper.min.js"></script>
+  <script type="text/javascript" src="../_static/js/vendor/bootstrap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+    jQuery(function () {
+      SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+  <!-- Begin Footer -->
+
+  <div class="container-fluid docs-tutorials-resources" id="docs-tutorials-resources">
+  </div>
+
+  <!-- End Footer -->
+
+  <!-- Begin Mobile Menu -->
+
+  <div class="mobile-main-menu">
+    <div class="container-fluid">
+      <div class="container">
+        <div class="mobile-main-menu-header-container">
+          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
+        </div>
+      </div>
+    </div>
+
+    <div class="mobile-main-menu-links-container">
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://github.com/opendilab/LightRFT" target="_blank">GitHub</a>
+          </li>
+      </div>
+    </div>
+  </div>
+
+  <!-- End Mobile Menu -->
+
+  <script type="text/javascript" src="../_static/js/vendor/anchor.min.js"></script>
+
+  <script type="text/javascript">
+    $(document).ready(function () {
+      mobileMenu.bind();
+      mobileTOC.bind();
+      pytorchAnchors.bind();
+      sideMenus.bind();
+      scrollToAnchor.bind();
+      highlightNavigation.bind();
+      mainMenuDropdown.bind();
+      filterTags.bind();
+
+      // Add class to links that have code blocks, since we cannot create links in code blocks
+      $("article.pytorch-article a span.pre").each(function (e) {
+        $(this).closest("a").addClass("has-code");
+      });
+    })
+  </script>
+</body>
+
+</html>
