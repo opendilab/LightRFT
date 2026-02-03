@@ -111,17 +111,8 @@ def get_vlm_for_sequence_regression(
     # Prioritize using the value_head_prefix in the model configuration.
     value_head_prefix = getattr(config, "value_head_prefix", value_head_prefix)
     logger.info(f"set value_head_prefix to `{value_head_prefix}`")
-    if "internvl" in model_name_or_path.lower():
-        _model = AutoModel.from_pretrained(model_name_or_path, trust_remote_code=True)
-        base_class = _model.__class__  
-        del _model  
-        torch.cuda.empty_cache()  
-    else:
-        base_class = AutoModelForVision2Seq._model_mapping[type(config)]
-    # base_pretrained_class = base_class.__base__
-    # print("base_class: ", base_class)
-    # print("base_pretrained_class: ", base_pretrained_class)
-    # TODO adapt to vlm
+    base_class = AutoModelForVision2Seq._model_mapping[type(config)]
+
     if model_type == "reward":
         cls_class = _get_reward_model(base_class, value_head_prefix, packing_samples)
     else:
@@ -258,8 +249,6 @@ def _get_reward_model(base_vlm_model, value_head_prefix="score", packing_samples
             return_output=False,
             ring_attn_group=None,
             packed_seq_lens=None,
-            pixel_values_intern: torch.Tensor = None,
-            image_flags: torch.Tensor = None,
         ) -> torch.Tensor:
             """
             Forward pass to compute reward scores for input sequences.
@@ -282,10 +271,6 @@ def _get_reward_model(base_vlm_model, value_head_prefix="score", packing_samples
             :type ring_attn_group: Optional[ProcessGroup]
             :param packed_seq_lens: Lengths of packed sequences for batch processing.
             :type packed_seq_lens: Optional[List[int]]
-            :param pixel_values_intern: Pixel values for InternVL models.
-            :type pixel_values_intern: Optional[torch.Tensor]
-            :param image_flags: Flags indicating image presence for InternVL models.
-            :type image_flags: Optional[torch.Tensor]
 
             :return: Reward scores, or tuple of (rewards, outputs) if return_output is True.
             :rtype: Union[torch.Tensor, Tuple[torch.Tensor, dict]]
@@ -299,29 +284,17 @@ def _get_reward_model(base_vlm_model, value_head_prefix="score", packing_samples
                 # explicitly ignore attention_mask for packing_samples
                 attention_mask = None
 
-            # outputs = getattr(self, self.base_model_prefix)(
-            #     input_ids, attention_mask=attention_mask, position_ids=position_ids, pixel_values=pixel_values, image_grid_thw=image_grid_thw, output_hidden_states=True
-            # )
-            if pixel_values_intern is not None:
-                outputs = super().forward(
-                    pixel_values_intern,
-                    input_ids=input_ids,
-                    attention_mask=attention_mask,
-                    position_ids=position_ids,
-                    image_flags=image_flags,
-                    output_hidden_states=True
-                )
-            else:
-                outputs = super().forward(
-                    input_ids=input_ids,
-                    attention_mask=attention_mask,
-                    position_ids=position_ids,
-                    pixel_values=pixel_values,
-                    image_grid_thw=image_grid_thw,
-                    pixel_values_videos=pixel_values_videos,
-                    video_grid_thw=video_grid_thw,
-                    output_hidden_states=True
-                )  
+
+            outputs = super().forward(
+                input_ids=input_ids,
+                attention_mask=attention_mask,
+                position_ids=position_ids,
+                pixel_values=pixel_values,
+                image_grid_thw=image_grid_thw,
+                pixel_values_videos=pixel_values_videos,
+                video_grid_thw=video_grid_thw,
+                output_hidden_states=True
+            )  
             # print(outputs.keys())
             # print(outputs["hidden_states"][-1].shape)
             last_hidden_states = outputs["hidden_states"][-1]
@@ -410,8 +383,6 @@ def _get_critic_model(base_vlm_model, value_head_prefix="score", packing_samples
             video_grid_thw: torch.LongTensor = None,
             return_output=False,
             packed_seq_lens=None,
-            pixel_values_intern: torch.Tensor = None,
-            image_flags: torch.Tensor = None,
         ) -> torch.Tensor:
             """
             Forward pass to compute value estimates for action sequences.
@@ -442,10 +413,6 @@ def _get_critic_model(base_vlm_model, value_head_prefix="score", packing_samples
             :param packed_seq_lens: Lengths of packed sequences for efficient batch processing.
                                    Required when packing_samples is True.
             :type packed_seq_lens: Optional[List[int]]
-            :param pixel_values_intern: Pixel values for InternVL-style models.
-            :type pixel_values_intern: Optional[torch.Tensor]
-            :param image_flags: Flags indicating image presence for InternVL models.
-            :type image_flags: Optional[torch.Tensor]
 
             :return: Value estimates for action tokens. Shape depends on num_actions:
                     - If num_actions is int: (batch_size, num_actions)
@@ -485,26 +452,16 @@ def _get_critic_model(base_vlm_model, value_head_prefix="score", packing_samples
                 # explicitly ignore attention_mask for packing_samples
                 attention_mask = None
 
-            if pixel_values_intern != None:
-                outputs = super().forward(
-                    pixel_values_intern,
-                    input_ids=input_ids,
-                    attention_mask=attention_mask,
-                    position_ids=position_ids,
-                    image_flags=image_flags,
-                    output_hidden_states=True
-                )
-            else:
-                outputs = super().forward(
-                    input_ids=input_ids,
-                    attention_mask=attention_mask,
-                    position_ids=position_ids,
-                    pixel_values=pixel_values,
-                    image_grid_thw=image_grid_thw,
-                    pixel_values_videos=pixel_values_videos,
-                    video_grid_thw=video_grid_thw,
-                    output_hidden_states=True
-                )  
+            outputs = super().forward(
+                input_ids=input_ids,
+                attention_mask=attention_mask,
+                position_ids=position_ids,
+                pixel_values=pixel_values,
+                image_grid_thw=image_grid_thw,
+                pixel_values_videos=pixel_values_videos,
+                video_grid_thw=video_grid_thw,
+                output_hidden_states=True
+            )  
             last_hidden_states = outputs["hidden_states"][-1]
             values = getattr(self, self.value_head_prefix)(last_hidden_states).squeeze(-1)[:, :-1]
 
