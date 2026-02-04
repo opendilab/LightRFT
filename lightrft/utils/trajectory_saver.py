@@ -301,6 +301,10 @@ class TrajectorySaver:
 
         batch_size = sequences.shape[0]
 
+        # Extract labels and references if available
+        labels = exp.labels if hasattr(exp, 'labels') and exp.labels is not None else [None] * batch_size
+        references = exp.references if hasattr(exp, 'references') and exp.references is not None else [None] * batch_size
+
         # Handle action_mask with same shape validation
         if exp.action_mask is not None:
             action_mask = exp.action_mask.cpu()
@@ -451,6 +455,9 @@ class TrajectorySaver:
                 "full_sequence": decoded_sequences[i],
                 "generated_text": generated_text,  # Includes last prompt token (for RL state-action)
                 "pure_generated_text": pure_generated_text,  # Only model's output
+                # Ground truth data
+                "label": labels[i] if i < len(labels) else None,
+                "reference": references[i] if i < len(references) else None,
                 # Analysis metrics
                 "repeat_score": repeat_score,
                 "reflection_pattern_score": reflection_pattern_score,
@@ -484,14 +491,30 @@ class TrajectorySaver:
                     elif key == 'reward_metrics':
                         metrics = {}
                         for metric_name, metric_tensor in value.items():
-                            if isinstance(metric_tensor, torch.Tensor) and len(
-                                metric_tensor.shape
-                            ) > 0 and len(metric_tensor) == batch_size:
-                                metrics[metric_name] = self._tensor_to_list(metric_tensor[i])
-                            else:  # scalar metric, applies to all
-                                metrics[metric_name] = self._tensor_to_list(metric_tensor) if isinstance(
-                                    metric_tensor, torch.Tensor
-                                ) else metric_tensor
+                            # Handle both tensor and list cases
+                            if isinstance(metric_tensor, torch.Tensor):
+                                if len(metric_tensor.shape) > 0 and len(metric_tensor) == batch_size:
+                                    # Tensor with batch dimension - extract single sample's value
+                                    metrics[metric_name] = self._tensor_to_list(metric_tensor[i])
+                                else:
+                                    # Scalar or mismatched tensor - log warning and use as is
+                                    print(
+                                        f"[TrajectorySaver] Warning: reward_metrics[{metric_name}] has shape {metric_tensor.shape}, expected batch_size={batch_size}. Using full tensor."  # noqa: E501
+                                    )
+                                    metrics[metric_name] = self._tensor_to_list(metric_tensor)
+                            elif isinstance(metric_tensor, (list, tuple)):
+                                # Already a list - extract single sample's value if length matches
+                                if len(metric_tensor) == batch_size:
+                                    metrics[metric_name] = metric_tensor[i]
+                                else:
+                                    # Mismatched length - log warning and use as is
+                                    print(
+                                        f"[TrajectorySaver] Warning: reward_metrics[{metric_name}] is a list with length {len(metric_tensor)}, expected batch_size={batch_size}. Using full list."  # noqa: E501
+                                    )
+                                    metrics[metric_name] = metric_tensor
+                            else:
+                                # Scalar value
+                                metrics[metric_name] = metric_tensor
                         info_dict[key] = metrics
                     else:  # scalar value, applies to all samples in micro-batch
                         info_dict[key] = self._tensor_to_list(value) if isinstance(value, torch.Tensor) else value
