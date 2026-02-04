@@ -127,6 +127,8 @@ class ExperienceVL:
     info: Optional[dict] = None
     kl: Optional[torch.Tensor] = None
     action_entropy: Optional[torch.Tensor] = None  # Entropy for high-entropy token filtering
+    labels: Optional[List[str]] = None  # Ground truth labels
+    references: Optional[List[str]] = None  # Reference texts
 
     @torch.no_grad()
     def to_device(self, device: torch.device):
