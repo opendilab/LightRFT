@@ -303,7 +303,8 @@ class TrajectorySaver:
 
         # Extract labels and references if available
         labels = exp.labels if hasattr(exp, 'labels') and exp.labels is not None else [None] * batch_size
-        references = exp.references if hasattr(exp, 'references') and exp.references is not None else [None] * batch_size
+        references = exp.references if hasattr(exp,
+                                               'references') and exp.references is not None else [None] * batch_size
 
         # Handle action_mask with same shape validation
         if exp.action_mask is not None:
