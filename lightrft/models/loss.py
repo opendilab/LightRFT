@@ -78,7 +78,7 @@ class PolicyLoss(nn.Module):
     References:
         [1] Dr.GRPO: https://arxiv.org/pdf/2503.20783
         [2] GSPO: https://arxiv.org/pdf/2507.18071
-        [3] GSPO Reference Implementation: https://github.com/vivekvar-dl/GSPO-DeepSeek-R1-Distill-Qwen-1.5B
+        [3] GSPO Reference Implementation: https://github.com/verl-project/verl
     """
 
     VALID_MODES = ["token-mean", "seq-mean-token-sum", "seq-mean-token-mean", "seq-mean-token-sum-norm"]
@@ -108,6 +108,13 @@ class PolicyLoss(nn.Module):
 
         if loss_agg_mode not in self.VALID_MODES:
             raise ValueError(f"Invalid loss_agg_mode: {loss_agg_mode}. Valid: {self.VALID_MODES}")
+        
+        # GSPO requires seq-mean-token-mean aggregation mode
+        if self.use_gspo and loss_agg_mode != "seq-mean-token-mean":
+            raise ValueError(
+                f"GSPO requires loss_agg_mode='seq-mean-token-mean', but got '{loss_agg_mode}'. "
+                "Please set --loss_agg_mode seq-mean-token-mean when using GSPO."
+            )
 
     def _masked_mean(self, values: torch.Tensor, mask: Optional[torch.Tensor], dim: int, eps: float = 1e-8) -> torch.Tensor:
         if mask is None:
@@ -140,6 +147,7 @@ class PolicyLoss(nn.Module):
         return token_advantages - adv_mean
 
     def _aggregate_token_loss(self, token_losses: torch.Tensor, action_mask: Optional[torch.Tensor]) -> torch.Tensor:
+        """Aggregate token-level losses to a scalar loss using the specified aggregation mode."""
         if self.loss_agg_mode == "token-mean":
             if action_mask is not None:
                 return (token_losses * action_mask).sum() / action_mask.sum().clamp(min=1e-6)
@@ -150,7 +158,9 @@ class PolicyLoss(nn.Module):
             else:
                 seq_losses = torch.sum(token_losses, dim=-1)
             return torch.mean(seq_losses)
-        if self.loss_agg_mode == "seq-mean-token-mean":
+        if self.loss_agg_mode == "seq-mean-token-mean":  # GSPO recommended
+            # First average over tokens within each sequence, then average over sequences
+            # This is the recommended mode for GSPO as specified in the paper
             if action_mask is not None:
                 token_sums = torch.sum(token_losses * action_mask, dim=-1)
                 token_counts = torch.sum(action_mask, dim=-1)
@@ -195,10 +205,37 @@ class PolicyLoss(nn.Module):
         old_log_probs: torch.Tensor,
         action_mask: Optional[torch.Tensor],
     ) -> torch.Tensor:
-        # EasyR1 GSPO token mode: detach sequence-level KL, keep token-level gradients.
+        """
+        Compute the GSPO log sequence-level importance ratio at token level.
+        
+        GSPO uses a sequence-level importance ratio applied to each token:
+        s_i,t(θ) = sg[s_i(θ)] · π_θ(y_i,t|x, y_i,<t) / sg[π_θ(y_i,t|x, y_i,<t)]
+        
+        In log space:
+        log(s_i,t(θ)) = sg[log(s_i(θ))] + log_prob - sg[log_prob]
+        
+        where s_i(θ) is the sequence-level importance ratio:
+        s_i(θ) = (π_θ(yi|x)/π_θold(yi|x))^(1/|yi|) = exp[(1/|yi|) * Σ_t log(π_θ/π_θold)]
+        
+        Reference: https://arxiv.org/pdf/2507.18071
+        """
+        # Compute token-level log importance ratio
         negative_approx_kl = log_probs - old_log_probs
-        seq_avg_kl = self._masked_mean(negative_approx_kl, action_mask, dim=-1)
-        return seq_avg_kl.detach().unsqueeze(-1) + (log_probs - log_probs.detach())
+        
+        # Compute sequence-level average: (1/|yi|) * Σ_t log(π_θ/π_θold)
+        if action_mask is not None:
+            seq_lengths = torch.sum(action_mask, dim=-1, keepdim=True).clamp(min=1)
+            negative_approx_kl_seq = torch.sum(negative_approx_kl * action_mask, dim=-1, keepdim=True) / seq_lengths
+        else:
+            negative_approx_kl_seq = negative_approx_kl.mean(dim=-1, keepdim=True)
+        
+        # Combined log ratio: log(s_i,t(θ)) = sg[log(s_i(θ))] + log_prob - sg[log_prob]
+        log_seq_importance_ratio = log_probs - log_probs.detach() + negative_approx_kl_seq.detach()
+        
+        # Clamp for numerical stability (critical for avoiding overflow in exp)
+        log_seq_importance_ratio = torch.clamp(log_seq_importance_ratio, max=10.0)
+        
+        return log_seq_importance_ratio
 
     def _prepare_gspo_advantages(
         self,
@@ -248,13 +285,20 @@ class PolicyLoss(nn.Module):
             return loss
 
         # GSPO mode: sequence-level optimization
-        # Reference implementation: EasyR1 (https://github.com/vivekvar-dl/distill-grpo/EasyR1)
+        # Reference: https://arxiv.org/pdf/2507.18071
         if self.use_gspo:
+            # Compute GSPO log sequence-level importance ratio
             log_importance_ratio = self._compute_gspo_log_ratio(log_probs, old_log_probs, action_mask)
-            ratio, clipped_ratio = self._ratio_and_clipped_from_log_ratio(log_importance_ratio)
+            # Convert from log ratio to ratio, with clipping
+            ratio = torch.exp(log_importance_ratio)
+            clip_ratio_low = 1.0 - self.clip_eps
+            clip_ratio_high = 1.0 + self.clip_eps
+            clipped_ratio = torch.clamp(ratio, clip_ratio_low, clip_ratio_high)
+            # Prepare advantages for GSPO
             token_advantages = self._prepare_gspo_advantages(
                 advantages, action_mask, ratio.shape, sequence_rewards
             )
+            # Compute clipped surrogate loss
             return self._compute_clipped_surrogate_loss(ratio, clipped_ratio, token_advantages, action_mask)
 
         # GMPO (Generalized Mirror Policy Optimization) implementation

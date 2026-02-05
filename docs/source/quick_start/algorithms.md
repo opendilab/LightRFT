@@ -99,27 +99,41 @@ python train.py \
 
 #### GSPO (Group Sequence Policy Optimization)
 
-**Overview**: GSPO generalizes the PPO objective with flexible surrogate functions, allowing for better control over policy updates.
+**Overview**: GSPO improves training stability by elevating optimization granularity from token-level to sequence-level. It uses sequence-level importance ratios for policy optimization, avoiding the variance explosion issues in GRPO and improving both stability and convergence speed.
 
 **Implementation**: `PolicyLoss.forward()` - Policy Loss module
 **Modification Type**: Loss Design
 
 **Key Features**:
-- Generalized clipping objectives
-- Adaptive trust region updates
-- Better sample efficiency
+- Sequence-level importance ratios (instead of token-level)
+- Very small clipping range (recommended 0.0003-0.0004)
+- Sequence-level loss aggregation mode
+- Better training stability and sample efficiency
 
 **Usage**:
 ```bash
 python train.py \
     --advantage_estimator gspo \
-    --gspo_alpha 0.1 \
-    --clip_range 0.2
+    --use_gspo \
+    --clip_range 0.0004 \
+    --loss_agg_mode seq-mean-token-mean \
+    --normalize_advantages \
+    --use_sequence_rewards
 ```
 
+**Key Configuration Parameters**:
+- `--use_gspo`: Enable GSPO mode (required)
+- `--loss_agg_mode seq-mean-token-mean`: Recommended loss aggregation mode for GSPO (required)
+- `--clip_range`: Clipping range, GSPO recommends very small values like 0.0003-0.0004
+- `--normalize_advantages`: Enable advantage normalization (recommended)
+- `--use_sequence_rewards`: Use sequence-level rewards (recommended)
+
 **Best For**:
-- Tasks requiring precise policy control
+- Large language models and MoE model training
+- Scenarios requiring training stability
 - Multi-task learning scenarios
+
+**Reference**: https://arxiv.org/pdf/2507.18071
 
 ---
 

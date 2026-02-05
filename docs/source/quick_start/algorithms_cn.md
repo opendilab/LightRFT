@@ -99,27 +99,41 @@ python train.py \
 
 #### GSPO (Group Sequence Policy Optimization)
 
-**概述**：GSPO 通过灵活的代理函数推广 PPO 目标，允许更好地控制策略更新。
+**概述**：GSPO 通过将优化粒度从token级提升到sequence级，使用序列级重要性比率进行策略优化，从而规避GRPO中遇到的方差急剧增大问题，提高训练稳定性和收敛速度。
 
 **实现位置**：`PolicyLoss.forward()` - 策略损失模块
 **修改类型**：损失设计
 
 **核心特性**：
-- 广义裁剪目标
-- 自适应信赖域更新
-- 更好的样本效率
+- 序列级重要性比率（而非token级）
+- 极小裁剪范围（推荐 0.0003-0.0004）
+- 序列级损失聚合模式
+- 更好的训练稳定性和样本效率
 
 **使用方法**：
 ```bash
 python train.py \
     --advantage_estimator gspo \
-    --gspo_alpha 0.1 \
-    --clip_range 0.2
+    --use_gspo \
+    --clip_range 0.0004 \
+    --loss_agg_mode seq-mean-token-mean \
+    --normalize_advantages \
+    --use_sequence_rewards
 ```
 
+**关键配置参数**：
+- `--use_gspo`: 启用GSPO模式（必需）
+- `--loss_agg_mode seq-mean-token-mean`: GSPO推荐的损失聚合模式（必需）
+- `--clip_range`: 裁剪范围，GSPO推荐使用极小值如0.0003-0.0004
+- `--normalize_advantages`: 启用优势归一化（推荐）
+- `--use_sequence_rewards`: 使用序列级奖励（推荐）
+
 **最适合**：
-- 需要精确策略控制的任务
+- 大语言模型和MoE模型训练
+- 需要训练稳定性的场景
 - 多任务学习场景
+
+**参考文献**：https://arxiv.org/pdf/2507.18071
 
 ---
 
