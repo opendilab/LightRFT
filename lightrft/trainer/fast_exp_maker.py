@@ -1183,18 +1183,17 @@ class FastExperienceMaker(NaiveExperienceMaker):
         try:
             if hasattr(self.strategy.args, 'use_fire') and self.strategy.args.use_fire:
                 # Use FIRE sampling (Flaming-hot Initiation with Regular Execution)
+                # According to the paper (https://arxiv.org/abs/2410.21236), FIRE only changes
+                # the temperature for the first token. All other sampling parameters (top_k, top_p, etc.)
+                # are kept the same between first token and remaining tokens.
                 all_outputs = fire_sampling(
                     all_prompt_token_ids=all_prompt_token_ids,
                     generate_fn=generate_fn,  # noqa: TODO
                     engine_type=config.engine_type,
                     first_token_temperature=generate_kwargs.get("first_token_temperature", 10.0),
                     temperature=generate_kwargs.get("temperature", 1.0),
-                    first_token_top_k=generate_kwargs.get(
-                        "first_token_top_k", sampling_params.top_k if hasattr(sampling_params, 'top_k') else -1
-                    ),
-                    first_token_top_p=generate_kwargs.get(
-                        "first_token_top_p", sampling_params.top_p if hasattr(sampling_params, 'top_p') else 1.0
-                    ),
+                    # Note: first_token_top_k and first_token_top_p are deprecated and ignored
+                    # The function will use top_k and top_p from sampling_params for both stages
                     is_multimodal=is_multimodal,
                     all_prompts=all_prompts,
                     all_images=all_images,

@@ -44,8 +44,15 @@ def fire_sampling(
     FIRE sampling (Flaming-hot Initiation with Regular Execution)
 
     FIRE sampling paper link: https://arxiv.org/abs/2410.21236
-    The first token is generated with high temperature and optional filters,
-    and the rest tokens are generated with normal temperature.
+
+    According to the paper, FIRE sampling:
+    1. Samples the FIRST token at a very high temperature ("flaming-hot initiation")
+    2. Proceeds with regular temperature for remaining tokens
+    3. IMPORTANT: top_k, top_p, min_p, and other sampling parameters remain THE SAME
+       for both first token and remaining tokens. Only temperature changes.
+
+    This implementation follows the paper's design: we only modify temperature between
+    the first token and remaining tokens, keeping all other sampling parameters identical.
 
     :param all_prompt_token_ids: List of tokenized prompts
     :type all_prompt_token_ids: List[List[int]]
@@ -53,13 +60,13 @@ def fire_sampling(
     :type generate_fn: Callable
     :param engine_type: Backend type ("vllm" or "sglang")
     :type engine_type: str
-    :param first_token_temperature: Temperature for first token generation
+    :param first_token_temperature: Temperature for first token generation (default: 10.0)
     :type first_token_temperature: float
     :param temperature: Temperature for remaining tokens
     :type temperature: float
-    :param first_token_top_k: Top-k for first token
+    :param first_token_top_k: DEPRECATED - kept for backward compatibility, will be ignored
     :type first_token_top_k: int
-    :param first_token_top_p: Top-p for first token
+    :param first_token_top_p: DEPRECATED - kept for backward compatibility, will be ignored
     :type first_token_top_p: float
     :param is_multimodal: Whether this is multimodal generation
     :type is_multimodal: bool
@@ -69,24 +76,28 @@ def fire_sampling(
     :type all_images: Optional[List]
     :param all_images_num: Number of images per prompt
     :type all_images_num: Optional[List[int]]
-    :param sampling_params: Original sampling parameters (for fallback)
+    :param all_videos: Videos (for multimodal)
+    :type all_videos: Optional[List]
+    :param all_videos_num: Number of videos per prompt
+    :type all_videos_num: Optional[List[int]]
+    :param sampling_params: Original sampling parameters
     :type sampling_params: Optional[Union[dict, object]]
 
     :return: List of generation outputs
     :rtype: List
     """
     # Step 1: Generate the first token with high temperature
+    # According to the paper, ONLY temperature changes for the first token.
+    # All other parameters (top_k, top_p, min_p, etc.) remain the same.
     if engine_type == "vllm":
         sampling_params_first = copy.deepcopy(sampling_params)
         sampling_params_first.temperature = first_token_temperature
-        sampling_params_first.top_k = first_token_top_k
-        sampling_params_first.top_p = first_token_top_p
+        # Keep top_k and top_p from original sampling_params (do NOT override)
         sampling_params_first.max_tokens = 1
     else:  # sglang
         sampling_params_first = copy.deepcopy(sampling_params)
         sampling_params_first["temperature"] = first_token_temperature
-        sampling_params_first["top_k"] = first_token_top_k
-        sampling_params_first["top_p"] = first_token_top_p
+        # Keep top_k and top_p from original sampling_params (do NOT override)
         sampling_params_first["max_new_tokens"] = 1
 
     # Generate first token

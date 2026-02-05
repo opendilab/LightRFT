@@ -84,7 +84,7 @@
 | **REINFORCE++** | Advantage Estimation | 改进基线估计 | [arXiv:2501.03262](https://arxiv.org/abs/2501.03262) |
 | **DAPO** | Policy Optimization | 解耦剪裁和动态采样策略优化 | [arXiv:2503.14476](https://arxiv.org/abs/2503.14476) |
 | **CPGD** | Advantage Estimation | KL漂移约束 | [arXiv:2505.12504](https://arxiv.org/abs/2505.12504) |
-| **FIRE Sampling** | Sampling Strategy | 过滤与排序策略 | [arXiv:2410.21236](https://arxiv.org/abs/2410.21236) |
+| **FIRE Sampling** | Sampling Strategy | 高温度首token采样提升多样性 | [arXiv:2410.21236](https://arxiv.org/abs/2410.21236) |
 
 ---
 
