@@ -327,10 +327,7 @@ This approach promotes diversity at the beginning of generation while maintainin
 ```bash
 python train.py \
     --use_fire \
-    --temperature 0.7 \
     --first_token_temperature 10.0 \
-    --top_p 0.7 \
-    --top_k 16
 ```
 
 **Best For**:

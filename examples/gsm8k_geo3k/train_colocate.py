@@ -472,6 +472,13 @@ if __name__ == "__main__":
     parser.add_argument("--normalize_reward_for_critic", action="store_true", default=False, help="Enable Reward Normalization in critic model")
     parser.add_argument("--top_p", type=float, default=1.0)
     parser.add_argument("--temperature", type=float, default=1.0)
+    
+    # FIRE Sampling
+    parser.add_argument("--use_fire", action="store_true", default=False, 
+                        help="Enable FIRE sampling (Flaming-hot Initiation with Regular Execution) for improved diversity. See https://arxiv.org/abs/2410.21236")
+    parser.add_argument("--first_token_temperature", type=float, default=10.0,
+                        help="Temperature for first token in FIRE sampling (default: 10.0). Only effective when --use_fire is enabled.")
+    
     parser.add_argument("--freeze_prefix", action="store_true", default=False, help="Freeze the prefix part (e.g. vision encoder) of the actor model")
     parser.add_argument("--freezing_actor_steps", type=int, default=-1, help="Used for critic initialization")
     parser.add_argument(
