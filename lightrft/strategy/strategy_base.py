@@ -1099,14 +1099,28 @@ class StrategyBase(ABC):
         """
         self.print("maybe_offload_optimizer not implemented and Skipped")
 
-    def maybe_load_optimizer(self, optimizer, device=torch.cuda.current_device()):  # pylint: disable=W0613
+    def maybe_load_optimizer(self, optimizer, device=None):  # pylint: disable=W0613
         """
         Placeholder for FSDP optimizer loading functionality.
         :param optimizer: The optimizer to potentially load
         :type optimizer: torch.optim.Optimizer
-        :param device: Target device for loading
-        :type device: torch.device
+        :param device: Target device for loading (None for auto-detect)
+        :type device: torch.device or None
         """
+        if device is None:
+            # Auto-detect device based on environment
+            accelerator_type = os.environ.get("ACCELERATOR_TYPE", "gpu").lower()
+            if accelerator_type == "npu":
+                try:
+                    import torch_npu
+                    device = torch.npu.current_device()
+                except ImportError:
+                    device = 0  # fallback
+            else:
+                try:
+                    device = torch.cuda.current_device()
+                except (RuntimeError, AssertionError):
+                    device = 0  # fallback
         self.print("maybe_load_optimizer not implemented and Skipped")
 
 
