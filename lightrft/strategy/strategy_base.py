@@ -38,7 +38,22 @@ from lightrft.strategy.utils.parallel_utils import (
     set_sequence_parallel_group,
 )
 from lightrft.strategy.utils.statistic import GenLenAnalyser
-from .sglang_utils import get_sglang_engine_for_rollout
+
+# Try to import sglang, but make it optional
+# This allows the code to run with vLLM-only (useful for NPU environments without sglang)
+try:
+    from .sglang_utils import get_sglang_engine_for_rollout
+    SGLANG_AVAILABLE = True
+except ImportError as e:
+    SGLANG_AVAILABLE = False
+    get_sglang_engine_for_rollout = None
+    import warnings
+    warnings.warn(
+        f"SGLang is not available: {e}. Only vLLM engine will be supported. "
+        f"To use sglang, please install it: pip install sglang",
+        ImportWarning
+    )
+
 from .vllm_utils import get_vllm_engine_for_rollout
 from lightrft.strategy.config import StrategyConfig
 
@@ -687,6 +702,12 @@ class StrategyBase(ABC):
             self.inference_engine = get_vllm_engine_for_rollout(args)
             self.inference_engine_status = EngineStatus.WAKEUP
         elif engine_type == "sglang":
+            if not SGLANG_AVAILABLE:
+                raise ImportError(
+                    "SGLang is not available. Please install sglang or use vllm engine instead.\n"
+                    "  - To install sglang: pip install sglang\n"
+                    "  - To use vllm: add '--engine_type vllm' to your training command"
+                )
             self.inference_engine = get_sglang_engine_for_rollout(args)
             self.inference_engine_status = EngineStatus.WAKEUP
         else:
