@@ -325,7 +325,7 @@ This approach promotes diversity at the beginning of generation while maintainin
 
 **Usage**:
 ```bash
-python train.py \
+python examples/gsm8k_geo3k/train_colocate.py \
     --use_fire \
     --first_token_temperature 10.0 \
 ```
