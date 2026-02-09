@@ -187,13 +187,7 @@ def create_sub_group(group_size: int, backend: str = "nccl") -> Tuple[dist.Proce
             flush=True,
         )
     dist.barrier()
-    # Support GPU (NCCL), NPU (HCCL), and CPU (Gloo)
-    if backend == "nccl":
-        device = "cuda"
-    elif backend == "hccl":
-        device = "npu"
-    else:
-        device = "cpu"
+    device = "cuda" if backend == "nccl" else "cpu"
     tmp = torch.tensor(1.1, device=device)
     dist.all_reduce(tmp, group=group, op=dist.ReduceOp.SUM)
     dist.barrier()

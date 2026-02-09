@@ -142,13 +142,7 @@ class StrategyBase(ABC):
         random.seed(seed)
         np.random.seed(seed)
         torch.manual_seed(seed)
-        # Support both GPU and NPU
-        accelerator_type = os.environ.get("ACCELERATOR_TYPE", "gpu").lower()
-        if accelerator_type == "npu":
-            import torch_npu
-            torch.npu.manual_seed_all(seed)
-        else:
-            torch.cuda.manual_seed_all(seed)
+        torch.cuda.manual_seed_all(seed)
 
     def setup_distributed(self, timeout: Optional[timedelta] = None, num_gpu_per_node: int = 8) -> None:
         """
@@ -169,12 +163,6 @@ class StrategyBase(ABC):
             rank = int(os.environ["RANK"])
             self.config.local_rank = rank % num_gpu_per_node
         if self.config.local_rank != -1:
-        # Support both GPU and NPU
-        accelerator_type = os.environ.get("ACCELERATOR_TYPE", "gpu").lower()
-        if accelerator_type == "npu":
-            import torch_npu
-            torch.npu.set_device(self.config.local_rank)
-        else:
             torch.cuda.set_device(self.config.local_rank)
         self.engine_type = self.config.engine_type
 
@@ -204,7 +192,7 @@ class StrategyBase(ABC):
                     world_size=world_size,
                     # here we set both cpu and cuda as backend, because we need to support
                     # both gpu and cpu training (e.g. FSDP and FSDP with cpu offload)
-                    backend=("cpu:gloo,npu:hccl" if os.environ.get("ACCELERATOR_TYPE", "gpu").lower() == "npu" else "cpu:gloo,cuda:nccl"),
+                    backend="cpu:gloo,cuda:nccl",
                     init_method=init_method,
                     timeout=timeout,
                 )
@@ -441,7 +429,7 @@ class StrategyBase(ABC):
             is_cpu_tensor = data.device.type == "cpu"
 
             if is_cpu_tensor:
-                data = data.to(self._get_current_device())
+                data = data.to(torch.cuda.current_device())
             if op == "mean":
                 data /= self.world_size
             dist.all_reduce(data, op=dist.ReduceOp.MAX if op == "max" else dist.ReduceOp.SUM)
@@ -470,8 +458,8 @@ class StrategyBase(ABC):
                 data = torch.Tensor([data])
             is_cpu_tensor = data.device.type == "cpu"
 
-            ret = [torch.zeros_like(data).to(self._get_current_device()) for _ in range(self.world_size)]
-            dist.all_gather(ret, data.to(self._get_current_device()))
+            ret = [torch.zeros_like(data).to(torch.cuda.current_device()) for _ in range(self.world_size)]
+            dist.all_gather(ret, data.to(torch.cuda.current_device()))
             return torch.cat(ret).cpu() if is_cpu_tensor else torch.cat(ret)
 
     @classmethod
