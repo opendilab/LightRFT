@@ -169,13 +169,13 @@ class StrategyBase(ABC):
             rank = int(os.environ["RANK"])
             self.config.local_rank = rank % num_gpu_per_node
         if self.config.local_rank != -1:
-        # Support both GPU and NPU
-        accelerator_type = os.environ.get("ACCELERATOR_TYPE", "gpu").lower()
-        if accelerator_type == "npu":
-            import torch_npu
-            torch.npu.set_device(self.config.local_rank)
-        else:
-            torch.cuda.set_device(self.config.local_rank)
+            # Support both GPU and NPU
+            accelerator_type = os.environ.get("ACCELERATOR_TYPE", "gpu").lower()
+            if accelerator_type == "npu":
+                import torch_npu
+                torch.npu.set_device(self.config.local_rank)
+            else:
+                torch.cuda.set_device(self.config.local_rank)
         self.engine_type = self.config.engine_type
 
         enable_fsdp = self.config.fsdp
