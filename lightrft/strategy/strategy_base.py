@@ -38,6 +38,16 @@ from lightrft.strategy.utils.parallel_utils import (
     set_sequence_parallel_group,
 )
 from lightrft.strategy.utils.statistic import GenLenAnalyser
+from lightrft.utils import (
+    is_accelerator_available,
+    device_synchronize,
+    empty_cache,
+    mem_get_info,
+    memory_allocated,
+    memory_summary,
+    set_device as device_set_device,
+    manual_seed_all as device_manual_seed_all,
+)
 
 # Try to import sglang, but make it optional
 # This allows the code to run with vLLM-only (useful for NPU environments without sglang)
@@ -158,13 +168,7 @@ class StrategyBase(ABC):
         random.seed(seed)
         np.random.seed(seed)
         torch.manual_seed(seed)
-        # Support both GPU and NPU
-        accelerator_type = os.environ.get("ACCELERATOR_TYPE", "gpu").lower()
-        if accelerator_type == "npu":
-            import torch_npu
-            torch.npu.manual_seed_all(seed)
-        else:
-            torch.cuda.manual_seed_all(seed)
+        device_manual_seed_all(seed)
 
     def setup_distributed(self, timeout: Optional[timedelta] = None, num_gpu_per_node: int = 8) -> None:
         """
@@ -185,13 +189,7 @@ class StrategyBase(ABC):
             rank = int(os.environ["RANK"])
             self.config.local_rank = rank % num_gpu_per_node
         if self.config.local_rank != -1:
-            # Support both GPU and NPU
-            accelerator_type = os.environ.get("ACCELERATOR_TYPE", "gpu").lower()
-            if accelerator_type == "npu":
-                import torch_npu
-                torch.npu.set_device(self.config.local_rank)
-            else:
-                torch.cuda.set_device(self.config.local_rank)
+            device_set_device(self.config.local_rank)
         self.engine_type = self.config.engine_type
 
         enable_fsdp = self.config.fsdp
@@ -674,12 +672,12 @@ class StrategyBase(ABC):
         :param prefix: Prefix string for the memory report
         :type prefix: str
         """
-        usable, total = torch.cuda.mem_get_info()
+        usable, total = mem_get_info()
         used = round((total - usable) / 1e9, 2)
         if torch.distributed.get_rank() == 0:
             print(
                 f"MEMORY STATUS: {prefix}, DRIVER_USED={used} GB, "
-                f"ALLOCATED={torch.cuda.memory_allocated() / 1e9:.2f} GB"
+                f"ALLOCATED={memory_allocated() / 1e9:.2f} GB"
             )
 
     def setup_inference_engine(self, args, engine_type="vllm", actor=None):
@@ -1074,9 +1072,9 @@ class StrategyBase(ABC):
         2. Distributed barrier
         3. CUDA cache clearing
         """
-        torch.cuda.synchronize()
+        device_synchronize()
         torch.distributed.barrier()
-        torch.cuda.empty_cache()
+        empty_cache()
 
     @contextmanager
     def init_model_context(self):

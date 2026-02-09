@@ -32,6 +32,7 @@ from lightrft.trainer.replay_buffer_vl import make_experience_batch as make_expe
 from lightrft.models.utils import create_high_entropy_mask
 from lightrft.utils import init_logger
 from lightrft.utils.utils import get_current_device
+from lightrft.utils import empty_cache, device_synchronize, memory_summary
 
 logger = init_logger(__name__)
 
@@ -190,10 +191,10 @@ class SPMDPPOTrainerBase:
             print(f"Policy loss: {metrics['policy_loss']}")
             print(f"Critic loss: {metrics['critic_loss']}")
         """
-        torch.cuda.synchronize()
+        device_synchronize()
         train_begin = time.time()
 
-        torch.cuda.empty_cache()
+        empty_cache()
         self.strategy.maybe_load_optimizer(self.actor_optim)
         all_items = self.strategy.sp_data_processor.preprocess(self.replay_buffer.items)
 
@@ -463,14 +464,14 @@ class SPMDPPOTrainerBase:
 
                 self.strategy.print("=" * 60 + "\n")
 
-        torch.cuda.empty_cache()
+        empty_cache()
 
         self.strategy.maybe_offload_optimizer(self.actor_optim)
-        torch.cuda.synchronize()
-        torch.cuda.empty_cache()
+        device_synchronize()
+        empty_cache()
         self.strategy.print(f"PPO Train TIMECOST {time.time() - train_begin}")
         self.strategy.report_memory("after train, opt offloaded, before update weights")
-        self.strategy.print(torch.cuda.memory_summary())
+        self.strategy.print(memory_summary())
         self.strategy.update_engine_weights(self.actor)
 
         # Save trajectories at the end of ppo_train, BEFORE replay buffer is cleared

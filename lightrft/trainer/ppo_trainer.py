@@ -15,6 +15,7 @@ from lightrft.models.utils import masked_mean, unpacking_samples, compute_approx
 from lightrft.utils.distributed_sampler import DistributedSampler
 from lightrft.trainer import AdaptiveKLController, Experience, FixedKLController, NaiveExperienceMaker, NaiveReplayBuffer  # noqa
 from lightrft.utils.utils import get_current_device
+from lightrft.utils import empty_cache, device_synchronize
 
 
 class PPOTrainer(ABC):
@@ -329,7 +330,7 @@ class PPOTrainer(ABC):
         :return: Dictionary of averaged training statistics.
         :rtype: dict
         """
-        torch.cuda.empty_cache()
+        empty_cache()
         # Replay buffer may be empty at first, we should rebuild at each training
         dataloader = DataLoader(
             self.replay_buffer,
@@ -390,7 +391,7 @@ class PPOTrainer(ABC):
                     status_mean[k] += v
             for k in status_mean.keys():
                 status_mean[k] /= len(status_list)
-        torch.cuda.empty_cache()
+        empty_cache()
         return status_mean
 
     def training_step(self,

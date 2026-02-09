@@ -44,7 +44,7 @@ except (ModuleNotFoundError, ImportError):
     DTENSOR_SUPPORTED = False
 
 from lightrft.utils import get_current_device
-from lightrft.utils.utils import get_current_device
+from lightrft.utils.utils import get_current_device, empty_cache
 
 from .fsdp_utils import BaseOptimizer, DynamicGradScaler
 
@@ -464,7 +464,7 @@ def offload_fsdp_optimizer(optimizer):
             for key, value in state.items():
                 if isinstance(value, torch.Tensor):
                     state[key] = value.to("cpu", non_blocking=True)
-    torch.cuda.empty_cache()
+    empty_cache()
 
 
 @torch.no_grad()
@@ -511,7 +511,7 @@ def load_fsdp_optimizer(optimizer, device_id=None):
 
     if not optimizer.state:
         return
-    torch.cuda.empty_cache()
+    empty_cache()
     # Use get_current_device() instead of get_current_device() for distributed compatibility
     #     device_id = get_current_device()
     for param_group in optimizer.param_groups:

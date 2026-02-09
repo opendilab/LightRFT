@@ -15,6 +15,7 @@ import torch
 # Add the lightrft package to the path
 
 from lightrft.models import ActorVL
+from lightrft.utils import is_accelerator_available
 
 
 class TestActorVL:
@@ -22,7 +23,7 @@ class TestActorVL:
     @pytest.fixture
     def device(self):
         """Set up device fixture."""
-        return torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        return torch.device("cuda" if is_accelerator_available() else "cpu")
 
     @pytest.fixture
     def mock_config(self):

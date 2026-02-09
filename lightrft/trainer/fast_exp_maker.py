@@ -54,6 +54,7 @@ from lightrft.trainer.experience_maker_vl import (
 
 from lightrft.utils.remote_rm_utils import remote_rm_fn
 from lightrft.utils import Timer, get_current_device
+from lightrft.utils import empty_cache, device_synchronize
 from .utils import RunningMoments, compute_clip_fraction, get_cpgd_advantages_returns, fire_sampling, vllm_ge_0130
 from .advantage_calculator import get_advantage_calculator, normalize_advantages_cross_batch
 from .image_utils import normalize_images, get_images_num
@@ -1017,7 +1018,7 @@ class FastExperienceMaker(NaiveExperienceMaker):
         Timer.stop('  generate_samples')
 
         torch.distributed.barrier()
-        torch.cuda.synchronize()
+        device_synchronize()
 
         # ========== Stage 2: Shard-Parallel Preprocessing ==========
         all_samples = self.strategy.sp_data_processor.preprocess(samples_list)
@@ -1094,7 +1095,7 @@ class FastExperienceMaker(NaiveExperienceMaker):
         """
         assert self.strategy.inference_engine is not None, "Inference engine required"
 
-        torch.cuda.synchronize()
+        device_synchronize()
         start_time = time.time()
 
         config = self.strategy.config
@@ -1287,7 +1288,7 @@ class FastExperienceMaker(NaiveExperienceMaker):
                 samples_list.append(sample)
 
         # Report timing
-        torch.cuda.synchronize()
+        device_synchronize()
         gen_time = torch.tensor(time.time() - start_time, device=get_current_device())
         torch.distributed.all_reduce(gen_time, op=torch.distributed.ReduceOp.MAX)
         self.strategy.print(f"***Rollout engine generation time (global max): {gen_time.item():.4f}s")

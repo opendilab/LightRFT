@@ -13,6 +13,7 @@ import pytest
 import torch
 
 from lightrft.models import ActorLanguage
+from lightrft.utils import is_accelerator_available
 
 
 class TestActorLanguage:
@@ -20,7 +21,7 @@ class TestActorLanguage:
     @pytest.fixture
     def device(self):
         """Set up device fixture."""
-        return torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        return torch.device("cuda" if is_accelerator_available() else "cpu")
 
     @pytest.fixture
     def mock_config(self):

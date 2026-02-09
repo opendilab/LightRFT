@@ -181,6 +181,43 @@ def get_distributed_backend() -> str:
     return "gloo"
 
 
+def _get_device_for_backend(backend: str) -> str:
+    """
+    Get the appropriate device string for a given backend.
+
+    :param backend: The backend name ("nccl", "hccl", or "gloo")
+    :type backend: str
+    :return: Device string ("cuda", "npu", or "cpu")
+    :rtype: str
+    """
+    if backend == "nccl":
+        return "cuda"
+    elif backend == "hccl":
+        return "npu"
+    else:
+        return "cpu"
+
+
+def _is_device_available(device_type: str) -> bool:
+    """
+    Check if a specific device type is available.
+
+    :param device_type: Device type ("cuda" or "npu")
+    :type device_type: str
+    :return: True if the device is available
+    :rtype: bool
+    """
+    if device_type == "cuda":
+        return torch.cuda.is_available()
+    elif device_type == "npu":
+        try:
+            import torch_npu
+            return torch_npu.npu.is_available()
+        except (ImportError, AttributeError):
+            return False
+    return False
+
+
 def create_sub_group(group_size: int, backend: Optional[str] = None) -> Tuple[dist.ProcessGroup, dist.ProcessGroup]:
     """
     Create process subgroups for distributed computing with validation and communication testing.
@@ -247,12 +284,7 @@ def create_sub_group(group_size: int, backend: Optional[str] = None) -> Tuple[di
         )
     dist.barrier()
     # Support GPU (NCCL), NPU (HCCL), and CPU (Gloo)
-    if backend == "nccl":
-        device = "cuda"
-    elif backend == "hccl":
-        device = "npu"
-    else:
-        device = "cpu"
+    device = _get_device_for_backend(backend)
     tmp = torch.tensor(1.1, device=device)
     dist.all_reduce(tmp, group=group, op=dist.ReduceOp.SUM)
     dist.barrier()
@@ -294,8 +326,14 @@ def all_gather_all_prompt_token_ids(all_prompt_token_ids: List[List[int]], group
 
     if torch.distributed.get_world_size(group) == 1:
         return all_prompt_token_ids
-    # Get device info
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    # Get device info - use unified device detection
+    accelerator_type = os.environ.get("ACCELERATOR_TYPE", "gpu").lower()
+    if accelerator_type == "npu" and _is_device_available("npu"):
+        device = torch.device("npu")
+    elif _is_device_available("cuda"):
+        device = torch.device("cuda")
+    else:
+        device = torch.device("cpu")
 
     # 1. Calculate max length in current process
     max_len_local = max(len(tokens) for tokens in all_prompt_token_ids)

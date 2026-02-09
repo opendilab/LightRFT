@@ -7,6 +7,7 @@ import argparse
 import json
 import os
 import torch
+from lightrft.utils import is_accelerator_available
 
 
 def load_model_and_tokenizer(model_path: str, device: str = "cuda"):
@@ -19,7 +20,7 @@ def load_model_and_tokenizer(model_path: str, device: str = "cuda"):
     # Load model
     model = AutoModelForCausalLM.from_pretrained(
         model_path,
-        torch_dtype=torch.bfloat16 if torch.cuda.is_available() else torch.float16,
+        torch_dtype=torch.bfloat16 if is_accelerator_available() else torch.float16,
         device_map="auto",
         trust_remote_code=True
     )

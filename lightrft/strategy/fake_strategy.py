@@ -15,7 +15,7 @@ from typing import List, Tuple, Union
 from contextlib import contextmanager
 
 from lightrft.strategy import StrategyConfig, StrategyBase
-from lightrft.utils.utils import get_current_device
+from lightrft.utils.utils import get_current_device, is_accelerator_available, set_device as device_set_device
 
 ModelOptimPair = Tuple[nn.Module, Optimizer]
 ModelOrModelOptimPair = Union[nn.Module, ModelOptimPair]
@@ -79,8 +79,8 @@ class FakeStrategy(StrategyBase):
                 self.args.local_rank = 0
 
         # Set device
-        if torch.cuda.is_available():
-            torch.cuda.set_device(0)
+        if is_accelerator_available():
+            device_set_device(0)
 
         self.world_size = 1
         self.print("FakeStrategy: Running in single process mode")

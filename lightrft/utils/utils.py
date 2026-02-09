@@ -304,6 +304,8 @@ def get_current_device(num_device_per_node: int = 8) -> torch.device:
                 return torch.device("npu:0")
         else:
             try:
+                # Use get_current_device recursively to ensure proper device detection
+                import torch.cuda
                 return torch.device(f"cuda:{torch.cuda.current_device()}")
             except (RuntimeError, AssertionError):
                 return torch.device("cuda:0")
@@ -316,6 +318,218 @@ def get_current_device(num_device_per_node: int = 8) -> torch.device:
             return torch.device(f"npu:{local_rank}")
         else:
             return torch.device(f"cuda:{local_rank}")
+
+
+def is_accelerator_available() -> bool:
+    """
+    Check if any accelerator (CUDA GPU or NPU) is available.
+
+    This function provides a unified way to check for hardware acceleration,
+    supporting both NVIDIA CUDA GPUs and Huawei NPUs.
+
+    :return: True if CUDA or NPU is available, False otherwise
+    :rtype: bool
+
+    Example::
+
+        >>> if is_accelerator_available():
+        ...     model = model.to(get_current_device())
+    """
+    accelerator_type = os.environ.get("ACCELERATOR_TYPE", "gpu").lower()
+
+    if accelerator_type == "npu":
+        try:
+            import torch_npu
+            return torch_npu.npu.is_available()
+        except (ImportError, AttributeError):
+            return False
+    else:
+        return torch.cuda.is_available()
+
+
+def device_synchronize() -> None:
+    """
+    Synchronize all streams on the current device (CUDA or NPU).
+
+    This function waits for all kernels in all streams on the current device to complete.
+    It's equivalent to torch.cuda.synchronize() for CUDA or torch_npu.npu.synchronize() for NPU.
+
+    Example::
+
+        >>> device_synchronize()  # Wait for all operations to complete
+    """
+    accelerator_type = os.environ.get("ACCELERATOR_TYPE", "gpu").lower()
+
+    if accelerator_type == "npu":
+        try:
+            import torch_npu
+            torch_npu.npu.synchronize()
+        except (ImportError, AttributeError):
+            pass
+    else:
+        if torch.cuda.is_available():
+            torch.cuda.synchronize()
+
+
+def empty_cache() -> None:
+    """
+    Release all unoccupied cached memory on the current device (CUDA or NPU).
+
+    This function frees up cached memory that is not currently being used,
+    which can help reduce memory fragmentation.
+
+    Example::
+
+        >>> empty_cache()  # Free up cached memory
+    """
+    accelerator_type = os.environ.get("ACCELERATOR_TYPE", "gpu").lower()
+
+    if accelerator_type == "npu":
+        try:
+            import torch_npu
+            torch_npu.npu.empty_cache()
+        except (ImportError, AttributeError):
+            pass
+    else:
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+
+
+def mem_get_info(device: Optional[Union[torch.device, int]] = None) -> Tuple[int, int]:
+    """
+    Get memory usage information for the current device (CUDA or NPU).
+
+    Returns a tuple of (free_memory, total_memory) in bytes.
+
+    :param device: Device to query (optional, defaults to current device)
+    :type device: Optional[Union[torch.device, int]]
+    :return: Tuple of (free_memory_bytes, total_memory_bytes)
+    :rtype: Tuple[int, int]
+
+    Example::
+
+        >>> free, total = mem_get_info()
+        >>> print(f"Free: {free/1e9:.2f} GB, Total: {total/1e9:.2f} GB")
+    """
+    accelerator_type = os.environ.get("ACCELERATOR_TYPE", "gpu").lower()
+
+    if accelerator_type == "npu":
+        try:
+            import torch_npu
+            return torch_npu.npu.mem_get_info(device)
+        except (ImportError, AttributeError, RuntimeError) as e:
+            # Fallback: return dummy values if NPU not available
+            return (0, 0)
+    else:
+        if torch.cuda.is_available():
+            return torch.cuda.mem_get_info(device)
+        else:
+            return (0, 0)
+
+
+def memory_allocated(device: Optional[Union[torch.device, int]] = None) -> int:
+    """
+    Get the current memory allocated by tensors on the device (CUDA or NPU).
+
+    :param device: Device to query (optional, defaults to current device)
+    :type device: Optional[Union[torch.device, int]]
+    :return: Memory allocated in bytes
+    :rtype: int
+
+    Example::
+
+        >>> allocated = memory_allocated()
+        >>> print(f"Allocated: {allocated/1e9:.2f} GB")
+    """
+    accelerator_type = os.environ.get("ACCELERATOR_TYPE", "gpu").lower()
+
+    if accelerator_type == "npu":
+        try:
+            import torch_npu
+            return torch_npu.npu.memory_allocated(device)
+        except (ImportError, AttributeError, RuntimeError):
+            return 0
+    else:
+        if torch.cuda.is_available():
+            return torch.cuda.memory_allocated(device)
+        else:
+            return 0
+
+
+def memory_summary(device: Optional[Union[torch.device, int]] = None) -> str:
+    """
+    Get a human-readable summary of memory allocator state (CUDA or NPU).
+
+    :param device: Device to query (optional, defaults to current device)
+    :type device: Optional[Union[torch.device, int]]
+    :return: Memory summary string
+    :rtype: str
+
+    Example::
+
+        >>> print(memory_summary())
+    """
+    accelerator_type = os.environ.get("ACCELERATOR_TYPE", "gpu").lower()
+
+    if accelerator_type == "npu":
+        try:
+            import torch_npu
+            return torch_npu.npu.memory_summary(device)
+        except (ImportError, AttributeError, RuntimeError):
+            return "NPU memory summary not available"
+    else:
+        if torch.cuda.is_available():
+            return torch.cuda.memory_summary(device)
+        else:
+            return "CUDA not available"
+
+
+def set_device(device: Union[torch.device, int]) -> None:
+    """
+    Set the current device (CUDA or NPU).
+
+    :param device: Device to set as current
+    :type device: Union[torch.device, int]
+
+    Example::
+
+        >>> set_device(0)  # Set device 0 as current
+    """
+    accelerator_type = os.environ.get("ACCELERATOR_TYPE", "gpu").lower()
+
+    if accelerator_type == "npu":
+        try:
+            import torch_npu
+            torch_npu.npu.set_device(device)
+        except (ImportError, AttributeError):
+            pass
+    else:
+        if torch.cuda.is_available():
+            torch.cuda.set_device(device)
+
+
+def manual_seed_all(seed: int) -> None:
+    """
+    Set the random seed for all devices (CUDA or NPU).
+
+    :param seed: Random seed value
+    :type seed: int
+
+    Example::
+
+        >>> manual_seed_all(42)  # Set seed for reproducibility
+    """
+    accelerator_type = os.environ.get("ACCELERATOR_TYPE", "gpu").lower()
+
+    if accelerator_type == "npu":
+        try:
+            import torch_npu
+            torch_npu.npu.manual_seed_all(seed)
+        except (ImportError, AttributeError):
+            pass
+    else:
+        if torch.cuda.is_available():
+            torch.cuda.manual_seed_all(seed)
 
 
 def get_torch_profiler(output_file: str,
@@ -542,7 +756,7 @@ def all_reduce_dict(metrics_dict: Dict[str, float],
     values = [metrics_dict[k] for k in keys]
 
     # Use the current device if available, otherwise CPU
-    device = get_current_device() if torch.cuda.is_available() else torch.device("cpu")
+    device = get_current_device() if is_accelerator_available() else torch.device("cpu")
     tensor = torch.tensor(values, device=device, dtype=torch.float64)
 
     dist_op_map = {
