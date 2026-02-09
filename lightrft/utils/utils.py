@@ -276,14 +276,14 @@ def print_rank_0(msg: str, *args: Any, **kwargs: Any) -> None:
 
 def get_current_device(num_device_per_node: int = 8) -> torch.device:
     """
-    Returns the current CUDA device.
+    Returns the current device (CUDA or NPU).
 
-    This function provides a convenient way to get the current CUDA device
-    being used by PyTorch.
+    This function provides a convenient way to get the current device
+    being used by PyTorch, supporting both CUDA (GPU) and NPU.
 
     :param num_device_per_node: Number of devices per node for distributed training
     :type num_device_per_node: int
-    :return: Current CUDA device
+    :return: Current device (CUDA or NPU)
     :rtype: torch.device
 
     Example::
@@ -291,9 +291,31 @@ def get_current_device(num_device_per_node: int = 8) -> torch.device:
         >>> device = get_current_device()
         >>> model = model.to(device)
     """
+    # Check accelerator type from environment variable
+    accelerator_type = os.environ.get("ACCELERATOR_TYPE", "gpu").lower()
+
     if not torch.distributed.is_initialized():
-        return torch.cuda.current_device()
-    return torch.device(f"cuda:{torch.distributed.get_rank() % num_device_per_node}")
+        # Not in distributed mode
+        if accelerator_type == "npu":
+            try:
+                import torch_npu
+                return torch.device(f"npu:{torch.npu.current_device()}")
+            except (ImportError, RuntimeError):
+                return torch.device("npu:0")
+        else:
+            try:
+                return torch.device(f"cuda:{torch.cuda.current_device()}")
+            except (RuntimeError, AssertionError):
+                return torch.device("cuda:0")
+    else:
+        # In distributed mode
+        rank = torch.distributed.get_rank()
+        local_rank = rank % num_device_per_node
+
+        if accelerator_type == "npu":
+            return torch.device(f"npu:{local_rank}")
+        else:
+            return torch.device(f"cuda:{local_rank}")
 
 
 def get_torch_profiler(output_file: str,
@@ -520,7 +542,7 @@ def all_reduce_dict(metrics_dict: Dict[str, float],
     values = [metrics_dict[k] for k in keys]
 
     # Use the current device if available, otherwise CPU
-    device = torch.cuda.current_device() if torch.cuda.is_available() else torch.device("cpu")
+    device = get_current_device() if torch.cuda.is_available() else torch.device("cpu")
     tensor = torch.tensor(values, device=device, dtype=torch.float64)
 
     dist_op_map = {

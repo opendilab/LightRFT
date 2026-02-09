@@ -56,6 +56,7 @@ except ImportError as e:
 
 from .vllm_utils import get_vllm_engine_for_rollout
 from lightrft.strategy.config import StrategyConfig
+from lightrft.utils.utils import get_current_device
 
 ModelOptimPair = Tuple[nn.Module, Optimizer]
 ModelOrModelOptimPair = Union[nn.Module, ModelOptimPair]
@@ -1118,7 +1119,7 @@ class StrategyBase(ABC):
                     device = 0  # fallback
             else:
                 try:
-                    device = torch.cuda.current_device()
+                    device = get_current_device()
                 except (RuntimeError, AssertionError):
                     device = 0  # fallback
         self.print("maybe_load_optimizer not implemented and Skipped")

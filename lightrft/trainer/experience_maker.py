@@ -11,6 +11,7 @@ from lightrft.models import ActorLanguage
 
 from lightrft.models.utils import compute_approx_kl, compute_reward, masked_mean
 from lightrft.utils import init_logger, remote_rm_fn
+from lightrft.utils.utils import get_current_device
 from .advantage_calculator import normalize_advantages_cross_batch
 
 logger = init_logger(__name__)
@@ -398,7 +399,7 @@ class NaiveExperienceMaker(ABC):
                 return_sums = reward.sum(dim=-1)
             else:
                 return_sums = torch.tensor([each_reward.sum() for each_reward in reward],
-                                           device=torch.cuda.current_device())
+                                           device=get_current_device())
             experience.info["return"] = return_sums
             # Remove unnecessary info
             experience.kl = None

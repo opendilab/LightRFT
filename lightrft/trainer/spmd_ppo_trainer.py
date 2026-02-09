@@ -31,6 +31,7 @@ from lightrft.trainer.replay_buffer import make_experience_batch
 from lightrft.trainer.replay_buffer_vl import make_experience_batch as make_experience_batch_vl
 from lightrft.models.utils import create_high_entropy_mask
 from lightrft.utils import init_logger
+from lightrft.utils.utils import get_current_device
 
 logger = init_logger(__name__)
 
@@ -196,7 +197,7 @@ class SPMDPPOTrainerBase:
         self.strategy.maybe_load_optimizer(self.actor_optim)
         all_items = self.strategy.sp_data_processor.preprocess(self.replay_buffer.items)
 
-        device = torch.cuda.current_device()
+        device = get_current_device()
 
         status_list = []
         status_mean = {}

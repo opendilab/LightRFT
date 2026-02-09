@@ -44,6 +44,7 @@ except (ModuleNotFoundError, ImportError):
     DTENSOR_SUPPORTED = False
 
 from lightrft.utils import get_current_device
+from lightrft.utils.utils import get_current_device
 
 from .fsdp_utils import BaseOptimizer, DynamicGradScaler
 
@@ -467,7 +468,7 @@ def offload_fsdp_optimizer(optimizer):
 
 
 @torch.no_grad()
-def load_fsdp_optimizer(optimizer, device_id=torch.cuda.current_device()):
+def load_fsdp_optimizer(optimizer, device_id=None):
     """
     Load optimizer states from CPU back to the specified GPU device.
 
@@ -492,11 +493,27 @@ def load_fsdp_optimizer(optimizer, device_id=torch.cuda.current_device()):
         This function automatically determines the current device using get_current_device()
         to ensure compatibility with distributed training setups.
     """
+    # Auto-detect device if not specified
+    if device_id is None:
+        import os
+        accelerator_type = os.environ.get("ACCELERATOR_TYPE", "gpu").lower()
+        if accelerator_type == "npu":
+            try:
+                import torch_npu
+                device_id = torch.npu.current_device()
+            except ImportError:
+                device_id = 0
+        else:
+            try:
+                device_id = get_current_device()
+            except (RuntimeError, AssertionError):
+                device_id = 0
+
     if not optimizer.state:
         return
     torch.cuda.empty_cache()
-    # Use get_current_device() instead of torch.cuda.current_device() for distributed compatibility
-    device_id = get_current_device()
+    # Use get_current_device() instead of get_current_device() for distributed compatibility
+    #     device_id = get_current_device()
     for param_group in optimizer.param_groups:
         for param in param_group["params"]:
             state = optimizer.state[param]

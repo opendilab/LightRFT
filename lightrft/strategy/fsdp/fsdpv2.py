@@ -51,6 +51,7 @@ from transformers.trainer_pt_utils import get_module_class_from_name
 from lightrft.strategy.strategy_base import StrategyBase, is_actor
 from lightrft.strategy.utils.optimizer_utils import group_parameters_for_optimizer_dtensor
 from lightrft.strategy.utils.ckpt_utils import find_latest_checkpoint_dir
+from lightrft.utils.utils import get_current_device
 
 from .fsdp_optimizer import (
     FSDPadaptOptimizer,
@@ -669,7 +670,7 @@ class FSDPV2Strategy(StrategyBase):
         if self.args.adam_offload:
             return offload_fsdp_optimizer(optimizer)
 
-    def maybe_load_optimizer(self, optimizer, device=torch.cuda.current_device()):
+    def maybe_load_optimizer(self, optimizer, device=None):
         """
         Load FSDP optimizer states back to GPU if adam_offload is enabled.
 
@@ -681,6 +682,22 @@ class FSDPV2Strategy(StrategyBase):
         :return: The loaded optimizer if adam_offload is enabled, otherwise the original optimizer
         :rtype: torch.optim.Optimizer
         """
+        # Auto-detect device if not specified
+        if device is None:
+            import os
+            accelerator_type = os.environ.get("ACCELERATOR_TYPE", "gpu").lower()
+            if accelerator_type == "npu":
+                try:
+                    import torch_npu
+                    device = torch.npu.current_device()
+                except ImportError:
+                    device = 0
+            else:
+                try:
+                    device = get_current_device()
+                except (RuntimeError, AssertionError):
+                    device = 0
+
         if self.args.adam_offload:
             return load_fsdp_optimizer(optimizer, device)
 
@@ -742,7 +759,7 @@ class FSDPV2Strategy(StrategyBase):
 
             >>> strategy.reload_model([actor_model, critic_model])
         """
-        device = torch.cuda.current_device()
+        device = get_current_device()
 
         def reload_single(model):
             """

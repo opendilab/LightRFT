@@ -20,6 +20,7 @@ import torch.distributed as dist
 
 from lightrft.models import LogExpLoss, LogSigmoidLoss, HPSLoss, pad_to_length
 from lightrft.utils import DistributedSampler, all_gather_and_flatten, all_reduce_dict
+from lightrft.utils.utils import get_current_device
 
 
 class SRMTrainerAL:
@@ -192,7 +193,7 @@ class SRMTrainerAL:
                     extras,
                 ) = data
 
-                device = torch.cuda.current_device()
+                device = get_current_device()
 
                 input0_ids = input0_ids.squeeze(1).to(device)
                 input0_mask = input0_mask.squeeze(1).to(device)
@@ -428,7 +429,7 @@ class SRMTrainerAL:
                     extras,
                 ) = data
 
-                device = torch.cuda.current_device()
+                device = get_current_device()
 
                 input0_ids = input0_ids.squeeze(1).to(device)
                 input0_mask = input0_mask.squeeze(1).to(device)

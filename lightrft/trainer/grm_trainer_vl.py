@@ -20,6 +20,7 @@ from typing import Dict, Any
 from lightrft.models import GPTLMLoss
 from lightrft.datasets.utils import extract_answer
 from lightrft.utils import DistributedSampler, all_gather_and_flatten, all_reduce_dict
+from lightrft.utils.utils import get_current_device
 
 
 class GRMTrainerVL:
@@ -150,7 +151,7 @@ class GRMTrainerVL:
             self.model.train()
             for data in self.train_dataloader:
                 ids, mask, pixel_values, image_grid_thws, pixel_values_videos, video_grid_thws, labels, extras = data
-                device = torch.cuda.current_device()
+                device = get_current_device()
                 ids = ids.squeeze(1).to(device)
                 mask = mask.squeeze(1).to(device)
                 labels = labels.squeeze(1).to(device)
@@ -297,7 +298,7 @@ class GRMTrainerVL:
             for data in eval_dataloader:
                 ids, mask, pixel_values, image_grid_thws, pixel_values_videos, video_grid_thws, labels, extras = data
 
-                device = torch.cuda.current_device()
+                device = get_current_device()
                 ids = ids.squeeze(1).to(device)
                 mask = mask.squeeze(1).to(device)
 
