@@ -1138,7 +1138,11 @@ class PPOTrainerVL(ABC):
         :param client_states: Client state for checkpoint recovery.
         :type client_states: dict
         """
-        if not self.disable_ds_ckpt:
+        # [MOD] Logic for LoRA saving optimization
+        is_lora = getattr(args, "lora_rank", 0) > 0
+
+        # For LoRA, we default to NOT saving the full checkpoint
+        if not self.disable_ds_ckpt and not is_lora:
             self.strategy.save_ckpt(
                 self.actor.model,
                 os.path.join(args.ckpt_path, "_actor"),
@@ -1152,7 +1156,8 @@ class PPOTrainerVL(ABC):
                     self.critic, os.path.join(args.ckpt_path, "_critic"), tag, args.max_ckpt_num, args.max_ckpt_mem
                 )
 
-        if self.save_hf_ckpt:
+        # For LoRA, we ALWAYS save the HF adapter as it is much smaller and more convenient for deployment.
+        if self.save_hf_ckpt or is_lora:
             save_path = os.path.join(args.ckpt_path, f"{tag}_hf")
             self.strategy.save_model(self.actor, self.tokenizer, save_path)
 

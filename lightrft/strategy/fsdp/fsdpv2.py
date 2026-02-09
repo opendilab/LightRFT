@@ -39,6 +39,7 @@ except ImportError:
 
 import torch.distributed.checkpoint as dcp
 from torch.distributed.checkpoint.state_dict import (
+    StateDictOptions,
     get_model_state_dict,
     get_optimizer_state_dict,
     set_model_state_dict,
@@ -451,9 +452,10 @@ class FSDPV2Strategy(StrategyBase):
         else:
             return model
 
-    def save_model(self, *args, **kwargs) -> None:
+    def save_model(self, model, tokenizer, output_dir, **kwargs) -> None:
         """
-        Save the model, its configuration, and tokenizer.
+        Save the model, its configuration, and tokenizer in Hugging Face format.
+        In LoRA mode, this saves the adapter. In full mode, this saves the full model.
 
         This method handles gathering and saving the full model parameters in a distributed setting.
         Only rank 0 process saves the model to disk.
@@ -465,7 +467,38 @@ class FSDPV2Strategy(StrategyBase):
         :type output_dir: str
         :param kwargs: Additional arguments to pass to model.save_pretrained
         """
-        self.print("FSDP save model is not implemented, please use offline tools to convert to huggingface model")
+        # Determine the model to save (unwrap ActorVL or similar wrappers)
+        actual_model = model.model if is_actor(model) or hasattr(model, "model") else model
+
+        # [Gather Configuration]
+        # In this environment, get_model_state_dict uses 'options' and 'StateDictOptions'.
+        # We want the full state dict collected to rank 0 (cpu_offload=True to avoid OOM).
+        opts = StateDictOptions(full_state_dict=True, cpu_offload=True)
+
+        # get_model_state_dict is a collective call, must be called on ALL ranks.
+        # It internally interacts with FSDP modules to perform the All-Gather.
+        state_dict = get_model_state_dict(actual_model, options=opts)
+
+        if self.is_rank_0():
+            os.makedirs(output_dir, exist_ok=True)
+
+            # Use save_pretrained if available (handles HF and PEFT)
+            # PEFT's save_pretrained will automatically filter for adapter weights if state_dict is provided
+            if hasattr(actual_model, "save_pretrained"):
+                actual_model.save_pretrained(output_dir, state_dict=state_dict, safe_serialization=True)
+            else:
+                # Fallback to torch.save
+                save_path = os.path.join(output_dir, "pytorch_model.bin")
+                torch.save(state_dict, save_path)
+
+            # Save the tokenizer
+            if tokenizer is not None:
+                tokenizer.save_pretrained(output_dir)
+
+            self.print(f"Hugging Face model saved to {output_dir}")
+
+        # Ensure all ranks wait for rank 0 to finish saving
+        dist.barrier()
 
     def save_ckpt(
         self,
@@ -537,7 +570,13 @@ class FSDPV2Strategy(StrategyBase):
 
         dist.barrier()
 
-        fsdp_state_dict = get_model_state_dict(model)
+        # Determine the model to save (unwrap ActorVL or similar wrappers)
+        actual_model = model.model if is_actor(model) or hasattr(model, "model") else model
+
+        # [Sharded State Dict]
+        # For DCP, we want the sharded state dict (full_state_dict=False by default)
+        opts = StateDictOptions(full_state_dict=False, cpu_offload=False)
+        fsdp_state_dict = get_model_state_dict(actual_model, options=opts)
 
         fp = os.path.join(save_dir, tag)
         os.makedirs(fp, exist_ok=True)
@@ -552,7 +591,7 @@ class FSDPV2Strategy(StrategyBase):
                 torch.save(optimizer.state_dict(), opt_ckpt_path)
             else:
                 # DCP can only be use with naive optimizer
-                fsdp_optim_state_dict = get_optimizer_state_dict(model, optimizer)
+                fsdp_optim_state_dict = get_optimizer_state_dict(actual_model, optimizer)
                 dcp.save(fsdp_optim_state_dict, checkpoint_id=opt_base_dir)
 
         client_ckpt_path = os.path.join(fp, "client_state.pt")
