@@ -1,3 +1,4 @@
+import os
 from datetime import timedelta
 from typing import Any, List, Optional, Tuple, Union
 
@@ -133,7 +134,54 @@ def init_process_group(
     return pg
 
 
-def create_sub_group(group_size: int, backend: str = "nccl") -> Tuple[dist.ProcessGroup, dist.ProcessGroup]:
+def get_distributed_backend() -> str:
+    """
+    Automatically detect the appropriate distributed backend based on the current environment.
+
+    This function provides robust backend detection for different hardware accelerators:
+    - NPU (Ascend): Uses HCCL (Huawei Collective Communication Library)
+    - CUDA (NVIDIA GPU): Uses NCCL (NVIDIA Collective Communications Library)
+    - CPU or others: Uses Gloo
+
+    Detection logic:
+    1. Check ACCELERATOR_TYPE environment variable (set by launcher scripts)
+    2. Check for torch_npu module availability (indicates NPU environment)
+    3. Check torch.cuda availability (indicates CUDA environment)
+    4. Default to Gloo for CPU or unknown environments
+
+    :return: Backend name string ("hccl", "nccl", or "gloo")
+    :rtype: str
+
+    Example::
+
+        >>> backend = get_distributed_backend()
+        >>> # Returns "hccl" on NPU, "nccl" on CUDA, "gloo" on CPU
+    """
+    # Method 1: Check ACCELERATOR_TYPE environment variable
+    accelerator_type = os.environ.get("ACCELERATOR_TYPE", "").lower()
+    if accelerator_type == "npu":
+        return "hccl"
+    elif accelerator_type == "gpu":
+        if torch.cuda.is_available():
+            return "nccl"
+
+    # Method 2: Check for torch_npu module (NPU environment)
+    try:
+        import torch_npu
+        if hasattr(torch_npu, 'npu') and torch_npu.npu.is_available():
+            return "hccl"
+    except ImportError:
+        pass
+
+    # Method 3: Check CUDA availability
+    if torch.cuda.is_available():
+        return "nccl"
+
+    # Default: Gloo for CPU or unknown environments
+    return "gloo"
+
+
+def create_sub_group(group_size: int, backend: Optional[str] = None) -> Tuple[dist.ProcessGroup, dist.ProcessGroup]:
     """
     Create process subgroups for distributed computing with validation and communication testing.
 
@@ -145,8 +193,11 @@ def create_sub_group(group_size: int, backend: str = "nccl") -> Tuple[dist.Proce
 
     :param group_size: Size of each process subgroup. Must be a divisor of world_size.
     :type group_size: int
-    :param backend: Backend for distributed communication ("nccl" for GPU, other options for CPU).
-    :type backend: str
+    :param backend: Backend for distributed communication. If None, automatically detects:
+        - "hccl" for NPU (Ascend)
+        - "nccl" for CUDA (NVIDIA GPU)
+        - "gloo" for CPU or unknown
+    :type backend: Optional[str]
 
     :return: Tuple of (regular process group, orthogonal process group).
     :rtype: Tuple[dist.ProcessGroup, dist.ProcessGroup]
@@ -154,12 +205,20 @@ def create_sub_group(group_size: int, backend: str = "nccl") -> Tuple[dist.Proce
 
     Example::
 
-        >>> # Create subgroups with size 4 using NCCL backend
-        >>> regular_group, orthogonal_group = create_sub_group(4, "nccl")
+        >>> # Auto-detect backend based on environment
+        >>> regular_group, orthogonal_group = create_sub_group(4)
+        >>> # Or explicitly specify backend
+        >>> regular_group, orthogonal_group = create_sub_group(4, backend="nccl")
         >>> # With world_size=8, this creates:
         >>> # Regular groups: [0,1,2,3] and [4,5,6,7]
         >>> # Orthogonal groups: [0,4], [1,5], [2,6], [3,7]
     """
+    # Auto-detect backend if not specified
+    if backend is None:
+        backend = get_distributed_backend()
+        if dist.get_rank() == 0:
+            print(f"Auto-detected distributed backend: {backend}", flush=True)
+
     world_size = dist.get_world_size()
     if world_size % group_size != 0:
         raise ValueError(f"world_size ({world_size}) % group_size ({group_size}) != 0 ")
@@ -178,7 +237,7 @@ def create_sub_group(group_size: int, backend: str = "nccl") -> Tuple[dist.Proce
     for i in range(group_size):
         orthogonal_ranks = list(range(i, world_size, group_size))
         orthogonal_group_ranks.append(orthogonal_ranks)
-    orthogonal_group, _ = dist.new_subgroups_by_enumeration(orthogonal_group_ranks)
+    orthogonal_group, _ = dist.new_subgroups_by_enumeration(orthogonal_group_ranks, backend=backend)
 
     if dist.get_rank() == 0:
         print(
