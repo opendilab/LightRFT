@@ -231,6 +231,17 @@ class SPMDPPOTrainerBase:
                         sequences, pixel_values, context="pre_training_validation"
                     )
                     should_skip_local = not is_valid
+                
+                # Check for empty advantages (can happen when dynamic sampling filters all samples)
+                if not should_skip_local and hasattr(experience, 'advantages') and experience.advantages is not None:
+                    if isinstance(experience.advantages, list):
+                        # Packed samples: check if any advantages are empty
+                        if any(adv.numel() == 0 for adv in experience.advantages):
+                            should_skip_local = True
+                    else:
+                        # Single tensor: check if empty
+                        if experience.advantages.numel() == 0:
+                            should_skip_local = True
 
                 # Step 2: Synchronize skip decision across all ranks via all_reduce
                 # This ensures all ranks agree on whether to skip, preventing execution divergence

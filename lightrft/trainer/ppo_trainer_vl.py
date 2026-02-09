@@ -374,31 +374,32 @@ class PPOTrainerVL(ABC):
                 # to collect enough valid prompts (groups with varying rewards)
                 num_gen_batches = 0
                 target_num_prompts = args.rollout_batch_size
+                n_samples = args.n_samples_per_prompt
                 
                 while True:
                     num_gen_batches += 1
                     
                     # Generate experiences for current batch
-                for i, experience in enumerate(
-                    self.experience_maker.make_experience_list(
-                        rand_prompts,
-                        rand_images,
-                        all_videos=rand_videos,
-                        all_references=rand_references,
-                        all_labels=rand_labels,
-                        **self.generate_kwargs
-                    )
-                ):
-                    if i == 0:
-                        output = self.tokenizer.batch_decode(
-                            experience.sequences[0].unsqueeze(0), skip_special_tokens=True
+                    for i, experience in enumerate(
+                        self.experience_maker.make_experience_list(
+                            rand_prompts,
+                            rand_images,
+                            all_videos=rand_videos,
+                            all_references=rand_references,
+                            all_labels=rand_labels,
+                            **self.generate_kwargs
                         )
-                        self.strategy.print("collect phase: experience.sequences w skip_special_tokens: ", output)
-                        self.strategy.print(
-                            f"collect phase: rand_prompts:\n {rand_prompts[0:2]}\n , rand_images:{rand_images[0:2]}\n , rand_references:{rand_references[0:2]}\n, rand_labels:{rand_labels[0:2]}\n "  # noqa
-                        )
+                    ):
+                        if i == 0:
+                            output = self.tokenizer.batch_decode(
+                                experience.sequences[0].unsqueeze(0), skip_special_tokens=True
+                            )
+                            self.strategy.print("collect phase: experience.sequences w skip_special_tokens: ", output)
+                            self.strategy.print(
+                                f"collect phase: rand_prompts:\n {rand_prompts[0:2]}\n , rand_images:{rand_images[0:2]}\n , rand_references:{rand_references[0:2]}\n, rand_labels:{rand_labels[0:2]}\n "  # noqa
+                            )
 
-                    self.replay_buffer.append(experience)
+                        self.replay_buffer.append(experience)
                     
                     # Check if dynamic sampling is enabled
                     if not self.strategy.config.dynamic_sampling:
@@ -406,19 +407,48 @@ class PPOTrainerVL(ABC):
                         break
                     
                     # Count valid prompts (groups with non-zero action masks after filtering)
-                    n_samples = args.n_samples_per_prompt
+                    # This check happens AFTER all experiences in the batch are generated
+                    # Note: When micro_rollout_batch_size == n_samples_per_prompt, each experience
+                    # contains all samples for one prompt. So we count experiences directly.
+                    total_experiences = len(self.replay_buffer.items)
                     num_valid_prompts = 0
+                    num_filtered_prompts = 0
                     
-                    for i in range(0, len(self.replay_buffer.items), n_samples):
-                        group = self.replay_buffer.items[i:i + n_samples]
-                        # Check if any experience in this group has non-zero action mask
-                        has_valid_actions = any(exp.action_mask.sum() > 0 for exp in group)
-                        if has_valid_actions:
+                    # Debug: Check experience structure
+                    if self.strategy.is_rank_0() and total_experiences > 0:
+                        first_exp = self.replay_buffer.items[0]
+                        if hasattr(first_exp, 'action_mask'):
+                            action_mask_shape = first_exp.action_mask.shape
+                            # Safely get reward shape
+                            reward_shape = "N/A"
+                            if hasattr(first_exp, 'info') and first_exp.info is not None:
+                                reward = first_exp.info.get("reward", None)
+                                if reward is not None:
+                                    if isinstance(reward, torch.Tensor):
+                                        reward_shape = reward.shape
+                                    else:
+                                        reward_shape = f"scalar({type(reward).__name__})"
+                            self.strategy.print(
+                                f"Debug: total_experiences={total_experiences}, "
+                                f"n_samples={n_samples}, "
+                                f"first_exp.action_mask.shape={action_mask_shape}, "
+                                f"first_exp.info['reward']={reward_shape}"
+                            )
+                    
+                    # Count valid prompts: each experience corresponds to one prompt
+                    # when micro_rollout_batch_size == n_samples_per_prompt
+                    for exp in self.replay_buffer.items:
+                        # Check if this experience has any valid actions (not all filtered)
+                        if exp.action_mask.sum() > 0:
                             num_valid_prompts += 1
+                        else:
+                            num_filtered_prompts += 1
                     
                     if self.strategy.is_rank_0():
                         self.strategy.print(
-                            f"Dynamic Sampling: num_valid_prompts={num_valid_prompts}, "
+                            f"Dynamic Sampling: total_experiences={total_experiences}, "
+                            f"num_valid_prompts={num_valid_prompts}, "
+                            f"num_filtered_prompts={num_filtered_prompts}, "
                             f"target={target_num_prompts}, num_gen_batches={num_gen_batches}"
                         )
                     
@@ -439,14 +469,13 @@ class PPOTrainerVL(ABC):
                             )
                         break
                     
-                    # Need more samples, continue to next batch
-                    # Note: In a real implementation, you would fetch the next batch from dataloader
-                    # For now, we break to avoid infinite loop (this is a simplified implementation)
+                    # Need more samples, but current implementation only processes one batch
+                    # In a full implementation, we would fetch the next batch from dataloader here
+                    # For now, we proceed with what we have
                     if self.strategy.is_rank_0():
                         self.strategy.print(
-                            f"Warning: Dynamic sampling requires fetching more batches, "
-                            f"but current implementation processes one batch at a time. "
-                            f"Proceeding with {num_valid_prompts} valid prompts."
+                            f"Warning: Dynamic sampling needs more batches, but current implementation "
+                            f"processes one batch at a time. Proceeding with {num_valid_prompts} valid prompts."
                         )
                     break
 
@@ -767,6 +796,14 @@ class PPOTrainerVL(ABC):
                 base_action_log_probs = experience.base_action_log_probs
 
         if advantages is not None:
+            # Check if advantages is empty (can happen when dynamic sampling filters all samples)
+            if advantages.numel() == 0:
+                self.strategy.print(
+                    "[Warning] Empty advantages tensor detected. This may occur when dynamic sampling "
+                    "filters out all samples in a batch. Skipping this training step."
+                )
+                return {}  # Return empty status dict to skip this step
+            
             # Log max advantage before clipping for debugging (optional)
             max_adv = advantages.max().item()
             if max_adv > 10.0:
