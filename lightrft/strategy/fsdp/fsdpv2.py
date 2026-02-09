@@ -60,6 +60,28 @@ from .fsdp_optimizer import (
 )
 from .fsdp_utils import is_meta_initialized
 
+
+def _get_device_type_str() -> str:
+    """
+    Get the device type string for the current accelerator.
+
+    Returns "npu" for NPU devices, "cuda" for NVIDIA GPUs, or "cpu" for CPU.
+    This is used for init_device_mesh and other device-specific operations.
+
+    :return: Device type string ("npu", "cuda", or "cpu")
+    :rtype: str
+    """
+    import os
+    accelerator_type = os.environ.get("ACCELERATOR_TYPE", "gpu").lower()
+
+    if accelerator_type == "npu":
+        return "npu"
+    else:
+        # Default to cuda for GPU or when unspecified
+        # init_device_mesh will handle the actual device availability check
+        return "cuda"
+
+
 ModelOptimPair = Tuple[nn.Module, Optimizer]
 ModelOrModelOptimPair = Union[nn.Module, ModelOptimPair]
 
@@ -363,15 +385,17 @@ class FSDPV2Strategy(StrategyBase):
         )
         mesh = None
         world_size = torch.distributed.get_world_size()
+        device_type = _get_device_type_str()  # Auto-detect device type (cuda/npu)
+
         if shard_size != -1:
             assert world_size % shard_size == 0
             mesh = init_device_mesh(
-                "cuda", (world_size // shard_size, shard_size), mesh_dim_names=("replicate", "shard")
+                device_type, (world_size // shard_size, shard_size), mesh_dim_names=("replicate", "shard")
             )
         else:
-            mesh = init_device_mesh("cuda", (1, world_size), mesh_dim_names=("replicate", "shard"))
+            mesh = init_device_mesh(device_type, (1, world_size), mesh_dim_names=("replicate", "shard"))
 
-        no_shard_mesh = init_device_mesh("cuda", (world_size, 1), mesh_dim_names=("replicate", "shard"))  # noqa
+        no_shard_mesh = init_device_mesh(device_type, (world_size, 1), mesh_dim_names=("replicate", "shard"))  # noqa
 
         offload_policy = CPUOffloadPolicy() if is_training and self.args.fsdp_cpu_offload else OffloadPolicy()
         fsdp_kwargs = {
@@ -410,7 +434,9 @@ class FSDPV2Strategy(StrategyBase):
             register_fsdp_forward_method(model_to_wrap, "generate")
 
         if is_meta_initialized(model_to_wrap):
-            model.to_empty(device="cuda")
+            # Use device-agnostic approach for materializing meta tensors
+            device_type = _get_device_type_str()
+            model.to_empty(device=device_type)
 
         self.print(f"after _fsdp2_init_model: {model_to_wrap}")
         self.report_memory("after FSDP2 wrap model")

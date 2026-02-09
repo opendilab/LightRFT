@@ -111,7 +111,7 @@ echo ""
 
 # --- Model and Dataset Paths ---
 # Path to the base model. Can be a Hugging Face model name or a local directory.
-PATH_TO_YOUR_BASE_MODEL="/data/puyuan/LightRFT/model/Qwen2.5-0.5B-Instruct"
+PATH_TO_YOUR_BASE_MODEL="/data/puyuan/LightRFT/model/Qwen2.5-0.5B-Instruct/7ae557604adf67be50417f59c2c2f167def9a775"
 
 # Path to the preprocessed GSM8K dataset.
 PATH_TO_YOUR_GSM8K_DATASET="/data/puyuan/LightRFT/data/gsm8k"

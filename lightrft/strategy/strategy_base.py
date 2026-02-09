@@ -227,7 +227,11 @@ class StrategyBase(ABC):
         else:
             # Initializes the distributed backend which will take care of sychronizing nodes/GPUs
             if self.config.engine_type in ("vllm", "sglang"):
-                deepspeed.init_distributed(dist_backend="nccl", timeout=timeout)
+                # Auto-detect backend for DeepSpeed initialization
+                from lightrft.strategy.utils.distributed_util import get_distributed_backend
+                detected_backend = get_distributed_backend()
+                self.print(f"DeepSpeed: Using auto-detected backend: {detected_backend}")
+                deepspeed.init_distributed(dist_backend=detected_backend, timeout=timeout)
             else:
                 raise ValueError(f"Unsupported backend: {self.config.engine_type}")
 
@@ -246,8 +250,11 @@ class StrategyBase(ABC):
         if self.config.sp_size > 1:
             assert self.world_size % self.config.sp_size == 0, "sp_size should be even divided by world size."
             dp_size = self.world_size // self.config.sp_size
+            # Auto-detect device type for sequence parallel mesh
+            accelerator_type = os.environ.get("ACCELERATOR_TYPE", "gpu").lower()
+            device_type_sp = "npu" if accelerator_type == "npu" else "cuda"
             self.sp_mesh_device = init_device_mesh(
-                "cuda", mesh_shape=(dp_size, self.config.sp_size), mesh_dim_names=["dp", "sp"]
+                device_type_sp, mesh_shape=(dp_size, self.config.sp_size), mesh_dim_names=["dp", "sp"]
             )
             set_sequence_parallel_group(self.sp_mesh_device["sp"].get_group())
             self.print(
