@@ -359,7 +359,7 @@
 <tr class="row-even"><td><p><strong>FIRE Sampling</strong></p></td>
 <td><p>采样策略</p></td>
 <td><p>经验生成</p></td>
-<td><p>通过过滤和排序策略修改样本生成过程</p></td>
+<td><p>第一个 token 使用高温度采样，剩余 tokens 使用常规温度，以提高多样性</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">FastExperienceMaker.generate_samples()</span></code></p></td>
 <td><p><a class="reference external" href="https://arxiv.org/abs/2410.21236">arXiv:2410.21236</a></p></td>
 </tr>
@@ -695,27 +695,38 @@
 <h2>采样策略<a class="headerlink" href="#id12" title="Permalink to this heading">¶</a></h2>
 <section id="fire-sampling">
 <h3>FIRE Sampling<a class="headerlink" href="#fire-sampling" title="Permalink to this heading">¶</a></h3>
-<p><strong>概述</strong>：FIRE（过滤和改进奖励估计）结合过滤和排序策略以实现更好的样本选择。</p>
+<p><strong>概述</strong>：FIRE（Flaming-hot Initiation with Regular Execution，炽热初始化与常规执行）是一种简单而有效的采样方法，可提高响应生成的多样性和质量。</p>
+<p><strong>论文</strong>：<a class="reference external" href="https://arxiv.org/abs/2410.21236">arXiv:2410.21236</a></p>
 <p><strong>实现位置</strong>：<code class="docutils literal notranslate"><span class="pre">FastExperienceMaker.generate_samples()</span></code> - 经验生成模块
 <strong>修改类型</strong>：采样策略</p>
+<p><strong>核心机制</strong>：
+根据论文，FIRE 采样通过以下方式工作：</p>
+<ol class="arabic simple">
+<li><p>使用非常高的温度（例如 10.0）采样<strong>第一个 token</strong> - “炽热初始化”</p></li>
+<li><p>使用常规温度（例如 0.7 或 1.0）采样<strong>剩余 tokens</strong></p></li>
+<li><p><strong>重要</strong>：所有其他采样参数（top_k、top_p、min_p）在第一个 token 和剩余 tokens 之间保持完全相同</p></li>
+</ol>
+<p>这种方法在生成开始时促进多样性，同时保持连贯的续写，从而提高 pass&#64;n 率并实现更有效的训练。</p>
 <p><strong>核心特性</strong>：</p>
 <ul class="simple">
-<li><p>多阶段过滤</p></li>
-<li><p>基于奖励的排序</p></li>
-<li><p>样本效率</p></li>
+<li><p>通过高温度第一个 token 增加多样性</p></li>
+<li><p>更好的 pass&#64;n 性能（在 N 次尝试内的成功率提高）</p></li>
+<li><p>无额外计算成本</p></li>
+<li><p>同时有益于推理和训练阶段</p></li>
 </ul>
 <p><strong>使用方法</strong>：</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>train.py<span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--use_fire_sampling<span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--fire_filter_ratio<span class="w"> </span><span class="m">0</span>.5<span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--fire_rank_method<span class="w"> </span>reward
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>examples/gsm8k_geo3k/train_colocate.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--use_fire<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--first_token_temperature<span class="w"> </span><span class="m">10</span>.0<span class="w"> </span><span class="se">\</span>
 </pre></div>
 </div>
 <p><strong>最适合</strong>：</p>
 <ul class="simple">
-<li><p>有限计算预算</p></li>
-<li><p>高质量数据生成</p></li>
+<li><p>数学推理任务</p></li>
+<li><p>代码生成</p></li>
+<li><p>具有可验证正确性的任务（沙箱检查器）</p></li>
 <li><p>Best-of-N 采样场景</p></li>
+<li><p>初始推理路径多样性有益的场景</p></li>
 </ul>
 </section>
 </section>

@@ -19,7 +19,7 @@ With the rapid development in the RFT field and emerging algorithmic innovations
 | **GSPO** | Policy Optimization | Policy Loss | Group sequence policy optimization | `PolicyLoss.forward()` | [arXiv:2507.18071](https://arxiv.org/abs/2507.18071) |
 | **REINFORCE++** | Advantage Estimation | Advantage Estimation | Modifies return and advantage calculation with improved baseline estimation | `FastExperienceMaker._get_return_advs()` | [arXiv:2501.03262](https://arxiv.org/abs/2501.03262) |
 | **CPGD** | Advantage Estimation | Advantage Estimation | Adds KL-based drift constraint and clipped log-ratio for stable return/advantage computation | `FastExperienceMaker._get_return_advs()` | [arXiv:2505.12504](https://arxiv.org/abs/2505.12504) |
-| **FIRE Sampling** | Sampling Strategy | Experience Generation | Modifies sample generation process with filtering and ranking strategies | `FastExperienceMaker.generate_samples()` | [arXiv:2410.21236](https://arxiv.org/abs/2410.21236) |
+| **FIRE Sampling** | Sampling Strategy | Experience Generation | Samples first token with high temperature and remaining tokens with regular temperature to improve diversity | `FastExperienceMaker.generate_samples()` | [arXiv:2410.21236](https://arxiv.org/abs/2410.21236) |
 | **GMPO** | Policy Optimization | Policy Loss | Geometric-Mean Policy Optimization | `PolicyLoss.forward()` | [arXiv:2507.20673](https://arxiv.org/abs/2507.20673) |
 | **Dr.GRPO** | Policy Optimization | Policy Loss | Introduces an unbiased policy optimization to mitigate length bias and improve token efficiency | `PolicyLoss.forward()` | [arXiv:2503.20783](https://arxiv.org/abs/2503.20783) |
 | **DAPO** | Policy Optimization | Policy Loss | Introduces decoupled clipping and dynamic sampling scheme to stabilize large-scale RL optimization | `PolicyLoss.forward()` | [arXiv:2503.14476](https://arxiv.org/abs/2503.14476) |
@@ -302,28 +302,40 @@ python train.py \
 
 #### FIRE Sampling
 
-**Overview**: FIRE (Filtered and Improved Reward Estimation) combines filtering and ranking strategies for better sample selection.
+**Overview**: FIRE (Flaming-hot Initiation with Regular Execution) is a simple yet effective sampling method that improves diversity and quality in response generation.
+
+**Paper**: [arXiv:2410.21236](https://arxiv.org/abs/2410.21236)
 
 **Implementation**: `FastExperienceMaker.generate_samples()` - Experience Generation module
 **Modification Type**: Sampling Strategy
 
+**Key Mechanism**:
+According to the paper, FIRE sampling works by:
+1. Sampling the **first token** with a very high temperature (e.g., 10.0) - "flaming-hot initiation"
+2. Sampling **remaining tokens** with regular temperature (e.g., 0.7 or 1.0)
+3. **Important**: All other sampling parameters (top_k, top_p, min_p) remain identical between first token and remaining tokens
+
+This approach promotes diversity at the beginning of generation while maintaining coherent continuation, leading to improved pass@n rates and more effective training.
+
 **Key Features**:
-- Multi-stage filtering
-- Reward-based ranking
-- Sample efficiency
+- Increased diversity through high-temperature first token
+- Better pass@n performance (improved success rate within N trials)
+- No additional computational cost
+- Benefits both inference and training stages
 
 **Usage**:
 ```bash
-python train.py \
-    --use_fire_sampling \
-    --fire_filter_ratio 0.5 \
-    --fire_rank_method reward
+python examples/gsm8k_geo3k/train_colocate.py \
+    --use_fire \
+    --first_token_temperature 10.0 \
 ```
 
 **Best For**:
-- Limited computational budgets
-- High-quality data generation
+- Mathematical reasoning tasks
+- Code generation
+- Tasks with verifiable correctness (sandbox checkers)
 - Best-of-N sampling scenarios
+- When diversity in initial reasoning paths is beneficial
 
 
 

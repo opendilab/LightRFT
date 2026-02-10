@@ -363,7 +363,7 @@
 <tr class="row-even"><td><p><strong>FIRE Sampling</strong></p></td>
 <td><p>Sampling Strategy</p></td>
 <td><p>Experience Generation</p></td>
-<td><p>Modifies sample generation process with filtering and ranking strategies</p></td>
+<td><p>Samples first token with high temperature and remaining tokens with regular temperature to improve diversity</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">FastExperienceMaker.generate_samples()</span></code></p></td>
 <td><p><a class="reference external" href="https://arxiv.org/abs/2410.21236">arXiv:2410.21236</a></p></td>
 </tr>
@@ -699,27 +699,38 @@
 <h2>Sampling Strategies<a class="headerlink" href="#sampling-strategies" title="Permalink to this heading">¶</a></h2>
 <section id="fire-sampling">
 <h3>FIRE Sampling<a class="headerlink" href="#fire-sampling" title="Permalink to this heading">¶</a></h3>
-<p><strong>Overview</strong>: FIRE (Filtered and Improved Reward Estimation) combines filtering and ranking strategies for better sample selection.</p>
+<p><strong>Overview</strong>: FIRE (Flaming-hot Initiation with Regular Execution) is a simple yet effective sampling method that improves diversity and quality in response generation.</p>
+<p><strong>Paper</strong>: <a class="reference external" href="https://arxiv.org/abs/2410.21236">arXiv:2410.21236</a></p>
 <p><strong>Implementation</strong>: <code class="docutils literal notranslate"><span class="pre">FastExperienceMaker.generate_samples()</span></code> - Experience Generation module
 <strong>Modification Type</strong>: Sampling Strategy</p>
+<p><strong>Key Mechanism</strong>:
+According to the paper, FIRE sampling works by:</p>
+<ol class="arabic simple">
+<li><p>Sampling the <strong>first token</strong> with a very high temperature (e.g., 10.0) - “flaming-hot initiation”</p></li>
+<li><p>Sampling <strong>remaining tokens</strong> with regular temperature (e.g., 0.7 or 1.0)</p></li>
+<li><p><strong>Important</strong>: All other sampling parameters (top_k, top_p, min_p) remain identical between first token and remaining tokens</p></li>
+</ol>
+<p>This approach promotes diversity at the beginning of generation while maintaining coherent continuation, leading to improved pass&#64;n rates and more effective training.</p>
 <p><strong>Key Features</strong>:</p>
 <ul class="simple">
-<li><p>Multi-stage filtering</p></li>
-<li><p>Reward-based ranking</p></li>
-<li><p>Sample efficiency</p></li>
+<li><p>Increased diversity through high-temperature first token</p></li>
+<li><p>Better pass&#64;n performance (improved success rate within N trials)</p></li>
+<li><p>No additional computational cost</p></li>
+<li><p>Benefits both inference and training stages</p></li>
 </ul>
 <p><strong>Usage</strong>:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>train.py<span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--use_fire_sampling<span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--fire_filter_ratio<span class="w"> </span><span class="m">0</span>.5<span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--fire_rank_method<span class="w"> </span>reward
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>examples/gsm8k_geo3k/train_colocate.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--use_fire<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--first_token_temperature<span class="w"> </span><span class="m">10</span>.0<span class="w"> </span><span class="se">\</span>
 </pre></div>
 </div>
 <p><strong>Best For</strong>:</p>
 <ul class="simple">
-<li><p>Limited computational budgets</p></li>
-<li><p>High-quality data generation</p></li>
+<li><p>Mathematical reasoning tasks</p></li>
+<li><p>Code generation</p></li>
+<li><p>Tasks with verifiable correctness (sandbox checkers)</p></li>
 <li><p>Best-of-N sampling scenarios</p></li>
+<li><p>When diversity in initial reasoning paths is beneficial</p></li>
 </ul>
 </section>
 </section>

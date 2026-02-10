@@ -19,7 +19,7 @@ LightRFT 支持丰富的强化学习算法生态系统，用于大语言模型�
 | **GSPO** | 策略优化 | 策略损失 | 序列视角的策略优化方案 | `PolicyLoss.forward()` | [arXiv:2507.18071](https://arxiv.org/abs/2507.18071) |
 | **REINFORCE++** | 优势估计 | 优势估计 | 通过改进的基线估计修改回报和优势计算 | `FastExperienceMaker._get_return_advs()` | [arXiv:2501.03262](https://arxiv.org/abs/2501.03262) |
 | **CPGD** | 优势估计 | 优势估计 | 添加基于 KL 的漂移约束和裁剪对数比率以实现稳定的回报/优势计算 | `FastExperienceMaker._get_return_advs()` | [arXiv:2505.12504](https://arxiv.org/abs/2505.12504) |
-| **FIRE Sampling** | 采样策略 | 经验生成 | 通过过滤和排序策略修改样本生成过程 | `FastExperienceMaker.generate_samples()` | [arXiv:2410.21236](https://arxiv.org/abs/2410.21236) |
+| **FIRE Sampling** | 采样策略 | 经验生成 | 第一个 token 使用高温度采样，剩余 tokens 使用常规温度，以提高多样性 | `FastExperienceMaker.generate_samples()` | [arXiv:2410.21236](https://arxiv.org/abs/2410.21236) |
 | **GMPO** | 策略优化 | 策略损失 | 通过几何平均策略优化修改策略损失 | `PolicyLoss.forward()` | [arXiv:2507.20673](https://arxiv.org/abs/2507.20673) |
 | **Dr.GRPO** | 策略优化 | 策略损失 | 引入无偏策略优化以缓解长度偏差并提高 token 效率 | `PolicyLoss.forward()` | [arXiv:2503.20783](https://arxiv.org/abs/2503.20783) |
 | **DAPO** | 策略优化 | 策略损失 | 引入解耦裁剪和动态采样方案以稳定大规模 RL 优化 | `PolicyLoss.forward()` | [arXiv:2503.14476](https://arxiv.org/abs/2503.14476) |
@@ -302,28 +302,40 @@ python train.py \
 
 #### FIRE Sampling
 
-**概述**：FIRE（过滤和改进奖励估计）结合过滤和排序策略以实现更好的样本选择。
+**概述**：FIRE（Flaming-hot Initiation with Regular Execution，炽热初始化与常规执行）是一种简单而有效的采样方法，可提高响应生成的多样性和质量。
+
+**论文**：[arXiv:2410.21236](https://arxiv.org/abs/2410.21236)
 
 **实现位置**：`FastExperienceMaker.generate_samples()` - 经验生成模块
 **修改类型**：采样策略
 
+**核心机制**：
+根据论文，FIRE 采样通过以下方式工作：
+1. 使用非常高的温度（例如 10.0）采样**第一个 token** - "炽热初始化"
+2. 使用常规温度（例如 0.7 或 1.0）采样**剩余 tokens**
+3. **重要**：所有其他采样参数（top_k、top_p、min_p）在第一个 token 和剩余 tokens 之间保持完全相同
+
+这种方法在生成开始时促进多样性，同时保持连贯的续写，从而提高 pass@n 率并实现更有效的训练。
+
 **核心特性**：
-- 多阶段过滤
-- 基于奖励的排序
-- 样本效率
+- 通过高温度第一个 token 增加多样性
+- 更好的 pass@n 性能（在 N 次尝试内的成功率提高）
+- 无额外计算成本
+- 同时有益于推理和训练阶段
 
 **使用方法**：
 ```bash
-python train.py \
-    --use_fire_sampling \
-    --fire_filter_ratio 0.5 \
-    --fire_rank_method reward
+python examples/gsm8k_geo3k/train_colocate.py \
+    --use_fire \
+    --first_token_temperature 10.0 \
 ```
 
 **最适合**：
-- 有限计算预算
-- 高质量数据生成
+- 数学推理任务
+- 代码生成
+- 具有可验证正确性的任务（沙箱检查器）
 - Best-of-N 采样场景
+- 初始推理路径多样性有益的场景
 
 
 

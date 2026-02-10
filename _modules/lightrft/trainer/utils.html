@@ -346,8 +346,15 @@
 <span class="sd">    FIRE sampling (Flaming-hot Initiation with Regular Execution)</span>
 
 <span class="sd">    FIRE sampling paper link: https://arxiv.org/abs/2410.21236</span>
-<span class="sd">    The first token is generated with high temperature and optional filters,</span>
-<span class="sd">    and the rest tokens are generated with normal temperature.</span>
+
+<span class="sd">    According to the paper, FIRE sampling:</span>
+<span class="sd">    1. Samples the FIRST token at a very high temperature (&quot;flaming-hot initiation&quot;)</span>
+<span class="sd">    2. Proceeds with regular temperature for remaining tokens</span>
+<span class="sd">    3. IMPORTANT: top_k, top_p, min_p, and other sampling parameters remain THE SAME</span>
+<span class="sd">       for both first token and remaining tokens. Only temperature changes.</span>
+
+<span class="sd">    This implementation follows the paper&#39;s design: we only modify temperature between</span>
+<span class="sd">    the first token and remaining tokens, keeping all other sampling parameters identical.</span>
 
 <span class="sd">    :param all_prompt_token_ids: List of tokenized prompts</span>
 <span class="sd">    :type all_prompt_token_ids: List[List[int]]</span>
@@ -355,13 +362,13 @@
 <span class="sd">    :type generate_fn: Callable</span>
 <span class="sd">    :param engine_type: Backend type (&quot;vllm&quot; or &quot;sglang&quot;)</span>
 <span class="sd">    :type engine_type: str</span>
-<span class="sd">    :param first_token_temperature: Temperature for first token generation</span>
+<span class="sd">    :param first_token_temperature: Temperature for first token generation (default: 10.0)</span>
 <span class="sd">    :type first_token_temperature: float</span>
 <span class="sd">    :param temperature: Temperature for remaining tokens</span>
 <span class="sd">    :type temperature: float</span>
-<span class="sd">    :param first_token_top_k: Top-k for first token</span>
+<span class="sd">    :param first_token_top_k: DEPRECATED - kept for backward compatibility, will be ignored</span>
 <span class="sd">    :type first_token_top_k: int</span>
-<span class="sd">    :param first_token_top_p: Top-p for first token</span>
+<span class="sd">    :param first_token_top_p: DEPRECATED - kept for backward compatibility, will be ignored</span>
 <span class="sd">    :type first_token_top_p: float</span>
 <span class="sd">    :param is_multimodal: Whether this is multimodal generation</span>
 <span class="sd">    :type is_multimodal: bool</span>
@@ -371,24 +378,28 @@
 <span class="sd">    :type all_images: Optional[List]</span>
 <span class="sd">    :param all_images_num: Number of images per prompt</span>
 <span class="sd">    :type all_images_num: Optional[List[int]]</span>
-<span class="sd">    :param sampling_params: Original sampling parameters (for fallback)</span>
+<span class="sd">    :param all_videos: Videos (for multimodal)</span>
+<span class="sd">    :type all_videos: Optional[List]</span>
+<span class="sd">    :param all_videos_num: Number of videos per prompt</span>
+<span class="sd">    :type all_videos_num: Optional[List[int]]</span>
+<span class="sd">    :param sampling_params: Original sampling parameters</span>
 <span class="sd">    :type sampling_params: Optional[Union[dict, object]]</span>
 
 <span class="sd">    :return: List of generation outputs</span>
 <span class="sd">    :rtype: List</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Step 1: Generate the first token with high temperature</span>
+    <span class="c1"># According to the paper, ONLY temperature changes for the first token.</span>
+    <span class="c1"># All other parameters (top_k, top_p, min_p, etc.) remain the same.</span>
     <span class="k">if</span> <span class="n">engine_type</span> <span class="o">==</span> <span class="s2">&quot;vllm&quot;</span><span class="p">:</span>
         <span class="n">sampling_params_first</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">sampling_params</span><span class="p">)</span>
         <span class="n">sampling_params_first</span><span class="o">.</span><span class="n">temperature</span> <span class="o">=</span> <span class="n">first_token_temperature</span>
-        <span class="n">sampling_params_first</span><span class="o">.</span><span class="n">top_k</span> <span class="o">=</span> <span class="n">first_token_top_k</span>
-        <span class="n">sampling_params_first</span><span class="o">.</span><span class="n">top_p</span> <span class="o">=</span> <span class="n">first_token_top_p</span>
+        <span class="c1"># Keep top_k and top_p from original sampling_params (do NOT override)</span>
         <span class="n">sampling_params_first</span><span class="o">.</span><span class="n">max_tokens</span> <span class="o">=</span> <span class="mi">1</span>
     <span class="k">else</span><span class="p">:</span>  <span class="c1"># sglang</span>
         <span class="n">sampling_params_first</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">sampling_params</span><span class="p">)</span>
         <span class="n">sampling_params_first</span><span class="p">[</span><span class="s2">&quot;temperature&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">first_token_temperature</span>
-        <span class="n">sampling_params_first</span><span class="p">[</span><span class="s2">&quot;top_k&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">first_token_top_k</span>
-        <span class="n">sampling_params_first</span><span class="p">[</span><span class="s2">&quot;top_p&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">first_token_top_p</span>
+        <span class="c1"># Keep top_k and top_p from original sampling_params (do NOT override)</span>
         <span class="n">sampling_params_first</span><span class="p">[</span><span class="s2">&quot;max_new_tokens&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
 
     <span class="c1"># Generate first token</span>

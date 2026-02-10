@@ -1485,18 +1485,17 @@
         <span class="k">try</span><span class="p">:</span>
             <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">args</span><span class="p">,</span> <span class="s1">&#39;use_fire&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">use_fire</span><span class="p">:</span>
                 <span class="c1"># Use FIRE sampling (Flaming-hot Initiation with Regular Execution)</span>
+                <span class="c1"># According to the paper (https://arxiv.org/abs/2410.21236), FIRE only changes</span>
+                <span class="c1"># the temperature for the first token. All other sampling parameters (top_k, top_p, etc.)</span>
+                <span class="c1"># are kept the same between first token and remaining tokens.</span>
                 <span class="n">all_outputs</span> <span class="o">=</span> <span class="n">fire_sampling</span><span class="p">(</span>
                     <span class="n">all_prompt_token_ids</span><span class="o">=</span><span class="n">all_prompt_token_ids</span><span class="p">,</span>
                     <span class="n">generate_fn</span><span class="o">=</span><span class="n">generate_fn</span><span class="p">,</span>  <span class="c1"># noqa: TODO</span>
                     <span class="n">engine_type</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">engine_type</span><span class="p">,</span>
                     <span class="n">first_token_temperature</span><span class="o">=</span><span class="n">generate_kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;first_token_temperature&quot;</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">),</span>
                     <span class="n">temperature</span><span class="o">=</span><span class="n">generate_kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;temperature&quot;</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span>
-                    <span class="n">first_token_top_k</span><span class="o">=</span><span class="n">generate_kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
-                        <span class="s2">&quot;first_token_top_k&quot;</span><span class="p">,</span> <span class="n">sampling_params</span><span class="o">.</span><span class="n">top_k</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">sampling_params</span><span class="p">,</span> <span class="s1">&#39;top_k&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="o">-</span><span class="mi">1</span>
-                    <span class="p">),</span>
-                    <span class="n">first_token_top_p</span><span class="o">=</span><span class="n">generate_kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
-                        <span class="s2">&quot;first_token_top_p&quot;</span><span class="p">,</span> <span class="n">sampling_params</span><span class="o">.</span><span class="n">top_p</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">sampling_params</span><span class="p">,</span> <span class="s1">&#39;top_p&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="mf">1.0</span>
-                    <span class="p">),</span>
+                    <span class="c1"># Note: first_token_top_k and first_token_top_p are deprecated and ignored</span>
+                    <span class="c1"># The function will use top_k and top_p from sampling_params for both stages</span>
                     <span class="n">is_multimodal</span><span class="o">=</span><span class="n">is_multimodal</span><span class="p">,</span>
                     <span class="n">all_prompts</span><span class="o">=</span><span class="n">all_prompts</span><span class="p">,</span>
                     <span class="n">all_images</span><span class="o">=</span><span class="n">all_images</span><span class="p">,</span>
