@@ -7,6 +7,7 @@ inference scenarios where model weights need to be synchronized across multiple 
 """
 
 import torch
+from lightrft.utils.utils import empty_cache as device_empty_cache
 # vLLM version compatibility notes:
 # --------------------------------
 # In older versions of vLLM (< 0.13.0), the Worker class is located under:
@@ -70,4 +71,4 @@ class WorkerWrap(Worker):
         del weight
         # TODO: should we empty cache if all weights have updated?
         if empty_cache:
-            torch.cuda.empty_cache()
+            device_empty_cache()

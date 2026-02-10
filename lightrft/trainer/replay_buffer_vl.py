@@ -1,6 +1,8 @@
 from typing import List
 from abc import ABC
 
+from lightrft.utils.utils import get_current_device
+
 import random
 import torch
 
@@ -32,7 +34,7 @@ class NaiveReplayBufferVL(ABC):
         self.limit = limit
         self.cpu_offload = cpu_offload
         self.packing_samples = packing_samples
-        self.target_device = torch.device(f"cuda:{torch.cuda.current_device()}")
+        self.target_device = get_current_device()
         self.items: List[BufferItemVL] = []
 
     @torch.no_grad()

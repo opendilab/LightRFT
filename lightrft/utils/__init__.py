@@ -12,7 +12,10 @@ from .distributed_sampler import DistributedSampler
 from .processor import get_processor, reward_normalization
 from .utils import (
     blending_datasets, get_tokenizer, get_tokenizer_processor_vl, print_rank_0, get_current_device, get_torch_profiler,
-    ensure_video_input_available, all_gather_and_flatten, all_reduce_dict
+    ensure_video_input_available, all_gather_and_flatten, all_reduce_dict,
+    # Device compatibility functions
+    is_accelerator_available, device_synchronize, empty_cache, mem_get_info,
+    memory_allocated, memory_summary, set_device, manual_seed_all
 )
 
 from .cli_args import add_arguments
@@ -42,6 +45,15 @@ __all__ = [
     "ensure_video_input_available",
     "all_gather_and_flatten",
     "all_reduce_dict",
+    # Device compatibility
+    "is_accelerator_available",
+    "device_synchronize",
+    "empty_cache",
+    "mem_get_info",
+    "memory_allocated",
+    "memory_summary",
+    "set_device",
+    "manual_seed_all",
 
     # cli_args
     "add_arguments",

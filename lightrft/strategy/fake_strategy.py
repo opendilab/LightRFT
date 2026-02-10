@@ -15,6 +15,7 @@ from typing import List, Tuple, Union
 from contextlib import contextmanager
 
 from lightrft.strategy import StrategyConfig, StrategyBase
+from lightrft.utils.utils import get_current_device, is_accelerator_available, set_device as device_set_device
 
 ModelOptimPair = Tuple[nn.Module, Optimizer]
 ModelOrModelOptimPair = Union[nn.Module, ModelOptimPair]
@@ -78,8 +79,8 @@ class FakeStrategy(StrategyBase):
                 self.args.local_rank = 0
 
         # Set device
-        if torch.cuda.is_available():
-            torch.cuda.set_device(0)
+        if is_accelerator_available():
+            device_set_device(0)
 
         self.world_size = 1
         self.print("FakeStrategy: Running in single process mode")
@@ -381,18 +382,33 @@ class FakeStrategy(StrategyBase):
         """
         return optimizer
 
-    def maybe_load_optimizer(self, optimizer, device=torch.cuda.current_device()):
+    def maybe_load_optimizer(self, optimizer, device=None):
         """
         Fake optimizer loading - returns optimizer unchanged.
 
         :param optimizer: The optimizer to potentially load
         :type optimizer: torch.optim.Optimizer
-        :param device: Target device for loading (ignored)
-        :type device: torch.device
+        :param device: Target device for loading (ignored in fake strategy, None for auto-detect)
+        :type device: torch.device or None
 
         :return: The original optimizer
         :rtype: torch.optim.Optimizer
         """
+        # Auto-detect device if needed (though not used in fake strategy)
+        if device is None:
+            import os
+            accelerator_type = os.environ.get("ACCELERATOR_TYPE", "gpu").lower()
+            if accelerator_type == "npu":
+                try:
+                    import torch_npu
+                    device = torch.npu.current_device()
+                except ImportError:
+                    device = 0
+            else:
+                try:
+                    device = get_current_device()
+                except (RuntimeError, AssertionError):
+                    device = 0
         return optimizer
 
 

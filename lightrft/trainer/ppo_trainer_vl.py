@@ -16,6 +16,8 @@ from lightrft.models.actor_modality import ActorModality, get_supported_paramete
 from lightrft.models.utils import masked_mean, unpacking_samples, compute_approx_kl
 from lightrft.utils.distributed_sampler import DistributedSampler
 from lightrft.trainer import AdaptiveKLController, ExperienceVL, FixedKLController, NaiveExperienceMakerVL, NaiveReplayBufferVL  # noqa
+from lightrft.utils.utils import get_current_device
+from lightrft.utils import empty_cache, device_synchronize
 
 
 class PPOTrainerVL(ABC):
@@ -432,7 +434,7 @@ class PPOTrainerVL(ABC):
                             all_response_lengths.append(item.info['response_length'])
 
                     # Compute rollout statistics
-                    device = torch.cuda.current_device()
+                    device = get_current_device()
 
                     if all_rewards:
                         # [TENSOR-FIX] Handle both tensor lists and scalar lists
@@ -530,7 +532,7 @@ class PPOTrainerVL(ABC):
         :return: Dictionary of averaged training statistics.
         :rtype: dict
         """
-        torch.cuda.empty_cache()
+        empty_cache()
         # Replay buffer may be empty at first, we should rebuild at each training
         dataloader = DataLoader(
             self.replay_buffer,
@@ -540,7 +542,7 @@ class PPOTrainerVL(ABC):
             pin_memory=self.dataloader_pin_memory,
             collate_fn=self.replay_buffer.collate_fn,
         )
-        device = torch.cuda.current_device()
+        device = get_current_device()
 
         status_list = []
         status_mean = {}
@@ -599,7 +601,7 @@ class PPOTrainerVL(ABC):
                     status_mean[k] += v
             for k in status_mean.keys():
                 status_mean[k] /= len(status_list)
-        torch.cuda.empty_cache()
+        empty_cache()
         return status_mean
 
     def training_step(self,
@@ -811,15 +813,15 @@ class PPOTrainerVL(ABC):
         # PTX loss for supervised fine-tuning
         if self.pretrain_dataloader is not None:
             data = next(self.pretrain_dataloader)
-            inputs = data[1].squeeze(1).to(torch.cuda.current_device())
-            attention_mask = data[2].squeeze(1).to(torch.cuda.current_device())
+            inputs = data[1].squeeze(1).to(get_current_device())
+            attention_mask = data[2].squeeze(1).to(get_current_device())
             label = torch.where(
                 attention_mask.bool(),
                 inputs,
                 self.ptx_loss_fn.IGNORE_INDEX,
             )
-            pixel_values = data[3].to(torch.cuda.current_device())
-            image_grid_thws = data[4].to(torch.cuda.current_device())
+            pixel_values = data[3].to(get_current_device())
+            image_grid_thws = data[4].to(get_current_device())
 
             output = self.actor(
                 inputs,
@@ -912,7 +914,7 @@ class PPOTrainerVL(ABC):
         self.critic.train()
 
         # Layer 1: Get current GPU device
-        device = torch.cuda.current_device()
+        device = get_current_device()
 
         # Layer 2: Helper function for robust device placement
         def ensure_device_and_contiguous(tensor, name="tensor"):
@@ -1237,7 +1239,7 @@ class PPOTrainerVL(ABC):
 
         # Compute statistics
         metrics = {}
-        device = torch.cuda.current_device()
+        device = get_current_device()
 
         def compute_stats(name, values_list):
             if not values_list:

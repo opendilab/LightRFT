@@ -26,10 +26,29 @@ Example::
     Timer.step()
 """
 
+import os
 import time
 from collections import defaultdict
 
 import torch
+
+
+def _device_synchronize():
+    """
+    Device-agnostic synchronization helper for Timer.
+    Synchronizes CUDA or NPU devices if available.
+    """
+    accelerator_type = os.environ.get("ACCELERATOR_TYPE", "gpu").lower()
+
+    if accelerator_type == "npu":
+        try:
+            import torch_npu
+            torch_npu.npu.synchronize()
+        except (ImportError, AttributeError):
+            pass
+    else:
+        if torch.cuda.is_available():
+            torch.cuda.synchronize()
 
 
 class Timer:
@@ -101,8 +120,7 @@ class Timer:
         Without synchronization, GPU operations may be asynchronous and timing measurements
         could be inaccurate.
         """
-        if torch.cuda.is_available():
-            torch.cuda.synchronize()
+        _device_synchronize()
 
     @classmethod
     def start(cls, name: str):

@@ -14,6 +14,8 @@ The main components are:
 from typing import List, Dict, Any, Optional
 import os
 
+from lightrft.utils.utils import get_current_device
+
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
@@ -251,7 +253,7 @@ def gather_all_lengths(local_lengths: List[int], group: dist.ProcessGroup) -> Li
         >>> all_lengths = gather_all_lengths(local_lengths, dist.group.WORLD)
         >>> # all_lengths now contains lengths from all processes
     """
-    local_lengths_tensor = torch.tensor(local_lengths, dtype=torch.int64, device=torch.cuda.current_device())
+    local_lengths_tensor = torch.tensor(local_lengths, dtype=torch.int64, device=get_current_device())
 
     world_size = dist.get_world_size(group=group)
 

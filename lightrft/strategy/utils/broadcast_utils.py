@@ -14,6 +14,7 @@ import torch
 from torch.distributed.tensor import DTensor
 
 from lightrft.utils import get_current_device
+from lightrft.utils.utils import empty_cache
 
 
 class BroadcastManager:
@@ -95,7 +96,7 @@ class BroadcastManager:
         :raises NotImplementedError: If an unsupported inference engine is specified
         """
         # avoid OOM
-        torch.cuda.empty_cache()
+        empty_cache()
         model = self.actor.model.module
         count, num_params = 0, len(list(model.named_parameters()))
         for name, param in model.named_parameters():

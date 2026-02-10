@@ -4,6 +4,7 @@ import torch
 
 from lightrft.utils import get_strategy
 from lightrft.models.actor_vl import ActorVL
+from lightrft.utils.utils import get_current_device
 
 
 class TestActorVL(unittest.TestCase):
@@ -69,7 +70,7 @@ class TestActorVL(unittest.TestCase):
             "pixel_values": pixel_values,
             "image_grid_thw": image_grid_thw,
         }
-        device = torch.cuda.current_device()
+        device = get_current_device()
         self.actor = self.actor.to(device)
         baseline_log_probs = []
         fused_linear_log_probs = []

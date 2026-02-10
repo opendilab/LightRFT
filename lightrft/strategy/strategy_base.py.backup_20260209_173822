@@ -38,35 +38,9 @@ from lightrft.strategy.utils.parallel_utils import (
     set_sequence_parallel_group,
 )
 from lightrft.strategy.utils.statistic import GenLenAnalyser
-from lightrft.utils import (
-    is_accelerator_available,
-    device_synchronize,
-    empty_cache,
-    mem_get_info,
-    memory_allocated,
-    memory_summary,
-    set_device as device_set_device,
-    manual_seed_all as device_manual_seed_all,
-)
-
-# Try to import sglang, but make it optional
-# This allows the code to run with vLLM-only (useful for NPU environments without sglang)
-try:
-    from .sglang_utils import get_sglang_engine_for_rollout
-    SGLANG_AVAILABLE = True
-except ImportError as e:
-    SGLANG_AVAILABLE = False
-    get_sglang_engine_for_rollout = None
-    import warnings
-    warnings.warn(
-        f"SGLang is not available: {e}. Only vLLM engine will be supported. "
-        f"To use sglang, please install it: pip install sglang",
-        ImportWarning
-    )
-
+from .sglang_utils import get_sglang_engine_for_rollout
 from .vllm_utils import get_vllm_engine_for_rollout
 from lightrft.strategy.config import StrategyConfig
-from lightrft.utils.utils import get_current_device
 
 ModelOptimPair = Tuple[nn.Module, Optimizer]
 ModelOrModelOptimPair = Union[nn.Module, ModelOptimPair]
@@ -168,7 +142,7 @@ class StrategyBase(ABC):
         random.seed(seed)
         np.random.seed(seed)
         torch.manual_seed(seed)
-        device_manual_seed_all(seed)
+        torch.cuda.manual_seed_all(seed)
 
     def setup_distributed(self, timeout: Optional[timedelta] = None, num_gpu_per_node: int = 8) -> None:
         """
@@ -189,7 +163,7 @@ class StrategyBase(ABC):
             rank = int(os.environ["RANK"])
             self.config.local_rank = rank % num_gpu_per_node
         if self.config.local_rank != -1:
-            device_set_device(self.config.local_rank)
+            torch.cuda.set_device(self.config.local_rank)
         self.engine_type = self.config.engine_type
 
         enable_fsdp = self.config.fsdp
@@ -218,7 +192,7 @@ class StrategyBase(ABC):
                     world_size=world_size,
                     # here we set both cpu and cuda as backend, because we need to support
                     # both gpu and cpu training (e.g. FSDP and FSDP with cpu offload)
-                    backend=("cpu:gloo,npu:hccl" if os.environ.get("ACCELERATOR_TYPE", "gpu").lower() == "npu" else "cpu:gloo,cuda:nccl"),
+                    backend="cpu:gloo,cuda:nccl",
                     init_method=init_method,
                     timeout=timeout,
                 )
@@ -227,11 +201,7 @@ class StrategyBase(ABC):
         else:
             # Initializes the distributed backend which will take care of sychronizing nodes/GPUs
             if self.config.engine_type in ("vllm", "sglang"):
-                # Auto-detect backend for DeepSpeed initialization
-                from lightrft.strategy.utils.distributed_util import get_distributed_backend
-                detected_backend = get_distributed_backend()
-                self.print(f"DeepSpeed: Using auto-detected backend: {detected_backend}")
-                deepspeed.init_distributed(dist_backend=detected_backend, timeout=timeout)
+                deepspeed.init_distributed(dist_backend="nccl", timeout=timeout)
             else:
                 raise ValueError(f"Unsupported backend: {self.config.engine_type}")
 
@@ -250,11 +220,8 @@ class StrategyBase(ABC):
         if self.config.sp_size > 1:
             assert self.world_size % self.config.sp_size == 0, "sp_size should be even divided by world size."
             dp_size = self.world_size // self.config.sp_size
-            # Auto-detect device type for sequence parallel mesh
-            accelerator_type = os.environ.get("ACCELERATOR_TYPE", "gpu").lower()
-            device_type_sp = "npu" if accelerator_type == "npu" else "cuda"
             self.sp_mesh_device = init_device_mesh(
-                device_type_sp, mesh_shape=(dp_size, self.config.sp_size), mesh_dim_names=["dp", "sp"]
+                "cuda", mesh_shape=(dp_size, self.config.sp_size), mesh_dim_names=["dp", "sp"]
             )
             set_sequence_parallel_group(self.sp_mesh_device["sp"].get_group())
             self.print(
@@ -462,7 +429,7 @@ class StrategyBase(ABC):
             is_cpu_tensor = data.device.type == "cpu"
 
             if is_cpu_tensor:
-                data = data.to(self._get_current_device())
+                data = data.to(torch.cuda.current_device())
             if op == "mean":
                 data /= self.world_size
             dist.all_reduce(data, op=dist.ReduceOp.MAX if op == "max" else dist.ReduceOp.SUM)
@@ -491,8 +458,8 @@ class StrategyBase(ABC):
                 data = torch.Tensor([data])
             is_cpu_tensor = data.device.type == "cpu"
 
-            ret = [torch.zeros_like(data).to(self._get_current_device()) for _ in range(self.world_size)]
-            dist.all_gather(ret, data.to(self._get_current_device()))
+            ret = [torch.zeros_like(data).to(torch.cuda.current_device()) for _ in range(self.world_size)]
+            dist.all_gather(ret, data.to(torch.cuda.current_device()))
             return torch.cat(ret).cpu() if is_cpu_tensor else torch.cat(ret)
 
     @classmethod
@@ -679,12 +646,12 @@ class StrategyBase(ABC):
         :param prefix: Prefix string for the memory report
         :type prefix: str
         """
-        usable, total = mem_get_info()
+        usable, total = torch.cuda.mem_get_info()
         used = round((total - usable) / 1e9, 2)
         if torch.distributed.get_rank() == 0:
             print(
                 f"MEMORY STATUS: {prefix}, DRIVER_USED={used} GB, "
-                f"ALLOCATED={memory_allocated() / 1e9:.2f} GB"
+                f"ALLOCATED={torch.cuda.memory_allocated() / 1e9:.2f} GB"
             )
 
     def setup_inference_engine(self, args, engine_type="vllm", actor=None):
@@ -708,12 +675,6 @@ class StrategyBase(ABC):
             self.inference_engine = get_vllm_engine_for_rollout(args)
             self.inference_engine_status = EngineStatus.WAKEUP
         elif engine_type == "sglang":
-            if not SGLANG_AVAILABLE:
-                raise ImportError(
-                    "SGLang is not available. Please install sglang or use vllm engine instead.\n"
-                    "  - To install sglang: pip install sglang\n"
-                    "  - To use vllm: add '--engine_type vllm' to your training command"
-                )
             self.inference_engine = get_sglang_engine_for_rollout(args)
             self.inference_engine_status = EngineStatus.WAKEUP
         else:
@@ -1079,9 +1040,9 @@ class StrategyBase(ABC):
         2. Distributed barrier
         3. CUDA cache clearing
         """
-        device_synchronize()
+        torch.cuda.synchronize()
         torch.distributed.barrier()
-        empty_cache()
+        torch.cuda.empty_cache()
 
     @contextmanager
     def init_model_context(self):
@@ -1105,28 +1066,14 @@ class StrategyBase(ABC):
         """
         self.print("maybe_offload_optimizer not implemented and Skipped")
 
-    def maybe_load_optimizer(self, optimizer, device=None):  # pylint: disable=W0613
+    def maybe_load_optimizer(self, optimizer, device=torch.cuda.current_device()):  # pylint: disable=W0613
         """
         Placeholder for FSDP optimizer loading functionality.
         :param optimizer: The optimizer to potentially load
         :type optimizer: torch.optim.Optimizer
-        :param device: Target device for loading (None for auto-detect)
-        :type device: torch.device or None
+        :param device: Target device for loading
+        :type device: torch.device
         """
-        if device is None:
-            # Auto-detect device based on environment
-            accelerator_type = os.environ.get("ACCELERATOR_TYPE", "gpu").lower()
-            if accelerator_type == "npu":
-                try:
-                    import torch_npu
-                    device = torch.npu.current_device()
-                except ImportError:
-                    device = 0  # fallback
-            else:
-                try:
-                    device = get_current_device()
-                except (RuntimeError, AssertionError):
-                    device = 0  # fallback
         self.print("maybe_load_optimizer not implemented and Skipped")
 
 
