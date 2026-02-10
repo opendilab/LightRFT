@@ -1,4 +1,4 @@
-.. _installation_cn:
+.. _installation_zh:
 
 ==================================
 安装指南

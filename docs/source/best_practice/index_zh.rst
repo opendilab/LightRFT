@@ -1,4 +1,4 @@
-.. _best_practice_cn:
+.. _best_practice_zh:
 
 最佳实践
 ==============
@@ -9,7 +9,7 @@
    :maxdepth: 2
    :caption: 核心模块与概念
 
-   model
+   model_zh
    reward_model_zh
    strategy_zh
 
@@ -17,13 +17,13 @@
    :maxdepth: 2
    :caption: 设计理念
 
-   strategy_design_philosophy
+   strategy_design_philosophy_zh
 
 .. toctree::
    :maxdepth: 1
    :caption: 其他资源
 
-   model_testing
-   faq
-   troubleshooting
-   contributing
+   model_testing_zh
+   faq_zh
+   troubleshooting_zh
+   contributing_zh

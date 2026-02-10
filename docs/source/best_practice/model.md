@@ -10,6 +10,7 @@ The `lightrft/models` module provides a comprehensive framework for implementing
 The models package follows a modular design approach that separates concerns and promotes code reusability:
 
 - **Actor Base Classes**: Provide foundational functionality for different types of actors
+- **Reward Model Base Classes**: Provide foundational functionality for different types of reward models
 - **Utility Functions**: Common operations and helper functions shared across models
 - **Model Patches**: Specialized adaptations for specific model architectures
 
@@ -57,6 +58,17 @@ Built-in optimizations for efficient training and inference:
 - Separate class to handle the complexity of multi-modal inputs
 - Model-specific adaptations for different VL architectures
 - Flexible pixel value and grid dimension handling
+
+#### 3. Reward Models
+**Purpose**: Scalar or generative reward models for evaluating response quality
+
+**Key Classes**:
+- **ScalarRewardModelVL**: Scalar Reward Model (SRM) mapping multimodal inputs to scalar scores. Supports multiple reward heads and preference loss functions like Bradley-Terry.
+- **GenerativeRewardModelVL**: Generative Reward Model (GRM) leveraging generation capabilities to output text-based evaluations with reasoning (CoT).
+
+**Design Decisions**:
+- Shared infrastructure with Actors.
+- Support for both scalar-based (efficient, direct for PPO) and text-based reasoning feedback mechanisms.
 
 ### Utility Functions
 

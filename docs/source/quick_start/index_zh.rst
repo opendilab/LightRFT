@@ -1,4 +1,4 @@
-.. _quick_start_cn:
+.. _quick_start_zh:
 
 快速入门
 =================
@@ -9,11 +9,11 @@
    :maxdepth: 2
    :caption: 核心概念
 
-   project
+   project_zh
 
 .. toctree::
    :maxdepth: 2
    :caption: 用户指南
 
-   algorithms_cn
-   configuration
+   algorithms_zh
+   configuration_zh

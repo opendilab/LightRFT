@@ -73,12 +73,12 @@
 快速链接
 -----------
 
-* :ref:`installation_cn` - 安装指南
-* :doc:`quick_start/algorithms_cn` - 支持的算法
+* :ref:`installation_zh` - 安装指南
+* :doc:`quick_start/algorithms_zh` - 支持的算法
 * :doc:`best_practice/strategy_zh` - 策略使用指南
-* :doc:`quick_start/configuration` - 配置参数
-* :doc:`best_practice/faq` - 常见问题解答
-* :doc:`best_practice/troubleshooting` - 故障排除指南
+* :doc:`quick_start/configuration_zh` - 配置参数
+* :doc:`best_practice/faq_zh` - 常见问题解答
+* :doc:`best_practice/troubleshooting_zh` - 故障排除指南
 
 索引与表格
 ==================
