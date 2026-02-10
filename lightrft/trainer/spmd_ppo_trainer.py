@@ -231,7 +231,7 @@ class SPMDPPOTrainerBase:
                         sequences, pixel_values, context="pre_training_validation"
                     )
                     should_skip_local = not is_valid
-                
+
                 # Check for empty advantages (can happen when dynamic sampling filters all samples)
                 if not should_skip_local and hasattr(experience, 'advantages') and experience.advantages is not None:
                     if isinstance(experience.advantages, list):

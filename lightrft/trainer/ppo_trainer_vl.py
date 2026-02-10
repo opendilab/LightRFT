@@ -375,10 +375,10 @@ class PPOTrainerVL(ABC):
                 num_gen_batches = 0
                 target_num_prompts = args.rollout_batch_size
                 n_samples = args.n_samples_per_prompt
-                
+
                 while True:
                     num_gen_batches += 1
-                    
+
                     # Generate experiences for current batch
                     for i, experience in enumerate(
                         self.experience_maker.make_experience_list(
@@ -400,65 +400,35 @@ class PPOTrainerVL(ABC):
                             )
 
                         self.replay_buffer.append(experience)
-                    
+
                     # Check if dynamic sampling is enabled
                     if not self.strategy.config.dynamic_sampling:
                         # No dynamic sampling, exit after first batch
                         break
-                    
+
                     # Count valid prompts (groups with non-zero action masks after filtering)
                     # This check happens AFTER all experiences in the batch are generated
                     # Note: When micro_rollout_batch_size == n_samples_per_prompt, each experience
                     # contains all samples for one prompt. So we count experiences directly.
-                    total_experiences = len(self.replay_buffer.items)
                     num_valid_prompts = 0
-                    num_filtered_prompts = 0
-                    
-                    # Debug: Check experience structure
-                    if self.strategy.is_rank_0() and total_experiences > 0:
-                        first_exp = self.replay_buffer.items[0]
-                        if hasattr(first_exp, 'action_mask'):
-                            action_mask_shape = first_exp.action_mask.shape
-                            # Safely get reward shape
-                            reward_shape = "N/A"
-                            if hasattr(first_exp, 'info') and first_exp.info is not None:
-                                reward = first_exp.info.get("reward", None)
-                                if reward is not None:
-                                    if isinstance(reward, torch.Tensor):
-                                        reward_shape = reward.shape
-                                    else:
-                                        reward_shape = f"scalar({type(reward).__name__})"
-                            self.strategy.print(
-                                f"Debug: total_experiences={total_experiences}, "
-                                f"n_samples={n_samples}, "
-                                f"first_exp.action_mask.shape={action_mask_shape}, "
-                                f"first_exp.info['reward']={reward_shape}"
-                            )
-                    
-                    # Count valid prompts: each experience corresponds to one prompt
-                    # when micro_rollout_batch_size == n_samples_per_prompt
                     for exp in self.replay_buffer.items:
                         # Check if this experience has any valid actions (not all filtered)
                         if exp.action_mask.sum() > 0:
                             num_valid_prompts += 1
-                        else:
-                            num_filtered_prompts += 1
-                    
+
                     if self.strategy.is_rank_0():
                         self.strategy.print(
-                            f"Dynamic Sampling: total_experiences={total_experiences}, "
-                            f"num_valid_prompts={num_valid_prompts}, "
-                            f"num_filtered_prompts={num_filtered_prompts}, "
+                            f"Dynamic Sampling: num_valid_prompts={num_valid_prompts}, "
                             f"target={target_num_prompts}, num_gen_batches={num_gen_batches}"
                         )
-                    
+
                     # Check if we have enough valid prompts
                     if num_valid_prompts >= target_num_prompts:
                         # Trim to exact target size
                         target_num_experiences = target_num_prompts * n_samples
                         self.replay_buffer.items = self.replay_buffer.items[:target_num_experiences]
                         break
-                    
+
                     # Check if we've reached the maximum number of generation batches
                     max_num_gen_batches = self.strategy.config.max_num_gen_batches
                     if max_num_gen_batches > 0 and num_gen_batches >= max_num_gen_batches:
@@ -468,7 +438,7 @@ class PPOTrainerVL(ABC):
                                 f"with only {num_valid_prompts} valid prompts. Proceeding with available data."
                             )
                         break
-                    
+
                     # Need more samples, but current implementation only processes one batch
                     # In a full implementation, we would fetch the next batch from dataloader here
                     # For now, we proceed with what we have
@@ -803,7 +773,7 @@ class PPOTrainerVL(ABC):
                     "filters out all samples in a batch. Skipping this training step."
                 )
                 return {}  # Return empty status dict to skip this step
-            
+
             # Log max advantage before clipping for debugging (optional)
             max_adv = advantages.max().item()
             if max_adv > 10.0:

@@ -630,7 +630,7 @@ class GroupNormCalculator(BaseREINFORCECalculator):
     Normalizes rewards within each group and optionally filters degenerate cases
     using dynamic sampling strategy (DAPO).
 
-    Reference: 
+    Reference:
         - GRPO: https://arxiv.org/pdf/2402.03300
         - DAPO: https://arxiv.org/abs/2503.14476
     """
@@ -663,13 +663,13 @@ class GroupNormCalculator(BaseREINFORCECalculator):
         # Filter out groups where all outputs have the same metric value
         if config.dynamic_sampling:
             metric = config.dynamic_sampling_metric
-            
+
             # When micro_rollout_batch_size == n_samples_per_prompt, each experience
             # contains all samples for one prompt in batched format
             # exp.info["reward"] has shape=[n_samples], representing all samples for that prompt
             for exp in experiences:
                 reward_tensor = exp.info["reward"]  # shape=[n_samples]
-                
+
                 # Extract metric values (all samples within this experience/prompt)
                 if metric == "reward":
                     metric_values = reward_tensor
@@ -683,7 +683,7 @@ class GroupNormCalculator(BaseREINFORCECalculator):
                 else:
                     # Default to reward
                     metric_values = reward_tensor
-                
+
                 # Check if all samples have the same metric value (degenerate group)
                 # This prompt provides no learning signal for relative comparison
                 if torch.all(metric_values == metric_values[0]):
