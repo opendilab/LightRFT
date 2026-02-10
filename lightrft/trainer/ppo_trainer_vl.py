@@ -1159,17 +1159,15 @@ class PPOTrainerVL(ABC):
 
         # For LoRA, we ALWAYS save the HF adapter as it is much smaller and more convenient for deployment.
         if self.save_hf_ckpt or is_lora:
-            # Rotate HF checkpoints (refer to save_ckpt implementation)
+            # Rotate HF checkpoints
             if self.strategy.is_rank_0():
                 os.makedirs(args.ckpt_path, exist_ok=True)
                 max_num = getattr(args, "max_ckpt_num", 3)
                 while True:
                     subdirs = sorted(
-                        [
-                            (os.path.join(args.ckpt_path, d), os.path.getmtime(os.path.join(args.ckpt_path, d)))
-                            for d in os.listdir(args.ckpt_path)
-                            if d.endswith("_lora") and os.path.isdir(os.path.join(args.ckpt_path, d))
-                        ],
+                        [(os.path.join(args.ckpt_path, d), os.path.getmtime(os.path.join(args.ckpt_path, d)))
+                         for d in os.listdir(args.ckpt_path)
+                         if d.endswith("_lora") and os.path.isdir(os.path.join(args.ckpt_path, d))],
                         key=lambda x: x[1],
                     )
 

@@ -125,7 +125,7 @@ class BroadcastManager:
                 elif self.strategy.engine_type == "sglang":
                     if ".lora_" in name:
                         continue
-                    
+
                     sglang_name = self._map_weight_name_for_sglang(name)
                     self.inference_engine.update_weights_from_tensor(
                         sglang_name, param.data, flush_cache=(count == num_params)
@@ -151,29 +151,29 @@ class BroadcastManager:
 
         for name, param in param_dict.items():
             count += 1
-            
+
             # Skip LoRA adapters directly, they will be merged when processing base_layer
             if ".lora_" in name:
                 continue
-            
+
             # Identify if this is a PEFT base layer
             effective_name = name
             full_weight = None
-            
+
             if ".base_layer.weight" in name:
                 # This is a LoRA-enabled layer
                 prefix = name.replace(".base_layer.weight", "")
                 lora_a_name = f"{prefix}.lora_A.default.weight"
                 lora_b_name = f"{prefix}.lora_B.default.weight"
-                
+
                 # Gather Base, LoRA A, and LoRA B
                 w_base = param.to(get_current_device()).full_tensor().to(torch.float32)
                 w_a = param_dict[lora_a_name].to(get_current_device()).full_tensor().to(torch.float32)
                 w_b = param_dict[lora_b_name].to(get_current_device()).full_tensor().to(torch.float32)
-                
+
                 # Merge: W = W + scale * (B @ A)
                 full_weight = (w_base + scaling * (w_b @ w_a)).to(dst_dtype)
-                
+
                 # Clean up intermediate huge gathered tensors
                 del w_base, w_a, w_b
             else:
@@ -220,12 +220,12 @@ class BroadcastManager:
             if is_peft:
                 self.strategy.print("Merging LoRA adapters for weight synchronization...")
                 self.actor.model.merge_adapter()
-            
+
             try:
                 self._deepspeed_broadcast()
             finally:
                 if is_peft:
                     self.strategy.print("Unmerging LoRA adapters after synchronization...")
                     self.actor.model.unmerge_adapter()
-                
+
         self.strategy.print("Finished weight broadcasting to inference engine.")
