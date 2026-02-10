@@ -4,3 +4,55 @@
     height: 40px;
     width: 110px;
 }
+
+/* 清理可能的旧样式 */
+.language-selector, .language-selector-header {
+    display: none !important;
+}
+
+/* 悬浮切换按钮样式 */
+.language-toggle-floating {
+    position: fixed;
+    right: 25px;
+    bottom: 25px;
+    z-index: 10000;
+}
+
+.lang-toggle-btn {
+    display: flex;
+    align-items: center;
+    padding: 8px 16px;
+    background-color: #ffffff;
+    border: 1px solid #e1e4e6;
+    border-radius: 24px;
+    color: #333;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none !important;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    border-left: 3px solid #ee4c2c; /* PyTorch Accent */
+}
+
+.lang-toggle-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    border-color: #ee4c2c;
+    color: #ee4c2c;
+}
+
+.lang-icon {
+    margin-right: 8px;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+}
+
+/* 移动端优化 */
+@media (max-width: 480px) {
+    .language-toggle-floating {
+        right: 15px;
+        bottom: 15px;
+    }
+}
