@@ -110,8 +110,12 @@ class StrategyConfig:
     overlong_buffer_penalty_factor: float = 1.0
 
     # Dynamic sampling and advantage estimation
-    # (bool): Enable dynamic sampling for advantage estimation, defaults to False
+    # (bool): Enable dynamic sampling for advantage estimation (DAPO), defaults to False
     dynamic_sampling: bool = False
+    # (str): Metric to filter groups in dynamic sampling: "reward", "acc", etc., defaults to "reward"
+    dynamic_sampling_metric: str = "reward"
+    # (int): Maximum number of generation batches for dynamic sampling, <=0 means no limit, defaults to 10
+    max_num_gen_batches: int = 10
     # (str): Advantage estimator method, defaults to "gae"
     advantage_estimator: str = "group_norm"
 
@@ -280,7 +284,7 @@ class StrategyConfig:
 
         # Dynamic Sampling and Advantage Estimation Parameters
         print("\nDynamic Sampling and Advantage Estimation Parameters:")
-        for attr in ['dynamic_sampling', 'advantage_estimator']:
+        for attr in ['dynamic_sampling', 'dynamic_sampling_metric', 'max_num_gen_batches', 'advantage_estimator']:
             current = getattr(self, attr)
             default = getattr(default_config, attr)
             status = "Overridden" if current != default else "Default"
