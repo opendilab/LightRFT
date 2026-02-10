@@ -398,6 +398,10 @@ def train(args):
         overlong_buffer_len=args.overlong_buffer_len,
         overlong_buffer_penalty_factor=args.overlong_buffer_penalty_factor,
         print_replay_buffer_stats=args.print_replay_buffer_stats,
+        # partial rollout
+        use_partial=args.use_partial,
+        partial_percent=args.partial_percent,
+        max_budget=args.max_budget,
     )
 
     trainer.fit(args, prompts_dataloader=prompts_dataloader, pretrain_dataloader=pretrain_dataloader, eval_dataloader=eval_dataloader, consumed_samples=0, num_update_steps_per_episodes=num_update_steps_per_episodes)
@@ -616,6 +620,11 @@ if __name__ == "__main__":
     
     # High-entropy token filtering (from "Beyond the 80/20 Rule" paper)
     parser.add_argument("--high_entropy_token_ratio", type=float, default=0.0, help="Ratio of high-entropy tokens to use for gradient updates (0.0 means use all tokens, 0.2 means use top 20% highest entropy tokens). Common value when enabled: 0.2. Based on 'Beyond the 80/20 Rule: High-Entropy Minority Tokens Drive Effective Reinforcement Learning for LLM Reasoning' (https://arxiv.org/abs/2506.01939)")
+
+    # Partial Rollout
+    parser.add_argument("--use_partial", action="store_true", default=False, help="whether to use the partial rollout trainer")
+    parser.add_argument("--partial_percent", type=float, default=0.7, help="partial rollout percent")
+    parser.add_argument("--max_budget", type=float, default=1024, help="partial rollout max_budget")
 
     add_arguments(parser)
 
