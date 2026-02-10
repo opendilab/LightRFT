@@ -390,6 +390,20 @@ class NaiveExperienceMaker(ABC):
                     generate_kwargs["gamma"],
                 )
                 experience.advantages = deepcopy(experience.returns)
+            elif self.advantage_estimator == "on_policy_distillation":
+                # For on_policy_distillation, use teacher log probs from experience.info
+                # The actual advantage computation happens in OnPolicyDistillationCalculator
+                # Here we just set placeholder values
+                teacher_log_probs = experience.info.get("teacher_log_probs")
+                if teacher_log_probs is None:
+                    raise ValueError(
+                        "teacher_log_probs not found in experience.info. "
+                        "This should have been set in process_experiences()."
+                    )
+                # Set placeholder returns and advantages
+                # They will be properly computed in the advantage calculator
+                experience.returns = torch.zeros_like(experience.action_log_probs)
+                experience.advantages = torch.zeros_like(experience.action_log_probs)
             else:
                 raise Exception(f"Unknown advantage_estimator {self.advantage_estimator}")
 
@@ -543,6 +557,62 @@ class NaiveExperienceMaker(ABC):
         :rtype: Tuple[List[Experience], List[torch.Tensor]]
         """
         args = self.strategy.args
+
+        # On-policy distillation: query teacher model for log probs
+        if args.advantage_estimator == "on_policy_distillation":
+            if self.remote_rm_url is None or len(self.remote_rm_url) == 0:
+                raise ValueError(
+                    "On-policy distillation requires a teacher model URL. "
+                    "Please set --remote_rm_url to the teacher model inference server."
+                )
+
+            # Import the teacher logprob function
+            import asyncio
+            import sys
+            import os.path
+            teacher_url = self.remote_rm_url[0] if isinstance(self.remote_rm_url, list) else self.remote_rm_url
+
+            # Collect all sequences and response lengths
+            all_sequences = []
+            all_response_lengths = []
+            for experience in experiences:
+                sequences_batch = experience.sequences
+                response_lengths = experience.info["response_length"]
+
+                # Decode sequences to text
+                for i, seq in enumerate(sequences_batch):
+                    decoded_seq = self.tokenizer.decode(seq.cpu().tolist(), skip_special_tokens=False)
+                    all_sequences.append(decoded_seq)
+                    all_response_lengths.append(int(response_lengths[i].item()))
+
+            # Query teacher model for log probs
+            try:
+                # Import the custom teacher logprob function
+                from examples.on_policy_distillation.on_policy_distillation_reward import (
+                    get_teacher_logprobs_sync
+                )
+
+                teacher_log_probs = get_teacher_logprobs_sync(
+                    teacher_url=teacher_url,
+                    sequences=all_sequences,
+                    response_lengths=all_response_lengths,
+                    device="cpu"
+                )
+
+                # Split and store teacher log probs in each experience
+                idx = 0
+                for experience in experiences:
+                    batch_size = experience.sequences.size(0)
+                    experience.info["teacher_log_probs"] = teacher_log_probs[idx:idx + batch_size]
+                    idx += batch_size
+
+            except Exception as e:
+                logger.error(f"Failed to get teacher log probs: {e}")
+                raise
+
+            # Return placeholder rewards (actual learning signal comes from teacher log probs)
+            rewards = [torch.zeros_like(experience.info["reward"]) for experience in experiences]
+            return experiences, rewards
 
         # Reward shaping for RLOO
         if args.advantage_estimator == "rloo":
