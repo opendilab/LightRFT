@@ -48,6 +48,7 @@ ensure_video_input_available()
 from lightrft.datasets import PromptDatasetVL, SFTDatasetVL
 from lightrft.models.actor_language import ActorLanguage
 from lightrft.models.actor_vl import ActorVL
+from lightrft.models.utils import get_vlm_for_sequence_regression
 from lightrft.strategy import get_strategy
 from lightrft.trainer.spmd_ppo_trainer import SPMDPPOTrainerVL
 from lightrft.utils import blending_datasets, get_tokenizer_processor_vl
@@ -55,6 +56,13 @@ from lightrft.utils import blending_datasets, get_tokenizer_processor_vl
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from reward_models_utils import RECIPE, load_reward_models, reward_fn
 
+import torch.multiprocessing
+
+# Fix "multiprocessing.context.AuthenticationError: digest received was wrong" error
+# that can occur during PPO pipeline execution with multiprocessing.
+# Using 'file_system' sharing strategy instead of default 'file_descriptor' prevents
+# authentication errors when sharing tensors across processes in distributed training.
+torch.multiprocessing.set_sharing_strategy('file_system')
 
 def train(args):
     """
@@ -91,7 +99,7 @@ def train(args):
     # When meta_init=True, models are created on "meta" device as empty shells,
     # fundamentally resolving CPU OOM issues.
     with strategy.init_model_context(meta_init=args.meta_init):
-        strategy.print(f"Initializing models with meta_init={args.meta_init}")
+        strategy.print(f"Initializing actor models with meta_init={args.meta_init}")
 
         # Select Actor class based on text_only flag
         if args.text_only:
@@ -122,6 +130,7 @@ def train(args):
     # pre-prepare is used for saving RAM memory when training 72B model
     if args.fsdp:
         setattr(actor, "is_actor", True)
+        strategy.print("Preparing actor model with FSDP...")
         actor = strategy.prepare_model(actor, is_training=True)
 
     # Optionally freeze parameters (e.g., vision encoder)
@@ -137,23 +146,29 @@ def train(args):
         strategy.print(f"Froze {frozen_params_count}/{total_params_count} parameters based on prefixes: {freeze_prefix}")
 
     if args.critic_pretrain:
-        critic = get_vlm_for_sequence_regression(
-            args.critic_pretrain,
-            "critic",
-            normalize_reward=args.normalize_reward_for_critic,
-            use_flash_attention_2=args.flash_attn,
-            bf16=args.bf16,
-            load_in_4bit=args.load_in_4bit,
-            lora_rank=args.lora_rank,
-            lora_alpha=args.lora_alpha,
-            target_modules=args.target_modules,
-            lora_dropout=args.lora_dropout,
-            ds_config=ds_train_cfg,
-            value_head_prefix=args.value_head_prefix,
-            init_value_head=strategy.args.pretrain == strategy.args.critic_pretrain,
-        )
+        with strategy.init_model_context(meta_init=args.meta_init):
+            strategy.print(f"Initializing critic models with meta_init={args.meta_init}")
+            critic = get_vlm_for_sequence_regression(
+                args.critic_pretrain,
+                "critic",
+                normalize_reward=args.normalize_reward_for_critic,
+                use_flash_attention_2=args.flash_attn,
+                bf16=args.bf16,
+                load_in_4bit=args.load_in_4bit,
+                lora_rank=args.lora_rank,
+                lora_alpha=args.lora_alpha,
+                target_modules=args.target_modules,
+                lora_dropout=args.lora_dropout,
+                ds_config=ds_train_cfg,
+                value_head_prefix=args.value_head_prefix,
+                init_value_head=strategy.args.pretrain == strategy.args.critic_pretrain,
+            )
     else:
         critic = None
+
+    if args.fsdp:
+        strategy.print("Preparing Critic model with FSDP...")
+        critic = strategy.prepare_model(critic, is_training=True)
 
     # Load reward models (multiple types: value, safety, knowledge, etc.)
     strategy.report_memory(f"before loaded reward models in main entry")

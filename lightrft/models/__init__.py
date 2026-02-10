@@ -9,8 +9,6 @@ from .loss import (
     GPTLMLoss, DPOLoss, KDLoss, KTOLoss, LogExpLoss, PairWiseLoss, PolicyLoss, PRMLoss, ValueLoss, VanillaKTOLoss,
     LogSigmoidLoss, HPSLoss
 )
-# from .model import get_llm_for_sequence_regression
-# from .model_vl import get_vlm_for_sequence_regression
 
 __all__ = [
     "ActorVL",
@@ -24,6 +22,6 @@ __all__ = [
     "PRMLoss",
     "ValueLoss",
     "VanillaKTOLoss",
-    # "get_llm_for_sequence_regression",
-    # "get_vlm_for_sequence_regression",
+    "get_llm_for_sequence_regression",
+    "get_vlm_for_sequence_regression",
 ]

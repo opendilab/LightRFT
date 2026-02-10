@@ -1603,13 +1603,15 @@ class FastExperienceMaker(NaiveExperienceMaker):
             self.strategy.offload_model(self.initial_model)
 
         # ========== Stage 3: Critic ==========
+        Timer.start('    critic')
         if self.critic is not None:
-            self.strategy.reload_model(self.critic)
+            # self.strategy.reload_model(self.critic)
             for output in outputs:
                 output.value = self.critic(
                     output.sequences, output.num_actions, output.attention_mask, **output.inputs_extra_kwargs
                 )
-            self.strategy.offload_model(self.critic)
+            # self.strategy.offload_model(self.critic)
+        Timer.stop('    critic')
 
         # ========== Stage 4: Reward Models ==========
         self.reward_engine.compute_rewards(outputs, vlm_mode, device)
@@ -1808,6 +1810,8 @@ class FastExperienceMaker(NaiveExperienceMaker):
                 info=info,
                 kl=kl,
                 action_entropy=output.action_entropy,
+                labels=output.labels,  # Ground truth labels
+                references=output.references,  # Reference texts
             )
         else:
             return Experience(
