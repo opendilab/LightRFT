@@ -16,7 +16,7 @@ normalization are important for training stability and monitoring.
 import copy
 import torch
 from copy import deepcopy
-from typing import Callable, List, Tuple, Union, Optional
+from typing import Callable, List, Tuple, Union, Optional, Any
 
 try:
     import vllm
@@ -39,6 +39,7 @@ def fire_sampling(
     all_videos: Optional[List] = None,
     all_videos_num: Optional[List[int]] = None,
     sampling_params: Optional[Union[dict, object]] = None,
+    tokenizer: Optional[Any] = None,
 ) -> List:
     """
     FIRE sampling (Flaming-hot Initiation with Regular Execution)
@@ -82,6 +83,10 @@ def fire_sampling(
     :type all_videos_num: Optional[List[int]]
     :param sampling_params: Original sampling parameters
     :type sampling_params: Optional[Union[dict, object]]
+    :param tokenizer: Tokenizer for decoding first token to text (required when is_multimodal=True).
+                      For multimodal, Step 2 needs to append the first token to prompts so we decode
+                      the token IDs to text for the continuation.
+    :type tokenizer: Optional[Any]
 
     :return: List of generation outputs
     :rtype: List
@@ -117,6 +122,26 @@ def fire_sampling(
         first_tok = list(out.output_token_ids)  # [token_id]
         new_prompt_token_ids.append(orig_ids + first_tok)
 
+    # For multimodal: gather_and_generate uses all_prompts (text) + images, not all_prompt_token_ids.
+    # We must decode the first token and append to prompts so Step 2 continues from the correct context.
+    if is_multimodal:
+        if tokenizer is None:
+            raise ValueError(
+                "fire_sampling: tokenizer is required when is_multimodal=True. "
+                "For multimodal, the first token must be decoded and appended to prompts for Step 2."
+            )
+        if all_prompts is None:
+            raise ValueError("fire_sampling: all_prompts is required when is_multimodal=True.")
+        decoded_first_tokens = tokenizer.batch_decode(
+            [list(out.output_token_ids) for out in first_token_outputs],
+            skip_special_tokens=False,
+        )
+        all_prompts_rest = [
+            prompt + decoded for prompt, decoded in zip(all_prompts, decoded_first_tokens)
+        ]
+    else:
+        all_prompts_rest = all_prompts
+
     # Step 2: Generate remaining tokens with normal temperature
     if engine_type == "vllm":
         sampling_params_rest = copy.deepcopy(sampling_params)
@@ -128,10 +153,12 @@ def fire_sampling(
         sampling_params_rest["max_new_tokens"] = sampling_params["max_new_tokens"] - 1
 
     # Generate remaining tokens
+    # For multimodal: use all_prompts_rest (prompt + decoded first token) so gather_and_generate
+    # builds inputs with the correct continuation context.
     rest_outputs = generate_fn(
         sampling_params=sampling_params_rest,
         all_prompt_token_ids=new_prompt_token_ids,
-        all_prompts=all_prompts if is_multimodal else None,
+        all_prompts=all_prompts_rest if is_multimodal else None,
         all_images=all_images,
         all_videos=all_videos,
         images_num=all_images_num if is_multimodal else None,

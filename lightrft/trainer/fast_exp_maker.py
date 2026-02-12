@@ -1186,11 +1186,28 @@ class FastExperienceMaker(NaiveExperienceMaker):
                 # According to the paper (https://arxiv.org/abs/2410.21236), FIRE only changes
                 # the temperature for the first token. All other sampling parameters (top_k, top_p, etc.)
                 # are kept the same between first token and remaining tokens.
+                sleep_engine = getattr(self.strategy.args, 'enable_engine_sleep', False)
+
+                def generate_fn(sampling_params, all_prompt_token_ids, all_prompts=None, all_images=None, all_videos=None, images_num=None, videos_num=None):
+                    return self.strategy.gather_and_generate(
+                        sampling_params=sampling_params,
+                        all_prompt_token_ids=all_prompt_token_ids,
+                        all_prompts=all_prompts,
+                        all_images=all_images,
+                        all_videos=all_videos,
+                        images_num=images_num,
+                        videos_num=videos_num,
+                        sleep_engine=sleep_engine,
+                    )
+
                 all_outputs = fire_sampling(
                     all_prompt_token_ids=all_prompt_token_ids,
-                    generate_fn=generate_fn,  # noqa: TODO
+                    generate_fn=generate_fn,
                     engine_type=config.engine_type,
-                    first_token_temperature=generate_kwargs.get("first_token_temperature", 10.0),
+                    first_token_temperature=generate_kwargs.get(
+                        "first_token_temperature",
+                        getattr(self.strategy.args, "first_token_temperature", 10.0),
+                    ),
                     temperature=generate_kwargs.get("temperature", 1.0),
                     # Note: first_token_top_k and first_token_top_p are deprecated and ignored
                     # The function will use top_k and top_p from sampling_params for both stages
@@ -1201,6 +1218,7 @@ class FastExperienceMaker(NaiveExperienceMaker):
                     all_images_num=all_images_num,
                     all_videos_num=all_videos_num,
                     sampling_params=sampling_params,
+                    tokenizer=self.tokenizer if is_multimodal else None,
                 )
             else:
                 # maybe this can be called in if and else respectively? or like this?
