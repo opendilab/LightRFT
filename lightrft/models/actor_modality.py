@@ -33,6 +33,8 @@ MODALITY_PARAMETERS = {
     },
     ActorModality.AUDIO_LANGUAGE: {
         "audio_values",
+        "pixel_values",       # Audio pipeline stores input_features in pixel_values slot
+        "image_grid_thw",     # Audio pipeline stores dummy grid entries for compatibility
     },
     ActorModality.OMNI: {
         "pixel_values",
