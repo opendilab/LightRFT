@@ -5,10 +5,6 @@
 # This script fine-tunes Qwen2-Audio-7B-Instruct using the GRPO algorithm
 # with rule-based rewards, faithfully migrating the R1-AQA training pipeline.
 #
-# Key Features:
-# - PURE RULE-BASED REWARD: accuracy(0/1) + format(0/1) = max 2.0
-# - Audio multimodal support via Qwen2-Audio
-# - GRPO with 8 samples per prompt (matching R1-AQA default)
 #
 # Migration from R1-AQA:
 #   R1-AQA num_generations=8      → N_SAMPLES=8
@@ -25,15 +21,15 @@
 
 # --- Model and Dataset Paths ---
 # Qwen2-Audio-7B-Instruct base model
-PATH_TO_YOUR_BASE_MODEL="/mnt/shared-storage-user/wangjieyi/huoshan/wangjieyi/models/qwen/Qwen/Qwen2-Audio-7B-Instruct"
+PATH_TO_YOUR_BASE_MODEL=""
 
 # Path to the preprocessed AVQA dataset (output of data_preprocess/avqa.py)
-PATH_TO_YOUR_AVQA_DATASET="/mnt/shared-storage-user/wangjieyi/huoshan/wangjieyi/code/LightRFT-main/examples/r1_aqa/data_preprocess/r1aqa4lightRFT"
+PATH_TO_YOUR_AVQA_DATASET=""
 
 # --- Experiment and Logging ---
 EXPERIMENT_NAME="lightrft-r1-aqa-grpo-training"
 
-export WANDB_API_KEY="2f148557306855ae8c704f0992842362bb3ad741"
+export WANDB_API_KEY=""
 export WANDB_PROJECT="LightRFT-R1-AQA"
 
 
@@ -105,8 +101,8 @@ current_time=$(date +"%Y%m%d_%H%M%S")
 SAVE_MODEL_NAME="${EXPERIMENT_NAME}-ep${EPISODE}-kl${KL}-lr${LR}-${current_time}"
 WANDB_RUN_NAME="${EXPERIMENT_NAME}-${current_time}"
 
-mkdir -p "/mnt/shared-storage-user/wangjieyi/huoshan/wangjieyi/code/logs/LightRFT/results/${EXPERIMENT_NAME}/${SAVE_MODEL_NAME}"
-mkdir -p "/mnt/shared-storage-user/wangjieyi/huoshan/wangjieyi/code/logs/LightRFT/rft_logs/${EXPERIMENT_NAME}"
+mkdir -p "./results/${EXPERIMENT_NAME}/${SAVE_MODEL_NAME}"
+mkdir -p "./rft_logs/${EXPERIMENT_NAME}"
 
 export TORCH_NCCL_AVOID_RECORD_STREAMS=1
 export NCCL_DEBUG="WARN"
