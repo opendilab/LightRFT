@@ -42,6 +42,12 @@ format: yapf
 fcheck: flake8
 
 dbuild:
-	docker build -t ${IMAGE_NAME} .
+	@if docker image inspect ${IMAGE_NAME} >/dev/null 2>&1; then \
+		docker build --cache-from ${IMAGE_NAME} -t ${IMAGE_NAME} .; \
+	else \
+		docker build -t ${IMAGE_NAME} .; \
+	fi
 dpush:
 	docker push ${IMAGE_NAME}
+dpull:
+	docker pull ${IMAGE_NAME}
