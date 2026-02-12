@@ -31,6 +31,38 @@ from .utils import apply_lora_configuration, log_probs_from_logits, reset_positi
 from .actor_modality import ActorModality
 
 
+class _AudioEmbedPositions(nn.Module):
+    """Drop-in replacement for ``nn.Embedding`` that is **not** an instance of
+    ``nn.Embedding``.
+
+    Why this exists:
+        FSDP2's wrapping policy individually shards every ``nn.Embedding``
+        module.  Whisper's ``embed_positions`` is accessed via the bare
+        ``.weight`` attribute (``embed_pos = self.embed_positions.weight``)
+        rather than through the module's ``forward()`` method.  When the
+        Embedding is its own FSDP unit the ``.weight`` attribute returns a
+        sharded ``DTensor`` whose all-gather hook has not fired, while the
+        conv-layer outputs (managed by the *root* FSDP unit) are regular
+        tensors — leading to a mixed ``Tensor / DTensor`` error on
+        ``inputs_embeds + embed_pos``.
+
+        By replacing the ``nn.Embedding`` with this plain ``nn.Module``,
+        FSDP does not individually wrap it; its weight is instead managed
+        by the parent (root) FSDP unit and is all-gathered together with
+        the conv-layer weights.
+    """
+
+    def __init__(self, embedding: nn.Embedding):
+        super().__init__()
+        # Re-use the **same** Parameter object so no data is copied.
+        self.weight = embedding.weight
+        self.num_embeddings = embedding.num_embeddings
+        self.embedding_dim = embedding.embedding_dim
+
+    def forward(self, input_ids: torch.Tensor) -> torch.Tensor:
+        return nn.functional.embedding(input_ids, self.weight)
+
+
 class ActorAL(nn.Module):
     """
     Audio Language Model actor for reinforcement learning applications.
@@ -77,7 +109,7 @@ class ActorAL(nn.Module):
         # Generate responses
         sequences, attention_mask, action_mask = actor.generate(
             input_ids=input_tensor,
-            audio_values=audio_tensor,
+            input_features=audio_features_tensor,
             max_new_tokens=100
         )
     """
@@ -141,11 +173,55 @@ class ActorAL(nn.Module):
         else:
             self.model = pretrain_or_model
             self.pretrain_or_model = pretrain_or_model.config.model_type
+
+        # ------------------------------------------------------------------
+        # FSDP2 compatibility fixes for the Whisper-based audio tower.
+        #
+        # 1. Replace embed_positions (nn.Embedding → _AudioEmbedPositions)
+        #    so FSDP2 does not individually wrap it.  Whisper accesses
+        #    embed_positions.weight directly, bypassing the module forward
+        #    and thus FSDP's all-gather hook.
+        #
+        # 2. Force the audio tower to use **eager** (non-flash) attention.
+        #    FSDP2 turns parameters into DTensors; computations with those
+        #    parameters also produce DTensors.  Flash Attention's CUDA
+        #    kernels (flash_attn_gpu.varlen_fwd) receive a mix of DTensor
+        #    activations and regular-tensor cu_seqlens, leading to shape
+        #    mismatches ("cu_seqlens_q must have shape (batch_size + 1)").
+        #    The Whisper encoder is small (~12 layers), so using eager
+        #    attention has negligible impact on overall training throughput.
+        # ------------------------------------------------------------------
+        audio_tower = getattr(self.model, "audio_tower", None) or getattr(
+            self.model, "audio_encoder", None
+        )
+        if audio_tower is not None:
+            # Fix 1: embed_positions
+            if hasattr(audio_tower, "embed_positions") and isinstance(
+                audio_tower.embed_positions, nn.Embedding
+            ):
+                audio_tower.embed_positions = _AudioEmbedPositions(
+                    audio_tower.embed_positions
+                )
+                print(
+                    "[ActorAL] Replaced audio_tower.embed_positions "
+                    "(nn.Embedding → _AudioEmbedPositions) for FSDP2 compat"
+                )
+
+            # Fix 2: force eager attention in the audio encoder
+            for module in audio_tower.modules():
+                if hasattr(module, "_attn_implementation"):
+                    module._attn_implementation = "eager"
+            # Also patch the config so any lazily-constructed layers use eager
+            audio_cfg = getattr(self.model.config, "audio_config", None)
+            if audio_cfg is not None:
+                audio_cfg._attn_implementation = "eager"
+            print("[ActorAL] Set audio_tower attention to 'eager' for FSDP2 compat")
+
         print("pretrain_or_model: ", self.pretrain_or_model)
 
     @torch.no_grad()
     def generate(
-        self, input_ids: torch.Tensor, audio_values: torch.Tensor, **kwargs
+        self, input_ids: torch.Tensor, input_features: torch.Tensor = None, **kwargs
     ) -> Union[
         Tuple[torch.LongTensor, torch.LongTensor],
         Tuple[torch.LongTensor, torch.LongTensor, torch.BoolTensor], ]:
@@ -158,8 +234,8 @@ class ActorAL(nn.Module):
 
         :param input_ids: Input token IDs representing the text prompt
         :type input_ids: torch.Tensor
-        :param audio_values: Preprocessed audio values of input audio
-        :type audio_values: torch.Tensor
+        :param input_features: Preprocessed audio features (mel-spectrogram) for Qwen2-Audio
+        :type input_features: torch.Tensor
         :param kwargs: Additional generation parameters (top_k, top_p, temperature, etc.)
         :type kwargs: dict
 
@@ -170,7 +246,7 @@ class ActorAL(nn.Module):
 
             sequences, attention_mask, action_mask = actor.generate(
                 input_ids=torch.tensor([[1, 2, 3]]),
-                audio_values=audio_tensor,
+                input_features=audio_features_tensor,
                 max_new_tokens=50,
                 temperature=0.8,
                 do_sample=True
@@ -178,7 +254,6 @@ class ActorAL(nn.Module):
         """
         generate_args = {
             "input_ids": input_ids,
-            "audio_values": audio_values,
             "top_k": kwargs.get("top_k", None),
             "top_p": kwargs.get("top_p", None),
             "do_sample": kwargs.get("do_sample", True),
@@ -191,6 +266,29 @@ class ActorAL(nn.Module):
             "pad_token_id": kwargs.get("pad_token_id"),
             "min_new_tokens": kwargs.get("min_new_tokens", 1),
         }
+
+        if input_features is not None:
+            # Pad mel features to 3000 if shorter (see forward() for rationale)
+            EXPECTED_MEL_LEN = 3000
+            actual_len = input_features.shape[-1]
+            if actual_len < EXPECTED_MEL_LEN:
+                pad_len = EXPECTED_MEL_LEN - actual_len
+                input_features = torch.nn.functional.pad(
+                    input_features, (0, pad_len), value=0.0,
+                )
+            elif actual_len > EXPECTED_MEL_LEN:
+                input_features = input_features[..., :EXPECTED_MEL_LEN]
+                actual_len = EXPECTED_MEL_LEN
+
+            generate_args["input_features"] = input_features
+
+            # Build feature_attention_mask: 1 for real frames, 0 for padding
+            feature_attention_mask = torch.zeros(
+                input_features.shape[0], EXPECTED_MEL_LEN,
+                dtype=torch.long, device=input_features.device,
+            )
+            feature_attention_mask[:, :actual_len] = 1
+            generate_args["feature_attention_mask"] = feature_attention_mask
 
         if kwargs.get("max_new_tokens", None):
             generate_args["max_new_tokens"] = kwargs.get("max_new_tokens")
@@ -228,9 +326,13 @@ class ActorAL(nn.Module):
         sequences: torch.LongTensor,
         num_actions: Optional[Union[int, list[int]]] = None,
         attention_mask: Optional[torch.Tensor] = None,
-        audio_values: torch.Tensor = None,
+        pixel_values: Optional[torch.Tensor] = None,
+        image_grid_thw: Optional[torch.Tensor] = None,
+        pixel_values_videos: Optional[torch.Tensor] = None,
+        video_grid_thw: Optional[torch.Tensor] = None,
         return_output=False,
         packed_seq_lens: Optional[list[int]] = None,
+        audio_values: Optional[torch.Tensor] = None,
     ) -> torch.Tensor:
         """
         Forward pass to compute action log probabilities for reinforcement learning.
@@ -239,18 +341,30 @@ class ActorAL(nn.Module):
         of actions (tokens) for RL training. It supports both standard and packed sequence formats
         and can return either just the action log probabilities or the full model output.
 
+        The audio pipeline stores ``input_features`` in the ``pixel_values`` slot for
+        compatibility with the VL pipeline. This method remaps it to ``input_features``
+        when calling ``Qwen2AudioForConditionalGeneration``.
+
         :param sequences: Input token sequences
         :type sequences: torch.LongTensor
         :param num_actions: Number of action tokens to extract log probs for
         :type num_actions: Optional[Union[int, list[int]]]
         :param attention_mask: Attention mask for the sequences
         :type attention_mask: Optional[torch.Tensor]
-        :param audio_values: Preprocessed audio values of input audio
-        :type audio_values: torch.Tensor
+        :param pixel_values: Audio input_features carried through the VL pipeline's pixel_values slot
+        :type pixel_values: Optional[torch.Tensor]
+        :param image_grid_thw: Unused (accepted for VL pipeline compatibility)
+        :type image_grid_thw: Optional[torch.Tensor]
+        :param pixel_values_videos: Unused (accepted for VL pipeline compatibility)
+        :type pixel_values_videos: Optional[torch.Tensor]
+        :param video_grid_thw: Unused (accepted for VL pipeline compatibility)
+        :type video_grid_thw: Optional[torch.Tensor]
         :param return_output: Whether to return the full model output along with log probs
         :type return_output: bool
         :param packed_seq_lens: Sequence lengths for packed samples
         :type packed_seq_lens: Optional[list[int]]
+        :param audio_values: Preprocessed audio features (alternative to pixel_values for direct usage)
+        :type audio_values: Optional[torch.Tensor]
 
         :return: Action log probabilities or tuple of (action_log_probs, output) if return_output=True
         :rtype: torch.Tensor
@@ -261,14 +375,14 @@ class ActorAL(nn.Module):
             log_probs = actor(
                 sequences=token_sequences,
                 num_actions=10,
-                audio_values=audio_tensor
+                pixel_values=input_features_tensor
             )
 
             # Get both log probs and full output
             log_probs, output = actor(
                 sequences=token_sequences,
                 num_actions=10,
-                audio_values=audio_tensor,
+                pixel_values=input_features_tensor,
                 return_output=True
             )
         """
@@ -281,13 +395,68 @@ class ActorAL(nn.Module):
             # explicitly ignore attention_mask for packing_samples
             attention_mask = None
 
-        # Qwen2Audio model expects different parameter names
-        output = self.model(
-            input_ids=sequences,
-            attention_mask=attention_mask,
-            position_ids=position_ids,
-            audio_values=audio_values,
-        )
+        # Remap: the audio pipeline stores input_features in the pixel_values slot.
+        # Qwen2AudioForConditionalGeneration.forward() expects `input_features`.
+        # Accept audio_values as an alternative for direct API usage.
+        input_features = audio_values if audio_values is not None else pixel_values
+
+        model_kwargs = {
+            "input_ids": sequences,
+            "attention_mask": attention_mask,
+            "position_ids": position_ids,
+        }
+
+        if input_features is not None:
+            # ----------------------------------------------------------
+            # Guard: only pass input_features when the sequences still
+            # contain ``audio_token_id`` placeholders that the model's
+            # ``_merge_input_ids_with_audio_features`` can locate.
+            #
+            # During GRPO/PPO training the sequences come from the
+            # inference engine (vLLM/SGLang) which may *expand* the
+            # single ``<|AUDIO|>`` placeholder into many tokens.  After
+            # expansion the original ``audio_token_id`` no longer
+            # appears in the token sequence, so the model's merge step
+            # would fail with a shape-mismatch error.
+            #
+            # When the placeholder is absent we fall back to a text-only
+            # forward.  Both the actor AND the reference model see the
+            # same expanded sequences, so the log-prob *ratio* used for
+            # the policy gradient is still consistent.
+            # ----------------------------------------------------------
+            audio_token_id = getattr(self.model.config, "audio_token_id", None)
+            has_audio_placeholder = (
+                audio_token_id is not None
+                and (sequences == audio_token_id).any().item()
+            )
+
+            if has_audio_placeholder:
+                # Qwen2Audio's Whisper encoder requires mel features of
+                # exactly 3000 frames.  Pad / truncate as needed.
+                EXPECTED_MEL_LEN = 3000
+                actual_len = input_features.shape[-1]
+
+                if actual_len < EXPECTED_MEL_LEN:
+                    pad_len = EXPECTED_MEL_LEN - actual_len
+                    input_features = torch.nn.functional.pad(
+                        input_features, (0, pad_len), value=0.0,
+                    )
+                elif actual_len > EXPECTED_MEL_LEN:
+                    input_features = input_features[..., :EXPECTED_MEL_LEN]
+                    actual_len = EXPECTED_MEL_LEN
+
+                model_kwargs["input_features"] = input_features
+
+                # Build feature_attention_mask: 1 for real, 0 for pad.
+                feature_attention_mask = torch.zeros(
+                    input_features.shape[0], EXPECTED_MEL_LEN,
+                    dtype=torch.long, device=input_features.device,
+                )
+                feature_attention_mask[:, :actual_len] = 1
+                model_kwargs["feature_attention_mask"] = feature_attention_mask
+            # else: audio_token_id absent → text-only forward (see comment above)
+
+        output = self.model(**model_kwargs)
 
         if num_actions is None:  # default
             assert return_output
