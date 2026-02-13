@@ -46,7 +46,7 @@ nvcc --version
 python -c "import torch; print(torch.version.cuda)"
 
 # 使用正确的 CUDA 版本重新安装 PyTorch
-pip install torch==2.5.1+cu118 --index-url https://download.pytorch.org/whl/cu118
+pip install torch==2.9.1+cu128 --index-url https://download.pytorch.org/whl/cu128
 ```
 
 ### 问题：vLLM 安装失败
@@ -65,7 +65,7 @@ pip install ninja packaging wheel
 pip install vllm --no-build-isolation
 
 # 或者使用预编译的 wheel 包
-pip install vllm==0.5.3.post1
+pip install vllm==0.13.3
 ```
 
 ## 显存问题
@@ -186,25 +186,6 @@ torch.cuda.empty_cache()
 
 ## 训练问题
 
-### 问题：`num_rollouts_per_episodes = 0`
-
-**现象**：
-```
-AssertionError: num_rollouts_per_episodes should be > 0
-```
-
-**根本原因**：
-`train_batch_size` < `rollout_batch_size × n_samples_per_prompt`
-
-**解决方案**：
-```bash
-# 确保 TBS >= RBS × n_samples
-# 示例：RBS=64, n_samples=8
---train_batch_size 512  # 必须 >= 64 × 8 = 512
---rollout_batch_size 64
---n_samples_per_prompt 8
-```
-
 ### 问题：训练不收敛
 
 **现象**：
@@ -244,38 +225,6 @@ AssertionError: num_rollouts_per_episodes should be > 0
 # 从 GRPO 切换到 CPGD
 --advantage_estimator cpgd \
 --kl_target 0.01
-```
-
-**5. 检查奖励模型 (RM) 质量**
-```python
-# 单独测试奖励模型
-python test_reward_model.py --model /path/to/rm
-```
-
-### 问题：Loss 或梯度值为 NaN
-
-**现象**：
-```
-Loss: nan
-Gradient: nan
-```
-
-**解决方案**：
-```bash
-# 1. 启用梯度裁剪
---max_norm 1.0
-
-# 2. 调低学习率
---actor_learning_rate 1e-7
-
-# 3. 使用 BF16 代替 FP16
---bf16
-
-# 4. 启用奖励裁剪
---reward_clip 10.0
-
-# 5. 检查是否存在除以零的情况
---advantages_norm  # 使用前自动进行归一化
 ```
 
 ### 问题：训练极其缓慢
@@ -433,36 +382,6 @@ torchrun \
 
 ## 性能问题
 
-### 问题：GPU 利用率过低
-
-**现象**：
-- GPU 利用率 < 80%
-- 训练速度慢于预期
-
-**解决方案**：
-
-**1. 增大 Batch Size**
-```bash
---micro_train_batch_size 2  # 尝试翻倍
---micro_rollout_batch_size 4
-```
-
-**2. 减少 CPU 瓶颈**
-```bash
---num_workers 8
---prefetch_factor 2
-```
-
-**3. 启用 Flash Attention**
-```bash
---flash_attn
-```
-
-**4. 使用融合算子 (Fused Kernels)**
-```bash
---fused_linear_logprob
-```
-
 ### 问题：生成速度过慢
 
 **现象**：
@@ -494,32 +413,6 @@ torchrun \
 ```
 
 ## 推理引擎问题
-
-### 问题：vLLM 引擎初始化失败
-
-**现象**：
-```
-Failed to initialize vLLM engine
-RuntimeError: Cannot allocate memory
-```
-
-**解决方案**：
-```bash
-# 1. 检查 GPU 剩余显存
-nvidia-smi
-
-# 2. 降低显存分配比例
---engine_mem_util 0.5
-
-# 3. 减小 TP 大小
---engine_tp_size 1
-
-# 4. 检查模型兼容性
-# 部分模型可能需要特定版本的 vLLM
-
-# 5. 更新 vLLM
-pip install -U vllm
-```
 
 ### 问题：引擎权重未能同步更新
 
@@ -559,28 +452,6 @@ all_outputs = self.strategy.gather_and_generate(
 ```
 
 ## 检查点 (Checkpoint) 问题
-
-### 问题：无法加载检查点
-
-**现象**：
-```
-FileNotFoundError: Checkpoint not found
-RuntimeError: Error loading state dict
-```
-
-**解决方案**：
-```bash
-# 1. 检查路径是否存在
-ls -la /path/to/checkpoint
-
-# 2. 尝试宽松加载
---load_checkpoint \
---ckpt_path /path/to/checkpoint
-
-# 3. 如果不兼容，可尝试跳过优化器状态
-# 修改代码仅加载模型权重：
-model.load_state_dict(torch.load(ckpt_path))
-```
 
 ### 问题：保存检查点失败
 

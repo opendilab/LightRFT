@@ -6,7 +6,7 @@
 
 ### Q: 什么是 LightRFT？
 
-**A**: LightRFT (Light Reinforcement Fine-Tuning) 是一个先进的强化学习框架，专为大语言模型 (LLM) 和视觉语言模型 (VLM) 的微调而设计。它通过支持多种算法和分布式训练策略，提供高效且可扩展的 RLHF 训练能力。
+**A**: LightRFT (Light Reinforcement Fine-Tuning) 是一个先进的强化学习框架，专为大语言模型 (LLM) 和视觉语言模型 (VLM) 的强化微调而设计，支持多种模型、算法、分布式训练策略和推理引擎，提供高效且可扩展的 RLHF 和 RLVR 训练能力。
 
 ### Q: LightRFT 与 OpenRLHF 的主要区别是什么？
 
@@ -14,24 +14,24 @@
 - 增强了多模态 (VLM) 支持
 - 更多的强化学习算法（GRPO, GSPO, GMPO, REINFORCE++, CPGD 等）
 - 更好的显存优化（推理引擎休眠、优化器卸载）
-- 改进的推理引擎（支持 FP8 的 vLLM, SGLang）
+- 改进的推理引擎（vLLM, SGLang）
 - 为了提高效率，支持奖励模型 (RM) 的同机部署 (Co-location)
-- 更灵活的分布式训练策略
+- 更灵活的分布式训练策略，支持 FSDP 和 DeepSpeed ZeRO 
 
 ### Q: 支持哪些模型？
 
 **A**: LightRFT 支持：
-- **LLM**: Qwen, Qwen2.5, LLaMA, Mistral 以及大多数 HuggingFace 模型
-- **VLM**: Qwen-VL, Qwen2-VL, LLaVA
+- **LLM**: Qwen, Qwen2.5 以及大多数 HuggingFace 模型
+- **VLM**: Qwen-VL, Qwen2-VL
 - **自定义模型**: 通过 monkey patching 可以轻松添加新模型
 
 ### Q: 需要什么样的硬件？
 
 **A**: 最低要求：
-- **GPU**: 支持 CUDA 11.8+ 的 NVIDIA GPU
+- **GPU**: 支持 CUDA 12.8+ 的 NVIDIA GPU
 - **显存**: 建议每张 GPU 40GB+ VRAM（通过优化可以实现 24GB 运行）
-- **PyTorch**: 2.5.1+
-- **Python**: 3.8+
+- **PyTorch**: 2.9.1+
+- **Python**: 3.10+
 
 生产环境建议：8× A100/H100 80GB。
 
@@ -46,33 +46,21 @@ cd LightRFT
 pip install -r requirements.txt && pip install -e .
 ```
 
-### Q: 我需要单独安装 vLLM 吗？
-
-**A**: 不需要，vLLM 已包含在依赖列表中。不过，为了使用最新特性，您可以从源码进行安装。
-
 ## 训练问题
 
 ### Q: FSDP 和 DeepSpeed 有什么区别？
 
-**A**:
-- **FSDP**: PyTorch 原生支持，集成度更高，支持 CPU 卸载 (Offload)。
-- **DeepSpeed**: 更成熟，ZeRO-3 优化效果好，通常速度更快。
+**A**: 虽然两者都实现了完全分片数据并行 (ZeRO-3/FSDP)，但设计哲学和侧重点不同：
+- **FSDP (PyTorch 原生)**:
+    - **深度集成**: 原生支持 Autograd 和 `torch.compile`，与 PyTorch 生态无缝衔接。
+    - **高灵活度**: 通过 `auto_wrap_policy` 可精细控制模块分片粒度，适合结构复杂的自定义模型。
+    - **易于组合**: 更容易与张量并行 (TP) 等原生分布式技术组合。
+- **DeepSpeed (微软开发)**:
+    - **功能全家桶**: 一站式提供 CPU/NVMe 卸载 (ZeRO-Infinity)、高性能优化器等工具。
+    - **声明式配置**: 通过 JSON 文件管理设置，将复杂性抽象化，上手门槛较低。
+    - **极致性能**: 包含大量针对特定场景优化的自定义 CUDA Kernel。
 
-追求极致显存效率时使用 FSDP，追求速度时使用 DeepSpeed。
-
-### Q: 如何选择 Batch Size？
-
-**A**: 请遵循以下约束：
-```
-train_batch_size >= rollout_batch_size × n_samples_per_prompt
-```
-
-以 8 张 GPU 为例：
-- `train_batch_size=256`
-- `rollout_batch_size=64`
-- `n_samples_per_prompt=8`
-- `micro_train_batch_size=1`
-- `micro_rollout_batch_size=2`
+**选择建议**: 追求原生体验、复杂定制或使用 `torch.compile` 时选 FSDP；需要极致易用性或极其巨大的模型（需 NVMe 卸载）时选 DeepSpeed。
 
 ### Q: 我该使用哪种算法？
 
@@ -99,16 +87,6 @@ train_batch_size >= rollout_batch_size × n_samples_per_prompt
 - 奖励模型同机部署（与训练共用 GPU）
 - 远程奖励模型服务器
 - 加权奖励组合
-
-### Q: 如何开启多模态 (VLM) 训练？
-
-**A**: 使用 VLM 训练脚本：
-```bash
-python train_vl.py \
-    --pretrain /path/to/Qwen2-VL \
-    --mixed_mm_data \
-    --packing_samples
-```
 
 ## 性能问题
 
@@ -140,22 +118,6 @@ python train_vl.py \
 - **34B 模型**: 约 200 样本/分钟
 - **70B 模型**: 约 50 样本/分钟
 
-### Q: 如何使用多节点训练？
-
-**A**: 使用 SLURM 或 Ray：
-```bash
-# SLURM 示例
-srun -N2 --gres=gpu:8 --ntasks-per-node=8 bash train.sh
-
-# 或使用 torchrun
-torchrun --nproc_per_node=8 \
-    --nnodes=2 \
-    --node_rank=$NODE_RANK \
-    --master_addr=$MASTER_ADDR \
-    --master_port=$MASTER_PORT \
-    train.py
-```
-
 ## 算法问题
 
 ### Q: GRPO 和 PPO 有什么区别？
@@ -173,13 +135,6 @@ GRPO 系统更简洁，显存效率更高。
 - 想要保留基础模型的能力
 - 需要受控的策略更新
 - 防止灾难性遗忘
-
-### Q: 什么是 Clip Higher？
-
-**A**: 一种改进的裁剪方案，针对正负优势分别设置不同的上下界。适用于：
-- 有噪声的奖励信号
-- 较大的分布偏移
-- 训练不稳定的情况
 
 ## 调试问题
 
@@ -293,7 +248,7 @@ trainer = SPMDPPOTrainer(
 )
 ```
 
-### Q: 训练过程中如何保存端点 (Checkpoint)？
+### Q: 训练过程中如何保存 Checkpoint ？
 
 **A**: 检查点保存是自动的：
 ```bash

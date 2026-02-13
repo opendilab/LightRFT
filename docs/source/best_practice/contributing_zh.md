@@ -73,7 +73,6 @@ make docs-live
 ```bash
 # 运行特定测试
 python test_trajectory_saver_fix.py
-python test_action_mask_indexing.py
 
 # 在 tests/ 目录下添加您自己的测试用例
 ```

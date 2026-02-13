@@ -32,43 +32,39 @@ Built-in optimizations for efficient training and inference:
 
 ### Core Classes
 
-#### 1. ActorText
-**Purpose**: General-purpose actor for text-only language models
+#### 1. ActorModality (Modality Definition)
+**Purpose**: Located in `models/actor_modality.py`, it defines the modality types for actor models and manages the parameters supported by each modality.
 
 **Key Features**:
-- Supports various causal language model architectures
-- Configurable LoRA adaptation with auto-detection of target modules
-- Flash Attention 2.0 integration for improved performance
+- **Categorization**: Defines model types via the `ActorModality` enum (e.g., `LANGUAGE_ONLY`, `VISION_LANGUAGE`, `AUDIO_LANGUAGE`, `OMNI`).
+- **Parameter Mapping**: The `MODALITY_PARAMETERS` dictionary defines special parameters supported by each modality (e.g., `pixel_values` for vision models, `audio_values` for audio models).
+- **Decoupled Design**: The Trainer dynamically retrieves required parameters via the `get_supported_parameters` interface, decoupling training logic from specific model input formats.
 
-**Design Decisions**:
-- Generic implementation that works with any HuggingFace causal LM
-- Automatic detection of linear modules for LoRA injection
-- Flexible generation parameters with post-processing for RL training
-
-#### 2. ActorVL (Vision-Language)
-**Purpose**: Specialized actor for vision-language models
+#### 2. ActorLanguage
+**Purpose**: General-purpose actor for text-only language models.
 
 **Key Features**:
-- Multi-modal input processing (text + vision)
-- Support for various VL architectures (LLaVA, Qwen2-VL, Qwen2.5-VL, Keye-VL, Qwen3-VL, etc.)
-- Image grid processing for different aspect ratios
-- Specialized handling for different model types
+- **Text-only Support**: Modality is explicitly declared as `ActorModality.LANGUAGE_ONLY`.
+- **Wide Compatibility**: Supports most Causal Language Model architectures available on HuggingFace.
+- **Performance Optimization**: Simple LoRA injection with auto-detection and Flash Attention 2.0 integration.
 
-**Design Decisions**:
-- Separate class to handle the complexity of multi-modal inputs
-- Model-specific adaptations for different VL architectures
-- Flexible pixel value and grid dimension handling
+#### 3. ActorVL (Vision-Language)
+**Purpose**: Specialized actor for vision-language models, handling images, videos, and multi-modal inputs.
 
-#### 3. Reward Models
-**Purpose**: Scalar or generative reward models for evaluating response quality
+**Key Features**:
+- **Multi-modal Capability**: Modality declared as `ActorModality.VISION_LANGUAGE`.
+- **Architecture Adaptation**: Supports various VLM architectures including  Qwen2-VL and Qwen2.5-VL.
+- **Input Handling**: Manages image grids and variable-length visual sequences internally.
+
+#### 4. ActorAL (Audio-Language)
+**Purpose**: Specialized actor for audio-language models (e.g., Qwen2-Audio) with `ActorModality.AUDIO_LANGUAGE`, supporting audio capture and processing.
+
+#### 5. Reward Models
+**Purpose**: Scalar (SRM) or generative (GRM) reward models for evaluating response quality.
 
 **Key Classes**:
-- **ScalarRewardModelVL**: Scalar Reward Model (SRM) mapping multimodal inputs to scalar scores. Supports multiple reward heads and preference loss functions like Bradley-Terry.
-- **GenerativeRewardModelVL**: Generative Reward Model (GRM) leveraging generation capabilities to output text-based evaluations with reasoning (CoT).
-
-**Design Decisions**:
-- Shared infrastructure with Actors.
-- Support for both scalar-based (efficient, direct for PPO) and text-based reasoning feedback mechanisms.
+- **ScalarRewardModelVL/AL**: Scalar Reward Models (SRM) mapping multimodal inputs to scalar scores. Supports Bradley-Terry preference loss.
+- **GenerativeRewardModelVL**: Generative Reward Models (GRM) leveraging generation capabilities to output text-based evaluations with reasoning (CoT).
 
 ### Utility Functions
 

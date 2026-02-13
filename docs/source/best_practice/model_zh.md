@@ -32,43 +32,39 @@ models 包采用了模块化设计方法，实现了关注点分离并提升了�
 
 ### 核心类
 
-#### 1. ActorText
+#### 1. ActorModality (模态定义)
+**用途**：位于 `models/actor_modality.py`，定义 Actor 模型的模态类型并管理不同模态支持的参数。
+
+**核心特性**：
+- **分类管理**：通过 `ActorModality` 枚举（如 `LANGUAGE_ONLY`, `VISION_LANGUAGE`, `AUDIO_LANGUAGE`, `OMNI`）定义模型类型。
+- **参数映射**：`MODALITY_PARAMETERS` 字典定义了各模态支持的特殊参数（如 `pixel_values` 对应视觉模型，`audio_values` 对应音频模型）。
+- **解耦设计**：Trainer 通过 `get_supported_parameters` 接口动态获取模型所需的参数，实现了训练逻辑与具体模型输入格式的解耦。
+
+#### 2. ActorLanguage
 **用途**：用于纯文本语言模型的通用 Actor。
 
 **核心特性**：
-- 支持各种因果语言模型 (Causal Language Model) 架构。
-- 可配置的 LoRA 适配，支持自动检测目标模块。
-- 集成 Flash Attention 2.0 以提升性能。
+- **纯文本支持**：模态被显式声明为 `ActorModality.LANGUAGE_ONLY`。
+- **广泛兼容**：支持 HuggingFace 上的大多数因果语言模型 (Causal Language Model) 架构。
+- **性能优化**：自动检测线性模块进行 LoRA 注入，集成 Flash Attention 2.0。
 
-**设计决策**：
-- 通用实现，可与任何 HuggingFace 因果语言模型配合使用。
-- 自动检测线性模块以进行 LoRA 注入。
-- 灵活的生成参数，并为 RL 训练提供后处理。
-
-#### 2. ActorVL (Vision-Language)
-**用途**：用于视觉语言模型的专门 Actor。
+#### 3. ActorVL (Vision-Language)
+**用途**：用于视觉语言模型的专门 Actor，处理图像、视频等多模态输入。
 
 **核心特性**：
-- 多模态输入处理（文本 + 视觉）。
-- 支持各种视觉语言架构（如 LLaVA, Qwen2-VL, Qwen2.5-VL, Keye-VL, Qwen3-VL 等）。
-- 针对不同长宽比的图像网格 (Image Grid) 处理。
-- 针对不同模型类型的专门处理。
+- **多模态能力**：模态声明为 `ActorModality.VISION_LANGUAGE`。
+- **架构适配**：支持 Qwen2-VL 和 Qwen2.5-VL
+- **输入处理**：内部处理图像网格 (Image Grid) 和变长视觉序列。
 
-**设计决策**：
-- 独立的类，用以处理多模态输入的复杂性。
-- 针对不同视觉语言架构的模型特定适配。
-- 灵活的像素值和网格维度处理。
+#### 4. ActorAL (Audio-Language)
+**用途**：用于音频语言模型（如 Qwen2-Audio）的专用 Actor，模态为 `ActorModality.AUDIO_LANGUAGE`，支持音频采集和处理。
 
-#### 3. 奖励模型 (Reward Models)
-**用途**：实现评估 Response 质量的标量或生成式奖励模型。
+#### 5. 奖励模型 (Reward Models)
+**用途**：评估 Response 质量的标量 (SRM) 或生成式 (GRM) 奖励模型。
 
 **核心类**：
-- **ScalarRewardModelVL**：标量奖励模型 (SRM)，将多模态输入映射为标量分数。支持多维度奖励头和 Bradley-Terry 等各种偏好损失函数。
-- **GenerativeRewardModelVL**：生成式奖励模型 (GRM)，利用文本生成能力输出带推理过程 (CoT) 的文本评估结果。
-
-**设计决策**：
-- 与 Actor 共享基础架构。
-- 支持基于标量（高效、直接用于 PPO）和基于自回归文本生成（可解释性强）的两种反馈机制。
+- **ScalarRewardModelVL/AL**：标量奖励模型 (SRM)，将多模态输入映射为标量分数。支持 Bradley-Terry 偏好损失。
+- **GenerativeRewardModelVL**：生成式奖励模型 (GRM)，输出带推理过程 (CoT) 的文本评估。
 
 ### 工具函数
 

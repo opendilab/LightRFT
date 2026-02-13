@@ -14,13 +14,13 @@ LightRFT 是一个专为 RLHF（基于人类反馈的强化学习）和 RLVR（�
 
 LightRFT 框架采用分层架构，旨在将推理大模型应用到不同领域。系统分为四个主要层级，从基础硬件基础设施逐步演进到高级推理应用：
 
-**异构硬件层 (Heterogeneous Hardware Layer)**：基础层支持多种 GPU 架构，包括 NVIDIA GPU（A100/A800/H100）、华为 GPU 以及其他硬件平台，实现在不同计算环境下的灵活部署。
+**异构硬件层 (Heterogeneous Hardware Layer)**：基础层支持多种 GPU 架构，包括 NVIDIA GPU（A100/A800/H100）、华为 GPU (Work in Progress) 以及其他硬件平台，实现在不同计算环境下的灵活部署。
 
 **分布式执行层 (Distributed Execution Layer)**：该层通过多种训练引擎（DeepSpeed ZeRO、PyTorch FSDP）和高性能推理引擎（vLLM、SGLang）提供分布式执行能力，确保高效的资源利用和可扩展性。
 
 **RLVR 框架层 (RLVR Framework Layer)**：作为系统的核心，该层集成了各种模型组件——Actor 模型、Critic 模型、参考模型（Reference Models）、可验证规则（Verifiable Rules）和奖励模型（Reward Models），并结合了包括 GRPO、DAPO、TTRL、CPGD 在内的高级优化算法。模型和算法通过 **colocate** 机制进行交互，该机制能够在同一计算资源内无缝优化并共同部署不同的组件。
 
-**推理大模型应用层 (Reasoning Large Models Application Layer)**：最顶层专注于提供跨多个领域的推理能力，包括形式数学推理（AIME/GSM8K）、代码生成（LiveCodeBench/SWE）、基于搜索的高效推理以及多模态推理（图像/视频/音频/音乐）。
+**推理大模型应用层 (Reasoning Large Models Application Layer)**：最顶层专注于提供跨多个领域的推理能力，包括形式数学推理（AIME/GSM8K）、代码生成（LiveCodeBench/SWE）、基于搜索的高效推理以及多模态推理（图像/视频/音频/音乐）。(Work in Progress)
 
 该架构在分布式执行框架和 RLVR 框架内运行，协调所有组件，为大语言模型、视觉语言模型、音频语言模型和扩散模型提供可扩展、高效且可信的推理应用。
 
