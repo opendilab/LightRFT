@@ -346,7 +346,7 @@ def apply_lora_configuration(
     model.enable_input_require_grads()
 
     # Auto-detect target modules if not provided
-    if target_modules is None:
+    if target_modules is None or "all-linear" in target_modules:
         target_modules = find_all_linear_modules(model, freeze_vision_tower)
 
     print("target_modules: ", target_modules)
