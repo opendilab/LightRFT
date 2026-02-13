@@ -15,13 +15,13 @@ High-Level Architecture
 The LightRFT framework follows a layered architecture designed to apply reasoning large models into different domains. 
 The system is structured in four main layers, progressing from foundational hardware infrastructure to advanced reasoning applications:
 
-**Heterogeneous Hardware Layer**: The foundation supports diverse GPU architectures including NVIDIA GPUs (A100/A800/H100), Huawei GPUs, and other hardware platforms, enabling flexible deployment across different computing environments.
+**Heterogeneous Hardware Layer**: The foundation supports diverse GPU architectures including NVIDIA GPUs (A100/A800/H100), Huawei GPUs (Work in Progress), and other hardware platforms, enabling flexible deployment across different computing environments.
 
 **Distributed Execution Layer**: This layer provides distributed execution capabilities through multiple training engines (DeepSpeed ZeRO, PyTorch FSDP) and high-performance inference engines (vLLM, SGLang), ensuring efficient resource utilization and scalability.
 
 **RLVR Framework Layer**: At the core of the system, this layer integrates various model components—Actor Models, Critic Models, Reference Models, Verifiable Rules, and Reward Models—with advanced optimization algorithms including GRPO, DAPO, TTRL, CPGD. The models and algorithms interact through a colocate mechanism that enables seamless optimization and co-location of different components within the same computing resources.
 
-**Reasoning Large Models Application Layer**: The topmost layer focuses on delivering reasoning capabilities across multiple domains, including formal math reasoning (AIME/GSM8K), code generation (LiveCodeBench/SWE), efficient reasoning with search, and multi-modal reasoning (image/video/audio/music).
+**Reasoning Large Models Application Layer**: The topmost layer focuses on delivering reasoning capabilities across multiple domains, including formal math reasoning (AIME/GSM8K), code generation (LiveCodeBench/SWE), efficient reasoning with search, and multi-modal reasoning (image/video/audio/music). (Work in Progress)
 
 The architecture operates within a distributed execution framework and an RLVR framework, orchestrating all components to deliver scalable, efficient, and trustworthy reasoning applications for large language models, vision-language models, audio-language models, and diffusion models.
 
