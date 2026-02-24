@@ -166,18 +166,6 @@ pip install ".[vllm]"
 pip install vllm>=0.13.3
 ```
 
-#### Alternative: Full Installation from Requirements
-
-```bash
-# Install all dependencies from requirements file
-pip install -r requirements.txt
-pip install -e .
-
-# Or use requirements-full.txt which includes vLLM
-pip install -r requirements-full.txt
-pip install -e .
-```
-
 #### Troubleshooting Flash-Attention Installation
 
 Flash-Attention is included by default but may fail on some systems due to CUDA compatibility. If installation fails, try:

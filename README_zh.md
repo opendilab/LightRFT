@@ -166,18 +166,6 @@ pip install ".[vllm]"
 pip install vllm>=0.13.3
 ```
 
-#### 备选方案：从 Requirements 文件完整安装
-
-```bash
-# 从 requirements 文件安装所有依赖
-pip install -r requirements.txt
-pip install -e .
-
-# 或使用包含 vLLM 的 requirements-full.txt
-pip install -r requirements-full.txt
-pip install -e .
-```
-
 #### Flash-Attention 安装问题排查
 
 Flash-Attention 默认包含在安装中，但在某些系统上可能因 CUDA 兼容性而安装失败。如果遇到问题，请尝试：
