@@ -671,10 +671,13 @@ class StrategyBase(ABC):
         self.inference_engine_type = engine_type
 
         if engine_type == "vllm":
+            # Conditional import: vLLM is optional and only imported when explicitly requested
+            # Default engine is SGLang. To use vLLM, install with: pip install "LightRFT[vllm]"
             from .vllm_utils import get_vllm_engine_for_rollout
             self.inference_engine = get_vllm_engine_for_rollout(args)
             self.inference_engine_status = EngineStatus.WAKEUP
         elif engine_type == "sglang":
+            # Default inference engine: SGLang (no additional dependencies required)
             self.inference_engine = get_sglang_engine_for_rollout(args)
             self.inference_engine_status = EngineStatus.WAKEUP
         else:

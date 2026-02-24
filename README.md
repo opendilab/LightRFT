@@ -6,9 +6,9 @@
 
 **Light, Efficient, Omni-modal & Reward-model Driven Reinforcement Fine-Tuning Framework**
 
-[![Version](https://img.shields.io/badge/version-0.1.0-blue.svg)](https://github.com/opendilab/lightrft)
+[![Version](https://img.shields.io/badge/version-0.1.1-blue.svg)](https://github.com/opendilab/lightrft)
 [![Python](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
-[![PyTorch](https://img.shields.io/badge/PyTorch-2.5.1+-ee4c2c.svg)](https://pytorch.org/)
+[![PyTorch](https://img.shields.io/badge/PyTorch-2.9.1+-ee4c2c.svg)](https://pytorch.org/)
 [![License](https://img.shields.io/badge/license-Apache%202.0-green.svg)](LICENSE)
 
 English | [简体中文](README_zh.md)
@@ -92,7 +92,7 @@ For detailed algorithm descriptions, implementation details, and usage guide, se
 
 ### Requirements
 
-- Python >= 3.12
+- Python >= 3.10
 - CUDA >= 12.8
 - PyTorch >= 2.9.1
 
@@ -149,9 +149,39 @@ cd LightRFT
 # Install dependencies
 pip install -r requirements.txt
 
-# Install LightRFT
+# Install LightRFT (basic installation with SGLang backend by default)
 pip install -e .
 ```
+
+#### Optional Dependencies
+
+LightRFT uses **SGLang** as the default inference backend. You can optionally install additional components:
+
+**vLLM Backend (Optional)**
+If you want to use vLLM instead of SGLang:
+```bash
+pip install ".[vllm]"
+# or
+pip install vllm>=0.13.3
+```
+
+**Flash-Attention (Optional)**
+For improved performance with attention operations:
+```bash
+# Option 1: Install from PyPI (may require specific CUDA version)
+pip install ".[flash-attn]"
+
+# Option 2: Use pre-built wheels (recommended for compatibility)
+# Download the appropriate wheel from https://github.com/Dao-AILab/flash-attention/releases
+# Example for CUDA 12.x and PyTorch 2.9:
+pip install flash_attn-2.8.3+cu12torch2.9cxx11abiTRUE-cp312-cp312-linux_x86_64.whl
+
+# Option 3: Use Docker (easiest method)
+# The official Docker images already include flash-attention
+docker pull opendilab/lightrft:v0.1.0
+```
+
+**Note**: Flash-attention installation may fail on some systems due to CUDA compatibility. Using Docker or pre-built wheels is recommended for a hassle-free setup.
 
 
 ## 📚 Usage Guide

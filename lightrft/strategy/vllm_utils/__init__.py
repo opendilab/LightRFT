@@ -5,11 +5,23 @@ The module simplifies the process of creating a vLLM engine with specific config
 for large language model inference, particularly in reinforcement learning from human feedback
 (RLHF) contexts. It offers both high-level and low-level functions for engine creation,
 with support for tensor parallelism, memory optimization, and multimodal capabilities.
+
+Note:
+    This module is only available when vLLM is installed. Install with:
+    pip install "LightRFT[vllm]"
 """
 
 from typing import Any
 
-from vllm import LLM
+# Conditional import: only import vLLM when this module is explicitly used
+# This allows the main package to work without vLLM installed (using SGLang by default)
+try:
+    from vllm import LLM
+except ImportError as e:
+    raise ImportError(
+        "vLLM is not installed. To use vLLM backend, install it with: "
+        "pip install 'LightRFT[vllm]' or pip install vllm>=0.13.3"
+    ) from e
 
 
 def get_vllm_engine_for_rollout(args: Any) -> LLM:

@@ -41,6 +41,18 @@ setup(
             "timeout_decorator",
             "word2number",
         ],
+        # Optional vLLM backend support
+        # Install with: pip install "LightRFT[vllm]"
+        "vllm": [
+            "vllm>=0.13.3",
+        ],
+        # Optional flash-attention support for improved performance
+        # Install with: pip install "LightRFT[flash-attn]"
+        # Note: flash-attn requires specific CUDA versions and may have installation challenges.
+        # See installation documentation for alternatives (prebuilt wheels or Docker images).
+        "flash-attn": [
+            "flash-attn>=2.8.3",
+        ],
     },
     keywords=[
         "reinforcement learning",

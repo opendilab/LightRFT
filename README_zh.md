@@ -6,9 +6,9 @@
 
 **轻量化、全模态和奖励模型驱动的强化学习微调框架**
 
-[![Version](https://img.shields.io/badge/version-0.1.0-blue.svg)](https://github.com/opendilab/lightrft)
+[![Version](https://img.shields.io/badge/version-0.1.1-blue.svg)](https://github.com/opendilab/lightrft)
 [![Python](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
-[![PyTorch](https://img.shields.io/badge/PyTorch-2.5.1+-ee4c2c.svg)](https://pytorch.org/)
+[![PyTorch](https://img.shields.io/badge/PyTorch-2.9.1+-ee4c2c.svg)](https://pytorch.org/)
 [![License](https://img.shields.io/badge/license-Apache%202.0-green.svg)](LICENSE)
 
 [English](README.md) | 简体中文
@@ -92,7 +92,7 @@
 
 ### 环境要求
 
-- Python >= 3.12
+- Python >= 3.10
 - CUDA >= 12.8
 - PyTorch >= 2.9.1
 
@@ -149,9 +149,39 @@ cd LightRFT
 # 安装依赖
 pip install -r requirements.txt
 
-# 安装 LightRFT
+# 安装 LightRFT (基础安装，默认使用 SGLang 后端)
 pip install -e .
 ```
+
+#### 可选依赖
+
+LightRFT 默认使用 **SGLang** 作为推理后端。您可以选择安装以下额外组件:
+
+**vLLM 后端 (可选)**
+如果您想使用 vLLM 而不是 SGLang:
+```bash
+pip install ".[vllm]"
+# 或者
+pip install vllm>=0.13.3
+```
+
+**Flash-Attention (可选)**
+用于改进注意力操作的性能:
+```bash
+# 方式 1: 从 PyPI 安装 (可能需要特定的 CUDA 版本)
+pip install ".[flash-attn]"
+
+# 方式 2: 使用预编译的 wheel 文件 (推荐,兼容性更好)
+# 从 https://github.com/Dao-AILab/flash-attention/releases 下载适合的 wheel 文件
+# 例如 CUDA 12.x 和 PyTorch 2.9:
+pip install flash_attn-2.8.3+cu12torch2.9cxx11abiTRUE-cp312-cp312-linux_x86_64.whl
+
+# 方式 3: 使用 Docker (最简单的方法)
+# 官方 Docker 镜像已经包含了 flash-attention
+docker pull opendilab/lightrft:v0.1.0
+```
+
+**注意**: Flash-attention 的安装在某些系统上可能因 CUDA 兼容性问题而失败。推荐使用 Docker 或预编译的 wheel 文件以获得无忧的安装体验。
 
 
 ---
