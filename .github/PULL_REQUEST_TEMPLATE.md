@@ -1,42 +1,57 @@
-## Summary
+## 📝 Summary
 
-<!-- Brief description of your changes -->
+<!-- Briefly describe the purpose of this PR. What problem does it solve? -->
 
-**Type of Change:**
-- [ ] Bug fix
-- [ ] New feature
-- [ ] Breaking change
-- [ ] Documentation
-- [ ] Other: _____
+## 🏷️ Type of Change
 
-## Related Issues
+<!-- Check the boxes that apply (e.g., [x]) -->
 
-<!-- Link related issues: Fixes #123, Related to #456 -->
+- [ ] 🐛 **Bug fix** (non-breaking change which fixes an issue)
+- [ ] ✨ **New feature** (non-breaking change which adds functionality)
+- [ ] 🎨 **Refactoring** (code style, formatting, local variables)
+- [ ] ⚡ **Performance** (improvements to code performance)
+- [ ] ✅ **Testing** (adding or fixing tests)
+- [ ] 📚 **Documentation** (updates to documentation)
+- [ ] 💥 **Breaking change** (fix or feature that causes existing functionality to fail)
 
-## Changes
+## 🔗 Related Issues
 
-<!-- List key changes made in this PR -->
+<!-- Link related issues here. Example: Fixes #123 -->
+
+- Fixes #
+- Related to #
+
+## 🛠️ Key Changes
+
+<!-- List the specific changes made in this PR -->
+
 -
 -
+-
 
-## Testing
+## 🧪 Testing
 
-<!-- Describe how you tested your changes -->
+<!-- Describe how you tested your changes to ensure they work as expected. -->
 
-**Test commands:**
+**Environment:**
+- Python:
+- PyTorch:
+- CUDA:
+
+**Command(s):**
 ```bash
-# Add test commands here
+# Paste the command used to run tests
 ```
 
-**Environment:** <!-- e.g., Python 3.10, PyTorch 2.1, 8xA100 -->
+**Results:**
+- [ ] Tests passed locally
 
-## Checklist
+## ✅ Checklist
 
-- [ ] Code follows project style (`make format` and `make fcheck`)
-- [ ] Tests added/updated and passing
-- [ ] Documentation updated (if needed)
-- [ ] Breaking changes documented (if applicable)
+<!-- Before submitting, please ensure the following: -->
 
----
-
-**BEFORE SUBMITTING, PLEASE READ:** [Contributing Guide](https://github.com/opendilab/LightRFT/tree/main/docs/source/best_practice/contributing.md)
+- [ ] I have run `make format` and `make fcheck` to ensure code style compliance.
+- [ ] I have added or updated tests for this change.
+- [ ] I have updated the documentation (if applicable).
+- [ ] I have documented any breaking changes (if applicable).
+- [ ] This PR is ready for review.
