@@ -7,7 +7,7 @@
 **Light, Efficient, Omni-modal & Reward-model Driven Reinforcement Fine-Tuning Framework**
 
 [![Version](https://img.shields.io/badge/version-0.1.1-blue.svg)](https://github.com/opendilab/lightrft)
-[![Python](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
+[![Python](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.9.1+-ee4c2c.svg)](https://pytorch.org/)
 [![License](https://img.shields.io/badge/license-Apache%202.0-green.svg)](LICENSE)
 
@@ -92,7 +92,7 @@ For detailed algorithm descriptions, implementation details, and usage guide, se
 
 ### Requirements
 
-- Python >= 3.10
+- Python >= 3.12
 - CUDA >= 12.8
 - PyTorch >= 2.9.1
 

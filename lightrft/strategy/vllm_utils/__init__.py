@@ -7,24 +7,17 @@ for large language model inference, particularly in reinforcement learning from 
 with support for tensor parallelism, memory optimization, and multimodal capabilities.
 
 Note:
-    This module is only available when vLLM is installed. Install with:
-    pip install "LightRFT[vllm]"
+    This module uses lazy imports for vLLM. The module can be imported without vLLM installed
+    (when using SGLang backend). ImportError will only be raised when actually trying to use
+    vLLM functions with engine_type="vllm".
+
+    To use vLLM backend, install with: pip install "LightRFT[vllm]"
 """
 
 from typing import Any
 
-# Conditional import: only import vLLM when this module is explicitly used
-# This allows the main package to work without vLLM installed (using SGLang by default)
-try:
-    from vllm import LLM
-except ImportError as e:
-    raise ImportError(
-        "vLLM is not installed. To use vLLM backend, install it with: "
-        "pip install 'LightRFT[vllm]' or pip install vllm>=0.13.3"
-    ) from e
 
-
-def get_vllm_engine_for_rollout(args: Any) -> LLM:
+def get_vllm_engine_for_rollout(args: Any):
     """
     Initialize and configure a vLLM engine for reinforcement learning rollout phase.
 
@@ -38,6 +31,8 @@ def get_vllm_engine_for_rollout(args: Any) -> LLM:
 
     :return: Configured vLLM engine instance ready for rollout operations.
     :rtype: vllm.LLM
+
+    :raises ImportError: If vLLM is not installed when this function is called.
 
     Example::
 
@@ -58,6 +53,18 @@ def get_vllm_engine_for_rollout(args: Any) -> LLM:
         The construction of tensor-parallel (TP) group is implemented in the strategy part.
         Multimodal image and video limits are automatically configured when applicable.
     """
+    # Lazy import: only import vLLM when this function is actually called
+    # This allows the module to be imported without vLLM installed (using SGLang by default)
+    try:
+        from vllm import LLM
+    except ImportError as e:
+        raise ImportError(
+            "vLLM is not installed but engine_type is set to 'vllm'. "
+            "To use vLLM backend, install it with: pip install 'LightRFT[vllm]' "
+            "or pip install vllm>=0.13.3. "
+            "Alternatively, use engine_type='sglang' (default) which doesn't require vLLM."
+        ) from e
+
     kwargs = {}
     if not args.text_only:
         limit_mm_per_prompt = {}
@@ -89,7 +96,7 @@ def get_vllm_engine(
     max_model_len: int = 4096,
     enable_sleep: bool = True,
     **kwargs: Any
-) -> LLM:
+):
     """
     Create and configure a vLLM engine with specified parameters.
 
@@ -115,6 +122,8 @@ def get_vllm_engine(
     :return: Configured vLLM engine instance.
     :rtype: vllm.LLM
 
+    :raises ImportError: If vLLM is not installed when this function is called.
+
     Example::
 
         >>> engine = get_vllm_engine(
@@ -130,6 +139,17 @@ def get_vllm_engine(
         Uses external launcher for distributed execution and custom worker class
         for integration with lightrft strategy components.
     """
+    # Lazy import: only import vLLM when this function is actually called
+    # This allows the module to be imported without vLLM installed (using SGLang by default)
+    try:
+        from vllm import LLM
+    except ImportError as e:
+        raise ImportError(
+            "vLLM is not installed but engine_type is set to 'vllm'. "
+            "To use vLLM backend, install it with: pip install 'LightRFT[vllm]' "
+            "or pip install vllm>=0.13.3. "
+            "Alternatively, use engine_type='sglang' (default) which doesn't require vLLM."
+        ) from e
 
     vllm_engine = LLM(
         model=pretrain_name_or_path,
