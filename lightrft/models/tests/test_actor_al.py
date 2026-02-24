@@ -16,6 +16,7 @@ import torch
 
 from lightrft.models.actor_al import ActorAL
 
+
 class TestActorAL:
     """Test cases for ActorAL class."""
     @pytest.fixture
