@@ -4,7 +4,7 @@ MMAU Test-Mini Evaluation Script for R1-AQA models trained with LightRFT.
 This script performs inference on the MMAU test-mini benchmark and outputs
 results in the format expected by MMAU's official evaluation script.
 
-Faithfully ported from R1-AQA's ``src/test_mmau.py``.
+Faithfully ported from R1-AQA's ``src/test_mmau.py``. You can find the original data of MMAU in the repository: https://github.com/Sakshi113/MMAU
 
 Output format (per sample):
     {

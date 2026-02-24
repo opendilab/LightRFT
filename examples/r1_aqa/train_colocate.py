@@ -5,22 +5,6 @@ This script adapts LightRFT's GRPO training pipeline for audio question-answerin
 on Qwen2-Audio, faithfully migrating R1-AQA's (xiaomi-research/r1-aqa) training
 logic into LightRFT's framework.
 
-Key adaptations from the standard VL pipeline:
-    - Uses AudioPromptDataset instead of PromptDatasetVL (audio content handling)
-    - Uses AudioMultimodalProcessor instead of MultimodalDataProcessor
-    - Uses ActorAL (from lightrft.models.actor_al) for native Qwen2-Audio support
-    - Patches strategy._build_multimodal_inputs for audio multi_modal_data
-    - Rule-based rewards: accuracy(0/1) + format(0/1) following R1-AQA
-
-Migration mapping (R1-AQA → LightRFT):
-    R1-AQA src/train.py        → this file (train_colocate.py)
-    R1-AQA GRPOTrainer         → SPMDPPOTrainerVL + group_norm advantage
-    R1-AQA num_generations=8   → --n_samples_per_prompt 8
-    R1-AQA temperature=1.0     → --temperature 1.0
-    R1-AQA max_prompt_length=512 → --prompt_max_len 512
-    R1-AQA accuracy+format     → reward_fn in reward_models_utils.py
-    R1-AQA DeepSpeed ZeRO3     → --zero_stage 3 (or --fsdp)
-
 Usage:
     python examples/r1_aqa/train_colocate.py --pretrain Qwen/Qwen2-Audio-7B-Instruct ...
 """
@@ -49,8 +33,8 @@ from lightrft.utils import blending_datasets, get_tokenizer_processor_vl
 
 # Local imports
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-from reward_models_utils import RECIPE, load_reward_models, reward_fn
-from audio_pipeline import (
+from reward_models_utils import load_reward_models, reward_fn
+from audio_dataset import (
     AudioPromptDataset,
     patch_strategy_for_audio,
     patch_experience_maker_for_audio,
@@ -129,14 +113,8 @@ def train(args):
     critic = None
 
     # ==================== Reward Models ====================
-    strategy.report_memory("before loaded reward models")
-    reward_models, reward_tokenizers, label_map = load_reward_models(
-        raw_reward_pretrain=args.reward_pretrain,
-        strategy=strategy,
-        use_engine=args.rm_use_engine,
-    )
-    strategy.print(f"label_map: {label_map}")
-    strategy.report_memory("after loaded reward models")
+    # R1-AQA uses pure rule-based rewards; no neural reward models are loaded.
+    reward_models, reward_tokenizers, label_map = [], [], {}
 
     strategy.print(actor)
 
@@ -243,28 +221,8 @@ def train(args):
                 )
                 strategy.print(f"Evaluation dataset: {len(eval_dataset)} samples")
 
-    # Pretrain dataset (optional PTX loss)
+    # Pretrain dataset disabled in this pipeline
     pretrain_dataloader = None
-    if args.pretrain_data:
-        strategy.print(f"Loading pretrain dataset from: {args.pretrain_data}")
-        pretrain_data = blending_datasets(
-            args.pretrain_data, args.pretrain_data_probs, strategy, args.seed,
-            return_eval=False, train_split=args.pretrain_split,
-        )
-        if len(pretrain_data) > 0:
-            pretrain_max_len = args.max_len if args.max_len else args.prompt_max_len + args.generate_max_len
-            total_pretrain_samples = args.max_epochs * len(prompts_dataset) * args.n_samples_per_prompt
-            pretrain_data_subset = pretrain_data.select(
-                range(min(len(pretrain_data), total_pretrain_samples))
-            )
-            pretrain_dataset = SFTDatasetVL(
-                pretrain_data_subset, tokenizer, pretrain_max_len, strategy, pretrain_mode=True,
-            )
-            pretrain_dataloader = itertools.cycle(
-                iter(strategy.setup_dataloader(
-                    pretrain_dataset, args.micro_train_batch_size, True, True, pretrain_dataset.collate_fn,
-                ))
-            )
 
     # Prompts dataloader
     prompts_dataloader = strategy.setup_dataloader(
@@ -367,7 +325,7 @@ def train(args):
         # Reward model
         reward_fn=reward_fn,
         reward_fn_label_map=label_map,
-        reward_recipe=RECIPE,
+        reward_recipe=None,
         reward_tokenizers=reward_tokenizers,
         save_hf_ckpt=args.save_hf_ckpt,
         disable_ds_ckpt=args.disable_ds_ckpt,

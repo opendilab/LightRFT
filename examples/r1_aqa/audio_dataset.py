@@ -32,50 +32,21 @@ import os
 import re
 from typing import Any, Dict, List, Optional, Tuple, Union
 
+import librosa
+from easydict import EasyDict
 import numpy as np
 import torch
 import torch.nn as nn
 from torch.utils.data import Dataset
-
-try:
-    import librosa
-except ImportError:
-    librosa = None
-
-try:
-    from easydict import EasyDict
-except ImportError:
-    EasyDict = dict
 
 
 # ============================================================================
 # Audio Loading
 # ============================================================================
 
-def load_audio(
-    audio_path: str,
-    sr: int = 16000,
-) -> Tuple[np.ndarray, int]:
-    """
-    Load an audio file and return (waveform, sample_rate).
-
-    :param audio_path: Path to the audio file (.wav, .mp3, etc.).
-    :param sr: Target sample rate for resampling.
-    :return: Tuple of (audio_array, sample_rate).
-    """
-    if librosa is not None:
-        audio, sample_rate = librosa.load(audio_path, sr=sr)
-    else:
-        # Fallback: use soundfile
-        import soundfile as sf
-        audio, sample_rate = sf.read(audio_path)
-        if sample_rate != sr:
-            # Simple resampling via scipy
-            from scipy.signal import resample
-            num_samples = int(len(audio) * sr / sample_rate)
-            audio = resample(audio, num_samples)
-            sample_rate = sr
-    return audio, sample_rate
+def load_audio(audio_path: str, sr: int = 16000) -> Tuple[np.ndarray, int]:
+    """Load audio file with librosa; returns (waveform, sample_rate)."""
+    return librosa.load(audio_path, sr=sr)
 
 
 # ============================================================================
@@ -177,29 +148,9 @@ class AudioPromptDataset(Dataset):
                 self.strategy.print(f"[WARNING] Failed to load audio {audio_path}: {e}")
                 audio_data = None
 
-        # ---- 4. Extract reference and label ----
-        reference = data.get(self.reference_key, "")
-        if reference is None:
-            reference = ""
-        # Also check extra_info and reward_model fallbacks
-        if not reference:
-            extra = data.get("extra_info", {})
-            if isinstance(extra, dict):
-                reference = extra.get("reference", "")
-            if not reference:
-                rm = data.get("reward_model", {})
-                if isinstance(rm, dict):
-                    reference = rm.get("ground_truth", "")
-
-        label = data.get(self.label_key, "avqa_rule")
-        if not label:
-            extra = data.get("extra_info", {})
-            if isinstance(extra, dict):
-                label = extra.get("label", "avqa_rule")
-
-        # Convert reference to string
-        reference = str(reference) if reference is not None else ""
-
+        # ---- 4. Reference and label (defaults if missing) ----
+        reference = str(data.get(self.reference_key) or "")
+        label = data.get(self.label_key) or "avqa_rule"
         return prompt_text, audio_data, reference, label
 
     def collate_fn(self, batch: List[Tuple]) -> Tuple[List, List, List, List]:

@@ -5,18 +5,6 @@ This module provides the ActorAL class, which implements an actor model specific
 for audio-language tasks in reinforcement learning scenarios. The actor is responsible for
 generating actions (text sequences) based on audio inputs and textual prompts.
 
-The module supports various optimization techniques including:
-- LoRA (Low-Rank Adaptation) for parameter-efficient fine-tuning
-- Flash Attention 2.0 for improved performance
-- DeepSpeed integration for distributed training
-- Sample packing for efficient batch processing
-
-Key Features:
-- Multi-modal input processing (text + audio)
-- Flexible model loading from pretrained checkpoints
-- Support for various audio-language model architectures
-- Gradient checkpointing for memory optimization
-- MoE (Mixture of Experts) model support
 """
 
 from typing import Optional, Tuple, Union

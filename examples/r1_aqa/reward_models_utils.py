@@ -23,20 +23,9 @@ Interface:
 from __future__ import annotations
 
 import re
-from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
+from typing import Any, Dict, List, Sequence, Tuple, Union
 
 import torch
-
-
-# ============================================================================
-# Reward Recipe Configuration
-# ============================================================================
-
-RECIPE: Dict[str, List[Tuple[str, Optional[str], float]]] = {
-    # AVQA dataset: pure rule-based reward (no neural reward model needed)
-    # Format: (reward_type, model_key, weight)
-    "avqa_rule": [("avqa_rule", None, 1.0)],
-}
 
 
 # ============================================================================
@@ -175,73 +164,7 @@ def avqa_combined_reward_fn(
 
 
 # ============================================================================
-# Reward Mixing (LightRFT Interface)
-# ============================================================================
-
-def mix_rewards(
-    labels: Sequence[str],
-    model_scores: torch.Tensor,
-    label_map: Dict[str, int],
-    solution_strs: Sequence[str],
-    refs: Sequence[str],
-) -> Tuple[torch.Tensor, Dict[str, torch.Tensor]]:
-    """
-    Mix rewards from multiple sources according to RECIPE configuration.
-
-    For R1-AQA, only rule-based rewards are used (no neural models).
-
-    :param labels: List of data labels (length B).
-    :param model_scores: Tensor of model scores — empty for rule-based.
-    :param label_map: Mapping from reward type to model index — empty.
-    :param solution_strs: List of model-generated solution strings (length B).
-    :param refs: List of reference/ground-truth answers (length B).
-    :return: Tuple of (final_reward [B], metrics_dict).
-    """
-    if torch.distributed.is_initialized() and torch.distributed.get_rank() == 0:
-        print(f"[mix_rewards] labels: {labels[:5]}...")
-
-    device = model_scores.device if model_scores.numel() > 0 else torch.device("cuda")
-    B = len(labels)
-
-    final_reward = torch.zeros(B, dtype=torch.float32, device=device)
-    metrics_dict: Dict[str, torch.Tensor] = {
-        "format_reward": torch.zeros(B, dtype=torch.float32, device=device),
-        "accuracy_reward": torch.zeros(B, dtype=torch.float32, device=device),
-        "model_reward": torch.zeros(B, dtype=torch.float32, device=device),
-        "rule_reward": torch.zeros(B, dtype=torch.float32, device=device),
-    }
-
-    for i, lab in enumerate(labels):
-        sol = solution_strs[i]
-        gt = refs[i] if i < len(refs) else ""
-
-        recipe = RECIPE.get(lab)
-        if recipe is None:
-            if torch.distributed.is_initialized() and torch.distributed.get_rank() == 0:
-                print(f"[WARNING] Label <{lab}> not in RECIPE, using 0.0 reward")
-            final_reward[i] = 0.0
-            continue
-
-        r = 0.0
-        for typ, key, w in recipe:
-            if typ == "avqa_rule":
-                total_r, acc_r, fmt_r = avqa_combined_reward_fn(sol, gt)
-                r += w * total_r
-
-                metrics_dict["accuracy_reward"][i] = acc_r
-                metrics_dict["format_reward"][i] = fmt_r
-                metrics_dict["rule_reward"][i] = total_r
-            else:
-                if torch.distributed.is_initialized() and torch.distributed.get_rank() == 0:
-                    print(f"[WARNING] Unknown reward type '{typ}', ignoring")
-
-        final_reward[i] = r
-
-    return final_reward, metrics_dict
-
-
-# ============================================================================
-# External Unified Interface (called by the trainer)
+# Reward Function (LightRFT interface — called by the trainer)
 # ============================================================================
 
 def reward_fn(
@@ -252,22 +175,35 @@ def reward_fn(
     label_map: Dict[str, int],
 ) -> Tuple[torch.Tensor, Dict[str, torch.Tensor]]:
     """
-    External unified interface for computing final rewards.
+    Compute rule-based AVQA rewards (accuracy + format) for each sample.
 
-    This is the main entry point called by LightRFT's trainer. It follows the
-    exact signature of ``examples/gsm8k_geo3k/reward_models_utils.py::reward_fn``.
+    Signature matches LightRFT's trainer expectation. For R1-AQA, model_reward_list,
+    labels, and label_map are unused (rule-based only).
 
     :param model_reward_list: List of reward tensors from neural models — empty for R1-AQA.
-    :param labels: List of data labels indicating reward type (length B).
+    :param labels: List of data labels (length B); unused.
     :param queries: List of model-generated solution strings (length B).
     :param refs: List of reference/ground-truth answers (length B).
-    :param label_map: Mapping from reward type to model index — empty.
+    :param label_map: Mapping from reward type to model index — unused.
     :return: Tuple of (final_reward [B], metrics_dict).
     """
-    if model_reward_list:
-        model_scores = torch.stack(model_reward_list)
-    else:
-        B = len(labels)
-        model_scores = torch.zeros(0, B, dtype=torch.float32, device="cuda")
+    device = torch.device("cuda")
+    B = len(queries)
 
-    return mix_rewards(labels, model_scores, label_map, queries, refs)
+    final_reward = torch.zeros(B, dtype=torch.float32, device=device)
+    metrics_dict: Dict[str, torch.Tensor] = {
+        "format_reward": torch.zeros(B, dtype=torch.float32, device=device),
+        "accuracy_reward": torch.zeros(B, dtype=torch.float32, device=device),
+        "rule_reward": torch.zeros(B, dtype=torch.float32, device=device),
+    }
+
+    for i in range(B):
+        sol = queries[i]
+        gt = refs[i] if i < len(refs) else ""
+        total_r, acc_r, fmt_r = avqa_combined_reward_fn(sol, gt)
+        final_reward[i] = total_r
+        metrics_dict["accuracy_reward"][i] = acc_r
+        metrics_dict["format_reward"][i] = fmt_r
+        metrics_dict["rule_reward"][i] = total_r
+
+    return final_reward, metrics_dict

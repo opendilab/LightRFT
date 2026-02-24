@@ -28,7 +28,7 @@ Output parquet fields (LightRFT compatible):
 Usage:
     python examples/r1_aqa/data_preprocess/avqa.py \\
         --input_jsonl train_r1aqa_line.json \\
-        --audio_dir data/AVQA/audios \\
+        --audio_dir AVQA/audios \\
         --local_save_dir ""
 """
 
@@ -247,7 +247,7 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--local_save_dir",
-        default="~/data/avqa_lightrft",
+        default="./avqa_lightrft",
         type=str,
         help="Output directory for the preprocessed parquet dataset",
     )

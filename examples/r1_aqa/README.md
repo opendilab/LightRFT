@@ -6,65 +6,13 @@ This example migrates [R1-AQA](https://github.com/xiaomi-research/r1-aqa) (Audio
 
 R1-AQA applies Group Relative Policy Optimization (GRPO) to Qwen2-Audio-7B-Instruct for audio question-answering tasks. The training uses rule-based rewards (accuracy + format) on the AVQA dataset. This LightRFT example faithfully reproduces the core training pipeline while leveraging LightRFT's distributed training infrastructure, GRPO implementation, and reward processing system.
 
-## Migration Mapping Table
-
-### Module Mapping (R1-AQA → LightRFT)
-
-| R1-AQA Module | LightRFT Module | Notes |
-|---|---|---|
-| `run_grpo.sh` | `examples/r1_aqa/run_grpo_r1_aqa_qwen2_audio_7b.sh` | Shell script with LightRFT params |
-| `src/train.py` → GRPOTrainer | `examples/r1_aqa/train_colocate.py` → SPMDPPOTrainerVL | LightRFT uses SPMD + group_norm for GRPO |
-| `src/dataset/dataset.py` → `_handle_avqa` | `examples/r1_aqa/data_preprocess/avqa.py` | Converts JSONL → parquet |
-| `src/utils/rewards.py` | `examples/r1_aqa/reward_models_utils.py` | Same reward logic, LightRFT interface |
-| `src/test_mmau.py` | `examples/r1_aqa/eval_mmau.py` | MMAU evaluation with HF/vLLM |
-| N/A (built into GRPOTrainer) | `examples/r1_aqa/audio_pipeline.py` | Audio multimodal pipeline extensions |
-| DeepSpeed ZeRO3 config | `--zero_stage 3` or `--fsdp` | LightRFT supports both |
-
-### Hyperparameter Mapping
-
-| R1-AQA Parameter | Value | LightRFT Parameter | Value |
-|---|---|---|---|
-| `num_generations` | 8 | `--n_samples_per_prompt` | 8 |
-| `temperature` | 1.0 | `--temperature` | 1.0 |
-| `max_prompt_length` | 512 | `--prompt_max_len` | 512 |
-| `per_device_train_batch_size` | 1 | `--micro_train_batch_size` | 1 |
-| `gradient_accumulation_steps` | 2 | (implicit via TBS/micro) | - |
-| `num_train_epochs` | 2 | `--max_epochs` | 1 (per episode) |
-| `max_steps` | 1000 | `--num_episodes` | 10 |
-| KL coefficient | (implicit) | `--init_kl_coef` | 0.01 |
-| KL estimator | - | `--kl_estimator` | k3 |
-| Advantage estimator | GRPO | `--advantage_estimator` | group_norm |
-
-### Data Format Mapping
-
-| R1-AQA Field | LightRFT Field | Notes |
-|---|---|---|
-| `question_text` | `prompt[0].content[1].text` | Embedded in chat message |
-| `multi_choice` | `prompt[0].content[1].text` | Formatted as options string |
-| `answer` (int index) | `reference` (answer string) | Converted to text |
-| `audio_path` | `audio_path` + `prompt[0].content[0].audio_url` | Dual storage |
-| `dataset_name` | `label` = "avqa_rule" | Routes to RECIPE |
-| N/A | `reward_model.ground_truth` | LightRFT reference format |
-| N/A | `extra_info` | Metadata for traceability |
-
-### Reward Interface Mapping
-
-| Aspect | R1-AQA | LightRFT |
-|---|---|---|
-| **Entry point** | `reward_funcs = [accuracy_reward, format_reward]` | `reward_fn(model_reward_list, labels, queries, refs, label_map)` |
-| **Accuracy** | `accuracy_reward(completions, solution)` → 0/1 | `accuracy_reward_fn(content, solution)` → 0/1 |
-| **Format** | `format_reward(completions)` → 0/1 | `format_reward_fn(content)` → 0/1 |
-| **Combination** | `sum(rewards_per_func, dim=1)` | `total = accuracy + format` (sum, matching R1-AQA) |
-| **Normalization** | `(reward - mean) / (std + 1e-4)` per group | GroupNormCalculator: `(reward - mean) / std` per group |
-| **Neural models** | None | None (empty model list) |
-
 ## File Structure
 
 ```
 examples/r1_aqa/
 ├── data_preprocess/
 │   └── avqa.py                          # Convert R1-AQA JSONL → LightRFT parquet
-├── audio_pipeline.py                    # Audio multimodal pipeline extensions
+├── audio_dataset.py                    # Audio multimodal pipeline extensions
 │   ├── AudioPromptDataset               # Dataset class for audio prompts
 │   ├── AudioMultimodalProcessor         # Audio feature extraction for pipeline
 │   └── patch_* functions                # Pipeline monkey-patches for audio
@@ -224,7 +172,7 @@ LightRFT's VL pipeline is built for images/videos. We repurpose the image data s
 - `raw_images` → raw audio tuples `(np.array, sr)`
 - `multi_modal_data["image"]` → `multi_modal_data["audio"]`
 
-This is done via targeted monkey patches in `audio_pipeline.py` rather than modifying core LightRFT code.
+This is done via targeted monkey patches in `audio_dataset.py` rather than modifying core LightRFT code.
 
 ### 3. ActorAL (Audio Language Actor)
 Qwen2-Audio uses `Qwen2AudioForConditionalGeneration` (not `AutoModelForVision2Seq`), and its forward pass expects `audio_values` instead of `pixel_values` + `image_grid_thw`. We use `ActorAL` from `lightrft.models.actor_al`, which natively supports Qwen2-Audio's parameter interface.
