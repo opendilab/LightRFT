@@ -129,4 +129,4 @@ torchrun --nnodes $NNODES --nproc-per-node $GPUS_PER_NODE --node_rank $NODE_RANK
    2>&1 | tee "/mnt/shared-storage-user/puyuan/code/code_refactor/LightRFT/rft_logs/${NAME}/${NAME}_7b_1node_node${NODE_RANK}_$(date +%Y%m%d_%H%M%S).log"
 
 
-# bash /mnt/shared-storage-user/puyuan/code/code_refactor/LightRFT/examples/safework_t1_runnable/run_svkng_fsdp_qwenvl.sh > /mnt/shared-storage-user/puyuan/code/code_refactor/LightRFT/rft_logs/${NAME}/${NAME}_7b_1node_node${NODE_RANK}_$(date +%Y%m%d_%H%M%S).log 2>&1
+# bash /mnt/shared-storage-user/puyuan/code/code_refactor/LightRFT/examples/math_prm/run_svkng_fsdp_qwenvl.sh > /mnt/shared-storage-user/puyuan/code/code_refactor/LightRFT/rft_logs/${NAME}/${NAME}_7b_1node_node${NODE_RANK}_$(date +%Y%m%d_%H%M%S).log 2>&1
