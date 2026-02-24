@@ -139,49 +139,61 @@ docker run --gpus all -it --rm \
 
 ### 安装步骤
 
-克隆并安装 LightRFT:
+#### 标准安装
+
+LightRFT 默认使用 **SGLang** 作为推理后端，并包含 **Flash-Attention** 以优化性能。
 
 ```bash
 # 克隆仓库
 git clone https://github.com/opendilab/LightRFT.git
 cd LightRFT
 
-# 安装依赖
-pip install -r requirements.txt
-
-# 安装 LightRFT (基础安装，默认使用 SGLang 后端)
+# 安装 LightRFT 及所有核心依赖
 pip install -e .
 ```
 
-#### 可选依赖
+**安装内容**: PyTorch、SGLang、Flash-Attention、Transformers、DeepSpeed 和其他核心依赖。
 
-LightRFT 默认使用 **SGLang** 作为推理后端。您可以选择安装以下额外组件:
+#### 可选：安装 vLLM 后端
 
-**vLLM 后端 (可选)**
-如果您想使用 vLLM 而不是 SGLang:
+如果您想使用 vLLM 替代（或配合）SGLang：
+
 ```bash
+# 安装 vLLM 后端
 pip install ".[vllm]"
-# 或者
+
+# 或直接安装 vLLM
 pip install vllm>=0.13.3
 ```
 
-**Flash-Attention (可选)**
-用于改进注意力操作的性能:
-```bash
-# 方式 1: 从 PyPI 安装 (可能需要特定的 CUDA 版本)
-pip install ".[flash-attn]"
+#### 备选方案：从 Requirements 文件完整安装
 
-# 方式 2: 使用预编译的 wheel 文件 (推荐,兼容性更好)
+```bash
+# 从 requirements 文件安装所有依赖
+pip install -r requirements.txt
+pip install -e .
+
+# 或使用包含 vLLM 的 requirements-full.txt
+pip install -r requirements-full.txt
+pip install -e .
+```
+
+#### Flash-Attention 安装问题排查
+
+Flash-Attention 默认包含在安装中，但在某些系统上可能因 CUDA 兼容性而安装失败。如果遇到问题，请尝试：
+
+**方式 1: 使用预编译的 wheel 文件（推荐）**
+```bash
 # 从 https://github.com/Dao-AILab/flash-attention/releases 下载适合的 wheel 文件
 # 例如 CUDA 12.x 和 PyTorch 2.9:
 pip install flash_attn-2.8.3+cu12torch2.9cxx11abiTRUE-cp312-cp312-linux_x86_64.whl
-
-# 方式 3: 使用 Docker (最简单的方法)
-# 官方 Docker 镜像已经包含了 flash-attention
-docker pull opendilab/lightrft:v0.1.0
 ```
 
-**注意**: Flash-attention 的安装在某些系统上可能因 CUDA 兼容性问题而失败。推荐使用 Docker 或预编译的 wheel 文件以获得无忧的安装体验。
+**方式 2: 使用 Docker（最简单）**
+```bash
+# 官方 Docker 镜像包含所有依赖
+docker pull opendilab/lightrft:v0.1.0
+```
 
 
 ---

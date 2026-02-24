@@ -139,49 +139,61 @@ If you need to customize the environment or build from a specific branch, you ca
 
 ### Installation
 
-Clone and install LightRFT:
+#### Standard Installation
+
+LightRFT uses **SGLang** as the default inference backend with **Flash-Attention** for optimized performance.
 
 ```bash
 # Clone the repository
 git clone https://github.com/opendilab/LightRFT.git
 cd LightRFT
 
-# Install dependencies
-pip install -r requirements.txt
-
-# Install LightRFT (basic installation with SGLang backend by default)
+# Install LightRFT with all core dependencies
 pip install -e .
 ```
 
-#### Optional Dependencies
+**What gets installed**: PyTorch, SGLang, Flash-Attention, Transformers, DeepSpeed, and other core dependencies.
 
-LightRFT uses **SGLang** as the default inference backend. You can optionally install additional components:
+#### Optional: Install vLLM Backend
 
-**vLLM Backend (Optional)**
-If you want to use vLLM instead of SGLang:
+If you want to use vLLM instead of (or alongside) SGLang:
+
 ```bash
+# Install vLLM backend
 pip install ".[vllm]"
-# or
+
+# Or install vLLM directly
 pip install vllm>=0.13.3
 ```
 
-**Flash-Attention (Optional)**
-For improved performance with attention operations:
-```bash
-# Option 1: Install from PyPI (may require specific CUDA version)
-pip install ".[flash-attn]"
+#### Alternative: Full Installation from Requirements
 
-# Option 2: Use pre-built wheels (recommended for compatibility)
+```bash
+# Install all dependencies from requirements file
+pip install -r requirements.txt
+pip install -e .
+
+# Or use requirements-full.txt which includes vLLM
+pip install -r requirements-full.txt
+pip install -e .
+```
+
+#### Troubleshooting Flash-Attention Installation
+
+Flash-Attention is included by default but may fail on some systems due to CUDA compatibility. If installation fails, try:
+
+**Option 1: Use pre-built wheels (recommended)**
+```bash
 # Download the appropriate wheel from https://github.com/Dao-AILab/flash-attention/releases
 # Example for CUDA 12.x and PyTorch 2.9:
 pip install flash_attn-2.8.3+cu12torch2.9cxx11abiTRUE-cp312-cp312-linux_x86_64.whl
-
-# Option 3: Use Docker (easiest method)
-# The official Docker images already include flash-attention
-docker pull opendilab/lightrft:v0.1.0
 ```
 
-**Note**: Flash-attention installation may fail on some systems due to CUDA compatibility. Using Docker or pre-built wheels is recommended for a hassle-free setup.
+**Option 2: Use Docker (easiest)**
+```bash
+# The official Docker images include all dependencies
+docker pull opendilab/lightrft:v0.1.0
+```
 
 
 ## 📚 Usage Guide
