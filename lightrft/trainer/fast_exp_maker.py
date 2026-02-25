@@ -1829,8 +1829,8 @@ class FastExperienceMaker(NaiveExperienceMaker):
                 info=info,
                 kl=kl,
                 action_entropy=output.action_entropy,
-                labels=output.labels,  # Ground truth labels
-                references=output.references,  # Reference texts
+                labels=output.labels,  # data source labels (if available, e.g., "gsm8k_rule")
+                references=output.references,  # ground truth references (if available, e.g., correct answers)
             )
         else:
             return Experience(

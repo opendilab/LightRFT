@@ -127,8 +127,8 @@ class ExperienceVL:
     info: Optional[dict] = None
     kl: Optional[torch.Tensor] = None
     action_entropy: Optional[torch.Tensor] = None  # Entropy for high-entropy token filtering
-    labels: Optional[List[str]] = None  # Ground truth labels
-    references: Optional[List[str]] = None  # Reference texts
+    labels: Optional[List[str]] = None  # data source labels (if available, e.g., "gsm8k_rule")
+    references: Optional[List[str]] = None  # ground truth references (if available, e.g., correct answers)
 
     @torch.no_grad()
     def to_device(self, device: torch.device):
@@ -216,7 +216,7 @@ class SamplesVL:
         - total_length: (B,) - total number of tokens in sequences
         - prompts: list[str] - the prompts used to generate responses
         - references: Optional[List[str]] - reference texts
-        - labels: Optional[List[str]] - ground truth labels
+        - labels: Optional[List[str]] - data source labels (if available, e.g., "gsm8k_rule")
         - output_texts: list[str] - generated output texts
         - image_num: Optional[List[int]] - image numbers
         - video_num: Optional[List[int]] - video numbers
@@ -243,7 +243,7 @@ class SamplesVL:
     :type total_length: torch.Tensor
     :param references: Reference texts, defaults to None.
     :type references: Optional[List[str]]
-    :param labels: Ground truth labels, defaults to None.
+    :param labels: data source labels (if available, e.g., "gsm8k_rule"), defaults to None.
     :type labels: Optional[List[str]]
     :param prompts: List of prompt strings, defaults to None.
     :type prompts: list[str]
@@ -441,7 +441,7 @@ class NaiveExperienceMakerVL(ABC):
         :type all_images: List
         :param all_references: Reference texts for evaluation.
         :type all_references: List[str]
-        :param all_labels: Ground truth labels.
+        :param all_labels: data source labels (if available, e.g., "gsm8k_rule")
         :type all_labels: List[str]
         :param generate_kwargs: Additional generation parameters (gamma, lambd, etc.).
         :type generate_kwargs: dict
@@ -462,7 +462,7 @@ class NaiveExperienceMakerVL(ABC):
         :type all_images: List
         :param all_references: List of reference texts.
         :type all_references: List[str]
-        :param all_labels: List of ground truth labels.
+        :param all_labels: List of data source labels.
         :type all_labels: List[str]
         :param generate_kwargs: Additional generation parameters.
         :type generate_kwargs: dict
