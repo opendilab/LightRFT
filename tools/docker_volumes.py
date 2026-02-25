@@ -34,15 +34,20 @@ def _build_volume_args(volume_str: str) -> str:
     stripped and converted into ``-v <segment>``. The resulting parts are joined
     with spaces into a CLI-ready argument string.
 
-    :param volume_str: Semicolon-delimited Docker volume mapping string
+    :param volume_str: Semicolon-delimited Docker volume mapping string.
     :type volume_str: str
-    :return: Space-separated Docker ``-v`` argument string
+    :return: Space-separated Docker ``-v`` argument string.
     :rtype: str
+
+    .. note::
+       Empty segments and whitespace-only entries are ignored.
 
     Example::
 
         >>> _build_volume_args("/data:/data;/logs:/logs")
         '-v /data:/data -v /logs:/logs'
+        >>> _build_volume_args(" /a:/a ; ; /b:/b ")
+        '-v /a:/a -v /b:/b'
     """
     segments = [seg.strip() for seg in volume_str.split(";") if seg.strip()]
     return " ".join(f"-v {seg}" for seg in segments)
@@ -59,15 +64,18 @@ def main(argv: Optional[Iterable[str]] = None) -> int:
     The ``argv`` parameter is accepted for interface consistency and potential
     future extension, but it is not used by the current implementation.
 
-    :param argv: Optional iterable of command-line arguments (currently unused)
-    :type argv: Iterable[str] or None
-    :return: Process exit status code (``0`` for normal execution)
+    :param argv: Optional iterable of command-line arguments (currently unused).
+    :type argv: Optional[Iterable[str]]
+    :return: Process exit status code (``0`` for normal execution).
     :rtype: int
+
+    .. note::
+       Output is written directly to :data:`sys.stdout` without a trailing newline.
 
     Example::
 
         >>> import os
-        >>> _ = os.environ.setdefault("DOCKER_VOLUME_STR", "/data:/data;/logs:/logs")
+        >>> os.environ["DOCKER_VOLUME_STR"] = "/data:/data;/logs:/logs"
         >>> main([])
         0
     """
