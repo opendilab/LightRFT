@@ -307,14 +307,19 @@
 <span class="sd">for large language model inference, particularly in reinforcement learning from human feedback</span>
 <span class="sd">(RLHF) contexts. It offers both high-level and low-level functions for engine creation,</span>
 <span class="sd">with support for tensor parallelism, memory optimization, and multimodal capabilities.</span>
+
+<span class="sd">Note:</span>
+<span class="sd">    This module uses lazy imports for vLLM. The module can be imported without vLLM installed</span>
+<span class="sd">    (when using SGLang backend). ImportError will only be raised when actually trying to use</span>
+<span class="sd">    vLLM functions with engine_type=&quot;vllm&quot;.</span>
+
+<span class="sd">    To use vLLM backend, install with: pip install &quot;LightRFT[vllm]&quot;</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">vllm</span><span class="w"> </span><span class="kn">import</span> <span class="n">LLM</span>
 
-
-<span class="k">def</span><span class="w"> </span><span class="nf">get_vllm_engine_for_rollout</span><span class="p">(</span><span class="n">args</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LLM</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_vllm_engine_for_rollout</span><span class="p">(</span><span class="n">args</span><span class="p">:</span> <span class="n">Any</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Initialize and configure a vLLM engine for reinforcement learning rollout phase.</span>
 
@@ -328,6 +333,8 @@
 
 <span class="sd">    :return: Configured vLLM engine instance ready for rollout operations.</span>
 <span class="sd">    :rtype: vllm.LLM</span>
+
+<span class="sd">    :raises ImportError: If vLLM is not installed when this function is called.</span>
 
 <span class="sd">    Example::</span>
 
@@ -348,6 +355,18 @@
 <span class="sd">        The construction of tensor-parallel (TP) group is implemented in the strategy part.</span>
 <span class="sd">        Multimodal image and video limits are automatically configured when applicable.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Lazy import: only import vLLM when this function is actually called</span>
+    <span class="c1"># This allows the module to be imported without vLLM installed (using SGLang by default)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">vllm</span><span class="w"> </span><span class="kn">import</span> <span class="n">LLM</span>
+    <span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
+            <span class="s2">&quot;vLLM is not installed but engine_type is set to &#39;vllm&#39;. &quot;</span>
+            <span class="s2">&quot;To use vLLM backend, install it with: pip install &#39;LightRFT[vllm]&#39; &quot;</span>
+            <span class="s2">&quot;or pip install vllm&gt;=0.13.3. &quot;</span>
+            <span class="s2">&quot;Alternatively, use engine_type=&#39;sglang&#39; (default) which doesn&#39;t require vLLM.&quot;</span>
+        <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+
     <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">args</span><span class="o">.</span><span class="n">text_only</span><span class="p">:</span>
         <span class="n">limit_mm_per_prompt</span> <span class="o">=</span> <span class="p">{}</span>
@@ -379,7 +398,7 @@
     <span class="n">max_model_len</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4096</span><span class="p">,</span>
     <span class="n">enable_sleep</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">LLM</span><span class="p">:</span>
+<span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Create and configure a vLLM engine with specified parameters.</span>
 
@@ -405,6 +424,8 @@
 <span class="sd">    :return: Configured vLLM engine instance.</span>
 <span class="sd">    :rtype: vllm.LLM</span>
 
+<span class="sd">    :raises ImportError: If vLLM is not installed when this function is called.</span>
+
 <span class="sd">    Example::</span>
 
 <span class="sd">        &gt;&gt;&gt; engine = get_vllm_engine(</span>
@@ -420,6 +441,17 @@
 <span class="sd">        Uses external launcher for distributed execution and custom worker class</span>
 <span class="sd">        for integration with lightrft strategy components.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Lazy import: only import vLLM when this function is actually called</span>
+    <span class="c1"># This allows the module to be imported without vLLM installed (using SGLang by default)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">vllm</span><span class="w"> </span><span class="kn">import</span> <span class="n">LLM</span>
+    <span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
+            <span class="s2">&quot;vLLM is not installed but engine_type is set to &#39;vllm&#39;. &quot;</span>
+            <span class="s2">&quot;To use vLLM backend, install it with: pip install &#39;LightRFT[vllm]&#39; &quot;</span>
+            <span class="s2">&quot;or pip install vllm&gt;=0.13.3. &quot;</span>
+            <span class="s2">&quot;Alternatively, use engine_type=&#39;sglang&#39; (default) which doesn&#39;t require vLLM.&quot;</span>
+        <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
 
     <span class="n">vllm_engine</span> <span class="o">=</span> <span class="n">LLM</span><span class="p">(</span>
         <span class="n">model</span><span class="o">=</span><span class="n">pretrain_name_or_path</span><span class="p">,</span>

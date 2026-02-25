@@ -332,7 +332,8 @@
 <p><strong>Solution</strong>:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Ensure you&#39;re in the correct directory</span>
 <span class="nb">cd</span><span class="w"> </span>/path/to/LightRFT
-pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements.txt
+
+<span class="c1"># Install LightRFT (includes all core dependencies)</span>
 pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.
 </pre></div>
 </div>
@@ -349,25 +350,53 @@ nvcc<span class="w"> </span>--version
 python<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;import torch; print(torch.version.cuda)&quot;</span>
 
 <span class="c1"># Reinstall PyTorch with correct CUDA version</span>
-pip<span class="w"> </span>install<span class="w"> </span><span class="nv">torch</span><span class="o">==</span><span class="m">2</span>.5.1+cu118<span class="w"> </span>--index-url<span class="w"> </span>https://download.pytorch.org/whl/cu118
+<span class="c1"># For CUDA 12.8:</span>
+pip<span class="w"> </span>install<span class="w"> </span>torch&gt;<span class="o">=</span><span class="m">2</span>.9.1<span class="w"> </span>--index-url<span class="w"> </span>https://download.pytorch.org/whl/cu128
 </pre></div>
 </div>
 </section>
-<section id="problem-vllm-installation-fails">
-<h3>Problem: vLLM installation fails<a class="headerlink" href="#problem-vllm-installation-fails" title="Permalink to this heading">¶</a></h3>
+<section id="problem-vllm-not-available-but-needed">
+<h3>Problem: vLLM not available (but needed)<a class="headerlink" href="#problem-vllm-not-available-but-needed" title="Permalink to this heading">¶</a></h3>
 <p><strong>Symptoms</strong>:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ERROR</span><span class="p">:</span> <span class="n">Failed</span> <span class="n">building</span> <span class="n">wheel</span> <span class="k">for</span> <span class="n">vllm</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="ne">ImportError</span><span class="p">:</span> <span class="n">vLLM</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">installed</span> <span class="n">but</span> <span class="n">engine_type</span> <span class="ow">is</span> <span class="nb">set</span> <span class="n">to</span> <span class="s1">&#39;vllm&#39;</span>
 </pre></div>
 </div>
 <p><strong>Solution</strong>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Install vLLM backend (optional)</span>
+pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;.[vllm]&quot;</span>
+
+<span class="c1"># Or install vLLM directly</span>
+pip<span class="w"> </span>install<span class="w"> </span>vllm&gt;<span class="o">=</span><span class="m">0</span>.13.3
+
+<span class="c1"># Alternatively, use SGLang engine (default, already installed)</span>
+<span class="c1"># Change --engine_type vllm to --engine_type sglang in your training script</span>
+</pre></div>
+</div>
+</section>
+<section id="problem-flash-attention-installation-fails">
+<h3>Problem: Flash-Attention installation fails<a class="headerlink" href="#problem-flash-attention-installation-fails" title="Permalink to this heading">¶</a></h3>
+<p><strong>Symptoms</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ERROR</span><span class="p">:</span> <span class="n">Failed</span> <span class="n">building</span> <span class="n">wheel</span> <span class="k">for</span> <span class="n">flash</span><span class="o">-</span><span class="n">attn</span>
+</pre></div>
+</div>
+<p><strong>Solution</strong>:</p>
+<p><strong>Option 1: Use pre-compiled wheel (Recommended)</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Download from https://github.com/Dao-AILab/flash-attention/releases</span>
+<span class="c1"># Example for CUDA 12.x with PyTorch 2.9 and Python 3.12:</span>
+pip<span class="w"> </span>install<span class="w"> </span>flash_attn-2.8.3+cu12torch2.9cxx11abiTRUE-cp312-cp312-linux_x86_64.whl
+</pre></div>
+</div>
+<p><strong>Option 2: Use Docker (Easiest)</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Official Docker image includes all dependencies</span>
+docker<span class="w"> </span>pull<span class="w"> </span>opendilab/lightrft:v0.1.0
+</pre></div>
+</div>
+<p><strong>Option 3: Install build dependencies</strong></p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Install build dependencies</span>
 pip<span class="w"> </span>install<span class="w"> </span>ninja<span class="w"> </span>packaging<span class="w"> </span>wheel
 
-<span class="c1"># Install vLLM from source</span>
-pip<span class="w"> </span>install<span class="w"> </span>vllm<span class="w"> </span>--no-build-isolation
-
-<span class="c1"># Or use pre-built wheel</span>
-pip<span class="w"> </span>install<span class="w"> </span><span class="nv">vllm</span><span class="o">==</span><span class="m">0</span>.5.3.post1
+<span class="c1"># Try installing flash-attn again</span>
+pip<span class="w"> </span>install<span class="w"> </span>flash-attn&gt;<span class="o">=</span><span class="m">2</span>.8.3<span class="w"> </span>--no-build-isolation
 </pre></div>
 </div>
 </section>
@@ -1053,7 +1082,8 @@ df<span class="w"> </span>-h
 <li><a class="reference internal" href="#installation-issues">Installation Issues</a><ul>
 <li><a class="reference internal" href="#problem-package-import-errors">Problem: Package import errors</a></li>
 <li><a class="reference internal" href="#problem-cuda-version-mismatch">Problem: CUDA version mismatch</a></li>
-<li><a class="reference internal" href="#problem-vllm-installation-fails">Problem: vLLM installation fails</a></li>
+<li><a class="reference internal" href="#problem-vllm-not-available-but-needed">Problem: vLLM not available (but needed)</a></li>
+<li><a class="reference internal" href="#problem-flash-attention-installation-fails">Problem: Flash-Attention installation fails</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#memory-issues">Memory Issues</a><ul>

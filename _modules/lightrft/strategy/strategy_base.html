@@ -340,9 +340,8 @@
     <span class="n">set_sequence_parallel_group</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">lightrft.strategy.utils.statistic</span><span class="w"> </span><span class="kn">import</span> <span class="n">GenLenAnalyser</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">.sglang_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_sglang_engine_for_rollout</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">.vllm_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_vllm_engine_for_rollout</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">lightrft.strategy.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">StrategyConfig</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.sglang_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_sglang_engine_for_rollout</span>
 
 <span class="n">ModelOptimPair</span> <span class="o">=</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span> <span class="n">Optimizer</span><span class="p">]</span>
 <span class="n">ModelOrModelOptimPair</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span> <span class="n">ModelOptimPair</span><span class="p">]</span>
@@ -974,9 +973,13 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">inference_engine_type</span> <span class="o">=</span> <span class="n">engine_type</span>
 
         <span class="k">if</span> <span class="n">engine_type</span> <span class="o">==</span> <span class="s2">&quot;vllm&quot;</span><span class="p">:</span>
+            <span class="c1"># Conditional import: vLLM is optional and only imported when explicitly requested</span>
+            <span class="c1"># Default engine is SGLang. To use vLLM, install with: pip install &quot;LightRFT[vllm]&quot;</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">.vllm_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_vllm_engine_for_rollout</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">inference_engine</span> <span class="o">=</span> <span class="n">get_vllm_engine_for_rollout</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">inference_engine_status</span> <span class="o">=</span> <span class="n">EngineStatus</span><span class="o">.</span><span class="n">WAKEUP</span>
         <span class="k">elif</span> <span class="n">engine_type</span> <span class="o">==</span> <span class="s2">&quot;sglang&quot;</span><span class="p">:</span>
+            <span class="c1"># Default inference engine: SGLang (no additional dependencies required)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">inference_engine</span> <span class="o">=</span> <span class="n">get_sglang_engine_for_rollout</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">inference_engine_status</span> <span class="o">=</span> <span class="n">EngineStatus</span><span class="o">.</span><span class="n">WAKEUP</span>
         <span class="k">else</span><span class="p">:</span>

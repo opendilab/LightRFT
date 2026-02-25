@@ -335,7 +335,6 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">PIL</span><span class="w"> </span><span class="kn">import</span> <span class="n">Image</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">easydict</span><span class="w"> </span><span class="kn">import</span> <span class="n">EasyDict</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">vllm</span><span class="w"> </span><span class="kn">import</span> <span class="n">SamplingParams</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">lightrft.models.utils</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">compute_approx_kl</span><span class="p">,</span>
@@ -1413,6 +1412,11 @@
 
         <span class="c1"># ========== Configure Sampling Parameters ==========</span>
         <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">engine_type</span> <span class="o">==</span> <span class="s2">&quot;vllm&quot;</span><span class="p">:</span>
+            <span class="c1"># vLLM-specific sampling configuration</span>
+            <span class="c1"># Note: vLLM is an optional dependency. Install with: pip install &quot;LightRFT[vllm]&quot;</span>
+            <span class="c1"># This import is conditional and only executed when engine_type is &quot;vllm&quot;</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">vllm</span><span class="w"> </span><span class="kn">import</span> <span class="n">SamplingParams</span>
+
             <span class="c1"># For vllm&gt;=0.13.0, truncate_prompt_tokens must not exceed max_model_len</span>
             <span class="c1"># For older versions, we can use 8192 directly without validation</span>
             <span class="k">if</span> <span class="n">vllm_ge_0130</span><span class="p">():</span>
@@ -1433,6 +1437,7 @@
                 <span class="n">truncate_prompt_tokens</span><span class="o">=</span><span class="n">truncate_tokens</span><span class="p">,</span>
             <span class="p">)</span>
         <span class="k">elif</span> <span class="n">config</span><span class="o">.</span><span class="n">engine_type</span> <span class="o">==</span> <span class="s2">&quot;sglang&quot;</span><span class="p">:</span>
+            <span class="c1"># SGLang-specific sampling configuration (default backend)</span>
             <span class="n">sampling_params</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
                 <span class="n">n</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
                 <span class="n">temperature</span><span class="o">=</span><span class="n">generate_kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;temperature&quot;</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span>

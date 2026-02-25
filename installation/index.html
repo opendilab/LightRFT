@@ -311,9 +311,9 @@
 <h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this heading">¶</a></h2>
 <p>Before installing LightRFT, ensure your environment meets the following requirements:</p>
 <ul class="simple">
-<li><p>Python &gt;= 3.10</p></li>
-<li><p>CUDA &gt;= 11.8</p></li>
-<li><p>PyTorch &gt;= 2.5.1</p></li>
+<li><p>Python &gt;= 3.12</p></li>
+<li><p>CUDA &gt;= 12.8</p></li>
+<li><p>PyTorch &gt;= 2.9.1</p></li>
 <li><p>CUDA-compatible GPU(s)</p></li>
 </ul>
 </section>
@@ -325,16 +325,40 @@
 <h2>Installation<a class="headerlink" href="#id2" title="Permalink to this heading">¶</a></h2>
 <section id="standard-installation">
 <h3>Standard Installation<a class="headerlink" href="#standard-installation" title="Permalink to this heading">¶</a></h3>
-<p>Clone and install LightRFT:</p>
+<p>LightRFT uses <strong>SGLang</strong> as the default inference backend and includes <strong>Flash-Attention</strong> for performance optimization.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Clone the repository</span>
 git<span class="w"> </span>clone<span class="w"> </span>https://github.com/opendilab/LightRFT.git
 <span class="nb">cd</span><span class="w"> </span>LightRFT
 
-<span class="c1"># Install dependencies</span>
-pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements.txt
-
-<span class="c1"># Install LightRFT</span>
+<span class="c1"># Install LightRFT and all core dependencies</span>
 pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.
+</pre></div>
+</div>
+<p><strong>What’s Installed</strong>: PyTorch, SGLang, Flash-Attention, Transformers, DeepSpeed, and other core dependencies.</p>
+</section>
+<section id="optional-install-vllm-backend">
+<h3>Optional: Install vLLM Backend<a class="headerlink" href="#optional-install-vllm-backend" title="Permalink to this heading">¶</a></h3>
+<p>If you want to use vLLM as an alternative (or in addition) to SGLang:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Install vLLM backend</span>
+pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;.[vllm]&quot;</span>
+
+<span class="c1"># Or install vLLM directly</span>
+pip<span class="w"> </span>install<span class="w"> </span>vllm&gt;<span class="o">=</span><span class="m">0</span>.13.3
+</pre></div>
+</div>
+</section>
+<section id="flash-attention-installation-troubleshooting">
+<h3>Flash-Attention Installation Troubleshooting<a class="headerlink" href="#flash-attention-installation-troubleshooting" title="Permalink to this heading">¶</a></h3>
+<p>Flash-Attention is included by default, but may fail on some systems due to CUDA compatibility. If you encounter issues, try:</p>
+<p><strong>Option 1: Use Pre-compiled Wheel (Recommended)</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Download the appropriate wheel from https://github.com/Dao-AILab/flash-attention/releases</span>
+<span class="c1"># For example, CUDA 12.x with PyTorch 2.9:</span>
+pip<span class="w"> </span>install<span class="w"> </span>flash_attn-2.8.3+cu12torch2.9cxx11abiTRUE-cp312-cp312-linux_x86_64.whl
+</pre></div>
+</div>
+<p><strong>Option 2: Use Docker (Easiest)</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Official Docker image includes all dependencies</span>
+docker<span class="w"> </span>pull<span class="w"> </span>opendilab/lightrft:v0.1.0
 </pre></div>
 </div>
 </section>
@@ -599,6 +623,8 @@ bash<span class="w"> </span>examples/gsm8k_geo3k/run_grpo_geo3k_qwen2.5_vl_7b.sh
 <li><a class="reference internal" href="#docker-images">Docker Images</a></li>
 <li><a class="reference internal" href="#id2">Installation</a><ul>
 <li><a class="reference internal" href="#standard-installation">Standard Installation</a></li>
+<li><a class="reference internal" href="#optional-install-vllm-backend">Optional: Install vLLM Backend</a></li>
+<li><a class="reference internal" href="#flash-attention-installation-troubleshooting">Flash-Attention Installation Troubleshooting</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#documentation-generation-optional">Documentation Generation (Optional)</a></li>

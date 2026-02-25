@@ -320,6 +320,9 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">copy</span><span class="w"> </span><span class="kn">import</span> <span class="n">deepcopy</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Optional</span>
 
+<span class="c1"># Conditional import: vLLM is optional and only needed when using vLLM backend</span>
+<span class="c1"># The default backend is SGLang, which doesn&#39;t require vLLM</span>
+<span class="c1"># To use vLLM backend, install with: pip install &quot;LightRFT[vllm]&quot;</span>
 <span class="k">try</span><span class="p">:</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">vllm</span>
 <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
@@ -680,11 +683,15 @@
 <span class="sd">    Starting from vLLM 0.13.0, truncate_prompt_tokens parameter must not exceed</span>
 <span class="sd">    max_model_len, requiring additional validation logic.</span>
 
-<span class="sd">    :return: True if vLLM version &gt;= 0.13.0, False otherwise</span>
+<span class="sd">    This function handles cases where vLLM is not installed by returning True,</span>
+<span class="sd">    which ensures compatibility when using the default SGLang backend.</span>
+
+<span class="sd">    :return: True if vLLM version &gt;= 0.13.0 or if vLLM is not installed, False otherwise</span>
 <span class="sd">    :rtype: bool</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">vllm</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="c1"># If vLLM is not installed, assume newer version for safety</span>
+        <span class="c1"># If vLLM is not installed (e.g., using SGLang backend), return True for safety</span>
+        <span class="c1"># This prevents issues in code paths that may reference this function</span>
         <span class="k">return</span> <span class="kc">True</span>
 
     <span class="k">try</span><span class="p">:</span>

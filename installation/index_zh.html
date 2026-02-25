@@ -309,9 +309,9 @@
 <h2>环境要求<a class="headerlink" href="#id2" title="Permalink to this heading">¶</a></h2>
 <p>在安装 LightRFT 之前，请确保您的环境满足以下要求：</p>
 <ul class="simple">
-<li><p>Python &gt;= 3.8</p></li>
-<li><p>CUDA &gt;= 11.8</p></li>
-<li><p>PyTorch &gt;= 2.5.1</p></li>
+<li><p>Python &gt;= 3.12</p></li>
+<li><p>CUDA &gt;= 12.8</p></li>
+<li><p>PyTorch &gt;= 2.9.1</p></li>
 <li><p>支持 CUDA 的 GPU</p></li>
 </ul>
 </section>
@@ -323,16 +323,40 @@
 <h2>安装步骤<a class="headerlink" href="#id3" title="Permalink to this heading">¶</a></h2>
 <section id="id4">
 <h3>标准安装<a class="headerlink" href="#id4" title="Permalink to this heading">¶</a></h3>
-<p>克隆并安装 LightRFT:</p>
+<p>LightRFT 默认使用 <strong>SGLang</strong> 作为推理后端，并包含 <strong>Flash-Attention</strong> 以优化性能。</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># 克隆仓库</span>
 git<span class="w"> </span>clone<span class="w"> </span>https://github.com/opendilab/LightRFT.git
 <span class="nb">cd</span><span class="w"> </span>LightRFT
 
-<span class="c1"># 安装依赖</span>
-pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements.txt
-
-<span class="c1"># 安装 LightRFT</span>
+<span class="c1"># 安装 LightRFT 及所有核心依赖</span>
 pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.
+</pre></div>
+</div>
+<p><strong>安装内容</strong>: PyTorch、SGLang、Flash-Attention、Transformers、DeepSpeed 和其他核心依赖。</p>
+</section>
+<section id="vllm">
+<h3>可选：安装 vLLM 后端<a class="headerlink" href="#vllm" title="Permalink to this heading">¶</a></h3>
+<p>如果您想使用 vLLM 替代（或配合）SGLang：</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># 安装 vLLM 后端</span>
+pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;.[vllm]&quot;</span>
+
+<span class="c1"># 或直接安装 vLLM</span>
+pip<span class="w"> </span>install<span class="w"> </span>vllm&gt;<span class="o">=</span><span class="m">0</span>.13.3
+</pre></div>
+</div>
+</section>
+<section id="flash-attention">
+<h3>Flash-Attention 安装问题排查<a class="headerlink" href="#flash-attention" title="Permalink to this heading">¶</a></h3>
+<p>Flash-Attention 默认包含在安装中，但在某些系统上可能因 CUDA 兼容性而安装失败。如果遇到问题，请尝试：</p>
+<p><strong>方式 1: 使用预编译的 wheel 文件（推荐）</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># 从 https://github.com/Dao-AILab/flash-attention/releases 下载适合的 wheel 文件</span>
+<span class="c1"># 例如 CUDA 12.x 和 PyTorch 2.9:</span>
+pip<span class="w"> </span>install<span class="w"> </span>flash_attn-2.8.3+cu12torch2.9cxx11abiTRUE-cp312-cp312-linux_x86_64.whl
+</pre></div>
+</div>
+<p><strong>方式 2: 使用 Docker（最简单）</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># 官方 Docker 镜像包含所有依赖</span>
+docker<span class="w"> </span>pull<span class="w"> </span>opendilab/lightrft:v0.1.0
 </pre></div>
 </div>
 </section>
@@ -606,6 +630,8 @@ bash<span class="w"> </span>examples/gsm8k_geo3k/run_grpo_geo3k_qwen2.5_vl_7b.sh
 <li><a class="reference internal" href="#docker">Docker 镜像</a></li>
 <li><a class="reference internal" href="#id3">安装步骤</a><ul>
 <li><a class="reference internal" href="#id4">标准安装</a></li>
+<li><a class="reference internal" href="#vllm">可选：安装 vLLM 后端</a></li>
+<li><a class="reference internal" href="#flash-attention">Flash-Attention 安装问题排查</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#id5">生成文档（可选）</a></li>

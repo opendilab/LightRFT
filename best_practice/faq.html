@@ -340,10 +340,10 @@
 <h3>Q: What hardware is required?<a class="headerlink" href="#q-what-hardware-is-required" title="Permalink to this heading">¶</a></h3>
 <p><strong>A</strong>: Minimum requirements:</p>
 <ul class="simple">
-<li><p><strong>GPU</strong>: NVIDIA GPUs with CUDA 11.8+</p></li>
+<li><p><strong>GPU</strong>: NVIDIA GPUs with CUDA 12.8+</p></li>
 <li><p><strong>Memory</strong>: 40GB+ VRAM per GPU recommended (24GB possible with optimizations)</p></li>
-<li><p><strong>PyTorch</strong>: 2.5.1+</p></li>
-<li><p><strong>Python</strong>: 3.8+</p></li>
+<li><p><strong>PyTorch</strong>: 2.9.1+</p></li>
+<li><p><strong>Python</strong>: 3.12+</p></li>
 </ul>
 <p>For production: 8× A100/H100 80GB recommended</p>
 </section>
@@ -352,16 +352,38 @@
 <h2>Installation Questions<a class="headerlink" href="#installation-questions" title="Permalink to this heading">¶</a></h2>
 <section id="q-how-do-i-install-lightrft">
 <h3>Q: How do I install LightRFT?<a class="headerlink" href="#q-how-do-i-install-lightrft" title="Permalink to this heading">¶</a></h3>
-<p><strong>A</strong>: Simple installation:</p>
+<p><strong>A</strong>: Standard installation (includes SGLang + Flash-Attention):</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/opendilab/LightRFT.git
 <span class="nb">cd</span><span class="w"> </span>LightRFT
-pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements.txt<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.
+pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.
 </pre></div>
 </div>
 </section>
-<section id="q-do-i-need-to-install-vllm-separately">
-<h3>Q: Do I need to install vLLM separately?<a class="headerlink" href="#q-do-i-need-to-install-vllm-separately" title="Permalink to this heading">¶</a></h3>
-<p><strong>A</strong>: No, vLLM is included in the requirements. However, for the latest features, you can install from source.</p>
+<section id="q-how-do-i-install-vllm">
+<h3>Q: How do I install vLLM?<a class="headerlink" href="#q-how-do-i-install-vllm" title="Permalink to this heading">¶</a></h3>
+<p><strong>A</strong>: vLLM is optional. Install it with:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Option 1: Install as optional dependency</span>
+pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;.[vllm]&quot;</span>
+
+<span class="c1"># Option 2: Install vLLM directly</span>
+pip<span class="w"> </span>install<span class="w"> </span>vllm&gt;<span class="o">=</span><span class="m">0</span>.13.3
+</pre></div>
+</div>
+<p>Note: SGLang is the default inference backend and is already included in the standard installation.</p>
+</section>
+<section id="q-what-if-flash-attention-installation-fails">
+<h3>Q: What if Flash-Attention installation fails?<a class="headerlink" href="#q-what-if-flash-attention-installation-fails" title="Permalink to this heading">¶</a></h3>
+<p><strong>A</strong>: Try these solutions:</p>
+<p><strong>Option 1: Use pre-compiled wheel (Recommended)</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Download from https://github.com/Dao-AILab/flash-attention/releases</span>
+<span class="c1"># For CUDA 12.x with PyTorch 2.9 and Python 3.12:</span>
+pip<span class="w"> </span>install<span class="w"> </span>flash_attn-2.8.3+cu12torch2.9cxx11abiTRUE-cp312-cp312-linux_x86_64.whl
+</pre></div>
+</div>
+<p><strong>Option 2: Use Docker (Easiest)</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>docker<span class="w"> </span>pull<span class="w"> </span>opendilab/lightrft:v0.1.0
+</pre></div>
+</div>
 </section>
 </section>
 <section id="training-questions">
@@ -751,7 +773,8 @@ torchrun<span class="w"> </span>--nproc_per_node<span class="o">=</span><span cl
 </li>
 <li><a class="reference internal" href="#installation-questions">Installation Questions</a><ul>
 <li><a class="reference internal" href="#q-how-do-i-install-lightrft">Q: How do I install LightRFT?</a></li>
-<li><a class="reference internal" href="#q-do-i-need-to-install-vllm-separately">Q: Do I need to install vLLM separately?</a></li>
+<li><a class="reference internal" href="#q-how-do-i-install-vllm">Q: How do I install vLLM?</a></li>
+<li><a class="reference internal" href="#q-what-if-flash-attention-installation-fails">Q: What if Flash-Attention installation fails?</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#training-questions">Training Questions</a><ul>

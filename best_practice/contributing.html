@@ -330,9 +330,14 @@
 </div>
 </li>
 <li><p><strong>Install Development Dependencies</strong></p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements.txt
-pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements-doc.txt<span class="w">  </span><span class="c1"># For documentation</span>
-pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.<span class="w">  </span><span class="c1"># Editable install</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Install LightRFT with all core dependencies (SGLang, Flash-Attention, etc.)</span>
+pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.
+
+<span class="c1"># Install documentation dependencies</span>
+pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements-doc.txt
+
+<span class="c1"># (Optional) Install vLLM if you need to test vLLM backend</span>
+pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;.[vllm]&quot;</span>
 </pre></div>
 </div>
 </li>
