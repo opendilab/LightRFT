@@ -82,18 +82,18 @@ MAX_EVAL_SAMPLES=700          # Max samples for evaluation to keep it fast.
 ################################################################################
 
 # --- Single-Node Distributed Setup ---
-export MLP_WORKER_NUM=1                 # Number of nodes.
-export MLP_WORKER_GPU=8                 # Number of GPUs per node.
-export MLP_ROLE_INDEX=0                 # Rank of the current node.
-export MLP_WORKER_0_HOST="localhost"    # IP address of the master node.
-export MLP_WORKER_0_PORT=20091          # Port for the master node.
+export WORKER_NUM=1                 # Number of nodes.
+export WORKER_GPU=8                 # Number of GPUs per node.
+export ROLE_INDEX=0                 # Rank of the current node.
+export WORKER_0_HOST="localhost"    # IP address of the master node.
+export WORKER_0_PORT=20091          # Port for the master node.
 
 # --- PyTorch Distributed Environment Variables ---
-export MASTER_ADDR=$MLP_WORKER_0_HOST
-export MASTER_PORT=$MLP_WORKER_0_PORT
-export NNODES=$MLP_WORKER_NUM
-export NODE_RANK=$MLP_ROLE_INDEX
-export GPUS_PER_NODE=$MLP_WORKER_GPU
+export MASTER_ADDR=$WORKER_0_HOST
+export MASTER_PORT=$WORKER_0_PORT
+export NNODES=$WORKER_NUM
+export NODE_RANK=$ROLE_INDEX
+export GPUS_PER_NODE=$WORKER_GPU
 
 # --- vLLM/SGLang Engine Settings ---
 ENGINE_TP=2  # Tensor parallelism size for the inference engine.
@@ -136,7 +136,7 @@ set -x
 #                         Part 5: Main Training Command                        #
 ################################################################################
 
-# Note: We use '{}' for reward_pretrain because we use a rule-based reward.
+# Note: We use rule-based reward (no reward model needed).
 # We explicitly set --advantage_estimator to "gae" for PPO.
 
 torchrun \
@@ -148,7 +148,6 @@ torchrun \
     examples/gsm8k_geo3k/train_colocate.py \
     --pretrain "${PATH_TO_YOUR_BASE_MODEL}" \
     --critic_pretrain "${PATH_TO_YOUR_CRITIC_MODEL}" \
-    --reward_pretrain "{}" \
     --save_trajectories \
     --fsdp \
     --mixed_mm_data \

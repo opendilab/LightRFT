@@ -1,6 +1,8 @@
 from .actor_language import ActorLanguage
 from .actor_vl import ActorVL
 from .actor_al import ActorAL
+from .critic_vl import CriticVL
+from .critic_language import CriticLanguage
 from .grm_vl import GenerativeRewardModelVL
 from .srm_vl import ScalarRewardModelVL
 from .srm_al import ScalarRewardModelAL
@@ -12,6 +14,8 @@ from .loss import (
 
 __all__ = [
     "ActorVL",
+    "CriticVL",
+    "CriticLanguage",
     "DPOLoss",
     "GPTLMLoss",
     "KDLoss",
