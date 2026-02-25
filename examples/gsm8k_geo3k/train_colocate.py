@@ -48,7 +48,7 @@ ensure_video_input_available()
 from lightrft.datasets import PromptDatasetVL, SFTDatasetVL
 from lightrft.models.actor_language import ActorLanguage
 from lightrft.models.actor_vl import ActorVL
-from lightrft.models.utils import get_vlm_for_sequence_regression
+from lightrft.models.critic_vl import CriticVL
 from lightrft.strategy import get_strategy
 from lightrft.trainer.spmd_ppo_trainer import SPMDPPOTrainerVL
 from lightrft.utils import blending_datasets, get_tokenizer_processor_vl
@@ -148,10 +148,8 @@ def train(args):
     if args.critic_pretrain:
         with strategy.init_model_context(meta_init=args.meta_init):
             strategy.print(f"Initializing critic models with meta_init={args.meta_init}")
-            critic = get_vlm_for_sequence_regression(
+            critic = CriticVL(
                 args.critic_pretrain,
-                "critic",
-                normalize_reward=args.normalize_reward_for_critic,
                 use_flash_attention_2=args.flash_attn,
                 bf16=args.bf16,
                 load_in_4bit=args.load_in_4bit,
@@ -159,9 +157,10 @@ def train(args):
                 lora_alpha=args.lora_alpha,
                 target_modules=args.target_modules,
                 lora_dropout=args.lora_dropout,
+                normalize_reward=args.normalize_reward_for_critic,
                 ds_config=ds_train_cfg,
-                value_head_prefix=args.value_head_prefix,
                 init_value_head=strategy.args.pretrain == strategy.args.critic_pretrain,
+                value_head_prefix=args.value_head_prefix,
             )
     else:
         critic = None

@@ -40,6 +40,7 @@ from lightrft.strategy import get_strategy
 from lightrft.datasets import RFTDatasetVL
 from lightrft.models.actor_language import ActorLanguage
 from lightrft.models.actor_vl import ActorVL
+from lightrft.models.critic_vl import CriticVL
 from lightrft.trainer import SPMDPPOTrainerVL
 from lightrft.utils import add_arguments, ensure_video_input_available, get_tokenizer_processor_vl
 ensure_video_input_available()
@@ -137,10 +138,8 @@ def train(args: argparse.Namespace) -> None:
         strategy.print(f"Froze {frozen_params_count}/{total_params_count} parameters based on prefixes: {freeze_prefix}")
 
     if args.critic_pretrain:
-        critic = get_vlm_for_sequence_regression(
+        critic = CriticVL(
             args.critic_pretrain,
-            "critic",
-            normalize_reward=args.normalize_reward_for_critic,
             use_flash_attention_2=args.flash_attn,
             bf16=args.bf16,
             load_in_4bit=args.load_in_4bit,
@@ -148,9 +147,10 @@ def train(args: argparse.Namespace) -> None:
             lora_alpha=args.lora_alpha,
             target_modules=args.target_modules,
             lora_dropout=args.lora_dropout,
+            normalize_reward=args.normalize_reward_for_critic,
             ds_config=ds_train_cfg,
-            value_head_prefix=args.value_head_prefix,
             init_value_head=strategy.args.pretrain == strategy.args.critic_pretrain,
+            value_head_prefix=args.value_head_prefix,
         )
     else:
         critic = None
