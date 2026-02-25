@@ -284,7 +284,9 @@ class PPOTrainer(ABC):
 
             for rand_prompts, labels, references in self.prompts_dataloader:
                 for i, experience in enumerate(
-                    self.experience_maker.make_experience_list(rand_prompts, all_labels=labels, all_references=references, **self.generate_kwargs)
+                    self.experience_maker.make_experience_list(
+                        rand_prompts, all_labels=labels, all_references=references, **self.generate_kwargs
+                    )
                 ):
                     if i == 0:
                         output = self.tokenizer.batch_decode(
