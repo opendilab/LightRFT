@@ -169,6 +169,11 @@ def train(args):
     if args.fsdp:
         strategy.print("Preparing Critic model with FSDP...")
         critic = strategy.prepare_model(critic, is_training=True)
+        # Note: Do NOT manually offload critic when using fsdp_cpu_offload flag.
+        # FSDP's CPUOffloadPolicy will automatically manage parameter offloading.
+        # Manual offload_model() followed by reload_model() in fast_exp_maker.py
+        # will cause "FSDP parameters should be materialized on CPU" error.
+        # strategy.offload_model(critic)  # Removed - let FSDP auto-manage
 
     # Load reward models (multiple types: value, safety, knowledge, etc.)
     strategy.report_memory(f"before loaded reward models in main entry")
@@ -200,6 +205,12 @@ def train(args):
         if args.fsdp:
             shard_size = args.initial_model_shard_size if args.initial_model_shard_size is not None else strategy.world_size
             initial_model = strategy.prepare_model(initial_model, is_training=False, shard_size=shard_size)
+            # Note: Manual offload is safe for initial_model because it uses is_training=False,
+            # which means FSDP's CPUOffloadPolicy is NOT enabled (see fsdpv2.py:375).
+            # Without CPUOffloadPolicy, we can safely use manual offload_model/reload_model
+            # to move the entire model between CPU and GPU as needed.
+            # This is different from critic which uses is_training=True + fsdp_cpu_offload,
+            # where manual offload/reload would conflict with FSDP's automatic management.
             strategy.offload_model(initial_model)
 
     if args.enable_ema:

@@ -1596,6 +1596,13 @@ class FastExperienceMaker(NaiveExperienceMaker):
 
         # ========== Stage 2: Initial Model ==========
         if self.initial_model is not None:
+            # Note: Manual reload/offload is safe for initial_model because:
+            # 1. It's initialized with is_training=False (see train_colocate.py:207)
+            # 2. This means FSDP's CPUOffloadPolicy is NOT enabled (see fsdpv2.py:375)
+            # 3. Without CPUOffloadPolicy, FSDP doesn't automatically manage parameter movement
+            # 4. We can safely use manual reload_model() to move model from CPU to GPU
+            # 5. After computing base_action_log_probs, we offload back to CPU to save memory
+            # This pattern works because there's no conflict with FSDP's automatic management.
             self.strategy.reload_model(self.initial_model)
             for output in outputs:
                 output.base_action_log_probs = self.initial_model(
@@ -1605,17 +1612,24 @@ class FastExperienceMaker(NaiveExperienceMaker):
                     packed_seq_lens=output.packed_seq_lens,
                     **output.inputs_extra_kwargs
                 )
+            # Offload back to CPU to free GPU memory for subsequent stages
             self.strategy.offload_model(self.initial_model)
 
         # ========== Stage 3: Critic ==========
         Timer.start('    critic')
         if self.critic is not None:
-            # self.strategy.reload_model(self.critic)
+            # Note: When critic is initialized with is_training=True and fsdp_cpu_offload=True,
+            # FSDP's CPUOffloadPolicy automatically manages parameter movement between CPU/GPU.
+            # Manual reload_model/offload_model calls will conflict with FSDP's automatic management
+            # and cause "FSDP parameters should be materialized on CPU" error.
+            # The CPUOffloadPolicy will automatically:
+            # 1. Prefetch parameters from CPU to GPU before forward pass
+            # 2. Offload parameters back to CPU after forward pass
+            # This is the recommended approach for memory-efficient training with FSDP2.
             for output in outputs:
                 output.value = self.critic(
                     output.sequences, output.num_actions, output.attention_mask, **output.inputs_extra_kwargs
                 )
-            # self.strategy.offload_model(self.critic)
         Timer.stop('    critic')
 
         # ========== Stage 4: Reward Models ==========
