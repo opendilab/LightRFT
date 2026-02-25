@@ -43,9 +43,12 @@ fcheck: flake8
 
 # dbuild: build docker image with cache if exists
 dbuild:
+	# use local image as cache source when it already exists
 	if docker image inspect ${IMAGE_NAME} >/dev/null 2>&1; then \
+		# build with cache from existing local image to speed up rebuilds
 		docker build --cache-from ${IMAGE_NAME} -t ${IMAGE_NAME} .; \
 	else \
+		# build image normally when no local cache image is found
 		docker build -t ${IMAGE_NAME} .; \
 	fi
 # dpush: push docker image to registry
