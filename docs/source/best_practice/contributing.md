@@ -73,7 +73,6 @@ make docs-live
 ```bash
 # Run specific tests
 python test_trajectory_saver_fix.py
-python test_action_mask_indexing.py
 
 # Add your own tests in tests/ directory
 ```
