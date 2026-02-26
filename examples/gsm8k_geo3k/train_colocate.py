@@ -382,6 +382,7 @@ def train(args):
         max_length=args.max_len,
         temperature=args.temperature,
         top_p=args.top_p,
+        first_token_temperature=args.first_token_temperature,
         pad_token_id=tokenizer.pad_token_id,
         eos_token_id=tokenizer.eos_token_id,
         # reward model
