@@ -1188,7 +1188,15 @@ class FastExperienceMaker(NaiveExperienceMaker):
                 # are kept the same between first token and remaining tokens.
                 sleep_engine = getattr(self.strategy.args, 'enable_engine_sleep', False)
 
-                def generate_fn(sampling_params, all_prompt_token_ids, all_prompts=None, all_images=None, all_videos=None, images_num=None, videos_num=None):
+                def generate_fn(
+                    sampling_params,
+                    all_prompt_token_ids,
+                    all_prompts=None,
+                    all_images=None,
+                    all_videos=None,
+                    images_num=None,
+                    videos_num=None,
+                ):
                     return self.strategy.gather_and_generate(
                         sampling_params=sampling_params,
                         all_prompt_token_ids=all_prompt_token_ids,

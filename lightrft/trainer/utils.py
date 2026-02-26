@@ -136,9 +136,7 @@ def fire_sampling(
             [list(out.output_token_ids) for out in first_token_outputs],
             skip_special_tokens=False,
         )
-        all_prompts_rest = [
-            prompt + decoded for prompt, decoded in zip(all_prompts, decoded_first_tokens)
-        ]
+        all_prompts_rest = [prompt + decoded for prompt, decoded in zip(all_prompts, decoded_first_tokens)]
     else:
         all_prompts_rest = all_prompts
 
