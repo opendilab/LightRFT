@@ -6,9 +6,9 @@
 
 **Light, Efficient, Omni-modal & Reward-model Driven Reinforcement Fine-Tuning Framework**
 
-[![Version](https://img.shields.io/badge/version-0.1.0-blue.svg)](https://github.com/opendilab/lightrft)
-[![Python](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
-[![PyTorch](https://img.shields.io/badge/PyTorch-2.5.1+-ee4c2c.svg)](https://pytorch.org/)
+[![Version](https://img.shields.io/badge/version-0.1.1-blue.svg)](https://github.com/opendilab/lightrft)
+[![Python](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
+[![PyTorch](https://img.shields.io/badge/PyTorch-2.9.1+-ee4c2c.svg)](https://pytorch.org/)
 [![License](https://img.shields.io/badge/license-Apache%202.0-green.svg)](LICENSE)
 
 English | [简体中文](README_zh.md)
@@ -139,18 +139,48 @@ If you need to customize the environment or build from a specific branch, you ca
 
 ### Installation
 
-Clone and install LightRFT:
+#### Standard Installation
+
+LightRFT uses **SGLang** as the default inference backend with **Flash-Attention** for optimized performance.
 
 ```bash
 # Clone the repository
 git clone https://github.com/opendilab/LightRFT.git
 cd LightRFT
 
-# Install dependencies
-pip install -r requirements.txt
-
-# Install LightRFT
+# Install LightRFT with all core dependencies
 pip install -e .
+```
+
+**What gets installed**: PyTorch, SGLang, Flash-Attention, Transformers, DeepSpeed, and other core dependencies.
+
+#### Optional: Install vLLM Backend
+
+If you want to use vLLM instead of (or alongside) SGLang:
+
+```bash
+# Install vLLM backend
+pip install ".[vllm]"
+
+# Or install vLLM directly
+pip install vllm>=0.13.3
+```
+
+#### Troubleshooting Flash-Attention Installation
+
+Flash-Attention is included by default but may fail on some systems due to CUDA compatibility. If installation fails, try:
+
+**Option 1: Use pre-built wheels (recommended)**
+```bash
+# Download the appropriate wheel from https://github.com/Dao-AILab/flash-attention/releases
+# Example for CUDA 12.x and PyTorch 2.9:
+pip install flash_attn-2.8.3+cu12torch2.9cxx11abiTRUE-cp312-cp312-linux_x86_64.whl
+```
+
+**Option 2: Use Docker (easiest)**
+```bash
+# The official Docker images include all dependencies
+docker pull opendilab/lightrft:v0.1.0
 ```
 
 

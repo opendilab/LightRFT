@@ -18,6 +18,9 @@ import torch
 from copy import deepcopy
 from typing import Callable, List, Tuple, Union, Optional, Any
 
+# Conditional import: vLLM is optional and only needed when using vLLM backend
+# The default backend is SGLang, which doesn't require vLLM
+# To use vLLM backend, install with: pip install "LightRFT[vllm]"
 try:
     import vllm
 except ImportError:
@@ -403,11 +406,15 @@ def vllm_ge_0130():
     Starting from vLLM 0.13.0, truncate_prompt_tokens parameter must not exceed
     max_model_len, requiring additional validation logic.
 
-    :return: True if vLLM version >= 0.13.0, False otherwise
+    This function handles cases where vLLM is not installed by returning True,
+    which ensures compatibility when using the default SGLang backend.
+
+    :return: True if vLLM version >= 0.13.0 or if vLLM is not installed, False otherwise
     :rtype: bool
     """
     if vllm is None:
-        # If vLLM is not installed, assume newer version for safety
+        # If vLLM is not installed (e.g., using SGLang backend), return True for safety
+        # This prevents issues in code paths that may reference this function
         return True
 
     try:

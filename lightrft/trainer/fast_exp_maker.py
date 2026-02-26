@@ -33,7 +33,6 @@ import torch
 import numpy as np
 from PIL import Image
 from easydict import EasyDict
-from vllm import SamplingParams
 
 from lightrft.models.utils import (
     compute_approx_kl,
@@ -1111,6 +1110,11 @@ class FastExperienceMaker(NaiveExperienceMaker):
 
         # ========== Configure Sampling Parameters ==========
         if config.engine_type == "vllm":
+            # vLLM-specific sampling configuration
+            # Note: vLLM is an optional dependency. Install with: pip install "LightRFT[vllm]"
+            # This import is conditional and only executed when engine_type is "vllm"
+            from vllm import SamplingParams
+
             # For vllm>=0.13.0, truncate_prompt_tokens must not exceed max_model_len
             # For older versions, we can use 8192 directly without validation
             if vllm_ge_0130():
@@ -1131,6 +1135,7 @@ class FastExperienceMaker(NaiveExperienceMaker):
                 truncate_prompt_tokens=truncate_tokens,
             )
         elif config.engine_type == "sglang":
+            # SGLang-specific sampling configuration (default backend)
             sampling_params = dict(
                 n=1,
                 temperature=generate_kwargs.get("temperature", 1.0),

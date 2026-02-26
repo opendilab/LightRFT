@@ -325,7 +325,7 @@ python train.py \
 
 **使用方法**：
 ```bash
-python train.py \
+python examples/gsm8k_geo3k/train_colocate.py \
     --use_fire \
     --first_token_temperature 10.0 \
 ```
