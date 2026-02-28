@@ -1664,6 +1664,9 @@ class FastExperienceMaker(NaiveExperienceMaker):
                 "pixel_values_videos": sample.pixel_values_videos,
                 "video_grid_thw": sample.video_grid_thws,
             }
+            # Audio-language actors expect audio_values; pipeline stores them in pixel_values slot
+            if "audio_values" in self._actor_supported_params:
+                candidate_params["audio_values"] = candidate_params.get("pixel_values")
 
             # Filter to only include supported parameters
             extra_kwargs = {
