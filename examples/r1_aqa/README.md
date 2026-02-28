@@ -76,26 +76,7 @@ Run training:
 bash examples/r1_aqa/run_grpo_r1_aqa_qwen2_audio_7b.sh
 ```
 
-### Step 3: Dry-Run (Minimal Test) *(optional)*
-
-Step 2 already runs full training. Step 3 is optional: use the same script with minimal settings for a quick sanity check (e.g. before a long run). For a quick test with minimal resources:
-```bash
-# In the shell script, change:
-EPISODE=1
-RBS=4
-TBS=32
-N_SAMPLES=4
-MLP_WORKER_GPU=1
-ENGINE_TP=1
-ENGINE_MEM_UTIL=0.5
-```
-
-Expected output for dry-run:
-- Training log with reward metrics (accuracy_reward, format_reward)
-- Checkpoint saved to `results/lightrft-r1-aqa-grpo-training/...`
-- wandb logs (if configured)
-
-### Step 4: Evaluate on MMAU Test-Mini
+### Step 3: Evaluate on MMAU Test-Mini
 
 ```bash
 # Using HuggingFace inference
@@ -130,7 +111,7 @@ For R1-AQA defaults (n_samples=8):
 | Config | rollout_batch_size | n_samples | train_batch_size | Valid? |
 |---|---|---|---|---|
 | Default | 16 | 8 | 128 | 128 >= 16×8=128 ✓ |
-| Dry-run | 4 | 4 | 32 | 32 >= 4×4=16 ✓ |
+| Minimal | 4 | 4 | 32 | 32 >= 4×4=16 ✓ |
 | 1-GPU | 4 | 4 | 16 | 16 >= 4×4=16 ✓ |
 
 ## Common Issues
@@ -187,7 +168,7 @@ R1-AQA's README notes that explicit reasoning did not show significant benefits 
 
 - [ ] Data preprocessing reads JSONL and outputs valid parquet
 - [ ] Reward function produces correct scores for sample inputs
-- [ ] Training script launches without errors (dry-run)
+- [ ] Training script launches without errors
 - [ ] GRPO advantage calculation works (check wandb/logs for reward metrics)
 - [ ] Evaluation script produces MMAU-compatible output format
 - [ ] Model prediction field matches MMAU evaluation.py expectations
