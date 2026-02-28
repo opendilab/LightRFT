@@ -11,16 +11,15 @@ Architecture:
        where audio_data flows through the 'images' slot.
     2. AudioMultimodalProcessor: Replaces the image processor to handle audio.
        - Calls processor(text=..., audios=...) instead of processor(text=..., images=...)
-       - Stores input_features in the pixel_values slot
-       - Stores feature_attention_mask in the image_grid_thw slot
+       - Stores audio features in pixel_values (VL slot) and audio_values (actor API).
     3. Monkey patches: Adapt normalize/count/build functions for audio data.
 
 The Actor model is provided by lightrft.models.actor_al.ActorAL, which
-natively handles Qwen2-Audio's audio_values parameter.
+expects audio via the audio_values parameter (forward and generate).
 
 Key Mapping (image pipeline → audio pipeline):
-    pixel_values       → input_features
-    image_grid_thw     → feature_attention_mask
+    pixel_values       → VL slot (same tensor as audio_values)
+    audio_values       → passed to ActorAL.forward / ActorAL.generate
     raw_images (PIL)   → raw_audios (numpy_array, sr) tuples
     multi_modal_data["image"] → multi_modal_data["audio"]
 """
@@ -433,7 +432,7 @@ class AudioMultimodalProcessor:
             all_images_grid_thw = torch.empty((0, 3), dtype=torch.long)
         all_videos_grid_thw = torch.empty((0, 3), dtype=torch.long)
 
-        # Store input_features as pixel_values for pipeline compatibility
+        # Store audio as both pixel_values (VL slot) and audio_values (actor API)
         return EasyDict(
             all_prompt_token_ids=all_prompt_token_ids_out,
             all_prompts=all_prompts_out,
@@ -441,7 +440,8 @@ class AudioMultimodalProcessor:
             all_videos=[None] * total_samples,
             all_images_num=all_images_num,
             all_videos_num=all_videos_num,
-            all_images_pixel_values=all_input_features,  # input_features stored here
+            all_images_pixel_values=all_input_features,
+            all_audio_values=all_input_features,  # ActorAL expects audio_values
             all_videos_pixel_values=None,
             all_images_grid_thw=all_images_grid_thw,
             all_videos_grid_thw=all_videos_grid_thw,

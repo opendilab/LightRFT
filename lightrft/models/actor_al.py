@@ -1,9 +1,8 @@
 """
-Audio Language Model Actor Module for Reinforcement Learning.
+Audio-language actor for reinforcement learning.
 
-This module provides the ActorAL class, which implements an actor model specifically designed
-for audio-language tasks in reinforcement learning scenarios. The actor is responsible for
-generating actions (text sequences) based on audio inputs and textual prompts.
+Provides the ActorAL (Audio-language) class: an actor that generates text (actions) from audio and text inputs. Supports LoRA, Flash Attention 2, DeepSpeed,
+sample packing, gradient checkpointing, and MoE.
 
 """
 
@@ -15,34 +14,25 @@ import torch.nn as nn
 from transformers import Qwen2AudioForConditionalGeneration
 from transformers.integrations.deepspeed import HfDeepSpeedConfig
 
-from .utils import apply_lora_configuration, log_probs_from_logits, reset_position_ids
 from .actor_modality import ActorModality
+from .utils import apply_lora_configuration, log_probs_from_logits, reset_position_ids
 
 
 class _AudioEmbedPositions(nn.Module):
-    """Drop-in replacement for ``nn.Embedding`` that is **not** an instance of
-    ``nn.Embedding``.
+    """FSDP2-safe replacement for ``nn.Embedding`` used in Whisper's audio tower.
 
-    Why this exists:
-        FSDP2's wrapping policy individually shards every ``nn.Embedding``
-        module.  Whisper's ``embed_positions`` is accessed via the bare
-        ``.weight`` attribute (``embed_pos = self.embed_positions.weight``)
-        rather than through the module's ``forward()`` method.  When the
-        Embedding is its own FSDP unit the ``.weight`` attribute returns a
-        sharded ``DTensor`` whose all-gather hook has not fired, while the
-        conv-layer outputs (managed by the *root* FSDP unit) are regular
-        tensors — leading to a mixed ``Tensor / DTensor`` error on
-        ``inputs_embeds + embed_pos``.
+    FSDP2 wraps each ``nn.Embedding`` separately. Whisper uses
+    ``embed_positions.weight`` directly instead of calling ``forward()``, so
+    the weight can be a sharded DTensor while conv outputs are full tensors,
+    causing a mixed Tensor/DTensor error on ``inputs_embeds + embed_pos``.
 
-        By replacing the ``nn.Embedding`` with this plain ``nn.Module``,
-        FSDP does not individually wrap it; its weight is instead managed
-        by the parent (root) FSDP unit and is all-gathered together with
-        the conv-layer weights.
+    This plain ``nn.Module`` is not wrapped by FSDP2; its weight stays in the
+    parent (root) FSDP unit and is all-gathered with the conv weights.
     """
+
     def __init__(self, embedding: nn.Embedding):
         super().__init__()
-        # Re-use the **same** Parameter object so no data is copied.
-        self.weight = embedding.weight
+        self.weight = embedding.weight  # same Parameter, no copy
         self.num_embeddings = embedding.num_embeddings
         self.embedding_dim = embedding.embedding_dim
 
@@ -52,17 +42,12 @@ class _AudioEmbedPositions(nn.Module):
 
 class ActorAL(nn.Module):
     """
-    Audio Language Model actor for reinforcement learning applications.
+    Audio-language actor for RL: generates text (actions) from audio and text inputs.
 
-    This class serves as a foundation for implementing audio-language actor models in RL,
-    which are responsible for generating text sequences (actions) based on both audio and
-    textual inputs. The model supports various optimization techniques including LoRA
-    adaptation, quantization, and distributed training.
+    Supports LoRA, quantization, and distributed training. Can be initialized from
+    a pretrained path or an existing model instance.
 
-    The actor model can be initialized either from a pretrained model path or from an
-    existing model instance, providing flexibility in model deployment scenarios.
-
-    :param pretrain_or_model: Either a string path to a pretrained model or a model instance
+    :param pretrain_or_model: Path to a pretrained model or an existing model instance.
     :type pretrain_or_model: Union[str, nn.Module]
     :param use_flash_attention_2: Whether to utilize Flash Attention 2.0 for improved performance
     :type use_flash_attention_2: bool
@@ -96,7 +81,7 @@ class ActorAL(nn.Module):
         # Generate responses
         sequences, attention_mask, action_mask = actor.generate(
             input_ids=input_tensor,
-            input_features=audio_features_tensor,
+            audio_values=audio_features_tensor,
             max_new_tokens=100
         )
     """
@@ -204,7 +189,7 @@ class ActorAL(nn.Module):
     def generate(
         self,
         input_ids: torch.Tensor,
-        input_features: torch.Tensor = None,
+        audio_values: torch.Tensor = None,
         **kwargs
     ) -> Union[
         Tuple[torch.LongTensor, torch.LongTensor],
@@ -218,8 +203,8 @@ class ActorAL(nn.Module):
 
         :param input_ids: Input token IDs representing the text prompt
         :type input_ids: torch.Tensor
-        :param input_features: Preprocessed audio features (mel-spectrogram) for Qwen2-Audio
-        :type input_features: torch.Tensor
+        :param audio_values: Preprocessed audio features (mel-spectrogram) for Qwen2-Audio
+        :type audio_values: torch.Tensor
         :param kwargs: Additional generation parameters (top_k, top_p, temperature, etc.)
         :type kwargs: dict
 
@@ -230,12 +215,18 @@ class ActorAL(nn.Module):
 
             sequences, attention_mask, action_mask = actor.generate(
                 input_ids=torch.tensor([[1, 2, 3]]),
-                input_features=audio_features_tensor,
+                audio_values=audio_features_tensor,
                 max_new_tokens=50,
                 temperature=0.8,
                 do_sample=True
             )
         """
+        # Pipeline may pass audio as pixel_values; use audio_values consistently.
+        if audio_values is None:
+            audio_values = kwargs.pop("input_features", None)
+        if audio_values is None:
+            audio_values = kwargs.get("pixel_values")
+
         generate_args = {
             "input_ids": input_ids,
             "top_k": kwargs.get("top_k", None),
@@ -251,9 +242,9 @@ class ActorAL(nn.Module):
             "min_new_tokens": kwargs.get("min_new_tokens", 1),
         }
 
-        if input_features is not None:
+        if audio_values is not None:
             # Pad mel features to 3000 if shorter (see forward() for rationale)
-            input_features, feature_attention_mask = self._prepare_audio_features(input_features)
+            input_features, feature_attention_mask = self._prepare_audio_features(audio_values)
             generate_args["input_features"] = input_features
             generate_args["feature_attention_mask"] = feature_attention_mask
 

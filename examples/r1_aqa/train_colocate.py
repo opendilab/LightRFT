@@ -33,7 +33,7 @@ from lightrft.utils import blending_datasets, get_tokenizer_processor_vl
 
 # Local imports
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-from reward_models_utils import load_reward_models, reward_fn
+from reward_models_utils import reward_fn
 from audio_dataset import (
     AudioPromptDataset,
     patch_strategy_for_audio,
@@ -112,8 +112,7 @@ def train(args):
     # No critic for GRPO
     critic = None
 
-    # ==================== Reward Models ====================
-    # R1-AQA uses pure rule-based rewards; no neural reward models are loaded.
+    # Rule-based rewards only; pass empty list/dict for trainer API compatibility.
     reward_models, reward_tokenizers, label_map = [], [], {}
 
     strategy.print(actor)

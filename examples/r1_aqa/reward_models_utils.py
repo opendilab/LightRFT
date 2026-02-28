@@ -23,38 +23,9 @@ Interface:
 from __future__ import annotations
 
 import re
-from typing import Any, Dict, List, Sequence, Tuple, Union
+from typing import Dict, List, Sequence, Tuple
 
 import torch
-
-
-# ============================================================================
-# Model Loading Interface (Simplified — no neural models needed)
-# ============================================================================
-
-RawRewardInput = Union[str, Dict[str, str], List[Dict[str, str]], None]
-
-
-def load_reward_models(
-    raw_reward_pretrain: RawRewardInput,
-    strategy: Any,
-    use_engine: bool = False,
-) -> Tuple[List[Any], List[Any], Dict[str, int]]:
-    """
-    Load reward models (simplified for rule-based rewards).
-
-    For R1-AQA, no neural reward models are needed. This function returns
-    empty lists to maintain interface compatibility with LightRFT's
-    ``train_colocate.py``.
-
-    :return: Tuple of (reward_models, reward_tokenizers, label_map)
-    """
-    strategy.print("=" * 80)
-    strategy.print("[INFO] R1-AQA: Using pure rule-based rewards (accuracy + format)")
-    strategy.print("[INFO] No neural reward models loaded")
-    strategy.print("[INFO] Rewards: accuracy_reward(0/1) + format_reward(0/1)")
-    strategy.print("=" * 80)
-    return [], [], {}
 
 
 # ============================================================================

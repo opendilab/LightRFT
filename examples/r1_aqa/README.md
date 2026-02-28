@@ -56,10 +56,10 @@ The JSONL file should have one JSON object per line with fields:
 
 Convert to LightRFT format:
 ```bash
-python examples/r1_aqa/data_preprocess/avqa.py \
-    --input_jsonl data/AVQA/train_qa.data \
-    --audio_dir data/AVQA/audios \
-    --local_save_dir ~/data/avqa_lightrft
+python examples/r1_aqa/data_preprocess/avqa.py \\
+    --input_jsonl path/to/AVQA/train_r1aqa_line.json \\
+    --audio_dir path/to/AVQA/all_audios \\
+    --local_save_dir ./avqa_lightrft
 ```
 
 ### Step 2: Configure and Run Training
@@ -76,9 +76,9 @@ Run training:
 bash examples/r1_aqa/run_grpo_r1_aqa_qwen2_audio_7b.sh
 ```
 
-### Step 3: Dry-Run (Minimal Test)
+### Step 3: Dry-Run (Minimal Test) *(optional)*
 
-For a quick test with minimal resources:
+Step 2 already runs full training. Step 3 is optional: use the same script with minimal settings for a quick sanity check (e.g. before a long run). For a quick test with minimal resources:
 ```bash
 # In the shell script, change:
 EPISODE=1

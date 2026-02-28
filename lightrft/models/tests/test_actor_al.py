@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-Unit tests for ActorAL class.
+Unit tests for ActorAL (Audio Language) class.
 
-This module contains unit tests for the ActorAL class, focusing on testing
+This module contains unit tests for the ActorAL (Audio Language) class, focusing on testing
 the forward function with various inputs and validating the output format
 and tensor dimensions.
 """
@@ -14,11 +14,11 @@ import torch
 
 # Add the lightrft package to the path
 
-from lightrft.models.actor_al import ActorAL
+from lightrft.models import ActorAL
 
 
 class TestActorAL:
-    """Test cases for ActorAL class."""
+    """Test cases for ActorAL (Audio Language) class."""
     @pytest.fixture
     def device(self):
         """Set up device fixture."""
@@ -147,12 +147,12 @@ class TestActorAL:
         # Prepare test inputs
         batch_size, input_len = 2, 5
         input_ids = torch.randint(0, 32000, (batch_size, input_len))
-        input_features = torch.randn(batch_size, 16000)  # Audio features tensor
+        audio_values = torch.randn(batch_size, 16000)  # Audio features tensor
 
         # Call generate function
         sequences, attention_mask, action_mask = actor.generate(
             input_ids=input_ids,
-            input_features=input_features,
+            audio_values=audio_values,
             max_new_tokens=10,
             temperature=0.8,
             do_sample=True,
@@ -265,12 +265,12 @@ class TestActorALWithRealData:
             batch_size, input_len = 1, 5
             input_ids = torch.randint(0, 32000, (batch_size, input_len))
             # Use proper audio format for Qwen2Audio
-            input_features = torch.randn(batch_size, 16000)  # Audio features tensor
+            audio_values = torch.randn(batch_size, 16000)  # Audio features tensor
 
             # Call generate function
             sequences, attention_mask, action_mask = actor.generate(
                 input_ids=input_ids,
-                input_features=input_features,
+                audio_values=audio_values,
                 max_new_tokens=10,
                 temperature=0.8,
                 do_sample=True,

@@ -5,7 +5,8 @@ This script converts R1-AQA's line-JSON (JSONL) training data into the
 LightRFT-compatible parquet format. The AVQA JSONL is produced by the R1-AQA
 project from the original AVQA training set.
 
-You can download the AVQA dataset and the corresponding JSONL files from the huggingface repository: https://huggingface.co/datasets/Joysw909/AVQA.
+You can download the AVQA dataset and the corresponding JSONL files from the
+HuggingFace repository: https://huggingface.co/datasets/Joysw909/AVQA.
 
 Expected JSONL fields (per line):
     - id (int)
@@ -26,10 +27,17 @@ Output parquet fields (LightRFT compatible):
     - extra_info: dict     — metadata for traceability
 
 Usage:
+    # Example: after downloading from https://huggingface.co/datasets/Joysw909/AVQA
+    huggingface-cli download --repo-type dataset --resume-download Joysw909/AVQA --local-dir path/to/AVQA
+    cd path/to/AVQA
+    mkdir -p all_audios
+    # Copy all files from each VGG directory to all_audios
+    cp VGG10000/* VGG20000/* VGG30000/* VGG40000/* all_audios/ 2>/dev/null || true
+
     python examples/r1_aqa/data_preprocess/avqa.py \\
-        --input_jsonl train_r1aqa_line.json \\
-        --audio_dir AVQA/audios \\
-        --local_save_dir ""
+        --input_jsonl path/to/AVQA/train_r1aqa_line.json \\
+        --audio_dir path/to/AVQA/all_audios \\
+        --local_save_dir ./avqa_lightrft
 """
 
 import argparse
