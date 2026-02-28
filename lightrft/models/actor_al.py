@@ -1,8 +1,9 @@
 """
 Audio-language actor for reinforcement learning.
 
-Provides the ActorAL (Audio-language) class: an actor that generates text (actions) from audio and text inputs. Supports LoRA, Flash Attention 2, DeepSpeed,
-sample packing, gradient checkpointing, and MoE.
+Provides the ActorAL (Audio-language) class: an actor that generates
+text (actions) from audio and text inputs. Supports LoRA, Flash Attention 2,
+DeepSpeed, sample packing, gradient checkpointing, and MoE.
 
 """
 
