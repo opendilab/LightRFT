@@ -406,7 +406,7 @@ def train(args):
     strategy.save_model(
         ema_model if args.enable_ema else actor,
         tokenizer,
-        args.save_path,
+        args.save_path + "/final_model",
     )
 
     if args.critic_pretrain and args.save_value_network:
