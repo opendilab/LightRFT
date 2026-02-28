@@ -717,6 +717,82 @@ class GroupNormCalculator(BaseREINFORCECalculator):
         return advantages, returns, info_dict
 
 
+class OnPolicyDistillationCalculator(AdvantageCalculator):
+    """
+    On-Policy Distillation calculator.
+
+    Uses teacher model's log probabilities as learning signal for knowledge distillation.
+    The advantage is computed as the difference between teacher and student log probabilities,
+    encouraging the student to match the teacher's token-level distribution.
+
+    Reference: On-policy distillation from teacher models during RL training
+    """
+    def compute(
+        self,
+        experience,
+        final_reward: torch.Tensor,
+        gamma: Optional[float],
+        generate_kwargs: Dict,
+    ) -> Tuple[torch.Tensor, torch.Tensor, Dict]:
+        """
+        Compute advantages using teacher log probabilities.
+
+        The advantage is computed as:
+            advantage = teacher_log_probs - student_log_probs
+
+        This encourages the student model to match the teacher's probability distribution.
+
+        :param experience: Experience object containing teacher_log_probs in info dict
+        :type experience: object
+        :param final_reward: Unused for on_policy_distillation
+        :type final_reward: torch.Tensor
+        :param gamma: Discount factor. Unused for on_policy_distillation.
+        :type gamma: Optional[float]
+        :param generate_kwargs: Unused
+        :type generate_kwargs: Dict
+        :return: Tuple of (advantages, returns, info_dict)
+        :rtype: Tuple[torch.Tensor, torch.Tensor, Dict]
+        """
+        # Get teacher log probs from experience info
+        if "teacher_log_probs" not in experience.info:
+            raise ValueError(
+                "teacher_log_probs not found in experience.info. "
+                "Make sure to use the on_policy_distillation reward function."
+            )
+
+        teacher_log_probs = experience.info["teacher_log_probs"].to(final_reward.device)
+
+        # Student log probs are already computed in experience.action_log_probs
+        student_log_probs = experience.action_log_probs
+
+        # Compute advantage as teacher - student log probs
+        # This encourages student to increase probability where teacher has higher probability
+        advantages = teacher_log_probs - student_log_probs
+
+        # Apply action mask to ensure we only consider generated tokens
+        if experience.action_mask is not None:
+            advantages = advantages * experience.action_mask
+
+        # Returns are the same as advantages for distillation
+        returns = deepcopy(advantages)
+
+        # Advantage whitening (normalization)
+        info_dict = {}
+        if self.config.advantages_norm:
+            masked_adv = torch.masked_select(advantages, experience.action_mask)
+            adv_mean = masked_adv.mean()
+            adv_std = masked_adv.std()
+            advantages = (advantages - adv_mean) / (adv_std + 1e-8)
+
+        # Advantage clipping
+        if self.config.advantage_clip > 0:
+            clip_val = self.config.advantage_clip
+            info_dict["advantage_clip_frac"] = compute_clip_fraction(advantages, clip_val, -clip_val)
+            advantages = torch.clamp(advantages, -clip_val, clip_val)
+
+        return advantages, returns, info_dict
+
+
 # ============================================================================
 # Factory Function
 # ============================================================================
@@ -728,7 +804,8 @@ def get_advantage_calculator(estimator_name: str, config) -> AdvantageCalculator
 
     :param estimator_name: Name of the advantage estimation method
                           Options: "gae", "cpgd", "reinforce", "rloo",
-                                   "reinforce_baseline", "group_norm", "grpo"
+                                   "reinforce_baseline", "group_norm", "grpo",
+                                   "on_policy_distillation"
     :type estimator_name: str
     :param config: Configuration object containing training parameters
     :type config: object
@@ -744,6 +821,7 @@ def get_advantage_calculator(estimator_name: str, config) -> AdvantageCalculator
         "reinforce_baseline": REINFORCEBaselineCalculator,
         "cpgd": CPGDCalculator,
         "grpo": GroupNormCalculator,  # Alias for group_norm
+        "on_policy_distillation": OnPolicyDistillationCalculator,
     }
 
     calculator_class = calculator_map.get(estimator_name)
