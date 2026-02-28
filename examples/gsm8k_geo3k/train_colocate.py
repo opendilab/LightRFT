@@ -440,8 +440,10 @@ if __name__ == "__main__":
     parser.add_argument("--max_ckpt_mem", type=int, default=1e8)
     parser.add_argument("--load_checkpoint", action="store_true", default=False)
 
-    # DAPO
-    parser.add_argument("--dynamic_sampling", action="store_true", default=False, help="Enable DAPO dynamic sampling strategy")
+    # DAPO (Decoupled Clip and Dynamic Sampling Policy Optimization)
+    parser.add_argument("--dynamic_sampling", action="store_true", default=False, help="Enable DAPO dynamic sampling strategy to filter out groups with uniform rewards")
+    parser.add_argument("--dynamic_sampling_metric", type=str, default="reward", help="Metric for dynamic sampling filtering: 'reward', 'acc', etc.")
+    parser.add_argument("--max_num_gen_batches", type=int, default=10, help="Maximum number of generation batches for dynamic sampling (<=0 means no limit)")
     parser.add_argument("--overlong_buffer", action="store_true", default=False, help="Apply overlong sequence buffer in DAPO")
     parser.add_argument("--overlong_buffer_len", type=int, default=1024, help="Max token threshold for overlong buffer")
     parser.add_argument("--overlong_buffer_penalty_factor", type=float, default=1.0, help="Penalty scaling factor for overlong sequences, <1 discourages long outputs; >1 encourages them")
