@@ -10,77 +10,77 @@ with support for tensor parallelism, memory optimization, and multimodal capabil
 import os
 from typing import Any
 
-# NPU Compatibility Patch for vLLM
-# vLLM's gpu_worker.py tries to set torch.backends.cuda.matmul.fp32_precision
-# which is not available on NPU. We patch it before importing vLLM.
-def _patch_vllm_for_npu():
-    """
-    Patch vLLM for NPU compatibility.
+# # NPU Compatibility Patch for vLLM
+# # vLLM's gpu_worker.py tries to set torch.backends.cuda.matmul.fp32_precision
+# # which is not available on NPU. We patch it before importing vLLM.
+# def _patch_vllm_for_npu():
+#     """
+#     Patch vLLM for NPU compatibility.
 
-    This function adds missing CUDA backend attributes that vLLM expects
-    but are not available in NPU (Ascend) environments. The patch allows
-    vLLM to initialize without errors when torch.backends.cuda doesn't
-    have all CUDA-specific attributes.
-    """
-    accelerator_type = os.environ.get("ACCELERATOR_TYPE", "gpu").lower()
-    if accelerator_type != "npu":
-        return  # Only patch for NPU environment
+#     This function adds missing CUDA backend attributes that vLLM expects
+#     but are not available in NPU (Ascend) environments. The patch allows
+#     vLLM to initialize without errors when torch.backends.cuda doesn't
+#     have all CUDA-specific attributes.
+#     """
+#     accelerator_type = os.environ.get("ACCELERATOR_TYPE", "gpu").lower()
+#     if accelerator_type != "npu":
+#         return  # Only patch for NPU environment
 
-    try:
-        import torch
+#     try:
+#         import torch
 
-        # Check if we're in an NPU environment (torch_npu available)
-        try:
-            import torch_npu
-            is_npu_env = True
-        except ImportError:
-            is_npu_env = False
+#         # Check if we're in an NPU environment (torch_npu available)
+#         try:
+#             import torch_npu
+#             is_npu_env = True
+#         except ImportError:
+#             is_npu_env = False
 
-        if not is_npu_env:
-            return
+#         if not is_npu_env:
+#             return
 
-        # Patch torch.backends.cuda.matmul if needed
-        if hasattr(torch.backends, 'cuda'):
-            cuda_backend = torch.backends.cuda
+#         # Patch torch.backends.cuda.matmul if needed
+#         if hasattr(torch.backends, 'cuda'):
+#             cuda_backend = torch.backends.cuda
 
-            # Create a matmul module if it doesn't exist or is incomplete
-            if not hasattr(cuda_backend, 'matmul'):
-                # Create a simple namespace for matmul settings
-                class MatmulSettings:
-                    _fp32_precision = "highest"  # Default value
+#             # Create a matmul module if it doesn't exist or is incomplete
+#             if not hasattr(cuda_backend, 'matmul'):
+#                 # Create a simple namespace for matmul settings
+#                 class MatmulSettings:
+#                     _fp32_precision = "highest"  # Default value
 
-                    @property
-                    def fp32_precision(self):
-                        return self._fp32_precision
+#                     @property
+#                     def fp32_precision(self):
+#                         return self._fp32_precision
 
-                    @fp32_precision.setter
-                    def fp32_precision(self, value):
-                        # Silently accept the value but don't actually use it on NPU
-                        self._fp32_precision = value
+#                     @fp32_precision.setter
+#                     def fp32_precision(self, value):
+#                         # Silently accept the value but don't actually use it on NPU
+#                         self._fp32_precision = value
 
-                cuda_backend.matmul = MatmulSettings()
-            elif not hasattr(cuda_backend.matmul, 'fp32_precision'):
-                # Matmul exists but missing fp32_precision attribute
-                class FP32PrecisionProperty:
-                    _value = "highest"
+#                 cuda_backend.matmul = MatmulSettings()
+#             elif not hasattr(cuda_backend.matmul, 'fp32_precision'):
+#                 # Matmul exists but missing fp32_precision attribute
+#                 class FP32PrecisionProperty:
+#                     _value = "highest"
 
-                    def __get__(self, obj, objtype=None):
-                        return self._value
+#                     def __get__(self, obj, objtype=None):
+#                         return self._value
 
-                    def __set__(self, obj, value):
-                        self._value = value
+#                     def __set__(self, obj, value):
+#                         self._value = value
 
-                # Add the property to the existing matmul object
-                type(cuda_backend.matmul).fp32_precision = FP32PrecisionProperty()
+#                 # Add the property to the existing matmul object
+#                 type(cuda_backend.matmul).fp32_precision = FP32PrecisionProperty()
 
-    except Exception as e:
-        # If patching fails, log but don't crash
-        # The original error will occur if vLLM tries to use the attribute
-        import warnings
-        warnings.warn(f"Failed to patch vLLM for NPU: {e}")
+#     except Exception as e:
+#         # If patching fails, log but don't crash
+#         # The original error will occur if vLLM tries to use the attribute
+#         import warnings
+#         warnings.warn(f"Failed to patch vLLM for NPU: {e}")
 
-# Apply the patch before importing vLLM
-_patch_vllm_for_npu()
+# # Apply the patch before importing vLLM
+# _patch_vllm_for_npu()
 
 from vllm import LLM
 
@@ -199,14 +199,14 @@ def get_vllm_engine(
 
     vllm_engine = LLM(
         model=pretrain_name_or_path,
-        dtype=dtype,
+        #dtype=dtype,
         tensor_parallel_size=tp_size,
         gpu_memory_utilization=mem_util,
         distributed_executor_backend="external_launcher",
         worker_cls="lightrft.strategy.vllm_utils.vllm_worker_wrap_no_ray.WorkerWrap",
         enable_sleep_mode=enable_sleep,
         max_model_len=max_model_len,
-        device=device,  # Explicitly specify device type (npu/cuda)
+        #device=device,  # Explicitly specify device type (npu/cuda)
         # enforce_eager=True,
         **kwargs,
     )

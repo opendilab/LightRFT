@@ -818,6 +818,34 @@ class StrategyBase(ABC):
                 prompts=prompt,
                 use_tqdm=False,
             )
+
+            # # ==================== 修改开始 ====================
+            # # vLLM 的 generate 接口严格区分 prompts (文本/多模态字典) 和 prompt_token_ids (整数列表)
+            # # 之前的代码将 prompt_token_ids 赋值给 prompt 变量并传给 prompts 参数，导致了解析错误
+
+            # if prompt_token_ids is not None:
+            #     # 情况 1: 纯文本 Token IDs (RL 训练通常走这里)
+            #     # 必须传给 prompt_token_ids 参数，prompts 设为 None
+            #     vllm_outputs = self.inference_engine.generate(
+            #         sampling_params=sampling_params,
+            #         prompts=None,
+            #         input_ids=prompt_token_ids,
+            #         use_tqdm=False,
+            #     )
+            # elif multi_modal_inputs is not None:
+            #     # 情况 2: 多模态输入 (包含 prompt 文本和 image/video 数据)
+            #     # 这些是结构化输入，应该传给 prompts 参数
+            #     vllm_outputs = self.inference_engine.generate(
+            #         sampling_params=sampling_params,
+            #         prompts=multi_modal_inputs,
+            #         input_ids=None,
+            #         use_tqdm=False,
+            #     )
+            # else:
+            #     raise ValueError("Either prompt (multi_modal_inputs) or prompt_token_ids must be provided.")
+            # # ==================== 修改结束 ====================
+
+
             return [
                 EasyDict(
                     prompt_token_ids=output.prompt_token_ids,
