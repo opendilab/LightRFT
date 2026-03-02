@@ -48,6 +48,7 @@ ensure_video_input_available()
 from lightrft.datasets import PromptDatasetVL, SFTDatasetVL
 from lightrft.models.actor_language import ActorLanguage
 from lightrft.models.actor_vl import ActorVL
+from lightrft.models.critic_vl import CriticVL
 from lightrft.strategy import get_strategy
 from lightrft.trainer.spmd_ppo_trainer import SPMDPPOTrainerVL
 from lightrft.utils import blending_datasets, get_tokenizer_processor_vl
@@ -55,6 +56,13 @@ from lightrft.utils import blending_datasets, get_tokenizer_processor_vl
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from reward_models_utils import RECIPE, load_reward_models, reward_fn
 
+import torch.multiprocessing
+
+# Fix "multiprocessing.context.AuthenticationError: digest received was wrong" error
+# that can occur during PPO pipeline execution with multiprocessing.
+# Using 'file_system' sharing strategy instead of default 'file_descriptor' prevents
+# authentication errors when sharing tensors across processes in distributed training.
+torch.multiprocessing.set_sharing_strategy('file_system')
 
 def train(args):
     """
@@ -91,7 +99,7 @@ def train(args):
     # When meta_init=True, models are created on "meta" device as empty shells,
     # fundamentally resolving CPU OOM issues.
     with strategy.init_model_context(meta_init=args.meta_init):
-        strategy.print(f"Initializing models with meta_init={args.meta_init}")
+        strategy.print(f"Initializing actor models with meta_init={args.meta_init}")
 
         # Select Actor class based on text_only flag
         if args.text_only:
@@ -122,6 +130,7 @@ def train(args):
     # pre-prepare is used for saving RAM memory when training 72B model
     if args.fsdp:
         setattr(actor, "is_actor", True)
+        strategy.print("Preparing actor model with FSDP...")
         actor = strategy.prepare_model(actor, is_training=True)
 
     # Optionally freeze parameters (e.g., vision encoder)
@@ -137,23 +146,33 @@ def train(args):
         strategy.print(f"Froze {frozen_params_count}/{total_params_count} parameters based on prefixes: {freeze_prefix}")
 
     if args.critic_pretrain:
-        critic = get_vlm_for_sequence_regression(
-            args.critic_pretrain,
-            "critic",
-            normalize_reward=args.normalize_reward_for_critic,
-            use_flash_attention_2=args.flash_attn,
-            bf16=args.bf16,
-            load_in_4bit=args.load_in_4bit,
-            lora_rank=args.lora_rank,
-            lora_alpha=args.lora_alpha,
-            target_modules=args.target_modules,
-            lora_dropout=args.lora_dropout,
-            ds_config=ds_train_cfg,
-            value_head_prefix=args.value_head_prefix,
-            init_value_head=strategy.args.pretrain == strategy.args.critic_pretrain,
-        )
+        with strategy.init_model_context(meta_init=args.meta_init):
+            strategy.print(f"Initializing critic models with meta_init={args.meta_init}")
+            critic = CriticVL(
+                args.critic_pretrain,
+                use_flash_attention_2=args.flash_attn,
+                bf16=args.bf16,
+                load_in_4bit=args.load_in_4bit,
+                lora_rank=args.lora_rank,
+                lora_alpha=args.lora_alpha,
+                target_modules=args.target_modules,
+                lora_dropout=args.lora_dropout,
+                normalize_reward=args.normalize_reward_for_critic,
+                ds_config=ds_train_cfg,
+                init_value_head=strategy.args.pretrain == strategy.args.critic_pretrain,
+                value_head_prefix=args.value_head_prefix,
+            )
     else:
         critic = None
+
+    if args.fsdp:
+        strategy.print("Preparing Critic model with FSDP...")
+        critic = strategy.prepare_model(critic, is_training=True)
+        # Note: Do NOT manually offload critic when using fsdp_cpu_offload flag.
+        # FSDP's CPUOffloadPolicy will automatically manage parameter offloading.
+        # Manual offload_model() followed by reload_model() in fast_exp_maker.py
+        # will cause "FSDP parameters should be materialized on CPU" error.
+        # strategy.offload_model(critic)  # Removed - let FSDP auto-manage
 
     # Load reward models (multiple types: value, safety, knowledge, etc.)
     strategy.report_memory(f"before loaded reward models in main entry")
@@ -185,6 +204,12 @@ def train(args):
         if args.fsdp:
             shard_size = args.initial_model_shard_size if args.initial_model_shard_size is not None else strategy.world_size
             initial_model = strategy.prepare_model(initial_model, is_training=False, shard_size=shard_size)
+            # Note: Manual offload is safe for initial_model because it uses is_training=False,
+            # which means FSDP's CPUOffloadPolicy is NOT enabled (see fsdpv2.py:375).
+            # Without CPUOffloadPolicy, we can safely use manual offload_model/reload_model
+            # to move the entire model between CPU and GPU as needed.
+            # This is different from critic which uses is_training=True + fsdp_cpu_offload,
+            # where manual offload/reload would conflict with FSDP's automatic management.
             strategy.offload_model(initial_model)
 
     if args.enable_ema:
