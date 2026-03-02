@@ -28,10 +28,10 @@ Common questions and answers about LightRFT.
 ### Q: What hardware is required?
 
 **A**: Minimum requirements:
-- **GPU**: NVIDIA GPUs with CUDA 11.8+
+- **GPU**: NVIDIA GPUs with CUDA 12.8+
 - **Memory**: 40GB+ VRAM per GPU recommended (24GB possible with optimizations)
-- **PyTorch**: 2.5.1+
-- **Python**: 3.8+
+- **PyTorch**: 2.9.1+
+- **Python**: 3.12+
 
 For production: 8× A100/H100 80GB recommended
 
@@ -39,16 +39,41 @@ For production: 8× A100/H100 80GB recommended
 
 ### Q: How do I install LightRFT?
 
-**A**: Simple installation:
+**A**: Standard installation (includes SGLang + Flash-Attention):
 ```bash
 git clone https://github.com/opendilab/LightRFT.git
 cd LightRFT
-pip install -r requirements.txt && pip install -e .
+pip install -e .
 ```
 
-### Q: Do I need to install vLLM separately?
+### Q: How do I install vLLM?
 
-**A**: No, vLLM is included in the requirements. However, for the latest features, you can install from source.
+**A**: vLLM is optional. Install it with:
+```bash
+# Option 1: Install as optional dependency
+pip install ".[vllm]"
+
+# Option 2: Install vLLM directly
+pip install vllm>=0.13.3
+```
+
+Note: SGLang is the default inference backend and is already included in the standard installation.
+
+### Q: What if Flash-Attention installation fails?
+
+**A**: Try these solutions:
+
+**Option 1: Use pre-compiled wheel (Recommended)**
+```bash
+# Download from https://github.com/Dao-AILab/flash-attention/releases
+# For CUDA 12.x with PyTorch 2.9 and Python 3.12:
+pip install flash_attn-2.8.3+cu12torch2.9cxx11abiTRUE-cp312-cp312-linux_x86_64.whl
+```
+
+**Option 2: Use Docker (Easiest)**
+```bash
+docker pull opendilab/lightrft:v0.1.0
+```
 
 ## Training Questions
 
