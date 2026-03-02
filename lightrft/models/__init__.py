@@ -26,6 +26,4 @@ __all__ = [
     "PRMLoss",
     "ValueLoss",
     "VanillaKTOLoss",
-    "get_llm_for_sequence_regression",
-    "get_vlm_for_sequence_regression",
 ]
