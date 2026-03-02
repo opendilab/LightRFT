@@ -470,9 +470,8 @@ class StrategyBase(ABC):
                 is_tensor = False
             is_cpu_tensor = data.device.type == "cpu"
 
-            # For CPU tensors on NPU, avoid device transfer to prevent stream exhaustion
-            # Perform all_reduce directly on CPU tensor to avoid NPU stream allocation
-            # Note: PyTorch distributed supports all_reduce on CPU tensors even in NPU/CUDA environments
+            # Keep CPU tensors on CPU for all_reduce to avoid NPU stream allocation
+            # This prevents stream exhaustion when NPU resources are already under pressure
             if op == "mean":
                 data /= self.world_size
             dist.all_reduce(data, op=dist.ReduceOp.MAX if op == "max" else dist.ReduceOp.SUM)
@@ -499,14 +498,13 @@ class StrategyBase(ABC):
                 data = torch.Tensor([data])
             is_cpu_tensor = data.device.type == "cpu"
 
+            # Keep CPU tensors on CPU for all_gather to avoid NPU stream allocation
             if is_cpu_tensor:
-                # For CPU tensors, perform all_gather directly on CPU to avoid NPU stream exhaustion
-                # PyTorch distributed supports CPU all_gather even in NPU/CUDA environments
                 ret = [torch.zeros_like(data) for _ in range(self.world_size)]
                 dist.all_gather(ret, data)
                 return torch.cat(ret)
             else:
-                # For device tensors, perform all_gather on device
+                # For device tensors, use device all_gather
                 ret = [torch.zeros_like(data).to(get_current_device()) for _ in range(self.world_size)]
                 dist.all_gather(ret, data.to(get_current_device()))
                 return torch.cat(ret)
