@@ -15,6 +15,8 @@ from torch.distributed.distributed_c10d import (
     rendezvous,
 )
 
+from lightrft.utils import device_synchronize
+
 
 # Copy from pytorch to allow creating multiple main groups.
 # https://github.com/pytorch/pytorch/blob/main/torch/distributed/distributed_c10d.py
@@ -359,6 +361,10 @@ def all_gather_all_prompt_token_ids(all_prompt_token_ids: List[List[int]], group
     # 6. Execute all-gather operation
     gathered_tensor = torch.zeros((world_size * num_prompts, max_len_global), dtype=torch.long, device=device)
     dist.all_gather_into_tensor(gathered_tensor, padded_tensor, group=group)
+
+    # Synchronize before CPU transfer to prevent NPU stream exhaustion
+    # all_gather_into_tensor is async, need to wait before device-to-device transfer
+    device_synchronize()
 
     # 7. Convert result format and remove padding
     gathered_list = gathered_tensor.cpu().tolist()

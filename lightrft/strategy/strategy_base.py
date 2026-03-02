@@ -470,12 +470,17 @@ class StrategyBase(ABC):
                 is_tensor = False
             is_cpu_tensor = data.device.type == "cpu"
 
+            # For CPU tensors, move to device for all_reduce, then synchronize before moving back
+            # This prevents NPU stream resource exhaustion from async device-to-device transfers
             if is_cpu_tensor:
                 data = data.to(get_current_device())
             if op == "mean":
                 data /= self.world_size
             dist.all_reduce(data, op=dist.ReduceOp.MAX if op == "max" else dist.ReduceOp.SUM)
             if is_cpu_tensor:
+                # Synchronize before CPU transfer to ensure all_reduce completes
+                # This prevents stream exhaustion on NPU
+                device_synchronize()
                 data = data.cpu()
             return data.item() if not is_tensor else data
 
@@ -502,6 +507,10 @@ class StrategyBase(ABC):
 
             ret = [torch.zeros_like(data).to(get_current_device()) for _ in range(self.world_size)]
             dist.all_gather(ret, data.to(get_current_device()))
+
+            # Synchronize before CPU transfer to prevent NPU stream exhaustion
+            if is_cpu_tensor:
+                device_synchronize()
             return torch.cat(ret).cpu() if is_cpu_tensor else torch.cat(ret)
 
     @classmethod
