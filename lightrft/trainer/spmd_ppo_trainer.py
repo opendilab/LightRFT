@@ -236,11 +236,12 @@ class SPMDPPOTrainerBase:
 
                 # Step 2: Synchronize skip decision across all ranks via all_reduce
                 # This ensures all ranks agree on whether to skip, preventing execution divergence
-                skip_flag = torch.tensor([1.0 if should_skip_local else 0.0], device=device)
-                torch.distributed.all_reduce(skip_flag, op=torch.distributed.ReduceOp.MAX)
+                # Use strategy.all_reduce to avoid NPU resource exhaustion
+                skip_flag_value = 1.0 if should_skip_local else 0.0
+                skip_flag_max = self.strategy.all_reduce(skip_flag_value, op="max")
 
                 # Step 3: Collectively skip if ANY rank detected invalid data
-                if skip_flag.item() > 0:
+                if skip_flag_max > 0:
                     if self.strategy.is_rank_0():
                         pbar.set_description(f"Train epoch [{epoch + 1}/{self.max_epochs}] (skipping invalid batch)")
                     continue  # All ranks skip together - no deadlock

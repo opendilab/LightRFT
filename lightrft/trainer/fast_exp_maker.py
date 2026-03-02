@@ -1289,10 +1289,16 @@ class FastExperienceMaker(NaiveExperienceMaker):
 
         # Report timing
         device_synchronize()
-        gen_time = torch.tensor(time.time() - start_time, device=get_current_device())
-        torch.distributed.all_reduce(gen_time, op=torch.distributed.ReduceOp.MAX)
-        self.strategy.print(f"***Rollout engine generation time (global max): {gen_time.item():.4f}s")
+        # Use CPU tensor for timing to avoid NPU resource exhaustion
+        # NPU stream resources can be depleted with frequent device tensor creation
+        gen_time_value = time.time() - start_time
+        gen_time_max = self.strategy.all_reduce(gen_time_value, op="max")
+        self.strategy.print(f"***Rollout engine generation time (global max): {gen_time_max:.4f}s")
         self.strategy.report_memory("after rollout engine generation")
+
+        # Explicitly clear cache to free NPU resources after generation
+        # This helps prevent stream resource exhaustion on NPU
+        empty_cache()
 
         return samples_list
 
