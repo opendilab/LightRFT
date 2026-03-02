@@ -470,18 +470,12 @@ class StrategyBase(ABC):
                 is_tensor = False
             is_cpu_tensor = data.device.type == "cpu"
 
-            # For CPU tensors, move to device for all_reduce, then synchronize before moving back
-            # This prevents NPU stream resource exhaustion from async device-to-device transfers
-            if is_cpu_tensor:
-                data = data.to(get_current_device())
+            # For CPU tensors on NPU, avoid device transfer to prevent stream exhaustion
+            # Perform all_reduce directly on CPU tensor to avoid NPU stream allocation
+            # Note: PyTorch distributed supports all_reduce on CPU tensors even in NPU/CUDA environments
             if op == "mean":
                 data /= self.world_size
             dist.all_reduce(data, op=dist.ReduceOp.MAX if op == "max" else dist.ReduceOp.SUM)
-            if is_cpu_tensor:
-                # Synchronize before CPU transfer to ensure all_reduce completes
-                # This prevents stream exhaustion on NPU
-                device_synchronize()
-                data = data.cpu()
             return data.item() if not is_tensor else data
 
     def all_gather(self, data: Union[torch.Tensor, Dict[str,
@@ -505,13 +499,17 @@ class StrategyBase(ABC):
                 data = torch.Tensor([data])
             is_cpu_tensor = data.device.type == "cpu"
 
-            ret = [torch.zeros_like(data).to(get_current_device()) for _ in range(self.world_size)]
-            dist.all_gather(ret, data.to(get_current_device()))
-
-            # Synchronize before CPU transfer to prevent NPU stream exhaustion
             if is_cpu_tensor:
-                device_synchronize()
-            return torch.cat(ret).cpu() if is_cpu_tensor else torch.cat(ret)
+                # For CPU tensors, perform all_gather directly on CPU to avoid NPU stream exhaustion
+                # PyTorch distributed supports CPU all_gather even in NPU/CUDA environments
+                ret = [torch.zeros_like(data) for _ in range(self.world_size)]
+                dist.all_gather(ret, data)
+                return torch.cat(ret)
+            else:
+                # For device tensors, perform all_gather on device
+                ret = [torch.zeros_like(data).to(get_current_device()) for _ in range(self.world_size)]
+                dist.all_gather(ret, data.to(get_current_device()))
+                return torch.cat(ret)
 
     @classmethod
     def print(cls, *msg):
