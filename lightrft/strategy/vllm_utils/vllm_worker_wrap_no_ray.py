@@ -6,33 +6,59 @@ model from a source rank. This is particularly useful for distributed training o
 inference scenarios where model weights need to be synchronized across multiple workers.
 """
 
+import os
 import torch
 from lightrft.utils.utils import empty_cache as device_empty_cache
-# vLLM version compatibility notes:
-# --------------------------------
-# In older versions of vLLM (< 0.13.0), the Worker class is located under:
-#     vllm.worker.worker.Worker
-#
-# In vLLM >= 0.13.0, the Worker implementation was moved to:
-#     vllm.v1.worker.gpu_worker.Worker
-#
-# To maintain compatibility across different vLLM versions, we try importing Worker
-# from the new v1 path first (for vllm>=0.13.0). If the import fails (ModuleNotFoundError),
-# we fall back to importing from the old path (for vllm<0.13.0).
-try:
-    from vllm.v1.worker.gpu_worker import Worker
-except (ModuleNotFoundError, ImportError):
+
+
+# ==================== 修改开始 ====================
+# 动态判断硬件类型，选择正确的 BaseWorker
+accelerator_type = os.environ.get("ACCELERATOR_TYPE", "gpu").lower()
+
+BaseWorker = None
+
+if accelerator_type == "npu":
+    # NPU 环境下尝试导入 NPUWorker
     try:
-        from vllm.worker.worker import Worker
+        from vllm_ascend.worker.worker import NPUWorker as BaseWorker
     except (ModuleNotFoundError, ImportError):
-        raise ImportError(
-            "Could not import Worker from vllm. "
-            "Please ensure you have a compatible version of vllm installed. "
-            "Supported versions: vllm>=0.6.3 or vllm>=0.13.0"
-        )
+        # 部分旧版本或特定分支可能仍使用通用 Worker，但通常 NPU 需要 NPUWorker
+        try:
+            from vllm.worker.worker import Worker as BaseWorker
+        except (ModuleNotFoundError, ImportError):
+            raise ImportError(
+                "Could not import NPUWorker from vllm.worker.npu_worker. "
+                "Please ensure you have installed vllm with NPU support."
+            )
+else:
+    # vLLM version compatibility notes:
+    # --------------------------------
+    # In older versions of vLLM (< 0.13.0), the Worker class is located under:
+    #     vllm.worker.worker.Worker
+    #
+    # In vLLM >= 0.13.0, the Worker implementation was moved to:
+    #     vllm.v1.worker.gpu_worker.Worker
+    #
+    # To maintain compatibility across different vLLM versions, we try importing Worker
+    # from the new v1 path first (for vllm>=0.13.0). If the import fails (ModuleNotFoundError),
+    # we fall back to importing from the old path (for vllm<0.13.0).
+    try:
+        from vllm.v1.worker.gpu_worker import Worker as BaseWorker
+    except (ModuleNotFoundError, ImportError):
+        try:
+            from vllm.worker.worker import Worker as BaseWorker
+        except (ModuleNotFoundError, ImportError):
+            raise ImportError(
+                "Could not import Worker from vllm. "
+                "Please ensure you have a compatible version of vllm installed. "
+                "Supported versions: vllm>=0.6.3 or vllm>=0.13.0"
+            )
 
 
-class WorkerWrap(Worker):
+# class WorkerWrap(Worker):
+# 让 WorkerWrap 继承自动态选择的 BaseWorker
+class WorkerWrap(BaseWorker):
+# ==================== 修改结束 ====================
     """
     A wrapper for vLLM worker that extends its functionality.
 

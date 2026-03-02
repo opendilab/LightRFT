@@ -305,7 +305,7 @@ def get_current_device(num_device_per_node: int = 8) -> torch.device:
         else:
             try:
                 # Use get_current_device recursively to ensure proper device detection
-                import torch.cuda
+                # import torch.cuda
                 return torch.device(f"cuda:{torch.cuda.current_device()}")
             except (RuntimeError, AssertionError):
                 return torch.device("cuda:0")
