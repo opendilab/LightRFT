@@ -228,6 +228,11 @@ echo "Experiment: ${EXPERIMENT_NAME}"
 echo "NPU Count: ${GPUS_PER_NODE}"
 echo ""
 
+    # --micro_train_batch_size 4 \
+    # --train_batch_size ${TBS} \
+    # --micro_rollout_batch_size 4 \
+    # --rollout_batch_size ${RBS} \
+
 torchrun \
     --nnodes $NNODES \
     --nproc-per-node $GPUS_PER_NODE \
@@ -247,9 +252,9 @@ torchrun \
     --reward_pretrain "{}" \
     --save_path "results/${EXPERIMENT_NAME}/${SAVE_MODEL_NAME}" \
     --ckpt_path "results/${EXPERIMENT_NAME}/${SAVE_MODEL_NAME}" \
-    --micro_train_batch_size 4 \
+    --micro_train_batch_size 1 \
     --train_batch_size ${TBS} \
-    --micro_rollout_batch_size 4 \
+    --micro_rollout_batch_size 1 \
     --rollout_batch_size ${RBS} \
     --max_epochs 1 \
     --num_episodes ${EPISODE} \

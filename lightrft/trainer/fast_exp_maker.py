@@ -59,7 +59,7 @@ from .utils import RunningMoments, compute_clip_fraction, get_cpgd_advantages_re
 from .advantage_calculator import get_advantage_calculator, normalize_advantages_cross_batch
 from .image_utils import normalize_images, get_images_num
 from .video_utils import normalize_videos, get_videos_num
-
+import gc
 # ============================================================================
 # Data Structures
 # ============================================================================
@@ -1598,6 +1598,12 @@ class FastExperienceMaker(NaiveExperienceMaker):
                 )
         Timer.stop('    actor_logprob')
 
+        # [NPU-FIX] After reload_model, sync and clear cache before forward pass
+        # reload_model allocates new streams, need to clean up before FSDP all_gather
+        device_synchronize()
+        gc.collect()
+        empty_cache()
+
         # ========== Stage 2: Initial Model ==========
         if self.initial_model is not None:
             self.strategy.reload_model(self.initial_model)
@@ -1605,6 +1611,7 @@ class FastExperienceMaker(NaiveExperienceMaker):
             # [NPU-FIX] After reload_model, sync and clear cache before forward pass
             # reload_model allocates new streams, need to clean up before FSDP all_gather
             device_synchronize()
+            gc.collect()
             empty_cache()
 
             for output in outputs:
