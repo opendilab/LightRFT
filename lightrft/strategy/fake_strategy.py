@@ -406,7 +406,7 @@ class FakeStrategy(StrategyBase):
                     device = 0
             else:
                 try:
-                    device = get_current_device()
+                    device = get_current_device().index
                 except (RuntimeError, AssertionError):
                     device = 0
         return optimizer

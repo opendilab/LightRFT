@@ -471,7 +471,7 @@ class StrategyBase(ABC):
             is_cpu_tensor = data.device.type == "cpu"
 
             if is_cpu_tensor:
-                data = data.to(self._get_current_device())
+                data = data.to(get_current_device())
             if op == "mean":
                 data /= self.world_size
             dist.all_reduce(data, op=dist.ReduceOp.MAX if op == "max" else dist.ReduceOp.SUM)
@@ -500,8 +500,8 @@ class StrategyBase(ABC):
                 data = torch.Tensor([data])
             is_cpu_tensor = data.device.type == "cpu"
 
-            ret = [torch.zeros_like(data).to(self._get_current_device()) for _ in range(self.world_size)]
-            dist.all_gather(ret, data.to(self._get_current_device()))
+            ret = [torch.zeros_like(data).to(get_current_device()) for _ in range(self.world_size)]
+            dist.all_gather(ret, data.to(get_current_device()))
             return torch.cat(ret).cpu() if is_cpu_tensor else torch.cat(ret)
 
     @classmethod
@@ -1173,7 +1173,7 @@ class StrategyBase(ABC):
                     device = 0  # fallback
             else:
                 try:
-                    device = get_current_device()
+                    device = get_current_device().index
                 except (RuntimeError, AssertionError):
                     device = 0  # fallback
         self.print("maybe_load_optimizer not implemented and Skipped")

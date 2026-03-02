@@ -505,7 +505,7 @@ def load_fsdp_optimizer(optimizer, device_id=None):
                 device_id = 0
         else:
             try:
-                device_id = get_current_device()
+                device_id = get_current_device().index
             except (RuntimeError, AssertionError):
                 device_id = 0
 
