@@ -7,6 +7,7 @@ from transformers import AutoModel
 from transformers.integrations.deepspeed import HfDeepSpeedConfig
 
 from .utils import apply_lora_configuration, AttentionPooling
+from lightrft.utils.utils import get_current_device
 
 
 class ScalarRewardModelVL(nn.Module):
@@ -132,20 +133,21 @@ class ScalarRewardModelVL(nn.Module):
                     nn.Linear(hidden_size, 1, bias=False),
                     nn.Sigmoid(),
                 )
+                current_device = get_current_device()
                 head.to(torch.bfloat16)
-                head.cuda()
+                head.to(current_device)
                 setattr(self, f"{head_type}_head", head)
 
                 if self.scale_for_train:
                     logit_scale = nn.Parameter(torch.full((1, ), np.log(1 / 0.07)))
                     logit_scale.to(torch.bfloat16)
-                    logit_scale.cuda()
+                    logit_scale.to(current_device)
                     setattr(self, f"{head_type}_logit_scale", logit_scale)
 
                 if self.pooling_method == 'attn':
                     attnpool = AttentionPooling(hidden_size)
                     attnpool.to(torch.bfloat16)
-                    attnpool.cuda()
+                    attnpool.to(current_device)
                     setattr(self, f"{head_type}_attnpool", attnpool)
 
             # https://github.com/huggingface/transformers/issues/26877
@@ -222,7 +224,7 @@ class ScalarRewardModelVL(nn.Module):
 
         # Extract hidden states and pass through reward heads
         hidden_states = output.hidden_states[self.probing_layer]
-        hidden_states = hidden_states.cuda()
+        hidden_states = hidden_states.to(get_current_device())
         scores = {}
         if self.pooling_method == 'attn':
             for head_type in self.head_types:

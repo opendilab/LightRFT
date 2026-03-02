@@ -1382,7 +1382,7 @@ class FastExperienceMaker(NaiveExperienceMaker):
                     thw_idx = 0
                     for num in micro_images_num:
                         if num > 0:
-                            stacked_thw = torch.stack(image_grid_thws_unbind[thw_idx:thw_idx + num], dim=0).to("cuda")
+                            stacked_thw = torch.stack(image_grid_thws_unbind[thw_idx:thw_idx + num], dim=0).to(get_current_device())
                             image_grid_thw_list.append(stacked_thw)
                             thw_idx += num
                         else:
@@ -1402,7 +1402,7 @@ class FastExperienceMaker(NaiveExperienceMaker):
                     for num in micro_videos_num:
                         if num > 0:
                             v_stacked_thw = torch.stack(video_grid_thws_unbind[v_thw_idx:v_thw_idx + num],
-                                                        dim=0).to("cuda")
+                                                        dim=0).to(get_current_device())
                             video_grid_thw_list.append(v_stacked_thw)
                             v_thw_idx += num
                         else:
@@ -1478,7 +1478,7 @@ class FastExperienceMaker(NaiveExperienceMaker):
         config = self.strategy.config
 
         for experience, reward in zip(experiences, rewards):
-            reward = reward.to("cuda")
+            reward = reward.to(get_current_device())
             processed_reward = reward.clone()  # TODO：check
 
             # ========== Reward Normalization ==========
@@ -1944,9 +1944,10 @@ class FastExperienceMaker(NaiveExperienceMaker):
         sequences, attention_mask, action_mask = self.actor.process_sequences(
             sequences, max_input_len, eos_token_id, pad_token_id
         )
-        sequences = sequences.to("cuda")
-        attention_mask = attention_mask.to("cuda")
-        action_mask = action_mask.to("cuda")
+        current_device = get_current_device()
+        sequences = sequences.to(current_device)
+        attention_mask = attention_mask.to(current_device)
+        action_mask = action_mask.to(current_device)
 
         if not is_multimodal:
             return Samples(
@@ -1964,11 +1965,12 @@ class FastExperienceMaker(NaiveExperienceMaker):
             ), None, None  # Return None for patch indices
         else:
             # Process VLM pixel values
+            current_device = get_current_device()
             pixel_values = (
-                torch.cat(pixel_values, dim=0).cuda() if pixel_values and pixel_values[0].shape[0] > 0 else None
+                torch.cat(pixel_values, dim=0).to(current_device) if pixel_values and pixel_values[0].shape[0] > 0 else None
             )
             pixel_values_videos = (
-                torch.cat(pixel_values_videos, dim=0).cuda()
+                torch.cat(pixel_values_videos, dim=0).to(current_device)
                 if pixel_values_videos and pixel_values_videos[0].shape[0] > 0 else None
             )
 
@@ -1976,8 +1978,8 @@ class FastExperienceMaker(NaiveExperienceMaker):
                 sequences=sequences,
                 attention_mask=attention_mask,
                 action_mask=action_mask,
-                image_grid_thws=(torch.cat(image_grid_thw_list, dim=0).to("cuda") if image_grid_thw_list else None),
-                video_grid_thws=(torch.cat(video_grid_thw_list, dim=0).to("cuda") if video_grid_thw_list else None),
+                image_grid_thws=(torch.cat(image_grid_thw_list, dim=0).to(current_device) if image_grid_thw_list else None),
+                video_grid_thws=(torch.cat(video_grid_thw_list, dim=0).to(current_device) if video_grid_thw_list else None),
                 raw_images=raw_images,
                 pixel_values=pixel_values,
                 pixel_values_videos=pixel_values_videos,
@@ -2031,10 +2033,11 @@ class FastExperienceMaker(NaiveExperienceMaker):
             attention_mask.extend([idx + 1] * (input_len + output_len))
             num_actions.append(max(1, output_len))
 
-        sequences = torch.tensor(sequences, device="cuda").unsqueeze(0)
-        attention_mask = torch.tensor(attention_mask, device="cuda").unsqueeze(0)
-        response_length = torch.tensor(num_actions, device="cuda", dtype=torch.float)
-        total_length = torch.tensor(packed_seq_lens, device="cuda", dtype=torch.float)
+        current_device = get_current_device()
+        sequences = torch.tensor(sequences, device=current_device).unsqueeze(0)
+        attention_mask = torch.tensor(attention_mask, device=current_device).unsqueeze(0)
+        response_length = torch.tensor(num_actions, device=current_device, dtype=torch.float)
+        total_length = torch.tensor(packed_seq_lens, device=current_device, dtype=torch.float)
 
         return Samples(
             sequences=sequences,

@@ -11,6 +11,7 @@ from lightrft.models.actor_vl import ActorVL
 
 from lightrft.models.utils import compute_approx_kl, masked_mean
 from lightrft.utils import init_logger, remote_rm_fn
+from lightrft.utils.utils import get_current_device
 
 logger = init_logger(__name__)
 
@@ -481,7 +482,7 @@ class NaiveExperienceMakerVL(ABC):
             images = all_images[i:i + args.micro_rollout_batch_size]
             references = all_references[i:i + args.micro_rollout_batch_size]
             labels = all_labels[i:i + args.micro_rollout_batch_size]
-            inputs = self.processor_fn(prompts, images, self.prompt_max_len, device="cuda")
+            inputs = self.processor_fn(prompts, images, self.prompt_max_len, device=get_current_device())
             sequences, attention_mask, action_mask = self.actor.generate(**inputs, **generate_kwargs)
             samples = SamplesVL(
                 sequences=sequences,
@@ -618,7 +619,7 @@ class NaiveExperienceMakerVL(ABC):
         # Reward shaping for RLOO and REINFORCE baseline
         if args.advantage_estimator == "rloo":
             rewards = torch.cat([experience.info["reward"] for experience in experiences])
-            rewards = rewards.reshape(-1, args.n_samples_per_prompt).to(device="cuda")
+            rewards = rewards.reshape(-1, args.n_samples_per_prompt).to(device=get_current_device())
             baseline = (rewards.sum(-1, keepdim=True) - rewards) / (args.n_samples_per_prompt - 1)
             rewards = rewards - baseline
             rewards = rewards.flatten().to(device="cpu").chunk(len(experiences))
@@ -628,13 +629,13 @@ class NaiveExperienceMakerVL(ABC):
             # `/ std` is not needed in RL variance reduction theory, and `K3 KL` has a larger variance
             # than `K1 KL` under a categorical distribution.
             rewards = torch.cat([experience.info["reward"] for experience in experiences])
-            rewards = rewards.reshape(-1, args.n_samples_per_prompt).to(device="cuda")
+            rewards = rewards.reshape(-1, args.n_samples_per_prompt).to(device=get_current_device())
             rewards = rewards - rewards.mean(-1, keepdim=True)
             rewards = rewards.reshape(-1).to(device="cpu").chunk(len(experiences))
             return experiences, rewards
         elif args.advantage_estimator in ["group_norm", "grpo"]:
             rewards = torch.cat([experience.info["reward"] for experience in experiences])
-            rewards = rewards.reshape(-1, args.n_samples_per_prompt).to(device="cuda")
+            rewards = rewards.reshape(-1, args.n_samples_per_prompt).to(device=get_current_device())
             rewards = (rewards - rewards.mean(-1, keepdim=True)) / (rewards.std(-1, keepdim=True) + 1e-9)
             rewards = rewards.reshape(-1).to(device="cpu").chunk(len(experiences))
             return experiences, rewards

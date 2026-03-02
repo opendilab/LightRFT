@@ -430,7 +430,7 @@ class NaiveExperienceMaker(ABC):
         samples_list = []
         for i in range(0, len(all_prompts), args.micro_rollout_batch_size):
             prompts = all_prompts[i:i + args.micro_rollout_batch_size]
-            inputs = self.tokenize_fn(prompts, self.prompt_max_len, device="cuda")
+            inputs = self.tokenize_fn(prompts, self.prompt_max_len, device=get_current_device())
             sequences, attention_mask, action_mask = self.actor.generate(**inputs, **generate_kwargs)
             samples = Samples(
                 sequences=sequences,
@@ -568,7 +568,7 @@ class NaiveExperienceMaker(ABC):
             # `/ std` is not needed in RL variance reduction theory, and `K3 KL` has a larger variance
             # than `K1 KL` under a categorical distribution
             rewards = torch.cat([experience.info["reward"] for experience in experiences])
-            rewards = rewards.reshape(-1, args.n_samples_per_prompt).to(device="cuda")
+            rewards = rewards.reshape(-1, args.n_samples_per_prompt).to(device=get_current_device())
             rewards = rewards - rewards.mean(-1, keepdim=True)
             rewards = rewards.reshape(-1).to(device="cpu").chunk(len(experiences))
             return experiences, rewards

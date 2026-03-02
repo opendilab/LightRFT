@@ -30,6 +30,7 @@ import torch
 import warnings
 
 from .utils import RunningMoments, compute_clip_fraction
+from lightrft.utils.utils import get_current_device
 
 # ============================================================================
 # Abstract Base Class
@@ -525,7 +526,7 @@ class RLOOCalculator(BaseREINFORCECalculator):
         n_samples = config.n_samples_per_prompt
 
         # Reshape to (n_groups, n_samples_per_prompt)
-        rewards = rewards.reshape(-1, n_samples).to("cuda")
+        rewards = rewards.reshape(-1, n_samples).to(get_current_device())
 
         # Compute leave-one-out baseline
         # baseline = (sum - self) / (n_samples - 1)
@@ -590,7 +591,7 @@ class REINFORCEBaselineCalculator(BaseREINFORCECalculator):
         n_samples = config.n_samples_per_prompt
 
         # Reshape to (n_groups, n_samples_per_prompt)
-        rewards = rewards.reshape(-1, n_samples).to("cuda")
+        rewards = rewards.reshape(-1, n_samples).to(get_current_device())
 
         # REINFORCE++-baseline: subtract mean baseline (no division by std)
         # This is different from GRPO which does (rewards - mean) / std
@@ -665,7 +666,7 @@ class GroupNormCalculator(BaseREINFORCECalculator):
                         exp.action_mask = torch.zeros_like(exp.action_mask, dtype=torch.bool)
 
         # Group normalization
-        rewards = rewards.reshape(-1, n_samples).to("cuda")
+        rewards = rewards.reshape(-1, n_samples).to(get_current_device())
         rewards = (rewards - rewards.mean(-1, keepdim=True)) / (rewards.std(-1, keepdim=True) + 1e-9)
 
         # Flatten and chunk back
