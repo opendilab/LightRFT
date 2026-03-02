@@ -1601,6 +1601,12 @@ class FastExperienceMaker(NaiveExperienceMaker):
         # ========== Stage 2: Initial Model ==========
         if self.initial_model is not None:
             self.strategy.reload_model(self.initial_model)
+
+            # [NPU-FIX] After reload_model, sync and clear cache before forward pass
+            # reload_model allocates new streams, need to clean up before FSDP all_gather
+            device_synchronize()
+            empty_cache()
+
             for output in outputs:
                 output.base_action_log_probs = self.initial_model(
                     output.sequences,
@@ -1614,6 +1620,11 @@ class FastExperienceMaker(NaiveExperienceMaker):
         # ========== Stage 3: Critic ==========
         if self.critic is not None:
             self.strategy.reload_model(self.critic)
+
+            # [NPU-FIX] After reload_model, sync and clear cache before forward pass
+            device_synchronize()
+            empty_cache()
+
             for output in outputs:
                 output.value = self.critic(
                     output.sequences, output.num_actions, output.attention_mask, **output.inputs_extra_kwargs
