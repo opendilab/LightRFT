@@ -68,6 +68,15 @@ from .vllm_utils import get_vllm_engine_for_rollout
 from lightrft.strategy.config import StrategyConfig
 from lightrft.utils.utils import get_current_device
 
+# Try to import vLLM TokensPrompt for proper prompt formatting
+# This is needed to ensure compatibility with newer vLLM versions
+try:
+    from vllm.inputs import TokensPrompt
+    VLLM_TOKENS_PROMPT_AVAILABLE = True
+except ImportError:
+    VLLM_TOKENS_PROMPT_AVAILABLE = False
+    TokensPrompt = None
+
 ModelOptimPair = Tuple[nn.Module, Optimizer]
 ModelOrModelOptimPair = Union[nn.Module, ModelOptimPair]
 
@@ -807,9 +816,21 @@ class StrategyBase(ABC):
             # - If `prompt_token_ids` is provided, it indicates a pure LLM (text-only) generation.
             # - If `prompts` (i.e., `multi_modal_inputs`) is provided, it indicates a VLM (multimodal) generation.
             if multi_modal_inputs is not None:
+                # VLM case: multi_modal_inputs is already in the correct format
+                # (list of dicts with 'prompt' and 'multi_modal_data' keys)
                 prompt = multi_modal_inputs
             elif prompt_token_ids is not None:
-                prompt = prompt_token_ids
+                # Text-only case: Convert List[List[int]] to proper vLLM format
+                # Modern vLLM (v0.4.0+) requires prompts to be List[TokensPrompt] or List[dict]
+                # instead of raw List[List[int]] to avoid AttributeError in get_prompt_components
+                if VLLM_TOKENS_PROMPT_AVAILABLE:
+                    # Use TokensPrompt wrapper for each token sequence
+                    # This is the recommended format for vLLM v0.4.0+
+                    prompt = [TokensPrompt(prompt_token_ids=ids) for ids in prompt_token_ids]
+                else:
+                    # Fallback for older vLLM versions: convert to list of dicts
+                    # This format is compatible with both old and new vLLM versions
+                    prompt = [{"prompt_token_ids": ids} for ids in prompt_token_ids]
             else:
                 raise ValueError("Either prompt (multi_modal_inputs) or prompt_token_ids must be provided.")
 
