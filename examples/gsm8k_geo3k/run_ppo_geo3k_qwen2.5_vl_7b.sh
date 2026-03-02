@@ -81,19 +81,12 @@ MAX_EVAL_SAMPLES=700          # Max samples for evaluation to keep it fast.
 # Configure settings for multi-GPU and multi-node training.                    #
 ################################################################################
 
-# --- Single-Node Distributed Setup ---
-export WORKER_NUM=1                 # Number of nodes.
-export WORKER_GPU=8                 # Number of GPUs per node.
-export ROLE_INDEX=0                 # Rank of the current node.
-export WORKER_0_HOST="localhost"    # IP address of the master node.
-export WORKER_0_PORT=20091          # Port for the master node.
-
 # --- PyTorch Distributed Environment Variables ---
-export MASTER_ADDR=$WORKER_0_HOST
-export MASTER_PORT=$WORKER_0_PORT
-export NNODES=$WORKER_NUM
-export NODE_RANK=$ROLE_INDEX
-export GPUS_PER_NODE=$WORKER_GPU
+export MASTER_ADDR="localhost"      # IP address of the master node.
+export MASTER_PORT=20091            # Port for the master node.
+export NNODES=1                     # Number of nodes.
+export NODE_RANK=0                  # Rank of the current node.
+export GPUS_PER_NODE=8              # Number of GPUs per node.
 
 # --- vLLM/SGLang Engine Settings ---
 ENGINE_TP=2  # Tensor parallelism size for the inference engine.
@@ -151,7 +144,6 @@ torchrun \
     --save_trajectories \
     --fsdp \
     --mixed_mm_data \
-    --rm_use_engine \
     --save_path "results/${EXPERIMENT_NAME}/${SAVE_MODEL_NAME}" \
     --ckpt_path "results/${EXPERIMENT_NAME}/${SAVE_MODEL_NAME}" \
     --micro_train_batch_size 4 \
