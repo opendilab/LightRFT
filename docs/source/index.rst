@@ -10,7 +10,7 @@ Welcome to LightRFT's Documentation!
 
 **LightRFT** (Light Reinforcement Fine-Tuning) is a lightweight, efficient, and versatile reinforcement learning fine-tuning framework designed for the fine-tuning tasks of Large Language Models (LLMs) and Vision-Language Models (VLMs). Its core advantages include:
 
-* **Comprehensive Multi-paradigm and Multi-modal Training Support**: Native support for RLVR and RLHF training, covering various modalities such as text, image, video, and audio, and supporting the full lifecycle from base models to reward models and reward rules.
+* **Comprehensive RLVR + RLHF and Multi-modal Training Support**: Native support for RLVR and RLHF training, covering various modalities such as text, image, video, and audio, and supporting the full lifecycle from base models to reward models and reward rules.
 * **Unified Strategy Abstraction Layer**: A highly abstract Strategy layer that flexibly controls training (DeepSpeed/FSDPv2) and high-performance inference (vLLM/SGLang) strategies.
 * **Easy-to-use and Efficient Multi-model Co-location Paradigm**: Supports flexible multi-model co-location training, enabling scalable algorithm exploration and comparison in large-scale scenarios.
 

@@ -33,7 +33,7 @@
 
 ## 代码规范
 
-- Python 代码请遵循 PEP 8 规范。
+- Python 代码请遵循 PEP8 规范。
 - 使用具有明确意义的变量和函数名。
 - 为所有公共函数和类添加 Docstrings（文档字符串）。
 - 保持函数功能单一且模块化。
@@ -47,7 +47,7 @@
    - 确保所有现有测试均能通过。
 
 2. **提交 PR**：
-   - 填写清晰的 PR 标题和描述。
+   - 填写清晰的 PR 标题和描述，请遵循格式 `<type>(<author>): <description>`（例如：`feature(username): add language switcher`）。
    - 引用相关 Issue（例如："Fixes #123"）。
    - 请求维护者进行 Review。
 
@@ -72,9 +72,9 @@ make docs-live
 
 ```bash
 # 运行特定测试
-python test_trajectory_saver_fix.py
+pytest lightrft/models/tests/test_actor_vl.py
 
-# 在 tests/ 目录下添加您自己的测试用例
+# 在 lightrft/models/tests/ 目录下添加您自己的测试用例
 ```
 
 ## 有疑问？

@@ -9,7 +9,7 @@
 ```
 问题类型？
 ├─ 安装与设置 → 参见 [安装问题](#安装问题)
-├─ 显存溢出 (OOM) → 参见 [显存问题](#显存问题)
+├─ 显存不足 (OOM) → 参见 [显存问题](#显存问题)
 ├─ 训练问题 → 参见 [训练问题](#训练问题)
 ├─ 性能问题 → 参见 [性能问题](#性能问题)
 └─ 分布式训练 → 参见 [分布式训练问题](#分布式训练问题)
@@ -70,7 +70,7 @@ pip install vllm==0.13.3
 
 ## 显存问题
 
-### 问题：显存溢出 (Out of Memory, OOM) 错误
+### 问题：显存不足 (Out of Memory, OOM) 错误
 
 **现象**：
 ```
@@ -382,6 +382,36 @@ torchrun \
 
 ## 性能问题
 
+### 问题：GPU 利用率低
+
+**现象**：
+- GPU 利用率 < 80%
+- 训练速度慢于预期
+
+**解决方案**：
+
+**1. 增加批量大小 (Batch Size)**
+```bash
+--micro_train_batch_size 2  # 翻倍
+--micro_rollout_batch_size 4
+```
+
+**2. 减少 CPU 瓶颈**
+```bash
+--num_workers 8
+--prefetch_factor 2
+```
+
+**3. 启用 Flash Attention**
+```bash
+--flash_attn
+```
+
+**4. 使用融合算子 (Fused Kernels)**
+```bash
+--fused_linear_logprob
+```
+
 ### 问题：生成速度过慢
 
 **现象**：
@@ -413,6 +443,32 @@ torchrun \
 ```
 
 ## 推理引擎问题
+
+### 问题：vLLM 引擎初始化失败
+
+**现象**：
+```
+Failed to initialize vLLM engine
+RuntimeError: Cannot allocate memory
+```
+
+**解决方案**：
+```bash
+# 1. 检查 GPU 显存
+nvidia-smi
+
+# 2. 降低显存分配比例 (engine_mem_util)
+--engine_mem_util 0.5
+
+# 3. 减小张量并行 (TP) 大小
+--engine_tp_size 1
+
+# 4. 检查模型兼容性
+# 某些模型可能需要特定的 vLLM 版本
+
+# 5. 更新 vLLM
+pip install -U vllm
+```
 
 ### 问题：引擎权重未能同步更新
 

@@ -82,7 +82,7 @@ python test_chat.py \
 ]
 ```
 
-### 基于图像的测试
+### 图文输入测试
 
 ```json
 [
@@ -107,7 +107,7 @@ python test_chat.py \
 | `--max_tokens` | `8192` | 最大生成 Token 数 |
 | `--temperature` | `0.7` | 采样温度（0 表示贪婪解码） |
 | `--top_p` | `0.95` | Top-p 采样参数 |
-| `--system_prompt` | (默认) | 自定义系统提示词 |
+| `--system_prompt` | `None` | 自定义系统提示词 |
 | `--batch` | `None` | 批量测试 JSON 文件路径 |
 | `--output` | `None` | 批量测试结果输出文件路径 |
 
@@ -228,7 +228,7 @@ pip install torch transformers pillow flash-attn
 
 1. **模型加载**：初次运行需要一定的模型加载时间。
 2. **图像重置**：每次对话后图像会自动重置。
-3. **历时管理**：使用 `/clear` 重置对话历史。
+3. **历史管理**：使用 `/clear` 命令可以随时重置多轮对话的上下文历史。
 4. **批量独立性**：每个批量测试任务独立运行。
 
 ## 更多资源

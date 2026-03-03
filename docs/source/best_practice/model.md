@@ -59,12 +59,36 @@ Built-in optimizations for efficient training and inference:
 #### 4. ActorAL (Audio-Language)
 **Purpose**: Specialized actor for audio-language models (e.g., Qwen2-Audio) with `ActorModality.AUDIO_LANGUAGE`, supporting audio capture and processing.
 
+**Key Features**:
+- **Multi-modal Capability**: Modality declared as `ActorModality.AUDIO_LANGUAGE`, processing combined audio and textual inputs.
+- **Architecture Adaptation**: Supports various audio-language model architectures like Qwen2-Audio.
+- **Optimization & MoE**: Supports Mixture of Experts (MoE) models, memory optimization through gradient checkpointing, and efficiency via LoRA and Flash Attention.
+
 #### 5. Reward Models
 **Purpose**: Scalar (SRM) or generative (GRM) reward models for evaluating response quality.
 
 **Key Classes**:
 - **ScalarRewardModelVL/AL**: Scalar Reward Models (SRM) mapping multimodal inputs to scalar scores. Supports Bradley-Terry preference loss.
 - **GenerativeRewardModelVL**: Generative Reward Models (GRM) leveraging generation capabilities to output text-based evaluations with reasoning (CoT).
+
+**Example Behavior**:
+```python
+# Common Input
+system_prompt = "You are a helpful visual assistant."
+image = "path/to/dog.jpg" # Visual input
+query = "What is shown in this image?"
+response = "The image shows a cute brown dog playing in the park."
+
+# 1. Scalar Reward Model
+srm_score = srm(image=image, system_prompt=system_prompt, query=query, response=response)
+print(srm_score) 
+# Output: tensor([0.88]) -> Yields a direct scalar float value
+
+# 2. Generative Reward Model
+grm_output = grm(image=image, system_prompt=system_prompt, query=query, response=response)
+print(grm_output)
+# Output: "<reasoning>The response accurately describes the content of the image.</reasoning><score>5</score>" -> Yields textual reasoning and score
+```
 
 ### Utility Functions
 

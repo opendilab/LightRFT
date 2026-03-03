@@ -13,6 +13,7 @@
 **A**: LightRFT 在 OpenRLHF 的基础上进行了以下扩展：
 - 增强了多模态 (VLM) 支持
 - 更多的强化学习算法（GRPO, GSPO, GMPO, REINFORCE++, CPGD 等）
+- 更全面的奖励模型 (Reward Model) 支持，包括标量奖励模型 (SRM) 和生成式奖励模型 (GRM)
 - 更好的显存优化（推理引擎休眠、优化器卸载）
 - 改进的推理引擎（vLLM, SGLang）
 - 为了提高效率，支持奖励模型 (RM) 的同机部署 (Co-location)
@@ -23,6 +24,7 @@
 **A**: LightRFT 支持：
 - **LLM**: Qwen, Qwen2.5 以及大多数 HuggingFace 模型
 - **VLM**: Qwen-VL, Qwen2-VL
+- **Audio**: Qwen2-Audio
 - **自定义模型**: 通过 monkey patching 可以轻松添加新模型
 
 ### Q: 需要什么样的硬件？
@@ -104,7 +106,7 @@ pip install -r requirements.txt && pip install -e .
 
 **A**:
 1. 增大 Batch Size（如果显存允许）
-2. 使用 FP8 推理 (vLLM)
+2. 使用 FP8 推理（正在开发中，仅限 vLLM）
 3. 开启 Flash Attention：`--flash_attn`
 4. 如果可能，减小 `n_samples_per_prompt`
 5. 生成阶段使用张量并行：`--engine_tp_size 2`
@@ -135,6 +137,13 @@ GRPO 系统更简洁，显存效率更高。
 - 想要保留基础模型的能力
 - 需要受控的策略更新
 - 防止灾难性遗忘
+
+### Q: 什么是 Clip Higher?
+
+**A**: 一种改进的裁剪方案，为正负优势 (advantages) 使用独立的上下界。更适用于：
+- 噪声奖励
+- 大分布偏移
+- 不稳定的训练过程
 
 ## 调试问题
 

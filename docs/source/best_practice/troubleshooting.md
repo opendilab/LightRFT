@@ -382,6 +382,36 @@ torchrun \
 
 ## Performance Issues
 
+### Problem: Low GPU Utilization
+
+**Symptoms**:
+- GPU utilization < 80%
+- Training slower than expected
+
+**Solutions**:
+
+**1. Increase Batch Size**
+```bash
+--micro_train_batch_size 2  # Double it
+--micro_rollout_batch_size 4
+```
+
+**2. Reduce CPU Bottleneck**
+```bash
+--num_workers 8
+--prefetch_factor 2
+```
+
+**3. Enable Flash Attention**
+```bash
+--flash_attn
+```
+
+**4. Use Fused Kernels**
+```bash
+--fused_linear_logprob
+```
+
 ### Problem: Generation Too Slow
 
 **Symptoms**:
@@ -413,6 +443,32 @@ torchrun \
 ```
 
 ## Inference Engine Issues
+
+### Problem: vLLM Engine Fails to Initialize
+
+**Symptoms**:
+```
+Failed to initialize vLLM engine
+RuntimeError: Cannot allocate memory
+```
+
+**Solution**:
+```bash
+# 1. Check GPU memory
+nvidia-smi
+
+# 2. Reduce memory allocation
+--engine_mem_util 0.5
+
+# 3. Use smaller TP size
+--engine_tp_size 1
+
+# 4. Check model compatibility
+# Some models need specific vLLM versions
+
+# 5. Update vLLM
+pip install -U vllm
+```
 
 ### Problem: Engine Not Updating Weights
 

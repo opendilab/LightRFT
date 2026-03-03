@@ -64,7 +64,7 @@ Key components:
 
 - Prompts datasets for RL training (text and vision-language)
 - SFT datasets for supervised fine-tuning (text and vision-language)
-- Reward model datasets (general and safe reward models)
+- Reward model datasets (generative and scalar reward models)
 - Audio-language dataset support
 - Data preprocessing and tokenization utilities
 
@@ -76,7 +76,7 @@ The Models module defines the neural architectures and adaptations necessary for
 Key components:
 
 - Actor network implementations (language, vision-language, audio-language)
-- Reward model implementations (general and safe reward models)
+- Reward model implementations (generative and scalar reward models)
 - Loss function definitions for policy optimization
 - Non-invasive model modifications via monkey patching
 - Support for various model architectures (LLaMA, Qwen, etc.)
@@ -92,6 +92,7 @@ Key components:
 - DeepSpeed integration for ZeRO-based optimization
 - Fully Sharded Data Parallel (FSDP) implementation
 - Efficient inference engines (vLLM, SGLang)
+- Efficient model parameter synchronization between training and inference engines
 - Utilities for distributed tensor operations
 - Checkpoint management and broadcasting
 - Strategy selection and configuration
@@ -103,11 +104,12 @@ The Trainer module implements the reinforcement learning algorithms and training
 
 Key components:
 
-- PPO (Proximal Policy Optimization) implementation
-- Experience generation and collection
-- Advantage estimation and return computation
+- Policy optimization algorithms: PPO, GRPO, GSPO, GMPO, Dr.GRPO, DAPO
+- Advantage estimation and return computation: REINFORCE++, CPGD
+- Experience generation and sampling strategies: FIRE Sampling
+- Reward processing and stability enhancement: Reward Norm/Clip, High Entropy Token Selection
 - Policy and value function updates
-- Replay buffer management (standard and vision-language)
+- Replay buffer management
 - KL divergence control
 - SPMD (Single Program Multiple Data) training support
 
@@ -124,7 +126,7 @@ Key components:
 - Data processors for multimodal inputs
 - Remote reward model utilities
 - Timer and profiling utilities
-- Trajectory saving for analysis
+- Trajectory saving for training analysis
 
 System Workflow
 ======================================================================================
@@ -139,9 +141,9 @@ The LightRFT framework operates through a coordinated workflow:
 
 4. **Strategy Selection**: Based on configuration, an appropriate distributed training strategy is selected and initialized.
 
-5. **Training Loop**: The Trainer module drives the training process, generating experiences, computing rewards, and updating the policy.
+5. **Experience Generation**: The system utilizes inference engines integrated in the Strategy module (e.g., vLLM/SGLang) for efficient large-scale parallel sampling to generate experience data (rollout) for training.
 
-6. **Inference Optimization**: During generation, specialized inference engines (vLLM/SGLang) may be employed for efficiency.
+6. **Model Optimization**: The Trainer module computes rewards and advantages based on the generated experiences and executes policy updates. The updated model weights are then synchronized back to the inference engine for the next iteration.
 
 7. **Checkpointing and Evaluation**: The system regularly saves model states and evaluates performance.
 
@@ -155,11 +157,11 @@ LightRFT is designed with extensibility in mind:
 
 - **New Models**: Support for additional model architectures can be added through the monkey patch system or by creating new actor/reward model classes.
 
-- **Alternative Strategies**: New distributed training approaches can be implemented by extending the strategy base class.
+- **New Distributed Training Strategies**: New distributed training approaches can be implemented by extending the strategy base class.
 
 - **Custom RL Algorithms**: Different reinforcement learning algorithms can be implemented as new trainer classes.
 
-- **Inference Optimization**: Additional inference engines can be integrated through the strategy module.
+- **Inference Optimization**: Additional inference engines can be integrated through the strategy module, and the latest features of engines like vLLM and SGLang are continuously integrated.
 
 - **Custom Utilities**: New utility functions and processors can be added to support specific use cases.
 

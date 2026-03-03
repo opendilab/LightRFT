@@ -13,6 +13,7 @@ Common questions and answers about LightRFT.
 **A**: LightRFT extends OpenRLHF with:
 - Enhanced multimodal (VLM) support
 - More RL algorithms (GRPO, GSPO, GMPO, REINFORCE++, CPGD, etc.)
+- Comprehensive Reward Model support, including Scalar Reward Models (SRM) and Generative Reward Models (GRM)
 - Better memory optimization (engine sleep, optimizer offload)
 - Improved inference engines (vLLM, SGLang)
 - Reward model co-location for efficiency
@@ -23,6 +24,7 @@ Common questions and answers about LightRFT.
 **A**: LightRFT supports:
 - **LLM**: Qwen, Qwen2.5 and most HuggingFace models
 - **VLM**: Qwen-VL, Qwen2-VL
+- **Audio**: Qwen2-Audio
 - **Custom**: Easy to add new models via monkey patching
 
 ### Q: What hardware is required?
@@ -104,7 +106,7 @@ More samples = better advantage estimation but slower.
 
 **A**:
 1. Increase batch sizes (if memory allows)
-2. Use FP8 inference (Work in Progress)
+2. Use FP8 inference (Work in Progress, only in vLLM)
 3. Enable Flash Attention: `--flash_attn`
 4. Reduce `n_samples_per_prompt` if possible
 5. Use tensor parallelism for inference: `--engine_tp_size 2`
@@ -137,6 +139,13 @@ GRPO is simpler and more memory-efficient.
 - Want to preserve base capabilities
 - Need controlled policy updates
 - Preventing catastrophic forgetting
+
+### Q: What is Clip Higher?
+
+**A**: An improved clipping scheme with separate upper/lower bounds for positive/negative advantages. Better for:
+- Noisy rewards
+- Large distribution shifts
+- Unstable training
 
 ## Debugging Questions
 
