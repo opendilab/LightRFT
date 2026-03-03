@@ -736,6 +736,9 @@ class PPOTrainerVL(ABC):
             "pixel_values_videos": pixel_values_videos,
             "video_grid_thw": video_grid_thws,
         }
+        # Audio-language actors expect audio_values; pipeline stores them in pixel_values slot
+        if "audio_values" in self._actor_supported_params:
+            candidate_params["audio_values"] = candidate_params.get("pixel_values")
 
         actor_kwargs = {key: value for key, value in candidate_params.items() if key in self._actor_supported_params}
 
