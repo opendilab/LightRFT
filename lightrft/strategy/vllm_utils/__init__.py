@@ -208,6 +208,7 @@ def get_vllm_engine(
         max_model_len=max_model_len,
         #device=device,  # Explicitly specify device type (npu/cuda)
         # enforce_eager=True,
+        compilation_config={"cudagraph_mode":"FULL_DECODE_ONLY"},
         **kwargs,
     )
 
