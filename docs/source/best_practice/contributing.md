@@ -21,9 +21,14 @@ Thank you for your interest in contributing to LightRFT! This guide will help yo
 
 2. **Install Development Dependencies**
    ```bash
-   pip install -r requirements.txt
-   pip install -r requirements-doc.txt  # For documentation
-   pip install -e .  # Editable install
+   # Install LightRFT with all core dependencies (SGLang, Flash-Attention, etc.)
+   pip install -e .
+
+   # Install documentation dependencies
+   pip install -r requirements-doc.txt
+
+   # (Optional) Install vLLM if you need to test vLLM backend
+   pip install ".[vllm]"
    ```
 
 3. **Create a Branch**

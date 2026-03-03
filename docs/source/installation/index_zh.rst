@@ -11,9 +11,9 @@
 
 在安装 LightRFT 之前，请确保您的环境满足以下要求：
 
-* Python >= 3.8
-* CUDA >= 11.8
-* PyTorch >= 2.5.1
+* Python >= 3.12
+* CUDA >= 12.8
+* PyTorch >= 2.9.1
 * 支持 CUDA 的 GPU
 
 Docker 镜像
@@ -27,7 +27,7 @@ TO BE DONE
 标准安装
 --------
 
-克隆并安装 LightRFT:
+LightRFT 默认使用 **SGLang** 作为推理后端，并包含 **Flash-Attention** 以优化性能。
 
 .. code-block:: bash
 
@@ -35,11 +35,43 @@ TO BE DONE
    git clone https://github.com/opendilab/LightRFT.git
    cd LightRFT
 
-   # 安装依赖
-   pip install -r requirements.txt
-
-   # 安装 LightRFT
+   # 安装 LightRFT 及所有核心依赖
    pip install -e .
+
+**安装内容**: PyTorch、SGLang、Flash-Attention、Transformers、DeepSpeed 和其他核心依赖。
+
+可选：安装 vLLM 后端
+--------------------
+
+如果您想使用 vLLM 替代（或配合）SGLang：
+
+.. code-block:: bash
+
+   # 安装 vLLM 后端
+   pip install ".[vllm]"
+
+   # 或直接安装 vLLM
+   pip install vllm>=0.13.3
+
+Flash-Attention 安装问题排查
+-----------------------------
+
+Flash-Attention 默认包含在安装中，但在某些系统上可能因 CUDA 兼容性而安装失败。如果遇到问题，请尝试：
+
+**方式 1: 使用预编译的 wheel 文件（推荐）**
+
+.. code-block:: bash
+
+   # 从 https://github.com/Dao-AILab/flash-attention/releases 下载适合的 wheel 文件
+   # 例如 CUDA 12.x 和 PyTorch 2.9:
+   pip install flash_attn-2.8.3+cu12torch2.9cxx11abiTRUE-cp312-cp312-linux_x86_64.whl
+
+**方式 2: 使用 Docker（最简单）**
+
+.. code-block:: bash
+
+   # 官方 Docker 镜像包含所有依赖
+   docker pull opendilab/lightrft:v0.1.0
 
 生成文档（可选）
 ================

@@ -6,9 +6,9 @@
 
 **轻量化、全模态和奖励模型驱动的强化学习微调框架**
 
-[![Version](https://img.shields.io/badge/version-0.1.0-blue.svg)](https://github.com/opendilab/lightrft)
-[![Python](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
-[![PyTorch](https://img.shields.io/badge/PyTorch-2.5.1+-ee4c2c.svg)](https://pytorch.org/)
+[![Version](https://img.shields.io/badge/version-0.1.1-blue.svg)](https://github.com/opendilab/lightrft)
+[![Python](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
+[![PyTorch](https://img.shields.io/badge/PyTorch-2.9.1+-ee4c2c.svg)](https://pytorch.org/)
 [![License](https://img.shields.io/badge/license-Apache%202.0-green.svg)](LICENSE)
 
 [English](README.md) | 简体中文
@@ -139,18 +139,48 @@ docker run --gpus all -it --rm \
 
 ### 安装步骤
 
-克隆并安装 LightRFT:
+#### 标准安装
+
+LightRFT 默认使用 **SGLang** 作为推理后端，并包含 **Flash-Attention** 以优化性能。
 
 ```bash
 # 克隆仓库
 git clone https://github.com/opendilab/LightRFT.git
 cd LightRFT
 
-# 安装依赖
-pip install -r requirements.txt
-
-# 安装 LightRFT
+# 安装 LightRFT 及所有核心依赖
 pip install -e .
+```
+
+**安装内容**: PyTorch、SGLang、Flash-Attention、Transformers、DeepSpeed 和其他核心依赖。
+
+#### 可选：安装 vLLM 后端
+
+如果您想使用 vLLM 替代（或配合）SGLang：
+
+```bash
+# 安装 vLLM 后端
+pip install ".[vllm]"
+
+# 或直接安装 vLLM
+pip install vllm>=0.13.3
+```
+
+#### Flash-Attention 安装问题排查
+
+Flash-Attention 默认包含在安装中，但在某些系统上可能因 CUDA 兼容性而安装失败。如果遇到问题，请尝试：
+
+**方式 1: 使用预编译的 wheel 文件（推荐）**
+```bash
+# 从 https://github.com/Dao-AILab/flash-attention/releases 下载适合的 wheel 文件
+# 例如 CUDA 12.x 和 PyTorch 2.9:
+pip install flash_attn-2.8.3+cu12torch2.9cxx11abiTRUE-cp312-cp312-linux_x86_64.whl
+```
+
+**方式 2: 使用 Docker（最简单）**
+```bash
+# 官方 Docker 镜像包含所有依赖
+docker pull opendilab/lightrft:v0.1.0
 ```
 
 

@@ -41,7 +41,26 @@ pylint:
 format: yapf
 fcheck: flake8
 
+# dbuild: build docker image with cache if exists
 dbuild:
-	docker build -t ${IMAGE_NAME} .
+	# use local image as cache source when it already exists
+	if docker image inspect ${IMAGE_NAME} >/dev/null 2>&1; then \
+		docker build --cache-from ${IMAGE_NAME} -t ${IMAGE_NAME} .; \
+	else \
+		docker build -t ${IMAGE_NAME} .; \
+	fi
+# dpush: push docker image to registry
 dpush:
 	docker push ${IMAGE_NAME}
+# dpull: pull docker image from registry
+dpull:
+	docker pull ${IMAGE_NAME}
+# drun: run docker container with gpu and volume mounts
+drun:
+	docker run -it --rm \
+		--gpus all \
+		--ipc=host \
+		--shm-size=16g \
+		-v $(shell pwd):/app \
+		$(shell python -m tools.docker_volumes) \
+		${IMAGE_NAME}
