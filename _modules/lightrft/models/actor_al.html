@@ -301,24 +301,12 @@
                 
   <h1>Source code for lightrft.models.actor_al</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">Audio Language Model Actor Module for Reinforcement Learning.</span>
+<span class="sd">Audio-language actor for reinforcement learning.</span>
 
-<span class="sd">This module provides the ActorAL class, which implements an actor model specifically designed</span>
-<span class="sd">for audio-language tasks in reinforcement learning scenarios. The actor is responsible for</span>
-<span class="sd">generating actions (text sequences) based on audio inputs and textual prompts.</span>
+<span class="sd">Provides the ActorAL (Audio-language) class: an actor that generates</span>
+<span class="sd">text (actions) from audio and text inputs. Supports LoRA, Flash Attention 2,</span>
+<span class="sd">DeepSpeed, sample packing, gradient checkpointing, and MoE.</span>
 
-<span class="sd">The module supports various optimization techniques including:</span>
-<span class="sd">- LoRA (Low-Rank Adaptation) for parameter-efficient fine-tuning</span>
-<span class="sd">- Flash Attention 2.0 for improved performance</span>
-<span class="sd">- DeepSpeed integration for distributed training</span>
-<span class="sd">- Sample packing for efficient batch processing</span>
-
-<span class="sd">Key Features:</span>
-<span class="sd">- Multi-modal input processing (text + audio)</span>
-<span class="sd">- Flexible model loading from pretrained checkpoints</span>
-<span class="sd">- Support for various audio-language model architectures</span>
-<span class="sd">- Gradient checkpointing for memory optimization</span>
-<span class="sd">- MoE (Mixture of Experts) model support</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
@@ -329,23 +317,39 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">transformers</span><span class="w"> </span><span class="kn">import</span> <span class="n">Qwen2AudioForConditionalGeneration</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">transformers.integrations.deepspeed</span><span class="w"> </span><span class="kn">import</span> <span class="n">HfDeepSpeedConfig</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">apply_lora_configuration</span><span class="p">,</span> <span class="n">log_probs_from_logits</span><span class="p">,</span> <span class="n">reset_position_ids</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.actor_modality</span><span class="w"> </span><span class="kn">import</span> <span class="n">ActorModality</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">apply_lora_configuration</span><span class="p">,</span> <span class="n">log_probs_from_logits</span><span class="p">,</span> <span class="n">reset_position_ids</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">_AudioEmbedPositions</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;FSDP2-safe replacement for ``nn.Embedding`` used in Whisper&#39;s audio tower.</span>
+
+<span class="sd">    FSDP2 wraps each ``nn.Embedding`` separately. Whisper uses</span>
+<span class="sd">    ``embed_positions.weight`` directly instead of calling ``forward()``, so</span>
+<span class="sd">    the weight can be a sharded DTensor while conv outputs are full tensors,</span>
+<span class="sd">    causing a mixed Tensor/DTensor error on ``inputs_embeds + embed_pos``.</span>
+
+<span class="sd">    This plain ``nn.Module`` is not wrapped by FSDP2; its weight stays in the</span>
+<span class="sd">    parent (root) FSDP unit and is all-gathered with the conv weights.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">embedding</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Embedding</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">weight</span> <span class="o">=</span> <span class="n">embedding</span><span class="o">.</span><span class="n">weight</span>  <span class="c1"># same Parameter, no copy</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_embeddings</span> <span class="o">=</span> <span class="n">embedding</span><span class="o">.</span><span class="n">num_embeddings</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">embedding_dim</span> <span class="o">=</span> <span class="n">embedding</span><span class="o">.</span><span class="n">embedding_dim</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_ids</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">nn</span><span class="o">.</span><span class="n">functional</span><span class="o">.</span><span class="n">embedding</span><span class="p">(</span><span class="n">input_ids</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="ActorAL"><a class="viewcode-back" href="../../../api_doc/models/actor_al.html#lightrft.models.actor_al.ActorAL">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">ActorAL</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Audio Language Model actor for reinforcement learning applications.</span>
+<span class="sd">    Audio-language actor for RL: generates text (actions) from audio and text inputs.</span>
 
-<span class="sd">    This class serves as a foundation for implementing audio-language actor models in RL,</span>
-<span class="sd">    which are responsible for generating text sequences (actions) based on both audio and</span>
-<span class="sd">    textual inputs. The model supports various optimization techniques including LoRA</span>
-<span class="sd">    adaptation, quantization, and distributed training.</span>
+<span class="sd">    Supports LoRA, quantization, and distributed training. Can be initialized from</span>
+<span class="sd">    a pretrained path or an existing model instance.</span>
 
-<span class="sd">    The actor model can be initialized either from a pretrained model path or from an</span>
-<span class="sd">    existing model instance, providing flexibility in model deployment scenarios.</span>
-
-<span class="sd">    :param pretrain_or_model: Either a string path to a pretrained model or a model instance</span>
+<span class="sd">    :param pretrain_or_model: Path to a pretrained model or an existing model instance.</span>
 <span class="sd">    :type pretrain_or_model: Union[str, nn.Module]</span>
 <span class="sd">    :param use_flash_attention_2: Whether to utilize Flash Attention 2.0 for improved performance</span>
 <span class="sd">    :type use_flash_attention_2: bool</span>
@@ -379,7 +383,7 @@
 <span class="sd">        # Generate responses</span>
 <span class="sd">        sequences, attention_mask, action_mask = actor.generate(</span>
 <span class="sd">            input_ids=input_tensor,</span>
-<span class="sd">            audio_values=audio_tensor,</span>
+<span class="sd">            audio_values=audio_features_tensor,</span>
 <span class="sd">            max_new_tokens=100</span>
 <span class="sd">        )</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -443,11 +447,52 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">pretrain_or_model</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">pretrain_or_model</span> <span class="o">=</span> <span class="n">pretrain_or_model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">model_type</span>
+
+        <span class="c1"># ------------------------------------------------------------------</span>
+        <span class="c1"># FSDP2 compatibility fixes for the Whisper-based audio tower.</span>
+        <span class="c1">#</span>
+        <span class="c1"># 1. Replace embed_positions (nn.Embedding → _AudioEmbedPositions)</span>
+        <span class="c1">#    so FSDP2 does not individually wrap it.  Whisper accesses</span>
+        <span class="c1">#    embed_positions.weight directly, bypassing the module forward</span>
+        <span class="c1">#    and thus FSDP&#39;s all-gather hook.</span>
+        <span class="c1">#</span>
+        <span class="c1"># 2. Force the audio tower to use **eager** (non-flash) attention.</span>
+        <span class="c1">#    FSDP2 turns parameters into DTensors; computations with those</span>
+        <span class="c1">#    parameters also produce DTensors.  Flash Attention&#39;s CUDA</span>
+        <span class="c1">#    kernels (flash_attn_gpu.varlen_fwd) receive a mix of DTensor</span>
+        <span class="c1">#    activations and regular-tensor cu_seqlens, leading to shape</span>
+        <span class="c1">#    mismatches (&quot;cu_seqlens_q must have shape (batch_size + 1)&quot;).</span>
+        <span class="c1">#    The Whisper encoder is small (~12 layers), so using eager</span>
+        <span class="c1">#    attention has negligible impact on overall training throughput.</span>
+        <span class="c1"># ------------------------------------------------------------------</span>
+        <span class="n">audio_tower</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="s2">&quot;audio_tower&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="s2">&quot;audio_encoder&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">audio_tower</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># Fix 1: embed_positions</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">audio_tower</span><span class="p">,</span> <span class="s2">&quot;embed_positions&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">audio_tower</span><span class="o">.</span><span class="n">embed_positions</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Embedding</span><span class="p">):</span>
+                <span class="n">audio_tower</span><span class="o">.</span><span class="n">embed_positions</span> <span class="o">=</span> <span class="n">_AudioEmbedPositions</span><span class="p">(</span><span class="n">audio_tower</span><span class="o">.</span><span class="n">embed_positions</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span>
+                    <span class="s2">&quot;[ActorAL] Replaced audio_tower.embed_positions &quot;</span>
+                    <span class="s2">&quot;(nn.Embedding → _AudioEmbedPositions) for FSDP2 compat&quot;</span>
+                <span class="p">)</span>
+
+            <span class="c1"># Fix 2: force eager attention in the audio encoder</span>
+            <span class="k">for</span> <span class="n">module</span> <span class="ow">in</span> <span class="n">audio_tower</span><span class="o">.</span><span class="n">modules</span><span class="p">():</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="s2">&quot;_attn_implementation&quot;</span><span class="p">):</span>
+                    <span class="n">module</span><span class="o">.</span><span class="n">_attn_implementation</span> <span class="o">=</span> <span class="s2">&quot;eager&quot;</span>
+            <span class="c1"># Also patch the config so any lazily-constructed layers use eager</span>
+            <span class="n">audio_cfg</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="p">,</span> <span class="s2">&quot;audio_config&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">audio_cfg</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">audio_cfg</span><span class="o">.</span><span class="n">_attn_implementation</span> <span class="o">=</span> <span class="s2">&quot;eager&quot;</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;[ActorAL] Set audio_tower attention to &#39;eager&#39; for FSDP2 compat&quot;</span><span class="p">)</span>
+
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;pretrain_or_model: &quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pretrain_or_model</span><span class="p">)</span>
 
     <span class="nd">@torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">()</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">generate</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">input_ids</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">audio_values</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">input_ids</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">audio_values</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span>
         <span class="n">Tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">LongTensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">LongTensor</span><span class="p">],</span>
         <span class="n">Tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">LongTensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">LongTensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">BoolTensor</span><span class="p">],</span> <span class="p">]:</span>
@@ -460,7 +505,7 @@
 
 <span class="sd">        :param input_ids: Input token IDs representing the text prompt</span>
 <span class="sd">        :type input_ids: torch.Tensor</span>
-<span class="sd">        :param audio_values: Preprocessed audio values of input audio</span>
+<span class="sd">        :param audio_values: Preprocessed audio features (mel-spectrogram) for Qwen2-Audio</span>
 <span class="sd">        :type audio_values: torch.Tensor</span>
 <span class="sd">        :param kwargs: Additional generation parameters (top_k, top_p, temperature, etc.)</span>
 <span class="sd">        :type kwargs: dict</span>
@@ -472,15 +517,20 @@
 
 <span class="sd">            sequences, attention_mask, action_mask = actor.generate(</span>
 <span class="sd">                input_ids=torch.tensor([[1, 2, 3]]),</span>
-<span class="sd">                audio_values=audio_tensor,</span>
+<span class="sd">                audio_values=audio_features_tensor,</span>
 <span class="sd">                max_new_tokens=50,</span>
 <span class="sd">                temperature=0.8,</span>
 <span class="sd">                do_sample=True</span>
 <span class="sd">            )</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Pipeline may pass audio as pixel_values; use audio_values consistently.</span>
+        <span class="k">if</span> <span class="n">audio_values</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">audio_values</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;input_features&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">audio_values</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">audio_values</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;pixel_values&quot;</span><span class="p">)</span>
+
         <span class="n">generate_args</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s2">&quot;input_ids&quot;</span><span class="p">:</span> <span class="n">input_ids</span><span class="p">,</span>
-            <span class="s2">&quot;audio_values&quot;</span><span class="p">:</span> <span class="n">audio_values</span><span class="p">,</span>
             <span class="s2">&quot;top_k&quot;</span><span class="p">:</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;top_k&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
             <span class="s2">&quot;top_p&quot;</span><span class="p">:</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;top_p&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
             <span class="s2">&quot;do_sample&quot;</span><span class="p">:</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;do_sample&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">),</span>
@@ -493,6 +543,12 @@
             <span class="s2">&quot;pad_token_id&quot;</span><span class="p">:</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;pad_token_id&quot;</span><span class="p">),</span>
             <span class="s2">&quot;min_new_tokens&quot;</span><span class="p">:</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;min_new_tokens&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
         <span class="p">}</span>
+
+        <span class="k">if</span> <span class="n">audio_values</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># Pad mel features to 3000 if shorter (see forward() for rationale)</span>
+            <span class="n">input_features</span><span class="p">,</span> <span class="n">feature_attention_mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prepare_audio_features</span><span class="p">(</span><span class="n">audio_values</span><span class="p">)</span>
+            <span class="n">generate_args</span><span class="p">[</span><span class="s2">&quot;input_features&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">input_features</span>
+            <span class="n">generate_args</span><span class="p">[</span><span class="s2">&quot;feature_attention_mask&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">feature_attention_mask</span>
 
         <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;max_new_tokens&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
             <span class="n">generate_args</span><span class="p">[</span><span class="s2">&quot;max_new_tokens&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;max_new_tokens&quot;</span><span class="p">)</span>
@@ -530,9 +586,13 @@
         <span class="n">sequences</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">LongTensor</span><span class="p">,</span>
         <span class="n">num_actions</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">attention_mask</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">audio_values</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">pixel_values</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">image_grid_thw</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">pixel_values_videos</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">video_grid_thw</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">return_output</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="n">packed_seq_lens</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">audio_values</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Forward pass to compute action log probabilities for reinforcement learning.</span>
@@ -541,18 +601,29 @@
 <span class="sd">        of actions (tokens) for RL training. It supports both standard and packed sequence formats</span>
 <span class="sd">        and can return either just the action log probabilities or the full model output.</span>
 
+<span class="sd">        Callers pass preprocessed audio as ``audio_values``; the pipeline maps from the</span>
+<span class="sd">        VL ``pixel_values`` slot to ``audio_values`` for this actor.</span>
+
 <span class="sd">        :param sequences: Input token sequences</span>
 <span class="sd">        :type sequences: torch.LongTensor</span>
 <span class="sd">        :param num_actions: Number of action tokens to extract log probs for</span>
 <span class="sd">        :type num_actions: Optional[Union[int, list[int]]]</span>
 <span class="sd">        :param attention_mask: Attention mask for the sequences</span>
 <span class="sd">        :type attention_mask: Optional[torch.Tensor]</span>
-<span class="sd">        :param audio_values: Preprocessed audio values of input audio</span>
-<span class="sd">        :type audio_values: torch.Tensor</span>
+<span class="sd">        :param pixel_values: Unused (VL compatibility; audio pipeline passes audio_values)</span>
+<span class="sd">        :type pixel_values: Optional[torch.Tensor]</span>
+<span class="sd">        :param image_grid_thw: Unused (accepted for pipeline compatibility)</span>
+<span class="sd">        :type image_grid_thw: Optional[torch.Tensor]</span>
+<span class="sd">        :param pixel_values_videos: Unused (accepted for VL pipeline compatibility)</span>
+<span class="sd">        :type pixel_values_videos: Optional[torch.Tensor]</span>
+<span class="sd">        :param video_grid_thw: Unused (accepted for VL pipeline compatibility)</span>
+<span class="sd">        :type video_grid_thw: Optional[torch.Tensor]</span>
 <span class="sd">        :param return_output: Whether to return the full model output along with log probs</span>
 <span class="sd">        :type return_output: bool</span>
 <span class="sd">        :param packed_seq_lens: Sequence lengths for packed samples</span>
 <span class="sd">        :type packed_seq_lens: Optional[list[int]]</span>
+<span class="sd">        :param audio_values: Preprocessed audio features (mel-spectrogram from pipeline)</span>
+<span class="sd">        :type audio_values: Optional[torch.Tensor]</span>
 
 <span class="sd">        :return: Action log probabilities or tuple of (action_log_probs, output) if return_output=True</span>
 <span class="sd">        :rtype: torch.Tensor</span>
@@ -563,15 +634,15 @@
 <span class="sd">            log_probs = actor(</span>
 <span class="sd">                sequences=token_sequences,</span>
 <span class="sd">                num_actions=10,</span>
-<span class="sd">                audio_values=audio_tensor</span>
+<span class="sd">                audio_values=input_features_tensor,</span>
 <span class="sd">            )</span>
 
 <span class="sd">            # Get both log probs and full output</span>
 <span class="sd">            log_probs, output = actor(</span>
 <span class="sd">                sequences=token_sequences,</span>
 <span class="sd">                num_actions=10,</span>
-<span class="sd">                audio_values=audio_tensor,</span>
-<span class="sd">                return_output=True</span>
+<span class="sd">                audio_values=input_features_tensor,</span>
+<span class="sd">                return_output=True,</span>
 <span class="sd">            )</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">packing_samples</span><span class="p">:</span>
@@ -583,13 +654,43 @@
             <span class="c1"># explicitly ignore attention_mask for packing_samples</span>
             <span class="n">attention_mask</span> <span class="o">=</span> <span class="kc">None</span>
 
-        <span class="c1"># Qwen2Audio model expects different parameter names</span>
-        <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span>
-            <span class="n">input_ids</span><span class="o">=</span><span class="n">sequences</span><span class="p">,</span>
-            <span class="n">attention_mask</span><span class="o">=</span><span class="n">attention_mask</span><span class="p">,</span>
-            <span class="n">position_ids</span><span class="o">=</span><span class="n">position_ids</span><span class="p">,</span>
-            <span class="n">audio_values</span><span class="o">=</span><span class="n">audio_values</span><span class="p">,</span>
-        <span class="p">)</span>
+        <span class="c1"># Pipeline passes audio as audio_values; Qwen2Audio expects input_features.</span>
+        <span class="n">input_features</span> <span class="o">=</span> <span class="n">audio_values</span>
+
+        <span class="n">model_kwargs</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;input_ids&quot;</span><span class="p">:</span> <span class="n">sequences</span><span class="p">,</span>
+            <span class="s2">&quot;attention_mask&quot;</span><span class="p">:</span> <span class="n">attention_mask</span><span class="p">,</span>
+            <span class="s2">&quot;position_ids&quot;</span><span class="p">:</span> <span class="n">position_ids</span><span class="p">,</span>
+        <span class="p">}</span>
+
+        <span class="k">if</span> <span class="n">input_features</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># ----------------------------------------------------------</span>
+            <span class="c1"># Guard: only pass input_features when the sequences still</span>
+            <span class="c1"># contain ``audio_token_id`` placeholders that the model&#39;s</span>
+            <span class="c1"># ``_merge_input_ids_with_audio_features`` can locate.</span>
+            <span class="c1">#</span>
+            <span class="c1"># During GRPO/PPO training the sequences come from the</span>
+            <span class="c1"># inference engine (vLLM/SGLang) which may *expand* the</span>
+            <span class="c1"># single ``&lt;|AUDIO|&gt;`` placeholder into many tokens.  After</span>
+            <span class="c1"># expansion the original ``audio_token_id`` no longer</span>
+            <span class="c1"># appears in the token sequence, so the model&#39;s merge step</span>
+            <span class="c1"># would fail with a shape-mismatch error.</span>
+            <span class="c1">#</span>
+            <span class="c1"># When the placeholder is absent we fall back to a text-only</span>
+            <span class="c1"># forward.  Both the actor AND the reference model see the</span>
+            <span class="c1"># same expanded sequences, so the log-prob *ratio* used for</span>
+            <span class="c1"># the policy gradient is still consistent.</span>
+            <span class="c1"># ----------------------------------------------------------</span>
+            <span class="n">audio_token_id</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="p">,</span> <span class="s2">&quot;audio_token_id&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="n">has_audio_placeholder</span> <span class="o">=</span> <span class="p">(</span><span class="n">audio_token_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="p">(</span><span class="n">sequences</span> <span class="o">==</span> <span class="n">audio_token_id</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
+
+            <span class="k">if</span> <span class="n">has_audio_placeholder</span><span class="p">:</span>
+                <span class="n">input_features</span><span class="p">,</span> <span class="n">feature_attention_mask</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prepare_audio_features</span><span class="p">(</span><span class="n">input_features</span><span class="p">)</span>
+                <span class="n">model_kwargs</span><span class="p">[</span><span class="s2">&quot;input_features&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">input_features</span>
+                <span class="n">model_kwargs</span><span class="p">[</span><span class="s2">&quot;feature_attention_mask&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">feature_attention_mask</span>
+            <span class="c1"># else: audio_token_id absent → text-only forward (see comment above)</span>
+
+        <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="o">**</span><span class="n">model_kwargs</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">num_actions</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># default</span>
             <span class="k">assert</span> <span class="n">return_output</span>
@@ -613,6 +714,35 @@
             <span class="k">return</span> <span class="p">(</span><span class="n">action_log_probs</span><span class="p">,</span> <span class="n">output</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">action_log_probs</span></div>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_prepare_audio_features</span><span class="p">(</span>
+        <span class="n">input_features</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+        <span class="n">expected_mel_len</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3000</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Normalize audio features to the expected mel length and build a feature mask.</span>
+
+<span class="sd">        :param input_features: Raw mel-spectrogram features (e.g. (B, C, T) or (B, T)).</span>
+<span class="sd">        :param expected_mel_len: Target temporal length for Whisper encoder.</span>
+<span class="sd">        :return: Tuple of (padded_or_truncated_features, feature_attention_mask).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">actual_len</span> <span class="o">=</span> <span class="n">input_features</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">actual_len</span> <span class="o">&lt;</span> <span class="n">expected_mel_len</span><span class="p">:</span>
+            <span class="n">pad_len</span> <span class="o">=</span> <span class="n">expected_mel_len</span> <span class="o">-</span> <span class="n">actual_len</span>
+            <span class="n">input_features</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">functional</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">input_features</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">pad_len</span><span class="p">),</span> <span class="n">value</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">actual_len</span> <span class="o">&gt;</span> <span class="n">expected_mel_len</span><span class="p">:</span>
+            <span class="n">input_features</span> <span class="o">=</span> <span class="n">input_features</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="p">:</span><span class="n">expected_mel_len</span><span class="p">]</span>
+            <span class="n">actual_len</span> <span class="o">=</span> <span class="n">expected_mel_len</span>
+
+        <span class="n">feature_attention_mask</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span>
+            <span class="n">input_features</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="n">expected_mel_len</span><span class="p">,</span>
+            <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">long</span><span class="p">,</span>
+            <span class="n">device</span><span class="o">=</span><span class="n">input_features</span><span class="o">.</span><span class="n">device</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">feature_attention_mask</span><span class="p">[:,</span> <span class="p">:</span><span class="n">actual_len</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="n">input_features</span><span class="p">,</span> <span class="n">feature_attention_mask</span>
 
 <div class="viewcode-block" id="ActorAL.gradient_checkpointing_enable"><a class="viewcode-back" href="../../../api_doc/models/actor_al.html#lightrft.models.actor_al.ActorAL.gradient_checkpointing_enable">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">gradient_checkpointing_enable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gradient_checkpointing_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;use_reentrant&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>

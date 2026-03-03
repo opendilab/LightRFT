@@ -1038,6 +1038,9 @@
             <span class="s2">&quot;pixel_values_videos&quot;</span><span class="p">:</span> <span class="n">pixel_values_videos</span><span class="p">,</span>
             <span class="s2">&quot;video_grid_thw&quot;</span><span class="p">:</span> <span class="n">video_grid_thws</span><span class="p">,</span>
         <span class="p">}</span>
+        <span class="c1"># Audio-language actors expect audio_values; pipeline stores them in pixel_values slot</span>
+        <span class="k">if</span> <span class="s2">&quot;audio_values&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_actor_supported_params</span><span class="p">:</span>
+            <span class="n">candidate_params</span><span class="p">[</span><span class="s2">&quot;audio_values&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">candidate_params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;pixel_values&quot;</span><span class="p">)</span>
 
         <span class="n">actor_kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">value</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">candidate_params</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_actor_supported_params</span><span class="p">}</span>
 
