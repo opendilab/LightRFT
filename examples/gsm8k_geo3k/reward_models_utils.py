@@ -25,7 +25,7 @@ import re
 from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
 
 import torch
-
+from lightrft.utils.utils import get_current_device
 
 # ============================================================================
 # Reward Recipe Configuration
@@ -289,7 +289,7 @@ def mix_rewards(
         print(f"[mix_rewards] labels: {labels}")
         print(f"[mix_rewards] model_scores shape: {model_scores.shape}")
 
-    device = model_scores.device if model_scores.numel() > 0 else torch.device('cuda')
+    device = model_scores.device if model_scores.numel() > 0 else get_current_device()
     B = len(labels)
 
     final_reward = torch.zeros(B, dtype=torch.float32, device=device)
@@ -390,7 +390,7 @@ def reward_fn(
     else:
         # No neural reward models - create empty placeholder
         B = len(labels)
-        model_scores = torch.zeros(0, B, dtype=torch.float32, device="cuda")
+        model_scores = torch.zeros(0, B, dtype=torch.float32, device=get_current_device())
 
     # Call mix_rewards to compute final rewards
     return mix_rewards(labels, model_scores, label_map, queries, refs)
