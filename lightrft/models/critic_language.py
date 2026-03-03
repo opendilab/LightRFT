@@ -24,12 +24,10 @@ from typing import Optional, Tuple, Union, List
 import deepspeed
 import torch
 import torch.nn as nn
-from transformers import AutoConfig, AutoModel
+from transformers import AutoModel
 from transformers.integrations.deepspeed import HfDeepSpeedConfig
-from peft import LoraConfig, get_peft_model
-from peft.tuners.lora import LoraLayer
 
-from .utils import reset_position_ids
+from .utils import reset_position_ids, apply_lora_configuration
 from .actor_modality import ActorModality
 from lightrft.utils.logging_utils import init_logger
 
@@ -45,7 +43,7 @@ class CriticLanguage(nn.Module):
     head that outputs scalar value estimates for each token position.
 
     The critic model can be initialized from a pretrained model path and supports various
-    optimization techniques including LoRA adaptation, quantization, and distributed training.
+    optimization techniques including LoRA adaptation and distributed training.
 
     :param pretrain_or_model: Either a string path to a pretrained model or a model instance
     :type pretrain_or_model: Union[str, nn.Module]
@@ -53,8 +51,6 @@ class CriticLanguage(nn.Module):
     :type use_flash_attention_2: bool
     :param bf16: Enable bfloat16 precision for model computations
     :type bf16: bool
-    :param load_in_4bit: Load the model in 4-bit precision for memory efficiency
-    :type load_in_4bit: bool
     :param lora_rank: Rank for LoRA adaptation (0 disables LoRA)
     :type lora_rank: int
     :param lora_alpha: Alpha parameter for LoRA scaling
@@ -102,7 +98,6 @@ class CriticLanguage(nn.Module):
         pretrain_or_model: Union[str, nn.Module],
         use_flash_attention_2: bool = False,
         bf16: bool = True,
-        load_in_4bit: bool = False,
         lora_rank: int = 0,
         lora_alpha: int = 16,
         lora_dropout: float = 0,
@@ -122,23 +117,8 @@ class CriticLanguage(nn.Module):
         self.normalize_reward = normalize_reward
 
         if isinstance(pretrain_or_model, str):
-            # Load model from pretrained path
-            config = AutoConfig.from_pretrained(pretrain_or_model, trust_remote_code=True)
-            config.normalize_reward = normalize_reward
-            config._attn_implementation = "flash_attention_2" if use_flash_attention_2 else "eager"
-
-            # Prioritize using the value_head_prefix in the model configuration
-            self.value_head_prefix = getattr(config, "value_head_prefix", value_head_prefix)
-            logger.info(f"set value_head_prefix to `{self.value_head_prefix}`")
-
-            # Get base model class
-            base_class = AutoModel._model_mapping[type(config)]
-            base_pretrained_class = base_class.__base__
-
-            # Create dynamic CriticModel class
-            CriticModel = self._create_critic_model_class(
-                base_pretrained_class, base_class, self.value_head_prefix, packing_samples
-            )
+            self.pretrain_or_model = pretrain_or_model
+            attn_implementation = "flash_attention_2" if use_flash_attention_2 else "eager"
 
             # Note: dschf is defined in function scope to avoid global effects
             # https://huggingface.co/docs/transformers/main_classes/deepspeed#nontrainer-deepspeed-integration
@@ -147,51 +127,36 @@ class CriticLanguage(nn.Module):
             else:
                 dschf = None
 
-            # Handle 4-bit quantization
-            if load_in_4bit:
-                assert bf16, "we only support bnb_4bit_compute_dtype = bf16"
-                from transformers import BitsAndBytesConfig
-                nf4_config = BitsAndBytesConfig(
-                    load_in_4bit=True,
-                    bnb_4bit_quant_type="nf4",
-                    bnb_4bit_use_double_quant=True,
-                    bnb_4bit_compute_dtype=torch.bfloat16,
-                )
-            else:
-                nf4_config = None
-
             # Load the model
-            self.model = CriticModel.from_pretrained(
+            self.model = AutoModel.from_pretrained(
                 pretrain_or_model,
-                config=config,
                 trust_remote_code=True,
+                attn_implementation=attn_implementation,
                 torch_dtype=torch.bfloat16 if bf16 else "auto",
-                quantization_config=nf4_config,
                 device_map=device_map,
                 **kwargs,
             )
 
-            # Apply LoRA if specified
+            # LoRA
             if lora_rank > 0:
-                self.model.enable_input_require_grads()
-                lora_config = LoraConfig(
-                    r=lora_rank,
+                self.model = apply_lora_configuration(
+                    model=self.model,
+                    lora_rank=lora_rank,
                     lora_alpha=lora_alpha,
-                    target_modules=target_modules,
                     lora_dropout=lora_dropout,
-                    bias="none",
+                    target_modules=target_modules,
+                    freeze_vision_tower=False,  # No vision tower for language models
                 )
-                self.model = get_peft_model(self.model, lora_config)
 
-                if load_in_4bit:
-                    for name, module in self.model.named_modules():
-                        if isinstance(module, LoraLayer):
-                            module = module.to(torch.bfloat16)
-                        if "norm" in name:
-                            module = module.to(torch.float32)
-                        if self.value_head_prefix in name or "embed_tokens" in name:
-                            if hasattr(module, "weight"):
-                                module = module.to(torch.bfloat16)
+            # Get hidden size for value head
+            hidden_size = self.model.config.hidden_size
+
+            # Add value head
+            setattr(self, value_head_prefix, nn.Linear(hidden_size, 1, bias=False))
+
+            # mean std for value normalization
+            self.register_buffer("mean", torch.zeros(1), persistent=False)
+            self.register_buffer("std", torch.ones(1), persistent=False)
 
             # MoE - balancing loss
             model_config = self.model.config.to_dict()
@@ -204,151 +169,25 @@ class CriticLanguage(nn.Module):
 
             # Initialize value head if requested
             if init_value_head:
-                value_head = getattr(self.model, self.value_head_prefix)
+                value_head = getattr(self, self.value_head_prefix)
                 if dschf is not None:
                     logger.info("initialize value_head for ZeRO-3 critic model training.")
                     with deepspeed.zero.GatheredParameters([value_head.weight], modifier_rank=0):
                         if torch.distributed.get_rank() == 0:
-                            value_head.weight.data.normal_(mean=0.0, std=1 / (config.hidden_size + 1))
+                            value_head.weight.data.normal_(mean=0.0, std=1 / (hidden_size + 1))
                 else:
-                    value_head.weight.data.normal_(mean=0.0, std=1 / (config.hidden_size + 1))
+                    value_head.weight.data.normal_(mean=0.0, std=1 / (hidden_size + 1))
 
         else:
             # Use existing model instance
             self.model = pretrain_or_model
+            self.pretrain_or_model = pretrain_or_model.config.model_type
+
+        print("pretrain_or_model: ", self.pretrain_or_model)
 
         # Enable gradient checkpointing if supported
         if hasattr(self.model, "gradient_checkpointing_enable"):
             self.model.gradient_checkpointing_enable()
-
-    def _create_critic_model_class(
-        self, base_pretrained_class, base_class, value_head_prefix="score", packing_samples=False
-    ):
-        """
-        Create a CriticModel class that extends a base language model.
-
-        This factory method dynamically creates a CriticModel class by inheriting from
-        the provided base language model and adding a value head for value function estimation.
-
-        :param base_pretrained_class: The base pretrained model class.
-        :type base_pretrained_class: type
-        :param base_class: The base model class to extend.
-        :type base_class: type
-        :param value_head_prefix: Prefix for the value head attribute name. Defaults to "score".
-        :type value_head_prefix: str
-        :param packing_samples: Whether to use packed sequence processing. Defaults to False.
-        :type packing_samples: bool
-
-        :return: A CriticModel class that extends the base model with value estimation capability.
-        :rtype: type
-        """
-        class CriticModel(base_pretrained_class):
-            supports_gradient_checkpointing = True
-
-            def __init__(self, config: AutoConfig):
-                """
-                Initialize the CriticModel with a value head for value function estimation.
-
-                The critic model is used in PPO/GRPO training to estimate state values for
-                advantage calculation. It extends the base language model with a linear value head that
-                outputs scalar value estimates for each token position.
-
-                :param config: Model configuration containing architecture and training parameters.
-                :type config: AutoConfig
-                """
-                super().__init__(config)
-                setattr(self, self.base_model_prefix, base_class(config))
-
-                self.value_head_prefix = value_head_prefix
-                setattr(self, value_head_prefix, nn.Linear(config.hidden_size, 1, bias=False))
-
-                self.packing_samples = packing_samples
-
-                # mean std for value normalization
-                self.normalize_reward = config.normalize_reward
-                self.register_buffer("mean", torch.zeros(1), persistent=False)
-                self.register_buffer("std", torch.ones(1), persistent=False)
-
-                # load mean/std from config.json if available
-                if hasattr(config, "mean"):
-                    self.mean[0] = config.mean
-                    self.std[0] = config.std
-
-            def forward(
-                self,
-                input_ids: torch.LongTensor = None,
-                num_actions: Optional[Union[int, List[int]]] = None,
-                attention_mask: Optional[torch.Tensor] = None,
-                return_output: bool = False,
-                packed_seq_lens: Optional[List[int]] = None,
-            ) -> Union[torch.Tensor, Tuple[torch.Tensor, dict]]:
-                """
-                Forward pass to compute value estimates for action sequences.
-
-                This method computes state-value estimates for tokens in the action sequence,
-                which are used to calculate advantages in PPO/GRPO training. The values are
-                computed from the last hidden states of the base language model, excluding the final token.
-
-                :param input_ids: Input token IDs including both prompt and generated actions.
-                :type input_ids: torch.LongTensor
-                :param num_actions: Number of action tokens to compute values for.
-                :type num_actions: Optional[Union[int, List[int]]]
-                :param attention_mask: Attention mask for input sequences.
-                :type attention_mask: Optional[torch.Tensor]
-                :param return_output: If True, return tuple of (values, model_outputs).
-                :type return_output: bool
-                :param packed_seq_lens: Lengths of packed sequences.
-                :type packed_seq_lens: Optional[List[int]]
-
-                :return: Value estimates for action tokens.
-                :rtype: Union[torch.Tensor, Tuple[torch.Tensor, dict]]
-                """
-                if not self.packing_samples:
-                    # https://github.com/OpenRLHF/OpenRLHF/issues/217
-                    position_ids = attention_mask.long().cumsum(-1) - 1
-                    position_ids.masked_fill_(attention_mask == 0, 1)
-                else:
-                    # convert attention_mask to position_ids
-                    position_ids = reset_position_ids(attention_mask)
-                    # explicitly ignore attention_mask for packing_samples
-                    attention_mask = None
-
-                outputs = getattr(self, self.base_model_prefix)(
-                    input_ids=input_ids,
-                    attention_mask=attention_mask,
-                    position_ids=position_ids,
-                    output_hidden_states=True,
-                    use_cache=False,
-                )
-                last_hidden_states = outputs["hidden_states"][-1]
-                values = getattr(self, self.value_head_prefix)(last_hidden_states).squeeze(-1)[:, :-1]
-
-                # normalize values if enabled
-                if self.normalize_reward:
-                    values = (values - self.mean) / self.std
-
-                if num_actions is None:
-                    assert return_output
-                    return outputs
-
-                if not self.packing_samples:
-                    action_values = values[:, -num_actions:]
-                else:
-                    assert isinstance(num_actions, list) and len(num_actions) == len(packed_seq_lens)
-                    action_values = []
-                    offset = 0
-                    for num_action, seq_len in zip(num_actions, packed_seq_lens):
-                        start, end = max(0, offset + seq_len - num_action - 1), offset + seq_len - 1
-                        action_values.append(values[:, start:end])
-                        offset += seq_len
-                    action_values = torch.cat(action_values, dim=1)
-
-                if return_output:
-                    return (action_values, outputs)
-                else:
-                    return action_values
-
-        return CriticModel
 
     def forward(
         self,
@@ -360,29 +199,70 @@ class CriticLanguage(nn.Module):
         **kwargs,
     ) -> Union[torch.Tensor, Tuple[torch.Tensor, dict]]:
         """
-        Forward pass through the critic model.
+        Forward pass to compute value estimates for action sequences.
 
-        :param input_ids: Input token IDs
+        This method computes state-value estimates for tokens in the action sequence,
+        which are used to calculate advantages in PPO/GRPO training. The values are
+        computed from the last hidden states of the base language model, excluding the final token.
+
+        :param input_ids: Input token IDs including both prompt and generated actions.
         :type input_ids: torch.LongTensor
-        :param num_actions: Number of action tokens
+        :param num_actions: Number of action tokens to compute values for.
         :type num_actions: Optional[Union[int, List[int]]]
-        :param attention_mask: Attention mask
+        :param attention_mask: Attention mask for input sequences.
         :type attention_mask: Optional[torch.Tensor]
-        :param return_output: Whether to return model outputs
+        :param return_output: If True, return tuple of (values, model_outputs).
         :type return_output: bool
-        :param packed_seq_lens: Packed sequence lengths
+        :param packed_seq_lens: Lengths of packed sequences.
         :type packed_seq_lens: Optional[List[int]]
 
-        :return: Value estimates
+        :return: Value estimates for action tokens.
         :rtype: Union[torch.Tensor, Tuple[torch.Tensor, dict]]
         """
-        return self.model(
+        if not self.packing_samples:
+            # https://github.com/OpenRLHF/OpenRLHF/issues/217
+            position_ids = attention_mask.long().cumsum(-1) - 1
+            position_ids.masked_fill_(attention_mask == 0, 1)
+        else:
+            # convert attention_mask to position_ids
+            position_ids = reset_position_ids(attention_mask)
+            # explicitly ignore attention_mask for packing_samples
+            attention_mask = None
+
+        outputs = self.model(
             input_ids=input_ids,
-            num_actions=num_actions,
             attention_mask=attention_mask,
-            return_output=return_output,
-            packed_seq_lens=packed_seq_lens,
+            position_ids=position_ids,
+            output_hidden_states=True,
+            use_cache=False,
         )
+        last_hidden_states = outputs["hidden_states"][-1]
+        values = getattr(self, self.value_head_prefix)(last_hidden_states).squeeze(-1)[:, :-1]
+
+        # normalize values if enabled
+        if self.normalize_reward:
+            values = (values - self.mean) / self.std
+
+        if num_actions is None:
+            assert return_output
+            return outputs
+
+        if not self.packing_samples:
+            action_values = values[:, -num_actions:]
+        else:
+            assert isinstance(num_actions, list) and len(num_actions) == len(packed_seq_lens)
+            action_values = []
+            offset = 0
+            for num_action, seq_len in zip(num_actions, packed_seq_lens):
+                start, end = max(0, offset + seq_len - num_action - 1), offset + seq_len - 1
+                action_values.append(values[:, start:end])
+                offset += seq_len
+            action_values = torch.cat(action_values, dim=1)
+
+        if return_output:
+            return (action_values, outputs)
+        else:
+            return action_values
 
     def gradient_checkpointing_enable(self, **kwargs):
         """Enable gradient checkpointing for memory optimization."""
