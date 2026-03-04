@@ -204,7 +204,8 @@ class PolicyLoss(nn.Module):
         .. math::
             s_i(\\theta) = \\exp\\left(\\frac{1}{|y_i|} \\sum_t \\log \\frac{\\pi_\\theta}{\\pi_{\\theta_{old}}}\\right)
 
-            s_{i,t}(\\theta) = \\text{sg}[s_i(\\theta)] \\cdot \\frac{\\pi_\\theta(y_{i,t})}{\\text{sg}[\\pi_\\theta(y_{i,t})]}
+            s_{i,t}(\\theta) =
+            \\text{sg}[s_i(\\theta)] \\cdot \\frac{\\pi_\\theta(y_{i,t})}{\\text{sg}[\\pi_\\theta(y_{i,t})]}
 
         :param log_probs: Current policy log-probabilities. Shape: ``(batch_size, seq_len)``
         :type log_probs: torch.Tensor
@@ -225,17 +226,13 @@ class PolicyLoss(nn.Module):
 
         # Combined token-level ratio with stop-gradient:
         # log(s_{i,t}) = sg[log(s_i)] + log_prob - sg[log_prob]
-        log_seq_importance_ratio = (
-            log_probs - log_probs.detach() + negative_approx_kl_seq.detach().unsqueeze(-1)
-        )
+        log_seq_importance_ratio = (log_probs - log_probs.detach() + negative_approx_kl_seq.detach().unsqueeze(-1))
         log_seq_importance_ratio = torch.clamp(log_seq_importance_ratio, max=10.0)
         seq_importance_ratio = torch.exp(log_seq_importance_ratio)
 
         # PPO-style clipping on the sequence-level ratio
         surr1 = -advantages * seq_importance_ratio
-        surr2 = -advantages * torch.clamp(
-            seq_importance_ratio, 1 - self.clip_ratio_low, 1 + self.clip_ratio_high
-        )
+        surr2 = -advantages * torch.clamp(seq_importance_ratio, 1 - self.clip_ratio_low, 1 + self.clip_ratio_high)
         loss = torch.maximum(surr1, surr2)
 
         loss = masked_mean(loss, final_mask, dim=-1).mean()
