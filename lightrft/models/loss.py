@@ -87,9 +87,8 @@ class PolicyLoss(nn.Module):
     Multi-purpose policy loss function supporting multiple reinforcement learning algorithms.
 
     This class implements a unified policy loss that can be configured to support various
-    policy optimization algorithms including PPO, CPGD, and high-entropy token filtering
-    strategies. The loss function computes clipped policy gradients with optional masking
-    for efficient training.
+    policy optimization algorithms including PPO, CPGD, GSPO, and GMPO, with optional
+    high-entropy token filtering for efficient training.
 
     **Supported Algorithms:**
 
@@ -102,45 +101,42 @@ class PolicyLoss(nn.Module):
       asymmetric clipping bounds for positive and negative advantages, providing better
       stability for constrained policy optimization. See: https://arxiv.org/abs/2505.12504
 
+    - **Group Sequence Policy Optimization (GSPO)**: Enabled via ``use_gspo=True``. Uses
+      sequence-level importance ratios (geometric mean of per-token ratios) instead of
+      token-level ratios. The combined token-level ratio uses stop-gradient to decouple
+      the sequence-level and token-level gradients. Typically uses very small clip ranges
+      (e.g., 0.0003/0.0004). See: https://arxiv.org/abs/2507.18071
+
+    - **Geometric Mean Policy Optimization (GMPO)**: Enabled via ``use_gmpo=True``. Uses
+      the geometric mean of importance ratios across tokens, with clipping applied in
+      signed log-difference space per-token before computing the sequence-level ratio.
+      This reduces the influence of outlier tokens. Typically uses larger clip ranges
+      (e.g., 0.4). See: https://arxiv.org/abs/2502.03950
+
     - **High-Entropy Token Filtering**: Enabled via ``high_entropy_token_ratio > 0`` or by
       providing an ``entropy_mask`` in the forward pass. This feature allows training only on
       high-entropy tokens (forking tokens that determine reasoning directions), significantly
       improving training efficiency. Based on: https://arxiv.org/abs/2506.01939
 
-    :param clip_eps: Clipping epsilon for PPO-style policy updates. Determines the maximum
-        allowed ratio between new and old policy probabilities. Typical values range from
-        0.1 to 0.3. Default: 0.2
+    :param clip_eps: Clipping epsilon for PPO/GMPO-style policy updates. Default: 0.2
     :type clip_eps: float
-    :param use_dapo: Flag for DAPO (Decoupled Clip and Dynamic sAmpling Policy Optimization).
-        Currently reserved for future implementation. Default: False
+    :param use_dapo: Flag for DAPO. Currently reserved for future implementation. Default: False
     :type use_dapo: bool
-    :param use_cpg_loss: If True, uses CPGD-style clipped policy gradient loss with
-        asymmetric clipping bounds. When False, uses standard PPO clipping. Default: False
+    :param use_cpg_loss: If True, uses CPGD-style clipped policy gradient loss. Default: False
     :type use_cpg_loss: bool
-    :param high_entropy_token_ratio: Ratio of high-entropy tokens to keep for training
-        (e.g., 0.2 means top 20% highest entropy tokens). When > 0, enables high-entropy
-        token filtering. Set to 0.0 to disable. Default: 0.0
+    :param use_gspo: If True, uses GSPO sequence-level importance ratios. Default: False
+    :type use_gspo: bool
+    :param use_gmpo: If True, uses GMPO geometric-mean importance ratios. Default: False
+    :type use_gmpo: bool
+    :param clip_ratio_low: Lower clip bound for GSPO asymmetric clipping. If None, falls
+        back to ``clip_eps``. Typical GSPO value: 0.0003. Default: None
+    :type clip_ratio_low: Optional[float]
+    :param clip_ratio_high: Upper clip bound for GSPO asymmetric clipping. If None, falls
+        back to ``clip_eps``. Typical GSPO value: 0.0004. Default: None
+    :type clip_ratio_high: Optional[float]
+    :param high_entropy_token_ratio: Ratio of high-entropy tokens to keep for training.
+        Set to 0.0 to disable. Default: 0.0
     :type high_entropy_token_ratio: float
-
-    **Loss Computation:**
-
-    The loss is computed as follows:
-
-    1. **Mask Application**: Combines ``action_mask`` (valid tokens) with ``entropy_mask``
-       (high-entropy tokens) to create a final mask for loss computation.
-
-    2. **PPO Mode** (default, ``use_cpg_loss=False``):
-       - Computes policy ratio: ``ratio = exp(log_probs - old_log_probs)``
-       - Clips ratio: ``clipped_ratio = clamp(ratio, 1 - clip_eps, 1 + clip_eps)``
-       - Loss: ``-min(ratio * advantages, clipped_ratio * advantages)``
-
-    3. **CPGD Mode** (``use_cpg_loss=True``):
-       - Uses asymmetric clipping: upper bound ``log(1 + clip_eps)`` for positive advantages,
-         lower bound ``log(1 - clip_eps)`` for negative advantages
-       - Loss: ``-clipped_log_probs * advantages``
-
-    4. **Masking**: The computed loss is masked using ``final_mask`` and averaged only over
-       valid, high-entropy tokens (if enabled).
 
     **Example Usage:**
 
@@ -154,14 +150,20 @@ class PolicyLoss(nn.Module):
         policy_loss = PolicyLoss(clip_eps=0.2, use_cpg_loss=True)
         loss = policy_loss(log_probs, old_log_probs, advantages, action_mask)
 
-        # PPO with high-entropy token filtering (top 20%)
-        policy_loss = PolicyLoss(clip_eps=0.2, high_entropy_token_ratio=0.2)
-        loss = policy_loss(log_probs, old_log_probs, advantages, action_mask, entropy_mask)
+        # GSPO loss with asymmetric clipping
+        policy_loss = PolicyLoss(use_gspo=True, clip_ratio_low=0.0003, clip_ratio_high=0.0004)
+        loss = policy_loss(log_probs, old_log_probs, advantages, action_mask)
+
+        # GMPO loss with wider clipping
+        policy_loss = PolicyLoss(clip_eps=0.4, use_gmpo=True)
+        loss = policy_loss(log_probs, old_log_probs, advantages, action_mask)
 
     **References:**
 
     - PPO: https://arxiv.org/abs/1707.06347
     - CPGD: https://arxiv.org/abs/2505.12504
+    - GSPO: https://arxiv.org/abs/2507.18071
+    - GMPO: https://arxiv.org/abs/2502.03950
     - High-Entropy Token Filtering: https://arxiv.org/abs/2506.01939
     """
     def __init__(
@@ -169,13 +171,132 @@ class PolicyLoss(nn.Module):
         clip_eps: float = 0.2,
         use_dapo: bool = False,
         use_cpg_loss: bool = False,
+        use_gspo: bool = False,
+        use_gmpo: bool = False,
+        clip_ratio_low: Optional[float] = None,
+        clip_ratio_high: Optional[float] = None,
         high_entropy_token_ratio: float = 0.0,
     ) -> None:
         super().__init__()
         self.clip_eps = clip_eps
         self.use_dapo = use_dapo
         self.use_cpg_loss = use_cpg_loss
+        self.use_gspo = use_gspo
+        self.use_gmpo = use_gmpo
+        self.clip_ratio_low = clip_ratio_low if clip_ratio_low is not None else clip_eps
+        self.clip_ratio_high = clip_ratio_high if clip_ratio_high is not None else clip_eps
         self.high_entropy_token_ratio = high_entropy_token_ratio
+
+    def _compute_gspo_loss(
+        self,
+        log_probs: torch.Tensor,
+        old_log_probs: torch.Tensor,
+        advantages: torch.Tensor,
+        final_mask: torch.Tensor,
+    ) -> torch.Tensor:
+        """
+        Compute GSPO (Group Sequence Policy Optimization) loss.
+
+        GSPO replaces token-level importance ratios with sequence-level ratios defined as
+        the geometric mean of per-token ratios. A stop-gradient trick decouples the
+        sequence-level ratio from token-level gradients:
+
+        .. math::
+            s_i(\\theta) = \\exp\\left(\\frac{1}{|y_i|} \\sum_t \\log \\frac{\\pi_\\theta}{\\pi_{\\theta_{old}}}\\right)
+
+            s_{i,t}(\\theta) = \\text{sg}[s_i(\\theta)] \\cdot \\frac{\\pi_\\theta(y_{i,t})}{\\text{sg}[\\pi_\\theta(y_{i,t})]}
+
+        :param log_probs: Current policy log-probabilities. Shape: ``(batch_size, seq_len)``
+        :type log_probs: torch.Tensor
+        :param old_log_probs: Old policy log-probabilities. Shape: ``(batch_size, seq_len)``
+        :type old_log_probs: torch.Tensor
+        :param advantages: Per-token advantage estimates. Shape: ``(batch_size, seq_len)``
+        :type advantages: torch.Tensor
+        :param final_mask: Binary mask for valid tokens. Shape: ``(batch_size, seq_len)``
+        :type final_mask: torch.Tensor
+        :returns: Scalar GSPO policy loss.
+        :rtype: torch.Tensor
+        """
+        negative_approx_kl = log_probs - old_log_probs
+
+        # Sequence-level importance ratio (geometric mean in log space)
+        seq_lengths = torch.sum(final_mask, dim=-1).clamp(min=1)
+        negative_approx_kl_seq = torch.sum(negative_approx_kl * final_mask, dim=-1) / seq_lengths
+
+        # Combined token-level ratio with stop-gradient:
+        # log(s_{i,t}) = sg[log(s_i)] + log_prob - sg[log_prob]
+        log_seq_importance_ratio = (
+            log_probs - log_probs.detach() + negative_approx_kl_seq.detach().unsqueeze(-1)
+        )
+        log_seq_importance_ratio = torch.clamp(log_seq_importance_ratio, max=10.0)
+        seq_importance_ratio = torch.exp(log_seq_importance_ratio)
+
+        # PPO-style clipping on the sequence-level ratio
+        surr1 = -advantages * seq_importance_ratio
+        surr2 = -advantages * torch.clamp(
+            seq_importance_ratio, 1 - self.clip_ratio_low, 1 + self.clip_ratio_high
+        )
+        loss = torch.maximum(surr1, surr2)
+
+        loss = masked_mean(loss, final_mask, dim=-1).mean()
+        return loss
+
+    def _compute_gmpo_loss(
+        self,
+        log_probs: torch.Tensor,
+        old_log_probs: torch.Tensor,
+        advantages: torch.Tensor,
+        final_mask: torch.Tensor,
+    ) -> torch.Tensor:
+        """
+        Compute GMPO (Geometric Mean Policy Optimization) loss.
+
+        GMPO clips per-token log-probability differences in signed space and then
+        aggregates via geometric mean (arithmetic mean of log-ratios). This reduces the
+        influence of outlier tokens compared to the arithmetic-mean aggregation in GRPO.
+
+        For each sequence with advantage :math:`A`:
+
+        .. math::
+            s = \\text{sgn}(A) \\cdot (\\log \\pi_\\theta - \\log \\pi_{\\theta_{old}})
+
+            \\tilde{s} = \\text{clip}(s, -\\epsilon, \\epsilon)
+
+            \\tilde{\\Delta} = \\text{sgn}(A) \\cdot \\max(s, \\tilde{s})
+
+            \\text{ratio} = \\exp\\left(\\frac{\\sum_t \\tilde{\\Delta}_t}{|y|}\\right)
+
+            \\mathcal{L} = -A \\cdot \\text{ratio}
+
+        :param log_probs: Current policy log-probabilities. Shape: ``(batch_size, seq_len)``
+        :type log_probs: torch.Tensor
+        :param old_log_probs: Old policy log-probabilities. Shape: ``(batch_size, seq_len)``
+        :type old_log_probs: torch.Tensor
+        :param advantages: Per-token advantage estimates. Shape: ``(batch_size, seq_len)``
+        :type advantages: torch.Tensor
+        :param final_mask: Binary mask for valid tokens. Shape: ``(batch_size, seq_len)``
+        :type final_mask: torch.Tensor
+        :returns: Scalar GMPO policy loss.
+        :rtype: torch.Tensor
+        """
+        # Extract per-sequence advantage (constant across tokens for GRPO-style)
+        seq_lengths = final_mask.sum(dim=-1).clamp(min=1)
+        seq_advantages = (advantages * final_mask).sum(dim=-1) / seq_lengths
+
+        # Sign factor: -1 if advantage >= 0, else 1 (matches GMPO paper convention)
+        sgn = torch.where(seq_advantages >= 0, -1.0, 1.0).unsqueeze(-1)
+
+        logprobs_diff = log_probs - old_log_probs
+        sgn_logprobs_diff = sgn * logprobs_diff
+        sgn_logprobs_diff_clamp = torch.clamp(sgn_logprobs_diff, -self.clip_eps, self.clip_eps)
+        sgn_logprobs_diff_max = torch.max(sgn_logprobs_diff, sgn_logprobs_diff_clamp)
+        logprobs_diff_max = sgn * sgn_logprobs_diff_max
+
+        # Geometric mean ratio: exp(mean of clipped log-diffs over valid tokens)
+        ratio = torch.exp((logprobs_diff_max * final_mask).sum(dim=-1) / seq_lengths)
+
+        loss = (-seq_advantages * ratio).mean()
+        return loss
 
     def forward(
         self,
@@ -188,7 +309,7 @@ class PolicyLoss(nn.Module):
         """
         Compute policy loss with optional masking and algorithm-specific clipping.
 
-        This method computes the policy loss based on the configured algorithm (PPO or CPGD)
+        This method dispatches to the configured algorithm (PPO, CPGD, GSPO, or GMPO)
         and applies masking for valid tokens and optionally high-entropy tokens.
 
         :param log_probs: Log probabilities of actions under the current policy.
@@ -224,18 +345,20 @@ class PolicyLoss(nn.Module):
 
         - **PPO**: Uses symmetric clipping ``[1 - clip_eps, 1 + clip_eps]`` on the policy ratio.
         - **CPGD**: Uses asymmetric clipping with log-space bounds for better stability.
+        - **GSPO**: Uses sequence-level importance ratios with stop-gradient decoupling.
+        - **GMPO**: Uses geometric-mean importance ratios with signed log-space clipping.
         """
-        # Apply entropy mask if provided (for high-entropy token filtering)
-        # action_mask shape: (batch_size, num_actions) - binary mask indicating valid tokens
-        # entropy_mask shape: (batch_size, num_actions) - binary mask for high-entropy tokens
-        # Note: entropy_mask is already created considering action_mask in create_high_entropy_mask,
-        # so it already excludes padding positions. No need to multiply with action_mask again.
         if entropy_mask is not None:
-            # entropy_mask already respects action_mask boundaries (padding positions are 0)
             final_mask = entropy_mask
         else:
-            # No entropy masking, use action_mask only
             final_mask = action_mask
+
+        if self.use_gspo:
+            return self._compute_gspo_loss(log_probs, old_log_probs, advantages, final_mask)
+
+        if self.use_gmpo:
+            return self._compute_gmpo_loss(log_probs, old_log_probs, advantages, final_mask)
+
         if self.use_cpg_loss:
             clipped_log_probs = torch.where(
                 advantages > 0, torch.clamp(log_probs, max=torch.log(torch.tensor(1 + self.clip_eps)) + old_log_probs),

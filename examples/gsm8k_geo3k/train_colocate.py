@@ -392,6 +392,9 @@ def train(args):
         eps_clip=args.eps_clip,
         loss_agg_mode=args.loss_agg_mode,
         use_gspo=args.use_gspo,
+        use_gmpo=args.use_gmpo,
+        clip_ratio_low=args.clip_ratio_low,
+        clip_ratio_high=args.clip_ratio_high,
         normalize_advantages=args.normalize_advantages,
         use_sequence_rewards=args.use_sequence_rewards,
         gamma=args.gamma,
@@ -486,7 +489,10 @@ if __name__ == "__main__":
     parser.add_argument("--eps_clip", type=float, default=0.2, help="PPO clip range")
     parser.add_argument("--loss_agg_mode", type=str, default='seq-mean-token-mean',
         help="Loss aggregation mode. Options: ['token-mean', 'seq-mean-token-sum', 'seq-mean-token-mean', 'seq-mean-token-sum-norm']")
-    parser.add_argument("--use_gspo", action="store_true", default=False, help="Enable GSPO (Group Sequence Policy Optimization) mode")
+    parser.add_argument("--use_gspo", action="store_true", default=False, help="Enable GSPO (Group Sequence Policy Optimization) mode. See: https://arxiv.org/abs/2507.18071")
+    parser.add_argument("--use_gmpo", action="store_true", default=False, help="Enable GMPO (Geometric Mean Policy Optimization) mode. See: https://arxiv.org/abs/2502.03950")
+    parser.add_argument("--clip_ratio_low", type=float, default=None, help="Lower clip bound for GSPO asymmetric clipping. Typical value: 0.0003")
+    parser.add_argument("--clip_ratio_high", type=float, default=None, help="Upper clip bound for GSPO asymmetric clipping. Typical value: 0.0004")
     parser.add_argument("--normalize_advantages", action="store_true", default=True, help="Enable advantage normalization in GSPO")
     parser.add_argument("--use_sequence_rewards", action="store_true", default=True, help="Use sequence-level rewards in GSPO")
     parser.add_argument("--value_clip", type=float, default=0.2, help="PPO value clip range")
