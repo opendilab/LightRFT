@@ -78,6 +78,8 @@ export WANDB_API_KEY="968275bc822c87ac741ecce2f06cdfb54dbc1608" # Replace with y
 WANDB_PROJECT="QwenVL-7B-MultiORM-GRPO-SVKG"
 WANDB_RUN_NAME="QwenVL-7B-MultiORM-SVKG-grpo-${current_time}"
 
+   # --rm_use_engine \
+
 torchrun --nnodes $NNODES --nproc-per-node $GPUS_PER_NODE --node_rank $NODE_RANK --master-port $MASTER_PORT --master-addr $MASTER_ADDR examples/safework_t1_runnable/train_colocate.py \
    --pretrain ${PRETRAIN_PATH} \
    --use_cpg_loss \
@@ -87,7 +89,6 @@ torchrun --nnodes $NNODES --nproc-per-node $GPUS_PER_NODE --node_rank $NODE_RANK
    --num_trajectories_to_save 16 \
    --print_replay_buffer_stats \
    --fsdp \
-   --rm_use_engine \
    --mixed_mm_data \
    --reward_pretrain ${REWARD_PRETRAIN_PATHS} \
    --save_path results/$NAME/$SAVE_MODEL_NAME \

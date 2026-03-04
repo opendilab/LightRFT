@@ -32,7 +32,8 @@ from itertools import zip_longest
 from lightrft.utils import Timer, get_current_device
 from lightrft.strategy.utils.distributed_util import gather_inputs_object_for_inference
 from lightrft.strategy import StrategyBase, is_engine
-
+from lightrft.utils.utils import get_current_device
+from lightrft.utils.utils import empty_cache, device_synchronize
 
 # ============================================================================
 # Utility Functions
@@ -223,7 +224,8 @@ def _hf_or_engine_generate(
         
 
         model.sleep()
-        torch.cuda.empty_cache()
+        # torch.cuda.empty_cache()
+        empty_cache()
         return texts, None
 
     else:
@@ -713,7 +715,7 @@ class Qwen2VLRewardModelVauAI(nn.Module):
         super().__init__()
         assert output_mode in {"prob", "hard", "both"}
         self.base_model, self.tokenizer, self.processor = base_model, tokenizer, processor
-        self.device, self.text_only = torch.cuda.current_device(), text_only
+        self.device, self.text_only = get_current_device(), text_only
         self.output_mode, self.threshold = output_mode, threshold
 
         # Only HF mode needs to prepare token-id in advance
@@ -764,9 +766,9 @@ class Qwen2VLRewardModelVauAI(nn.Module):
             vision_token_process_type="clean",
         )
         if pixel_values is not None:
-            pixel_values = pixel_values.cuda()
+            pixel_values = pixel_values.to(self.device)
         if image_grid_thw is not None:
-            image_grid_thw = image_grid_thw.cuda()
+            image_grid_thw = image_grid_thw.to(self.device)
         outputs = self.base_model(
             input_ids=input_ids,
             attention_mask=attention_mask,
@@ -952,9 +954,9 @@ Additional Case:
                 queries=prompt_and_outputs, return_raw_texts=False
             )
             if pixel_values is not None:
-                pixel_values = pixel_values.cuda()
+                pixel_values = pixel_values.to(self.device)
             if image_grid_thw is not None:
-                image_grid_thw = image_grid_thw.cuda()
+                image_grid_thw = image_grid_thw.to(self.device)
 
             texts, _ = _hf_or_engine_generate(
                 self.base_model,
@@ -1281,7 +1283,7 @@ class Qwen2VLRewardModelNormal(nn.Module):
         self.base_model = base_model
         self.tokenizer = tokenizer
         self.processor = processor
-        self.device = torch.cuda.current_device()
+        self.device = get_current_device()
         self.text_only = text_only
 
     def forward(
@@ -1636,14 +1638,14 @@ class Qwen2VLRewardModelVauAIThink(nn.Module):
             return_think_content=True
         )
         if pixel_values is not None:
-            pixel_values = pixel_values.cuda()
+            pixel_values = pixel_values.to(self.device)
         if image_grid_thw is not None:
-            image_grid_thw = image_grid_thw.cuda()
+            image_grid_thw = image_grid_thw.to(self.device)
 
         # answer part
         outputs = self.base_model(
-            input_ids=input_ids.cuda(),
-            attention_mask=attention_mask.cuda(),
+            input_ids=input_ids.to(self.device),
+            attention_mask=attention_mask.to(self.device),
             pixel_values=pixel_values,
             image_grid_thw=image_grid_thw,
             output_hidden_states=True
@@ -1659,8 +1661,8 @@ class Qwen2VLRewardModelVauAIThink(nn.Module):
 
         # think part
         outputs = self.base_model(
-            input_ids=think_input_ids.cuda(),
-            attention_mask=think_attention_mask.cuda(),
+            input_ids=think_input_ids.to(self.device),
+            attention_mask=think_attention_mask.to(self.device),
             pixel_values=pixel_values,
             image_grid_thw=image_grid_thw,
             output_hidden_states=True
@@ -1841,7 +1843,7 @@ class Qwen2VLRewardModelGeneral(nn.Module):
         self.base_model: nn.Module = base_model
         self.tokenizer = tokenizer
         self.processor = processor
-        self.device = torch.cuda.current_device()
+        self.device = get_current_device()
         self.text_only = text_only
 
         if is_engine(self.base_model):
@@ -2083,5 +2085,5 @@ def rule_reward_func(queries):
     #     print("Queries validation results (final reward is the product of format reward and language consistency reward):", rewards)
 
     # Return rewards as torch.Tensor
-    device = torch.cuda.current_device()
+    device = get_current_device()
     return torch.tensor(rewards, dtype=torch.float).to(device)

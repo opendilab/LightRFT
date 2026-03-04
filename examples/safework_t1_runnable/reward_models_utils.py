@@ -41,7 +41,7 @@ from lightrft.models.monkey_patch.hf_generate_patch import (
 )
 from lightrft.strategy.sglang_utils import get_sglang_engine
 from lightrft.utils import get_current_device
-
+from lightrft.utils.utils import get_current_device
 # ============================================================================
 # Optional Dependencies
 # ============================================================================
@@ -994,7 +994,7 @@ def reward_fn(
     else:
         # When no torch.nn model RM is available, give placeholder zero score
         B = len(labels)
-        model_scores = torch.zeros(0, B, dtype=torch.float32, device="cuda")
+        model_scores = torch.zeros(0, B, dtype=torch.float32, device=get_current_device())
 
     # ------ call combination logic ------
     return mix_rewards(labels, model_scores, label_map, queries, refs)
