@@ -25,7 +25,6 @@ Thank you for your interest in contributing to LightRFT! This guide will help yo
    pip install -e .
 
    # Install documentation dependencies
-   pip install -r requirements-doc.txt
 
    # (Optional) Install vLLM if you need to test vLLM backend
    pip install ".[vllm]"

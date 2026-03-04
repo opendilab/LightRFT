@@ -25,7 +25,7 @@
 - **LLM**: Qwen, Qwen2.5 以及大多数 HuggingFace 模型
 - **VLM**: Qwen-VL, Qwen2-VL
 - **Audio**: Qwen2-Audio
-- **自定义模型**: 通过 monkey patching 可以轻松添加新模型
+- **自定义模型**: 轻松继承并扩展现有模型架构
 
 ### Q: 需要什么样的硬件？
 
@@ -130,14 +130,6 @@ pip install -r requirements.txt && pip install -e .
 
 GRPO 系统更简洁，显存效率更高。
 
-### Q: 什么时候应该使用 CPGD？
-
-**A**: 在以下情况使用 CPGD：
-- 对预训练模型进行微调
-- 想要保留基础模型的能力
-- 需要受控的策略更新
-- 防止灾难性遗忘
-
 ### Q: 什么是 Clip Higher?
 
 **A**: 一种改进的裁剪方案，为正负优势 (advantages) 使用独立的上下界。更适用于：
@@ -232,7 +224,9 @@ class CustomTrainer(SPMDPPOTrainer):
 
 ### Q: 如何添加新的模型架构？
 
-**A**: 在 `lightrft/models/monkey_patch/` 中创建 monkey patch：
+**A**: 有以下两种方法：
+1. **常规方法**：通过继承 `ActorLanguage` 或 `ActorVL` 等基类来实现新的模型架构，并在 `lightrft/models/` 目录下添加相应实现。
+2. **Monkey Patch 方法**：在 `lightrft/models/monkey_patch/` 中创建 monkey patch：
 ```python
 # your_model.py
 def patch_your_model(model):

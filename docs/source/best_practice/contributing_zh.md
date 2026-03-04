@@ -21,7 +21,6 @@
 
 2. **安装开发依赖**
    ```bash
-   pip install -r requirements.txt
    pip install -r requirements-doc.txt  # 文档构建所需
    pip install -e .  # 以可编辑模式安装
    ```

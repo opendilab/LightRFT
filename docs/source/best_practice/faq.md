@@ -25,7 +25,7 @@ Common questions and answers about LightRFT.
 - **LLM**: Qwen, Qwen2.5 and most HuggingFace models
 - **VLM**: Qwen-VL, Qwen2-VL
 - **Audio**: Qwen2-Audio
-- **Custom**: Easy to add new models via monkey patching
+- **Custom**: Easily inherit and extend existing model architectures
 
 ### Q: What hardware is required?
 
@@ -161,14 +161,6 @@ With FSDP and optimizations.
 
 GRPO is simpler and more memory-efficient.
 
-### Q: When should I use CPGD?
-
-**A**: Use CPGD when:
-- Fine-tuning pre-trained models
-- Want to preserve base capabilities
-- Need controlled policy updates
-- Preventing catastrophic forgetting
-
 ### Q: What is Clip Higher?
 
 **A**: An improved clipping scheme with separate upper/lower bounds for positive/negative advantages. Better for:
@@ -263,14 +255,16 @@ class CustomTrainer(SPMDPPOTrainer):
 
 ### Q: How do I add a new model architecture?
 
-**A**: Create a monkey patch in `lightrft/models/monkey_patch/`:
+**A**: There are two methods:
+1. **Standard approach**: Inherit from base classes like `ActorLanguage` or `ActorVL`, and add the implementation in the `lightrft/models/` directory.
+2. **Monkey Patching**: Create a monkey patch in `lightrft/models/monkey_patch/`:
 ```python
 # your_model.py
 def patch_your_model(model):
-    # Add custom forward methods
+    # Add custom forward methods, etc.
     pass
 
-# In apply.py
+# Register in apply.py
 from .your_model import patch_your_model
 ```
 
