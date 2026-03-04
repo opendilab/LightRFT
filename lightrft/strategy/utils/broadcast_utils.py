@@ -7,6 +7,7 @@ Data Parallel v2). It handles the complexities of gathering sharded
 parameters and efficiently transferring them to inference engines like vllm and sglang.
 """
 
+from collections import OrderedDict
 from typing import Any
 
 import deepspeed
@@ -130,6 +131,8 @@ class BroadcastManager:
                     self.inference_engine.update_weights_from_tensor(
                         sglang_name, param.data, flush_cache=(count == num_params)
                     )
+                else:
+                    raise RuntimeError(f"Unsupported engine type: {self.strategy.engine_type}")
 
     def _fsdp_v2_broadcast(self):
         """
@@ -140,7 +143,7 @@ class BroadcastManager:
         we manually gather base and lora weights and merge them on the fly.
         """
         model = self.actor.model
-        param_dict = dict(model.named_parameters())
+        param_dict = OrderedDict(model.named_parameters())
         count, num_params = 0, len(param_dict)
         dst_dtype = torch.bfloat16 if self.strategy.args.bf16 else torch.float16
 
@@ -187,9 +190,9 @@ class BroadcastManager:
 
             # Broadcast to engine
             if self.strategy.engine_type == "vllm":
-                vllm_name = self._map_weight_name_for_sglang(effective_name)
+                # TODO：map weight name for vllm
                 kwargs = dict(
-                    name=vllm_name,
+                    name=name,
                     dtype=full_weight.dtype,
                     shape=full_weight.shape,
                     weight=full_weight.data,
@@ -211,21 +214,24 @@ class BroadcastManager:
         This method selects the appropriate broadcasting strategy based on the
         distributed training configuration (DeepSpeed, FSDP v2).
         """
-        if self.strategy.args.fsdp:
-            # FSDP handles merging manually inside _fsdp_v2_broadcast
-            self._fsdp_v2_broadcast()
-        else:
-            # DeepSpeed path
-            is_peft = hasattr(self.actor.model, "merge_adapter")
-            if is_peft:
-                self.strategy.print("Merging LoRA adapters for weight synchronization...")
-                self.actor.model.merge_adapter()
-
-            try:
-                self._deepspeed_broadcast()
-            finally:
+        if self.strategy.engine_type in ("vllm", "sglang"):
+            if self.strategy.args.fsdp:
+                # FSDP handles merging manually inside _fsdp_v2_broadcast
+                self._fsdp_v2_broadcast()
+            else:
+                # DeepSpeed path
+                is_peft = hasattr(self.actor.model, "merge_adapter")
                 if is_peft:
-                    self.strategy.print("Unmerging LoRA adapters after synchronization...")
-                    self.actor.model.unmerge_adapter()
+                    self.strategy.print("Merging LoRA adapters for weight synchronization...")
+                    self.actor.model.merge_adapter()
+
+                try:
+                    self._deepspeed_broadcast()
+                finally:
+                    if is_peft:
+                        self.strategy.print("Unmerging LoRA adapters after synchronization...")
+                        self.actor.model.unmerge_adapter()
+        else:
+            raise RuntimeError(f"Unsupported engine type: {self.strategy.engine_type}")
 
         self.strategy.print("Finished weight broadcasting to inference engine.")

@@ -468,7 +468,7 @@ class FSDPV2Strategy(StrategyBase):
         :param kwargs: Additional arguments to pass to model.save_pretrained
         """
         # Determine the model to save (unwrap ActorVL or similar wrappers)
-        actual_model = model.model if is_actor(model) or hasattr(model, "model") else model
+        actual_model = model.model if hasattr(model, "model") else model
 
         # [Gather Configuration]
         # In this environment, get_model_state_dict uses 'options' and 'StateDictOptions'.

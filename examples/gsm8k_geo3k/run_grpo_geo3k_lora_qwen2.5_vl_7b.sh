@@ -13,7 +13,8 @@
 #                                                                              #
 # Main modifications for LoRA:                                                 #
 # - Parameter Efficiency: Significantly reduces VRAM usage for 7B+ models.     #
-# - Targeted Adaptation: Adapts all linear layers to maintain reasoning power.  #
+# - Targeted Adaptation: Adapts all linear layers to maintain necessary        #
+#   model capacity.                                                            #
 # - Memory Optimization: Fully compatible with FSDP and ZeRO strategies.       #
 ################################################################################
 #
@@ -74,7 +75,6 @@ PROMPT_MAX_LEN=1024      # Max length of the input prompt.
 GENERATE_MAX_LEN=2048    # Max length of the generated response.
 LORA_RANK=128            # LoRA rank.
 LORA_ALPHA=256           # LoRA alpha.
-LORA_DROPOUT=0.1         # LoRA dropout rate.
 TARGET_MODULES="all-linear"  # Target modules for LoRA.
 
 # --- Multi-modal Settings ---
@@ -91,20 +91,12 @@ MAX_EVAL_SAMPLES=700          # Max samples for evaluation to keep it fast.
 # Configure settings for multi-GPU and multi-node training.                    #
 ################################################################################
 
-# --- Single-Node Distributed Setup ---
-# Update these if you are running in a multi-node environment.
-export MLP_WORKER_NUM=1                 # Number of nodes.
-export MLP_WORKER_GPU=8                 # Number of GPUs per node.
-export MLP_ROLE_INDEX=0                 # Rank of the current node.
-export MLP_WORKER_0_HOST="localhost"    # IP address of the master node (node 0).
-export MLP_WORKER_0_PORT=20091          # Port for the master node.
-
 # --- PyTorch Distributed Environment Variables ---
-export MASTER_ADDR=$MLP_WORKER_0_HOST
-export MASTER_PORT=$MLP_WORKER_0_PORT
-export NNODES=$MLP_WORKER_NUM
-export NODE_RANK=$MLP_ROLE_INDEX
-export GPUS_PER_NODE=$MLP_WORKER_GPU
+export NNODES=1                 # Number of nodes.
+export GPUS_PER_NODE=8          # Number of GPUs per node.
+export NODE_RANK=0              # Rank of the current node.
+export MASTER_ADDR="localhost"  # IP address of the master node (node 0).
+export MASTER_PORT=20091        # Port for the master node.
 
 # --- vLLM/SGLang Engine Settings ---
 ENGINE_TP=2  # Tensor parallelism size for the inference engine. Adjust based on your model and GPU setup.
@@ -117,7 +109,7 @@ ENGINE_TP=2  # Tensor parallelism size for the inference engine. Adjust based on
 
 # --- Generate dynamic names and paths ---
 current_time=$(date +"%Y%m%d_%H%M%S")
-SAVE_MODEL_NAME="${EXPERIMENT_NAME}-ep${EPISODE}-kl${KL}-lr${LR}-lora_rank-${LORA_RANK}-alpha_${LORA_ALPHA}-dropout_${LORA_DROPOUT}-${current_time}"
+SAVE_MODEL_NAME="${EXPERIMENT_NAME}-ep${EPISODE}-kl${KL}-lr${LR}-lora_rank-${LORA_RANK}-alpha_${LORA_ALPHA}-${current_time}"
 WANDB_RUN_NAME="${EXPERIMENT_NAME}-${current_time}"
 
 # --- Create directories for logs and checkpoints ---
@@ -172,7 +164,6 @@ torchrun \
     --lora_rank $LORA_RANK \
     --lora_alpha $LORA_ALPHA \
     --target_modules $TARGET_MODULES \
-    --lora_dropout $LORA_DROPOUT \
     --use_kl_loss \
     --init_kl_coef $KL \
     --kl_estimator "k3" \

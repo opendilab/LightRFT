@@ -1,6 +1,5 @@
 import os
 import sys
-import shutil
 import os.path
 from abc import ABC
 from typing import Any, Callable, Dict, List, Optional
@@ -16,6 +15,7 @@ from lightrft.models import ActorVL, GPTLMLoss, PolicyLoss, ValueLoss
 from lightrft.models.actor_modality import ActorModality, get_supported_parameters
 from lightrft.models.utils import masked_mean, unpacking_samples, compute_approx_kl
 from lightrft.utils.distributed_sampler import DistributedSampler
+from lightrft.utils import rotate_ckpt_dirs
 from lightrft.trainer import AdaptiveKLController, ExperienceVL, FixedKLController, NaiveExperienceMakerVL, NaiveReplayBufferVL  # noqa
 
 
@@ -162,6 +162,7 @@ class PPOTrainerVL(ABC):
         self.reward_fn = reward_fn
         self.reward_fn_label_map = reward_fn_label_map
         self.reward_recipe = reward_recipe
+        self.is_lora = getattr(self.args, "lora_rank", 0) > 0
 
         self.actor = actor
         self.critic = critic
@@ -1139,14 +1140,11 @@ class PPOTrainerVL(ABC):
         :param client_states: Client state for checkpoint recovery.
         :type client_states: dict
         """
-        # Logic for LoRA saving optimization
-        is_lora = getattr(args, "lora_rank", 0) > 0
-
-        # For LoRA, we default to NOT saving the full checkpoint
-        if not self.disable_ds_ckpt and not is_lora:
+        ckpt_path = args.ckpt_path
+        if not self.disable_ds_ckpt and not self.is_lora:
             self.strategy.save_ckpt(
                 self.actor.model,
-                os.path.join(args.ckpt_path, "_actor"),
+                os.path.join(ckpt_path, "_actor"),
                 tag,
                 args.max_ckpt_num,
                 args.max_ckpt_mem,
@@ -1154,32 +1152,24 @@ class PPOTrainerVL(ABC):
             )
             if self.critic is not None:
                 self.strategy.save_ckpt(
-                    self.critic, os.path.join(args.ckpt_path, "_critic"), tag, args.max_ckpt_num, args.max_ckpt_mem
+                    self.critic, os.path.join(ckpt_path, "_critic"), tag, args.max_ckpt_num, args.max_ckpt_mem
                 )
 
         # For LoRA, we ALWAYS save the HF adapter as it is much smaller and more convenient for deployment.
-        if self.save_hf_ckpt or is_lora:
+        if self.save_hf_ckpt or self.is_lora:
             # Rotate HF checkpoints
             if self.strategy.is_rank_0():
-                os.makedirs(args.ckpt_path, exist_ok=True)
+                os.makedirs(ckpt_path, exist_ok=True)
                 max_num = getattr(args, "max_ckpt_num", 3)
-                while True:
-                    subdirs = sorted(
-                        [(os.path.join(args.ckpt_path, d), os.path.getmtime(os.path.join(args.ckpt_path, d)))
-                         for d in os.listdir(args.ckpt_path)
-                         if d.endswith("_lora") and os.path.isdir(os.path.join(args.ckpt_path, d))],
-                        key=lambda x: x[1],
-                    )
+                rotate_ckpt_dirs(
+                    ckpt_path,
+                    max_num,
+                    suffix="_lora",
+                    strategy=self.strategy,
+                    label="HF ckpt",
+                )
 
-                    if len(subdirs) >= max_num:
-                        oldest_dir = subdirs[0][0]
-                        if os.path.exists(oldest_dir):
-                            shutil.rmtree(oldest_dir)
-                            self.strategy.print(f"Deleted oldest HF ckpt {oldest_dir}")
-                    else:
-                        break
-
-            save_path = os.path.join(args.ckpt_path, f"{tag}_lora")
+            save_path = os.path.join(ckpt_path, f"{tag}_lora")
             self.strategy.save_model(self.actor, self.tokenizer, save_path)
 
     def evaluate(self, eval_dataloader, global_step):

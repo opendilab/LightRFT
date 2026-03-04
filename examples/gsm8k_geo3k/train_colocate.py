@@ -406,14 +406,14 @@ def train(args):
     strategy.save_model(
         ema_model if args.enable_ema else actor,
         tokenizer,
-        args.save_path + "/final_model",
+        os.path.join(args.save_path, "final_ckpt"),
     )
 
     if args.critic_pretrain and args.save_value_network:
         strategy.save_model(
             critic,
             tokenizer,
-            args.save_path + "_critic",
+            os.path.join(args.save_path, "critic"),
         )
 
 
@@ -540,7 +540,7 @@ if __name__ == "__main__":
     parser.add_argument("--lora_rank", type=int, default=0)
     parser.add_argument("--lora_alpha", type=int, default=16)
     parser.add_argument("--target_modules", type=str, nargs="*", default="all-linear")
-    parser.add_argument("--lora_dropout", type=float, default=0)
+    parser.add_argument("--lora_dropout", type=float, default=0.0)
 
     # Models
     parser.add_argument("--pretrain", type=str, default=None, help="HF model name or path")
