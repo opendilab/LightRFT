@@ -552,7 +552,10 @@ def load_reward_models(
             shared_count[cfg.path] += 1
 
         if shared_count[cfg.path] == 1:
-            shared_bases[cfg.path] = _load_engine(cfg.path, get_current_device())
+            if cfg.use_engine:
+                shared_bases[cfg.path] = _load_engine(cfg.path, get_current_device())
+            else:
+                shared_bases[cfg.path] = _load_hf_model(cfg.path, get_current_device())
             strategy.print(f"Init reward model {cfg.path} (engine={cfg.use_engine})")
         else:
             strategy.print(f"Use shared base model {cfg.path}")
