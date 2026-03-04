@@ -1,3 +1,98 @@
+#!/bin/bash
+
+################################################################################
+#                    Huawei NPU Training Configuration Script                   #
+# This script has been modified to support Huawei Ascend NPU devices.         #
+# Key changes:                                                                 #
+# - NPU-specific environment variables                                         #
+# - HCCL backend for distributed communication                                 #
+# - torch_npu library configuration                                            #
+# - Adjusted inference engine settings for NPU compatibility                   #
+################################################################################
+
+
+
+################################################################################
+#                       NPU Environment Configuration                          #
+################################################################################
+
+# --- NPU设备配置 ---
+# 设置NPU可见设备 (类似于CUDA_VISIBLE_DEVICES)
+# 如果需要限制使用特定NPU,取消下面的注释并设置
+# export ASCEND_RT_VISIBLE_DEVICES=0,1,2,3,4,5,6,7
+
+# --- NPU库路径配置 ---
+# 根据您的Ascend安装路径进行调整
+# 典型的Ascend安装路径: /usr/local/Ascend
+export ASCEND_HOME_PATH=${ASCEND_HOME_PATH:-/usr/local/Ascend}
+
+# 添加CANN库路径
+if [ -d "${ASCEND_HOME_PATH}/latest" ]; then
+    export LD_LIBRARY_PATH=${ASCEND_HOME_PATH}/latest/lib64:$LD_LIBRARY_PATH
+    export LD_LIBRARY_PATH=${ASCEND_HOME_PATH}/latest/lib64/plugin/opskernel:$LD_LIBRARY_PATH
+    export LD_LIBRARY_PATH=${ASCEND_HOME_PATH}/latest/lib64/plugin/nnengine:$LD_LIBRARY_PATH
+    export ASCEND_TOOLKIT_PATH=${ASCEND_HOME_PATH}/latest
+    export ASCEND_AICPU_PATH=${ASCEND_HOME_PATH}/latest
+fi
+
+# 添加torch_npu相关路径 (如果torch_npu是通过pip安装的)
+TORCH_NPU_PATH=$(python3 -c "import torch_npu; print(torch_npu.__path__[0])" 2>/dev/null)
+if [ ! -z "$TORCH_NPU_PATH" ]; then
+    export LD_LIBRARY_PATH=${TORCH_NPU_PATH}/lib:$LD_LIBRARY_PATH
+fi
+
+# --- NPU日志和调试配置 ---
+# 设置NPU日志级别 (0:DEBUG, 1:INFO, 2:WARNING, 3:ERROR)
+export ASCEND_GLOBAL_LOG_LEVEL=${ASCEND_GLOBAL_LOG_LEVEL:-3}
+export ASCEND_SLOG_PRINT_TO_STDOUT=${ASCEND_SLOG_PRINT_TO_STDOUT:-0}
+
+# 设置NPU算子行为 (类似于CUDA的一些配置)
+export COMBINED_ENABLE=1  # 使能算子融合优化
+export TASK_QUEUE_ENABLE=1  # 使能任务队列优化
+
+# --- HCCL配置 (华为集合通信库,相当于NVIDIA的NCCL) ---
+export HCCL_CONNECT_TIMEOUT=${HCCL_CONNECT_TIMEOUT:-1800}
+export HCCL_BUFFSIZE=${HCCL_BUFFSIZE:-512}
+# 如果遇到通信问题,可以启用详细日志
+# export HCCL_DEBUG=1
+
+# 验证NPU是否可用
+echo "=== Checking NPU Environment ==="
+python3 << 'EOF'
+import torch
+try:
+    import torch_npu
+    print(f"✓ torch_npu imported successfully")
+    print(f"✓ NPU available: {torch.npu.is_available()}")
+    if torch.npu.is_available():
+        print(f"✓ NPU count: {torch.npu.device_count()}")
+        for i in range(torch.npu.device_count()):
+            print(f"  - NPU {i}: {torch.npu.get_device_name(i)}")
+    else:
+        print("✗ No NPU devices detected!")
+        exit(1)
+except ImportError as e:
+    print(f"✗ ERROR: torch_npu not installed: {e}")
+    print("Please install torch_npu: pip install torch_npu")
+    exit(1)
+except Exception as e:
+    print(f"✗ ERROR: {e}")
+    exit(1)
+EOF
+
+if [ $? -ne 0 ]; then
+    echo ""
+    echo "ERROR: NPU environment check failed!"
+    echo "Please ensure:"
+    echo "  1. CANN toolkit is installed (typically at /usr/local/Ascend)"
+    echo "  2. torch_npu is installed: pip install torch_npu"
+    echo "  3. NPU devices are properly configured and drivers loaded"
+    echo "  4. Run 'npu-smi info' to check NPU status"
+    exit 1
+fi
+echo "=== NPU Environment Check Passed ==="
+echo ""
+
 #############################  kwargs  ##########################
 
 NAME="svkng-npu"
@@ -60,6 +155,12 @@ export NODE_RANK=$MLP_ROLE_INDEX
 export GPUS_PER_NODE=$MLP_WORKER_GPU
 export MASTER_PORT=$MLP_WORKER_0_PORT
 ###############################  volcengine env  #####################
+
+# --- 重要:设置使用HCCL后端 ---
+# 对于NPU,我们使用HCCL而不是NCCL
+# 这个环境变量会被LightRFT代码识别并使用正确的后端
+export ACCELERATOR_TYPE="npu"  # 标识使用NPU而不是GPU
+
 
 SAVE_MODEL_NAME=LightRFT-len_${MAX_LENGTH-}tbs_${TBS}-rbs_${RBS}-sample_$N_SAMPLES-kl_${KL}-warmup_${WARMUP}-ep_${EPISODE}-plr_${LR}-rm-colocate-svkg-20251205
 

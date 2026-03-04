@@ -164,7 +164,8 @@ def train(args):
     reward_models, reward_tokenizers, label_map = load_reward_models(
         raw_reward_pretrain=args.reward_pretrain,
         strategy=strategy,
-        use_engine=args.rm_use_engine,
+        # use_engine=args.rm_use_engine,
+        use_engine=False,
     )
     strategy.print(f"label_map: {label_map}")
     strategy.report_memory(f"after loaded reward models in main entry")

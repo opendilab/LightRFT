@@ -39,9 +39,10 @@ from transformers import AutoProcessor, Qwen2_5_VLForConditionalGeneration
 from lightrft.models.monkey_patch.hf_generate_patch import (
     apply_monkey_patch_to_generation_mixin,
 )
-from lightrft.strategy.sglang_utils import get_sglang_engine
+# from lightrft.strategy.sglang_utils import get_sglang_engine
 from lightrft.utils import get_current_device
 from lightrft.utils.utils import get_current_device
+
 # ============================================================================
 # Optional Dependencies
 # ============================================================================
@@ -348,6 +349,7 @@ def build_value(
             engine, proc = base
         else:
             engine, proc = _load_engine(cfg.path, get_current_device())
+        
         model = Qwen2VLRewardModelVauAI(
             base_model=engine,
             tokenizer=proc.tokenizer,
