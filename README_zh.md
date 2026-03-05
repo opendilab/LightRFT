@@ -73,7 +73,7 @@
 
 ## 🎯 支持的算法
 
-详细算法说明、实现细节和使用指南请参考 [算法文档](docs/source/quick_start/algorithms_cn.md)。
+详细算法说明、实现细节和使用指南请参考 [算法文档](docs/source/quick_start/algorithms_zh.md)。
 
 | 算法 | 类型 | 主要改进 | 论文链接 |
 |------|------|----------|---------|
@@ -386,9 +386,9 @@ micro_rollout_batch_size=2        # Rollout 微批次大小
 ### 📚 完整文档指南
 
 **快速开始：**
-- [安装指南](docs/source/installation/index_cn.rst) - Docker 镜像、安装方法和问题排查
-- [支持的算法](docs/source/quick_start/algorithms_cn.md) - 详细算法指南及实现细节
-- [配置参数参考](docs/source/quick_start/configuration.md) - 完整参数文档
+- [安装指南](docs/source/installation/index_zh.rst) - Docker 镜像、安装方法和问题排查
+- [支持的算法](docs/source/quick_start/algorithms_zh.md) - 详细算法指南及实现细节
+- [配置参数参考](docs/source/quick_start/configuration_zh.md) - 完整参数文档
 
 **最佳实践：**
 - [训练策略使用](docs/source/best_practice/strategy_usage_zh.md) - FSDP、DeepSpeed 和推理引擎配置
