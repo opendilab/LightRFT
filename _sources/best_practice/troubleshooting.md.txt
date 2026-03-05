@@ -219,25 +219,6 @@ torch.cuda.empty_cache()
 
 ## Training Problems
 
-### Problem: `num_rollouts_per_episodes = 0`
-
-**Symptoms**:
-```
-AssertionError: num_rollouts_per_episodes should be > 0
-```
-
-**Root Cause**:
-`train_batch_size` < `rollout_batch_size × n_samples_per_prompt`
-
-**Solution**:
-```bash
-# Ensure TBS >= RBS × n_samples
-# Example: RBS=64, n_samples=8
---train_batch_size 512  # Must be >= 64×8=512
---rollout_batch_size 64
---n_samples_per_prompt 8
-```
-
 ### Problem: Training Not Converging
 
 **Symptoms**:
@@ -277,38 +258,6 @@ AssertionError: num_rollouts_per_episodes should be > 0
 # Switch from GRPO to CPGD
 --advantage_estimator cpgd \
 --kl_target 0.01
-```
-
-**5. Check Reward Model Quality**
-```python
-# Test reward model separately
-python test_reward_model.py --model /path/to/rm
-```
-
-### Problem: NaN Loss or Gradients
-
-**Symptoms**:
-```
-Loss: nan
-Gradient: nan
-```
-
-**Solution**:
-```bash
-# 1. Enable gradient clipping
---max_norm 1.0
-
-# 2. Lower learning rate
---actor_learning_rate 1e-7
-
-# 3. Use BF16 instead of FP16
---bf16
-
-# 4. Enable reward clipping
---reward_clip 10.0
-
-# 5. Check for division by zero
---advantages_norm  # Normalizes before use
 ```
 
 ### Problem: Training Extremely Slow
@@ -592,28 +541,6 @@ all_outputs = self.strategy.gather_and_generate(
 ```
 
 ## Checkpoint Issues
-
-### Problem: Cannot Load Checkpoint
-
-**Symptoms**:
-```
-FileNotFoundError: Checkpoint not found
-RuntimeError: Error loading state dict
-```
-
-**Solution**:
-```bash
-# 1. Check checkpoint path
-ls -la /path/to/checkpoint
-
-# 2. Load with relaxed matching
---load_checkpoint \
---ckpt_path /path/to/checkpoint
-
-# 3. Skip optimizer states if incompatible
-# Edit code to load model only:
-model.load_state_dict(torch.load(ckpt_path))
-```
 
 ### Problem: Checkpoint Saving Fails
 

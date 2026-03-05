@@ -540,23 +540,26 @@
 </section>
 <section id="conclusion">
 <h2>Conclusion<a class="headerlink" href="#conclusion" title="Permalink to this heading">¶</a></h2>
-<p>The LightRFT strategy module represents a paradigm shift in distributed training abstraction design, establishing a new standard for flexibility, type safety, and developer experience in RLHF training systems. By embracing a holistic design philosophy centered on abstraction unification and configuration-driven development, the module achieves unprecedented levels of interoperability across diverse distributed training frameworks.</p>
-<section id="foundational-design-innovations">
-<h3>Foundational Design Innovations<a class="headerlink" href="#foundational-design-innovations" title="Permalink to this heading">¶</a></h3>
-<p><strong>Unified Abstraction Architecture</strong>: The module introduces a sophisticated abstraction layer that seamlessly unifies DeepSpeed, FSDP, and other distributed training backends under a single, consistent API. This architectural breakthrough eliminates the traditional fragmentation between different distributed training approaches, enabling developers to switch between strategies with zero code changes.</p>
-<p><strong>Type-Safe Configuration Ecosystem</strong>: By replacing dynamic attribute access patterns with strongly-typed configuration objects through <a class="reference internal" href="#lightrft/strategy/config.py:16"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">StrategyConfig</span></code></span></a>, the module establishes a new paradigm for configuration management that eliminates runtime errors, enables IDE autocompletion, and provides compile-time safety guarantees.</p>
-<p><strong>Intelligent Strategy Selection</strong>: The factory-based approach in <a class="reference internal" href="#lightrft/strategy/strategy.py:21"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">get_strategy()</span></code></span></a> implements automatic strategy selection based on configuration parameters, abstracting away the complexity of backend selection while maintaining full control through explicit configuration.</p>
+<p>The LightRFT Strategy module optimizes the abstract design of distributed training, aiming to enhance the flexibility, type safety, and development efficiency of RLHF systems. Through a unified abstraction layer and configuration-driven development, this module achieves interoperability between different training frameworks.</p>
+<section id="core-design">
+<h3>Core Design<a class="headerlink" href="#core-design" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>Unified Interface Architecture</strong>: Encapsulates distributed backends like DeepSpeed and FSDP, providing a consistent API. Developers can switch underlying strategies without modifying business code.</p></li>
+<li><p><strong>Type-Safe Configuration</strong>: Converts dynamic configuration into strongly typed objects via <a class="reference internal" href="#../../lightrft/strategy/config.py"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">StrategyConfig</span></code></span></a>, reducing runtime errors and supporting IDE autocompletion.</p></li>
+<li><p><strong>Factory Pattern Selection</strong>: <a class="reference internal" href="#../../lightrft/strategy/strategy.py"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">get_strategy()</span></code></span></a> automatically instantiates strategies based on configuration parameters, simplifying calls while retaining control over backends.</p></li>
+</ul>
 </section>
-<section id="advanced-capabilities">
-<h3>Advanced Capabilities<a class="headerlink" href="#advanced-capabilities" title="Permalink to this heading">¶</a></h3>
-<p><strong>Multi-Modal Inference Engine Integration</strong>: The strategy module pioneers unified support for both text-only and multi-modal generation through sophisticated engine management, supporting vLLM and SGLang backends with consistent interfaces for diverse AI workloads.</p>
-<p><strong>Comprehensive Testing Infrastructure</strong>: Through <a class="reference internal" href="#lightrft/strategy/fake_strategy.py:24"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">FakeStrategy</span></code></span></a>, the module enables full-featured testing of distributed training workflows without requiring complex distributed environments, dramatically improving development velocity and test coverage.</p>
-<p><strong>Memory-Efficient Training Orchestration</strong>: Advanced features like inference engine sleep/wake cycles, gradient accumulation optimizations, and memory-aware checkpointing demonstrate the module’s commitment to resource efficiency at scale.</p>
+<section id="feature-highlights">
+<h3>Feature Highlights<a class="headerlink" href="#feature-highlights" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>Inference Engine Integration</strong>: Supports plain text and multimodal generation through a unified interface, compatible with vLLM and SGLang backends.</p></li>
+<li><p><strong>Convenient Testing Support</strong>: Provides <a class="reference internal" href="#../../lightrft/strategy/fake_strategy.py"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">FakeStrategy</span></code></span></a>, allowing testing of training workflows without a distributed environment, reducing debugging costs.</p></li>
+<li><p><strong>Resource Efficiency Optimization</strong>: Supports advanced features like inference engine sleep/wake, gradient accumulation, and memory-aware checkpointing to optimize resource usage during large-scale training.</p></li>
+</ul>
 </section>
-<section id="industry-impact">
-<h3>Industry Impact<a class="headerlink" href="#industry-impact" title="Permalink to this heading">¶</a></h3>
-<p>This design philosophy has established new best practices for distributed training abstraction, demonstrating that type safety, developer experience, and performance optimization are not mutually exclusive goals. The module’s extensible architecture ensures long-term viability, providing a solid foundation for integrating future distributed training technologies while maintaining backward compatibility with existing codebases.</p>
-<p>The LightRFT strategy module stands as a reference implementation for next-generation distributed training systems, proving that thoughtful abstraction design can simultaneously achieve simplicity for beginners and powerful customization for experts across the entire spectrum of RLHF training requirements.</p>
+<section id="summary">
+<h3>Summary<a class="headerlink" href="#summary" title="Permalink to this heading">¶</a></h3>
+<p>The module strikes a balance between ease of use and flexibility. Its architectural design balances development experience with performance requirements, lowering the barrier to entry for distributed training while providing a scalable technical foundation for diverse scenarios from RLHF to RLVR.</p>
 </section>
 </section>
 </section>
@@ -644,9 +647,9 @@
 </ul>
 </li>
 <li><a class="reference internal" href="#conclusion">Conclusion</a><ul>
-<li><a class="reference internal" href="#foundational-design-innovations">Foundational Design Innovations</a></li>
-<li><a class="reference internal" href="#advanced-capabilities">Advanced Capabilities</a></li>
-<li><a class="reference internal" href="#industry-impact">Industry Impact</a></li>
+<li><a class="reference internal" href="#core-design">Core Design</a></li>
+<li><a class="reference internal" href="#feature-highlights">Feature Highlights</a></li>
+<li><a class="reference internal" href="#summary">Summary</a></li>
 </ul>
 </li>
 </ul>
@@ -671,6 +674,7 @@
   <script src="../_static/doctools.js"></script>
   <script src="../_static/sphinx_highlight.js"></script>
   <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+  <script src="../_static/js/language_switch.js"></script>
   
 
   

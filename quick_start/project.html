@@ -314,10 +314,10 @@
 <a class="reference internal image-reference" href="../_images/lightrft_system.png"><img alt="LightRFT System" class="align-center" src="../_images/lightrft_system.png" style="width: 100%;" /></a>
 <p>The LightRFT framework follows a layered architecture designed to apply reasoning large models into different domains.
 The system is structured in four main layers, progressing from foundational hardware infrastructure to advanced reasoning applications:</p>
-<p><strong>Heterogeneous Hardware Layer</strong>: The foundation supports diverse GPU architectures including NVIDIA GPUs (A100/A800/H100), Huawei GPUs, and other hardware platforms, enabling flexible deployment across different computing environments.</p>
+<p><strong>Heterogeneous Hardware Layer</strong>: The foundation supports diverse GPU architectures including NVIDIA GPUs (A100/A800/H100), Huawei GPUs (Work in Progress), and other hardware platforms, enabling flexible deployment across different computing environments.</p>
 <p><strong>Distributed Execution Layer</strong>: This layer provides distributed execution capabilities through multiple training engines (DeepSpeed ZeRO, PyTorch FSDP) and high-performance inference engines (vLLM, SGLang), ensuring efficient resource utilization and scalability.</p>
 <p><strong>RLVR Framework Layer</strong>: At the core of the system, this layer integrates various model components—Actor Models, Critic Models, Reference Models, Verifiable Rules, and Reward Models—with advanced optimization algorithms including GRPO, DAPO, TTRL, CPGD. The models and algorithms interact through a colocate mechanism that enables seamless optimization and co-location of different components within the same computing resources.</p>
-<p><strong>Reasoning Large Models Application Layer</strong>: The topmost layer focuses on delivering reasoning capabilities across multiple domains, including formal math reasoning (AIME/GSM8K), code generation (LiveCodeBench/SWE), efficient reasoning with search, and multi-modal reasoning (image/video/audio/music).</p>
+<p><strong>Reasoning Large Models Application Layer</strong>: The topmost layer focuses on delivering reasoning capabilities across multiple domains, including formal math reasoning (AIME/GSM8K), code generation (LiveCodeBench/SWE), efficient reasoning with search, and multi-modal reasoning (image/video/audio/music). (Work in Progress)</p>
 <p>The architecture operates within a distributed execution framework and an RLVR framework, orchestrating all components to deliver scalable, efficient, and trustworthy reasoning applications for large language models, vision-language models, audio-language models, and diffusion models.</p>
 </section>
 <section id="training-flowchart">
@@ -345,7 +345,7 @@ In LightRFT, we extend this concept across all models used in training, establis
 <ul class="simple">
 <li><p>Prompts datasets for RL training (text and vision-language)</p></li>
 <li><p>SFT datasets for supervised fine-tuning (text and vision-language)</p></li>
-<li><p>Reward model datasets (general and safe reward models)</p></li>
+<li><p>Reward model datasets (generative and scalar reward models)</p></li>
 <li><p>Audio-language dataset support</p></li>
 <li><p>Data preprocessing and tokenization utilities</p></li>
 </ul>
@@ -356,7 +356,7 @@ In LightRFT, we extend this concept across all models used in training, establis
 <p>Key components:</p>
 <ul class="simple">
 <li><p>Actor network implementations (language, vision-language, audio-language)</p></li>
-<li><p>Reward model implementations (general and safe reward models)</p></li>
+<li><p>Reward model implementations (generative and scalar reward models)</p></li>
 <li><p>Loss function definitions for policy optimization</p></li>
 <li><p>Non-invasive model modifications via monkey patching</p></li>
 <li><p>Support for various model architectures (LLaMA, Qwen, etc.)</p></li>
@@ -371,6 +371,7 @@ In LightRFT, we extend this concept across all models used in training, establis
 <li><p>DeepSpeed integration for ZeRO-based optimization</p></li>
 <li><p>Fully Sharded Data Parallel (FSDP) implementation</p></li>
 <li><p>Efficient inference engines (vLLM, SGLang)</p></li>
+<li><p>Efficient model parameter synchronization between training and inference engines</p></li>
 <li><p>Utilities for distributed tensor operations</p></li>
 <li><p>Checkpoint management and broadcasting</p></li>
 <li><p>Strategy selection and configuration</p></li>
@@ -381,11 +382,12 @@ In LightRFT, we extend this concept across all models used in training, establis
 <p>The Trainer module implements the reinforcement learning algorithms and training loops. It coordinates the interaction between models, strategies, and optimization processes.</p>
 <p>Key components:</p>
 <ul class="simple">
-<li><p>PPO (Proximal Policy Optimization) implementation</p></li>
-<li><p>Experience generation and collection</p></li>
-<li><p>Advantage estimation and return computation</p></li>
+<li><p>Policy optimization algorithms: PPO, GRPO, GSPO, GMPO, Dr.GRPO, DAPO</p></li>
+<li><p>Advantage estimation and return computation: REINFORCE++, CPGD</p></li>
+<li><p>Experience generation and sampling strategies: FIRE Sampling</p></li>
+<li><p>Reward processing and stability enhancement: Reward Norm/Clip, High Entropy Token Selection</p></li>
 <li><p>Policy and value function updates</p></li>
-<li><p>Replay buffer management (standard and vision-language)</p></li>
+<li><p>Replay buffer management</p></li>
 <li><p>KL divergence control</p></li>
 <li><p>SPMD (Single Program Multiple Data) training support</p></li>
 </ul>
@@ -401,7 +403,7 @@ In LightRFT, we extend this concept across all models used in training, establis
 <li><p>Data processors for multimodal inputs</p></li>
 <li><p>Remote reward model utilities</p></li>
 <li><p>Timer and profiling utilities</p></li>
-<li><p>Trajectory saving for analysis</p></li>
+<li><p>Trajectory saving for training analysis</p></li>
 </ul>
 </section>
 </section>
@@ -413,8 +415,8 @@ In LightRFT, we extend this concept across all models used in training, establis
 <li><p><strong>Data Loading</strong>: The Datasets module loads and preprocesses training data, creating dataloaders for prompts, SFT, or reward modeling.</p></li>
 <li><p><strong>Model Preparation</strong>: Pre-trained models are loaded and adapted for RL through strategic monkey patching in the Models module.</p></li>
 <li><p><strong>Strategy Selection</strong>: Based on configuration, an appropriate distributed training strategy is selected and initialized.</p></li>
-<li><p><strong>Training Loop</strong>: The Trainer module drives the training process, generating experiences, computing rewards, and updating the policy.</p></li>
-<li><p><strong>Inference Optimization</strong>: During generation, specialized inference engines (vLLM/SGLang) may be employed for efficiency.</p></li>
+<li><p><strong>Experience Generation</strong>: The system utilizes inference engines integrated in the Strategy module (e.g., vLLM/SGLang) for efficient large-scale parallel sampling to generate experience data (rollout) for training.</p></li>
+<li><p><strong>Model Optimization</strong>: The Trainer module computes rewards and advantages based on the generated experiences and executes policy updates. The updated model weights are then synchronized back to the inference engine for the next iteration.</p></li>
 <li><p><strong>Checkpointing and Evaluation</strong>: The system regularly saves model states and evaluates performance.</p></li>
 </ol>
 </section>
@@ -424,9 +426,9 @@ In LightRFT, we extend this concept across all models used in training, establis
 <ul class="simple">
 <li><p><strong>New Datasets</strong>: Additional dataset types can be added by extending the base dataset classes in the Datasets module.</p></li>
 <li><p><strong>New Models</strong>: Support for additional model architectures can be added through the monkey patch system or by creating new actor/reward model classes.</p></li>
-<li><p><strong>Alternative Strategies</strong>: New distributed training approaches can be implemented by extending the strategy base class.</p></li>
+<li><p><strong>New Distributed Training Strategies</strong>: New distributed training approaches can be implemented by extending the strategy base class.</p></li>
 <li><p><strong>Custom RL Algorithms</strong>: Different reinforcement learning algorithms can be implemented as new trainer classes.</p></li>
-<li><p><strong>Inference Optimization</strong>: Additional inference engines can be integrated through the strategy module.</p></li>
+<li><p><strong>Inference Optimization</strong>: Additional inference engines can be integrated through the strategy module, and the latest features of engines like vLLM and SGLang are continuously integrated.</p></li>
 <li><p><strong>Custom Utilities</strong>: New utility functions and processors can be added to support specific use cases.</p></li>
 </ul>
 <p>This modular design allows LightRFT to adapt to new research directions, model architectures, and hardware configurations while maintaining a consistent interface for users.</p>
@@ -511,6 +513,7 @@ In LightRFT, we extend this concept across all models used in training, establis
   <script src="../_static/doctools.js"></script>
   <script src="../_static/sphinx_highlight.js"></script>
   <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+  <script src="../_static/js/language_switch.js"></script>
   
 
   

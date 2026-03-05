@@ -334,7 +334,6 @@
 pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.
 
 <span class="c1"># Install documentation dependencies</span>
-pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements-doc.txt
 
 <span class="c1"># (Optional) Install vLLM if you need to test vLLM backend</span>
 pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;.[vllm]&quot;</span>
@@ -351,7 +350,7 @@ pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot
 <section id="code-style">
 <h2>Code Style<a class="headerlink" href="#code-style" title="Permalink to this heading">¶</a></h2>
 <ul class="simple">
-<li><p>Follow PEP 8 for Python code</p></li>
+<li><p>Follow PEP8 for Python code</p></li>
 <li><p>Use meaningful variable and function names</p></li>
 <li><p>Add docstrings to all public functions/classes</p></li>
 <li><p>Keep functions focused and modular</p></li>
@@ -370,7 +369,7 @@ pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot
 </li>
 <li><p><strong>Submit PR</strong>:</p>
 <ul class="simple">
-<li><p>Write a clear PR title and description</p></li>
+<li><p>Write a clear PR title and description, following the format <code class="docutils literal notranslate"><span class="pre">&lt;type&gt;(&lt;author&gt;):</span> <span class="pre">&lt;description&gt;</span></code> (e.g., <code class="docutils literal notranslate"><span class="pre">feature(username):</span> <span class="pre">add</span> <span class="pre">language</span> <span class="pre">switcher</span></code>)</p></li>
 <li><p>Reference related issues (e.g., “Fixes #123”)</p></li>
 <li><p>Request review from maintainers</p></li>
 </ul>
@@ -398,10 +397,9 @@ make<span class="w"> </span>docs-live
 <section id="testing">
 <h2>Testing<a class="headerlink" href="#testing" title="Permalink to this heading">¶</a></h2>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Run specific tests</span>
-python<span class="w"> </span>test_trajectory_saver_fix.py
-python<span class="w"> </span>test_action_mask_indexing.py
+pytest<span class="w"> </span>lightrft/models/tests/test_actor_vl.py
 
-<span class="c1"># Add your own tests in tests/ directory</span>
+<span class="c1"># Add your own tests in lightrft/models/tests/ directory</span>
 </pre></div>
 </div>
 </section>
@@ -489,6 +487,7 @@ python<span class="w"> </span>test_action_mask_indexing.py
   <script src="../_static/doctools.js"></script>
   <script src="../_static/sphinx_highlight.js"></script>
   <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+  <script src="../_static/js/language_switch.js"></script>
   
 
   

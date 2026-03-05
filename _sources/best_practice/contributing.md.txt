@@ -25,7 +25,6 @@ Thank you for your interest in contributing to LightRFT! This guide will help yo
    pip install -e .
 
    # Install documentation dependencies
-   pip install -r requirements-doc.txt
 
    # (Optional) Install vLLM if you need to test vLLM backend
    pip install ".[vllm]"
@@ -38,7 +37,7 @@ Thank you for your interest in contributing to LightRFT! This guide will help yo
 
 ## Code Style
 
-- Follow PEP 8 for Python code
+- Follow PEP8 for Python code
 - Use meaningful variable and function names
 - Add docstrings to all public functions/classes
 - Keep functions focused and modular
@@ -52,7 +51,7 @@ Thank you for your interest in contributing to LightRFT! This guide will help yo
    - Ensure all tests pass
 
 2. **Submit PR**:
-   - Write a clear PR title and description
+   - Write a clear PR title and description, following the format `<type>(<author>): <description>` (e.g., `feature(username): add language switcher`)
    - Reference related issues (e.g., "Fixes #123")
    - Request review from maintainers
 
@@ -77,10 +76,9 @@ make docs-live
 
 ```bash
 # Run specific tests
-python test_trajectory_saver_fix.py
-python test_action_mask_indexing.py
+pytest lightrft/models/tests/test_actor_vl.py
 
-# Add your own tests in tests/ directory
+# Add your own tests in lightrft/models/tests/ directory
 ```
 
 ## Questions?

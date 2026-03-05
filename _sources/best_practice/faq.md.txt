@@ -6,24 +6,26 @@ Common questions and answers about LightRFT.
 
 ### Q: What is LightRFT?
 
-**A**: LightRFT (Light Reinforcement Fine-Tuning) is an advanced reinforcement learning framework for fine-tuning Large Language Models (LLMs) and Vision-Language Models (VLMs). It provides efficient and scalable RLHF training with support for multiple algorithms and distributed training strategies.
+**A**: LightRFT (Light Reinforcement Fine-Tuning) is an advanced reinforcement learning framework designed for the reinforcement fine-tuning of Large Language Models (LLMs) and Vision-Language Models (VLMs). It supports multiple models, algorithms, distributed training strategies, and inference engines, providing efficient and scalable RLHF and RLVR training capabilities.
 
 ### Q: What are the main differences between LightRFT and OpenRLHF?
 
 **A**: LightRFT extends OpenRLHF with:
 - Enhanced multimodal (VLM) support
 - More RL algorithms (GRPO, GSPO, GMPO, REINFORCE++, CPGD, etc.)
+- Comprehensive Reward Model support, including Scalar Reward Models (SRM) and Generative Reward Models (GRM)
 - Better memory optimization (engine sleep, optimizer offload)
-- Improved inference engines (vLLM, SGLang with FP8)
+- Improved inference engines (vLLM, SGLang)
 - Reward model co-location for efficiency
-- More flexible distributed training strategies
+- More flexible distributed training strategies, supporting FSDP and DeepSpeed ZeRO
 
 ### Q: Which models are supported?
 
 **A**: LightRFT supports:
-- **LLMs**: Qwen, Qwen2.5, LLaMA, Mistral, and most HuggingFace models
-- **VLMs**: Qwen-VL, Qwen2-VL, LLaVA
-- **Custom**: Easy to add new models via monkey patching
+- **LLM**: Qwen, Qwen2.5 and most HuggingFace models
+- **VLM**: Qwen-VL, Qwen2-VL
+- **Audio**: Qwen2-Audio
+- **Custom**: Easily inherit and extend existing model architectures
 
 ### Q: What hardware is required?
 
@@ -79,25 +81,17 @@ docker pull opendilab/lightrft:v0.1.0
 
 ### Q: What's the difference between FSDP and DeepSpeed?
 
-**A**:
-- **FSDP**: PyTorch-native, better integration, supports CPU offload
-- **DeepSpeed**: More mature, ZeRO-3 optimization, generally faster
+**A**: Both implement Fully Sharded Data Parallelism (ZeRO-3/FSDP), but they differ in design philosophy:
+- **FSDP (PyTorch Native)**:
+    - **Deep Integration**: Seamlessly works with PyTorch ecosystem including Autograd and `torch.compile`.
+    - **High Flexibility**: Offers programmatic control over sharding units via `auto_wrap_policy`.
+    - **Composability**: Easier to combine with other native features like Tensor Parallelism.
+- **DeepSpeed (Microsoft)**:
+    - **All-in-One Toolkit**: Provides built-in CPU/NVMe offloading (ZeRO-Infinity) and high-performance optimizers.
+    - **Declarative Config**: Simple setup via JSON configuration files, abstracting away complexity.
+    - **Custom Kernels**: Contains many manual CUDA optimizations for peak performance in specific setups.
 
-Use FSDP for maximum memory efficiency, DeepSpeed for speed.
-
-### Q: How do I choose batch sizes?
-
-**A**: Follow this constraint:
-```
-train_batch_size >= rollout_batch_size × n_samples_per_prompt
-```
-
-Example for 8 GPUs:
-- `train_batch_size=256`
-- `rollout_batch_size=64`
-- `n_samples_per_prompt=8`
-- `micro_train_batch_size=1`
-- `micro_rollout_batch_size=2`
+**Recommendation**: Use FSDP for native experience, complex model customization, or with `torch.compile`. Use DeepSpeed for ease of use or extreme model sizes requiring NVMe offloading.
 
 ### Q: Which algorithm should I use?
 
@@ -125,16 +119,6 @@ More samples = better advantage estimation but slower.
 - Remote reward model servers
 - Weighted reward combination
 
-### Q: How do I enable multimodal (VLM) training?
-
-**A**: Use the VLM training script:
-```bash
-python train_vl.py \
-    --pretrain /path/to/Qwen2-VL \
-    --mixed_mm_data \
-    --packing_samples
-```
-
 ## Performance Questions
 
 ### Q: How do I reduce memory usage?
@@ -151,7 +135,7 @@ python train_vl.py \
 
 **A**:
 1. Increase batch sizes (if memory allows)
-2. Use FP8 inference (vLLM)
+2. Use FP8 inference (Work in Progress, only in vLLM)
 3. Enable Flash Attention: `--flash_attn`
 4. Reduce `n_samples_per_prompt` if possible
 5. Use tensor parallelism for inference: `--engine_tp_size 2`
@@ -167,22 +151,6 @@ python train_vl.py \
 
 With FSDP and optimizations.
 
-### Q: How do I use multiple nodes?
-
-**A**: Use SLURM or Ray:
-```bash
-# SLURM example
-srun -N2 --gres=gpu:8 --ntasks-per-node=8 bash train.sh
-
-# Or use torchrun
-torchrun --nproc_per_node=8 \
-    --nnodes=2 \
-    --node_rank=$NODE_RANK \
-    --master_addr=$MASTER_ADDR \
-    --master_port=$MASTER_PORT \
-    train.py
-```
-
 ## Algorithm Questions
 
 ### Q: What's the difference between GRPO and PPO?
@@ -192,14 +160,6 @@ torchrun --nproc_per_node=8 \
 - **PPO**: Uses separate value network (critic)
 
 GRPO is simpler and more memory-efficient.
-
-### Q: When should I use CPGD?
-
-**A**: Use CPGD when:
-- Fine-tuning pre-trained models
-- Want to preserve base capabilities
-- Need controlled policy updates
-- Preventing catastrophic forgetting
 
 ### Q: What is Clip Higher?
 
@@ -212,7 +172,7 @@ GRPO is simpler and more memory-efficient.
 
 ### Q: Training crashes with OOM error
 
-**A**: See the [Troubleshooting Guide](troubleshooting.md#out-of-memory-oom-errors)
+**A**: See the [Troubleshooting Guide](troubleshooting.md#memory-issues)
 
 ### Q: `num_rollouts_per_episodes = 0` error
 
@@ -295,14 +255,16 @@ class CustomTrainer(SPMDPPOTrainer):
 
 ### Q: How do I add a new model architecture?
 
-**A**: Create a monkey patch in `lightrft/models/monkey_patch/`:
+**A**: There are two methods:
+1. **Standard approach**: Inherit from base classes like `ActorLanguage` or `ActorVL`, and add the implementation in the `lightrft/models/` directory.
+2. **Monkey Patching**: Create a monkey patch in `lightrft/models/monkey_patch/`:
 ```python
 # your_model.py
 def patch_your_model(model):
-    # Add custom forward methods
+    # Add custom forward methods, etc.
     pass
 
-# In apply.py
+# Register in apply.py
 from .your_model import patch_your_model
 ```
 
@@ -368,7 +330,7 @@ See [Contributing Guide](contributing.md) for details.
 
 - [Installation Guide](../installation/index.rst)
 - [Quick Start](../quick_start/index.rst)
-- [Algorithm Guide](algorithms.md)
-- [Configuration Reference](configuration.md)
+- [Algorithm Guide](../quick_start/algorithms.md)
+- [Configuration Reference](../quick_start/configuration.md)
 - [Troubleshooting Guide](troubleshooting.md)
-- [Best Practices](../best_practice/index.rst)
+- [Best Practices](index.rst)

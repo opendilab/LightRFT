@@ -511,23 +511,6 @@ torch.cuda.empty_cache<span class="o">()</span>
 </section>
 <section id="training-problems">
 <h2>Training Problems<a class="headerlink" href="#training-problems" title="Permalink to this heading">¶</a></h2>
-<section id="problem-num-rollouts-per-episodes-0">
-<h3>Problem: <code class="docutils literal notranslate"><span class="pre">num_rollouts_per_episodes</span> <span class="pre">=</span> <span class="pre">0</span></code><a class="headerlink" href="#problem-num-rollouts-per-episodes-0" title="Permalink to this heading">¶</a></h3>
-<p><strong>Symptoms</strong>:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="ne">AssertionError</span><span class="p">:</span> <span class="n">num_rollouts_per_episodes</span> <span class="n">should</span> <span class="n">be</span> <span class="o">&gt;</span> <span class="mi">0</span>
-</pre></div>
-</div>
-<p><strong>Root Cause</strong>:
-<code class="docutils literal notranslate"><span class="pre">train_batch_size</span></code> &lt; <code class="docutils literal notranslate"><span class="pre">rollout_batch_size</span> <span class="pre">×</span> <span class="pre">n_samples_per_prompt</span></code></p>
-<p><strong>Solution</strong>:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Ensure TBS &gt;= RBS × n_samples</span>
-<span class="c1"># Example: RBS=64, n_samples=8</span>
---train_batch_size<span class="w"> </span><span class="m">512</span><span class="w">  </span><span class="c1"># Must be &gt;= 64×8=512</span>
---rollout_batch_size<span class="w"> </span><span class="m">64</span>
---n_samples_per_prompt<span class="w"> </span><span class="m">8</span>
-</pre></div>
-</div>
-</section>
 <section id="problem-training-not-converging">
 <h3>Problem: Training Not Converging<a class="headerlink" href="#problem-training-not-converging" title="Permalink to this heading">¶</a></h3>
 <p><strong>Symptoms</strong>:</p>
@@ -563,36 +546,6 @@ torch.cuda.empty_cache<span class="o">()</span>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Switch from GRPO to CPGD</span>
 --advantage_estimator<span class="w"> </span>cpgd<span class="w"> </span><span class="se">\</span>
 --kl_target<span class="w"> </span><span class="m">0</span>.01
-</pre></div>
-</div>
-<p><strong>5. Check Reward Model Quality</strong></p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Test reward model separately</span>
-<span class="n">python</span> <span class="n">test_reward_model</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">model</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">rm</span>
-</pre></div>
-</div>
-</section>
-<section id="problem-nan-loss-or-gradients">
-<h3>Problem: NaN Loss or Gradients<a class="headerlink" href="#problem-nan-loss-or-gradients" title="Permalink to this heading">¶</a></h3>
-<p><strong>Symptoms</strong>:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Loss</span><span class="p">:</span> <span class="n">nan</span>
-<span class="n">Gradient</span><span class="p">:</span> <span class="n">nan</span>
-</pre></div>
-</div>
-<p><strong>Solution</strong>:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># 1. Enable gradient clipping</span>
---max_norm<span class="w"> </span><span class="m">1</span>.0
-
-<span class="c1"># 2. Lower learning rate</span>
---actor_learning_rate<span class="w"> </span>1e-7
-
-<span class="c1"># 3. Use BF16 instead of FP16</span>
---bf16
-
-<span class="c1"># 4. Enable reward clipping</span>
---reward_clip<span class="w"> </span><span class="m">10</span>.0
-
-<span class="c1"># 5. Check for division by zero</span>
---advantages_norm<span class="w">  </span><span class="c1"># Normalizes before use</span>
 </pre></div>
 </div>
 </section>
@@ -876,27 +829,6 @@ pip<span class="w"> </span>install<span class="w"> </span>-U<span class="w"> </s
 </section>
 <section id="checkpoint-issues">
 <h2>Checkpoint Issues<a class="headerlink" href="#checkpoint-issues" title="Permalink to this heading">¶</a></h2>
-<section id="problem-cannot-load-checkpoint">
-<h3>Problem: Cannot Load Checkpoint<a class="headerlink" href="#problem-cannot-load-checkpoint" title="Permalink to this heading">¶</a></h3>
-<p><strong>Symptoms</strong>:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="ne">FileNotFoundError</span><span class="p">:</span> <span class="n">Checkpoint</span> <span class="ow">not</span> <span class="n">found</span>
-<span class="ne">RuntimeError</span><span class="p">:</span> <span class="n">Error</span> <span class="n">loading</span> <span class="n">state</span> <span class="nb">dict</span>
-</pre></div>
-</div>
-<p><strong>Solution</strong>:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># 1. Check checkpoint path</span>
-ls<span class="w"> </span>-la<span class="w"> </span>/path/to/checkpoint
-
-<span class="c1"># 2. Load with relaxed matching</span>
---load_checkpoint<span class="w"> </span><span class="se">\</span>
---ckpt_path<span class="w"> </span>/path/to/checkpoint
-
-<span class="c1"># 3. Skip optimizer states if incompatible</span>
-<span class="c1"># Edit code to load model only:</span>
-model.load_state_dict<span class="o">(</span>torch.load<span class="o">(</span>ckpt_path<span class="o">))</span>
-</pre></div>
-</div>
-</section>
 <section id="problem-checkpoint-saving-fails">
 <h3>Problem: Checkpoint Saving Fails<a class="headerlink" href="#problem-checkpoint-saving-fails" title="Permalink to this heading">¶</a></h3>
 <p><strong>Symptoms</strong>:</p>
@@ -1093,9 +1025,7 @@ df<span class="w"> </span>-h
 </ul>
 </li>
 <li><a class="reference internal" href="#training-problems">Training Problems</a><ul>
-<li><a class="reference internal" href="#problem-num-rollouts-per-episodes-0">Problem: <code class="docutils literal notranslate"><span class="pre">num_rollouts_per_episodes</span> <span class="pre">=</span> <span class="pre">0</span></code></a></li>
 <li><a class="reference internal" href="#problem-training-not-converging">Problem: Training Not Converging</a></li>
-<li><a class="reference internal" href="#problem-nan-loss-or-gradients">Problem: NaN Loss or Gradients</a></li>
 <li><a class="reference internal" href="#problem-training-extremely-slow">Problem: Training Extremely Slow</a></li>
 </ul>
 </li>
@@ -1118,7 +1048,6 @@ df<span class="w"> </span>-h
 </ul>
 </li>
 <li><a class="reference internal" href="#checkpoint-issues">Checkpoint Issues</a><ul>
-<li><a class="reference internal" href="#problem-cannot-load-checkpoint">Problem: Cannot Load Checkpoint</a></li>
 <li><a class="reference internal" href="#problem-checkpoint-saving-fails">Problem: Checkpoint Saving Fails</a></li>
 </ul>
 </li>
@@ -1154,6 +1083,7 @@ df<span class="w"> </span>-h
   <script src="../_static/doctools.js"></script>
   <script src="../_static/sphinx_highlight.js"></script>
   <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+  <script src="../_static/js/language_switch.js"></script>
   
 
   

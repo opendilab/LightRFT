@@ -313,7 +313,7 @@
 <h2>General Questions<a class="headerlink" href="#general-questions" title="Permalink to this heading">¶</a></h2>
 <section id="q-what-is-lightrft">
 <h3>Q: What is LightRFT?<a class="headerlink" href="#q-what-is-lightrft" title="Permalink to this heading">¶</a></h3>
-<p><strong>A</strong>: LightRFT (Light Reinforcement Fine-Tuning) is an advanced reinforcement learning framework for fine-tuning Large Language Models (LLMs) and Vision-Language Models (VLMs). It provides efficient and scalable RLHF training with support for multiple algorithms and distributed training strategies.</p>
+<p><strong>A</strong>: LightRFT (Light Reinforcement Fine-Tuning) is an advanced reinforcement learning framework designed for the reinforcement fine-tuning of Large Language Models (LLMs) and Vision-Language Models (VLMs). It supports multiple models, algorithms, distributed training strategies, and inference engines, providing efficient and scalable RLHF and RLVR training capabilities.</p>
 </section>
 <section id="q-what-are-the-main-differences-between-lightrft-and-openrlhf">
 <h3>Q: What are the main differences between LightRFT and OpenRLHF?<a class="headerlink" href="#q-what-are-the-main-differences-between-lightrft-and-openrlhf" title="Permalink to this heading">¶</a></h3>
@@ -321,19 +321,21 @@
 <ul class="simple">
 <li><p>Enhanced multimodal (VLM) support</p></li>
 <li><p>More RL algorithms (GRPO, GSPO, GMPO, REINFORCE++, CPGD, etc.)</p></li>
+<li><p>Comprehensive Reward Model support, including Scalar Reward Models (SRM) and Generative Reward Models (GRM)</p></li>
 <li><p>Better memory optimization (engine sleep, optimizer offload)</p></li>
-<li><p>Improved inference engines (vLLM, SGLang with FP8)</p></li>
+<li><p>Improved inference engines (vLLM, SGLang)</p></li>
 <li><p>Reward model co-location for efficiency</p></li>
-<li><p>More flexible distributed training strategies</p></li>
+<li><p>More flexible distributed training strategies, supporting FSDP and DeepSpeed ZeRO</p></li>
 </ul>
 </section>
 <section id="q-which-models-are-supported">
 <h3>Q: Which models are supported?<a class="headerlink" href="#q-which-models-are-supported" title="Permalink to this heading">¶</a></h3>
 <p><strong>A</strong>: LightRFT supports:</p>
 <ul class="simple">
-<li><p><strong>LLMs</strong>: Qwen, Qwen2.5, LLaMA, Mistral, and most HuggingFace models</p></li>
-<li><p><strong>VLMs</strong>: Qwen-VL, Qwen2-VL, LLaVA</p></li>
-<li><p><strong>Custom</strong>: Easy to add new models via monkey patching</p></li>
+<li><p><strong>LLM</strong>: Qwen, Qwen2.5 and most HuggingFace models</p></li>
+<li><p><strong>VLM</strong>: Qwen-VL, Qwen2-VL</p></li>
+<li><p><strong>Audio</strong>: Qwen2-Audio</p></li>
+<li><p><strong>Custom</strong>: Easily inherit and extend existing model architectures</p></li>
 </ul>
 </section>
 <section id="q-what-hardware-is-required">
@@ -390,27 +392,24 @@ pip<span class="w"> </span>install<span class="w"> </span>flash_attn-2.8.3+cu12t
 <h2>Training Questions<a class="headerlink" href="#training-questions" title="Permalink to this heading">¶</a></h2>
 <section id="q-what-s-the-difference-between-fsdp-and-deepspeed">
 <h3>Q: What’s the difference between FSDP and DeepSpeed?<a class="headerlink" href="#q-what-s-the-difference-between-fsdp-and-deepspeed" title="Permalink to this heading">¶</a></h3>
-<p><strong>A</strong>:</p>
+<p><strong>A</strong>: Both implement Fully Sharded Data Parallelism (ZeRO-3/FSDP), but they differ in design philosophy:</p>
 <ul class="simple">
-<li><p><strong>FSDP</strong>: PyTorch-native, better integration, supports CPU offload</p></li>
-<li><p><strong>DeepSpeed</strong>: More mature, ZeRO-3 optimization, generally faster</p></li>
+<li><p><strong>FSDP (PyTorch Native)</strong>:</p>
+<ul>
+<li><p><strong>Deep Integration</strong>: Seamlessly works with PyTorch ecosystem including Autograd and <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code>.</p></li>
+<li><p><strong>High Flexibility</strong>: Offers programmatic control over sharding units via <code class="docutils literal notranslate"><span class="pre">auto_wrap_policy</span></code>.</p></li>
+<li><p><strong>Composability</strong>: Easier to combine with other native features like Tensor Parallelism.</p></li>
 </ul>
-<p>Use FSDP for maximum memory efficiency, DeepSpeed for speed.</p>
-</section>
-<section id="q-how-do-i-choose-batch-sizes">
-<h3>Q: How do I choose batch sizes?<a class="headerlink" href="#q-how-do-i-choose-batch-sizes" title="Permalink to this heading">¶</a></h3>
-<p><strong>A</strong>: Follow this constraint:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>train_batch_size &gt;= rollout_batch_size × n_samples_per_prompt
-</pre></div>
-</div>
-<p>Example for 8 GPUs:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">train_batch_size=256</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">rollout_batch_size=64</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">n_samples_per_prompt=8</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">micro_train_batch_size=1</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">micro_rollout_batch_size=2</span></code></p></li>
+</li>
+<li><p><strong>DeepSpeed (Microsoft)</strong>:</p>
+<ul>
+<li><p><strong>All-in-One Toolkit</strong>: Provides built-in CPU/NVMe offloading (ZeRO-Infinity) and high-performance optimizers.</p></li>
+<li><p><strong>Declarative Config</strong>: Simple setup via JSON configuration files, abstracting away complexity.</p></li>
+<li><p><strong>Custom Kernels</strong>: Contains many manual CUDA optimizations for peak performance in specific setups.</p></li>
 </ul>
+</li>
+</ul>
+<p><strong>Recommendation</strong>: Use FSDP for native experience, complex model customization, or with <code class="docutils literal notranslate"><span class="pre">torch.compile</span></code>. Use DeepSpeed for ease of use or extreme model sizes requiring NVMe offloading.</p>
 </section>
 <section id="q-which-algorithm-should-i-use">
 <h3>Q: Which algorithm should I use?<a class="headerlink" href="#q-which-algorithm-should-i-use" title="Permalink to this heading">¶</a></h3>
@@ -443,16 +442,6 @@ pip<span class="w"> </span>install<span class="w"> </span>flash_attn-2.8.3+cu12t
 <li><p>Weighted reward combination</p></li>
 </ul>
 </section>
-<section id="q-how-do-i-enable-multimodal-vlm-training">
-<h3>Q: How do I enable multimodal (VLM) training?<a class="headerlink" href="#q-how-do-i-enable-multimodal-vlm-training" title="Permalink to this heading">¶</a></h3>
-<p><strong>A</strong>: Use the VLM training script:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>train_vl.py<span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--pretrain<span class="w"> </span>/path/to/Qwen2-VL<span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--mixed_mm_data<span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--packing_samples
-</pre></div>
-</div>
-</section>
 </section>
 <section id="performance-questions">
 <h2>Performance Questions<a class="headerlink" href="#performance-questions" title="Permalink to this heading">¶</a></h2>
@@ -473,7 +462,7 @@ pip<span class="w"> </span>install<span class="w"> </span>flash_attn-2.8.3+cu12t
 <p><strong>A</strong>:</p>
 <ol class="arabic simple">
 <li><p>Increase batch sizes (if memory allows)</p></li>
-<li><p>Use FP8 inference (vLLM)</p></li>
+<li><p>Use FP8 inference (Work in Progress, only in vLLM)</p></li>
 <li><p>Enable Flash Attention: <code class="docutils literal notranslate"><span class="pre">--flash_attn</span></code></p></li>
 <li><p>Reduce <code class="docutils literal notranslate"><span class="pre">n_samples_per_prompt</span></code> if possible</p></li>
 <li><p>Use tensor parallelism for inference: <code class="docutils literal notranslate"><span class="pre">--engine_tp_size</span> <span class="pre">2</span></code></p></li>
@@ -491,22 +480,6 @@ pip<span class="w"> </span>install<span class="w"> </span>flash_attn-2.8.3+cu12t
 </ul>
 <p>With FSDP and optimizations.</p>
 </section>
-<section id="q-how-do-i-use-multiple-nodes">
-<h3>Q: How do I use multiple nodes?<a class="headerlink" href="#q-how-do-i-use-multiple-nodes" title="Permalink to this heading">¶</a></h3>
-<p><strong>A</strong>: Use SLURM or Ray:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># SLURM example</span>
-srun<span class="w"> </span>-N2<span class="w"> </span>--gres<span class="o">=</span>gpu:8<span class="w"> </span>--ntasks-per-node<span class="o">=</span><span class="m">8</span><span class="w"> </span>bash<span class="w"> </span>train.sh
-
-<span class="c1"># Or use torchrun</span>
-torchrun<span class="w"> </span>--nproc_per_node<span class="o">=</span><span class="m">8</span><span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--nnodes<span class="o">=</span><span class="m">2</span><span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--node_rank<span class="o">=</span><span class="nv">$NODE_RANK</span><span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--master_addr<span class="o">=</span><span class="nv">$MASTER_ADDR</span><span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--master_port<span class="o">=</span><span class="nv">$MASTER_PORT</span><span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>train.py
-</pre></div>
-</div>
-</section>
 </section>
 <section id="algorithm-questions">
 <h2>Algorithm Questions<a class="headerlink" href="#algorithm-questions" title="Permalink to this heading">¶</a></h2>
@@ -518,16 +491,6 @@ torchrun<span class="w"> </span>--nproc_per_node<span class="o">=</span><span cl
 <li><p><strong>PPO</strong>: Uses separate value network (critic)</p></li>
 </ul>
 <p>GRPO is simpler and more memory-efficient.</p>
-</section>
-<section id="q-when-should-i-use-cpgd">
-<h3>Q: When should I use CPGD?<a class="headerlink" href="#q-when-should-i-use-cpgd" title="Permalink to this heading">¶</a></h3>
-<p><strong>A</strong>: Use CPGD when:</p>
-<ul class="simple">
-<li><p>Fine-tuning pre-trained models</p></li>
-<li><p>Want to preserve base capabilities</p></li>
-<li><p>Need controlled policy updates</p></li>
-<li><p>Preventing catastrophic forgetting</p></li>
-</ul>
 </section>
 <section id="q-what-is-clip-higher">
 <h3>Q: What is Clip Higher?<a class="headerlink" href="#q-what-is-clip-higher" title="Permalink to this heading">¶</a></h3>
@@ -543,7 +506,7 @@ torchrun<span class="w"> </span>--nproc_per_node<span class="o">=</span><span cl
 <h2>Debugging Questions<a class="headerlink" href="#debugging-questions" title="Permalink to this heading">¶</a></h2>
 <section id="q-training-crashes-with-oom-error">
 <h3>Q: Training crashes with OOM error<a class="headerlink" href="#q-training-crashes-with-oom-error" title="Permalink to this heading">¶</a></h3>
-<p><strong>A</strong>: See the <a class="reference internal" href="troubleshooting.html#out-of-memory-oom-errors"><span class="std std-ref">Troubleshooting Guide</span></a></p>
+<p><strong>A</strong>: See the <a class="reference internal" href="troubleshooting.html#memory-issues"><span class="std std-ref">Troubleshooting Guide</span></a></p>
 </section>
 <section id="q-num-rollouts-per-episodes-0-error">
 <h3>Q: <code class="docutils literal notranslate"><span class="pre">num_rollouts_per_episodes</span> <span class="pre">=</span> <span class="pre">0</span></code> error<a class="headerlink" href="#q-num-rollouts-per-episodes-0-error" title="Permalink to this heading">¶</a></h3>
@@ -632,13 +595,17 @@ torchrun<span class="w"> </span>--nproc_per_node<span class="o">=</span><span cl
 </section>
 <section id="q-how-do-i-add-a-new-model-architecture">
 <h3>Q: How do I add a new model architecture?<a class="headerlink" href="#q-how-do-i-add-a-new-model-architecture" title="Permalink to this heading">¶</a></h3>
-<p><strong>A</strong>: Create a monkey patch in <code class="docutils literal notranslate"><span class="pre">lightrft/models/monkey_patch/</span></code>:</p>
+<p><strong>A</strong>: There are two methods:</p>
+<ol class="arabic simple">
+<li><p><strong>Standard approach</strong>: Inherit from base classes like <code class="docutils literal notranslate"><span class="pre">ActorLanguage</span></code> or <code class="docutils literal notranslate"><span class="pre">ActorVL</span></code>, and add the implementation in the <code class="docutils literal notranslate"><span class="pre">lightrft/models/</span></code> directory.</p></li>
+<li><p><strong>Monkey Patching</strong>: Create a monkey patch in <code class="docutils literal notranslate"><span class="pre">lightrft/models/monkey_patch/</span></code>:</p></li>
+</ol>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># your_model.py</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">patch_your_model</span><span class="p">(</span><span class="n">model</span><span class="p">):</span>
-    <span class="c1"># Add custom forward methods</span>
+    <span class="c1"># Add custom forward methods, etc.</span>
     <span class="k">pass</span>
 
-<span class="c1"># In apply.py</span>
+<span class="c1"># Register in apply.py</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.your_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">patch_your_model</span>
 </pre></div>
 </div>
@@ -712,8 +679,8 @@ torchrun<span class="w"> </span>--nproc_per_node<span class="o">=</span><span cl
 <ul class="simple">
 <li><p><a class="reference internal" href="../installation/index.html"><span class="std std-doc">Installation Guide</span></a></p></li>
 <li><p><a class="reference internal" href="../quick_start/index.html"><span class="std std-doc">Quick Start</span></a></p></li>
-<li><p><a class="reference internal" href="#algorithms.md"><span class="xref myst">Algorithm Guide</span></a></p></li>
-<li><p><a class="reference internal" href="#configuration.md"><span class="xref myst">Configuration Reference</span></a></p></li>
+<li><p><a class="reference internal" href="../quick_start/algorithms.html"><span class="std std-doc">Algorithm Guide</span></a></p></li>
+<li><p><a class="reference internal" href="../quick_start/configuration.html"><span class="std std-doc">Configuration Reference</span></a></p></li>
 <li><p><a class="reference internal" href="troubleshooting.html"><span class="std std-doc">Troubleshooting Guide</span></a></p></li>
 <li><p><a class="reference internal" href="index.html"><span class="std std-doc">Best Practices</span></a></p></li>
 </ul>
@@ -779,23 +746,19 @@ torchrun<span class="w"> </span>--nproc_per_node<span class="o">=</span><span cl
 </li>
 <li><a class="reference internal" href="#training-questions">Training Questions</a><ul>
 <li><a class="reference internal" href="#q-what-s-the-difference-between-fsdp-and-deepspeed">Q: What’s the difference between FSDP and DeepSpeed?</a></li>
-<li><a class="reference internal" href="#q-how-do-i-choose-batch-sizes">Q: How do I choose batch sizes?</a></li>
 <li><a class="reference internal" href="#q-which-algorithm-should-i-use">Q: Which algorithm should I use?</a></li>
 <li><a class="reference internal" href="#q-how-many-samples-per-prompt-should-i-use">Q: How many samples per prompt should I use?</a></li>
 <li><a class="reference internal" href="#q-can-i-use-multiple-reward-models">Q: Can I use multiple reward models?</a></li>
-<li><a class="reference internal" href="#q-how-do-i-enable-multimodal-vlm-training">Q: How do I enable multimodal (VLM) training?</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#performance-questions">Performance Questions</a><ul>
 <li><a class="reference internal" href="#q-how-do-i-reduce-memory-usage">Q: How do I reduce memory usage?</a></li>
 <li><a class="reference internal" href="#q-how-do-i-speed-up-training">Q: How do I speed up training?</a></li>
 <li><a class="reference internal" href="#q-what-s-the-typical-training-speed">Q: What’s the typical training speed?</a></li>
-<li><a class="reference internal" href="#q-how-do-i-use-multiple-nodes">Q: How do I use multiple nodes?</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#algorithm-questions">Algorithm Questions</a><ul>
 <li><a class="reference internal" href="#q-what-s-the-difference-between-grpo-and-ppo">Q: What’s the difference between GRPO and PPO?</a></li>
-<li><a class="reference internal" href="#q-when-should-i-use-cpgd">Q: When should I use CPGD?</a></li>
 <li><a class="reference internal" href="#q-what-is-clip-higher">Q: What is Clip Higher?</a></li>
 </ul>
 </li>
@@ -849,6 +812,7 @@ torchrun<span class="w"> </span>--nproc_per_node<span class="o">=</span><span cl
   <script src="../_static/doctools.js"></script>
   <script src="../_static/sphinx_highlight.js"></script>
   <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+  <script src="../_static/js/language_switch.js"></script>
   
 
   

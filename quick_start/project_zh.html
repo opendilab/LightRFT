@@ -1,0 +1,564 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js" lang="en">
+<!--<![endif]-->
+
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>LightRFT 项目概览 &mdash; LightRFT v0.1.1 documentation</title>
+  
+
+  <link rel="shortcut icon" href="../_static/images/favicon.ico" />
+  
+  
+
+  
+
+  
+  
+  
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/readthedocs.css" type="text/css" />
+  <link rel="index" title="Index" href="../genindex.html" />
+  <link rel="search" title="Search" href="../search.html" />
+  <!-- Google Analytics -->
+  <script type="text/javascript">
+    var collapsedSections = [];
+  </script>
+  
+  <!-- End Google Analytics -->
+  
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+  <script>
+    MathJax = {
+        chtml: {
+            scale: 1,
+            minScale: 1,
+        },
+        svg: {
+            scale: 1,
+            minScale: 1,
+        }
+    }
+</script>
+
+  <!-- Preload the theme fonts -->
+
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-book.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/IBMPlexMono/IBMPlexMono-Medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-medium-italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/IBMPlexMono/IBMPlexMono-SemiBold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+
+<!-- Preload the katex fonts -->
+
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Math-Italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size1-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size4-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size2-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size3-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Caligraphic-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.2/css/all.css"
+    integrity="sha384-vSIIfh2YWi9wW0r9iZe7RJPrKwp6bG+s9QZMoITbCckVJqGCCRhc+ccxNcdpHuYu" crossorigin="anonymous">
+</head>
+
+<div class="container-fluid header-holder tutorials-header" id="header-holder">
+  <div class="container">
+    <div class="header-container">
+      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+        aria-label="OpenMMLab"></a>
+
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://github.com/opendilab/LightRFT" target="_blank">GitHub</a>
+          </li>
+          <li >
+            <div id="resourcesDropdownButton" data-toggle="resources-dropdown" class="resources-dropdown">
+              <a
+                class="resource-option with-down-arrow">
+                OpenDILab
+              </a>
+              <div class="resources-dropdown-menu">
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-engine" target="_blank">
+                  <span class="dropdown-title">DI-engine </span>
+                  <p>OpenDILab Decision AI Engine</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/LightZero" target="_blank">
+                  <span class="dropdown-title">LightZero </span>
+                  <p>OpenDILab Decision Monte Carlo Tree Search Framework</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/GenerativeRL" target="_blank">
+                  <span class="dropdown-title">GenerativeRL </span>
+                  <p>OpenDILab Generative AI Framework</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-star" target="_blank">
+                  <span class="dropdown-title">DI-star </span>
+                  <p>OpenDILab Decision AI in StarCraftII</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-drive" target="_blank">
+                  <span class="dropdown-title">DI-drive </span>
+                  <p>OpenDILab Auto-driving platform</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/GoBigger" target="_blank">
+                  <span class="dropdown-title">GoBigger </span>
+                  <p>OpenDILab Multi-Agent Environment</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-smartcross" target="_blank">
+                  <span class="dropdown-title">DI-smartcross </span>
+                  <p>Decision Intelligence Platform for Traffic Crossing Signal Control</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-treetensor" target="_blank">
+                  <span class="dropdown-title">DI-treetensor </span>
+                  <p>Tree Nested PyTorch Tensor Lib</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-sheep" target="_blank">
+                  <span class="dropdown-title">DI-sheep </span>
+                  <p>Deep Reinforcement Learning + 3 Tiles Game</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-model-based-RL" target="_blank">
+                  <span class="dropdown-title">awesome-model-based-RL </span>
+                  <p>A curated list of awesome model based RL resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-decision-transformer" target="_blank">
+                  <span class="dropdown-title">awesome-decision-transformer </span>
+                  <p>A curated list of Decision Transformer resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-exploration-rl" target="_blank">
+                  <span class="dropdown-title">awesome-exploration-rl </span>
+                  <p>A curated list of awesome exploration RL resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-multi-modal-reinforcement-learning" target="_blank">
+                  <span class="dropdown-title">awesome-multi-modal-reinforcement-learning </span>
+                  <p>A curated list of Multi-Modal Reinforcement Learning resources (continually updated)</p>
+                </a>
+              </div>
+          </li>
+        </ul>
+      </div>
+
+      <a class="main-menu-open-button" href="#" data-behavior="open-mobile-menu"></a>
+    </div>
+  </div>
+</div>
+
+<body class="pytorch-body">
+
+   
+
+  
+
+  <div class="table-of-contents-link-wrapper">
+    <span>Table of Contents</span>
+    <a href="#" class="toggle-table-of-contents" data-behavior="toggle-table-of-contents"></a>
+  </div>
+
+  <nav data-toggle="wy-nav-shift" class="pytorch-left-menu" id="pytorch-left-menu">
+    <div class="pytorch-side-scroll">
+      <div class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        <div class="pytorch-left-menu-search">
+          
+
+          
+          
+          
+          
+
+          
+
+
+
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search Docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        
+        
+        
+        
+        
+        <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../installation/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index.html">Quick Start</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide &amp; Best Practices</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../best_practice/index.html">Best Practices</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/utils/index.html">lightrft.utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/datasets/index.html">lightrft.datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/models/index.html">lightrft.models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/strategy/index.html">lightrft.strategy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/trainer/index.html">lightrft.trainer</a></li>
+</ul>
+
+        
+        
+      </div>
+    </div>
+  </nav>
+
+  <div class="pytorch-container">
+    <div class="pytorch-page-level-bar" id="pytorch-page-level-bar">
+      <div class="pytorch-breadcrumbs-wrapper">
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="pytorch-breadcrumbs">
+    
+      <li>
+        <a href="../index.html">
+            Docs
+        </a> &gt;
+      </li>
+
+        
+      <li>LightRFT 项目概览</li>
+    
+    
+      <li class="pytorch-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/quick_start/project_zh.rst.txt" rel="nofollow"><img src="../_static/images/view-page-source-icon.svg"></a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+</div>
+      </div>
+
+      <div class="pytorch-shortcuts-wrapper" id="pytorch-shortcuts-wrapper">
+        Shortcuts
+      </div>
+    </div>
+
+    <section data-toggle="wy-nav-shift" id="pytorch-content-wrap" class="pytorch-content-wrap">
+      <div class="pytorch-content-left">
+        
+          <div class="rst-content">
+            
+            <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
+              <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
+                
+  <section id="lightrft">
+<h1>LightRFT 项目概览<a class="headerlink" href="#lightrft" title="Permalink to this heading">¶</a></h1>
+<p>LightRFT 是一个专为 RLHF（基于人类反馈的强化学习）和 RLVR（基于可验证奖励的强化学习）设计的框架，能够实现大语言模型（LLM）和视觉语言模型（VLM）的高效微调。该项目的结构旨在支持跨多个 GPU 和节点的分布式训练，同时保持简洁的模块化架构。</p>
+<section id="id1">
+<h2>高层架构<a class="headerlink" href="#id1" title="Permalink to this heading">¶</a></h2>
+<a class="reference internal image-reference" href="../_images/lightrft_system.png"><img alt="LightRFT 系统" class="align-center" src="../_images/lightrft_system.png" style="width: 100%;" /></a>
+<p>LightRFT 框架采用分层架构，旨在将推理大模型应用到不同领域。系统分为四个主要层级，从基础硬件基础设施逐步演进到高级推理应用：</p>
+<p><strong>异构硬件层 (Heterogeneous Hardware Layer)</strong>：基础层支持多种 GPU 架构，包括 NVIDIA GPU（A100/A800/H100）、华为 GPU (Work in Progress) 以及其他硬件平台，实现在不同计算环境下的灵活部署。</p>
+<p><strong>分布式执行层 (Distributed Execution Layer)</strong>：该层通过多种训练引擎（DeepSpeed ZeRO、PyTorch FSDP）和高性能推理引擎（vLLM、SGLang）提供分布式执行能力，确保高效的资源利用和可扩展性。</p>
+<p><strong>RLVR 框架层 (RLVR Framework Layer)</strong>：作为系统的核心，该层集成了各种模型组件——Actor 模型、Critic 模型、参考模型（Reference Models）、可验证规则（Verifiable Rules）和奖励模型（Reward Models），并结合了包括 GRPO、DAPO、TTRL、CPGD 在内的高级优化算法。模型和算法通过 <strong>colocate</strong> 机制进行交互，该机制能够在同一计算资源内无缝优化并共同部署不同的组件。</p>
+<p><strong>推理大模型应用层 (Reasoning Large Models Application Layer)</strong>：最顶层专注于提供跨多个领域的推理能力，包括形式数学推理（AIME/GSM8K）、代码生成（LiveCodeBench/SWE）、基于搜索的高效推理以及多模态推理（图像/视频/音频/音乐）。(Work in Progress)</p>
+<p>该架构在分布式执行框架和 RLVR 框架内运行，协调所有组件，为大语言模型、视觉语言模型、音频语言模型和扩散模型提供可扩展、高效且可信的推理应用。</p>
+</section>
+<section id="id2">
+<h2>训练流程图<a class="headerlink" href="#id2" title="Permalink to this heading">¶</a></h2>
+<a class="reference internal image-reference" href="../_images/lightrft_pipeline.png"><img alt="LightRFT 流水线" class="align-center" src="../_images/lightrft_pipeline.png" style="width: 100%;" /></a>
+<p>与传统的强化学习任务（如游戏或机器人技术，它们严重依赖 CPU 密集型环境）不同，大语言模型主要通过神经网络推理在线生成数据，产生大量的 token 序列。这使得在不同计算资源之间划分不同角色（如生产者和消费者）的解耦系统架构变得不再适用。
+在这种“模型即环境”的设置下，<strong>colocate</strong> 架构将训练流水线的所有阶段整合在相同的计算资源中。每台机器通过数据并行承担相同的角色，不同的阶段通过底层引擎的切换进行转换。
+这种设计实现了简洁的可扩展性，并确保了计算资源的高利用率。
+在 LightRFT 中，我们将这一概念扩展到训练中使用的所有模型，建立了我们的 <strong>通用 Colocate 机制 (Universal Colocate Mechanism)</strong>。</p>
+<ul class="simple">
+<li><p><strong>多模式 Colocate (Multi-Mode Colocate)</strong>：多回复生成（rollout）、奖励判定（辅助计算）和优化（训练）在统一的硬件系统中运行——就像厨师、骑手和质检员在单个调度中心内无缝协作。这消除了交接延迟，提升了端到端效率。</p></li>
+<li><p><strong>即插即用模块 (Plug-and-Play Modules)</strong>：无需重建系统即可添加新机制——如奖励、约束或教师模型（teachers）。这就像在飞行中更换乐高车轮或转向模块，能够快速适应不断变化的需求。</p></li>
+<li><p><strong>高效模式切换 (Efficient Mode Switching)</strong>：在训练、生成（rollout）和校验评分模式之间无缝切换，开销微乎其微，类似于一级方程式赛车的快速进站。结合灵活的数据路由和模型共享，这最大限度地减少了冗余的资源分配和切换开销。系统在保持峰值效率的同时减少了总训练时间。</p></li>
+</ul>
+</section>
+<section id="id3">
+<h2>核心模块<a class="headerlink" href="#id3" title="Permalink to this heading">¶</a></h2>
+<section id="datasets-module">
+<h3>数据集模块 (Datasets Module)<a class="headerlink" href="#datasets-module" title="Permalink to this heading">¶</a></h3>
+<p>Datasets 模块为各种训练场景（包括 prompt、有监督微调 (SFT) 和奖励建模）提供数据加载和预处理能力。</p>
+<p>核心组件：</p>
+<ul class="simple">
+<li><p>用于 RL 训练的 Prompt 数据集（文本和视觉语言）</p></li>
+<li><p>用于有监督微调的 SFT 数据集（文本和视觉语言）</p></li>
+<li><p>奖励模型数据集（生成式和标量奖励模型）</p></li>
+<li><p>音频语言数据集支持</p></li>
+<li><p>数据预处理和分词 (tokenization) 工具</p></li>
+</ul>
+</section>
+<section id="models-module">
+<h3>模型模块 (Models Module)<a class="headerlink" href="#models-module" title="Permalink to this heading">¶</a></h3>
+<p>Models 模块定义了语言模型和视觉语言模型进行强化学习所需的神经架构和适配。它专注于通过 monkey patch 方法对现有模型架构进行最小限度的修改。</p>
+<p>核心组件：</p>
+<ul class="simple">
+<li><p>Actor 网络实现（语言、视觉语言、音频语言）</p></li>
+<li><p>奖励模型实现（生成式和标量奖励模型）</p></li>
+<li><p>策略优化的损失函数定义</p></li>
+<li><p>通过 monkey patching 进行的非侵入式模型修改</p></li>
+<li><p>支持多种模型架构（LLaMA、Qwen 等）</p></li>
+<li><p>针对 RL 训练优化的自定义生成方法</p></li>
+</ul>
+</section>
+<section id="strategy-module">
+<h3>策略模块 (Strategy Module)<a class="headerlink" href="#strategy-module" title="Permalink to this heading">¶</a></h3>
+<p>Strategy 模块实现了不同的分布式训练方法，使框架能够跨多个 GPU 和节点高效扩展。它为各种并行技术和优化策略提供了抽象。</p>
+<p>核心组件：</p>
+<ul class="simple">
+<li><p>用于基于 ZeRO 优化的 DeepSpeed 集成</p></li>
+<li><p>完全分片数据并行 (FSDP) 实现</p></li>
+<li><p>高效推理引擎 (vLLM, SGLang)</p></li>
+<li><p>训练引擎与推理引擎间的模型参数高效同步</p></li>
+<li><p>分布式张量操作工具</p></li>
+<li><p>检查点 (Checkpoint) 管理和广播</p></li>
+<li><p>策略选择与配置</p></li>
+</ul>
+</section>
+<section id="trainer-module">
+<h3>训练器模块 (Trainer Module)<a class="headerlink" href="#trainer-module" title="Permalink to this heading">¶</a></h3>
+<p>Trainer 模块实现了强化学习算法和训练循环。它协调模型、策略和优化过程之间的交互。</p>
+<p>核心组件：</p>
+<ul class="simple">
+<li><p>策略优化算法实现：PPO, GRPO, GSPO, GMPO, Dr.GRPO, DAPO</p></li>
+<li><p>优势估计 (Advantage estimation) 与回报计算：REINFORCE++, CPGD</p></li>
+<li><p>经验生成与采样策略：FIRE Sampling</p></li>
+<li><p>奖励处理与稳定性增强：Reward Norm/Clip, High Entropy Token Selection</p></li>
+<li><p>策略与价值函数更新</p></li>
+<li><p>重放缓存 (Replay buffer) 管理</p></li>
+<li><p>KL 散度控制</p></li>
+<li><p>SPMD (单程序多数据) 训练支持</p></li>
+</ul>
+</section>
+<section id="utils-module">
+<h3>工具模块 (Utils Module)<a class="headerlink" href="#utils-module" title="Permalink to this heading">¶</a></h3>
+<p>Utils 模块提供了支持整个框架的通用工具函数，包括 CLI 参数解析、日志记录、分布式采样和数据处理。</p>
+<p>核心组件：</p>
+<ul class="simple">
+<li><p>命令行界面 (CLI) 参数解析</p></li>
+<li><p>用于数据加载的分布式采样器 (Distributed sampler)</p></li>
+<li><p>日志记录与监控工具</p></li>
+<li><p>多模态输入的处理器</p></li>
+<li><p>远程奖励模型工具</p></li>
+<li><p>计时器与性能分析 (profiling) 工具</p></li>
+<li><p>用于训练效果分析的轨迹 (Trajectory) 保存</p></li>
+</ul>
+</section>
+</section>
+<section id="id4">
+<h2>系统工作流<a class="headerlink" href="#id4" title="Permalink to this heading">¶</a></h2>
+<p>LightRFT 框架通过协调的工作流运行：</p>
+<ol class="arabic simple">
+<li><p><strong>初始化</strong>：系统首先通过 Utils 模块设置分布式 environment 并加载配置。</p></li>
+<li><p><strong>数据加载</strong>：Datasets 模块加载并预处理训练数据，为 prompt、SFT 或奖励建模创建 dataloader。</p></li>
+<li><p><strong>模型准备</strong>：加载预训练模型，并通过 Models 模块中的策略性 monkey patching 将其适配用于 RL。</p></li>
+<li><p><strong>策略选择</strong>：根据配置选择并初始化适当的分布式训练策略。</p></li>
+<li><p><strong>经验生成</strong>：系统利用 Strategy 模块集成的推理引擎（如 vLLM/SGLang）进行高效的大规模并行采样，生成用于训练的经验数据 (Rollout)。</p></li>
+<li><p><strong>模型优化</strong>：Trainer 模块基于生成的经验计算奖励和优势，并执行策略更新。更新后的模型参数随后被同步回推理引擎，为下一轮迭代做准备。</p></li>
+<li><p><strong>检查点与评估</strong>：系统定期保存模型状态并评估性能。</p></li>
+</ol>
+</section>
+<section id="id5">
+<h2>扩展点<a class="headerlink" href="#id5" title="Permalink to this heading">¶</a></h2>
+<p>LightRFT 在设计时充分考虑了扩展性：</p>
+<ul class="simple">
+<li><p><strong>新数据集</strong>：可以通过扩展 Datasets 模块中的基础数据集类来添加额外的数据集类型。</p></li>
+<li><p><strong>新模型</strong>：可以通过 monkey patch 系统或创建新的 actor/reward 模型类来增加对其他模型架构的支持。</p></li>
+<li><p><strong>新的分布式训练策略</strong>：可以通过扩展 strategy 基类来实现新的分布式训练方法。</p></li>
+<li><p><strong>自定义 RL 算法</strong>：不同的强化学习算法可以实现为新的 trainer 类。</p></li>
+<li><p><strong>推理优化</strong>：可以通过 strategy 模块集成额外的推理引擎，并持续集成 vLLM 和 SGLang 等推理引擎的最新版本特性。</p></li>
+<li><p><strong>自定义工具</strong>：可以添加新的工具函数和处理器以支持特定用例。</p></li>
+</ul>
+<p>这种模块化设计使 LightRFT 能够适应新的研究方向、模型架构和硬件配置，同时为用户保持一致的接口。</p>
+</section>
+</section>
+
+
+              </article>
+              
+            </div>
+            <footer>
+  
+
+  <hr>
+
+  <div role="contentinfo">
+    <p>
+      &copy; Copyright 2025, OpenDILab.
+
+    </p>
+  </div>
+  
+  <div>
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a
+      href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the
+      Docs</a>.
+  </div>
+   
+
+</footer>
+          </div>
+        </div>
+
+        <div class="pytorch-content-right" id="pytorch-content-right">
+          <div class="pytorch-right-menu" id="pytorch-right-menu">
+            <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
+              <ul>
+<li><a class="reference internal" href="#">LightRFT 项目概览</a><ul>
+<li><a class="reference internal" href="#id1">高层架构</a></li>
+<li><a class="reference internal" href="#id2">训练流程图</a></li>
+<li><a class="reference internal" href="#id3">核心模块</a><ul>
+<li><a class="reference internal" href="#datasets-module">数据集模块 (Datasets Module)</a></li>
+<li><a class="reference internal" href="#models-module">模型模块 (Models Module)</a></li>
+<li><a class="reference internal" href="#strategy-module">策略模块 (Strategy Module)</a></li>
+<li><a class="reference internal" href="#trainer-module">训练器模块 (Trainer Module)</a></li>
+<li><a class="reference internal" href="#utils-module">工具模块 (Utils Module)</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id4">系统工作流</a></li>
+<li><a class="reference internal" href="#id5">扩展点</a></li>
+</ul>
+</li>
+</ul>
+
+            </div>
+          </div>
+        </div>
+    </section>
+  </div>
+
+  
+
+
+  
+
+  
+  <script type="text/javascript" id="documentation_options" data-url_root="../"
+    src="../_static/documentation_options.js"></script>
+  <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+  <script src="../_static/doctools.js"></script>
+  <script src="../_static/sphinx_highlight.js"></script>
+  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+  <script src="../_static/js/language_switch.js"></script>
+  
+
+  
+
+  <script type="text/javascript" src="../_static/js/vendor/popper.min.js"></script>
+  <script type="text/javascript" src="../_static/js/vendor/bootstrap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+    jQuery(function () {
+      SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+  <!-- Begin Footer -->
+
+  <div class="container-fluid docs-tutorials-resources" id="docs-tutorials-resources">
+  </div>
+
+  <!-- End Footer -->
+
+  <!-- Begin Mobile Menu -->
+
+  <div class="mobile-main-menu">
+    <div class="container-fluid">
+      <div class="container">
+        <div class="mobile-main-menu-header-container">
+          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
+        </div>
+      </div>
+    </div>
+
+    <div class="mobile-main-menu-links-container">
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://github.com/opendilab/LightRFT" target="_blank">GitHub</a>
+          </li>
+      </div>
+    </div>
+  </div>
+
+  <!-- End Mobile Menu -->
+
+  <script type="text/javascript" src="../_static/js/vendor/anchor.min.js"></script>
+
+  <script type="text/javascript">
+    $(document).ready(function () {
+      mobileMenu.bind();
+      mobileTOC.bind();
+      pytorchAnchors.bind();
+      sideMenus.bind();
+      scrollToAnchor.bind();
+      highlightNavigation.bind();
+      mainMenuDropdown.bind();
+      filterTags.bind();
+
+      // Add class to links that have code blocks, since we cannot create links in code blocks
+      $("article.pytorch-article a span.pre").each(function (e) {
+        $(this).closest("a").addClass("has-code");
+      });
+    })
+  </script>
+</body>
+
+</html>

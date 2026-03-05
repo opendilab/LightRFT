@@ -1,4 +1,4 @@
-.. _installation_cn:
+.. _installation_zh:
 
 ==================================
 安装指南
@@ -107,20 +107,20 @@ LightRFT 组织成几个关键模块：
    ├── lightrft/                      # 核心库
    │   ├── datasets/                  # 数据集实现
    │   │   ├── audio_alpaca.py        # 音频数据集
-   │   │   ├── grm_dataset.py         # 通用奖励模型数据集
+   │   │   ├── grm_dataset.py         # 生成式奖励模型数据集
    │   │   ├── prompts_dataset.py     # 提示数据集
    │   │   ├── prompts_dataset_vl.py  # 视觉语言提示数据集
    │   │   ├── sft_dataset.py         # SFT 数据集
    │   │   ├── sft_dataset_vl.py      # 视觉语言 SFT 数据集
-   │   │   ├── srm_dataset.py         # 安全奖励模型数据集
+   │   │   ├── srm_dataset.py         # 标量奖励模型数据集
    │   │   └── utils.py               # 数据集工具
    │   ├── models/                    # 模型定义
    │   │   ├── actor_al.py            # 音频-语言 Actor 模型
    │   │   ├── actor_language.py      # 语言 Actor 模型
    │   │   ├── actor_vl.py            # 视觉-语言 Actor 模型
-   │   │   ├── grm_vl.py              # 通用奖励模型 (VL)
-   │   │   ├── srm_al.py              # 安全奖励模型 (AL)
-   │   │   ├── srm_vl.py              # 安全奖励模型 (VL)
+   │   │   ├── grm_vl.py              # 生成式奖励模型 (视觉-语言)
+   │   │   ├── srm_al.py              # 标量奖励模型 (音频-语言)
+   │   │   ├── srm_vl.py              # 标量奖励模型 (视觉-语言)
    │   │   ├── loss.py                # 损失函数
    │   │   ├── utils.py               # 模型工具
    │   │   └── monkey_patch/          # 模型适配补丁
@@ -157,7 +157,7 @@ LightRFT 组织成几个关键模块：
    │   │   ├── experience_maker.py    # 经验生成器
    │   │   ├── experience_maker_vl.py # VLM 经验生成器
    │   │   ├── fast_exp_maker.py      # 快速经验生成器
-   │   │   ├── grm_trainer_vl.py      # 通用奖励模型训练器 (VL)
+   │   │   ├── grm_trainer_vl.py      # 生成式奖励模型训练器 (视觉-语言)
    │   │   ├── kl_controller.py       # KL 散度控制器
    │   │   ├── ppo_trainer.py         # PPO 训练器
    │   │   ├── ppo_trainer_vl.py      # 视觉-语言 PPO 训练器
@@ -165,8 +165,8 @@ LightRFT 组织成几个关键模块：
    │   │   ├── replay_buffer_utils.py # 回放缓冲区工具
    │   │   ├── replay_buffer_vl.py    # 视觉-语言回放缓冲区
    │   │   ├── spmd_ppo_trainer.py    # SPMD PPO 训练器
-   │   │   ├── srm_trainer_al.py      # 安全奖励模型训练器 (AL)
-   │   │   ├── srm_trainer_vl.py      # 安全奖励模型训练器 (VL)
+   │   │   ├── srm_trainer_al.py      # 标量奖励模型训练器 (音频-语言)
+   │   │   ├── srm_trainer_vl.py      # 标量奖励模型训练器 (视觉-语言)
    │   │   └── utils.py               # 训练器工具
    │   └── utils/                     # 工具函数
    │       ├── cli_args.py            # CLI 参数解析
@@ -187,7 +187,7 @@ LightRFT 组织成几个关键模块：
    │   │   ├── reward_models_utils.py # 奖励模型工具
    │   │   ├── run_grpo_gsm8k_qwen2.5_0.5b.sh    # GSM8K 训练脚本
    │   │   └── run_grpo_geo3k_qwen2.5_vl_7b.sh   # Geo3K VLM 训练脚本
-   │   └── srm_training/              # 安全奖励模型训练示例
+   │   └── srm_training/              # 标量奖励模型训练示例
    │
    ├── docs/                          # 📚 Sphinx 文档
    │   └── source/
@@ -226,8 +226,8 @@ LightRFT 组织成几个关键模块：
 * **examples/**：完整的训练示例和脚本
 
   * ``gsm8k_geo3k/``：GSM8K 和 Geo3K 数学推理训练示例
-  * ``grm_training/``：通用奖励模型训练示例
-  * ``srm_training/``：安全奖励模型训练示例
+  * ``grm_training/``：生成式奖励模型训练示例
+  * ``srm_training/``：标量奖励模型训练示例
   * ``chat/``：对话模型训练示例
 
 * **docs/**：Sphinx 文档，包含完整的用户指南和 API 文档

@@ -1,0 +1,777 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js" lang="en">
+<!--<![endif]-->
+
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>LightRFT 模型设计文档 &mdash; LightRFT v0.1.1 documentation</title>
+  
+
+  <link rel="shortcut icon" href="../_static/images/favicon.ico" />
+  
+  
+
+  
+
+  
+  
+  
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/readthedocs.css" type="text/css" />
+  <link rel="index" title="Index" href="../genindex.html" />
+  <link rel="search" title="Search" href="../search.html" />
+  <!-- Google Analytics -->
+  <script type="text/javascript">
+    var collapsedSections = [];
+  </script>
+  
+  <!-- End Google Analytics -->
+  
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+  <script>
+    MathJax = {
+        chtml: {
+            scale: 1,
+            minScale: 1,
+        },
+        svg: {
+            scale: 1,
+            minScale: 1,
+        }
+    }
+</script>
+
+  <!-- Preload the theme fonts -->
+
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-book.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/IBMPlexMono/IBMPlexMono-Medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-medium-italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/IBMPlexMono/IBMPlexMono-SemiBold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+
+<!-- Preload the katex fonts -->
+
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Math-Italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size1-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size4-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size2-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size3-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Caligraphic-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.2/css/all.css"
+    integrity="sha384-vSIIfh2YWi9wW0r9iZe7RJPrKwp6bG+s9QZMoITbCckVJqGCCRhc+ccxNcdpHuYu" crossorigin="anonymous">
+</head>
+
+<div class="container-fluid header-holder tutorials-header" id="header-holder">
+  <div class="container">
+    <div class="header-container">
+      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+        aria-label="OpenMMLab"></a>
+
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://github.com/opendilab/LightRFT" target="_blank">GitHub</a>
+          </li>
+          <li >
+            <div id="resourcesDropdownButton" data-toggle="resources-dropdown" class="resources-dropdown">
+              <a
+                class="resource-option with-down-arrow">
+                OpenDILab
+              </a>
+              <div class="resources-dropdown-menu">
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-engine" target="_blank">
+                  <span class="dropdown-title">DI-engine </span>
+                  <p>OpenDILab Decision AI Engine</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/LightZero" target="_blank">
+                  <span class="dropdown-title">LightZero </span>
+                  <p>OpenDILab Decision Monte Carlo Tree Search Framework</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/GenerativeRL" target="_blank">
+                  <span class="dropdown-title">GenerativeRL </span>
+                  <p>OpenDILab Generative AI Framework</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-star" target="_blank">
+                  <span class="dropdown-title">DI-star </span>
+                  <p>OpenDILab Decision AI in StarCraftII</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-drive" target="_blank">
+                  <span class="dropdown-title">DI-drive </span>
+                  <p>OpenDILab Auto-driving platform</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/GoBigger" target="_blank">
+                  <span class="dropdown-title">GoBigger </span>
+                  <p>OpenDILab Multi-Agent Environment</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-smartcross" target="_blank">
+                  <span class="dropdown-title">DI-smartcross </span>
+                  <p>Decision Intelligence Platform for Traffic Crossing Signal Control</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-treetensor" target="_blank">
+                  <span class="dropdown-title">DI-treetensor </span>
+                  <p>Tree Nested PyTorch Tensor Lib</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-sheep" target="_blank">
+                  <span class="dropdown-title">DI-sheep </span>
+                  <p>Deep Reinforcement Learning + 3 Tiles Game</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-model-based-RL" target="_blank">
+                  <span class="dropdown-title">awesome-model-based-RL </span>
+                  <p>A curated list of awesome model based RL resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-decision-transformer" target="_blank">
+                  <span class="dropdown-title">awesome-decision-transformer </span>
+                  <p>A curated list of Decision Transformer resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-exploration-rl" target="_blank">
+                  <span class="dropdown-title">awesome-exploration-rl </span>
+                  <p>A curated list of awesome exploration RL resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-multi-modal-reinforcement-learning" target="_blank">
+                  <span class="dropdown-title">awesome-multi-modal-reinforcement-learning </span>
+                  <p>A curated list of Multi-Modal Reinforcement Learning resources (continually updated)</p>
+                </a>
+              </div>
+          </li>
+        </ul>
+      </div>
+
+      <a class="main-menu-open-button" href="#" data-behavior="open-mobile-menu"></a>
+    </div>
+  </div>
+</div>
+
+<body class="pytorch-body">
+
+   
+
+  
+
+  <div class="table-of-contents-link-wrapper">
+    <span>Table of Contents</span>
+    <a href="#" class="toggle-table-of-contents" data-behavior="toggle-table-of-contents"></a>
+  </div>
+
+  <nav data-toggle="wy-nav-shift" class="pytorch-left-menu" id="pytorch-left-menu">
+    <div class="pytorch-side-scroll">
+      <div class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        <div class="pytorch-left-menu-search">
+          
+
+          
+          
+          
+          
+
+          
+
+
+
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search Docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        
+        
+        
+        
+        
+        <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../installation/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quick_start/index.html">Quick Start</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide &amp; Best Practices</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="index.html">Best Practices</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/utils/index.html">lightrft.utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/datasets/index.html">lightrft.datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/models/index.html">lightrft.models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/strategy/index.html">lightrft.strategy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/trainer/index.html">lightrft.trainer</a></li>
+</ul>
+
+        
+        
+      </div>
+    </div>
+  </nav>
+
+  <div class="pytorch-container">
+    <div class="pytorch-page-level-bar" id="pytorch-page-level-bar">
+      <div class="pytorch-breadcrumbs-wrapper">
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="pytorch-breadcrumbs">
+    
+      <li>
+        <a href="../index.html">
+            Docs
+        </a> &gt;
+      </li>
+
+        
+      <li>LightRFT 模型设计文档</li>
+    
+    
+      <li class="pytorch-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/best_practice/model_zh.md.txt" rel="nofollow"><img src="../_static/images/view-page-source-icon.svg"></a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+</div>
+      </div>
+
+      <div class="pytorch-shortcuts-wrapper" id="pytorch-shortcuts-wrapper">
+        Shortcuts
+      </div>
+    </div>
+
+    <section data-toggle="wy-nav-shift" id="pytorch-content-wrap" class="pytorch-content-wrap">
+      <div class="pytorch-content-left">
+        
+          <div class="rst-content">
+            
+            <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
+              <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
+                
+  <section id="lightrft">
+<h1>LightRFT 模型设计文档<a class="headerlink" href="#lightrft" title="Permalink to this heading">¶</a></h1>
+<section id="id1">
+<h2>概述<a class="headerlink" href="#id1" title="Permalink to this heading">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">lightrft/models</span></code> 模块提供了一个全面的框架，用于在强化学习场景中实现 Actor 模型，特别为语言模型微调和人类反馈集成而设计。本文档概述了 models 包的设计理念、架构和实现细节。</p>
+</section>
+<section id="id2">
+<h2>设计理念<a class="headerlink" href="#id2" title="Permalink to this heading">¶</a></h2>
+<section id="id3">
+<h3>1. 模块化架构<a class="headerlink" href="#id3" title="Permalink to this heading">¶</a></h3>
+<p>models 包采用了模块化设计方法，实现了关注点分离并提升了代码的复用性：</p>
+<ul class="simple">
+<li><p><strong>Actor 基类</strong>：为不同类型的 Actor 提供基础功能。</p></li>
+<li><p><strong>奖励模型基类</strong>：为不同类型的奖励模型提供基础功能。</p></li>
+<li><p><strong>工具函数</strong>：在不同模型之间共享的常用操作和辅助函数。</p></li>
+<li><p><strong>模型补丁 (Model Patches)</strong>：针对特定模型架构的专门适配。</p></li>
+</ul>
+</section>
+<section id="id4">
+<h3>2. 灵活性与可扩展性<a class="headerlink" href="#id4" title="Permalink to this heading">¶</a></h3>
+<p>设计优先考虑灵活性，以支持各种模型类型和使用场景：</p>
+<ul class="simple">
+<li><p>支持纯文本模型和视觉语言 (Vision-Language) 模型。</p></li>
+<li><p>可配置的优化策略（LoRA、量化、Flash Attention）。</p></li>
+<li><p>能够适配不同的模型架构和规模。</p></li>
+</ul>
+</section>
+<section id="id5">
+<h3>3. 性能优化<a class="headerlink" href="#id5" title="Permalink to this heading">¶</a></h3>
+<p>内置优化以实现高效的训练和推理：</p>
+<ul class="simple">
+<li><p>通过梯度检查点 (Gradient Checkpointing) 实现显存高效的实现。</p></li>
+<li><p>支持使用 DeepSpeed 和 FSDP 进行分布式训练。</p></li>
+<li><p>样本打包 (Sample Packing) 以提高批处理效率。</p></li>
+</ul>
+</section>
+</section>
+<section id="id6">
+<h2>架构组件<a class="headerlink" href="#id6" title="Permalink to this heading">¶</a></h2>
+<section id="id7">
+<h3>核心类<a class="headerlink" href="#id7" title="Permalink to this heading">¶</a></h3>
+<section id="actormodality">
+<h4>1. ActorModality (模态定义)<a class="headerlink" href="#actormodality" title="Permalink to this heading">¶</a></h4>
+<p><strong>用途</strong>：位于 <code class="docutils literal notranslate"><span class="pre">models/actor_modality.py</span></code>，定义 Actor 模型的模态类型并管理不同模态支持的参数。</p>
+<p><strong>核心特性</strong>：</p>
+<ul class="simple">
+<li><p><strong>分类管理</strong>：通过 <code class="docutils literal notranslate"><span class="pre">ActorModality</span></code> 枚举（如 <code class="docutils literal notranslate"><span class="pre">LANGUAGE_ONLY</span></code>, <code class="docutils literal notranslate"><span class="pre">VISION_LANGUAGE</span></code>, <code class="docutils literal notranslate"><span class="pre">AUDIO_LANGUAGE</span></code>, <code class="docutils literal notranslate"><span class="pre">OMNI</span></code>）定义模型类型。</p></li>
+<li><p><strong>参数映射</strong>：<code class="docutils literal notranslate"><span class="pre">MODALITY_PARAMETERS</span></code> 字典定义了各模态支持的特殊参数（如 <code class="docutils literal notranslate"><span class="pre">pixel_values</span></code> 对应视觉模型，<code class="docutils literal notranslate"><span class="pre">audio_values</span></code> 对应音频模型）。</p></li>
+<li><p><strong>解耦设计</strong>：Trainer 通过 <code class="docutils literal notranslate"><span class="pre">get_supported_parameters</span></code> 接口动态获取模型所需的参数，实现了训练逻辑与具体模型输入格式的解耦。</p></li>
+</ul>
+</section>
+<section id="actorlanguage">
+<h4>2. ActorLanguage<a class="headerlink" href="#actorlanguage" title="Permalink to this heading">¶</a></h4>
+<p><strong>用途</strong>：用于纯文本语言模型的通用 Actor。</p>
+<p><strong>核心特性</strong>：</p>
+<ul class="simple">
+<li><p><strong>纯文本支持</strong>：模态被显式声明为 <code class="docutils literal notranslate"><span class="pre">ActorModality.LANGUAGE_ONLY</span></code>。</p></li>
+<li><p><strong>广泛兼容</strong>：支持 HuggingFace 上的大多数因果语言模型 (Causal Language Model) 架构。</p></li>
+<li><p><strong>性能优化</strong>：自动检测线性模块进行 LoRA 注入，集成 Flash Attention 2.0。</p></li>
+</ul>
+</section>
+<section id="actorvl-vision-language">
+<h4>3. ActorVL (Vision-Language)<a class="headerlink" href="#actorvl-vision-language" title="Permalink to this heading">¶</a></h4>
+<p><strong>用途</strong>：用于视觉语言模型的专门 Actor，处理图像、视频等多模态输入。</p>
+<p><strong>核心特性</strong>：</p>
+<ul class="simple">
+<li><p><strong>多模态能力</strong>：模态声明为 <code class="docutils literal notranslate"><span class="pre">ActorModality.VISION_LANGUAGE</span></code>。</p></li>
+<li><p><strong>架构适配</strong>：支持 Qwen2-VL 和 Qwen2.5-VL</p></li>
+<li><p><strong>输入处理</strong>：内部处理图像网格 (Image Grid) 和变长视觉序列。</p></li>
+</ul>
+</section>
+<section id="actoral-audio-language">
+<h4>4. ActorAL (Audio-Language)<a class="headerlink" href="#actoral-audio-language" title="Permalink to this heading">¶</a></h4>
+<p><strong>用途</strong>：用于音频语言模型（如 Qwen2-Audio）的专用 Actor，模态为 <code class="docutils literal notranslate"><span class="pre">ActorModality.AUDIO_LANGUAGE</span></code>，支持音频采集和处理。</p>
+<p><strong>核心特性</strong>：</p>
+<ul class="simple">
+<li><p><strong>多模态能力</strong>：模态声明为 <code class="docutils literal notranslate"><span class="pre">ActorModality.AUDIO_LANGUAGE</span></code>，处理音频和文本的组合输入。</p></li>
+<li><p><strong>架构适配</strong>：支持如 Qwen2-Audio 等多种音频语言模型架构。</p></li>
+<li><p><strong>优化与 MoE</strong>：支持混合专家 (MoE) 模型，通过梯度检查点进行显存优化，以及通过 LoRA 和 Flash Attention 提升效率。</p></li>
+</ul>
+</section>
+<section id="reward-models">
+<h4>5. 奖励模型 (Reward Models)<a class="headerlink" href="#reward-models" title="Permalink to this heading">¶</a></h4>
+<p><strong>用途</strong>：评估 Response 质量的标量 (SRM) 或生成式 (GRM) 奖励模型。</p>
+<p><strong>核心类</strong>：</p>
+<ul class="simple">
+<li><p><strong>ScalarRewardModelVL/AL</strong>：标量奖励模型 (SRM)，将多模态输入映射为标量分数。支持 Bradley-Terry 偏好损失。</p></li>
+<li><p><strong>GenerativeRewardModelVL</strong>：生成式奖励模型 (GRM)，输出带推理过程 (CoT) 的文本评估。</p></li>
+</ul>
+<p><strong>示例行为 (Example Behavior)</strong>：</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># 共同输入</span>
+<span class="n">system_prompt</span> <span class="o">=</span> <span class="s2">&quot;You are a helpful visual assistant.&quot;</span>
+<span class="n">image</span> <span class="o">=</span> <span class="s2">&quot;path/to/dog.jpg&quot;</span> <span class="c1"># 视觉输入</span>
+<span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;What is shown in this image?&quot;</span>
+<span class="n">response</span> <span class="o">=</span> <span class="s2">&quot;The image shows a cute brown dog playing in the park.&quot;</span>
+
+<span class="c1"># 1. 标量奖励模型 (SRM)</span>
+<span class="n">srm_score</span> <span class="o">=</span> <span class="n">srm</span><span class="p">(</span><span class="n">image</span><span class="o">=</span><span class="n">image</span><span class="p">,</span> <span class="n">system_prompt</span><span class="o">=</span><span class="n">system_prompt</span><span class="p">,</span> <span class="n">query</span><span class="o">=</span><span class="n">query</span><span class="p">,</span> <span class="n">response</span><span class="o">=</span><span class="n">response</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">srm_score</span><span class="p">)</span> 
+<span class="c1"># 输出: tensor([0.88]) -&gt; 得出一个直接的浮点标量分数值</span>
+
+<span class="c1"># 2. 生成式奖励模型 (GRM)</span>
+<span class="n">grm_output</span> <span class="o">=</span> <span class="n">grm</span><span class="p">(</span><span class="n">image</span><span class="o">=</span><span class="n">image</span><span class="p">,</span> <span class="n">system_prompt</span><span class="o">=</span><span class="n">system_prompt</span><span class="p">,</span> <span class="n">query</span><span class="o">=</span><span class="n">query</span><span class="p">,</span> <span class="n">response</span><span class="o">=</span><span class="n">response</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">grm_output</span><span class="p">)</span>
+<span class="c1"># 输出: &quot;&lt;reasoning&gt;The response accurately describes the content of the image.&lt;/reasoning&gt;&lt;score&gt;5&lt;/score&gt;&quot; -&gt; 输出文本推理过程与评分</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="id8">
+<h3>工具函数<a class="headerlink" href="#id8" title="Permalink to this heading">¶</a></h3>
+<section id="lora-apply-lora-configuration">
+<h4>1. LoRA 配置 (<code class="docutils literal notranslate"><span class="pre">apply_lora_configuration</span></code>)<a class="headerlink" href="#lora-apply-lora-configuration" title="Permalink to this heading">¶</a></h4>
+<p><strong>用途</strong>：集中的 LoRA 设置和配置。</p>
+<p><strong>设计理由</strong>：</p>
+<ul class="simple">
+<li><p>消除不同 Actor 类型之间的代码重复。</p></li>
+<li><p>在整个框架中提供一致的 LoRA 配置。</p></li>
+</ul>
+</section>
+<section id="log-probs-from-logits">
+<h4>2. 对数概率计算 (<code class="docutils literal notranslate"><span class="pre">log_probs_from_logits</span></code>)<a class="headerlink" href="#log-probs-from-logits" title="Permalink to this heading">¶</a></h4>
+<p><strong>用途</strong>：从模型 Logits 中高效计算对数概率。</p>
+<p><strong>设计特性</strong>：</p>
+<ul class="simple">
+<li><p>显存优化的实现，采用逐行处理。</p></li>
+<li><p>支持不同的数据类型（float32, float16, bfloat16）。</p></li>
+<li><p>集成 Flash Attention 以提升性能。</p></li>
+<li><p>针对不支持的配置提供自动回退机制。</p></li>
+</ul>
+</section>
+<section id="reset-position-ids">
+<h4>3. 位置编码管理 (<code class="docutils literal notranslate"><span class="pre">reset_position_ids</span></code>)<a class="headerlink" href="#reset-position-ids" title="Permalink to this heading">¶</a></h4>
+<p><strong>用途</strong>：处理打包序列 (Packed Sequences) 的位置编码 ID。</p>
+<p><strong>设计理由</strong>：</p>
+<ul class="simple">
+<li><p>对样本打包优化至关重要。</p></li>
+<li><p>在拼接的序列中保持正确的位置编码。</p></li>
+<li><p>支持打包格式下的变长序列。</p></li>
+</ul>
+<p><strong>设计特性</strong>：</p>
+<ul class="simple">
+<li><p>模型架构感知的检测。</p></li>
+<li><p>支持配置排除特定模块（如 Vision Towers 等）。</p></li>
+<li><p>支持多种模型类型和架构。</p></li>
+</ul>
+</section>
+</section>
+<section id="model-patches">
+<h3>模型补丁 (Model Patches)<a class="headerlink" href="#model-patches" title="Permalink to this heading">¶</a></h3>
+<section id="id9">
+<h4>用途<a class="headerlink" href="#id9" title="Permalink to this heading">¶</a></h4>
+<p><code class="docutils literal notranslate"><span class="pre">monkey_patch</span></code> 目录包含模型特定的适配和优化：</p>
+<ul class="simple">
+<li><p><strong>架构特定优化</strong>：为特定模型架构量身定制的改进。</p></li>
+<li><p><strong>生成方法补丁</strong>：增强的生成能力。</p></li>
+<li><p><strong>性能优化</strong>：模型特定的性能提升。</p></li>
+</ul>
+</section>
+</section>
+</section>
+<section id="id10">
+<h2>实现细节<a class="headerlink" href="#id10" title="Permalink to this heading">¶</a></h2>
+<section id="id11">
+<h3>1. 模型初始化策略<a class="headerlink" href="#id11" title="Permalink to this heading">¶</a></h3>
+<p>模型支持两种初始化模式：</p>
+<section id="a">
+<h4>模式 A：从预训练路径加载<a class="headerlink" href="#a" title="Permalink to this heading">¶</a></h4>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">actor</span> <span class="o">=</span> <span class="n">ActorText</span><span class="p">(</span>
+    <span class="n">pretrain_or_model</span><span class="o">=</span><span class="s2">&quot;model_path&quot;</span><span class="p">,</span>
+    <span class="n">lora_rank</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span>
+    <span class="n">use_flash_attention_2</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="b">
+<h4>模式 B：从现有模型加载<a class="headerlink" href="#b" title="Permalink to this heading">¶</a></h4>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">actor</span> <span class="o">=</span> <span class="n">ActorText</span><span class="p">(</span>
+    <span class="n">pretrain_or_model</span><span class="o">=</span><span class="n">existing_model</span><span class="p">,</span>
+    <span class="n">packing_samples</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>设计理由</strong>：</p>
+<ul class="simple">
+<li><p>同时支持从零开始训练和对现有模型进行微调。</p></li>
+<li><p>支持灵活的模型部署场景。</p></li>
+<li><p>保持与现有工作流的向后兼容性。</p></li>
+</ul>
+</section>
+</section>
+<section id="forward-pass">
+<h3>2. 生成与前向传播 (Forward Pass) 设计<a class="headerlink" href="#forward-pass" title="Permalink to this heading">¶</a></h3>
+<section id="id12">
+<h4>生成方法<a class="headerlink" href="#id12" title="Permalink to this heading">¶</a></h4>
+<ul class="simple">
+<li><p><strong>输入处理</strong>：处理各种输入格式和参数。</p></li>
+<li><p><strong>模型生成</strong>：委托给底层模型及其配置参数。</p></li>
+<li><p><strong>后处理</strong>：为 RL 训练创建 Attention Mask 和 Action Mask。</p></li>
+</ul>
+</section>
+<section id="forward-method">
+<h4>前向方法 (Forward Method)<a class="headerlink" href="#forward-method" title="Permalink to this heading">¶</a></h4>
+<ul class="simple">
+<li><p><strong>位置 ID 处理</strong>：管理不同序列格式的位置编码。</p></li>
+<li><p><strong>对数概率计算</strong>：高效计算动作概率。</p></li>
+<li><p><strong>打包序列支持</strong>：在单个 Batch 中处理多个序列。</p></li>
+</ul>
+</section>
+</section>
+<section id="id13">
+<h3>3. 显存与性能优化<a class="headerlink" href="#id13" title="Permalink to this heading">¶</a></h3>
+<section id="gradient-checkpointing">
+<h4>梯度检查点 (Gradient Checkpointing)<a class="headerlink" href="#gradient-checkpointing" title="Permalink to this heading">¶</a></h4>
+<ul class="simple">
+<li><p>可选的节省显存技术。</p></li>
+<li><p>通过 <code class="docutils literal notranslate"><span class="pre">gradient_checkpointing_enable/disable</span></code> 进行配置。</p></li>
+<li><p>在显存使用与计算开销之间取得平衡。</p></li>
+</ul>
+</section>
+<section id="sample-packing">
+<h4>样本打包 (Sample Packing)<a class="headerlink" href="#sample-packing" title="Permalink to this heading">¶</a></h4>
+<ul class="simple">
+<li><p>将多个序列拼接以实现高效的批处理。</p></li>
+<li><p>通过位置 ID 管理维持正确的注意力模式。</p></li>
+<li><p>显著提高变长序列的训练吞吐量。</p></li>
+</ul>
+</section>
+</section>
+</section>
+<section id="id14">
+<h2>配置与自定义<a class="headerlink" href="#id14" title="Permalink to this heading">¶</a></h2>
+<section id="lora">
+<h3>1. LoRA 配置<a class="headerlink" href="#lora" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>Rank 和 Alpha</strong>：可配置的 LoRA 维度和缩放。</p></li>
+<li><p><strong>目标模块 (Target Modules)</strong>：支持自动检测以及手动覆盖。</p></li>
+<li><p><strong>Dropout</strong>：可配置的正则化强度。</p></li>
+</ul>
+</section>
+<section id="id15">
+<h3>2. 注意力机制<a class="headerlink" href="#id15" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>Flash Attention 2.0</strong>：可选的高性能注意力实现。</p></li>
+<li><p><strong>回退支持</strong>：需要时自动回退到标准注意力。</p></li>
+<li><p><strong>架构兼容性</strong>：跨不同模型架构工作。</p></li>
+</ul>
+</section>
+<section id="id16">
+<h3>3. 设备与分布式训练<a class="headerlink" href="#id16" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><strong>设备映射</strong>：多 GPU 设置下的灵活设备分配。</p></li>
+<li><p><strong>DeepSpeed 集成</strong>：原生支持 DeepSpeed ZeRO 优化。</p></li>
+<li><p><strong>FSDP 兼容性</strong>：支持完全分片数据并行 (Fully Sharded Data Parallel) 训练。</p></li>
+</ul>
+</section>
+</section>
+<section id="id17">
+<h2>错误处理与鲁棒性<a class="headerlink" href="#id17" title="Permalink to this heading">¶</a></h2>
+<section id="id18">
+<h3>1. 优雅降级<a class="headerlink" href="#id18" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>自动回退不支持的特性。</p></li>
+<li><p>针对配置问题提供清晰的错误提示。</p></li>
+<li><p>检查模型需求的兼容性。</p></li>
+</ul>
+</section>
+<section id="id19">
+<h3>2. 验证与断言<a class="headerlink" href="#id19" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p>关键参数的输入验证。</p></li>
+<li><p>针对不兼容配置的断言检查。</p></li>
+<li><p>模型兼容性的运行时验证。</p></li>
+</ul>
+</section>
+</section>
+<section id="id20">
+<h2>结论<a class="headerlink" href="#id20" title="Permalink to this heading">¶</a></h2>
+<p>LightRFT 的 models 包为基于语言模型的强化学习提供了一个强大、灵活且高效的基础。模块化设计确保了可维护性和可扩展性，而全面的优化支持使得能够跨各种硬件配置和模型架构进行高效的训练和部署。</p>
+<p>设计的首要目标包括：</p>
+<ul class="simple">
+<li><p><strong>简洁性</strong>：易于使用和理解。</p></li>
+<li><p><strong>灵活性</strong>：适配各种使用场景。</p></li>
+<li><p><strong>性能</strong>：针对效率进行了优化。</p></li>
+<li><p><strong>鲁棒性</strong>：健壮的错误处理和验证。</p></li>
+<li><p><strong>可扩展性</strong>：易于添加新功能和模型类型。</p></li>
+</ul>
+<p>该架构为当前需求奠定了坚实基础，同时也为未来的功能增强和适配提供了清晰的路径。</p>
+</section>
+</section>
+
+
+              </article>
+              
+            </div>
+            <footer>
+  
+
+  <hr>
+
+  <div role="contentinfo">
+    <p>
+      &copy; Copyright 2025, OpenDILab.
+
+    </p>
+  </div>
+  
+  <div>
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a
+      href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the
+      Docs</a>.
+  </div>
+   
+
+</footer>
+          </div>
+        </div>
+
+        <div class="pytorch-content-right" id="pytorch-content-right">
+          <div class="pytorch-right-menu" id="pytorch-right-menu">
+            <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
+              <ul>
+<li><a class="reference internal" href="#">LightRFT 模型设计文档</a><ul>
+<li><a class="reference internal" href="#id1">概述</a></li>
+<li><a class="reference internal" href="#id2">设计理念</a><ul>
+<li><a class="reference internal" href="#id3">1. 模块化架构</a></li>
+<li><a class="reference internal" href="#id4">2. 灵活性与可扩展性</a></li>
+<li><a class="reference internal" href="#id5">3. 性能优化</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id6">架构组件</a><ul>
+<li><a class="reference internal" href="#id7">核心类</a><ul>
+<li><a class="reference internal" href="#actormodality">1. ActorModality (模态定义)</a></li>
+<li><a class="reference internal" href="#actorlanguage">2. ActorLanguage</a></li>
+<li><a class="reference internal" href="#actorvl-vision-language">3. ActorVL (Vision-Language)</a></li>
+<li><a class="reference internal" href="#actoral-audio-language">4. ActorAL (Audio-Language)</a></li>
+<li><a class="reference internal" href="#reward-models">5. 奖励模型 (Reward Models)</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id8">工具函数</a><ul>
+<li><a class="reference internal" href="#lora-apply-lora-configuration">1. LoRA 配置 (<code class="docutils literal notranslate"><span class="pre">apply_lora_configuration</span></code>)</a></li>
+<li><a class="reference internal" href="#log-probs-from-logits">2. 对数概率计算 (<code class="docutils literal notranslate"><span class="pre">log_probs_from_logits</span></code>)</a></li>
+<li><a class="reference internal" href="#reset-position-ids">3. 位置编码管理 (<code class="docutils literal notranslate"><span class="pre">reset_position_ids</span></code>)</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#model-patches">模型补丁 (Model Patches)</a><ul>
+<li><a class="reference internal" href="#id9">用途</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id10">实现细节</a><ul>
+<li><a class="reference internal" href="#id11">1. 模型初始化策略</a><ul>
+<li><a class="reference internal" href="#a">模式 A：从预训练路径加载</a></li>
+<li><a class="reference internal" href="#b">模式 B：从现有模型加载</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#forward-pass">2. 生成与前向传播 (Forward Pass) 设计</a><ul>
+<li><a class="reference internal" href="#id12">生成方法</a></li>
+<li><a class="reference internal" href="#forward-method">前向方法 (Forward Method)</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id13">3. 显存与性能优化</a><ul>
+<li><a class="reference internal" href="#gradient-checkpointing">梯度检查点 (Gradient Checkpointing)</a></li>
+<li><a class="reference internal" href="#sample-packing">样本打包 (Sample Packing)</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id14">配置与自定义</a><ul>
+<li><a class="reference internal" href="#lora">1. LoRA 配置</a></li>
+<li><a class="reference internal" href="#id15">2. 注意力机制</a></li>
+<li><a class="reference internal" href="#id16">3. 设备与分布式训练</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id17">错误处理与鲁棒性</a><ul>
+<li><a class="reference internal" href="#id18">1. 优雅降级</a></li>
+<li><a class="reference internal" href="#id19">2. 验证与断言</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id20">结论</a></li>
+</ul>
+</li>
+</ul>
+
+            </div>
+          </div>
+        </div>
+    </section>
+  </div>
+
+  
+
+
+  
+
+  
+  <script type="text/javascript" id="documentation_options" data-url_root="../"
+    src="../_static/documentation_options.js"></script>
+  <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+  <script src="../_static/doctools.js"></script>
+  <script src="../_static/sphinx_highlight.js"></script>
+  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+  <script src="../_static/js/language_switch.js"></script>
+  
+
+  
+
+  <script type="text/javascript" src="../_static/js/vendor/popper.min.js"></script>
+  <script type="text/javascript" src="../_static/js/vendor/bootstrap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+    jQuery(function () {
+      SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+  <!-- Begin Footer -->
+
+  <div class="container-fluid docs-tutorials-resources" id="docs-tutorials-resources">
+  </div>
+
+  <!-- End Footer -->
+
+  <!-- Begin Mobile Menu -->
+
+  <div class="mobile-main-menu">
+    <div class="container-fluid">
+      <div class="container">
+        <div class="mobile-main-menu-header-container">
+          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
+        </div>
+      </div>
+    </div>
+
+    <div class="mobile-main-menu-links-container">
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://github.com/opendilab/LightRFT" target="_blank">GitHub</a>
+          </li>
+      </div>
+    </div>
+  </div>
+
+  <!-- End Mobile Menu -->
+
+  <script type="text/javascript" src="../_static/js/vendor/anchor.min.js"></script>
+
+  <script type="text/javascript">
+    $(document).ready(function () {
+      mobileMenu.bind();
+      mobileTOC.bind();
+      pytorchAnchors.bind();
+      sideMenus.bind();
+      scrollToAnchor.bind();
+      highlightNavigation.bind();
+      mainMenuDropdown.bind();
+      filterTags.bind();
+
+      // Add class to links that have code blocks, since we cannot create links in code blocks
+      $("article.pytorch-article a span.pre").each(function (e) {
+        $(this).closest("a").addClass("has-code");
+      });
+    })
+  </script>
+</body>
+
+</html>

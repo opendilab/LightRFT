@@ -306,15 +306,18 @@
   <section id="welcome-to-lightrft-s-documentation">
 <h1>Welcome to LightRFT’s Documentation!<a class="headerlink" href="#welcome-to-lightrft-s-documentation" title="Permalink to this heading">¶</a></h1>
 <a class="reference internal image-reference" href="_images/logo.png"><img alt="LightRFT Logo" class="align-center" src="_images/logo.png" style="width: 600px;" /></a>
-<p><strong>LightRFT</strong> (Light Reinforcement Fine-Tuning) is a light and efficient reinforcement learning fine-tuning framework designed for Large Language Models (LLMs), Vision-Language Models (VLMs) and other modalities and tasks.
-This framework provides efficient and scalable RLHF (Reinforcement Learning from Human Feedback), RLVR (Reinforcement Learning with Verifiable Rewards), and Reward Model training and evaluation capabilities,
-supporting multiple state-of-the-art algorithms and distributed training (FSDP, DeepSpeed, etc.) strategies.</p>
+<p><strong>LightRFT</strong> (Light Reinforcement Fine-Tuning) is a lightweight, efficient, and versatile reinforcement learning fine-tuning framework designed for the fine-tuning tasks of Large Language Models (LLMs) and Vision-Language Models (VLMs). Its core advantages include:</p>
+<ul class="simple">
+<li><p><strong>Comprehensive RLVR + RLHF and Multi-modal Training Support</strong>: Native support for RLVR and RLHF training, covering various modalities such as text, image, video, and audio, and supporting the full lifecycle from base models to reward models and reward rules.</p></li>
+<li><p><strong>Unified Strategy Abstraction Layer</strong>: A highly abstract Strategy layer that flexibly controls training (DeepSpeed/FSDPv2) and high-performance inference (vLLM/SGLang) strategies.</p></li>
+<li><p><strong>Easy-to-use and Efficient Multi-model Co-location Paradigm</strong>: Supports flexible multi-model co-location training, enabling scalable algorithm exploration and comparison in large-scale scenarios.</p></li>
+</ul>
 <section id="key-features">
 <h2>Key Features<a class="headerlink" href="#key-features" title="Permalink to this heading">¶</a></h2>
 <dl class="simple">
 <dt>🚀 <strong>High-Performance Inference Engines</strong></dt><dd><ul class="simple">
 <li><p>Integrated vLLM and SGLang for efficient sampling and inference</p></li>
-<li><p>FP8 inference optimization for reduced latency and memory usage</p></li>
+<li><p>FP8 inference optimization for reduced latency and memory usage (Work in Progress)</p></li>
 <li><p>Flexible engine sleep/wake mechanisms for optimal resource utilization</p></li>
 </ul>
 </dd>
@@ -492,6 +495,7 @@ supporting multiple state-of-the-art algorithms and distributed training (FSDP, 
   <script src="_static/doctools.js"></script>
   <script src="_static/sphinx_highlight.js"></script>
   <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+  <script src="_static/js/language_switch.js"></script>
   
 
   

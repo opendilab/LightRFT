@@ -1,0 +1,1108 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js" lang="en">
+<!--<![endif]-->
+
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>故障排除指南 &mdash; LightRFT v0.1.1 documentation</title>
+  
+
+  <link rel="shortcut icon" href="../_static/images/favicon.ico" />
+  
+  
+
+  
+
+  
+  
+  
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/readthedocs.css" type="text/css" />
+  <link rel="index" title="Index" href="../genindex.html" />
+  <link rel="search" title="Search" href="../search.html" />
+  <!-- Google Analytics -->
+  <script type="text/javascript">
+    var collapsedSections = [];
+  </script>
+  
+  <!-- End Google Analytics -->
+  
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+  <script>
+    MathJax = {
+        chtml: {
+            scale: 1,
+            minScale: 1,
+        },
+        svg: {
+            scale: 1,
+            minScale: 1,
+        }
+    }
+</script>
+
+  <!-- Preload the theme fonts -->
+
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-book.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/IBMPlexMono/IBMPlexMono-Medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-medium-italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/IBMPlexMono/IBMPlexMono-SemiBold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+
+<!-- Preload the katex fonts -->
+
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Math-Italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size1-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size4-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size2-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size3-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Caligraphic-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.2/css/all.css"
+    integrity="sha384-vSIIfh2YWi9wW0r9iZe7RJPrKwp6bG+s9QZMoITbCckVJqGCCRhc+ccxNcdpHuYu" crossorigin="anonymous">
+</head>
+
+<div class="container-fluid header-holder tutorials-header" id="header-holder">
+  <div class="container">
+    <div class="header-container">
+      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+        aria-label="OpenMMLab"></a>
+
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://github.com/opendilab/LightRFT" target="_blank">GitHub</a>
+          </li>
+          <li >
+            <div id="resourcesDropdownButton" data-toggle="resources-dropdown" class="resources-dropdown">
+              <a
+                class="resource-option with-down-arrow">
+                OpenDILab
+              </a>
+              <div class="resources-dropdown-menu">
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-engine" target="_blank">
+                  <span class="dropdown-title">DI-engine </span>
+                  <p>OpenDILab Decision AI Engine</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/LightZero" target="_blank">
+                  <span class="dropdown-title">LightZero </span>
+                  <p>OpenDILab Decision Monte Carlo Tree Search Framework</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/GenerativeRL" target="_blank">
+                  <span class="dropdown-title">GenerativeRL </span>
+                  <p>OpenDILab Generative AI Framework</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-star" target="_blank">
+                  <span class="dropdown-title">DI-star </span>
+                  <p>OpenDILab Decision AI in StarCraftII</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-drive" target="_blank">
+                  <span class="dropdown-title">DI-drive </span>
+                  <p>OpenDILab Auto-driving platform</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/GoBigger" target="_blank">
+                  <span class="dropdown-title">GoBigger </span>
+                  <p>OpenDILab Multi-Agent Environment</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-smartcross" target="_blank">
+                  <span class="dropdown-title">DI-smartcross </span>
+                  <p>Decision Intelligence Platform for Traffic Crossing Signal Control</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-treetensor" target="_blank">
+                  <span class="dropdown-title">DI-treetensor </span>
+                  <p>Tree Nested PyTorch Tensor Lib</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-sheep" target="_blank">
+                  <span class="dropdown-title">DI-sheep </span>
+                  <p>Deep Reinforcement Learning + 3 Tiles Game</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-model-based-RL" target="_blank">
+                  <span class="dropdown-title">awesome-model-based-RL </span>
+                  <p>A curated list of awesome model based RL resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-decision-transformer" target="_blank">
+                  <span class="dropdown-title">awesome-decision-transformer </span>
+                  <p>A curated list of Decision Transformer resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-exploration-rl" target="_blank">
+                  <span class="dropdown-title">awesome-exploration-rl </span>
+                  <p>A curated list of awesome exploration RL resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-multi-modal-reinforcement-learning" target="_blank">
+                  <span class="dropdown-title">awesome-multi-modal-reinforcement-learning </span>
+                  <p>A curated list of Multi-Modal Reinforcement Learning resources (continually updated)</p>
+                </a>
+              </div>
+          </li>
+        </ul>
+      </div>
+
+      <a class="main-menu-open-button" href="#" data-behavior="open-mobile-menu"></a>
+    </div>
+  </div>
+</div>
+
+<body class="pytorch-body">
+
+   
+
+  
+
+  <div class="table-of-contents-link-wrapper">
+    <span>Table of Contents</span>
+    <a href="#" class="toggle-table-of-contents" data-behavior="toggle-table-of-contents"></a>
+  </div>
+
+  <nav data-toggle="wy-nav-shift" class="pytorch-left-menu" id="pytorch-left-menu">
+    <div class="pytorch-side-scroll">
+      <div class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        <div class="pytorch-left-menu-search">
+          
+
+          
+          
+          
+          
+
+          
+
+
+
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search Docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        
+        
+        
+        
+        
+        <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../installation/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quick_start/index.html">Quick Start</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide &amp; Best Practices</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="index.html">Best Practices</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/utils/index.html">lightrft.utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/datasets/index.html">lightrft.datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/models/index.html">lightrft.models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/strategy/index.html">lightrft.strategy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/trainer/index.html">lightrft.trainer</a></li>
+</ul>
+
+        
+        
+      </div>
+    </div>
+  </nav>
+
+  <div class="pytorch-container">
+    <div class="pytorch-page-level-bar" id="pytorch-page-level-bar">
+      <div class="pytorch-breadcrumbs-wrapper">
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="pytorch-breadcrumbs">
+    
+      <li>
+        <a href="../index.html">
+            Docs
+        </a> &gt;
+      </li>
+
+        
+      <li>故障排除指南</li>
+    
+    
+      <li class="pytorch-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/best_practice/troubleshooting_zh.md.txt" rel="nofollow"><img src="../_static/images/view-page-source-icon.svg"></a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+</div>
+      </div>
+
+      <div class="pytorch-shortcuts-wrapper" id="pytorch-shortcuts-wrapper">
+        Shortcuts
+      </div>
+    </div>
+
+    <section data-toggle="wy-nav-shift" id="pytorch-content-wrap" class="pytorch-content-wrap">
+      <div class="pytorch-content-left">
+        
+          <div class="rst-content">
+            
+            <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
+              <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
+                
+  <section id="id1">
+<h1>故障排除指南<a class="headerlink" href="#id1" title="Permalink to this heading">¶</a></h1>
+<p>本指南旨在帮助您诊断并解决在使用 LightRFT 过程中遇到的常见问题。</p>
+<section id="id2">
+<h2>快速诊断<a class="headerlink" href="#id2" title="Permalink to this heading">¶</a></h2>
+<p>使用以下流程图快速定位您的问题：</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>问题类型？
+├─ 安装与设置 → 参见 [安装问题](#安装问题)
+├─ 显存不足 (OOM) → 参见 [显存问题](#显存问题)
+├─ 训练问题 → 参见 [训练问题](#训练问题)
+├─ 性能问题 → 参见 [性能问题](#性能问题)
+└─ 分布式训练 → 参见 [分布式训练问题](#分布式训练问题)
+</pre></div>
+</div>
+</section>
+<section id="id3">
+<h2>安装问题<a class="headerlink" href="#id3" title="Permalink to this heading">¶</a></h2>
+<section id="id4">
+<h3>问题：包导入错误<a class="headerlink" href="#id4" title="Permalink to this heading">¶</a></h3>
+<p><strong>现象</strong>：</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="ne">ModuleNotFoundError</span><span class="p">:</span> <span class="n">No</span> <span class="n">module</span> <span class="n">named</span> <span class="s1">&#39;lightrft&#39;</span>
+</pre></div>
+</div>
+<p><strong>解决方案</strong>：</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># 确保您处于正确的目录</span>
+<span class="nb">cd</span><span class="w"> </span>/path/to/LightRFT
+pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements.txt
+pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.
+</pre></div>
+</div>
+</section>
+<section id="cuda">
+<h3>问题：CUDA 版本不匹配<a class="headerlink" href="#cuda" title="Permalink to this heading">¶</a></h3>
+<p><strong>现象</strong>：</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="ne">RuntimeError</span><span class="p">:</span> <span class="n">CUDA</span> <span class="n">error</span><span class="p">:</span> <span class="n">no</span> <span class="n">kernel</span> <span class="n">image</span> <span class="ow">is</span> <span class="n">available</span> <span class="k">for</span> <span class="n">execution</span>
+</pre></div>
+</div>
+<p><strong>解决方案</strong>：</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># 检查 CUDA 版本</span>
+nvcc<span class="w"> </span>--version
+python<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;import torch; print(torch.version.cuda)&quot;</span>
+
+<span class="c1"># 使用正确的 CUDA 版本重新安装 PyTorch</span>
+pip<span class="w"> </span>install<span class="w"> </span><span class="nv">torch</span><span class="o">==</span><span class="m">2</span>.9.1+cu128<span class="w"> </span>--index-url<span class="w"> </span>https://download.pytorch.org/whl/cu128
+</pre></div>
+</div>
+</section>
+<section id="vllm">
+<h3>问题：vLLM 安装失败<a class="headerlink" href="#vllm" title="Permalink to this heading">¶</a></h3>
+<p><strong>现象</strong>：</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ERROR</span><span class="p">:</span> <span class="n">Failed</span> <span class="n">building</span> <span class="n">wheel</span> <span class="k">for</span> <span class="n">vllm</span>
+</pre></div>
+</div>
+<p><strong>解决方案</strong>：</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># 安装构建依赖</span>
+pip<span class="w"> </span>install<span class="w"> </span>ninja<span class="w"> </span>packaging<span class="w"> </span>wheel
+
+<span class="c1"># 从源码安装 vLLM</span>
+pip<span class="w"> </span>install<span class="w"> </span>vllm<span class="w"> </span>--no-build-isolation
+
+<span class="c1"># 或者使用预编译的 wheel 包</span>
+pip<span class="w"> </span>install<span class="w"> </span><span class="nv">vllm</span><span class="o">==</span><span class="m">0</span>.13.3
+</pre></div>
+</div>
+</section>
+</section>
+<section id="id5">
+<h2>显存问题<a class="headerlink" href="#id5" title="Permalink to this heading">¶</a></h2>
+<section id="out-of-memory-oom">
+<h3>问题：显存不足 (Out of Memory, OOM) 错误<a class="headerlink" href="#out-of-memory-oom" title="Permalink to this heading">¶</a></h3>
+<p><strong>现象</strong>：</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="ne">RuntimeError</span><span class="p">:</span> <span class="n">CUDA</span> <span class="n">out</span> <span class="n">of</span> <span class="n">memory</span>
+<span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">OutOfMemoryError</span>
+</pre></div>
+</div>
+<p><strong>解决策略</strong>（建议按顺序尝试）：</p>
+<p><strong>1. 减小 Batch Size</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># 修改前</span>
+--micro_train_batch_size<span class="w"> </span><span class="m">2</span>
+--micro_rollout_batch_size<span class="w"> </span><span class="m">4</span>
+
+<span class="c1"># 修改后</span>
+--micro_train_batch_size<span class="w"> </span><span class="m">1</span>
+--micro_rollout_batch_size<span class="w"> </span><span class="m">2</span>
+</pre></div>
+</div>
+<p><strong>2. 启用梯度检查点 (Gradient Checkpointing)</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>--gradient_checkpointing
+</pre></div>
+</div>
+<p>以约 20% 的速度损失换取约 50% 的显存节省。</p>
+<p><strong>3. 降低推理引擎显存占用</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># 修改前</span>
+--engine_mem_util<span class="w"> </span><span class="m">0</span>.9
+
+<span class="c1"># 修改后</span>
+--engine_mem_util<span class="w"> </span><span class="m">0</span>.5<span class="w">  </span><span class="c1"># 对于极低显存设备可尝试 0.4</span>
+</pre></div>
+</div>
+<p><strong>4. 使用 FSDP 并开启 CPU 卸载 (Offload)</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>--fsdp<span class="w"> </span><span class="se">\</span>
+--fsdp_cpu_offload<span class="w"> </span><span class="se">\</span>
+--use_mp_opt
+</pre></div>
+</div>
+<p><strong>5. 启用 Adam 状态卸载 (Offload)</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>--adam_offload
+</pre></div>
+</div>
+<p><strong>6. 使用 ZeRO-3</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>--zero_stage<span class="w"> </span><span class="m">3</span>
+</pre></div>
+</div>
+<p><strong>7. 减小模型/序列长度</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>--max_len<span class="w"> </span><span class="m">2048</span><span class="w">  </span><span class="c1"># 代替 4096</span>
+--prompt_max_len<span class="w"> </span><span class="m">1024</span>
+</pre></div>
+</div>
+<p><strong>完整的低显存配置示例</strong>：</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>train.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--micro_train_batch_size<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--micro_rollout_batch_size<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--gradient_checkpointing<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--engine_mem_util<span class="w"> </span><span class="m">0</span>.4<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--fsdp<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--fsdp_cpu_offload<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--adam_offload<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--max_len<span class="w"> </span><span class="m">2048</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--use_mp_opt
+</pre></div>
+</div>
+</section>
+<section id="vllm-oom">
+<h3>问题：vLLM 引擎引发的 OOM<a class="headerlink" href="#vllm-oom" title="Permalink to this heading">¶</a></h3>
+<p><strong>现象</strong>：</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Failed</span> <span class="n">to</span> <span class="n">allocate</span> <span class="n">memory</span> <span class="k">for</span> <span class="n">KV</span> <span class="n">cache</span>
+</pre></div>
+</div>
+<p><strong>解决方案</strong>：</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># 减少用于 KV 缓存的显存比例</span>
+--engine_mem_util<span class="w"> </span><span class="m">0</span>.3
+
+<span class="c1"># 增加张量并行 (Tensor Parallelism) 大小</span>
+--engine_tp_size<span class="w"> </span><span class="m">2</span><span class="w">  </span><span class="c1"># 或 4</span>
+
+<span class="c1"># 启用引擎休眠模式</span>
+--enable_engine_sleep
+
+<span class="c1"># 使用较小的最大长度</span>
+--max_len<span class="w"> </span><span class="m">2048</span>
+</pre></div>
+</div>
+</section>
+<section id="id6">
+<h3>问题：训练过程中的显存泄漏<a class="headerlink" href="#id6" title="Permalink to this heading">¶</a></h3>
+<p><strong>现象</strong>：</p>
+<ul class="simple">
+<li><p>显存占用随时间逐渐增加</p></li>
+<li><p>在训练数个 episode 后最终导致 OOM</p></li>
+</ul>
+<p><strong>解决方案</strong>：</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># 启用 NCCL 优化</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">TORCH_NCCL_AVOID_RECORD_STREAMS</span><span class="o">=</span><span class="m">1</span>
+
+<span class="c1"># 定期清理缓存</span>
+<span class="c1"># 在训练代码中添加：</span>
+torch.cuda.empty_cache<span class="o">()</span>
+
+<span class="c1"># 使用引擎休眠模式</span>
+--enable_engine_sleep
+</pre></div>
+</div>
+</section>
+</section>
+<section id="id7">
+<h2>训练问题<a class="headerlink" href="#id7" title="Permalink to this heading">¶</a></h2>
+<section id="id8">
+<h3>问题：训练不收敛<a class="headerlink" href="#id8" title="Permalink to this heading">¶</a></h3>
+<p><strong>现象</strong>：</p>
+<ul class="simple">
+<li><p>奖励值不增加</p></li>
+<li><p>Loss 剧烈震荡</p></li>
+<li><p>模型表现无提升</p></li>
+</ul>
+<p><strong>诊断与解决方案</strong>：</p>
+<p><strong>1. 检查学习率</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># 如果过高（Loss 飙升）：</span>
+--actor_learning_rate<span class="w"> </span>1e-7<span class="w">  </span><span class="c1"># 调低</span>
+
+<span class="c1"># 如果过低（无进展）：</span>
+--actor_learning_rate<span class="w"> </span>1e-6<span class="w">  </span><span class="c1"># 调高</span>
+</pre></div>
+</div>
+<p><strong>2. 启用奖励归一化</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>--reward_running_norm<span class="w"> </span><span class="se">\</span>
+--reward_running_norm_minus_mean<span class="w"> </span><span class="se">\</span>
+--advantages_norm
+</pre></div>
+</div>
+<p><strong>3. 检查 KL 惩罚系数</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># 如果 KL 过大（策略更新过慢）：</span>
+--init_kl_coef<span class="w"> </span><span class="m">0</span>.0001<span class="w">  </span><span class="c1"># 调低</span>
+
+<span class="c1"># 如果 KL 过小（训练不稳定）：</span>
+--init_kl_coef<span class="w"> </span><span class="m">0</span>.01<span class="w">  </span><span class="c1"># 调高</span>
+</pre></div>
+</div>
+<p><strong>4. 尝试不同的算法架构</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># 从 GRPO 切换到 CPGD</span>
+--advantage_estimator<span class="w"> </span>cpgd<span class="w"> </span><span class="se">\</span>
+--kl_target<span class="w"> </span><span class="m">0</span>.01
+</pre></div>
+</div>
+</section>
+<section id="id9">
+<h3>问题：训练极其缓慢<a class="headerlink" href="#id9" title="Permalink to this heading">¶</a></h3>
+<p><strong>现象</strong>：</p>
+<ul class="simple">
+<li><p>在 8 张 A100 上每分钟处理样本数 &lt; 100</p></li>
+<li><p>每个 episode 需要耗费数小时</p></li>
+</ul>
+<p><strong>解决方案</strong>：</p>
+<p><strong>1. 定位性能瓶颈</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># 使用 profiler 进行性能分析</span>
+<span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">profiler</span><span class="o">.</span><span class="n">profile</span><span class="p">()</span> <span class="k">as</span> <span class="n">prof</span><span class="p">:</span>
+    <span class="n">trainer</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">prof</span><span class="o">.</span><span class="n">key_averages</span><span class="p">())</span>
+</pre></div>
+</div>
+<p><strong>2. 检查数据加载</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># 增加 worker 数量</span>
+--num_workers<span class="w"> </span><span class="m">8</span>
+
+<span class="c1"># 使用更快的 dataloader 配置</span>
+--dataloader_pin_memory
+</pre></div>
+</div>
+<p><strong>3. 优化生成阶段</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># 使用 FP8 推理</span>
+--engine_type<span class="w"> </span>vllm<span class="w">  </span><span class="c1"># vLLM 支持 FP8 推理</span>
+
+<span class="c1"># 增加生成阶段的张量并行 (TP)</span>
+--engine_tp_size<span class="w"> </span><span class="m">2</span>
+
+<span class="c1"># 如果可能，减小最大长度</span>
+--max_len<span class="w"> </span><span class="m">2048</span>
+</pre></div>
+</div>
+<p><strong>4. 减少日志记录频率</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># 不要每步都记录日志</span>
+--log_interval<span class="w"> </span><span class="m">100</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="id10">
+<h2>分布式训练问题<a class="headerlink" href="#id10" title="Permalink to this heading">¶</a></h2>
+<section id="nccl">
+<h3>问题：NCCL 超时<a class="headerlink" href="#nccl" title="Permalink to this heading">¶</a></h3>
+<p><strong>现象</strong>：</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="ne">RuntimeError</span><span class="p">:</span> <span class="n">NCCL</span> <span class="n">timeout</span>
+<span class="p">[</span><span class="n">E</span> <span class="n">ProcessGroupNCCL</span><span class="o">.</span><span class="n">cpp</span><span class="p">]</span> <span class="n">Caught</span> <span class="n">collective</span> <span class="n">operation</span> <span class="n">timeout</span>
+</pre></div>
+</div>
+<p><strong>解决方案</strong>：</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># 增加超时时间</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">NCCL_TIMEOUT</span><span class="o">=</span><span class="m">1800</span>
+
+<span class="c1"># 开启 NCCL 调试日志</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">NCCL_DEBUG</span><span class="o">=</span>INFO
+
+<span class="c1"># 尝试使用不同的网络接口</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">NCCL_SOCKET_IFNAME</span><span class="o">=</span>eth0
+
+<span class="c1"># 如果存在 IB 问题，尝试禁用 InfiniBand</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">NCCL_IB_DISABLE</span><span class="o">=</span><span class="m">1</span>
+
+<span class="c1"># 使用 GLOO 模式进行调试</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">NCCL_BACKEND</span><span class="o">=</span>gloo
+</pre></div>
+</div>
+</section>
+<section id="id11">
+<h3>问题：分布式初始化进程卡住<a class="headerlink" href="#id11" title="Permalink to this heading">¶</a></h3>
+<p><strong>现象</strong>：</p>
+<ul class="simple">
+<li><p>脚本停在 “Initializing process group”</p></li>
+<li><p>无任何错误提示</p></li>
+</ul>
+<p><strong>解决方案</strong>：</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># 1. 检查网络连通性</span>
+ping<span class="w"> </span><span class="nv">$MASTER_ADDR</span>
+
+<span class="c1"># 2. 检查端口可用性</span>
+nc<span class="w"> </span>-zv<span class="w"> </span><span class="nv">$MASTER_ADDR</span><span class="w"> </span><span class="nv">$MASTER_PORT</span>
+
+<span class="c1"># 3. 设置正确的环境变量</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">MASTER_ADDR</span><span class="o">=</span><span class="m">192</span>.168.1.1
+<span class="nb">export</span><span class="w"> </span><span class="nv">MASTER_PORT</span><span class="o">=</span><span class="m">29500</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">WORLD_SIZE</span><span class="o">=</span><span class="m">8</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">RANK</span><span class="o">=</span><span class="m">0</span><span class="w">  </span><span class="c1"># 每张 GPU 分别设置为 0 到 7</span>
+
+<span class="c1"># 4. 使用显式的初始化方法</span>
+torchrun<span class="w"> </span>--nproc_per_node<span class="o">=</span><span class="m">8</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--master_addr<span class="o">=</span><span class="nv">$MASTER_ADDR</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--master_port<span class="o">=</span><span class="nv">$MASTER_PORT</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>train.py
+
+<span class="c1"># 5. 开启详细的调试日志</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">TORCH_DISTRIBUTED_DEBUG</span><span class="o">=</span>DETAIL
+</pre></div>
+</div>
+</section>
+<section id="gpu">
+<h3>问题：GPU 利用率不均衡<a class="headerlink" href="#gpu" title="Permalink to this heading">¶</a></h3>
+<p><strong>现象</strong>：</p>
+<ul class="simple">
+<li><p>部分 GPU 负载 100%，其余处于空闲</p></li>
+<li><p>即使有多个 GPU，训练依然缓慢</p></li>
+</ul>
+<p><strong>解决方案</strong>：</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># 1. 检查 batch size 的整除性</span>
+<span class="c1"># 确保 batch_size % world_size == 0</span>
+
+<span class="c1"># 2. 使用张量并行 (Tensor Parallelism)</span>
+--engine_tp_size<span class="w"> </span><span class="m">2</span><span class="w">  </span><span class="c1"># 将模型拆分到多张 GPU</span>
+
+<span class="c1"># 3. 检查流水线气泡</span>
+<span class="c1"># 确保 train_batch_size 足够大</span>
+
+<span class="c1"># 4. 监控 GPU 实时负载</span>
+nvidia-smi<span class="w"> </span>dmon<span class="w"> </span>-i<span class="w"> </span><span class="m">0</span>,1,2,3,4,5,6,7<span class="w"> </span>-s<span class="w"> </span>u
+
+<span class="c1"># 5. 针对长序列开启序列并行 (Sequence Parallelism)</span>
+--sp_size<span class="w"> </span><span class="m">2</span>
+</pre></div>
+</div>
+</section>
+<section id="id12">
+<h3>问题：多节点训练失败<a class="headerlink" href="#id12" title="Permalink to this heading">¶</a></h3>
+<p><strong>现象</strong>：</p>
+<ul class="simple">
+<li><p>单节点运行正常</p></li>
+<li><p>跨节点运行时失败</p></li>
+</ul>
+<p><strong>解决方案</strong>：</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># 1. 使用 SLURM 调度器</span>
+srun<span class="w"> </span>-N2<span class="w"> </span>--gres<span class="o">=</span>gpu:8<span class="w"> </span>--ntasks-per-node<span class="o">=</span><span class="m">8</span><span class="w"> </span>bash<span class="w"> </span>train.sh
+
+<span class="c1"># 2. 使用显式的 torchrun 命令</span>
+<span class="c1"># 在每个节点上执行：</span>
+torchrun<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--nproc_per_node<span class="o">=</span><span class="m">8</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--nnodes<span class="o">=</span><span class="m">2</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--node_rank<span class="o">=</span><span class="nv">$SLURM_NODEID</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--master_addr<span class="o">=</span><span class="nv">$MASTER_ADDR</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--master_port<span class="o">=</span><span class="m">29500</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>train.py
+
+<span class="c1"># 3. 检查防火墙规则</span>
+<span class="c1"># 确保节点间的通信端口已开放</span>
+
+<span class="c1"># 4. 使用共享文件系统</span>
+<span class="c1"># 确保所有节点都能访问相同的模型/数据路径</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="id13">
+<h2>性能问题<a class="headerlink" href="#id13" title="Permalink to this heading">¶</a></h2>
+<section id="id14">
+<h3>问题：GPU 利用率低<a class="headerlink" href="#id14" title="Permalink to this heading">¶</a></h3>
+<p><strong>现象</strong>：</p>
+<ul class="simple">
+<li><p>GPU 利用率 &lt; 80%</p></li>
+<li><p>训练速度慢于预期</p></li>
+</ul>
+<p><strong>解决方案</strong>：</p>
+<p><strong>1. 增加批量大小 (Batch Size)</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>--micro_train_batch_size<span class="w"> </span><span class="m">2</span><span class="w">  </span><span class="c1"># 翻倍</span>
+--micro_rollout_batch_size<span class="w"> </span><span class="m">4</span>
+</pre></div>
+</div>
+<p><strong>2. 减少 CPU 瓶颈</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>--num_workers<span class="w"> </span><span class="m">8</span>
+--prefetch_factor<span class="w"> </span><span class="m">2</span>
+</pre></div>
+</div>
+<p><strong>3. 启用 Flash Attention</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>--flash_attn
+</pre></div>
+</div>
+<p><strong>4. 使用融合算子 (Fused Kernels)</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>--fused_linear_logprob
+</pre></div>
+</div>
+</section>
+<section id="id15">
+<h3>问题：生成速度过慢<a class="headerlink" href="#id15" title="Permalink to this heading">¶</a></h3>
+<p><strong>现象</strong>：</p>
+<ul class="simple">
+<li><p>生成 (rollout) 阶段占据了绝大部分训练时间</p></li>
+<li><p>生成速度 &lt; 100 tokens/sec</p></li>
+</ul>
+<p><strong>解决方案</strong>：</p>
+<p><strong>1. 使用 vLLM 推理引擎</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>--engine_type<span class="w"> </span>vllm<span class="w">  </span><span class="c1"># 代替传统的 Transformers 推理</span>
+--engine_tp_size<span class="w"> </span><span class="m">2</span>
+</pre></div>
+</div>
+<p><strong>2. 优化 KV 缓存</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>--engine_mem_util<span class="w"> </span><span class="m">0</span>.9<span class="w">  </span><span class="c1"># 在显存允许的情况下</span>
+</pre></div>
+</div>
+<p><strong>3. 使用 FP8 推理 (如硬件支持)</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># vLLM 在 H100 等卡上会自动尝试使用 FP8</span>
+--engine_type<span class="w"> </span>vllm
+</pre></div>
+</div>
+<p><strong>4. 减少采样样本数</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>--n_samples_per_prompt<span class="w"> </span><span class="m">4</span><span class="w">  </span><span class="c1"># 代替默认的 8</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="id16">
+<h2>推理引擎问题<a class="headerlink" href="#id16" title="Permalink to this heading">¶</a></h2>
+<section id="id17">
+<h3>问题：vLLM 引擎初始化失败<a class="headerlink" href="#id17" title="Permalink to this heading">¶</a></h3>
+<p><strong>现象</strong>：</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Failed</span> <span class="n">to</span> <span class="n">initialize</span> <span class="n">vLLM</span> <span class="n">engine</span>
+<span class="ne">RuntimeError</span><span class="p">:</span> <span class="n">Cannot</span> <span class="n">allocate</span> <span class="n">memory</span>
+</pre></div>
+</div>
+<p><strong>解决方案</strong>：</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># 1. 检查 GPU 显存</span>
+nvidia-smi
+
+<span class="c1"># 2. 降低显存分配比例 (engine_mem_util)</span>
+--engine_mem_util<span class="w"> </span><span class="m">0</span>.5
+
+<span class="c1"># 3. 减小张量并行 (TP) 大小</span>
+--engine_tp_size<span class="w"> </span><span class="m">1</span>
+
+<span class="c1"># 4. 检查模型兼容性</span>
+<span class="c1"># 某些模型可能需要特定的 vLLM 版本</span>
+
+<span class="c1"># 5. 更新 vLLM</span>
+pip<span class="w"> </span>install<span class="w"> </span>-U<span class="w"> </span>vllm
+</pre></div>
+</div>
+</section>
+<section id="id18">
+<h3>问题：引擎权重未能同步更新<a class="headerlink" href="#id18" title="Permalink to this heading">¶</a></h3>
+<p><strong>现象</strong>：</p>
+<ul class="simple">
+<li><p>策略模型 (Policy Model) 已更新，但生成的文本内容无变化</p></li>
+<li><p>奖励值保持恒定</p></li>
+</ul>
+<p><strong>解决方案</strong>：</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># 确保调用了 update_engine_weights</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">update_engine_weights</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">actor</span><span class="p">)</span>
+
+<span class="c1"># 在训练循环中检查：</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">ppo_train</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="o">...</span>
+    <span class="c1"># 训练结束后</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">update_engine_weights</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">actor</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="id19">
+<h3>问题：引擎休眠/唤醒失败<a class="headerlink" href="#id19" title="Permalink to this heading">¶</a></h3>
+<p><strong>现象</strong>：</p>
+<ul class="simple">
+<li><p>训练在生成结束后卡住</p></li>
+<li><p>报错 “Engine already sleeping”</p></li>
+</ul>
+<p><strong>解决方案</strong>：</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># 1. 调试时可尝试禁用引擎休眠</span>
+--disable_engine_sleep
+
+<span class="c1"># 2. 或使用自动化管理</span>
+<span class="c1"># gather_and_generate 函数会自动处理休眠与唤醒</span>
+<span class="nv">all_outputs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>self.strategy.gather_and_generate<span class="o">(</span>
+<span class="w">    </span>...,
+<span class="w">    </span><span class="nv">sleep_engine</span><span class="o">=</span>True<span class="w">  </span><span class="c1"># 启用自动管理</span>
+<span class="o">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="checkpoint">
+<h2>检查点 (Checkpoint) 问题<a class="headerlink" href="#checkpoint" title="Permalink to this heading">¶</a></h2>
+<section id="id20">
+<h3>问题：保存检查点失败<a class="headerlink" href="#id20" title="Permalink to this heading">¶</a></h3>
+<p><strong>现象</strong>：</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="ne">OSError</span><span class="p">:</span> <span class="n">Disk</span> <span class="n">quota</span> <span class="n">exceeded</span>
+<span class="ne">RuntimeError</span><span class="p">:</span> <span class="n">Cannot</span> <span class="n">save</span> <span class="n">checkpoint</span>
+</pre></div>
+</div>
+<p><strong>解决方案</strong>：</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># 1. 检查磁盘剩余空间</span>
+df<span class="w"> </span>-h
+
+<span class="c1"># 2. 限制保存的检查点数量</span>
+--max_ckpt_num<span class="w"> </span><span class="m">3</span>
+
+<span class="c1"># 3. 设置最大存储占用的限制</span>
+--max_ckpt_mem<span class="w"> </span><span class="m">1000</span><span class="w">  </span><span class="c1"># 单位：GB</span>
+
+<span class="c1"># 4. 更换保存路径</span>
+--save_path<span class="w"> </span>/path/with/space
+</pre></div>
+</div>
+</section>
+</section>
+<section id="id21">
+<h2>调试技巧<a class="headerlink" href="#id21" title="Permalink to this heading">¶</a></h2>
+<section id="id22">
+<h3>开启详细调试日志<a class="headerlink" href="#id22" title="Permalink to this heading">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># PyTorch 分布式调试</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">TORCH_DISTRIBUTED_DEBUG</span><span class="o">=</span>DETAIL
+
+<span class="c1"># NCCL 调试</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">NCCL_DEBUG</span><span class="o">=</span>INFO
+
+<span class="c1"># 强制同步执行（精确定位 CUDA 错误）</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">CUDA_LAUNCH_BLOCKING</span><span class="o">=</span><span class="m">1</span>
+</pre></div>
+</div>
+</section>
+<section id="memory-profiling">
+<h3>显存画像分析 (Memory Profiling)<a class="headerlink" href="#memory-profiling" title="Permalink to this heading">¶</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+
+<span class="c1"># 记录显存分配历史</span>
+<span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">memory</span><span class="o">.</span><span class="n">_record_memory_history</span><span class="p">()</span>
+
+<span class="c1"># 训练循环</span>
+<span class="o">...</span>
+
+<span class="c1"># 导出快照文件</span>
+<span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">memory</span><span class="o">.</span><span class="n">_dump_snapshot</span><span class="p">(</span><span class="s2">&quot;memory.pickle&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="performance-profiling">
+<h3>性能画像分析 (Performance Profiling)<a class="headerlink" href="#performance-profiling" title="Permalink to this heading">¶</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">profiler</span><span class="o">.</span><span class="n">profile</span><span class="p">(</span>
+    <span class="n">activities</span><span class="o">=</span><span class="p">[</span>
+        <span class="n">torch</span><span class="o">.</span><span class="n">profiler</span><span class="o">.</span><span class="n">ProfilerActivity</span><span class="o">.</span><span class="n">CPU</span><span class="p">,</span>
+        <span class="n">torch</span><span class="o">.</span><span class="n">profiler</span><span class="o">.</span><span class="n">ProfilerActivity</span><span class="o">.</span><span class="n">CUDA</span><span class="p">,</span>
+    <span class="p">],</span>
+    <span class="n">record_shapes</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">with_stack</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span> <span class="k">as</span> <span class="n">prof</span><span class="p">:</span>
+    <span class="n">trainer</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
+
+<span class="c1"># 查看耗时分布</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">prof</span><span class="o">.</span><span class="n">key_averages</span><span class="p">()</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">sort_by</span><span class="o">=</span><span class="s2">&quot;cuda_time_total&quot;</span><span class="p">))</span>
+</pre></div>
+</div>
+</section>
+<section id="id23">
+<h3>问题反馈清单<a class="headerlink" href="#id23" title="Permalink to this heading">¶</a></h3>
+<p>在报告 Bug 时，请提供以下信息：</p>
+<ul class="contains-task-list simple">
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> 硬件设备：GPU 型号、数量、显存容量</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> 软件版本：CUDA、PyTorch、vLLM 版本号</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> 运行命令：包含所有启动参数的完整命令</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> 运行日志：完整的错误堆栈追踪 (Traceback)</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> 环境变量：已生效的相关环境变量设置</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> 最小复现脚本</p></li>
+<li class="task-list-item"><p><input class="task-list-item-checkbox" disabled="disabled" type="checkbox"> 您已尝试过的解决方法</p></li>
+</ul>
+</section>
+</section>
+<section id="id24">
+<h2>获取更多帮助<a class="headerlink" href="#id24" title="Permalink to this heading">¶</a></h2>
+<p>如果上述方法无法解决您的问题：</p>
+<ol class="arabic simple">
+<li><p><strong>查阅 FAQ</strong>：<a class="reference internal" href="faq_zh.html"><span class="std std-doc">常见问题</span></a></p></li>
+<li><p><strong>搜索 Issues</strong>：<a class="reference external" href="https://github.com/opendilab/LightRFT/issues">GitHub Issues</a></p></li>
+<li><p><strong>社区交流</strong>：GitHub Discussions</p></li>
+<li><p><strong>提交 Bug</strong>：提交带有调试信息的新 Issue</p></li>
+</ol>
+</section>
+<section id="id25">
+<h2>常见错误信息快速索引<a class="headerlink" href="#id25" title="Permalink to this heading">¶</a></h2>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>错误信息</p></th>
+<th class="head"><p>对应章节</p></th>
+<th class="head"><p>快速修复</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">CUDA</span> <span class="pre">out</span> <span class="pre">of</span> <span class="pre">memory</span></code></p></td>
+<td><p>显存问题</p></td>
+<td><p>减小 batch size，开启梯度检查点</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">num_rollouts_per_episodes</span> <span class="pre">=</span> <span class="pre">0</span></code></p></td>
+<td><p>训练问题</p></td>
+<td><p>增大 <code class="docutils literal notranslate"><span class="pre">train_batch_size</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">NCCL</span> <span class="pre">timeout</span></code></p></td>
+<td><p>分布式训练问题</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">export</span> <span class="pre">NCCL_TIMEOUT=1800</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">Failed</span> <span class="pre">to</span> <span class="pre">initialize</span> <span class="pre">vLLM</span></code></p></td>
+<td><p>推理引擎问题</p></td>
+<td><p>调低 <code class="docutils literal notranslate"><span class="pre">engine_mem_util</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">NaN</span> <span class="pre">loss</span></code></p></td>
+<td><p>训练问题</p></td>
+<td><p>调低学习率，开启梯度裁剪</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="id26">
+<h2>另请参阅<a class="headerlink" href="#id26" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="faq_zh.html"><span class="std std-doc">常见问题 (FAQ)</span></a> - 汇总的常见问题解答</p></li>
+<li><p><a class="reference internal" href="#../user_guide/configuration.md"><span class="xref myst">配置指南</span></a> - 全量参数说明</p></li>
+<li><p><a class="reference internal" href="#../best_practice/strategy_usage.md"><span class="xref myst">最佳实践</span></a> - 框架优化建议</p></li>
+</ul>
+</section>
+</section>
+
+
+              </article>
+              
+            </div>
+            <footer>
+  
+
+  <hr>
+
+  <div role="contentinfo">
+    <p>
+      &copy; Copyright 2025, OpenDILab.
+
+    </p>
+  </div>
+  
+  <div>
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a
+      href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the
+      Docs</a>.
+  </div>
+   
+
+</footer>
+          </div>
+        </div>
+
+        <div class="pytorch-content-right" id="pytorch-content-right">
+          <div class="pytorch-right-menu" id="pytorch-right-menu">
+            <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
+              <ul>
+<li><a class="reference internal" href="#">故障排除指南</a><ul>
+<li><a class="reference internal" href="#id2">快速诊断</a></li>
+<li><a class="reference internal" href="#id3">安装问题</a><ul>
+<li><a class="reference internal" href="#id4">问题：包导入错误</a></li>
+<li><a class="reference internal" href="#cuda">问题：CUDA 版本不匹配</a></li>
+<li><a class="reference internal" href="#vllm">问题：vLLM 安装失败</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id5">显存问题</a><ul>
+<li><a class="reference internal" href="#out-of-memory-oom">问题：显存不足 (Out of Memory, OOM) 错误</a></li>
+<li><a class="reference internal" href="#vllm-oom">问题：vLLM 引擎引发的 OOM</a></li>
+<li><a class="reference internal" href="#id6">问题：训练过程中的显存泄漏</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id7">训练问题</a><ul>
+<li><a class="reference internal" href="#id8">问题：训练不收敛</a></li>
+<li><a class="reference internal" href="#id9">问题：训练极其缓慢</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id10">分布式训练问题</a><ul>
+<li><a class="reference internal" href="#nccl">问题：NCCL 超时</a></li>
+<li><a class="reference internal" href="#id11">问题：分布式初始化进程卡住</a></li>
+<li><a class="reference internal" href="#gpu">问题：GPU 利用率不均衡</a></li>
+<li><a class="reference internal" href="#id12">问题：多节点训练失败</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id13">性能问题</a><ul>
+<li><a class="reference internal" href="#id14">问题：GPU 利用率低</a></li>
+<li><a class="reference internal" href="#id15">问题：生成速度过慢</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id16">推理引擎问题</a><ul>
+<li><a class="reference internal" href="#id17">问题：vLLM 引擎初始化失败</a></li>
+<li><a class="reference internal" href="#id18">问题：引擎权重未能同步更新</a></li>
+<li><a class="reference internal" href="#id19">问题：引擎休眠/唤醒失败</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#checkpoint">检查点 (Checkpoint) 问题</a><ul>
+<li><a class="reference internal" href="#id20">问题：保存检查点失败</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id21">调试技巧</a><ul>
+<li><a class="reference internal" href="#id22">开启详细调试日志</a></li>
+<li><a class="reference internal" href="#memory-profiling">显存画像分析 (Memory Profiling)</a></li>
+<li><a class="reference internal" href="#performance-profiling">性能画像分析 (Performance Profiling)</a></li>
+<li><a class="reference internal" href="#id23">问题反馈清单</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id24">获取更多帮助</a></li>
+<li><a class="reference internal" href="#id25">常见错误信息快速索引</a></li>
+<li><a class="reference internal" href="#id26">另请参阅</a></li>
+</ul>
+</li>
+</ul>
+
+            </div>
+          </div>
+        </div>
+    </section>
+  </div>
+
+  
+
+
+  
+
+  
+  <script type="text/javascript" id="documentation_options" data-url_root="../"
+    src="../_static/documentation_options.js"></script>
+  <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+  <script src="../_static/doctools.js"></script>
+  <script src="../_static/sphinx_highlight.js"></script>
+  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+  <script src="../_static/js/language_switch.js"></script>
+  
+
+  
+
+  <script type="text/javascript" src="../_static/js/vendor/popper.min.js"></script>
+  <script type="text/javascript" src="../_static/js/vendor/bootstrap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+    jQuery(function () {
+      SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+  <!-- Begin Footer -->
+
+  <div class="container-fluid docs-tutorials-resources" id="docs-tutorials-resources">
+  </div>
+
+  <!-- End Footer -->
+
+  <!-- Begin Mobile Menu -->
+
+  <div class="mobile-main-menu">
+    <div class="container-fluid">
+      <div class="container">
+        <div class="mobile-main-menu-header-container">
+          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
+        </div>
+      </div>
+    </div>
+
+    <div class="mobile-main-menu-links-container">
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://github.com/opendilab/LightRFT" target="_blank">GitHub</a>
+          </li>
+      </div>
+    </div>
+  </div>
+
+  <!-- End Mobile Menu -->
+
+  <script type="text/javascript" src="../_static/js/vendor/anchor.min.js"></script>
+
+  <script type="text/javascript">
+    $(document).ready(function () {
+      mobileMenu.bind();
+      mobileTOC.bind();
+      pytorchAnchors.bind();
+      sideMenus.bind();
+      scrollToAnchor.bind();
+      highlightNavigation.bind();
+      mainMenuDropdown.bind();
+      filterTags.bind();
+
+      // Add class to links that have code blocks, since we cannot create links in code blocks
+      $("article.pytorch-article a span.pre").each(function (e) {
+        $(this).closest("a").addClass("has-code");
+      });
+    })
+  </script>
+</body>
+
+</html>

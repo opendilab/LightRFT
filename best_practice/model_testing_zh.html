@@ -1,0 +1,753 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js" lang="en">
+<!--<![endif]-->
+
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>模型测试指南 &mdash; LightRFT v0.1.1 documentation</title>
+  
+
+  <link rel="shortcut icon" href="../_static/images/favicon.ico" />
+  
+  
+
+  
+
+  
+  
+  
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/readthedocs.css" type="text/css" />
+  <link rel="index" title="Index" href="../genindex.html" />
+  <link rel="search" title="Search" href="../search.html" />
+  <!-- Google Analytics -->
+  <script type="text/javascript">
+    var collapsedSections = [];
+  </script>
+  
+  <!-- End Google Analytics -->
+  
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+  <script>
+    MathJax = {
+        chtml: {
+            scale: 1,
+            minScale: 1,
+        },
+        svg: {
+            scale: 1,
+            minScale: 1,
+        }
+    }
+</script>
+
+  <!-- Preload the theme fonts -->
+
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-book.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/IBMPlexMono/IBMPlexMono-Medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-medium-italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/IBMPlexMono/IBMPlexMono-SemiBold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+
+<!-- Preload the katex fonts -->
+
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Math-Italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size1-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size4-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size2-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size3-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Caligraphic-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.2/css/all.css"
+    integrity="sha384-vSIIfh2YWi9wW0r9iZe7RJPrKwp6bG+s9QZMoITbCckVJqGCCRhc+ccxNcdpHuYu" crossorigin="anonymous">
+</head>
+
+<div class="container-fluid header-holder tutorials-header" id="header-holder">
+  <div class="container">
+    <div class="header-container">
+      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+        aria-label="OpenMMLab"></a>
+
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://github.com/opendilab/LightRFT" target="_blank">GitHub</a>
+          </li>
+          <li >
+            <div id="resourcesDropdownButton" data-toggle="resources-dropdown" class="resources-dropdown">
+              <a
+                class="resource-option with-down-arrow">
+                OpenDILab
+              </a>
+              <div class="resources-dropdown-menu">
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-engine" target="_blank">
+                  <span class="dropdown-title">DI-engine </span>
+                  <p>OpenDILab Decision AI Engine</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/LightZero" target="_blank">
+                  <span class="dropdown-title">LightZero </span>
+                  <p>OpenDILab Decision Monte Carlo Tree Search Framework</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/GenerativeRL" target="_blank">
+                  <span class="dropdown-title">GenerativeRL </span>
+                  <p>OpenDILab Generative AI Framework</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-star" target="_blank">
+                  <span class="dropdown-title">DI-star </span>
+                  <p>OpenDILab Decision AI in StarCraftII</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-drive" target="_blank">
+                  <span class="dropdown-title">DI-drive </span>
+                  <p>OpenDILab Auto-driving platform</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/GoBigger" target="_blank">
+                  <span class="dropdown-title">GoBigger </span>
+                  <p>OpenDILab Multi-Agent Environment</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-smartcross" target="_blank">
+                  <span class="dropdown-title">DI-smartcross </span>
+                  <p>Decision Intelligence Platform for Traffic Crossing Signal Control</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-treetensor" target="_blank">
+                  <span class="dropdown-title">DI-treetensor </span>
+                  <p>Tree Nested PyTorch Tensor Lib</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-sheep" target="_blank">
+                  <span class="dropdown-title">DI-sheep </span>
+                  <p>Deep Reinforcement Learning + 3 Tiles Game</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-model-based-RL" target="_blank">
+                  <span class="dropdown-title">awesome-model-based-RL </span>
+                  <p>A curated list of awesome model based RL resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-decision-transformer" target="_blank">
+                  <span class="dropdown-title">awesome-decision-transformer </span>
+                  <p>A curated list of Decision Transformer resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-exploration-rl" target="_blank">
+                  <span class="dropdown-title">awesome-exploration-rl </span>
+                  <p>A curated list of awesome exploration RL resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-multi-modal-reinforcement-learning" target="_blank">
+                  <span class="dropdown-title">awesome-multi-modal-reinforcement-learning </span>
+                  <p>A curated list of Multi-Modal Reinforcement Learning resources (continually updated)</p>
+                </a>
+              </div>
+          </li>
+        </ul>
+      </div>
+
+      <a class="main-menu-open-button" href="#" data-behavior="open-mobile-menu"></a>
+    </div>
+  </div>
+</div>
+
+<body class="pytorch-body">
+
+   
+
+  
+
+  <div class="table-of-contents-link-wrapper">
+    <span>Table of Contents</span>
+    <a href="#" class="toggle-table-of-contents" data-behavior="toggle-table-of-contents"></a>
+  </div>
+
+  <nav data-toggle="wy-nav-shift" class="pytorch-left-menu" id="pytorch-left-menu">
+    <div class="pytorch-side-scroll">
+      <div class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        <div class="pytorch-left-menu-search">
+          
+
+          
+          
+          
+          
+
+          
+
+
+
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search Docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        
+        
+        
+        
+        
+        <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../installation/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quick_start/index.html">Quick Start</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide &amp; Best Practices</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="index.html">Best Practices</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/utils/index.html">lightrft.utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/datasets/index.html">lightrft.datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/models/index.html">lightrft.models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/strategy/index.html">lightrft.strategy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/trainer/index.html">lightrft.trainer</a></li>
+</ul>
+
+        
+        
+      </div>
+    </div>
+  </nav>
+
+  <div class="pytorch-container">
+    <div class="pytorch-page-level-bar" id="pytorch-page-level-bar">
+      <div class="pytorch-breadcrumbs-wrapper">
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="pytorch-breadcrumbs">
+    
+      <li>
+        <a href="../index.html">
+            Docs
+        </a> &gt;
+      </li>
+
+        
+      <li>模型测试指南</li>
+    
+    
+      <li class="pytorch-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/best_practice/model_testing_zh.md.txt" rel="nofollow"><img src="../_static/images/view-page-source-icon.svg"></a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+</div>
+      </div>
+
+      <div class="pytorch-shortcuts-wrapper" id="pytorch-shortcuts-wrapper">
+        Shortcuts
+      </div>
+    </div>
+
+    <section data-toggle="wy-nav-shift" id="pytorch-content-wrap" class="pytorch-content-wrap">
+      <div class="pytorch-content-left">
+        
+          <div class="rst-content">
+            
+            <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
+              <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
+                
+  <section id="id1">
+<h1>模型测试指南<a class="headerlink" href="#id1" title="Permalink to this heading">¶</a></h1>
+<p>本指南介绍了如何测试和评估训练好的模型，特别是视觉语言模型 (VLMs)。</p>
+<section id="id2">
+<h2>概述<a class="headerlink" href="#id2" title="Permalink to this heading">¶</a></h2>
+<p>LightRFT 提供了用于交互式模型测试的工具，支持：</p>
+<ul class="simple">
+<li><p><strong>交互式对话</strong>：实时对话测试。</p></li>
+<li><p><strong>多模态支持</strong>：支持文本和图像输入。</p></li>
+<li><p><strong>批量测试</strong>：使用 JSON 文件进行自动化测试。</p></li>
+<li><p><strong>性能优化</strong>：支持 Flash Attention 2 和 bfloat16。</p></li>
+<li><p><strong>命令行界面</strong>：便捷的测试命令。</p></li>
+</ul>
+</section>
+<section id="id3">
+<h2>快速开始<a class="headerlink" href="#id3" title="Permalink to this heading">¶</a></h2>
+<section id="id4">
+<h3>基本文本对话<a class="headerlink" href="#id4" title="Permalink to this heading">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>test_chat.py<span class="w"> </span>--model_path<span class="w"> </span>&lt;checkpoint-path&gt;
+</pre></div>
+</div>
+</section>
+<section id="id5">
+<h3>基于图像的测试<a class="headerlink" href="#id5" title="Permalink to this heading">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># 启动交互模式</span>
+python<span class="w"> </span>test_chat.py<span class="w"> </span>--model_path<span class="w"> </span>&lt;checkpoint-path&gt;
+</pre></div>
+</div>
+<p>在交互模式下：</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>[You] /image &lt;image-path&gt;
+✓ Image loaded: &lt;image-path&gt;
+[You] What do you see in this image?
+[Assistant] ...
+</pre></div>
+</div>
+</section>
+<section id="id6">
+<h3>批量测试<a class="headerlink" href="#id6" title="Permalink to this heading">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>test_chat.py<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--model_path<span class="w"> </span>&lt;checkpoint-path&gt;<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--batch<span class="w"> </span>&lt;test-file.json&gt;<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--output<span class="w"> </span>&lt;results.json&gt;
+</pre></div>
+</div>
+</section>
+<section id="id7">
+<h3>自定义生成参数<a class="headerlink" href="#id7" title="Permalink to this heading">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>test_chat.py<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--model_path<span class="w"> </span>&lt;checkpoint-path&gt;<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--max_tokens<span class="w"> </span><span class="m">4096</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--temperature<span class="w"> </span><span class="m">0</span>.5<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--top_p<span class="w"> </span><span class="m">0</span>.9
+</pre></div>
+</div>
+</section>
+</section>
+<section id="id8">
+<h2>交互命令<a class="headerlink" href="#id8" title="Permalink to this heading">¶</a></h2>
+<p>交互模式下的可用命令：</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>命令</p></th>
+<th class="head"><p>描述</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">/image</span> <span class="pre">&lt;path&gt;</span></code></p></td>
+<td><p>为下一次查询加载图像</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">/clear</span></code></p></td>
+<td><p>清除对话历史</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">/reset</span></code></p></td>
+<td><p>重置已加载的图像</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">/help</span></code></p></td>
+<td><p>显示帮助信息</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">/quit</span></code> 或 <code class="docutils literal notranslate"><span class="pre">/exit</span></code></p></td>
+<td><p>退出程序</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="id9">
+<h2>批量测试文件格式<a class="headerlink" href="#id9" title="Permalink to this heading">¶</a></h2>
+<section id="id10">
+<h3>纯文本测试<a class="headerlink" href="#id10" title="Permalink to this heading">¶</a></h3>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">[</span>
+<span class="w">  </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;query&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;What is 2 + 2?&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;expected&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;4&quot;</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;query&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Explain the Pythagorean theorem.&quot;</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+</section>
+<section id="id11">
+<h3>图文输入测试<a class="headerlink" href="#id11" title="Permalink to this heading">¶</a></h3>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">[</span>
+<span class="w">  </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;query&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Describe what you see in this image.&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;images&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;&lt;image-path-1&gt;&quot;</span><span class="p">],</span>
+<span class="w">    </span><span class="nt">&quot;expected&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Description of the image&quot;</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;query&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Compare these two images.&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;images&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;&lt;image-path-1&gt;&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;&lt;image-path-2&gt;&quot;</span><span class="p">]</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="id12">
+<h2>配置参数<a class="headerlink" href="#id12" title="Permalink to this heading">¶</a></h2>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>参数</p></th>
+<th class="head"><p>默认值</p></th>
+<th class="head"><p>描述</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--model_path</span></code></p></td>
+<td><p>-</p></td>
+<td><p>模型检查点路径（必填）</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--device</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">cuda</span></code></p></td>
+<td><p>推理设备 (cuda/cpu)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--max_tokens</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">8192</span></code></p></td>
+<td><p>最大生成 Token 数</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--temperature</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">0.7</span></code></p></td>
+<td><p>采样温度（0 表示贪婪解码）</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--top_p</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">0.95</span></code></p></td>
+<td><p>Top-p 采样参数</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--system_prompt</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p></td>
+<td><p>自定义系统提示词</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--batch</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p></td>
+<td><p>批量测试 JSON 文件路径</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--output</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">None</span></code></p></td>
+<td><p>批量测试结果输出文件路径</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="id13">
+<h2>使用示例<a class="headerlink" href="#id13" title="Permalink to this heading">¶</a></h2>
+<section id="id14">
+<h3>示例 1：数学问题求解<a class="headerlink" href="#id14" title="Permalink to this heading">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>test_chat.py<span class="w"> </span>--model_path<span class="w"> </span>&lt;checkpoint-path&gt;
+</pre></div>
+</div>
+<p>交互示例：</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>[You] If a triangle has sides 3, 4, and 5, what is its area?
+
+[Assistant] &lt;think&gt;
+This is a right triangle since 3² + 4² = 9 + 16 = 25 = 5².
+For a right triangle, the area is (1/2) × base × height.
+Using the two perpendicular sides: Area = (1/2) × 3 × 4 = 6
+&lt;/think&gt;
+
+The area of the triangle is 6 square units.
+</pre></div>
+</div>
+</section>
+<section id="id15">
+<h3>示例 2：几何图形识别<a class="headerlink" href="#id15" title="Permalink to this heading">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>test_chat.py<span class="w"> </span>--model_path<span class="w"> </span>&lt;checkpoint-path&gt;
+</pre></div>
+</div>
+<p>交互示例：</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>[You] /image &lt;geometry-image-path&gt;
+✓ Image loaded: &lt;geometry-image-path&gt;
+
+[You] Solve the geometry problem shown in this image.
+
+[Assistant] &lt;think&gt;
+Looking at the diagram, I can see a triangle ABC with...
+[详细的推理过程]
+&lt;/think&gt;
+
+The answer is [solution].
+</pre></div>
+</div>
+</section>
+<section id="id16">
+<h3>示例 3：批量性能测试<a class="headerlink" href="#id16" title="Permalink to this heading">¶</a></h3>
+<p>创建测试文件 <code class="docutils literal notranslate"><span class="pre">test_questions.json</span></code>:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">[</span>
+<span class="w">  </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;query&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Find the area of triangle with base 6 and height 8.&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;expected&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;24&quot;</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;query&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;What is the perimeter of a square with side length 5?&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;expected&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;20&quot;</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+<p>运行批量测试：</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>test_chat.py<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--model_path<span class="w"> </span>&lt;checkpoint-path&gt;<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--batch<span class="w"> </span>test_questions.json<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--output<span class="w"> </span>test_results.json<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--temperature<span class="w"> </span><span class="m">0</span>.0
+</pre></div>
+</div>
+</section>
+</section>
+<section id="id17">
+<h2>性能优化<a class="headerlink" href="#id17" title="Permalink to this heading">¶</a></h2>
+<p>测试脚本包含：</p>
+<ol class="arabic simple">
+<li><p><strong>Flash Attention 2</strong>：加速注意力计算。</p></li>
+<li><p><strong>BFloat16</strong>：减少显存占用并加快推理。</p></li>
+<li><p><strong>批量处理</strong>：提高批量测试的吞吐量。</p></li>
+<li><p><strong>内存管理</strong>：自动 GPU 显存清理。</p></li>
+</ol>
+</section>
+<section id="id18">
+<h2>常见问题排查<a class="headerlink" href="#id18" title="Permalink to this heading">¶</a></h2>
+<section id="oom">
+<h3>显存不足 (OOM)<a class="headerlink" href="#oom" title="Permalink to this heading">¶</a></h3>
+<p>如果遇到显存问题：</p>
+<p><strong>1. 减少 max_tokens：</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>test_chat.py<span class="w"> </span>--model_path<span class="w"> </span>&lt;checkpoint-path&gt;<span class="w"> </span>--max_tokens<span class="w"> </span><span class="m">4096</span>
+</pre></div>
+</div>
+<p><strong>2. 使用 CPU 推理（较慢）：</strong></p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>test_chat.py<span class="w"> </span>--model_path<span class="w"> </span>&lt;checkpoint-path&gt;<span class="w"> </span>--device<span class="w"> </span>cpu
+</pre></div>
+</div>
+</section>
+<section id="id19">
+<h3>图像加载失败<a class="headerlink" href="#id19" title="Permalink to this heading">¶</a></h3>
+<p>确保图像路径正确且格式受支持（JPG, PNG 等）：</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>ls<span class="w"> </span>-lh<span class="w"> </span>&lt;image-path&gt;
+</pre></div>
+</div>
+</section>
+<section id="id20">
+<h3>生成质量问题<a class="headerlink" href="#id20" title="Permalink to this heading">¶</a></h3>
+<p>调整采样参数：</p>
+<ul class="simple">
+<li><p><strong>更确定性</strong>：<code class="docutils literal notranslate"><span class="pre">--temperature</span> <span class="pre">0.0</span></code>（贪婪解码）</p></li>
+<li><p><strong>更多样化</strong>：<code class="docutils literal notranslate"><span class="pre">--temperature</span> <span class="pre">1.0</span> <span class="pre">--top_p</span> <span class="pre">0.9</span></code></p></li>
+<li><p><strong>平衡</strong>：<code class="docutils literal notranslate"><span class="pre">--temperature</span> <span class="pre">0.7</span> <span class="pre">--top_p</span> <span class="pre">0.95</span></code>（默认）</p></li>
+</ul>
+</section>
+</section>
+<section id="id21">
+<h2>依赖要求<a class="headerlink" href="#id21" title="Permalink to this heading">¶</a></h2>
+<p>所需 Python 包：</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>torch<span class="w"> </span>transformers<span class="w"> </span>pillow<span class="w"> </span>flash-attn
+</pre></div>
+</div>
+</section>
+<section id="id22">
+<h2>最佳实践<a class="headerlink" href="#id22" title="Permalink to this heading">¶</a></h2>
+<ol class="arabic simple">
+<li><p><strong>模型加载</strong>：初次运行需要一定的模型加载时间。</p></li>
+<li><p><strong>图像重置</strong>：每次对话后图像会自动重置。</p></li>
+<li><p><strong>历史管理</strong>：使用 <code class="docutils literal notranslate"><span class="pre">/clear</span></code> 命令可以随时重置多轮对话的上下文历史。</p></li>
+<li><p><strong>批量独立性</strong>：每个批量测试任务独立运行。</p></li>
+</ol>
+</section>
+<section id="id23">
+<h2>更多资源<a class="headerlink" href="#id23" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="../quick_start/index_zh.html"><span class="std std-doc">快速开始指南</span></a></p></li>
+<li><p><a class="reference internal" href="../quick_start/configuration_zh.html"><span class="std std-doc">配置参考</span></a></p></li>
+<li><p><a class="reference internal" href="faq_zh.html"><span class="std std-doc">常见问题解答 (FAQ)</span></a></p></li>
+<li><p><a class="reference internal" href="troubleshooting_zh.html"><span class="std std-doc">问题排查指南</span></a></p></li>
+</ul>
+</section>
+</section>
+
+
+              </article>
+              
+            </div>
+            <footer>
+  
+
+  <hr>
+
+  <div role="contentinfo">
+    <p>
+      &copy; Copyright 2025, OpenDILab.
+
+    </p>
+  </div>
+  
+  <div>
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a
+      href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the
+      Docs</a>.
+  </div>
+   
+
+</footer>
+          </div>
+        </div>
+
+        <div class="pytorch-content-right" id="pytorch-content-right">
+          <div class="pytorch-right-menu" id="pytorch-right-menu">
+            <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
+              <ul>
+<li><a class="reference internal" href="#">模型测试指南</a><ul>
+<li><a class="reference internal" href="#id2">概述</a></li>
+<li><a class="reference internal" href="#id3">快速开始</a><ul>
+<li><a class="reference internal" href="#id4">基本文本对话</a></li>
+<li><a class="reference internal" href="#id5">基于图像的测试</a></li>
+<li><a class="reference internal" href="#id6">批量测试</a></li>
+<li><a class="reference internal" href="#id7">自定义生成参数</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id8">交互命令</a></li>
+<li><a class="reference internal" href="#id9">批量测试文件格式</a><ul>
+<li><a class="reference internal" href="#id10">纯文本测试</a></li>
+<li><a class="reference internal" href="#id11">图文输入测试</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id12">配置参数</a></li>
+<li><a class="reference internal" href="#id13">使用示例</a><ul>
+<li><a class="reference internal" href="#id14">示例 1：数学问题求解</a></li>
+<li><a class="reference internal" href="#id15">示例 2：几何图形识别</a></li>
+<li><a class="reference internal" href="#id16">示例 3：批量性能测试</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id17">性能优化</a></li>
+<li><a class="reference internal" href="#id18">常见问题排查</a><ul>
+<li><a class="reference internal" href="#oom">显存不足 (OOM)</a></li>
+<li><a class="reference internal" href="#id19">图像加载失败</a></li>
+<li><a class="reference internal" href="#id20">生成质量问题</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id21">依赖要求</a></li>
+<li><a class="reference internal" href="#id22">最佳实践</a></li>
+<li><a class="reference internal" href="#id23">更多资源</a></li>
+</ul>
+</li>
+</ul>
+
+            </div>
+          </div>
+        </div>
+    </section>
+  </div>
+
+  
+
+
+  
+
+  
+  <script type="text/javascript" id="documentation_options" data-url_root="../"
+    src="../_static/documentation_options.js"></script>
+  <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+  <script src="../_static/doctools.js"></script>
+  <script src="../_static/sphinx_highlight.js"></script>
+  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+  <script src="../_static/js/language_switch.js"></script>
+  
+
+  
+
+  <script type="text/javascript" src="../_static/js/vendor/popper.min.js"></script>
+  <script type="text/javascript" src="../_static/js/vendor/bootstrap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+    jQuery(function () {
+      SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+  <!-- Begin Footer -->
+
+  <div class="container-fluid docs-tutorials-resources" id="docs-tutorials-resources">
+  </div>
+
+  <!-- End Footer -->
+
+  <!-- Begin Mobile Menu -->
+
+  <div class="mobile-main-menu">
+    <div class="container-fluid">
+      <div class="container">
+        <div class="mobile-main-menu-header-container">
+          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
+        </div>
+      </div>
+    </div>
+
+    <div class="mobile-main-menu-links-container">
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://github.com/opendilab/LightRFT" target="_blank">GitHub</a>
+          </li>
+      </div>
+    </div>
+  </div>
+
+  <!-- End Mobile Menu -->
+
+  <script type="text/javascript" src="../_static/js/vendor/anchor.min.js"></script>
+
+  <script type="text/javascript">
+    $(document).ready(function () {
+      mobileMenu.bind();
+      mobileTOC.bind();
+      pytorchAnchors.bind();
+      sideMenus.bind();
+      scrollToAnchor.bind();
+      highlightNavigation.bind();
+      mainMenuDropdown.bind();
+      filterTags.bind();
+
+      // Add class to links that have code blocks, since we cannot create links in code blocks
+      $("article.pytorch-article a span.pre").each(function (e) {
+        $(this).closest("a").addClass("has-code");
+      });
+    })
+  </script>
+</body>
+
+</html>
