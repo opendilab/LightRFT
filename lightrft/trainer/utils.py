@@ -119,14 +119,19 @@ def fire_sampling(
         videos_num=all_videos_num if is_multimodal else None,
     )
 
-    # Concatenate the first token to the prompt
+    # Concatenate the first token to the prompt (for Step 2 input).
+    # Step 1 = above: generate only the first token at high temperature.
+    # Step 2 = below: generate the *rest* (remaining) tokens at normal temperature.
     new_prompt_token_ids = []
     for orig_ids, out in zip(all_prompt_token_ids, first_token_outputs):
         first_tok = list(out.output_token_ids)  # [token_id]
         new_prompt_token_ids.append(orig_ids + first_tok)
 
-    # For multimodal: gather_and_generate uses all_prompts (text) + images, not all_prompt_token_ids.
-    # We must decode the first token and append to prompts so Step 2 continues from the correct context.
+    # Build the prompt input for Step 2. Naming: all_prompts_rest = prompts used for the "rest" (remaining) generation.
+    # - Text-only: gather_and_generate uses all_prompt_token_ids, so we pass new_prompt_token_ids; all_prompts_rest
+    #   is only used as a passthrough (all_prompts_rest = all_prompts) and may be ignored.
+    # - Multimodal: gather_and_generate uses all_prompts (text) + images, NOT all_prompt_token_ids. We must decode
+    #   the first token to text and append to each prompt so Step 2 continues from the correct context.
     if is_multimodal:
         if tokenizer is None:
             raise ValueError(
@@ -139,11 +144,12 @@ def fire_sampling(
             [list(out.output_token_ids) for out in first_token_outputs],
             skip_special_tokens=False,
         )
+        # "rest" = prompt for the rest of generation (Step 2): original prompt + first token as text
         all_prompts_rest = [prompt + decoded for prompt, decoded in zip(all_prompts, decoded_first_tokens)]
     else:
         all_prompts_rest = all_prompts
 
-    # Step 2: Generate remaining tokens with normal temperature
+    # Step 2: Generate the remaining tokens with normal temperature (the "rest" after the first token)
     if engine_type == "vllm":
         sampling_params_rest = copy.deepcopy(sampling_params)
         sampling_params_rest.temperature = temperature
