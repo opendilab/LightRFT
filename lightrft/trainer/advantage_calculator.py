@@ -627,9 +627,12 @@ class GroupNormCalculator(BaseREINFORCECalculator):
     """
     Group normalization calculator (GRPO).
 
-    Normalizes rewards within each group and optionally filters degenerate cases.
+    Normalizes rewards within each group and optionally filters degenerate cases
+    using dynamic sampling strategy (DAPO).
 
-    Reference: GRPO: https://arxiv.org/pdf/2402.03300
+    Reference:
+        - GRPO: https://arxiv.org/pdf/2402.03300
+        - DAPO: https://arxiv.org/abs/2503.14476
     """
     def preprocess_rewards(
         self,
@@ -639,6 +642,10 @@ class GroupNormCalculator(BaseREINFORCECalculator):
     ) -> Tuple[List, List[torch.Tensor]]:
         """
         Preprocess rewards using group normalization with optional dynamic filtering.
+
+        Dynamic sampling (DAPO) filters out groups where all samples have the same metric value
+        (e.g., all rewards are 0 or all are 1), as these groups provide no learning signal.
+        This is achieved by setting action_mask to all zeros for filtered groups.
 
         :param rewards: Concatenated reward tensor
         :type rewards: torch.Tensor
@@ -652,17 +659,36 @@ class GroupNormCalculator(BaseREINFORCECalculator):
         config = self.config
         n_samples = config.n_samples_per_prompt
 
-        # Dynamic sampling filtering
+        # Dynamic sampling filtering (DAPO)
+        # Filter out groups where all outputs have the same metric value
         if config.dynamic_sampling:
-            step_size = n_samples // config.micro_train_batch_size
-            for i in range(0, len(experiences), step_size):
-                chunk = experiences[i:i + step_size]
-                chunk_rewards = torch.cat([exp.info["reward"] for exp in chunk])
+            metric = config.dynamic_sampling_metric
 
-                # Filter out degenerate cases (all 0s or all 1s)
-                if torch.all(chunk_rewards == 0) or torch.all(chunk_rewards == 1):
-                    for exp in chunk:
-                        exp.action_mask = torch.zeros_like(exp.action_mask, dtype=torch.bool)
+            # When micro_rollout_batch_size == n_samples_per_prompt, each experience
+            # contains all samples for one prompt in batched format
+            # exp.info["reward"] has shape=[n_samples], representing all samples for that prompt
+            for exp in experiences:
+                reward_tensor = exp.info["reward"]  # shape=[n_samples]
+
+                # Extract metric values (all samples within this experience/prompt)
+                if metric == "reward":
+                    metric_values = reward_tensor
+                elif metric == "acc":
+                    # Use accuracy if available
+                    if "accuracy" in exp.info:
+                        metric_values = exp.info["accuracy"]
+                    else:
+                        # Fallback: treat reward as binary accuracy
+                        metric_values = reward_tensor
+                else:
+                    # Default to reward
+                    metric_values = reward_tensor
+
+                # Check if all samples have the same metric value (degenerate group)
+                # This prompt provides no learning signal for relative comparison
+                if torch.all(metric_values == metric_values[0]):
+                    # Mark this experience for filtering by zeroing out action mask
+                    exp.action_mask = torch.zeros_like(exp.action_mask, dtype=torch.bool)
 
         # Group normalization
         rewards = rewards.reshape(-1, n_samples).to("cuda")
