@@ -417,8 +417,11 @@ def train(args):
         save_hf_ckpt=args.save_hf_ckpt,
         disable_ds_ckpt=args.disable_ds_ckpt,
         packing_samples=args.packing_samples,
-        # overlong_reward
+        # DAPO dynamic sampling
         dynamic_sampling=args.dynamic_sampling,
+        dynamic_sampling_metric=args.dynamic_sampling_metric,
+        max_num_gen_batches=args.max_num_gen_batches,
+        # overlong_reward
         overlong_buffer=args.overlong_buffer,
         overlong_buffer_len=args.overlong_buffer_len,
         overlong_buffer_penalty_factor=args.overlong_buffer_penalty_factor,
@@ -466,7 +469,9 @@ if __name__ == "__main__":
     parser.add_argument("--load_checkpoint", action="store_true", default=False)
 
     # DAPO
-    parser.add_argument("--dynamic_sampling", action="store_true", default=False, help="Enable DAPO dynamic sampling strategy")
+    parser.add_argument("--dynamic_sampling", action="store_true", default=False, help="Enable DAPO dynamic sampling strategy: filter out prompt groups with zero metric variance and accumulate until train_batch_size is reached")
+    parser.add_argument("--dynamic_sampling_metric", type=str, default="reward", choices=["reward", "acc"], help="Metric for dynamic sampling group filtering (default: reward)")
+    parser.add_argument("--max_num_gen_batches", type=int, default=10, help="Max generation batches for dynamic sampling accumulation. Non-positive means no limit (default: 10)")
     parser.add_argument("--overlong_buffer", action="store_true", default=False, help="Apply overlong sequence buffer in DAPO")
     parser.add_argument("--overlong_buffer_len", type=int, default=1024, help="Max token threshold for overlong buffer")
     parser.add_argument("--overlong_buffer_penalty_factor", type=float, default=1.0, help="Penalty scaling factor for overlong sequences, <1 discourages long outputs; >1 encourages them")
