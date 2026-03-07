@@ -280,13 +280,17 @@ class PPOTrainerVL(ABC):
 
             metric_vals = []
             for item in group:
-                if metric_name == "reward" and hasattr(item, 'info') and item.info is not None and 'reward' in item.info:
+                if metric_name == "reward" and hasattr(
+                    item, 'info'
+                ) and item.info is not None and 'reward' in item.info:
                     val = item.info['reward']
                     if isinstance(val, torch.Tensor):
                         metric_vals.append(val.float().mean().item())
                     else:
                         metric_vals.append(float(val))
-                elif metric_name == "acc" and hasattr(item, 'info') and item.info is not None and 'reward_metrics' in item.info:
+                elif metric_name == "acc" and hasattr(
+                    item, 'info'
+                ) and item.info is not None and 'reward_metrics' in item.info:
                     rm = item.info.get('reward_metrics')
                     if rm is not None and 'accuracy_reward' in rm:
                         val = rm['accuracy_reward']
@@ -429,7 +433,8 @@ class PPOTrainerVL(ABC):
                 f"{'=' * 80}\n"
                 f"Configuration:\n"
                 f"  - Metric: {dynamic_sampling_metric}\n"
-                f"  - Max generation batches: {max_num_gen_batches} ({'unlimited' if max_num_gen_batches <= 0 else max_num_gen_batches})\n"
+                f"  - Max generation batches: {max_num_gen_batches} "
+                f"({'unlimited' if max_num_gen_batches <= 0 else max_num_gen_batches})\n"
                 f"  - train_batch_size: {args.train_batch_size} prompts (global)\n"
                 f"  - local target per rank: {ds_local_target} prompts (world_size={ds_world_size})\n"
                 f"  - rollout_batch_size: {args.rollout_batch_size} prompts per generation\n"
@@ -541,7 +546,8 @@ class PPOTrainerVL(ABC):
                         rand_videos = None
 
                     self.strategy.print(
-                        f"[DynSamp] Gen batch {num_gen_batches + 1}: generating rollouts for {len(rand_prompts)} prompts..."
+                        f"[DynSamp] Gen batch {num_gen_batches + 1}: generating rollouts "
+                        f"for {len(rand_prompts)} prompts..."
                     )
 
                     # Generate experiences and collect individual items
@@ -645,7 +651,9 @@ class PPOTrainerVL(ABC):
 
                         client_states = {"consumed_samples": steps * args.rollout_batch_size}
                         logs_dict_combined = {**rollout_status, **status}
-                        self.save_logs_and_checkpoints(args, steps, pbar, logs_dict_combined, client_states, episode=episode)
+                        self.save_logs_and_checkpoints(
+                            args, steps, pbar, logs_dict_combined, client_states, episode=episode
+                        )
 
                         pbar.update()
                         steps += 1
@@ -695,7 +703,9 @@ class PPOTrainerVL(ABC):
                             pbar.set_postfix(rollout_status)
                             client_states = {"consumed_samples": steps * args.rollout_batch_size}
                             logs_dict_combined = {**rollout_status, **status}
-                            self.save_logs_and_checkpoints(args, steps, pbar, logs_dict_combined, client_states, episode=episode)
+                            self.save_logs_and_checkpoints(
+                                args, steps, pbar, logs_dict_combined, client_states, episode=episode
+                            )
 
                             pbar.update()
                             steps += 1
@@ -714,9 +724,7 @@ class PPOTrainerVL(ABC):
 
                 # Handle remaining accumulated items at end of episode.
                 # All ranks must participate in the all_reduce even if some have no items.
-                local_count = torch.tensor(
-                    [len(accumulated_items)], device=device, dtype=torch.long
-                )
+                local_count = torch.tensor([len(accumulated_items)], device=device, dtype=torch.long)
                 torch.distributed.all_reduce(local_count, op=torch.distributed.ReduceOp.MIN)
                 min_items = local_count.item()
                 min_items = (min_items // args.n_samples_per_prompt) * args.n_samples_per_prompt
@@ -724,7 +732,8 @@ class PPOTrainerVL(ABC):
 
                 if accumulated_items:
                     self.strategy.print(
-                        f"[DynSamp] End of episode: training with {len(accumulated_items) // args.n_samples_per_prompt} "
+                        f"[DynSamp] End of episode: training with "
+                        f"{len(accumulated_items) // args.n_samples_per_prompt} "
                         f"remaining qualified prompts per rank."
                     )
                     self.replay_buffer.items.extend(accumulated_items)
@@ -746,7 +755,9 @@ class PPOTrainerVL(ABC):
                     pbar.set_postfix(rollout_status)
                     client_states = {"consumed_samples": steps * args.rollout_batch_size}
                     logs_dict_combined = {**rollout_status, **status}
-                    self.save_logs_and_checkpoints(args, steps, pbar, logs_dict_combined, client_states, episode=episode)
+                    self.save_logs_and_checkpoints(
+                        args, steps, pbar, logs_dict_combined, client_states, episode=episode
+                    )
 
                     pbar.update()
                     steps += 1
@@ -811,7 +822,9 @@ class PPOTrainerVL(ABC):
                     client_states = {"consumed_samples": steps * args.rollout_batch_size}
                     logs_dict_combined = {**rollout_status, **status}
 
-                    self.save_logs_and_checkpoints(args, steps, pbar, logs_dict_combined, client_states, episode=episode)
+                    self.save_logs_and_checkpoints(
+                        args, steps, pbar, logs_dict_combined, client_states, episode=episode
+                    )
 
                     pbar.update()
                     steps = steps + 1
