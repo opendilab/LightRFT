@@ -421,6 +421,8 @@ class PPOTrainerVL(ABC):
 
         # Print training mode information
         if use_dynamic_sampling:
+            ds_world_size = torch.distributed.get_world_size()
+            ds_local_target = args.train_batch_size // ds_world_size
             self.strategy.print(
                 f"\n{'=' * 80}\n"
                 f"DYNAMIC SAMPLING MODE (DAPO)\n"
@@ -428,12 +430,14 @@ class PPOTrainerVL(ABC):
                 f"Configuration:\n"
                 f"  - Metric: {dynamic_sampling_metric}\n"
                 f"  - Max generation batches: {max_num_gen_batches} ({'unlimited' if max_num_gen_batches <= 0 else max_num_gen_batches})\n"
-                f"  - train_batch_size: {args.train_batch_size} prompts\n"
+                f"  - train_batch_size: {args.train_batch_size} prompts (global)\n"
+                f"  - local target per rank: {ds_local_target} prompts (world_size={ds_world_size})\n"
                 f"  - rollout_batch_size: {args.rollout_batch_size} prompts per generation\n"
                 f"  - n_samples_per_prompt: {args.n_samples_per_prompt}\n"
                 f"Behavior:\n"
                 f"  - Groups with zero metric variance (all-correct/all-wrong) are filtered out.\n"
-                f"  - Generation repeats until {args.train_batch_size} qualified prompts are accumulated.\n"
+                f"  - Generation repeats until each rank has {ds_local_target} qualified prompts.\n"
+                f"  - Training decision is synchronized across all ranks via all_reduce.\n"
                 f"{'=' * 80}\n"
             )
         elif args.train_batch_size < args.rollout_batch_size:
@@ -511,7 +515,18 @@ class PPOTrainerVL(ABC):
                 # 2. Filter items by prompt group metric variance
                 # 3. Accumulate kept items across generation batches
                 # 4. When enough qualified prompts → train
+                #
+                # MULTI-GPU SYNCHRONIZATION:
+                # Each rank processes different prompts (via DistributedSampler),
+                # so filtering rates differ across ranks. To prevent deadlocks
+                # from divergent control flow (one rank training while another
+                # is still generating), we synchronize the "ready to train"
+                # decision across all ranks using all_reduce(MIN).
                 # ============================================================
+                world_size = torch.distributed.get_world_size()
+                local_target_prompts = args.train_batch_size // world_size
+                device = torch.cuda.current_device()
+
                 accumulated_items = []  # List of BufferItemVL
                 num_qualified_prompts = 0
                 num_gen_batches = 0
@@ -568,18 +583,35 @@ class PPOTrainerVL(ABC):
                     self.strategy.print(
                         f"[DynSamp] Batch {num_gen_batches}: kept {num_kept}/{num_total} prompts "
                         f"(filtered {num_filtered}). "
-                        f"Accumulated: {num_qualified_prompts}/{args.train_batch_size} qualified prompts."
+                        f"Accumulated: {num_qualified_prompts}/{local_target_prompts} local qualified prompts."
                     )
 
-                    # Check if we have enough qualified prompts
-                    if num_qualified_prompts >= args.train_batch_size:
-                        # Trim to exact train_batch_size * n_samples_per_prompt
-                        target_num_items = args.train_batch_size * args.n_samples_per_prompt
+                    # Synchronize "ready to train" decision across all ranks.
+                    # Use all_reduce(MIN) so training only starts when ALL ranks
+                    # have enough qualified prompts, preventing deadlock.
+                    local_ready = torch.tensor(
+                        [1.0 if num_qualified_prompts >= local_target_prompts else 0.0],
+                        device=device,
+                    )
+                    torch.distributed.all_reduce(local_ready, op=torch.distributed.ReduceOp.MIN)
+                    all_ranks_ready = local_ready.item() > 0
+
+                    # Also synchronize the max_gen_batches fallback decision
+                    local_max_reached = torch.tensor(
+                        [1.0 if (max_num_gen_batches > 0 and num_gen_batches >= max_num_gen_batches) else 0.0],
+                        device=device,
+                    )
+                    torch.distributed.all_reduce(local_max_reached, op=torch.distributed.ReduceOp.MAX)
+                    any_rank_max_reached = local_max_reached.item() > 0
+
+                    if all_ranks_ready:
+                        # Trim to exact local_target_prompts * n_samples_per_prompt
+                        target_num_items = local_target_prompts * args.n_samples_per_prompt
                         accumulated_items = accumulated_items[:target_num_items]
-                        num_qualified_prompts = args.train_batch_size
+                        num_qualified_prompts = local_target_prompts
 
                         self.strategy.print(
-                            f"[DynSamp] Reached train_batch_size={args.train_batch_size} after "
+                            f"[DynSamp] All ranks ready. Local target={local_target_prompts} reached after "
                             f"{num_gen_batches} generation batches. "
                             f"Total generated: {total_generated_prompts}, filtered: {total_filtered_prompts} "
                             f"({total_filtered_prompts / max(total_generated_prompts, 1) * 100:.1f}% filtered)."
@@ -594,7 +626,7 @@ class PPOTrainerVL(ABC):
                         rollout_status = self._collect_rollout_status(self.replay_buffer.items)
                         rollout_status["ds_gen_batches"] = num_gen_batches
                         rollout_status["ds_filter_rate"] = total_filtered_prompts / max(total_generated_prompts, 1)
-                        rollout_status["ds_qualified_prompts"] = num_qualified_prompts
+                        rollout_status["ds_qualified_prompts"] = num_qualified_prompts * world_size
 
                         if self.args.advantage_estimator != "group_norm":
                             self.replay_buffer.normalize("advantages", self.strategy)
@@ -607,7 +639,7 @@ class PPOTrainerVL(ABC):
                         self.strategy.report_memory('after train')
 
                         if "kl" in status:
-                            self.kl_ctl.update(status["kl"], args.train_batch_size * args.n_samples_per_prompt)
+                            self.kl_ctl.update(status["kl"], local_target_prompts * args.n_samples_per_prompt)
 
                         pbar.set_postfix(rollout_status)
 
@@ -625,13 +657,23 @@ class PPOTrainerVL(ABC):
                         total_generated_prompts = 0
                         total_filtered_prompts = 0
 
-                    elif max_num_gen_batches > 0 and num_gen_batches >= max_num_gen_batches:
-                        # Reached max generation batches without enough qualified prompts
+                    elif any_rank_max_reached:
+                        # At least one rank reached max generation batches
                         self.strategy.print(
-                            f"[DynSamp] WARNING: Reached max_num_gen_batches={max_num_gen_batches} "
-                            f"with only {num_qualified_prompts}/{args.train_batch_size} qualified prompts. "
+                            f"[DynSamp] WARNING: max_num_gen_batches={max_num_gen_batches} reached by some rank "
+                            f"with local {num_qualified_prompts}/{local_target_prompts} qualified prompts. "
                             f"Training with available data."
                         )
+
+                        # Synchronize item count: use the minimum across ranks
+                        # to ensure all ranks have the same number of training steps.
+                        # All ranks must participate in all_reduce.
+                        local_count = torch.tensor([len(accumulated_items)], device=device, dtype=torch.long)
+                        torch.distributed.all_reduce(local_count, op=torch.distributed.ReduceOp.MIN)
+                        min_items = local_count.item()
+                        # Round down to multiple of n_samples_per_prompt to keep prompt groups intact
+                        min_items = (min_items // args.n_samples_per_prompt) * args.n_samples_per_prompt
+                        accumulated_items = accumulated_items[:min_items]
 
                         if accumulated_items:
                             self.replay_buffer.items.extend(accumulated_items)
@@ -639,7 +681,7 @@ class PPOTrainerVL(ABC):
                             rollout_status = self._collect_rollout_status(self.replay_buffer.items)
                             rollout_status["ds_gen_batches"] = num_gen_batches
                             rollout_status["ds_filter_rate"] = total_filtered_prompts / max(total_generated_prompts, 1)
-                            rollout_status["ds_qualified_prompts"] = num_qualified_prompts
+                            rollout_status["ds_qualified_prompts"] = len(accumulated_items) // args.n_samples_per_prompt
 
                             if self.args.advantage_estimator != "group_norm":
                                 self.replay_buffer.normalize("advantages", self.strategy)
@@ -657,6 +699,11 @@ class PPOTrainerVL(ABC):
 
                             pbar.update()
                             steps += 1
+                        else:
+                            # All ranks have zero items after sync - skip training
+                            self.strategy.print(
+                                "[DynSamp] WARNING: No items available after synchronization. Skipping training step."
+                            )
 
                         # Reset
                         accumulated_items = []
@@ -665,17 +712,27 @@ class PPOTrainerVL(ABC):
                         total_generated_prompts = 0
                         total_filtered_prompts = 0
 
-                # Handle remaining accumulated items at end of episode
+                # Handle remaining accumulated items at end of episode.
+                # All ranks must participate in the all_reduce even if some have no items.
+                local_count = torch.tensor(
+                    [len(accumulated_items)], device=device, dtype=torch.long
+                )
+                torch.distributed.all_reduce(local_count, op=torch.distributed.ReduceOp.MIN)
+                min_items = local_count.item()
+                min_items = (min_items // args.n_samples_per_prompt) * args.n_samples_per_prompt
+                accumulated_items = accumulated_items[:min_items]
+
                 if accumulated_items:
                     self.strategy.print(
-                        f"[DynSamp] End of episode: training with {num_qualified_prompts} remaining qualified prompts."
+                        f"[DynSamp] End of episode: training with {len(accumulated_items) // args.n_samples_per_prompt} "
+                        f"remaining qualified prompts per rank."
                     )
                     self.replay_buffer.items.extend(accumulated_items)
 
                     rollout_status = self._collect_rollout_status(self.replay_buffer.items)
                     rollout_status["ds_gen_batches"] = num_gen_batches
                     rollout_status["ds_filter_rate"] = total_filtered_prompts / max(total_generated_prompts, 1)
-                    rollout_status["ds_qualified_prompts"] = num_qualified_prompts
+                    rollout_status["ds_qualified_prompts"] = len(accumulated_items) // args.n_samples_per_prompt
 
                     if self.args.advantage_estimator != "group_norm":
                         self.replay_buffer.normalize("advantages", self.strategy)
