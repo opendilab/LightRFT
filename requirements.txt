@@ -17,6 +17,7 @@ tqdm
 wandb
 nltk
 mathruler
+pylatexenc
 loguru
 librosa
 qwen-vl-utils
