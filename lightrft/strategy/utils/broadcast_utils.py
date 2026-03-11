@@ -117,16 +117,19 @@ class BroadcastManager:
 
             # For ZeRO-3, allgather sharded parameter and broadcast to all vllm engines by rank 0
             with deepspeed.zero.GatheredParameters([param], enabled=self.strategy.args.zero_stage == 3):
+                # Both engines: LoRA adapters are already merged, no need to broadcast them
+                if ".lora_" in name:
+                    continue
+
                 shape = param.shape if self.strategy.args.zero_stage != 3 else param.ds_shape
                 kwargs = dict(
                     name=name, dtype=param.dtype, shape=shape, weight=param.data, empty_cache=(count == num_params)
                 )
                 if self.strategy.engine_type == "vllm":
+                    if ".base_layer" in name or "base_model" in name:
+                        raise NotImplementedError("vLLM name mapping is not supported for LoRA broadcasting yet.")
                     self.inference_engine.llm_engine.model_executor.collective_rpc("update_weight", kwargs=kwargs)
                 elif self.strategy.engine_type == "sglang":
-                    if ".lora_" in name:
-                        continue
-
                     sglang_name = self._map_weight_name_for_sglang(name)
                     self.inference_engine.update_weights_from_tensor(
                         sglang_name, param.data, flush_cache=(count == num_params)
@@ -164,6 +167,8 @@ class BroadcastManager:
             full_weight = None
 
             if ".base_layer.weight" in name:
+                if self.strategy.engine_type == "vllm":
+                    raise NotImplementedError("vLLM is not supported for FSDP LoRA broadcasting yet.")
                 # This is a LoRA-enabled layer
                 prefix = name.replace(".base_layer.weight", "")
                 lora_a_name = f"{prefix}.lora_A.default.weight"
