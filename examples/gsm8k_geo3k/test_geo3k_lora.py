@@ -97,6 +97,15 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--tp_size", type=int, default=1, help="Tensor parallel size for vLLM")
     parser.add_argument("--max_samples", type=int, default=None, help="Max samples to evaluate")
     parser.add_argument("--prompt_max_len", type=int, default=1024, help="Max tokens for prompt")
+    parser.add_argument("--generate_max_len", type=int, default=2048, help="Max tokens to generate")
+    parser.add_argument("--temperature", type=float, default=0.0, help="Sampling temperature")
+    parser.add_argument("--top_p", type=float, default=1.0, help="Top-p for sampling (match training by default)")
+    parser.add_argument(
+        "--system_prompt",
+        type=str,
+        default='A conversation between the User and Assistant. The User asks a question, and the Assistant provides a solution. The Assistant first thinks through the reasoning process internally with self-reflection and consistency check and then gives the final analysis and answer. The reasoning process should be enclosed within <think></think>, followed directly by the final thought and answer, the final answer MUST BE put in \\boxed{}, like this: <think> reasoning process here </think> final thought and \\boxed{answer} here.',
+        help="System prompt used when applying chat template; should match training.",
+    )
     parser.add_argument("--seed", type=int, default=42, help="Random seed")
     return parser.parse_args()
 
@@ -160,7 +169,7 @@ def evaluate_model(model_path: str, args: argparse.Namespace) -> None:
     :type args: argparse.Namespace
     """
     print(f"Loading tokenizer and processor from {model_path}...")
-    mock_args = MockArgs(seed=args.seed)
+    mock_args = MockArgs(seed=args.seed, system_prompt=args.system_prompt)
     # create a dynamic object that PromptDatasetVL expects for strategy.args
     mock_strategy = type('MockStrategyParams', (), {'args': mock_args, 'print': print, 'is_rank_0': lambda self: True})()
     
@@ -201,9 +210,9 @@ def evaluate_model(model_path: str, args: argparse.Namespace) -> None:
         stop_token_ids.append(im_end_id)
         
     sampling_params = SamplingParams(
-        temperature=0.0,        # Greedy decoding for evaluation
-        top_p=1.0,              # No nucleus sampling, consider all tokens
-        max_tokens=2048,
+        temperature=args.temperature,
+        top_p=args.top_p,
+        max_tokens=args.generate_max_len,
         stop_token_ids=stop_token_ids
     )
 
