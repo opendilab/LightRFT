@@ -15,6 +15,7 @@ from lightrft.models import ActorVL, GPTLMLoss, PolicyLoss, ValueLoss
 from lightrft.models.actor_modality import ActorModality, get_supported_parameters
 from lightrft.models.utils import masked_mean, unpacking_samples, compute_approx_kl
 from lightrft.utils.distributed_sampler import DistributedSampler
+from lightrft.utils import rotate_ckpt_dirs
 from lightrft.trainer import AdaptiveKLController, ExperienceVL, FixedKLController, NaiveExperienceMakerVL, NaiveReplayBufferVL  # noqa
 
 
@@ -161,6 +162,7 @@ class PPOTrainerVL(ABC):
         self.reward_fn = reward_fn
         self.reward_fn_label_map = reward_fn_label_map
         self.reward_recipe = reward_recipe
+        self.is_lora = getattr(self.args, "lora_rank", 0) > 0
 
         self.actor = actor
         self.critic = critic
@@ -1141,10 +1143,11 @@ class PPOTrainerVL(ABC):
         :param client_states: Client state for checkpoint recovery.
         :type client_states: dict
         """
-        if not self.disable_ds_ckpt:
+        ckpt_path = args.ckpt_path
+        if not self.disable_ds_ckpt and not self.is_lora:
             self.strategy.save_ckpt(
                 self.actor.model,
-                os.path.join(args.ckpt_path, "_actor"),
+                os.path.join(ckpt_path, "_actor"),
                 tag,
                 args.max_ckpt_num,
                 args.max_ckpt_mem,
@@ -1152,11 +1155,24 @@ class PPOTrainerVL(ABC):
             )
             if self.critic is not None:
                 self.strategy.save_ckpt(
-                    self.critic, os.path.join(args.ckpt_path, "_critic"), tag, args.max_ckpt_num, args.max_ckpt_mem
+                    self.critic, os.path.join(ckpt_path, "_critic"), tag, args.max_ckpt_num, args.max_ckpt_mem
                 )
 
-        if self.save_hf_ckpt:
-            save_path = os.path.join(args.ckpt_path, f"{tag}_hf")
+        # For LoRA, we ALWAYS save the HF adapter as it is much smaller and more convenient for deployment.
+        if self.save_hf_ckpt or self.is_lora:
+            # Rotate HF checkpoints
+            if self.strategy.is_rank_0():
+                os.makedirs(ckpt_path, exist_ok=True)
+                max_num = getattr(args, "max_ckpt_num", 3)
+                rotate_ckpt_dirs(
+                    ckpt_path,
+                    max_num,
+                    suffix="_lora",
+                    strategy=self.strategy,
+                    label="HF ckpt",
+                )
+
+            save_path = os.path.join(ckpt_path, f"{tag}_lora")
             self.strategy.save_model(self.actor, self.tokenizer, save_path)
 
     def evaluate(self, eval_dataloader, global_step):

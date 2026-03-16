@@ -1,5 +1,6 @@
 import os
 import sys
+import shutil
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 from datasets import interleave_datasets, load_dataset, load_from_disk, Dataset, DatasetDict
@@ -538,3 +539,42 @@ def all_reduce_dict(metrics_dict: Dict[str, float],
 
     reduced_values = tensor.tolist()
     return {k: v for k, v in zip(keys, reduced_values)}
+
+
+def rotate_ckpt_dirs(
+    ckpt_path: str,
+    max_num: int,
+    suffix: Optional[str] = None,
+    strategy: Optional[Any] = None,
+    label: str = "checkpoint",
+) -> None:
+    """
+    Remove oldest checkpoint directories under a path when reaching a limit.
+
+    :param ckpt_path: Parent checkpoint directory.
+    :type ckpt_path: str
+    :param max_num: Maximum number of checkpoints to keep.
+    :type max_num: int
+    :param suffix: Optional directory suffix filter (e.g., "_lora").
+    :type suffix: Optional[str]
+    :param strategy: Optional strategy for logging.
+    :type strategy: Optional[Any]
+    :param label: Label used in log messages.
+    :type label: str
+    """
+    if max_num is None or max_num <= 0 or not os.path.isdir(ckpt_path):
+        return
+
+    subdirs = sorted(
+        [(os.path.join(ckpt_path, d), os.path.getmtime(os.path.join(ckpt_path, d)))
+         for d in os.listdir(ckpt_path)
+         if os.path.isdir(os.path.join(ckpt_path, d)) and (suffix is None or d.endswith(suffix))],
+        key=lambda x: x[1],
+    )
+
+    while len(subdirs) >= max_num:
+        oldest_dir = subdirs.pop(0)[0]
+        if os.path.exists(oldest_dir):
+            shutil.rmtree(oldest_dir)
+            if strategy is not None:
+                strategy.print(f"Deleted oldest {label} {oldest_dir}")
