@@ -302,6 +302,7 @@
   <h1>Source code for lightrft.utils.utils</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">datasets</span><span class="w"> </span><span class="kn">import</span> <span class="n">interleave_datasets</span><span class="p">,</span> <span class="n">load_dataset</span><span class="p">,</span> <span class="n">load_from_disk</span><span class="p">,</span> <span class="n">Dataset</span><span class="p">,</span> <span class="n">DatasetDict</span>
@@ -840,6 +841,45 @@
 
     <span class="n">reduced_values</span> <span class="o">=</span> <span class="n">tensor</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
     <span class="k">return</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="n">reduced_values</span><span class="p">)}</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">rotate_ckpt_dirs</span><span class="p">(</span>
+    <span class="n">ckpt_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">max_num</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">suffix</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">strategy</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">label</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;checkpoint&quot;</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Remove oldest checkpoint directories under a path when reaching a limit.</span>
+
+<span class="sd">    :param ckpt_path: Parent checkpoint directory.</span>
+<span class="sd">    :type ckpt_path: str</span>
+<span class="sd">    :param max_num: Maximum number of checkpoints to keep.</span>
+<span class="sd">    :type max_num: int</span>
+<span class="sd">    :param suffix: Optional directory suffix filter (e.g., &quot;_lora&quot;).</span>
+<span class="sd">    :type suffix: Optional[str]</span>
+<span class="sd">    :param strategy: Optional strategy for logging.</span>
+<span class="sd">    :type strategy: Optional[Any]</span>
+<span class="sd">    :param label: Label used in log messages.</span>
+<span class="sd">    :type label: str</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">max_num</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">max_num</span> <span class="o">&lt;=</span> <span class="mi">0</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">ckpt_path</span><span class="p">):</span>
+        <span class="k">return</span>
+
+    <span class="n">subdirs</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span>
+        <span class="p">[(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ckpt_path</span><span class="p">,</span> <span class="n">d</span><span class="p">),</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">getmtime</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ckpt_path</span><span class="p">,</span> <span class="n">d</span><span class="p">)))</span>
+         <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">ckpt_path</span><span class="p">)</span>
+         <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ckpt_path</span><span class="p">,</span> <span class="n">d</span><span class="p">))</span> <span class="ow">and</span> <span class="p">(</span><span class="n">suffix</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">d</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="n">suffix</span><span class="p">))],</span>
+        <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+    <span class="p">)</span>
+
+    <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">subdirs</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">max_num</span><span class="p">:</span>
+        <span class="n">oldest_dir</span> <span class="o">=</span> <span class="n">subdirs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">oldest_dir</span><span class="p">):</span>
+            <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">oldest_dir</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">strategy</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">strategy</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Deleted oldest </span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">oldest_dir</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
 
               </article>

@@ -314,7 +314,7 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">defaultdict</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">contextlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">contextmanager</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">torch</span><span class="w"> </span><span class="kn">import</span> <span class="n">distributed</span> <span class="k">as</span> <span class="n">dist</span>
@@ -341,6 +341,7 @@
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">torch.distributed.checkpoint</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">dcp</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">torch.distributed.checkpoint.state_dict</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">StateDictOptions</span><span class="p">,</span>
     <span class="n">get_model_state_dict</span><span class="p">,</span>
     <span class="n">get_optimizer_state_dict</span><span class="p">,</span>
     <span class="n">set_model_state_dict</span><span class="p">,</span>
@@ -753,9 +754,10 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">model</span></div>
 
-<div class="viewcode-block" id="FSDPV2Strategy.save_model"><a class="viewcode-back" href="../../../../api_doc/strategy/fsdp/fsdpv2.html#lightrft.strategy.fsdp.fsdpv2.FSDPV2Strategy.save_model">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">save_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<div class="viewcode-block" id="FSDPV2Strategy.save_model"><a class="viewcode-back" href="../../../../api_doc/strategy/fsdp/fsdpv2.html#lightrft.strategy.fsdp.fsdpv2.FSDPV2Strategy.save_model">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">save_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span> <span class="n">tokenizer</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Save the model, its configuration, and tokenizer.</span>
+<span class="sd">        Save the model, its configuration, and tokenizer in Hugging Face format.</span>
+<span class="sd">        In LoRA mode, this saves the adapter. In full mode, this saves the full model.</span>
 
 <span class="sd">        This method handles gathering and saving the full model parameters in a distributed setting.</span>
 <span class="sd">        Only rank 0 process saves the model to disk.</span>
@@ -767,7 +769,38 @@
 <span class="sd">        :type output_dir: str</span>
 <span class="sd">        :param kwargs: Additional arguments to pass to model.save_pretrained</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="s2">&quot;FSDP save model is not implemented, please use offline tools to convert to huggingface model&quot;</span><span class="p">)</span></div>
+        <span class="c1"># Determine the model to save (unwrap ActorVL or similar wrappers)</span>
+        <span class="n">actual_model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">model</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="s2">&quot;model&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="n">model</span>
+
+        <span class="c1"># [Gather Configuration]</span>
+        <span class="c1"># In this environment, get_model_state_dict uses &#39;options&#39; and &#39;StateDictOptions&#39;.</span>
+        <span class="c1"># We want the full state dict collected to rank 0 (cpu_offload=True to avoid OOM).</span>
+        <span class="n">opts</span> <span class="o">=</span> <span class="n">StateDictOptions</span><span class="p">(</span><span class="n">full_state_dict</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">cpu_offload</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># get_model_state_dict is a collective call, must be called on ALL ranks.</span>
+        <span class="c1"># It internally interacts with FSDP modules to perform the All-Gather.</span>
+        <span class="n">state_dict</span> <span class="o">=</span> <span class="n">get_model_state_dict</span><span class="p">(</span><span class="n">actual_model</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">opts</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_rank_0</span><span class="p">():</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+            <span class="c1"># Use save_pretrained if available (handles HF and PEFT)</span>
+            <span class="c1"># PEFT&#39;s save_pretrained will automatically filter for adapter weights if state_dict is provided</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">actual_model</span><span class="p">,</span> <span class="s2">&quot;save_pretrained&quot;</span><span class="p">):</span>
+                <span class="n">actual_model</span><span class="o">.</span><span class="n">save_pretrained</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="n">state_dict</span><span class="o">=</span><span class="n">state_dict</span><span class="p">,</span> <span class="n">safe_serialization</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Fallback to torch.save</span>
+                <span class="n">save_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="s2">&quot;pytorch_model.bin&quot;</span><span class="p">)</span>
+                <span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">state_dict</span><span class="p">,</span> <span class="n">save_path</span><span class="p">)</span>
+
+            <span class="c1"># Save the tokenizer</span>
+            <span class="k">if</span> <span class="n">tokenizer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">tokenizer</span><span class="o">.</span><span class="n">save_pretrained</span><span class="p">(</span><span class="n">output_dir</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Hugging Face model saved to </span><span class="si">{</span><span class="n">output_dir</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Ensure all ranks wait for rank 0 to finish saving</span>
+        <span class="n">dist</span><span class="o">.</span><span class="n">barrier</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="FSDPV2Strategy.save_ckpt"><a class="viewcode-back" href="../../../../api_doc/strategy/fsdp/fsdpv2.html#lightrft.strategy.fsdp.fsdpv2.FSDPV2Strategy.save_ckpt">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">save_ckpt</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -839,7 +872,13 @@
 
         <span class="n">dist</span><span class="o">.</span><span class="n">barrier</span><span class="p">()</span>
 
-        <span class="n">fsdp_state_dict</span> <span class="o">=</span> <span class="n">get_model_state_dict</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+        <span class="c1"># Determine the model to save (unwrap ActorVL or similar wrappers)</span>
+        <span class="n">actual_model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">model</span> <span class="k">if</span> <span class="n">is_actor</span><span class="p">(</span><span class="n">model</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="s2">&quot;model&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="n">model</span>
+
+        <span class="c1"># [Sharded State Dict]</span>
+        <span class="c1"># For DCP, we want the sharded state dict (full_state_dict=False by default)</span>
+        <span class="n">opts</span> <span class="o">=</span> <span class="n">StateDictOptions</span><span class="p">(</span><span class="n">full_state_dict</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">cpu_offload</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">fsdp_state_dict</span> <span class="o">=</span> <span class="n">get_model_state_dict</span><span class="p">(</span><span class="n">actual_model</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">opts</span><span class="p">)</span>
 
         <span class="n">fp</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">save_dir</span><span class="p">,</span> <span class="n">tag</span><span class="p">)</span>
         <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">fp</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -854,7 +893,7 @@
                 <span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">optimizer</span><span class="o">.</span><span class="n">state_dict</span><span class="p">(),</span> <span class="n">opt_ckpt_path</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="c1"># DCP can only be use with naive optimizer</span>
-                <span class="n">fsdp_optim_state_dict</span> <span class="o">=</span> <span class="n">get_optimizer_state_dict</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">)</span>
+                <span class="n">fsdp_optim_state_dict</span> <span class="o">=</span> <span class="n">get_optimizer_state_dict</span><span class="p">(</span><span class="n">actual_model</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">)</span>
                 <span class="n">dcp</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">fsdp_optim_state_dict</span><span class="p">,</span> <span class="n">checkpoint_id</span><span class="o">=</span><span class="n">opt_base_dir</span><span class="p">)</span>
 
         <span class="n">client_ckpt_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">fp</span><span class="p">,</span> <span class="s2">&quot;client_state.pt&quot;</span><span class="p">)</span>

@@ -353,22 +353,7 @@ DeepSpeed ZeRO and PyTorch’s FSDP v2.</p>
 <span class="sig-name descname"><span class="pre">broadcast_to_engine</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/lightrft/strategy/utils/broadcast_utils.html#BroadcastManager.broadcast_to_engine"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.utils.broadcast_utils.BroadcastManager.broadcast_to_engine" title="Permalink to this definition">¶</a></dt>
 <dd><p>Broadcast model weights to the inference engine.</p>
 <p>This method selects the appropriate broadcasting strategy based on the
-distributed training configuration (DeepSpeed, FSDP v2). It automatically
-detects whether to use DeepSpeed or FSDP broadcasting based on the strategy
-configuration.</p>
-<p>Example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Initialize the broadcast manager</span>
-<span class="n">broadcast_manager</span> <span class="o">=</span> <span class="n">BroadcastManager</span><span class="p">(</span><span class="n">actor_model</span><span class="p">,</span> <span class="n">strategy</span><span class="p">,</span> <span class="n">inference_engine</span><span class="p">)</span>
-
-<span class="c1"># Broadcast weights to inference engine</span>
-<span class="n">broadcast_manager</span><span class="o">.</span><span class="n">broadcast_to_engine</span><span class="p">()</span>
-</pre></div>
-</div>
-<dl class="field-list simple">
-<dt class="field-odd">Raises<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>NotImplementedError</strong> – If an unsupported configuration is used</p>
-</dd>
-</dl>
+distributed training configuration (DeepSpeed, FSDP v2).</p>
 </dd></dl>
 
 </dd></dl>
