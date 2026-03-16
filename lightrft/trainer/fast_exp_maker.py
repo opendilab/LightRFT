@@ -452,7 +452,13 @@ class RewardComputationEngine:
         :type packing_samples: bool
         """
         self.reward_model = reward_model
-        self.remote_rm_url = remote_rm_url
+        # Ensure remote_rm_url is a list for consistent iteration
+        if remote_rm_url is None:
+            self.remote_rm_url = None
+        elif isinstance(remote_rm_url, str):
+            self.remote_rm_url = [remote_rm_url]
+        else:
+            self.remote_rm_url = list(remote_rm_url)
         self.custom_reward_func = custom_reward_func
         self.reward_fn = reward_fn
         self.reward_fn_label_map = reward_fn_label_map or {}
@@ -934,9 +940,20 @@ class FastExperienceMaker(NaiveExperienceMaker):
         else:
             self.multimodal_processor = None
 
+        # For On-Policy Distillation (OPD), remote_rm_url is used for teacher model,
+        # not for reward model. So we don't pass it to RewardComputationEngine.
+        # Instead, we store it separately for _fetch_teacher_logprobs().
+        if advantage_estimator == "on_policy_distillation":
+            # Store teacher URL separately for OPD
+            self.teacher_model_url = self.remote_rm_url
+            rm_url_for_reward_engine = None  # Don't use remote_rm_url for rewards in OPD mode
+        else:
+            self.teacher_model_url = None
+            rm_url_for_reward_engine = self.remote_rm_url
+
         self.reward_engine = RewardComputationEngine(
             reward_model=self.reward_model,
-            remote_rm_url=self.remote_rm_url,
+            remote_rm_url=rm_url_for_reward_engine,
             custom_reward_func=getattr(self, "custom_reward_func", None),
             reward_fn=self.reward_fn,
             reward_fn_label_map=getattr(self, "reward_fn_label_map", None),
@@ -1445,8 +1462,8 @@ class FastExperienceMaker(NaiveExperienceMaker):
             )
 
         # Get teacher URL from config
-        # remote_rm_url may be a string or list of strings
-        teacher_url = self.remote_rm_url
+        # Use self.teacher_model_url which is set during __init__ for OPD mode
+        teacher_url = self.teacher_model_url
         if isinstance(teacher_url, list):
             teacher_url = teacher_url[0] if teacher_url else None
         if teacher_url is None:
