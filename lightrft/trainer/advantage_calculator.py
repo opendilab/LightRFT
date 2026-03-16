@@ -765,19 +765,28 @@ class OnPolicyDistillationCalculator(AdvantageCalculator):
         # Student log probs are already computed in experience.action_log_probs
         student_log_probs = experience.action_log_probs
 
-        # Compute advantage as teacher - student log probs
-        # This encourages student to increase probability where teacher has higher probability
-        advantages = teacher_log_probs - student_log_probs
+        # Compute reverse KL divergence: student - teacher
+        # This is the correct direction for on-policy distillation:
+        # - When student > teacher: positive penalty (discourage student from being overconfident)
+        # - When student < teacher: negative penalty (encourage student to match teacher)
+        # The final advantage is: base_advantage - opd_kl_coef * reverse_kl
+        # Since we don't have a base advantage here, we use: -reverse_kl = teacher - student
+        # which encourages minimizing KL(student || teacher)
+        reverse_kl = student_log_probs - teacher_log_probs
+        advantages = -reverse_kl  # This equals: teacher - student
 
         # Apply action mask to ensure we only consider generated tokens
         if experience.action_mask is not None:
             advantages = advantages * experience.action_mask
+            reverse_kl = reverse_kl * experience.action_mask
 
         # Returns are the same as advantages for distillation
         returns = deepcopy(advantages)
 
+        # Store reverse KL for metrics logging
+        info_dict = {"opd_reverse_kl": reverse_kl}
+
         # Advantage whitening (normalization)
-        info_dict = {}
         if self.config.advantages_norm:
             masked_adv = torch.masked_select(advantages, experience.action_mask)
             adv_mean = masked_adv.mean()

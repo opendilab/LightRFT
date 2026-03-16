@@ -59,6 +59,16 @@ from .advantage_calculator import get_advantage_calculator, normalize_advantages
 from .image_utils import normalize_images, get_images_num
 from .video_utils import normalize_videos, get_videos_num
 
+# On-Policy Distillation imports
+try:
+    from examples.on_policy_distillation.on_policy_distillation_reward import (
+        get_teacher_logprobs_for_experiences
+    )
+    import asyncio
+    OPD_AVAILABLE = True
+except ImportError:
+    OPD_AVAILABLE = False
+
 # ============================================================================
 # Data Structures
 # ============================================================================
@@ -1047,6 +1057,10 @@ class FastExperienceMaker(NaiveExperienceMaker):
 
             self._process_multi_image_video_thws(experiences, expanded_images_num, expanded_videos_num)
 
+        # ========== Stage 6.5: On-Policy Distillation Teacher Log-Probs ==========
+        if config.advantage_estimator == "on_policy_distillation":
+            self._fetch_teacher_logprobs(experiences)
+
         # ========== Stage 7: Advantage Computation ==========
         experiences = self._compute_advantages_and_returns(experiences, rewards, generate_kwargs)
 
@@ -1409,6 +1423,83 @@ class FastExperienceMaker(NaiveExperienceMaker):
                     experience.video_grid_thws = video_grid_thw_list
                 else:
                     experience.video_grid_thws = [None] * len(micro_videos_num)
+
+    def _fetch_teacher_logprobs(
+        self,
+        experiences: List[ExperienceVL],
+    ) -> None:
+        """
+        Fetch teacher log probabilities for on-policy distillation.
+
+        This method queries the teacher model server to get log probabilities
+        for each generated sequence, which are used by OnPolicyDistillationCalculator
+        to compute advantages.
+
+        :param experiences: List of experiences to add teacher log probs to
+        :type experiences: List[Union[Experience, ExperienceVL]]
+        """
+        if not OPD_AVAILABLE:
+            raise RuntimeError(
+                "On-policy distillation module not available. "
+                "Make sure examples/on_policy_distillation/on_policy_distillation_reward.py exists."
+            )
+
+        # Get teacher URL from config
+        # remote_rm_url may be a string or list of strings
+        teacher_url = self.remote_rm_url
+        if isinstance(teacher_url, list):
+            teacher_url = teacher_url[0] if teacher_url else None
+        if teacher_url is None:
+            raise ValueError(
+                "Teacher model URL not specified. "
+                "Please set --remote_rm_url to the teacher model server URL."
+            )
+
+        Timer.start('  fetch_teacher_logprobs')
+
+        for exp in experiences:
+            # Decode sequences to text for teacher model query
+            sequences = exp.sequences
+            attention_mask = exp.attention_mask
+            action_mask = exp.action_mask
+
+            # Get response lengths (number of generated tokens per sequence)
+            response_lengths = action_mask.sum(dim=-1).tolist()
+
+            # Decode full sequences to text
+            # Using batch_decode for efficiency
+            sequence_texts = self.tokenizer.batch_decode(
+                sequences,
+                skip_special_tokens=False,
+                clean_up_tokenization_spaces=False,
+            )
+
+            # Query teacher model for log probs
+            try:
+                # Use asyncio to run the async function
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+                try:
+                    teacher_log_probs = loop.run_until_complete(
+                        get_teacher_logprobs_for_experiences(
+                            teacher_url=teacher_url,
+                            sequences=sequence_texts,
+                            response_lengths=response_lengths,
+                            device="cpu",  # Store on CPU, will move to GPU when needed
+                        )
+                    )
+                finally:
+                    loop.close()
+
+                # Store in experience info for advantage calculator
+                exp.info["teacher_log_probs"] = teacher_log_probs
+
+            except Exception as e:
+                raise RuntimeError(
+                    f"Failed to fetch teacher log probs from {teacher_url}: {e}"
+                ) from e
+
+        Timer.stop('  fetch_teacher_logprobs')
 
     def _process_experiences(
         self,

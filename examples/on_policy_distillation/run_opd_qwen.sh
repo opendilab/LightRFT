@@ -88,7 +88,8 @@ echo "Starting Teacher Model Server"
 echo "========================================="
 
 # Generate unique log file for teacher server
-LOG_FILE="/tmp/teacher_model_$(date +%Y%m%d_%H%M%S).log"
+LOG_FILE="rft_logs/${EXPERIMENT_NAME}/teacher_model_$(date +%Y%m%d_%H%M%S).log"
+mkdir -p rft_logs
 
 # Launch teacher model server in background
 CUDA_VISIBLE_DEVICES=$TEACHER_GPU python3 -m sglang.launch_server \

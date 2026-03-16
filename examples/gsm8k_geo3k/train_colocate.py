@@ -384,7 +384,8 @@ def train(args):
         top_p=args.top_p,
         pad_token_id=tokenizer.pad_token_id,
         eos_token_id=tokenizer.eos_token_id,
-        # reward model
+        # reward model / teacher model URL (used for OPD)
+        remote_rm_url=args.remote_rm_url,
         reward_fn=reward_fn,
         reward_fn_label_map=label_map,
         reward_recipe=RECIPE,
@@ -528,7 +529,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--advantage_estimator",
         type=str,
-        choices=["gae", "reinforce", "rloo", "reinforce_baseline", "group_norm", "cpgd", "reinforce++"],
+        choices=["gae", "reinforce", "rloo", "reinforce_baseline", "group_norm", "cpgd", "reinforce++", "on_policy_distillation"],
         default="gae",
         help="Choose advantage estimation method: gae, reinforce, rloo, reinforce_baseline, group_norm, reinforce++",
     )
