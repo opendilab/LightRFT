@@ -19,25 +19,11 @@ setup(
         "Intended Audience :: Science/Research",
         "License :: OSI Approved :: Apache Software License",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.10",
-        "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3.12",
         "Topic :: Scientific/Engineering :: Artificial Intelligence",
         "Topic :: Software Development :: Libraries :: Python Modules",
     ],
-    python_requires=">=3.10",
-    install_requires=[
-        "torch>=2.9.1",
-        "transformers>=4.51.3",
-        "vllm>=0.13.3",
-        "sglang>=0.5.6.post2",
-        "deepspeed>=0.18.3",
-        "accelerate",
-        "datasets",
-        "wandb",
-        "peft",
-        "easydict",
-    ],
+    python_requires=">=3.12",
     extras_require={
         "dev": [
             "pytest",
@@ -52,6 +38,11 @@ setup(
             "latex2sympy2",
             "timeout_decorator",
             "word2number",
+        ],
+        # Optional vLLM backend support
+        # Install with: pip install "LightRFT[vllm]"
+        "vllm": [
+            "vllm>=0.13.3",
         ],
     },
     keywords=[

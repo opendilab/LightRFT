@@ -26,6 +26,41 @@ from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
 
 import torch
 
+# ============================================================================
+# Response Extraction Utility
+# ============================================================================
+
+def extract_response(text: str) -> str:
+    """
+    Extract assistant completion from a full chat transcript.
+
+    Training may pass decoded full sequences (prompt + response). If format/
+    accuracy checks run on the full transcript, system prompt examples like
+    <think>...</think> and \\boxed{} can cause false positives.
+
+    :param text: Raw decoded text (possibly full transcript)
+    :type text: str
+    :return: Assistant completion text when detectable, else stripped original text
+    :rtype: str
+    """
+    if not isinstance(text, str):
+        return ""
+
+    s = text.strip()
+    if not s:
+        return s
+
+    # Qwen-style chat markers (keep only the last assistant segment)
+    assistant_marker = "<|im_start|>assistant"
+    if assistant_marker in s:
+        start = s.rfind(assistant_marker) + len(assistant_marker)
+        tail = s[start:]
+        end_idx = tail.find("<|im_end|>")
+        if end_idx != -1:
+            tail = tail[:end_idx]
+        return tail.strip()
+    return s
+
 
 # ============================================================================
 # Reward Recipe Configuration
@@ -305,6 +340,7 @@ def mix_rewards(
     # ---------- Main loop ----------
     for i, lab in enumerate(labels):
         sol = solution_strs[i]
+        sol_completion = extract_response(sol)
         gt = refs[i] if i < len(refs) else ""
 
         # Get recipe for this label
@@ -319,8 +355,8 @@ def mix_rewards(
         for typ, key, w in recipe:
             if typ == "geo3k_rule":
                 # Geo3K pure rule-based reward (format + accuracy)
-                acc_r = geo3k_accuracy_reward_fn(sol, gt)
-                fmt_r = geo3k_format_reward_fn(sol)
+                acc_r = geo3k_accuracy_reward_fn(sol_completion, gt)
+                fmt_r = geo3k_format_reward_fn(sol_completion)
                 combined_r = (1.0 - 0.1) * acc_r + 0.1 * fmt_r
                 r += w * combined_r
 
@@ -331,8 +367,8 @@ def mix_rewards(
 
             elif typ == "gsm8k_rule":
                 # GSM8K pure rule-based reward (format + accuracy)
-                acc_r = gsm8k_accuracy_reward_fn(sol, gt)
-                fmt_r = gsm8k_format_reward_fn(sol)
+                acc_r = gsm8k_accuracy_reward_fn(sol_completion, gt)
+                fmt_r = gsm8k_format_reward_fn(sol_completion)
                 combined_r = (1.0 - 0.1) * acc_r + 0.1 * fmt_r
                 r += w * combined_r
 

@@ -33,7 +33,6 @@ import torch
 import numpy as np
 from PIL import Image
 from easydict import EasyDict
-from vllm import SamplingParams
 
 from lightrft.models.utils import (
     compute_approx_kl,
@@ -1143,6 +1142,11 @@ class FastExperienceMaker(NaiveExperienceMaker):
 
         # ========== Configure Sampling Parameters ==========
         if config.engine_type == "vllm":
+            # vLLM-specific sampling configuration
+            # Note: vLLM is an optional dependency. Install with: pip install "LightRFT[vllm]"
+            # This import is conditional and only executed when engine_type is "vllm"
+            from vllm import SamplingParams
+
             # For vllm>=0.13.0, truncate_prompt_tokens must not exceed max_model_len
             # For older versions, we can use 8192 directly without validation
             if vllm_ge_0130():
@@ -1163,6 +1167,7 @@ class FastExperienceMaker(NaiveExperienceMaker):
                 truncate_prompt_tokens=truncate_tokens,
             )
         elif config.engine_type == "sglang":
+            # SGLang-specific sampling configuration (default backend)
             sampling_params = dict(
                 n=1,
                 temperature=generate_kwargs.get("temperature", 1.0),
@@ -1215,18 +1220,17 @@ class FastExperienceMaker(NaiveExperienceMaker):
         try:
             if hasattr(self.strategy.args, 'use_fire') and self.strategy.args.use_fire:
                 # Use FIRE sampling (Flaming-hot Initiation with Regular Execution)
+                # According to the paper (https://arxiv.org/abs/2410.21236), FIRE only changes
+                # the temperature for the first token. All other sampling parameters (top_k, top_p, etc.)
+                # are kept the same between first token and remaining tokens.
                 all_outputs = fire_sampling(
                     all_prompt_token_ids=all_prompt_token_ids,
                     generate_fn=generate_fn,  # noqa: TODO
                     engine_type=config.engine_type,
                     first_token_temperature=generate_kwargs.get("first_token_temperature", 10.0),
                     temperature=generate_kwargs.get("temperature", 1.0),
-                    first_token_top_k=generate_kwargs.get(
-                        "first_token_top_k", sampling_params.top_k if hasattr(sampling_params, 'top_k') else -1
-                    ),
-                    first_token_top_p=generate_kwargs.get(
-                        "first_token_top_p", sampling_params.top_p if hasattr(sampling_params, 'top_p') else 1.0
-                    ),
+                    # Note: first_token_top_k and first_token_top_p are deprecated and ignored
+                    # The function will use top_k and top_p from sampling_params for both stages
                     is_multimodal=is_multimodal,
                     all_prompts=all_prompts,
                     all_images=all_images,
@@ -1709,6 +1713,13 @@ class FastExperienceMaker(NaiveExperienceMaker):
 
         # ========== Stage 2: Initial Model ==========
         if self.initial_model is not None:
+            # Note: Manual reload/offload is safe for initial_model because:
+            # 1. It's initialized with is_training=False (see train_colocate.py:207)
+            # 2. This means FSDP's CPUOffloadPolicy is NOT enabled (see fsdpv2.py:375)
+            # 3. Without CPUOffloadPolicy, FSDP doesn't automatically manage parameter movement
+            # 4. We can safely use manual reload_model() to move model from CPU to GPU
+            # 5. After computing base_action_log_probs, we offload back to CPU to save memory
+            # This pattern works because there's no conflict with FSDP's automatic management.
             self.strategy.reload_model(self.initial_model)
             for output in outputs:
                 output.base_action_log_probs = self.initial_model(
@@ -1718,16 +1729,25 @@ class FastExperienceMaker(NaiveExperienceMaker):
                     packed_seq_lens=output.packed_seq_lens,
                     **output.inputs_extra_kwargs
                 )
+            # Offload back to CPU to free GPU memory for subsequent stages
             self.strategy.offload_model(self.initial_model)
 
         # ========== Stage 3: Critic ==========
+        Timer.start('    critic')
         if self.critic is not None:
-            self.strategy.reload_model(self.critic)
+            # Note: When critic is initialized with is_training=True and fsdp_cpu_offload=True,
+            # FSDP's CPUOffloadPolicy automatically manages parameter movement between CPU/GPU.
+            # Manual reload_model/offload_model calls will conflict with FSDP's automatic management
+            # and cause "FSDP parameters should be materialized on CPU" error.
+            # The CPUOffloadPolicy will automatically:
+            # 1. Prefetch parameters from CPU to GPU before forward pass
+            # 2. Offload parameters back to CPU after forward pass
+            # This is the recommended approach for memory-efficient training with FSDP2.
             for output in outputs:
                 output.value = self.critic(
                     output.sequences, output.num_actions, output.attention_mask, **output.inputs_extra_kwargs
                 )
-            self.strategy.offload_model(self.critic)
+        Timer.stop('    critic')
 
         # ========== Stage 4: Reward Models ==========
         self.reward_engine.compute_rewards(outputs, vlm_mode, device)
@@ -1777,6 +1797,9 @@ class FastExperienceMaker(NaiveExperienceMaker):
                 "pixel_values_videos": sample.pixel_values_videos,
                 "video_grid_thw": sample.video_grid_thws,
             }
+            # Audio-language actors expect audio_values; pipeline stores them in pixel_values slot
+            if "audio_values" in self._actor_supported_params:
+                candidate_params["audio_values"] = candidate_params.get("pixel_values")
 
             # Filter to only include supported parameters
             extra_kwargs = {
@@ -1926,6 +1949,8 @@ class FastExperienceMaker(NaiveExperienceMaker):
                 info=info,
                 kl=kl,
                 action_entropy=output.action_entropy,
+                labels=output.labels,  # data source labels (if available, e.g., "gsm8k_rule")
+                references=output.references,  # ground truth references (if available, e.g., correct answers)
             )
         else:
             return Experience(

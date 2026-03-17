@@ -13,14 +13,21 @@ The module is particularly useful for:
 - Handling position IDs in packed sequence scenarios for transformer models
 """
 
-from typing import List, Optional, Union, Tuple, Dict, Callable
+import logging
+from typing import Callable, Dict, List, Optional, Tuple, Union
 
-from loguru import logger
+import deepspeed
 import torch
+import torch.distributions as dist
 import torch.nn as nn
 import torch.nn.functional as F
-import torch.distributions as dist
+from flash_attn.utils.distributed import all_gather
+from lightrft.utils.logging_utils import init_logger
 from peft import LoraConfig, TaskType, get_peft_model
+from peft.tuners.lora import LoraLayer
+from transformers import (AutoConfig, AutoModel)
+
+logger = init_logger(__name__)
 
 
 def find_all_linear_modules(model: "nn.Module", freeze_vision_tower: bool) -> List[str]:
@@ -224,7 +231,8 @@ def log_probs_from_logits(
         flashattn_available = False
         if not disable_logprobs_flashattn:
             try:
-                from flash_attn.ops.triton.cross_entropy import cross_entropy_loss
+                from flash_attn.ops.triton.cross_entropy import \
+                    cross_entropy_loss
 
                 flashattn_available = True
             except ImportError:
@@ -346,7 +354,7 @@ def apply_lora_configuration(
     model.enable_input_require_grads()
 
     # Auto-detect target modules if not provided
-    if target_modules is None:
+    if target_modules is None or "all-linear" in target_modules:
         target_modules = find_all_linear_modules(model, freeze_vision_tower)
 
     print("target_modules: ", target_modules)
