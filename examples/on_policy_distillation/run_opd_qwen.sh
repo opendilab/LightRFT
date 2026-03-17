@@ -75,9 +75,18 @@ N_SAMPLES=${N_SAMPLES:-8}
 EPISODE=${EPISODE:-30}
 WARMUP=${WARMUP:-0.03}
 OPD_KL_COEF=${OPD_KL_COEF:-1.0}
+MICRO_TRAIN_BS=${MICRO_TRAIN_BS:-4}
+MICRO_ROLLOUT_BS=${MICRO_ROLLOUT_BS:-4}
 
-RBS=${RBS:-128}
-TBS=${TBS:-128}
+# Auto-align batch sizes to (micro_batch * world_size)
+WORLD_SIZE=$((NNODES * GPUS_PER_NODE))
+ALIGN=$((MICRO_TRAIN_BS * WORLD_SIZE))
+RBS=$(( (${RBS:-128} / ALIGN) * ALIGN ))
+TBS=$(( (${TBS:-128} / ALIGN) * ALIGN ))
+[ "$RBS" -lt "$ALIGN" ] && RBS=$ALIGN
+[ "$TBS" -lt "$ALIGN" ] && TBS=$ALIGN
+
+echo "Batch sizes: TBS=${TBS}, RBS=${RBS} (aligned to micro=${MICRO_TRAIN_BS} * world=${WORLD_SIZE} = ${ALIGN})"
 
 if [ "$OPD_MODE" = "hybrid" ]; then
     ADVANTAGE_ESTIMATOR="on_policy_distillation_hybrid"
@@ -215,9 +224,9 @@ torchrun \
     --remote_rm_url "$TEACHER_URL" \
     --save_path "results/${EXPERIMENT_NAME}/${SAVE_MODEL_NAME}" \
     --ckpt_path "results/${EXPERIMENT_NAME}/${SAVE_MODEL_NAME}" \
-    --micro_train_batch_size 4 \
+    --micro_train_batch_size ${MICRO_TRAIN_BS} \
     --train_batch_size ${TBS} \
-    --micro_rollout_batch_size 4 \
+    --micro_rollout_batch_size ${MICRO_ROLLOUT_BS} \
     --rollout_batch_size ${RBS} \
     --max_epochs 1 \
     --num_episodes ${EPISODE} \
