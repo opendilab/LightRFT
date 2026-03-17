@@ -787,7 +787,8 @@ class OnPolicyDistillationCalculator(AdvantageCalculator):
         return experiences, list(zero_rewards.chunk(len(experiences)))
 
     def compute(self, experience, final_reward, gamma, generate_kwargs):
-        """advantages = -opd_kl_coef * (student_logp - teacher_logp), then whiten."""
+        """advantages = -opd_kl_coef * (student_logp - teacher_logp).
+        Whitening is done cross-batch in normalize_advantages_cross_batch."""
         if "teacher_log_probs" not in experience.info:
             raise ValueError("teacher_log_probs not found in experience.info.")
 
@@ -797,9 +798,6 @@ class OnPolicyDistillationCalculator(AdvantageCalculator):
         advantages, info_dict = _apply_opd_kl_penalty(
             student_lp, teacher_lp, experience.action_mask, self.opd_kl_coef
         )
-
-        # Whiten advantages for training stability
-        advantages = _whiten_advantages(advantages, experience.action_mask)
 
         returns = advantages.clone()
 
@@ -833,7 +831,8 @@ class OnPolicyDistillationHybridCalculator(AdvantageCalculator):
         return self.base_calculator.preprocess_rewards(rewards, experiences, max_new_tokens)
 
     def compute(self, experience, final_reward, gamma, generate_kwargs):
-        """advantages = whiten(GRPO_base + OPD_KL_penalty)."""
+        """advantages = GRPO_base + OPD_KL_penalty.
+        Whitening is done cross-batch in normalize_advantages_cross_batch."""
         # Step 1: GRPO base advantages from task rewards
         base_advantages, returns, info_dict = self.base_calculator.compute(
             experience, final_reward, gamma, generate_kwargs
@@ -851,9 +850,8 @@ class OnPolicyDistillationHybridCalculator(AdvantageCalculator):
         )
         info_dict.update(opd_info)
 
-        # Step 3: Combine and whiten to resolve scale mismatch
+        # Step 3: Combine (whitening done cross-batch later)
         advantages = base_advantages + opd_adv
-        advantages = _whiten_advantages(advantages, experience.action_mask)
 
         if self.config.advantage_clip > 0:
             clip_val = self.config.advantage_clip
@@ -928,7 +926,10 @@ def normalize_advantages_cross_batch(experiences: List, advantage_estimator: str
     :return: List of Experience objects with normalized advantages.
     :rtype: List
     """
-    if advantage_estimator not in ["gae", "reinforce", "reinforce_baseline"]:
+    if advantage_estimator not in [
+        "gae", "reinforce", "reinforce_baseline",
+        "on_policy_distillation", "on_policy_distillation_hybrid",
+    ]:
         return experiences
 
     # Collect all advantages and action masks
