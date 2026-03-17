@@ -400,10 +400,9 @@ class NaiveExperienceMaker(ABC):
                     generate_kwargs["gamma"],
                 )
                 experience.advantages = deepcopy(experience.returns)
-            elif self.advantage_estimator == "on_policy_distillation":
-                # OPD uses GRPO base advantages + OPD KL penalty
-                # Here compute GRPO-style cumulative returns from task rewards
-                # The OPD KL penalty is applied in OnPolicyDistillationCalculator
+            elif self.advantage_estimator in ("on_policy_distillation", "on_policy_distillation_hybrid"):
+                # OPD: cumulative returns from rewards (0 for pure, task rewards for hybrid)
+                # The OPD KL penalty is applied in the advantage calculator
                 experience.returns = self.get_cumulative_returns(
                     reward,
                     experience.action_mask,
@@ -586,7 +585,7 @@ class NaiveExperienceMaker(ABC):
         args = self.strategy.args
 
         # On-policy distillation: query teacher model for log probs, then use GRPO reward shaping
-        if args.advantage_estimator == "on_policy_distillation":
+        if args.advantage_estimator in ("on_policy_distillation", "on_policy_distillation_hybrid"):
             if self.remote_rm_url is None or len(self.remote_rm_url) == 0:
                 raise ValueError(
                     "On-policy distillation requires a teacher model URL. "
@@ -647,13 +646,20 @@ class NaiveExperienceMaker(ABC):
                 logger.error(f"Failed to get teacher log probs: {e}")
                 raise
 
-            # Use GRPO reward shaping (group normalization) on task rewards
-            rewards = torch.cat([experience.info["reward"] for experience in experiences])
-            rewards = rewards.reshape(-1, args.n_samples_per_prompt)
-            baseline = rewards.mean(-1, keepdim=True)
-            rewards = (rewards - baseline) / (rewards.std(1, keepdim=True) + 1e-8)
-            rewards = rewards.flatten().chunk(len(experiences))
-            return experiences, rewards
+            # Return rewards based on mode
+            if args.advantage_estimator == "on_policy_distillation":
+                # Pure distillation: zero rewards, learning signal from OPD KL only
+                zero_rewards = torch.zeros(sum(exp.sequences.size(0) for exp in experiences))
+                rewards = zero_rewards.chunk(len(experiences))
+                return experiences, list(rewards)
+            else:
+                # Hybrid: use task rewards with GRPO normalization
+                rewards = torch.cat([experience.info["reward"] for experience in experiences])
+                rewards = rewards.reshape(-1, args.n_samples_per_prompt)
+                baseline = rewards.mean(-1, keepdim=True)
+                rewards = (rewards - baseline) / (rewards.std(-1, keepdim=True) + 1e-9)
+                rewards = rewards.flatten().chunk(len(experiences))
+                return experiences, list(rewards)
 
         # Reward shaping for RLOO
         if args.advantage_estimator == "rloo":

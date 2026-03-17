@@ -1,170 +1,198 @@
 #!/bin/bash
 #
-# LightRFT On-Policy Distillation Training Script
-# This script demonstrates knowledge distillation from Qwen2.5-7B (teacher) to Qwen2.5-0.5B (student)
-# using on-policy distillation during reinforcement learning.
+# LightRFT On-Policy Distillation Training Script (Template)
+# Knowledge distillation from a teacher model to a student model.
 #
-# Key Features:
-# - No separate reward model needed - teacher model provides the learning signal
-# - Token-level supervision from teacher log probabilities
-# - On-policy: teacher evaluates student's actual generated responses
+# Features:
+#   - Auto GPU detection and allocation (teacher + training)
+#   - Robust teacher server with health monitoring
+#   - Two OPD modes: pure distillation / hybrid (GRPO + OPD)
+#
+# Usage:
+#   # Edit paths below, then:
+#   bash examples/on_policy_distillation/run_opd_qwen.sh
+#   OPD_MODE=hybrid bash examples/on_policy_distillation/run_opd_qwen.sh
 #
 
-set -e
+set -euo pipefail
 
 ################################################################################
 #                           Part 1: User Configuration                         #
 ################################################################################
 
-# --- Model Paths ---
-# Teacher model (larger, provides learning signal)
-TEACHER_MODEL_PATH="Qwen/Qwen2.5-7B-Instruct"
+# --- Model Paths (EDIT THESE) ---
+TEACHER_MODEL_PATH="${TEACHER_MODEL_PATH:-Qwen/Qwen2.5-7B-Instruct}"
+STUDENT_MODEL_PATH="${STUDENT_MODEL_PATH:-Qwen/Qwen2.5-0.5B-Instruct}"
+DATASET_PATH="${DATASET_PATH:-/path/to/your/dataset.jsonl}"
 
-# Student model (smaller, being trained)
-STUDENT_MODEL_PATH="Qwen/Qwen2.5-0.5B-Instruct"
+# --- Experiment ---
+EXPERIMENT_NAME="${EXPERIMENT_NAME:-opd-qwen-7b-to-0.5b}"
+export WANDB_API_KEY="${WANDB_API_KEY:-YOUR_WANDB_API_KEY}"
+export WANDB_PROJECT="${WANDB_PROJECT:-LightRFT-OnPolicyDistillation}"
 
-# --- Dataset Path ---
-# Path to your training dataset (JSONL format)
-# Each line should be a JSON object with a "prompt" field
-DATASET_PATH="/path/to/your/dataset.jsonl"
-
-# --- Teacher Model Server Configuration ---
+# --- Teacher Server ---
 TEACHER_IP="127.0.0.1"
-TEACHER_PORT=13141
-TEACHER_GPU=7  # GPU to run teacher model on
-
-# --- Experiment Configuration ---
-EXPERIMENT_NAME="opd-qwen-7b-to-0.5b"
-export WANDB_API_KEY="YOUR_WANDB_API_KEY"
-export WANDB_PROJECT="LightRFT-OnPolicyDistillation"
+TEACHER_PORT=${TEACHER_PORT:-13141}
 
 ################################################################################
-#                       Part 2: Training Hyperparameters                       #
+#                       Part 2: Auto GPU Detection & Allocation                #
 ################################################################################
 
-# --- Distillation Settings ---
-N_SAMPLES=4              # Number of samples per prompt
-EPISODE=30               # Total number of training episodes
-WARMUP=0.03              # Learning rate warmup ratio
+TOTAL_GPUS=$(nvidia-smi -L 2>/dev/null | wc -l)
+if [ "$TOTAL_GPUS" -lt 2 ]; then
+    echo "ERROR: Need at least 2 GPUs (1 teacher + 1 training). Found: $TOTAL_GPUS"
+    exit 1
+fi
 
-# --- Batch Size Configuration ---
-RBS=128       # Rollout Batch Size
-TBS=128       # Train Batch Size
+# Last GPU for teacher, rest for training
+TEACHER_GPU=$((TOTAL_GPUS - 1))
+TRAIN_GPUS=$((TOTAL_GPUS - 1))
 
-# --- Learning Settings ---
-KL=0.01                  # KL divergence coefficient (for regularization)
-LR=1e-6                  # Student learning rate
-MAX_LENGTH=3072          # Max sequence length
-PROMPT_MAX_LEN=1024      # Max prompt length
-GENERATE_MAX_LEN=2048    # Max generation length
+if [ "$TRAIN_GPUS" -ge 2 ]; then
+    ENGINE_TP=2
+else
+    ENGINE_TP=1
+fi
 
-################################################################################
-#                    Part 3: Distributed Training Setup                        #
-################################################################################
+export NNODES=1
+export GPUS_PER_NODE=$TRAIN_GPUS
+export NODE_RANK=0
+export MASTER_ADDR="localhost"
+export MASTER_PORT=${MASTER_PORT:-20090}
 
-# --- Single-Node Setup ---
-export MLP_WORKER_NUM=1
-export MLP_WORKER_GPU=8
-export MLP_ROLE_INDEX=0
-export MLP_WORKER_0_HOST="localhost"
-export MLP_WORKER_0_PORT=20090
-
-# --- PyTorch Distributed Variables ---
-export MASTER_ADDR=$MLP_WORKER_0_HOST
-export MASTER_PORT=$MLP_WORKER_0_PORT
-export NNODES=$MLP_WORKER_NUM
-export NODE_RANK=$MLP_ROLE_INDEX
-export GPUS_PER_NODE=$MLP_WORKER_GPU
-
-# --- vLLM Engine Settings ---
-ENGINE_TP=2  # Tensor parallelism for inference engine
+echo "GPU Allocation: ${TOTAL_GPUS} total → Teacher: GPU ${TEACHER_GPU}, Training: GPU 0-$((TRAIN_GPUS-1)) (TP=${ENGINE_TP})"
 
 ################################################################################
-#                      Part 4: Start Teacher Model Server                      #
+#                       Part 3: Training Hyperparameters                       #
 ################################################################################
 
-echo "========================================="
-echo "Starting Teacher Model Server"
-echo "========================================="
+# --- OPD Mode (override via env: OPD_MODE=hybrid) ---
+#   "pure"   - Pure distillation (Slime default): rewards=0, only OPD KL signal
+#   "hybrid" - GRPO task rewards + OPD KL penalty with advantage whitening
+OPD_MODE="${OPD_MODE:-pure}"
 
-# Generate unique log file for teacher server
-LOG_FILE="rft_logs/${EXPERIMENT_NAME}/teacher_model_$(date +%Y%m%d_%H%M%S).log"
-mkdir -p rft_logs
+N_SAMPLES=${N_SAMPLES:-8}
+EPISODE=${EPISODE:-30}
+WARMUP=${WARMUP:-0.03}
+OPD_KL_COEF=${OPD_KL_COEF:-1.0}
 
-# Launch teacher model server in background
-CUDA_VISIBLE_DEVICES=$TEACHER_GPU python3 -m sglang.launch_server \
-    --model-path "$TEACHER_MODEL_PATH" \
-    --host 0.0.0.0 \
-    --port $TEACHER_PORT \
-    --tp 1 \
-    --chunked-prefill-size 4096 \
-    --mem-fraction-static 0.6 \
-    > "$LOG_FILE" 2>&1 &
+RBS=${RBS:-128}
+TBS=${TBS:-128}
 
-TEACHER_PID=$!
-echo "Teacher model server starting (PID: $TEACHER_PID)..."
-echo "Logs: $LOG_FILE"
+if [ "$OPD_MODE" = "hybrid" ]; then
+    ADVANTAGE_ESTIMATOR="on_policy_distillation_hybrid"
+    KL=${KL:-0.01}
+    LR=${LR:-5e-7}
+else
+    ADVANTAGE_ESTIMATOR="on_policy_distillation"
+    KL=${KL:-0.00}
+    LR=${LR:-5e-7}
+fi
 
-# Wait for teacher model server to be ready
-MAX_WAIT=300  # Maximum wait time in seconds
-WAITED=0
-until curl -sf http://$TEACHER_IP:$TEACHER_PORT/health > /dev/null 2>&1; do
-    if [ $WAITED -ge $MAX_WAIT ]; then
-        echo "ERROR: Teacher model server failed to start within $MAX_WAIT seconds"
-        echo "Last 20 lines of log:"
-        tail -n 20 "$LOG_FILE"
-        kill $TEACHER_PID 2>/dev/null || true
-        exit 1
+PROMPT_MAX_LEN=${PROMPT_MAX_LEN:-1024}
+GENERATE_MAX_LEN=${GENERATE_MAX_LEN:-2048}
+
+################################################################################
+#                      Part 4: Teacher Model Server                            #
+################################################################################
+
+TEACHER_PID=""
+LOG_DIR="rft_logs/${EXPERIMENT_NAME}"
+mkdir -p "$LOG_DIR"
+TEACHER_LOG="${LOG_DIR}/teacher_model_$(date +%Y%m%d_%H%M%S).log"
+
+cleanup() {
+    echo ""
+    echo "=== Cleaning up ==="
+    if [ -n "$TEACHER_PID" ] && kill -0 "$TEACHER_PID" 2>/dev/null; then
+        echo "Stopping teacher server (PID: $TEACHER_PID)..."
+        kill "$TEACHER_PID" 2>/dev/null || true
+        sleep 2
+        kill -9 "$TEACHER_PID" 2>/dev/null || true
     fi
-    echo "Waiting for teacher model server to start... ($WAITED/$MAX_WAIT seconds)"
-    tail -n 5 "$LOG_FILE"
-    sleep 5
-    WAITED=$((WAITED + 5))
+    pkill -f "sglang.launch_server.*${TEACHER_PORT}" 2>/dev/null || true
+    echo "Done."
+}
+trap cleanup EXIT INT TERM
+
+start_teacher_server() {
+    if lsof -Pi :"$TEACHER_PORT" -sTCP:LISTEN -t >/dev/null 2>&1; then
+        echo "Port $TEACHER_PORT in use, killing existing process..."
+        lsof -ti:"$TEACHER_PORT" | xargs kill -9 2>/dev/null || true
+        sleep 3
+    fi
+
+    echo "Starting teacher server on GPU $TEACHER_GPU..."
+    CUDA_VISIBLE_DEVICES=$TEACHER_GPU python3 -m sglang.launch_server \
+        --model-path "$TEACHER_MODEL_PATH" \
+        --host 0.0.0.0 \
+        --port "$TEACHER_PORT" \
+        --tp 1 \
+        --chunked-prefill-size 4096 \
+        --mem-fraction-static 0.7 \
+        --disable-radix-cache \
+        --request-timeout 300 \
+        --max-running-requests 64 \
+        >> "$TEACHER_LOG" 2>&1 &
+
+    TEACHER_PID=$!
+    echo "Teacher PID: $TEACHER_PID, Log: $TEACHER_LOG"
+
+    local max_wait=600 waited=0
+    while ! curl -sf "http://$TEACHER_IP:$TEACHER_PORT/health" >/dev/null 2>&1; do
+        if [ $waited -ge $max_wait ]; then
+            echo "ERROR: Teacher server failed to start in ${max_wait}s"
+            tail -30 "$TEACHER_LOG"
+            exit 1
+        fi
+        if ! kill -0 "$TEACHER_PID" 2>/dev/null; then
+            echo "ERROR: Teacher server process died"
+            tail -30 "$TEACHER_LOG"
+            exit 1
+        fi
+        printf "."
+        sleep 5
+        waited=$((waited + 5))
+    done
+    echo ""
+    echo "Teacher server ready at $TEACHER_IP:$TEACHER_PORT"
+}
+
+# Validate model paths
+for p in "$TEACHER_MODEL_PATH" "$STUDENT_MODEL_PATH"; do
+    [ -e "$p" ] || { echo "ERROR: Path not found: $p"; exit 1; }
 done
 
-echo "✓ Teacher model server is up and running at $TEACHER_IP:$TEACHER_PORT"
-sleep 5
+start_teacher_server
+sleep 3
 
 ################################################################################
-#                         Part 5: Training Setup                               #
+#                         Part 5: Launch Training                              #
 ################################################################################
 
-# --- Generate dynamic names ---
 current_time=$(date +"%Y%m%d_%H%M%S")
-SAVE_MODEL_NAME="${EXPERIMENT_NAME}-ep${EPISODE}-kl${KL}-lr${LR}-${current_time}"
-WANDB_RUN_NAME="${EXPERIMENT_NAME}-${current_time}"
-
-# --- Create directories ---
-mkdir -p "results/${EXPERIMENT_NAME}/${SAVE_MODEL_NAME}"
-mkdir -p "rft_logs/${EXPERIMENT_NAME}"
-
-# --- Environment optimizations ---
-export TORCH_NCCL_AVOID_RECORD_STREAMS=1
-export NCCL_DEBUG="WARN"
-export IGNORE_EOS=0
-export WANDB_MODE="offline"  # Set to "online" for real-time logging
-
-# --- Teacher model URL for distillation ---
+SAVE_MODEL_NAME="${EXPERIMENT_NAME}-${OPD_MODE}-ep${EPISODE}-kl${KL}-lr${LR}-${current_time}"
+WANDB_RUN_NAME="${EXPERIMENT_NAME}-${OPD_MODE}-${current_time}"
 TEACHER_URL="http://$TEACHER_IP:$TEACHER_PORT/generate"
 
+mkdir -p "results/${EXPERIMENT_NAME}/${SAVE_MODEL_NAME}"
+
+export TORCH_NCCL_AVOID_RECORD_STREAMS=1
+export NCCL_DEBUG="WARN"
+export NCCL_TIMEOUT=3600
+export IGNORE_EOS=0
+export WANDB_MODE="${WANDB_MODE:-offline}"
+
+echo "========================================="
+echo "On-Policy Distillation Training"
+echo "========================================="
+echo "Mode:    $OPD_MODE ($ADVANTAGE_ESTIMATOR)"
+echo "Student: $STUDENT_MODEL_PATH"
+echo "Teacher: $TEACHER_URL"
+echo "GPUs:    Training=0-$((TRAIN_GPUS-1)), Teacher=$TEACHER_GPU"
+echo "========================================="
+
 set -x
-
-################################################################################
-#                         Part 6: Launch Training                              #
-################################################################################
-
-echo "========================================="
-echo "Starting On-Policy Distillation Training"
-echo "========================================="
-
-# Function to cleanup on exit
-cleanup() {
-    echo "Cleaning up..."
-    kill $TEACHER_PID 2>/dev/null || true
-    pkill -f "sglang.launch_server" 2>/dev/null || true
-    echo "Cleanup complete"
-}
-trap cleanup EXIT
 
 torchrun \
     --nnodes $NNODES \
@@ -175,12 +203,15 @@ torchrun \
     examples/gsm8k_geo3k/train_colocate.py \
     --pretrain "$STUDENT_MODEL_PATH" \
     --save_trajectories \
-    --advantage_estimator "on_policy_distillation" \
+    --advantage_estimator "${ADVANTAGE_ESTIMATOR}" \
+    --opd_kl_coef ${OPD_KL_COEF} \
     --fsdp \
     --use_kl_loss \
     --flash_attn \
+    --engine_type sglang \
+    --enable_engine_sleep \
     --rm_use_engine \
-    --reward_pretrain "{}" \
+    --reward_pretrain "" \
     --remote_rm_url "$TEACHER_URL" \
     --save_path "results/${EXPERIMENT_NAME}/${SAVE_MODEL_NAME}" \
     --ckpt_path "results/${EXPERIMENT_NAME}/${SAVE_MODEL_NAME}" \
@@ -200,60 +231,32 @@ torchrun \
     --init_kl_coef $KL \
     --kl_estimator "k3" \
     --prompt_data "$DATASET_PATH" \
+    --input_key "prompt" \
+    --label_key "label" \
+    --eval_steps 20 \
+    --eval_split "test" \
+    --apply_chat_template \
+    --gradient_checkpointing \
+    --save_steps 20 \
     --max_ckpt_num 3 \
-    --max_ckpt_mem 160 \
-    --use_wandb \
-    --wandb_project "$WANDB_PROJECT" \
-    --wandb_run_name "$WANDB_RUN_NAME" \
-    --logging_steps 1 \
-    --eval_steps -1 \
-    --rm_engine_tp $ENGINE_TP
+    --engine_mem_util 0.6 \
+    --engine_tp_size $ENGINE_TP \
+    --l2 1.0e-2 \
+    --freeze_prefix \
+    --adam_offload \
+    --text_only \
+    --use_wandb "${WANDB_API_KEY}" \
+    --wandb_project "${WANDB_PROJECT}" \
+    --wandb_run_name "${WANDB_RUN_NAME}" \
+    2>&1 | tee "${LOG_DIR}/node${NODE_RANK}_${current_time}.log"
 
-echo "Training complete!"
+TRAINING_EXIT_CODE=${PIPESTATUS[0]}
+set +x
 
-################################################################################
-#                         Part 7: Usage Instructions                           #
-################################################################################
+echo ""
+echo "========================================="
+echo "Training Complete (exit: $TRAINING_EXIT_CODE)"
+echo "Model: results/${EXPERIMENT_NAME}/${SAVE_MODEL_NAME}"
+echo "========================================="
 
-: <<'USAGE'
-===============================================================================
-Usage Instructions
-===============================================================================
-
-1. Prerequisites:
-   - Install LightRFT and dependencies
-   - Install SGLang: pip install sglang
-   - Prepare your training dataset in JSONL format
-
-2. Configure the script:
-   - Set TEACHER_MODEL_PATH to your teacher model
-   - Set STUDENT_MODEL_PATH to your student model
-   - Set DATASET_PATH to your training data
-   - Adjust hyperparameters as needed
-
-3. Run the script:
-   bash examples/on_policy_distillation/run_opd_qwen.sh
-
-4. Monitor training:
-   - Check W&B dashboard for training metrics
-   - Logs are saved in rft_logs/${EXPERIMENT_NAME}/
-   - Checkpoints are saved in results/${EXPERIMENT_NAME}/
-
-5. Key Parameters:
-   - N_SAMPLES: Number of responses per prompt (higher = more stable but slower)
-   - LR: Learning rate (typically 1e-6 for distillation)
-   - KL: KL coefficient for regularization (keeps student close to initialization)
-   - EPISODE: Number of training episodes
-
-6. Expected Behavior:
-   - Student model should gradually match teacher's probability distribution
-   - Training loss should decrease over episodes
-   - Student responses should become more similar to teacher's style
-
-7. Troubleshooting:
-   - If teacher server fails: Check GPU memory and CUDA availability
-   - If training OOMs: Reduce batch sizes or enable gradient checkpointing
-   - If convergence is slow: Adjust learning rate or increase N_SAMPLES
-
-===============================================================================
-USAGE
+exit $TRAINING_EXIT_CODE

@@ -943,7 +943,7 @@ class FastExperienceMaker(NaiveExperienceMaker):
         # For On-Policy Distillation (OPD), remote_rm_url is used for teacher model,
         # not for reward model. So we don't pass it to RewardComputationEngine.
         # Instead, we store it separately for _fetch_teacher_logprobs().
-        if advantage_estimator == "on_policy_distillation":
+        if advantage_estimator in ("on_policy_distillation", "on_policy_distillation_hybrid"):
             # Store teacher URL separately for OPD
             self.teacher_model_url = self.remote_rm_url
             rm_url_for_reward_engine = None  # Don't use remote_rm_url for rewards in OPD mode
@@ -1075,7 +1075,7 @@ class FastExperienceMaker(NaiveExperienceMaker):
             self._process_multi_image_video_thws(experiences, expanded_images_num, expanded_videos_num)
 
         # ========== Stage 6.5: On-Policy Distillation Teacher Log-Probs ==========
-        if config.advantage_estimator == "on_policy_distillation":
+        if config.advantage_estimator in ("on_policy_distillation", "on_policy_distillation_hybrid"):
             self._fetch_teacher_logprobs(experiences)
 
         # ========== Stage 7: Advantage Computation ==========
