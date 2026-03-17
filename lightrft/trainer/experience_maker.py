@@ -391,19 +391,15 @@ class NaiveExperienceMaker(ABC):
                 )
                 experience.advantages = deepcopy(experience.returns)
             elif self.advantage_estimator == "on_policy_distillation":
-                # For on_policy_distillation, use teacher log probs from experience.info
-                # The actual advantage computation happens in OnPolicyDistillationCalculator
-                # Here we just set placeholder values
-                teacher_log_probs = experience.info.get("teacher_log_probs")
-                if teacher_log_probs is None:
-                    raise ValueError(
-                        "teacher_log_probs not found in experience.info. "
-                        "This should have been set in process_experiences()."
-                    )
-                # Set placeholder returns and advantages
-                # They will be properly computed in the advantage calculator
-                experience.returns = torch.zeros_like(experience.action_log_probs)
-                experience.advantages = torch.zeros_like(experience.action_log_probs)
+                # OPD uses GRPO base advantages + OPD KL penalty
+                # Here compute GRPO-style cumulative returns from task rewards
+                # The OPD KL penalty is applied in OnPolicyDistillationCalculator
+                experience.returns = self.get_cumulative_returns(
+                    reward,
+                    experience.action_mask,
+                    generate_kwargs["gamma"],
+                )
+                experience.advantages = deepcopy(experience.returns)
             else:
                 raise Exception(f"Unknown advantage_estimator {self.advantage_estimator}")
 
@@ -558,7 +554,7 @@ class NaiveExperienceMaker(ABC):
         """
         args = self.strategy.args
 
-        # On-policy distillation: query teacher model for log probs
+        # On-policy distillation: query teacher model for log probs, then use GRPO reward shaping
         if args.advantage_estimator == "on_policy_distillation":
             if self.remote_rm_url is None or len(self.remote_rm_url) == 0:
                 raise ValueError(
@@ -566,52 +562,66 @@ class NaiveExperienceMaker(ABC):
                     "Please set --remote_rm_url to the teacher model inference server."
                 )
 
-            # Import the teacher logprob function
             import asyncio
-            import sys
-            import os.path
             teacher_url = self.remote_rm_url[0] if isinstance(self.remote_rm_url, list) else self.remote_rm_url
 
-            # Collect all sequences and response lengths
-            all_sequences = []
+            # Collect all sequences as input_ids and response lengths
+            all_input_ids = []
             all_response_lengths = []
             for experience in experiences:
                 sequences_batch = experience.sequences
                 response_lengths = experience.info["response_length"]
-
-                # Decode sequences to text
                 for i, seq in enumerate(sequences_batch):
-                    decoded_seq = self.tokenizer.decode(seq.cpu().tolist(), skip_special_tokens=False)
-                    all_sequences.append(decoded_seq)
+                    all_input_ids.append(seq.cpu().tolist())
                     all_response_lengths.append(int(response_lengths[i].item()))
 
-            # Query teacher model for log probs
+            # Query teacher model for log probs using input_ids
             try:
-                # Import the custom teacher logprob function
                 from examples.on_policy_distillation.on_policy_distillation_reward import (
-                    get_teacher_logprobs_sync
+                    get_teacher_logprobs_by_ids
                 )
 
-                teacher_log_probs = get_teacher_logprobs_sync(
-                    teacher_url=teacher_url,
-                    sequences=all_sequences,
-                    response_lengths=all_response_lengths,
-                    device="cpu"
-                )
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+                try:
+                    teacher_lp_list = loop.run_until_complete(
+                        get_teacher_logprobs_by_ids(
+                            url=teacher_url,
+                            input_ids_list=all_input_ids,
+                            response_lengths=all_response_lengths,
+                        )
+                    )
+                finally:
+                    loop.close()
 
-                # Split and store teacher log probs in each experience
+                # Align teacher log probs to action_log_probs shape [batch, num_actions]
                 idx = 0
                 for experience in experiences:
                     batch_size = experience.sequences.size(0)
-                    experience.info["teacher_log_probs"] = teacher_log_probs[idx:idx + batch_size]
+                    num_actions = experience.action_mask.shape[1]
+                    aligned = torch.zeros(batch_size, num_actions, dtype=torch.float32)
+                    for j in range(batch_size):
+                        tlp = teacher_lp_list[idx + j]
+                        resp_len = all_response_lengths[idx + j]
+                        actual_len = min(len(tlp), resp_len, num_actions)
+                        start_pos = num_actions - resp_len
+                        if start_pos >= 0:
+                            aligned[j, start_pos:start_pos + actual_len] = tlp[:actual_len]
+                        else:
+                            aligned[j, :] = tlp[-num_actions:]
+                    experience.info["teacher_log_probs"] = aligned
                     idx += batch_size
 
             except Exception as e:
                 logger.error(f"Failed to get teacher log probs: {e}")
                 raise
 
-            # Return placeholder rewards (actual learning signal comes from teacher log probs)
-            rewards = [torch.zeros_like(experience.info["reward"]) for experience in experiences]
+            # Use GRPO reward shaping (group normalization) on task rewards
+            rewards = torch.cat([experience.info["reward"] for experience in experiences])
+            rewards = rewards.reshape(-1, args.n_samples_per_prompt)
+            baseline = rewards.mean(-1, keepdim=True)
+            rewards = (rewards - baseline) / (rewards.std(1, keepdim=True) + 1e-8)
+            rewards = rewards.flatten().chunk(len(experiences))
             return experiences, rewards
 
         # Reward shaping for RLOO

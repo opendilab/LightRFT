@@ -62,7 +62,8 @@ from .video_utils import normalize_videos, get_videos_num
 # On-Policy Distillation imports
 try:
     from examples.on_policy_distillation.on_policy_distillation_reward import (
-        get_teacher_logprobs_for_experiences
+        get_teacher_logprobs_for_experiences,
+        get_teacher_logprobs_by_ids,
     )
     import asyncio
     OPD_AVAILABLE = True
@@ -1448,9 +1449,11 @@ class FastExperienceMaker(NaiveExperienceMaker):
         """
         Fetch teacher log probabilities for on-policy distillation.
 
-        This method queries the teacher model server to get log probabilities
-        for each generated sequence, which are used by OnPolicyDistillationCalculator
-        to compute advantages.
+        Uses input_ids (not text) to query teacher model, ensuring token-level
+        alignment between teacher and student log probabilities.
+
+        Teacher log probs are aligned to the same shape as action_log_probs
+        [batch_size, seq_len], with zeros for prompt positions.
 
         :param experiences: List of experiences to add teacher log probs to
         :type experiences: List[Union[Experience, ExperienceVL]]
@@ -1462,7 +1465,6 @@ class FastExperienceMaker(NaiveExperienceMaker):
             )
 
         # Get teacher URL from config
-        # Use self.teacher_model_url which is set during __init__ for OPD mode
         teacher_url = self.teacher_model_url
         if isinstance(teacher_url, list):
             teacher_url = teacher_url[0] if teacher_url else None
@@ -1475,41 +1477,48 @@ class FastExperienceMaker(NaiveExperienceMaker):
         Timer.start('  fetch_teacher_logprobs')
 
         for exp in experiences:
-            # Decode sequences to text for teacher model query
-            sequences = exp.sequences
-            attention_mask = exp.attention_mask
-            action_mask = exp.action_mask
+            sequences = exp.sequences  # [batch_size, seq_len]
+            action_mask = exp.action_mask  # [batch_size, num_actions]
 
             # Get response lengths (number of generated tokens per sequence)
             response_lengths = action_mask.sum(dim=-1).tolist()
+            num_actions = action_mask.shape[1]  # action_log_probs dim
 
-            # Decode full sequences to text
-            # Using batch_decode for efficiency
-            sequence_texts = self.tokenizer.batch_decode(
-                sequences,
-                skip_special_tokens=False,
-                clean_up_tokenization_spaces=False,
-            )
+            # Use input_ids for teacher query to ensure token-level alignment
+            input_ids_list = sequences.cpu().tolist()
 
             # Query teacher model for log probs
             try:
-                # Use asyncio to run the async function
                 loop = asyncio.new_event_loop()
                 asyncio.set_event_loop(loop)
                 try:
-                    teacher_log_probs = loop.run_until_complete(
-                        get_teacher_logprobs_for_experiences(
-                            teacher_url=teacher_url,
-                            sequences=sequence_texts,
+                    teacher_lp_list = loop.run_until_complete(
+                        get_teacher_logprobs_by_ids(
+                            url=teacher_url,
+                            input_ids_list=input_ids_list,
                             response_lengths=response_lengths,
-                            device="cpu",  # Store on CPU, will move to GPU when needed
                         )
                     )
                 finally:
                     loop.close()
 
+                # Align teacher log probs to action_log_probs shape [batch_size, num_actions]
+                # teacher_lp_list[i] has shape [resp_len_i], need to pad/align to [num_actions]
+                batch_size = sequences.shape[0]
+                aligned_teacher_lp = torch.zeros(batch_size, num_actions, dtype=torch.float32)
+                for i, (tlp, resp_len) in enumerate(zip(teacher_lp_list, response_lengths)):
+                    # Right-align: teacher log probs fill the last resp_len positions
+                    # (matching where action_mask == 1)
+                    actual_len = min(len(tlp), resp_len, num_actions)
+                    start_pos = num_actions - resp_len
+                    if start_pos >= 0:
+                        aligned_teacher_lp[i, start_pos:start_pos + actual_len] = tlp[:actual_len]
+                    else:
+                        # resp_len > num_actions (shouldn't happen, but handle gracefully)
+                        aligned_teacher_lp[i, :] = tlp[-num_actions:]
+
                 # Store in experience info for advantage calculator
-                exp.info["teacher_log_probs"] = teacher_log_probs
+                exp.info["teacher_log_probs"] = aligned_teacher_lp
 
             except Exception as e:
                 raise RuntimeError(

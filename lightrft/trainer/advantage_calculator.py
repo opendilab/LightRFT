@@ -719,14 +719,34 @@ class GroupNormCalculator(BaseREINFORCECalculator):
 
 class OnPolicyDistillationCalculator(AdvantageCalculator):
     """
-    On-Policy Distillation calculator.
+    On-Policy Distillation calculator (GRPO + OPD KL penalty).
 
-    Uses teacher model's log probabilities as learning signal for knowledge distillation.
-    The advantage is computed as the difference between teacher and student log probabilities,
-    encouraging the student to match the teacher's token-level distribution.
+    Combines GRPO (group normalization) as the base advantage estimator with
+    an on-policy distillation KL penalty from a teacher model. This is orthogonal
+    to the base advantage estimator, following the Slime framework design:
+
+        advantages = base_advantages(GRPO) - opd_kl_coef * (student_logp - teacher_logp)
 
     Reference: On-policy distillation from teacher models during RL training
     """
+    def __init__(self, config):
+        super().__init__(config)
+        self.opd_kl_coef = getattr(config, 'opd_kl_coef', 1.0)
+        # Use GroupNormCalculator (GRPO) as the base advantage estimator
+        self.base_calculator = GroupNormCalculator(config)
+
+    def preprocess_rewards(
+        self,
+        rewards: torch.Tensor,
+        experiences: List,
+        max_new_tokens: int,
+    ) -> Tuple[List, List[torch.Tensor]]:
+        """
+        Delegate reward preprocessing to GRPO base calculator.
+        This applies group normalization (mean/std) to task rewards.
+        """
+        return self.base_calculator.preprocess_rewards(rewards, experiences, max_new_tokens)
+
     def compute(
         self,
         experience,
@@ -735,65 +755,57 @@ class OnPolicyDistillationCalculator(AdvantageCalculator):
         generate_kwargs: Dict,
     ) -> Tuple[torch.Tensor, torch.Tensor, Dict]:
         """
-        Compute advantages using teacher log probabilities.
+        Compute advantages = GRPO base advantages - opd_kl_coef * reverse_KL.
 
-        The advantage is computed as:
-            advantage = teacher_log_probs - student_log_probs
-
-        This encourages the student model to match the teacher's probability distribution.
+        Step 1: Compute GRPO base advantages from task rewards (e.g., GSM8K accuracy).
+        Step 2: Apply OPD KL penalty: advantages -= opd_kl_coef * (student_logp - teacher_logp).
+        This encourages the student to match teacher's distribution while still
+        optimizing for task performance.
 
         :param experience: Experience object containing teacher_log_probs in info dict
         :type experience: object
-        :param final_reward: Unused for on_policy_distillation
+        :param final_reward: Processed reward tensor (from task rewards)
         :type final_reward: torch.Tensor
-        :param gamma: Discount factor. Unused for on_policy_distillation.
+        :param gamma: Discount factor for GRPO base advantages
         :type gamma: Optional[float]
-        :param generate_kwargs: Unused
+        :param generate_kwargs: Generation parameters
         :type generate_kwargs: Dict
         :return: Tuple of (advantages, returns, info_dict)
         :rtype: Tuple[torch.Tensor, torch.Tensor, Dict]
         """
-        # Get teacher log probs from experience info
+        # Step 1: Compute GRPO base advantages from task rewards
+        base_advantages, returns, info_dict = self.base_calculator.compute(
+            experience, final_reward, gamma, generate_kwargs
+        )
+
+        # Step 2: Apply OPD KL penalty (if teacher_log_probs available)
         if "teacher_log_probs" not in experience.info:
             raise ValueError(
                 "teacher_log_probs not found in experience.info. "
-                "Make sure to use the on_policy_distillation reward function."
+                "Make sure to use the on_policy_distillation reward function "
+                "and that _fetch_teacher_logprobs() was called."
             )
 
-        teacher_log_probs = experience.info["teacher_log_probs"].to(final_reward.device)
-
-        # Student log probs are already computed in experience.action_log_probs
+        teacher_log_probs = experience.info["teacher_log_probs"].to(base_advantages.device)
         student_log_probs = experience.action_log_probs
 
-        # Compute reverse KL divergence: student - teacher
-        # This is the correct direction for on-policy distillation:
-        # - When student > teacher: positive penalty (discourage student from being overconfident)
-        # - When student < teacher: negative penalty (encourage student to match teacher)
-        # The final advantage is: base_advantage - opd_kl_coef * reverse_kl
-        # Since we don't have a base advantage here, we use: -reverse_kl = teacher - student
-        # which encourages minimizing KL(student || teacher)
+        # Compute reverse KL: student_logp - teacher_logp
+        # Penalty: when student diverges from teacher, reverse_kl > 0
         reverse_kl = student_log_probs - teacher_log_probs
-        advantages = -reverse_kl  # This equals: teacher - student
 
-        # Apply action mask to ensure we only consider generated tokens
+        # Apply OPD penalty to base advantages
+        advantages = base_advantages - self.opd_kl_coef * reverse_kl
+
+        # Apply action mask
         if experience.action_mask is not None:
             advantages = advantages * experience.action_mask
-            reverse_kl = reverse_kl * experience.action_mask
 
-        # Returns are the same as advantages for distillation
-        returns = deepcopy(advantages)
+        # Store metrics for logging
+        if experience.action_mask is not None:
+            masked_rkl = reverse_kl * experience.action_mask
+            info_dict["opd_reverse_kl"] = masked_rkl.sum(-1) / experience.action_mask.sum(-1).clamp(min=1)
 
-        # Store reverse KL for metrics logging
-        info_dict = {"opd_reverse_kl": reverse_kl}
-
-        # Advantage whitening (normalization)
-        if self.config.advantages_norm:
-            masked_adv = torch.masked_select(advantages, experience.action_mask)
-            adv_mean = masked_adv.mean()
-            adv_std = masked_adv.std()
-            advantages = (advantages - adv_mean) / (adv_std + 1e-8)
-
-        # Advantage clipping
+        # Advantage clipping (skip advantages_norm since GRPO already normalized rewards)
         if self.config.advantage_clip > 0:
             clip_val = self.config.advantage_clip
             info_dict["advantage_clip_frac"] = compute_clip_fraction(advantages, clip_val, -clip_val)

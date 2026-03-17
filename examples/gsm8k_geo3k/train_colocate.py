@@ -535,6 +535,7 @@ if __name__ == "__main__":
     )
 
     parser.add_argument("--use_kl_loss", action="store_true", default=False, help="whether to use KL loss from GRPO")
+    parser.add_argument("--opd_kl_coef", type=float, default=1.0, help="KL coefficient for on-policy distillation penalty")
 
     # LoRA
     parser.add_argument("--load_in_4bit", action="store_true", default=False)
@@ -621,7 +622,7 @@ if __name__ == "__main__":
     elif args.critic_pretrain is None:
         args.critic_pretrain = args.pretrain
 
-    if args.advantage_estimator in ["rloo", "reinforce_baseline", "group_norm"]:
+    if args.advantage_estimator in ["rloo", "reinforce_baseline", "group_norm", "on_policy_distillation"]:
         assert args.n_samples_per_prompt > 1, f"{args.advantage_estimator} requires n_samples_per_prompt > 1"
 
     if args.use_kl_loss:

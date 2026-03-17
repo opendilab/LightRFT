@@ -114,6 +114,8 @@ class StrategyConfig:
     dynamic_sampling: bool = False
     # (str): Advantage estimator method, defaults to "gae"
     advantage_estimator: str = "group_norm"
+    # (float): OPD KL coefficient for on-policy distillation penalty
+    opd_kl_coef: float = 1.0
 
     # KL loss and estimation
     # (bool): Use KL loss in training, defaults to False
