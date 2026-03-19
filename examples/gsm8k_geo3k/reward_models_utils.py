@@ -369,9 +369,6 @@ def mix_rewards(
                 # GSM8K pure rule-based reward (format + accuracy)
                 acc_r = gsm8k_accuracy_reward_fn(sol_completion, gt)
                 fmt_r = gsm8k_format_reward_fn(sol_completion)
-                # only for debug now
-                # acc_r = gsm8k_accuracy_reward_fn(sol, gt)
-                # fmt_r = gsm8k_format_reward_fn(sol)
                 combined_r = (1.0 - 0.1) * acc_r + 0.1 * fmt_r
                 r += w * combined_r
 
