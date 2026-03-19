@@ -199,6 +199,8 @@ bash examples/gsm8k_geo3k/run_grpo_gsm8k_qwen2.5_0.5b.sh
 bash examples/gsm8k_geo3k/run_grpo_geo3k_qwen2.5_vl_7b.sh
 ```
 
+For a complete walkthrough including dataset preprocessing, hyperparameter tuning, reward mechanism details, and W&B monitoring, see the [GRPO Training Tutorial (GSM8K & Geo3K)](docs/source/quick_start/grpo_gsm8k_geo3k_tutorial.md).
+
 ---
 
 ## 🏗️ Project Structure
@@ -207,6 +209,10 @@ bash examples/gsm8k_geo3k/run_grpo_geo3k_qwen2.5_vl_7b.sh
 LightRFT/
 ├── lightrft/                      # Core library
 │   ├── strategy/                  # Training & inference strategies
+│   │   ├── config.py              # Strategy configuration
+│   │   ├── strategy_base.py       # Strategy base class
+│   │   ├── strategy.py            # Strategy implementation
+│   │   ├── fake_strategy.py       # Fake strategy for testing
 │   │   ├── fsdp/                  # FSDP implementation
 │   │   ├── deepspeed/             # DeepSpeed implementation
 │   │   ├── vllm_utils/            # vLLM utilities
@@ -215,7 +221,10 @@ LightRFT/
 │   ├── models/                    # Model definitions
 │   │   ├── actor_al.py            # Audio-language model actor
 │   │   ├── actor_language.py      # Language model actor
+│   │   ├── actor_modality.py      # Modality-agnostic model actor
 │   │   ├── actor_vl.py            # Vision-language model actor
+│   │   ├── critic_language.py     # Language model critic
+│   │   ├── critic_vl.py           # Vision-language model critic
 │   │   ├── grm_vl.py              # Generative reward model (Vision-Language)
 │   │   ├── srm_al.py              # Scalar reward model (Audio-Language)
 │   │   ├── srm_vl.py              # Scalar reward model (Vision-Language)
@@ -233,6 +242,7 @@ LightRFT/
 │   │   ├── fast_exp_maker.py      # Fast experience generator (**Core**)
 │   │   ├── experience_maker.py    # Base experience generator
 │   │   ├── experience_maker_vl.py # Base experience generator for VLM
+│   │   ├── advantage_calculator.py # Advantage calculation utilities
 │   │   ├── replay_buffer.py       # Replay buffer
 │   │   ├── replay_buffer_vl.py    # VLM replay buffer
 │   │   ├── replay_buffer_utils.py # Replay buffer utilities
@@ -247,6 +257,7 @@ LightRFT/
 │   │   ├── hpdv3.py               # Data Handler for HPDv3 reward model dataset
 │   │   ├── image_reward_db.py     # Data Handler for ImageRewardDB dataset
 │   │   ├── imagegen_cot_reward.py # Data Handler for ImageGen-CoT-Reward dataset
+│   │   ├── math_reasoning_benchmarks.py # Math reasoning benchmark datasets
 │   │   ├── omnirewardbench.py     # Data Handler for OmniRewardBench dataset
 │   │   ├── process_reward_dataset.py # Reward dataset processing
 │   │   ├── prompts_dataset.py     # LLM Prompts dataset
@@ -275,9 +286,17 @@ LightRFT/
 │   ├── grm_training/              # Generative reward model training examples
 │   ├── grm_vl_rl/                 # Reinforcement fine-tuning for generative reward model training examples
 │   ├── srm_training/              # Scalar reward model training examples
-│   ├── chat/                      # Model dialogue examples
+│   ├── r1_aqa/                    # Audio question answering (R1-AQA) training examples
+│   ├── math_benchmarks/           # Math reasoning benchmark evaluation tools
+│   ├── entropy_viz/               # Entropy visualization tools
+│   ├── on_policy_distillation/    # On-policy distillation examples
+│   └── chat/                      # Model dialogue examples
 │
-├── docs/                          # 📚 Sphinx documentation
+├── tools/                         # Project tools & scripts
+│   ├── docker_volumes.py          # Docker volume management
+│   └── show_version.py            # Version display utility
+│
+├── docs/                          # Sphinx documentation
 │   ├── Makefile                   # Documentation build Makefile
 │   ├── make.bat                   # Documentation build batch file
 │   └── source/                    # Documentation source
@@ -290,15 +309,20 @@ LightRFT/
 ├── assets/                        # Assets
 │   └── logo.png                   # Project logo
 │
-├── CHANGELOG.md                   # Changelog
-├── LICENSE                        # License file
+├── .github/                       # GitHub configuration (CI/CD, etc.)
+├── Dockerfile                     # Docker build file
 ├── Makefile                       # Project Makefile
-├── README.md                      # Project documentation (English)
-├── README_zh.md                   # Project documentation (Chinese)
+├── MANIFEST.in                    # Package manifest
+├── pyproject.toml                 # Python project configuration
+├── setup.py                       # Package setup script
+├── .style.yapf                    # YAPF code style configuration
 ├── requirements.txt               # Python dependencies
 ├── requirements-dev.txt           # Development dependencies
 ├── requirements-doc.txt           # Documentation dependencies
-└── setup.py                       # Package setup script
+├── CHANGELOG.md                   # Changelog
+├── LICENSE                        # License file
+├── README.md                      # Project documentation (English)
+└── README_zh.md                   # Project documentation (Chinese)
 ```
 
 ### 🔑 Key Directory Descriptions
@@ -309,7 +333,12 @@ LightRFT/
   - `grm_training/`: Generative reward model training examples
   - `grm_vl_rl/`: Reinforcement fine-tuning generative reward model training examples
   - `srm_training/`: Scalar reward model training examples
+  - `r1_aqa/`: Audio question answering (R1-AQA) training examples
+  - `math_benchmarks/`: Math reasoning benchmark evaluation tools
+  - `entropy_viz/`: Entropy visualization tools
+  - `on_policy_distillation/`: On-policy distillation examples
   - `chat/`: Model dialogue examples
+- **`tools/`**: Project tools and scripts (version display, Docker volume management)
 - **`docs/`**: Sphinx documentation with complete user guides and API documentation
 
 ---
