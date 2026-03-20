@@ -48,6 +48,15 @@ def add_arguments(parser: argparse.ArgumentParser) -> None:
         "Higher values improve throughput but may risk out-of-memory errors.",
     )
     parser.add_argument(
+        "--local_hf_generate_max_batch_size",
+        type=int,
+        default=0,
+        help="Maximum per-call sample batch size for the local HuggingFace inference engine. "
+        "A value <= 0 keeps the current single-shot behavior. "
+        "Set this to a small positive integer (for example 1 or 2) to chunk local HF rollout generation "
+        "when multimodal models would otherwise OOM.",
+    )
+    parser.add_argument(
         "--enable_engine_sleep",
         action="store_true",
         default=True,  # This sets the default value if the flag is NOT provided

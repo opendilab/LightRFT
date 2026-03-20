@@ -1,6 +1,7 @@
 import os
 import sys
 import os.path
+from collections import defaultdict
 from abc import ABC
 from typing import Any, Callable, Dict, List, Optional
 
@@ -15,7 +16,6 @@ from lightrft.models import ActorVL, GPTLMLoss, PolicyLoss, ValueLoss
 from lightrft.models.actor_modality import ActorModality, get_supported_parameters
 from lightrft.models.utils import masked_mean, unpacking_samples, compute_approx_kl
 from lightrft.utils.distributed_sampler import DistributedSampler
-from lightrft.utils import rotate_ckpt_dirs
 from lightrft.trainer import AdaptiveKLController, ExperienceVL, FixedKLController, NaiveExperienceMakerVL, NaiveReplayBufferVL  # noqa
 
 
@@ -162,7 +162,6 @@ class PPOTrainerVL(ABC):
         self.reward_fn = reward_fn
         self.reward_fn_label_map = reward_fn_label_map
         self.reward_recipe = reward_recipe
-        self.is_lora = getattr(self.args, "lora_rank", 0) > 0
 
         self.actor = actor
         self.critic = critic
@@ -366,9 +365,14 @@ class PPOTrainerVL(ABC):
                     rand_prompts, rand_images, rand_references, rand_labels = batch
                     rand_videos = None
 
-                # TODO: Remove debug print
+                batch_preview = min(2, len(rand_prompts))
                 self.strategy.print(
-                    f"rand_prompts:\n {rand_prompts}\n , rand_images:{rand_images}\n , rand_references:{rand_references}\n, rand_labels:{rand_labels}\n "  # noqa
+                    "collect phase batch summary: "
+                    f"batch_size={len(rand_prompts)}, "
+                    f"preview_prompts={rand_prompts[:batch_preview]}, "
+                    f"preview_images={rand_images[:batch_preview]}, "
+                    f"preview_references={rand_references[:batch_preview]}, "
+                    f"preview_labels={rand_labels[:batch_preview]}"
                 )
 
                 for i, experience in enumerate(
@@ -403,8 +407,7 @@ class PPOTrainerVL(ABC):
                 rollout_status = {}
                 if self.replay_buffer.items:
                     all_rewards = []
-                    all_format_rewards = []
-                    all_accuracy_rewards = []
+                    reward_metric_values = defaultdict(list)
                     all_response_lengths = []
 
                     for item in self.replay_buffer.items:
@@ -420,14 +423,9 @@ class PPOTrainerVL(ABC):
                             hasattr(item, 'info') and item.info is not None and 'reward_metrics' in item.info
                             and item.info['reward_metrics'] is not None
                         ):
-
                             reward_metrics = item.info['reward_metrics']
-
-                            # Safely extract sub-metrics
-                            if 'format_reward' in reward_metrics:
-                                all_format_rewards.append(reward_metrics['format_reward'])
-                            if 'accuracy_reward' in reward_metrics:
-                                all_accuracy_rewards.append(reward_metrics['accuracy_reward'])
+                            for key, value in reward_metrics.items():
+                                reward_metric_values[key].append(value)
 
                         # Collect response lengths from rollout
                         if hasattr(item, 'info') and item.info is not None and 'response_length' in item.info:
@@ -445,36 +443,18 @@ class PPOTrainerVL(ABC):
                         rollout_status["rollout_reward"] = rewards_tensor.mean().item()
                         rollout_status["rollout_reward_std"] = rewards_tensor.std().item()
 
-                    if all_format_rewards:
-                        # [TENSOR-FIX] Handle both tensor lists and scalar lists
-                        # Issue: all_format_rewards may contain tensors (from reward_metrics),
-                        # but torch.tensor() cannot convert a list of tensors directly.
-                        # Solution: Use torch.cat() for tensor lists, torch.tensor() for scalar lists
-                        if isinstance(all_format_rewards[0], torch.Tensor):
-                            # List of tensors: concatenate them
-                            format_tensor = torch.cat([t.to(device).float() for t in all_format_rewards])
+                    for metric_name, values in reward_metric_values.items():
+                        if not values:
+                            continue
+                        if isinstance(values[0], torch.Tensor):
+                            metric_tensor = torch.cat([t.to(device).float() for t in values])
                         else:
-                            # List of scalars: convert to tensor
-                            format_tensor = torch.tensor(all_format_rewards, dtype=torch.float32, device=device)
-
-                        mean_format_reward = format_tensor.mean().item()
-
-                        # Only display if mean is significantly non-zero
-                        if abs(mean_format_reward) > 1e-6:
-                            rollout_status["rollout_format_reward"] = mean_format_reward
-
-                    if all_accuracy_rewards:
-                        # [TENSOR-FIX] Handle both tensor lists and scalar lists
-                        if isinstance(all_accuracy_rewards[0], torch.Tensor):
-                            accuracy_tensor = torch.cat([t.to(device).float() for t in all_accuracy_rewards])
-                        else:
-                            accuracy_tensor = torch.tensor(all_accuracy_rewards, dtype=torch.float32, device=device)
-
-                        mean_accuracy_reward = accuracy_tensor.mean().item()
-
-                        # Only display if mean is significantly non-zero
-                        if abs(mean_accuracy_reward) > 1e-6:
-                            rollout_status["rollout_accuracy_reward"] = mean_accuracy_reward
+                            metric_tensor = torch.tensor(values, dtype=torch.float32, device=device)
+                        if metric_tensor.numel() == 0:
+                            continue
+                        mean_metric = metric_tensor.mean().item()
+                        if abs(mean_metric) > 1e-6:
+                            rollout_status[f"rollout_{metric_name}"] = mean_metric
 
                     if all_response_lengths:
                         # [TENSOR-FIX] Handle both tensor lists and scalar lists
@@ -738,9 +718,6 @@ class PPOTrainerVL(ABC):
             "pixel_values_videos": pixel_values_videos,
             "video_grid_thw": video_grid_thws,
         }
-        # Audio-language actors expect audio_values; pipeline stores them in pixel_values slot
-        if "audio_values" in self._actor_supported_params:
-            candidate_params["audio_values"] = candidate_params.get("pixel_values")
 
         actor_kwargs = {key: value for key, value in candidate_params.items() if key in self._actor_supported_params}
 
@@ -1143,11 +1120,10 @@ class PPOTrainerVL(ABC):
         :param client_states: Client state for checkpoint recovery.
         :type client_states: dict
         """
-        ckpt_path = args.ckpt_path
-        if not self.disable_ds_ckpt and not self.is_lora:
+        if not self.disable_ds_ckpt:
             self.strategy.save_ckpt(
                 self.actor.model,
-                os.path.join(ckpt_path, "_actor"),
+                os.path.join(args.ckpt_path, "_actor"),
                 tag,
                 args.max_ckpt_num,
                 args.max_ckpt_mem,
@@ -1155,24 +1131,11 @@ class PPOTrainerVL(ABC):
             )
             if self.critic is not None:
                 self.strategy.save_ckpt(
-                    self.critic, os.path.join(ckpt_path, "_critic"), tag, args.max_ckpt_num, args.max_ckpt_mem
+                    self.critic, os.path.join(args.ckpt_path, "_critic"), tag, args.max_ckpt_num, args.max_ckpt_mem
                 )
 
-        # For LoRA, we ALWAYS save the HF adapter as it is much smaller and more convenient for deployment.
-        if self.save_hf_ckpt or self.is_lora:
-            # Rotate HF checkpoints
-            if self.strategy.is_rank_0():
-                os.makedirs(ckpt_path, exist_ok=True)
-                max_num = getattr(args, "max_ckpt_num", 3)
-                rotate_ckpt_dirs(
-                    ckpt_path,
-                    max_num,
-                    suffix="_lora",
-                    strategy=self.strategy,
-                    label="HF ckpt",
-                )
-
-            save_path = os.path.join(ckpt_path, f"{tag}_lora")
+        if self.save_hf_ckpt:
+            save_path = os.path.join(args.ckpt_path, f"{tag}_hf")
             self.strategy.save_model(self.actor, self.tokenizer, save_path)
 
     def evaluate(self, eval_dataloader, global_step):
@@ -1198,8 +1161,7 @@ class PPOTrainerVL(ABC):
             self.critic.eval()
 
         all_rewards = []
-        all_format_rewards = []
-        all_accuracy_rewards = []
+        reward_metric_values = defaultdict(list)
         all_response_lengths = []
         num_eval_batches = 0
 
@@ -1245,10 +1207,8 @@ class PPOTrainerVL(ABC):
 
                         if 'reward_metrics' in info:
                             rm = info['reward_metrics']
-                            if 'format_reward' in rm:
-                                all_format_rewards.extend(extract_values(rm['format_reward']))
-                            if 'accuracy_reward' in rm:
-                                all_accuracy_rewards.extend(extract_values(rm['accuracy_reward']))
+                            for key, value in rm.items():
+                                reward_metric_values[key].extend(extract_values(value))
 
                 num_eval_batches += 1
                 if num_eval_batches >= len(eval_dataloader):
@@ -1269,8 +1229,8 @@ class PPOTrainerVL(ABC):
             # metrics[f"{name}_std"] = t.std().item() # Optional
 
         compute_stats("reward", all_rewards)
-        compute_stats("format_reward", all_format_rewards)
-        compute_stats("accuracy_reward", all_accuracy_rewards)
+        for metric_name, values in reward_metric_values.items():
+            compute_stats(metric_name, values)
         compute_stats("response_length", all_response_lengths)
 
         metrics["num_samples"] = len(all_rewards)

@@ -282,7 +282,7 @@ class FakeStrategy(StrategyBase):
         """
         return 0
 
-    def setup_inference_engine(self, args, engine_type="vllm", actor=None):
+    def setup_inference_engine(self, args, engine_type="vllm", actor=None, tokenizer=None, processor=None):
         """
         Fake inference engine setup - returns None.
 
@@ -311,7 +311,18 @@ class FakeStrategy(StrategyBase):
         """
         self.print("FakeStrategy: Inference engine wakeup skipped")
 
-    def engine_generate_local(self, sampling_params, prompt_token_ids=None, multi_modal_inputs=None):
+    def engine_generate_local(
+        self,
+        sampling_params,
+        prompt_token_ids=None,
+        multi_modal_inputs=None,
+        pixel_values=None,
+        image_grid_thw=None,
+        pixel_values_videos=None,
+        video_grid_thw=None,
+        images_num=None,
+        videos_num=None,
+    ):
         """
         Fake generation - returns empty results.
 
@@ -332,7 +343,13 @@ class FakeStrategy(StrategyBase):
         all_prompts=None,
         all_images=None,
         sleep_engine=True,
-        images_num=None
+        images_num=None,
+        all_videos=None,
+        videos_num=None,
+        all_images_pixel_values=None,
+        all_videos_pixel_values=None,
+        all_images_grid_thw=None,
+        all_videos_grid_thw=None,
     ):
         """
         Fake gather and generate - returns empty results.

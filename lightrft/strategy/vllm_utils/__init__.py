@@ -14,6 +14,7 @@ Note:
     To use vLLM backend, install with: pip install "LightRFT[vllm]"
 """
 
+import os
 from typing import Any
 
 
@@ -156,6 +157,8 @@ def get_vllm_engine(
         dtype=dtype,
         tensor_parallel_size=tp_size,
         gpu_memory_utilization=mem_util,
+        trust_remote_code=True,
+        allowed_local_media_path=os.environ.get("VLLM_ALLOWED_LOCAL_MEDIA_PATH", "/"),
         distributed_executor_backend="external_launcher",
         worker_cls="lightrft.strategy.vllm_utils.vllm_worker_wrap_no_ray.WorkerWrap",
         enable_sleep_mode=enable_sleep,

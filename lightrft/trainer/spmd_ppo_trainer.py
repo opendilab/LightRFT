@@ -19,6 +19,7 @@ Key features:
 """
 
 import time
+from collections import defaultdict
 
 import torch
 from tqdm import tqdm
@@ -314,13 +315,11 @@ class SPMDPPOTrainerBase:
         # - "step_*" prefix: clarifies this is per-step aggregation, not per-episode
         if self.replay_buffer.items:
             all_rewards = []
-            all_format_rewards = []
-            all_accuracy_rewards = []
-            all_model_rewards = []
-            all_rule_rewards = []
+            reward_metric_values = defaultdict(list)
             all_advantages = []
             all_returns = []
             all_response_lengths = []
+            all_total_lengths = []
 
             for item in self.replay_buffer.items:
                 # Collect rewards
@@ -330,14 +329,9 @@ class SPMDPPOTrainerBase:
                 # Collect detailed reward metrics from info dict
                 if hasattr(item, 'info') and item.info is not None and 'reward_metrics' in item.info:
                     reward_metrics = item.info['reward_metrics']
-                    if 'format_reward' in reward_metrics:
-                        all_format_rewards.append(reward_metrics['format_reward'])
-                    if 'accuracy_reward' in reward_metrics:
-                        all_accuracy_rewards.append(reward_metrics['accuracy_reward'])
-                    if 'model_reward' in reward_metrics:
-                        all_model_rewards.append(reward_metrics['model_reward'])
-                    if 'rule_reward' in reward_metrics:
-                        all_rule_rewards.append(reward_metrics['rule_reward'])
+                    if reward_metrics is not None:
+                        for key, value in reward_metrics.items():
+                            reward_metric_values[key].append(value)
 
                 # Collect advantages and returns
                 if hasattr(item, 'advantages') and item.advantages is not None:
@@ -346,6 +340,8 @@ class SPMDPPOTrainerBase:
                     all_returns.append(item.returns)
                 if hasattr(item, 'info') and item.info is not None and 'response_length' in item.info:
                     all_response_lengths.append(item.info['response_length'])
+                if hasattr(item, 'info') and item.info is not None and 'total_length' in item.info:
+                    all_total_lengths.append(item.info['total_length'])
 
             # Compute statistics
             # [TENSOR-FIX] Handle both tensor lists and scalar lists for all reward types
@@ -360,44 +356,22 @@ class SPMDPPOTrainerBase:
                 status_mean["step_reward_std"] = rewards_tensor.std().item()
                 status_mean["step_reward_max"] = rewards_tensor.max().item()
                 status_mean["step_reward_min"] = rewards_tensor.min().item()
+                status_mean["step_reward_zero_ratio"] = (rewards_tensor == 0).float().mean().item()
+                status_mean["step_reward_one_ratio"] = (rewards_tensor == 1).float().mean().item()
 
-            if all_format_rewards:
-                # [TENSOR-FIX] Handle both tensor lists and scalar lists
-                if isinstance(all_format_rewards[0], torch.Tensor):
-                    format_tensor = torch.cat([t.to(device).float() for t in all_format_rewards])
+            for metric_name, values in reward_metric_values.items():
+                if not values:
+                    continue
+                if isinstance(values[0], torch.Tensor):
+                    metric_tensor = torch.cat([t.to(device).float() for t in values])
                 else:
-                    format_tensor = torch.tensor(all_format_rewards, dtype=torch.float32, device=device)
-                status_mean["format_reward_mean"] = format_tensor.mean().item()
-                status_mean["format_reward_std"] = format_tensor.std().item()
-
-            if all_accuracy_rewards:
-                # [TENSOR-FIX] Handle both tensor lists and scalar lists
-                if isinstance(all_accuracy_rewards[0], torch.Tensor):
-                    accuracy_tensor = torch.cat([t.to(device).float() for t in all_accuracy_rewards])
-                else:
-                    accuracy_tensor = torch.tensor(all_accuracy_rewards, dtype=torch.float32, device=device)
-                status_mean["accuracy_reward_mean"] = accuracy_tensor.mean().item()
-                status_mean["accuracy_reward_std"] = accuracy_tensor.std().item()
-
-            if all_model_rewards:
-                # [TENSOR-FIX] Handle both tensor lists and scalar lists
-                if isinstance(all_model_rewards[0], torch.Tensor):
-                    model_tensor = torch.cat([t.to(device).float() for t in all_model_rewards])
-                else:
-                    model_tensor = torch.tensor(all_model_rewards, dtype=torch.float32, device=device)
-                if model_tensor.abs().sum() > 0:  # Only log if model rewards are non-zero
-                    status_mean["model_reward_mean"] = model_tensor.mean().item()
-                    self.strategy.print(f" model_reward_mean: {status_mean['model_reward_mean']}")
-
-            if all_rule_rewards:
-                # [TENSOR-FIX] Handle both tensor lists and scalar lists
-                if isinstance(all_rule_rewards[0], torch.Tensor):
-                    rule_tensor = torch.cat([t.to(device).float() for t in all_rule_rewards])
-                else:
-                    rule_tensor = torch.tensor(all_rule_rewards, dtype=torch.float32, device=device)
-                if rule_tensor.abs().sum() > 0:  # Only log if rule rewards are non-zero
-                    status_mean["rule_reward_mean"] = rule_tensor.mean().item()
-                    self.strategy.print(f"rule_reward_mean: {status_mean['rule_reward_mean']}")
+                    metric_tensor = torch.tensor(values, dtype=torch.float32, device=device)
+                if metric_tensor.numel() == 0:
+                    continue
+                if metric_name in {"model_reward", "rule_reward"} and metric_tensor.abs().sum() == 0:
+                    continue
+                status_mean[f"{metric_name}_mean"] = metric_tensor.mean().item()
+                status_mean[f"{metric_name}_std"] = metric_tensor.std().item()
 
             # For advantages, returns, and lengths, they are already lists of tensors,
             # so torch.cat() is the correct function to use.
@@ -421,6 +395,20 @@ class SPMDPPOTrainerBase:
                     lengths_tensor = torch.tensor(all_response_lengths, dtype=torch.float32, device=device)
                 status_mean["response_length_mean"] = lengths_tensor.float().mean().item()
                 status_mean["response_length_std"] = lengths_tensor.float().std().item()
+                status_mean["response_length_zero_ratio"] = (lengths_tensor <= 1).float().mean().item()
+                generate_max_len = getattr(self.args, "generate_max_len", None)
+                if generate_max_len:
+                    status_mean["response_hit_max_ratio"] = (
+                        lengths_tensor >= float(generate_max_len - 1)
+                    ).float().mean().item()
+
+            if all_total_lengths:
+                if isinstance(all_total_lengths[0], torch.Tensor):
+                    total_lengths_tensor = torch.cat([t.to(device).float() for t in all_total_lengths])
+                else:
+                    total_lengths_tensor = torch.tensor(all_total_lengths, dtype=torch.float32, device=device)
+                status_mean["total_length_mean"] = total_lengths_tensor.float().mean().item()
+                status_mean["total_length_std"] = total_lengths_tensor.float().std().item()
 
             # Print detailed reward breakdown (only on rank 0)
             if self.print_replay_buffer_stats and self.strategy.is_rank_0():
@@ -433,16 +421,32 @@ class SPMDPPOTrainerBase:
                         f"🎁 Total Reward:     {status_mean['step_reward_mean']:.4f} ± {status_mean['step_reward_std']:.4f} "  # noqa
                         f"(min={status_mean['step_reward_min']:.4f}, max={status_mean['step_reward_max']:.4f})"
                     )
-
-                if all_format_rewards:
                     self.strategy.print(
-                        f"📝 Format Reward:    {status_mean['format_reward_mean']:.4f} ± {status_mean['format_reward_std']:.4f}"  # noqa
+                        f"   Reward Ratios:    zero={status_mean['step_reward_zero_ratio']:.4f}, "
+                        f"one={status_mean['step_reward_one_ratio']:.4f}"
                     )
 
-                if all_accuracy_rewards:
-                    self.strategy.print(
-                        f"✅ Accuracy Reward:  {status_mean['accuracy_reward_mean']:.4f} ± {status_mean['accuracy_reward_std']:.4f}"  # noqa
-                    )
+                reward_metric_print_order = [
+                    ("format_reward", "📝 Format Reward"),
+                    ("accuracy_reward", "✅ Accuracy Reward"),
+                    ("outcome_correct", "🎯 Outcome Correct"),
+                    ("model_reward", "🤖 Model Reward"),
+                    ("final_reward", "🏁 Final Reward"),
+                    ("rule_reward", "⚖️  Rule Reward"),
+                    ("max_relative_drop", "📉 Max Relative Drop"),
+                    ("has_drop_moment", "🪂 Drop Moment"),
+                    ("step_score_min", "🔬 Step Score Min"),
+                    ("step_score_mean", "🔬 Step Score Mean"),
+                    ("step_score_last", "🔬 Step Score Last"),
+                    ("step_count", "🧮 Step Count"),
+                ]
+                for metric_name, title in reward_metric_print_order:
+                    mean_key = f"{metric_name}_mean"
+                    std_key = f"{metric_name}_std"
+                    if mean_key in status_mean:
+                        self.strategy.print(
+                            f"{title:<20} {status_mean[mean_key]:.4f} ± {status_mean[std_key]:.4f}"
+                        )
 
                 if all_advantages:
                     self.strategy.print(
@@ -458,6 +462,15 @@ class SPMDPPOTrainerBase:
                 if all_response_lengths:
                     self.strategy.print(
                         f"📏 Response Length:  {status_mean['response_length_mean']:.1f} ± {status_mean['response_length_std']:.1f} tokens"  # noqa
+                    )
+                    self.strategy.print(
+                        f"   Length Ratios:    empty={status_mean['response_length_zero_ratio']:.4f}, "
+                        f"hit_max={status_mean.get('response_hit_max_ratio', 0.0):.4f}"
+                    )
+
+                if all_total_lengths:
+                    self.strategy.print(
+                        f"📦 Total Length:     {status_mean['total_length_mean']:.1f} ± {status_mean['total_length_std']:.1f} tokens"  # noqa
                     )
 
                 self.strategy.print("=" * 60 + "\n")

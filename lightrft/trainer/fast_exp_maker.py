@@ -53,6 +53,10 @@ from lightrft.trainer.experience_maker_vl import (
 
 from lightrft.utils.remote_rm_utils import remote_rm_fn
 from lightrft.utils import Timer, get_current_device
+from lightrft.utils.math_prm_output import (
+    is_math_prm_structured_label,
+    sanitize_math_prm_response_text,
+)
 from .utils import RunningMoments, compute_clip_fraction, get_cpgd_advantages_returns, fire_sampling, vllm_ge_0130
 from .advantage_calculator import get_advantage_calculator, normalize_advantages_cross_batch
 from .image_utils import normalize_images, get_images_num
@@ -132,6 +136,14 @@ class _SamplesOutput:
     action_entropy: Optional[torch.Tensor] = None  # Entropy for high-entropy token filtering
     inputs_extra_kwargs: Optional[dict] = None
     prompt_and_output: Optional[List[str]] = None
+
+
+@dataclass
+class _RewardBatchResult:
+    """Reward scores and optional auxiliary metrics for one micro-batch."""
+
+    scores: torch.Tensor
+    metrics: Optional[Dict[str, torch.Tensor]] = None
 
 
 # ============================================================================
@@ -279,8 +291,10 @@ class MultimodalDataProcessor:
             processor_kwargs = {
                 "text": all_prompts_multimodal.copy(),
                 "add_special_tokens": False,
+                "padding": True,
                 "max_length": self.prompt_max_len,
                 "truncation": True,
+                "return_tensors": "pt",
             }
             if flat_images:
                 processor_kwargs["images"] = flat_images
@@ -295,6 +309,15 @@ class MultimodalDataProcessor:
 
             all_images_grid_thw_multimodal = inputs_multimodal.get("image_grid_thw", None)
             all_videos_grid_thw_multimodal = inputs_multimodal.get("video_grid_thw", None)
+
+            # Some VLM processors (for example URSA) return batched image tensors directly
+            # and do not expose Qwen2-VL style grid metadata. In that case we synthesize a
+            # minimal per-image grid so the existing sample/replay slicing logic can still
+            # split one tensor slice per image while the model simply ignores the grid input.
+            if flat_images and all_images_grid_thw_multimodal is None:
+                all_images_grid_thw_multimodal = torch.ones((len(flat_images), 3), dtype=torch.long)
+            if flat_videos and all_videos_grid_thw_multimodal is None:
+                all_videos_grid_thw_multimodal = torch.ones((len(flat_videos), 3), dtype=torch.long)
 
         # ===== Stage 4: Merge back in original order =====
         total_samples = L * N
@@ -567,7 +590,7 @@ class RewardComputationEngine:
                 self.strategy.reload_model(rm)
 
         # Compute rewards for each RM
-        # all_rewards_list[rm_idx][micro_batch_idx] = Tensor(batch_size,)
+        # all_rewards_list[rm_idx][micro_batch_idx] = _RewardBatchResult(batch_size,)
         all_rewards_list = []
 
         for rm_idx, rm in enumerate(rm_list):
@@ -588,7 +611,7 @@ class RewardComputationEngine:
         outputs: List[_SamplesOutput],
         vlm_mode: bool,
         device: torch.device,
-    ) -> List[torch.Tensor]:
+    ) -> List[_RewardBatchResult]:
         """
         Compute rewards for a single reward model across all micro-batches.
 
@@ -602,8 +625,8 @@ class RewardComputationEngine:
         :type vlm_mode: bool
         :param device: Target device
         :type device: torch.device
-        :return: List of reward tensors, one per micro-batch
-        :rtype: List[torch.Tensor]
+        :return: List of reward results, one per micro-batch
+        :rtype: List[_RewardBatchResult]
         """
         # Check if this is a custom engine model (non-torch base_model)
         is_custom_engine = (
@@ -626,7 +649,7 @@ class RewardComputationEngine:
         rm_idx: int,
         outputs: List[_SamplesOutput],
         device: torch.device,
-    ) -> List[torch.Tensor]:
+    ) -> List[_RewardBatchResult]:
         """
         Compute rewards using optimized filtering (only process relevant samples).
 
@@ -641,8 +664,8 @@ class RewardComputationEngine:
         :type outputs: List[_SamplesOutput]
         :param device: Target device
         :type device: torch.device
-        :return: List of reward tensors per micro-batch
-        :rtype: List[torch.Tensor]
+        :return: List of reward results per micro-batch
+        :rtype: List[_RewardBatchResult]
         """
         # Get RM key from inverse label map
         rm_key = self.inv_label_map.get(rm_idx)
@@ -681,7 +704,13 @@ class RewardComputationEngine:
         # ========== Process Stage: Compute or skip ==========
         if not needed_positions:
             # No samples need this RM, return zeros for all micro-batches
-            return [torch.zeros(len(output.labels), dtype=torch.float32, device=device) for output in outputs]
+            return [
+                _RewardBatchResult(
+                    scores=torch.zeros(len(output.labels), dtype=torch.float32, device=device),
+                    metrics=None,
+                )
+                for output in outputs
+            ]
 
         # Run single forward pass on filtered samples
         rm_output = rm(
@@ -703,14 +732,14 @@ class RewardComputationEngine:
         for (mb_idx, samp_idx), score in zip(needed_positions, filtered_scores):
             micro_batch_rewards[mb_idx][samp_idx] = score
 
-        return micro_batch_rewards
+        return [_RewardBatchResult(scores=rewards, metrics=None) for rewards in micro_batch_rewards]
 
     def _compute_batched_custom_engine_rewards(
         self,
         rm,
         outputs: List[_SamplesOutput],
         device: torch.device,  # noqa: ARG002 (unused but kept for API consistency)
-    ) -> List[torch.Tensor]:
+    ) -> List[_RewardBatchResult]:
         """
         Compute rewards using custom engine with full batch processing (legacy path).
 
@@ -720,8 +749,8 @@ class RewardComputationEngine:
         :type outputs: List[_SamplesOutput]
         :param device: Target device (unused but kept for API consistency)
         :type device: torch.device
-        :return: List of reward tensors per micro-batch
-        :rtype: List[torch.Tensor]
+        :return: List of reward results per micro-batch
+        :rtype: List[_RewardBatchResult]
         """
         # Flatten all micro-batches into single batch
         flat_data = {
@@ -753,7 +782,34 @@ class RewardComputationEngine:
 
         # Split back into micro-batches
         batch_sizes = [len(output.prompt_and_output) for output in outputs]
-        return list(all_scores.split(batch_sizes))
+        return [
+            _RewardBatchResult(scores=scores.to(device=device, dtype=torch.float32), metrics=None)
+            for scores in all_scores.split(batch_sizes)
+        ]
+
+    @staticmethod
+    def _normalize_reward_metrics(
+        rm_output: Dict[str, torch.Tensor],
+        batch_size: int,
+        device: torch.device,
+    ) -> Optional[Dict[str, torch.Tensor]]:
+        metrics: Dict[str, torch.Tensor] = {}
+        for key, value in rm_output.items():
+            if key == "score":
+                continue
+            if not isinstance(value, torch.Tensor):
+                if isinstance(value, (int, float, bool)):
+                    value = torch.tensor(value, dtype=torch.float32)
+                else:
+                    continue
+            metric = value.to(device=device)
+            if metric.ndim == 0:
+                metric = metric.repeat(batch_size)
+            metric = metric.reshape(-1).float()
+            if metric.numel() != batch_size:
+                continue
+            metrics[key] = metric
+        return metrics or None
 
     def _compute_standard_torch_rewards(
         self,
@@ -761,7 +817,7 @@ class RewardComputationEngine:
         outputs: List[_SamplesOutput],
         vlm_mode: bool,  # noqa: ARG002 (kept for future VLM-specific logic)
         device: torch.device,
-    ) -> List[torch.Tensor]:
+    ) -> List[_RewardBatchResult]:
         """
         Compute rewards using standard PyTorch reward model.
 
@@ -775,10 +831,10 @@ class RewardComputationEngine:
         :type vlm_mode: bool
         :param device: Target device
         :type device: torch.device
-        :return: List of reward tensors per micro-batch
-        :rtype: List[torch.Tensor]
+        :return: List of reward results per micro-batch
+        :rtype: List[_RewardBatchResult]
         """
-        micro_batch_rewards = []
+        micro_batch_rewards: List[_RewardBatchResult] = []
 
         for output in outputs:
             # Unpack sequences if needed
@@ -794,18 +850,25 @@ class RewardComputationEngine:
                 prompt_and_output=output.prompt_and_output,
                 raw_images=output.raw_images,
                 img_num=output.image_num,
+                references=output.references,
+                labels=output.labels,
                 **output.inputs_extra_kwargs,
             )
 
-            score = rm_output["score"] if isinstance(rm_output, dict) else rm_output
-            micro_batch_rewards.append(torch.as_tensor(score, dtype=torch.float32, device=device))
+            if isinstance(rm_output, dict):
+                score = torch.as_tensor(rm_output["score"], dtype=torch.float32, device=device)
+                metrics = self._normalize_reward_metrics(rm_output, score.numel(), device)
+            else:
+                score = torch.as_tensor(rm_output, dtype=torch.float32, device=device)
+                metrics = None
+            micro_batch_rewards.append(_RewardBatchResult(scores=score, metrics=metrics))
 
         return micro_batch_rewards
 
     def _aggregate_rewards(
         self,
         outputs: List[_SamplesOutput],
-        all_rewards_list: List[List[torch.Tensor]],
+        all_rewards_list: List[List[_RewardBatchResult]],
         is_multi_rm: bool,
     ) -> None:
         """
@@ -813,8 +876,8 @@ class RewardComputationEngine:
 
         :param outputs: Sample outputs (modified in-place)
         :type outputs: List[_SamplesOutput]
-        :param all_rewards_list: Nested list [rm_idx][micro_batch_idx] -> Tensor
-        :type all_rewards_list: List[List[torch.Tensor]]
+        :param all_rewards_list: Nested list [rm_idx][micro_batch_idx] -> reward result
+        :type all_rewards_list: List[List[_RewardBatchResult]]
         :param is_multi_rm: Whether using multiple reward models
         :type is_multi_rm: bool
         """
@@ -823,7 +886,8 @@ class RewardComputationEngine:
 
         for mb_idx in range(num_micro_batches):
             # Collect rewards from all RMs for this micro-batch
-            same_batch_rewards = [all_rewards_list[rm_idx][mb_idx] for rm_idx in range(num_rms)]
+            same_batch_results = [all_rewards_list[rm_idx][mb_idx] for rm_idx in range(num_rms)]
+            same_batch_rewards = [result.scores for result in same_batch_results]
 
             if is_multi_rm:
                 # Use custom aggregation function
@@ -835,6 +899,7 @@ class RewardComputationEngine:
 
                 rewards, reward_metrics = self.reward_fn(
                     model_reward_list=same_batch_rewards,
+                    model_reward_metrics_list=[result.metrics for result in same_batch_results],
                     labels=outputs[mb_idx].labels,
                     queries=queries,
                     refs=outputs[mb_idx].references,
@@ -844,8 +909,8 @@ class RewardComputationEngine:
                 outputs[mb_idx].reward_metrics = reward_metrics
             else:
                 # Single RM, use score directly
-                outputs[mb_idx].rewards = same_batch_rewards[0]
-                outputs[mb_idx].reward_metrics = None
+                outputs[mb_idx].rewards = same_batch_results[0].scores
+                outputs[mb_idx].reward_metrics = same_batch_results[0].metrics
 
 
 # ============================================================================
@@ -1127,6 +1192,7 @@ class FastExperienceMaker(NaiveExperienceMaker):
                 temperature=generate_kwargs.get("temperature", 1.0),
                 top_p=generate_kwargs.get("top_p", 1.0),
                 top_k=generate_kwargs.get("top_k", -1),
+                repetition_penalty=generate_kwargs.get("repetition_penalty", 1.0),
                 max_tokens=generate_kwargs.get("max_new_tokens", 1024),
                 min_tokens=generate_kwargs.get("min_new_tokens", 1),
                 skip_special_tokens=generate_kwargs.get("skip_special_tokens", False),
@@ -1144,9 +1210,22 @@ class FastExperienceMaker(NaiveExperienceMaker):
                 max_new_tokens=generate_kwargs.get("max_new_tokens", 1024),
                 presence_penalty=0.0,
                 frequency_penalty=0.0,
-                repetition_penalty=1.0,
+                repetition_penalty=generate_kwargs.get("repetition_penalty", 1.0),
                 skip_special_tokens=generate_kwargs.get("skip_special_tokens", False),
                 spaces_between_special_tokens=True,
+                ignore_eos=os.environ.get("IGNORE_EOS", "0") == "1",
+            )
+        elif config.engine_type == "hf":
+            sampling_params = dict(
+                temperature=generate_kwargs.get("temperature", 1.0),
+                top_p=generate_kwargs.get("top_p", 1.0),
+                top_k=generate_kwargs.get("top_k", -1),
+                max_new_tokens=generate_kwargs.get("max_new_tokens", 1024),
+                min_new_tokens=generate_kwargs.get("min_new_tokens", 1),
+                do_sample=generate_kwargs.get("do_sample", True),
+                repetition_penalty=generate_kwargs.get("repetition_penalty", 1.0),
+                no_repeat_ngram_size=generate_kwargs.get("no_repeat_ngram_size", 0),
+                skip_special_tokens=generate_kwargs.get("skip_special_tokens", False),
                 ignore_eos=os.environ.get("IGNORE_EOS", "0") == "1",
             )
         else:
@@ -1155,6 +1234,9 @@ class FastExperienceMaker(NaiveExperienceMaker):
         # ========== Expand Labels ==========
         if all_labels is not None:
             all_labels = sum([[label] * n_samples for label in all_labels], [])
+        structured_answer_stop = bool(all_labels) and all(is_math_prm_structured_label(label) for label in all_labels)
+        if config.engine_type == "hf":
+            sampling_params["structured_answer_stop"] = structured_answer_stop
 
         # ========== Process Multimodal Data ==========
         if is_multimodal:
@@ -1219,6 +1301,10 @@ class FastExperienceMaker(NaiveExperienceMaker):
                     all_videos=all_videos if is_multimodal else None,
                     images_num=all_images_num if is_multimodal else None,
                     videos_num=all_videos_num if is_multimodal else None,
+                    all_images_pixel_values=all_images_pixel_values if is_multimodal else None,
+                    all_videos_pixel_values=all_videos_pixel_values if is_multimodal else None,
+                    all_images_grid_thw=all_images_grid_thw if is_multimodal else None,
+                    all_videos_grid_thw=all_videos_grid_thw if is_multimodal else None,
                 )
         except ValueError as e:
             if "prompt" in str(e) and "too long" in str(e):
@@ -1226,6 +1312,8 @@ class FastExperienceMaker(NaiveExperienceMaker):
                 return None  # Return None, subsequent experience_maker will ignore
             else:
                 raise
+
+        all_outputs = self._sanitize_structured_math_prm_outputs(all_outputs, all_labels)
 
         # ========== Process Outputs into Samples ==========
         samples_list = []
@@ -1298,6 +1386,49 @@ class FastExperienceMaker(NaiveExperienceMaker):
         self.strategy.report_memory("after rollout engine generation")
 
         return samples_list
+
+    def _sanitize_structured_math_prm_outputs(self, outputs: List, labels: Optional[List]) -> List:
+        if not outputs or not labels:
+            return outputs
+        if not hasattr(self.tokenizer, "decode") or not hasattr(self.tokenizer, "encode"):
+            return outputs
+
+        sanitized = 0
+        trimmed_token_counts = []
+
+        for idx, label in enumerate(labels[: len(outputs)]):
+            if not is_math_prm_structured_label(label):
+                continue
+
+            original_ids = list(outputs[idx].output_token_ids)
+            if not original_ids:
+                continue
+
+            original_text = self.tokenizer.decode(original_ids, skip_special_tokens=False)
+            cleaned_text = sanitize_math_prm_response_text(original_text)
+            if cleaned_text == original_text:
+                continue
+
+            cleaned_ids = self.tokenizer.encode(cleaned_text, add_special_tokens=False)
+            if not cleaned_ids:
+                continue
+            if cleaned_ids == original_ids:
+                continue
+
+            outputs[idx].output_token_ids = cleaned_ids
+            sanitized += 1
+            trimmed_token_counts.append(len(original_ids) - len(cleaned_ids))
+
+        if sanitized:
+            mean_trim = float(np.mean(trimmed_token_counts))
+            max_trim = int(max(trimmed_token_counts))
+            self.strategy.print(
+                "[math_prm_postprocess] sanitized "
+                f"{sanitized}/{len(outputs)} outputs after first answer line; "
+                f"mean_trim_tokens={mean_trim:.1f}, max_trim_tokens={max_trim}"
+            )
+
+        return outputs
 
     def get_advantages_and_returns(
         self,
@@ -1596,13 +1727,6 @@ class FastExperienceMaker(NaiveExperienceMaker):
 
         # ========== Stage 2: Initial Model ==========
         if self.initial_model is not None:
-            # Note: Manual reload/offload is safe for initial_model because:
-            # 1. It's initialized with is_training=False (see train_colocate.py:207)
-            # 2. This means FSDP's CPUOffloadPolicy is NOT enabled (see fsdpv2.py:375)
-            # 3. Without CPUOffloadPolicy, FSDP doesn't automatically manage parameter movement
-            # 4. We can safely use manual reload_model() to move model from CPU to GPU
-            # 5. After computing base_action_log_probs, we offload back to CPU to save memory
-            # This pattern works because there's no conflict with FSDP's automatic management.
             self.strategy.reload_model(self.initial_model)
             for output in outputs:
                 output.base_action_log_probs = self.initial_model(
@@ -1612,25 +1736,16 @@ class FastExperienceMaker(NaiveExperienceMaker):
                     packed_seq_lens=output.packed_seq_lens,
                     **output.inputs_extra_kwargs
                 )
-            # Offload back to CPU to free GPU memory for subsequent stages
             self.strategy.offload_model(self.initial_model)
 
         # ========== Stage 3: Critic ==========
-        Timer.start('    critic')
         if self.critic is not None:
-            # Note: When critic is initialized with is_training=True and fsdp_cpu_offload=True,
-            # FSDP's CPUOffloadPolicy automatically manages parameter movement between CPU/GPU.
-            # Manual reload_model/offload_model calls will conflict with FSDP's automatic management
-            # and cause "FSDP parameters should be materialized on CPU" error.
-            # The CPUOffloadPolicy will automatically:
-            # 1. Prefetch parameters from CPU to GPU before forward pass
-            # 2. Offload parameters back to CPU after forward pass
-            # This is the recommended approach for memory-efficient training with FSDP2.
+            self.strategy.reload_model(self.critic)
             for output in outputs:
                 output.value = self.critic(
                     output.sequences, output.num_actions, output.attention_mask, **output.inputs_extra_kwargs
                 )
-        Timer.stop('    critic')
+            self.strategy.offload_model(self.critic)
 
         # ========== Stage 4: Reward Models ==========
         self.reward_engine.compute_rewards(outputs, vlm_mode, device)
@@ -1680,9 +1795,6 @@ class FastExperienceMaker(NaiveExperienceMaker):
                 "pixel_values_videos": sample.pixel_values_videos,
                 "video_grid_thw": sample.video_grid_thws,
             }
-            # Audio-language actors expect audio_values; pipeline stores them in pixel_values slot
-            if "audio_values" in self._actor_supported_params:
-                candidate_params["audio_values"] = candidate_params.get("pixel_values")
 
             # Filter to only include supported parameters
             extra_kwargs = {
@@ -1740,9 +1852,16 @@ class FastExperienceMaker(NaiveExperienceMaker):
             return
 
         config = self.strategy.unwrap_model(self.actor.model).config
-        image_token_id = config.image_token_id
+        image_token_id = getattr(config, "image_token_id", getattr(config, "image_token_index", None))
+        if image_token_id is None:
+            return
         num_tokens = (sequences == image_token_id).sum()
-        num_patches = sample.pixel_values.shape[0] // 4
+        # Qwen2-VL style processors usually flatten patches (dim < 4), while some
+        # VLMs such as URSA keep one image tensor per item (dim == 4). Handle both.
+        if sample.pixel_values.dim() >= 4:
+            num_patches = sample.pixel_values.shape[0]
+        else:
+            num_patches = sample.pixel_values.shape[0] // 4
 
         if num_tokens != num_patches:
             self.strategy.print(
@@ -1832,8 +1951,6 @@ class FastExperienceMaker(NaiveExperienceMaker):
                 info=info,
                 kl=kl,
                 action_entropy=output.action_entropy,
-                labels=output.labels,  # data source labels (if available, e.g., "gsm8k_rule")
-                references=output.references,  # ground truth references (if available, e.g., correct answers)
             )
         else:
             return Experience(
