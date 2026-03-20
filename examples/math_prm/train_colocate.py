@@ -145,6 +145,36 @@ def load_actor_tokenizer_processor(
     )
 
 
+def build_actor_init_kwargs(
+    args,
+    *,
+    ds_config,
+    include_lora: bool,
+    include_disable_logprobs_flashattn: bool,
+):
+    """
+    Build Actor/UrsaActor initialization kwargs while keeping train/eval variants aligned.
+    """
+    kwargs = dict(
+        use_flash_attention_2=args.flash_attn,
+        bf16=args.bf16,
+        load_in_4bit=args.load_in_4bit,
+        ds_config=ds_config,
+        packing_samples=args.packing_samples,
+        fused_linear_logprob=args.fused_linear_logprob,
+    )
+    if include_lora:
+        kwargs.update(
+            lora_rank=args.lora_rank,
+            lora_alpha=args.lora_alpha,
+            target_modules=args.target_modules,
+            lora_dropout=args.lora_dropout,
+        )
+    if include_disable_logprobs_flashattn:
+        kwargs["disable_logprobs_flashattn"] = args.disable_logprobs_flashattn
+    return kwargs
+
+
 def prepare_ursa_runtime_for_inference_engines(strategy=None):
     """
     Register the local URSA classes with HuggingFace auto classes so rollout
@@ -201,6 +231,11 @@ def train(args):
         - rm_use_engine: Generic flag retained for other reward types, but
           URSA math_prm/math_psgrpo PRM paths still load via HF directly
     """
+    if args.hf_separate_rollout_actor and args.engine_type != "hf":
+        raise ValueError("--hf_separate_rollout_actor requires --engine_type hf.")
+    if args.hf_separate_rollout_actor and not args.fsdp:
+        raise ValueError("--hf_separate_rollout_actor currently requires --fsdp.")
+
     # configure strategy
     strategy = get_strategy(args)
 
@@ -231,18 +266,25 @@ def train(args):
         # Initialize Actor (policy model)
         actor = Actor(
             args.pretrain,
-            use_flash_attention_2=args.flash_attn,
-            bf16=args.bf16,
-            load_in_4bit=args.load_in_4bit,
-            lora_rank=args.lora_rank,
-            lora_alpha=args.lora_alpha,
-            target_modules=args.target_modules,
-            lora_dropout=args.lora_dropout,
-            ds_config=ds_train_cfg,
-            packing_samples=args.packing_samples,
-            disable_logprobs_flashattn=args.disable_logprobs_flashattn,
-            fused_linear_logprob=args.fused_linear_logprob,
+            **build_actor_init_kwargs(
+                args,
+                ds_config=ds_train_cfg,
+                include_lora=True,
+                include_disable_logprobs_flashattn=True,
+            ),
         )
+
+        rollout_actor = None
+        if args.hf_separate_rollout_actor:
+            rollout_actor = Actor(
+                args.pretrain,
+                **build_actor_init_kwargs(
+                    args,
+                    ds_config=ds_eval_cfg,
+                    include_lora=True,
+                    include_disable_logprobs_flashattn=True,
+                ),
+            )
 
     if args.actor_init_on_gpu:
         actor = actor.to(torch.cuda.current_device())
@@ -310,14 +352,13 @@ def train(args):
         # Use the same Actor class (including URSA if detected)
         initial_model = Actor(
             args.pretrain,
-            use_flash_attention_2=args.flash_attn,
-            bf16=args.bf16,
-            load_in_4bit=args.load_in_4bit,
-            ds_config=ds_eval_cfg,
-            packing_samples=args.packing_samples,
-            fused_linear_logprob=args.fused_linear_logprob,
+            **build_actor_init_kwargs(
+                args,
+                ds_config=ds_eval_cfg,
+                include_lora=False,
+                include_disable_logprobs_flashattn=False,
+            ),
         )
-
         if args.fsdp:
             reference_shard_size = resolve_reference_shard_size(
                 world_size=strategy.world_size,
@@ -472,6 +513,21 @@ def train(args):
         initial_model,
     ) = strategy.prepare_models_and_optimizers(actor, critic, reward_models, initial_model, args, max_steps)
 
+    if rollout_actor is not None:
+        rollout_actor = strategy.prepare_model(
+            rollout_actor,
+            is_training=False,
+            shard_size=-1,
+            reshard_after_forward=False,
+        )
+        rollout_actor.gradient_checkpointing_disable()
+        rollout_actor.eval()
+        strategy.offload_model(rollout_actor)
+        strategy.print(
+            "Prepared separate local HF rollout actor with FSDP full-shard, gc disabled, "
+            "and reshard_after_forward disabled."
+        )
+
     strategy.print(reward_models)
 
     if ema_model:
@@ -499,6 +555,7 @@ def train(args):
         args,
         engine_type=args.engine_type,
         actor=actor,
+        rollout_actor=rollout_actor,
         tokenizer=tokenizer,
         processor=processor,
     )
@@ -614,14 +671,14 @@ if __name__ == "__main__":
     parser.add_argument("--overlong_buffer_penalty_factor", type=float, default=1.0, help="Penalty scaling factor for overlong sequences, <1 discourages long outputs; >1 encourages them")
 
     # PPO
-    parser.add_argument("--num_episodes", type=int, default=1)
-    parser.add_argument("--rollout_batch_size", type=int, default=512)
-    parser.add_argument("--micro_rollout_batch_size", type=int, default=8)
+    parser.add_argument("--num_episodes", type=int, default=10)
+    parser.add_argument("--rollout_batch_size", type=int, default=128)
+    parser.add_argument("--micro_rollout_batch_size", type=int, default=4)
     parser.add_argument("--max_epochs", type=int, default=1)
-    parser.add_argument("--prompt_max_len", type=int, default=6048, help="Max tokens for each prompt")
+    parser.add_argument("--prompt_max_len", type=int, default=1024, help="Max tokens for each prompt")
     parser.add_argument("--generate_max_len", type=int, default=3072, help="Max tokens to generate in PPO")
     parser.add_argument("--max_len", type=int, default=None, help="deprecated max_len")
-    parser.add_argument("--max_samples", type=int, default=1000000)
+    parser.add_argument("--max_samples", type=int, default=15360)
     parser.add_argument("--max_norm", type=float, default=1.0, help="Gradient clipping")
     parser.add_argument("--l2", type=float, default=0.0, help="weight decay loss")
     parser.add_argument("--ptx_coef", type=float, default=0.05, help="PPO-ptx loss coef")
@@ -635,7 +692,7 @@ if __name__ == "__main__":
     parser.add_argument("--lambd", type=float, default=0.95, help="PPO GAE lambd")
     parser.add_argument("--gamma", type=float, default=1, help="PPO GAE gamma")
     parser.add_argument("--micro_train_batch_size", type=int, default=4, help="batch size per GPU")
-    parser.add_argument("--train_batch_size", type=int, default=512, help="Global training batch size")
+    parser.add_argument("--train_batch_size", type=int, default=128, help="Global training batch size")
     parser.add_argument("--normalize_reward_for_critic", action="store_true", default=False, help="Enable Reward Normalization in critic model")
     parser.add_argument("--top_p", type=float, default=1.0)
     parser.add_argument("--top_k", type=int, default=-1)
@@ -648,11 +705,11 @@ if __name__ == "__main__":
         "--n_samples_per_prompt", type=int, default=8, help="number of responses for each prompt in generation"
     )
     parser.add_argument("--save_value_network", action="store_true", default=False, help="Save critic model")
-    parser.add_argument("--actor_learning_rate", type=float, default=2e-6)
+    parser.add_argument("--actor_learning_rate", type=float, default=1e-6)
     parser.add_argument("--critic_learning_rate", type=float, default=9e-6)
     parser.add_argument("--lr_warmup_ratio", type=float, default=0.03)
     parser.add_argument("--kl_target", type=float, default=None)
-    parser.add_argument("--init_kl_coef", type=float, default=0.003, help="KL penalty in PPO")
+    parser.add_argument("--init_kl_coef", type=float, default=0.001, help="KL penalty in PPO")
     parser.add_argument(
         "--kl_estimator",
         type=str,

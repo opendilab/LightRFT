@@ -45,8 +45,10 @@ PATH_TO_URSA_RM="${PATH_TO_URSA_RM:-/home/ubuntu/URSA-MATH/checkpoints/URSA-RM-8
 # PATH_TO_URSA_RM="AI-MO/URSA-8B-RM"
 
 # --- Dataset ---
-# Default: converted full-data Stage 3 manifest for smoke / early training.
-# The paper-style filtered ~15.3K RL subset is a later Phase 8 deliverable.
+# Default: converted full-data Stage 3 manifest.
+# The original paper uses a one-time filtered ~15K RL subset; the exact subset
+# is not present locally yet, so the launcher keeps the converted manifest path
+# and caps training with MAX_SAMPLES to stay close to the reported Stage 3 scale.
 # Dataset format:
 #   "prompt"  : the math question (string, may include images)
 #   "images"  : list of image paths (optional, for multimodal problems)
@@ -79,6 +81,7 @@ else
     fi
 fi
 export WANDB_PROJECT="${WANDB_PROJECT:-LightRFT-URSA8B-Stage3}"
+export WANDB_ORG="${WANDB_ORG:-}"
 
 
 ################################################################################
@@ -86,27 +89,29 @@ export WANDB_PROJECT="${WANDB_PROJECT:-LightRFT-URSA8B-Stage3}"
 ################################################################################
 
 # --- GRPO (Phase 4: reward = PS-GRPO over PRM step scores + correctness) ---
-N_SAMPLES="${N_SAMPLES:-8}"           # Responses per prompt (must be > 1 for group_norm).
-EPISODE="${EPISODE:-20}"              # Total training episodes.
-WARMUP="${WARMUP:-0.03}"              # LR warmup ratio.
+# Defaults below follow the explicit Stage 3 settings documented in the local
+# URSA-MATH repo where possible.
+N_SAMPLES="${N_SAMPLES:-8}"           # URSA-MATH repo: responses per prompt.
+EPISODE="${EPISODE:-10}"              # URSA-MATH repo: Stage 3 training episodes.
+WARMUP="${WARMUP:-0.03}"              # URSA-MATH repo: LR warmup ratio.
 
 # --- Batch sizes ---
-RBS="${RBS:-128}"                     # Rollout batch size (total across all GPUs).
-TBS="${TBS:-512}"                     # Global train batch size (Table 14 target).
+RBS="${RBS:-128}"                     # URSA-MATH repo: rollout batch size.
+TBS="${TBS:-128}"                     # URSA-MATH repo: global train batch size.
 MICRO_TRAIN_BATCH_SIZE="${MICRO_TRAIN_BATCH_SIZE:-4}"
-MICRO_ROLLOUT_BATCH_SIZE="${MICRO_ROLLOUT_BATCH_SIZE:-8}"
+MICRO_ROLLOUT_BATCH_SIZE="${MICRO_ROLLOUT_BATCH_SIZE:-4}"
 
 # --- Optimisation ---
-KL="${KL:-0.003}"                     # Table 14 target KL coefficient.
-LR="${LR:-2e-6}"                      # Table 14 target actor learning rate.
-PROMPT_MAX_LEN="${PROMPT_MAX_LEN:-6048}"   # Table 14 target prompt length.
-GENERATE_MAX_LEN="${GENERATE_MAX_LEN:-3072}" # Max generation length (leave room for CoT).
+KL="${KL:-0.001}"                     # URSA-MATH repo: KL coefficient.
+LR="${LR:-1e-6}"                      # URSA-MATH repo: actor learning rate.
+PROMPT_MAX_LEN="${PROMPT_MAX_LEN:-1024}"   # URSA-MATH repo: prompt length.
+GENERATE_MAX_LEN="${GENERATE_MAX_LEN:-3072}" # URSA-MATH repo: generation length.
 TOP_P="${TOP_P:-1.0}"
 TOP_K="${TOP_K:--1}"
 TEMPERATURE="${TEMPERATURE:-1.0}"
 REPETITION_PENALTY="${REPETITION_PENALTY:-1.0}"
 NO_REPEAT_NGRAM_SIZE="${NO_REPEAT_NGRAM_SIZE:-0}"
-MAX_SAMPLES="${MAX_SAMPLES:-1000000}"
+MAX_SAMPLES="${MAX_SAMPLES:-15360}"   # Proxy for the paper's filtered ~15K RL set.
 SAVE_STEPS="${SAVE_STEPS:-20}"
 MAX_CKPT_NUM="${MAX_CKPT_NUM:-2}"
 NUM_TRAJECTORIES_TO_SAVE="${NUM_TRAJECTORIES_TO_SAVE:-16}"
@@ -135,6 +140,7 @@ export GPUS_PER_NODE=$MLP_WORKER_GPU
 # URSA-8B (8B params + vision towers) requires TP for efficient inference.
 # URSA-8B-RM (8B params) runs on a single GPU; this controls the actor engine.
 ENGINE_TYPE="${ENGINE_TYPE:-hf}"
+HF_SEPARATE_ROLLOUT_ACTOR="${HF_SEPARATE_ROLLOUT_ACTOR:-1}"
 if [[ "${ENGINE_TYPE}" == "hf" ]]; then
     ENGINE_TP="${ENGINE_TP:-1}"
     LOCAL_HF_GENERATE_MAX_BATCH_SIZE="${LOCAL_HF_GENERATE_MAX_BATCH_SIZE:-4}"
@@ -169,8 +175,11 @@ export PATH_TO_YOUR_MATH_DATASET
 export EXPECTED_REWARD_LABEL
 export DOCKER_BASELINE
 export N_SAMPLES
+export EPISODE
+export RBS
 export TBS
 export MICRO_TRAIN_BATCH_SIZE
+export MICRO_ROLLOUT_BATCH_SIZE
 export MLP_WORKER_NUM
 export MLP_WORKER_GPU
 export TEMPERATURE
@@ -178,6 +187,7 @@ export KL
 export LR
 export PROMPT_MAX_LEN
 export GENERATE_MAX_LEN
+export MAX_SAMPLES
 export ENGINE_TYPE
 export LOCAL_HF_GENERATE_MAX_BATCH_SIZE
 export NUM_TRAJECTORIES_TO_SAVE
@@ -242,23 +252,28 @@ if train_batch_size % (micro_train_batch_size * world_size) != 0:
     )
 grad_accum = train_batch_size // (micro_train_batch_size * world_size)
 
-table14_targets = {
+ursa_stage3_targets = {
+    "num_episodes": ("EPISODE", "10"),
     "n_samples_per_prompt": ("N_SAMPLES", "8"),
     "temperature": ("TEMPERATURE", "1.0"),
-    "init_kl_coef": ("KL", "0.003"),
-    "actor_learning_rate": ("LR", "2e-6"),
-    "prompt_max_len": ("PROMPT_MAX_LEN", "6048"),
+    "init_kl_coef": ("KL", "0.001"),
+    "actor_learning_rate": ("LR", "1e-6"),
+    "prompt_max_len": ("PROMPT_MAX_LEN", "1024"),
     "generate_max_len": ("GENERATE_MAX_LEN", "3072"),
-    "train_batch_size": ("TBS", "512"),
+    "rollout_batch_size": ("RBS", "128"),
+    "train_batch_size": ("TBS", "128"),
+    "micro_rollout_batch_size": ("MICRO_ROLLOUT_BATCH_SIZE", "4"),
+    "micro_train_batch_size": ("MICRO_TRAIN_BATCH_SIZE", "4"),
+    "max_samples_proxy": ("MAX_SAMPLES", "15360"),
 }
 alignment_summary = []
-for name, (env_key, expected_value) in table14_targets.items():
+for name, (env_key, expected_value) in ursa_stage3_targets.items():
     current_value = os.environ[env_key]
     status = "aligned" if current_value == expected_value else f"override({current_value})"
     alignment_summary.append(f"{name}={status}")
 
 print(
-    "[run_grpo_math_prm_ursa_8b.sh] Phase 6 preflight: "
+    "[run_grpo_math_prm_ursa_8b.sh] URSA Stage 3 preflight: "
     f"engine_type={os.environ['ENGINE_TYPE']}, "
     f"world_size={world_size}, "
     f"train_batch_size={train_batch_size}, "
@@ -266,7 +281,7 @@ print(
     f"gradient_accumulation={grad_accum}"
 )
 print(
-    "[run_grpo_math_prm_ursa_8b.sh] Table 14 alignment snapshot: "
+    "[run_grpo_math_prm_ursa_8b.sh] URSA Stage 3 default snapshot: "
     + ", ".join(alignment_summary)
 )
 print(
@@ -289,9 +304,22 @@ if [[ -n "${WANDB_API_KEY}" && "${WANDB_API_KEY}" != "YOUR_WANDB_API_KEY" ]]; th
         --wandb_project "${WANDB_PROJECT}"
         --wandb_run_name "${WANDB_RUN_NAME}"
     )
+    if [[ -n "${WANDB_ORG}" ]]; then
+        WANDB_ARGS+=(
+            --wandb_org "${WANDB_ORG}"
+        )
+    fi
     echo "[run_grpo_math_prm_ursa_8b.sh] WANDB enabled for this run via ${WANDB_KEY_SOURCE}."
 else
     echo "[run_grpo_math_prm_ursa_8b.sh] WANDB disabled for this run."
+fi
+
+HF_ROLLOUT_ARGS=()
+if [[ "${ENGINE_TYPE}" == "hf" && "${HF_SEPARATE_ROLLOUT_ACTOR}" == "1" ]]; then
+    HF_ROLLOUT_ARGS=(
+        --hf_separate_rollout_actor
+    )
+    echo "[run_grpo_math_prm_ursa_8b.sh] Separate local HF rollout actor enabled."
 fi
 
 EVAL_ARGS=()
@@ -374,6 +402,7 @@ torchrun \
     --engine_tp_size $ENGINE_TP \
     --local_hf_generate_max_batch_size ${LOCAL_HF_GENERATE_MAX_BATCH_SIZE} \
     --enable_engine_sleep \
+    "${HF_ROLLOUT_ARGS[@]}" \
     --system_prompt "${SYSTEM_PROMPT}" \
     --l2 1.0e-2 \
     --freeze_prefix \
@@ -416,20 +445,26 @@ torchrun \
 #   - Phase 3 baseline remains available only when you intentionally provide   #
 #     a math_prm-labeled manifest and override EXPECTED_REWARD_LABEL          #
 #   - You can override all key hyperparameters and paths via environment vars #
-#   - Phase 6 default alignment to Table 14 now includes:                      #
-#       n_samples_per_prompt=8, temperature=1.0, init_kl_coef=0.003,          #
-#       actor_learning_rate=2e-6, prompt_max_len=6048, generate_max_len=3072, #
-#       train_batch_size=512                                                   #
+#   - Current launcher defaults follow the explicit Stage 3 values documented  #
+#     in the local URSA-MATH repo:                                             #
+#       EPISODE=10, N_SAMPLES=8, RBS=128, TBS=128,                            #
+#       MICRO_TRAIN_BATCH_SIZE=4, MICRO_ROLLOUT_BATCH_SIZE=4,                 #
+#       KL=0.001, LR=1e-6, PROMPT_MAX_LEN=1024, GENERATE_MAX_LEN=3072         #
 #   - On the current 8-GPU machine this batch is realized as:                  #
-#       micro_train_batch_size=4 x world_size=8 x grad_accum=16 = 512         #
-#   - Current deliberate differences vs final paper reproduction:              #
-#       full-data manifest first, filtered ~15.3K subset postponed to Phase 8 #
-#       rollout uses the local HF engine under the frozen Docker baseline      #
+#       micro_train_batch_size=4 x world_size=8 x grad_accum=4 = 128          #
+#   - Paper-scale data curation uses one-time filtering from 20K candidates    #
+#     down to ~15K RL samples. Because that exact subset is not yet present    #
+#     locally, the launcher keeps the converted manifest path but defaults     #
+#     MAX_SAMPLES to 15360 as a scale proxy.                                   #
+#   - Current deliberate differences vs original paper runtime:                #
+#       local hardware is 8x A100 instead of the paper's default 32x H100      #
+#       rollout uses the local HF engine path under the frozen Docker baseline #
 #                                                                              #
 # Step 5: Run training                                                         #
 #   bash examples/math_prm/run_grpo_math_prm_ursa_8b.sh                       #
-#   - Additional smoke/profiling wrappers are maintained outside this minimal  #
-#     upstream PR surface.                                                     #
+#   - For the Phase 3 baseline smoke path, use                                #
+#       bash examples/math_prm/tools/run_phase3_smoke.sh                       #
+#     which exports a math_prm-labeled manifest and time-boxed settings.      #
 #   - For data/resource smoke checks before RL training, you can reuse:        #
 #       python /home/ubuntu/URSA-MATH/examples/run_dataset_loading_example.py  #
 #       python /home/ubuntu/URSA-MATH/examples/validate_dataset_entrypoints.py \

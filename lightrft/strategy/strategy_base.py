@@ -40,7 +40,7 @@ from lightrft.strategy.utils.parallel_utils import (
 )
 from lightrft.strategy.utils.statistic import GenLenAnalyser
 from lightrft.strategy.config import StrategyConfig
-from lightrft.utils.math_prm_output import should_stop_math_prm_response_text
+from lightrft.utils.math_prm_output import MATH_PRM_ANSWER_MARKER, should_stop_math_prm_response_text
 from .sglang_utils import get_sglang_engine_for_rollout
 
 ModelOptimPair = Tuple[nn.Module, Optimizer]
@@ -64,18 +64,50 @@ class _StructuredAnswerEosLogitsProcessor(LogitsProcessor):
         self.tokenizer = tokenizer
         self.prompt_length = int(prompt_length)
         self.eos_token_id = int(eos_token_id)
+        self.check_interval = 4
+        self.marker_scan_max_tokens = 192
+        self.answer_tail_max_tokens = 128
+        self._marker_seen = None
+
+    def _ensure_state(self, batch_size: int) -> None:
+        if self._marker_seen is None or len(self._marker_seen) != batch_size:
+            self._marker_seen = [False] * batch_size
 
     def __call__(self, input_ids: torch.LongTensor, scores: torch.FloatTensor) -> torch.FloatTensor:
         if input_ids.size(1) <= self.prompt_length:
             return scores
 
-        generated_ids = input_ids[:, self.prompt_length:].detach().cpu()
-        decoded_rows = self.tokenizer.batch_decode(generated_ids, skip_special_tokens=False)
-        stop_mask = torch.tensor(
-            [should_stop_math_prm_response_text(text) for text in decoded_rows],
-            device=scores.device,
-            dtype=torch.bool,
-        )
+        generated_length = input_ids.size(1) - self.prompt_length
+        if generated_length % self.check_interval != 0:
+            return scores
+
+        batch_size = input_ids.size(0)
+        self._ensure_state(batch_size)
+
+        stop_mask = torch.zeros(batch_size, device=scores.device, dtype=torch.bool)
+
+        unresolved_rows = [idx for idx, marker_seen in enumerate(self._marker_seen) if not marker_seen]
+        if unresolved_rows:
+            scan_start = max(self.prompt_length, input_ids.size(1) - self.marker_scan_max_tokens)
+            scan_ids = input_ids[unresolved_rows, scan_start:].detach().cpu()
+            scan_texts = self.tokenizer.batch_decode(scan_ids, skip_special_tokens=False)
+            for row_idx, text in zip(unresolved_rows, scan_texts):
+                if MATH_PRM_ANSWER_MARKER in text:
+                    self._marker_seen[row_idx] = True
+                    if should_stop_math_prm_response_text(text):
+                        stop_mask[row_idx] = True
+
+        marker_rows = [
+            idx for idx, marker_seen in enumerate(self._marker_seen) if marker_seen and not bool(stop_mask[idx].item())
+        ]
+        if marker_rows:
+            tail_start = max(self.prompt_length, input_ids.size(1) - self.answer_tail_max_tokens)
+            tail_ids = input_ids[marker_rows, tail_start:].detach().cpu()
+            tail_texts = self.tokenizer.batch_decode(tail_ids, skip_special_tokens=False)
+            for row_idx, text in zip(marker_rows, tail_texts):
+                if should_stop_math_prm_response_text(text):
+                    stop_mask[row_idx] = True
+
         if not torch.any(stop_mask):
             return scores
 
@@ -142,6 +174,8 @@ class StrategyBase(ABC):
         self.inference_tokenizer = None
         self.inference_processor = None
         self.broadcast_manager = None
+        self.rollout_train_actor = None
+        self.use_separate_hf_rollout_actor = False
 
         self.time_steps = defaultdict(int)
 
@@ -683,7 +717,84 @@ class StrategyBase(ABC):
                 f"ALLOCATED={torch.cuda.memory_allocated() / 1e9:.2f} GB"
             )
 
-    def setup_inference_engine(self, args, engine_type="vllm", actor=None, tokenizer=None, processor=None):
+    def _uses_separate_hf_rollout_actor(self) -> bool:
+        return (
+            self.inference_engine_type == "hf"
+            and self.use_separate_hf_rollout_actor
+            and self.rollout_train_actor is not None
+            and self.inference_engine is not None
+            and self.inference_engine is not self.rollout_train_actor
+        )
+
+    def _copy_local_hf_rollout_actor_state(self, src_actor: nn.Module, dst_actor: nn.Module) -> None:
+        src_params = dict(src_actor.named_parameters())
+        dst_params = dict(dst_actor.named_parameters())
+        if src_params.keys() != dst_params.keys():
+            missing_in_dst = sorted(set(src_params) - set(dst_params))
+            missing_in_src = sorted(set(dst_params) - set(src_params))
+            raise ValueError(
+                "Separate local HF rollout actor parameter mismatch. "
+                f"missing_in_dst={missing_in_dst[:8]}, missing_in_src={missing_in_src[:8]}"
+            )
+
+        for name, dst_param in dst_params.items():
+            src_param = src_params[name]
+            if src_param.shape != dst_param.shape:
+                raise ValueError(
+                    f"Separate local HF rollout actor parameter shape mismatch for {name}: "
+                    f"{tuple(src_param.shape)} vs {tuple(dst_param.shape)}"
+                )
+            src_tensor = src_param.detach()
+            if src_tensor.device != dst_param.device or src_tensor.dtype != dst_param.dtype:
+                src_tensor = src_tensor.to(device=dst_param.device, dtype=dst_param.dtype)
+            dst_param.detach().copy_(src_tensor)
+
+        src_buffers = dict(src_actor.named_buffers())
+        dst_buffers = dict(dst_actor.named_buffers())
+        common_buffer_names = sorted(set(src_buffers) & set(dst_buffers))
+        for name in common_buffer_names:
+            src_buffer = src_buffers[name].detach()
+            dst_buffer = dst_buffers[name]
+            if src_buffer.shape != dst_buffer.shape:
+                raise ValueError(
+                    f"Separate local HF rollout actor buffer shape mismatch for {name}: "
+                    f"{tuple(src_buffer.shape)} vs {tuple(dst_buffer.shape)}"
+                )
+            if src_buffer.device != dst_buffer.device or src_buffer.dtype != dst_buffer.dtype:
+                src_buffer = src_buffer.to(device=dst_buffer.device, dtype=dst_buffer.dtype)
+            dst_buffer.detach().copy_(src_buffer)
+
+    def _prepare_separate_hf_rollout_actor_for_generation(self) -> None:
+        if not self._uses_separate_hf_rollout_actor():
+            return
+        model = getattr(self.inference_engine, "model", None)
+        if isinstance(model, nn.Module):
+            model.eval()
+        self.inference_engine.eval()
+
+    def _sync_separate_hf_rollout_actor(self, actor: nn.Module) -> None:
+        if not self.config.fsdp:
+            raise NotImplementedError("Separate local HF rollout actor currently only supports FSDP.")
+        if not self._uses_separate_hf_rollout_actor():
+            raise RuntimeError("Separate local HF rollout actor is not initialized.")
+
+        self.offload_model(actor)
+        self.offload_model(self.inference_engine, empty_cache=False)
+        self._copy_local_hf_rollout_actor_state(actor, self.inference_engine)
+        self._prepare_separate_hf_rollout_actor_for_generation()
+        self.inference_engine_status = EngineStatus.SLEEPED
+        self.sync_and_clear_cache()
+        self.print("Finished update engine weights for separate local HF rollout actor")
+
+    def setup_inference_engine(
+        self,
+        args,
+        engine_type="vllm",
+        actor=None,
+        rollout_actor=None,
+        tokenizer=None,
+        processor=None,
+    ):
         """
         Initialize and setup the inference engine.
 
@@ -701,6 +812,8 @@ class StrategyBase(ABC):
         self.inference_engine_type = engine_type
         self.inference_tokenizer = tokenizer
         self.inference_processor = processor
+        self.rollout_train_actor = None
+        self.use_separate_hf_rollout_actor = False
 
         if engine_type == "vllm":
             # Conditional import: vLLM is optional and only imported when explicitly requested
@@ -715,13 +828,23 @@ class StrategyBase(ABC):
         elif engine_type == "hf":
             if actor is None:
                 raise ValueError("engine_type='hf' requires the prepared actor to be passed in.")
-            # Local HF mode reuses the actor directly for time-boxed smoke runs.
-            self.inference_engine = actor
+            if getattr(args, "hf_separate_rollout_actor", False):
+                if rollout_actor is None:
+                    raise ValueError(
+                        "engine_type='hf' with --hf_separate_rollout_actor requires a prepared rollout_actor."
+                    )
+                self.use_separate_hf_rollout_actor = True
+                self.rollout_train_actor = actor
+                self.inference_engine = rollout_actor
+                self._prepare_separate_hf_rollout_actor_for_generation()
+            else:
+                # Local HF mode reuses the actor directly for time-boxed smoke runs.
+                self.inference_engine = actor
             self.inference_engine_status = EngineStatus.WAKEUP
         else:
             raise ValueError(f"Unsupported engine type: {engine_type}")
 
-        if actor is not None and engine_type != "hf":
+        if actor is not None and (engine_type != "hf" or self.use_separate_hf_rollout_actor):
             self.update_engine_weights(actor)
         self.maybe_sleep_inference_engine()
         return self.inference_engine
@@ -735,17 +858,27 @@ class StrategyBase(ABC):
 
         :raises ValueError: If the inference engine type is not supported
         """
-        if self.inference_engine is not None and self.args.enable_engine_sleep:
+        if self.inference_engine is None or self.inference_engine_status == EngineStatus.SLEEPED:
+            return
+        if self.inference_engine is not None and (
+            self.args.enable_engine_sleep or self._uses_separate_hf_rollout_actor()
+        ):
+            sleep_t0 = time.time()
             if self.inference_engine_type in ["vllm", "sglang"]:
                 self.inference_engine.sleep()
             elif self.inference_engine_type == "hf":
-                return
+                if self._uses_separate_hf_rollout_actor():
+                    self.offload_model(self.inference_engine)
+                    self.reload_model(self.rollout_train_actor)
+                    self.rollout_train_actor.train()
+                else:
+                    return
             else:
                 raise ValueError(f"Unsupported engine type: {self.inference_engine_type}")
             self.inference_engine_status = EngineStatus.SLEEPED
 
             self.sync_and_clear_cache()
-            self.print("Sleeped inference engine")
+            self.print(f"Sleeped inference engine, TIMECOST {time.time() - sleep_t0}")
 
     def wakeup_inference_engine(self):
         """
@@ -765,6 +898,11 @@ class StrategyBase(ABC):
         if self.inference_engine_type in ["vllm", "sglang"]:
             self.inference_engine.wake_up()
         elif self.inference_engine_type == "hf":
+            if self._uses_separate_hf_rollout_actor():
+                self.offload_model(self.rollout_train_actor)
+                self.reload_model(self.inference_engine)
+                self._prepare_separate_hf_rollout_actor_for_generation()
+            self.print(f"Finished {self.inference_engine_type} wakeup, TIMECOST {time.time() - wkup_t0}")
             self.inference_engine_status = EngineStatus.WAKEUP
             return
         else:
@@ -948,6 +1086,7 @@ class StrategyBase(ABC):
                         ]
                     )
 
+                generate_t0 = time.time()
                 with torch.no_grad():
                     sequences, attention_mask_out, _ = self.inference_engine.generate(
                         input_ids=padded_input_ids,
@@ -968,6 +1107,14 @@ class StrategyBase(ABC):
                         eos_token_id=eos_token_id,
                         pad_token_id=pad_token_id,
                     )
+                self.print(
+                    "Local HF model.generate finished:",
+                    {
+                        "batch_size": len(batch_prompt_token_ids),
+                        "prompt_tokens": [len(token_ids) for token_ids in batch_prompt_token_ids],
+                        "elapsed_s": round(time.time() - generate_t0, 4),
+                    }
+                )
 
                 output_start_idx = padded_input_ids.size(1)
                 sequences = sequences.detach().cpu()
@@ -1163,6 +1310,8 @@ class StrategyBase(ABC):
         """
         if self.inference_engine is None:
             raise NotImplementedError("Inference engine is not initialized.")
+        if self._uses_separate_hf_rollout_actor():
+            sleep_engine = True
         self.wakeup_inference_engine()
 
         # is_multimodal = all_images is not None
@@ -1244,7 +1393,10 @@ class StrategyBase(ABC):
             self.print("Skip update engine weights since inference engine is not initialized.")
             return
         if self.inference_engine_type == "hf":
-            self.print("Skip update engine weights for local HF engine because it reuses the actor directly.")
+            if self._uses_separate_hf_rollout_actor():
+                self._sync_separate_hf_rollout_actor(actor)
+            else:
+                self.print("Skip update engine weights for local HF engine because it reuses the actor directly.")
             return
         # 1. wakeup engine if sleeped
         self.wakeup_inference_engine()

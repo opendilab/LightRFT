@@ -54,6 +54,8 @@ class StrategyConfig:
     engine_tp_size: int = 1
     # (int): Maximum local HF generation batch size, <=0 disables chunking
     local_hf_generate_max_batch_size: int = 0
+    # (bool): Use a dedicated local HF rollout actor instead of reusing the training actor
+    hf_separate_rollout_actor: bool = False
     # (bool): Enable engine sleep mode, defaults to False
     enable_engine_sleep: bool = False
     # (int): Local rank for distributed training, defaults to -1
@@ -233,7 +235,8 @@ class StrategyConfig:
         # Engine and Inference Parameters
         print("\nEngine and Inference Parameters:")
         for attr in [
-            'engine_type', 'engine_tp_size', 'local_hf_generate_max_batch_size', 'enable_engine_sleep',
+            'engine_type', 'engine_tp_size', 'local_hf_generate_max_batch_size', 'hf_separate_rollout_actor',
+            'enable_engine_sleep',
             'local_rank', 'sp_size'
         ]:
             current = getattr(self, attr)

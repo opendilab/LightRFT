@@ -57,6 +57,13 @@ def add_arguments(parser: argparse.ArgumentParser) -> None:
         "when multimodal models would otherwise OOM.",
     )
     parser.add_argument(
+        "--hf_separate_rollout_actor",
+        action="store_true",
+        default=False,
+        help="Use a dedicated local HF rollout actor instead of reusing the training actor directly. "
+        "The current implementation is intended for FSDP-based quick rollout experiments.",
+    )
+    parser.add_argument(
         "--enable_engine_sleep",
         action="store_true",
         default=True,  # This sets the default value if the flag is NOT provided
