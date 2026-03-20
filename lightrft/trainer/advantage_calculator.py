@@ -27,6 +27,7 @@ from copy import deepcopy
 from typing import Dict, List, Optional, Tuple, Union
 
 import torch
+import torch.distributed as dist
 import warnings
 
 from .utils import RunningMoments, compute_clip_fraction
@@ -727,19 +728,39 @@ def _apply_opd_kl_penalty(
     Compute OPD reverse KL penalty: -opd_kl_coef * (student_logp - teacher_logp).
 
     Shared helper for both pure and hybrid OPD modes.
+    Aligned with Slime's apply_opd_kl_to_advantages.
+
+    Safety guards:
+    - Masks out positions where teacher_log_probs == 0 (uninitialized/padded),
+      since teacher_logp=0 means P(token)=1, which is nonsensical and would
+      produce a large spurious KL penalty.
+    - Clamps per-token reverse KL to [-20, 20] to prevent extreme gradients.
 
     :return: Tuple of (opd_advantages, info_dict with opd_reverse_kl metric)
     """
     reverse_kl = student_log_probs - teacher_log_probs
+
+    # Clamp per-token reverse KL to prevent extreme values from teacher-student
+    # capability gap (e.g. 7B teacher vs 0.5B student)
+    reverse_kl = torch.clamp(reverse_kl, min=-20.0, max=20.0)
+
     opd_adv = -opd_kl_coef * reverse_kl
 
+    # Mask out positions where teacher_log_probs == 0 (padded/uninitialized)
+    # teacher_logp=0 means exp(0)=1 probability, which is nonsensical
+    valid_teacher_mask = (teacher_log_probs != 0.0).float()
+
     if action_mask is not None:
-        opd_adv = opd_adv * action_mask
+        effective_mask = action_mask * valid_teacher_mask
+    else:
+        effective_mask = valid_teacher_mask
+
+    opd_adv = opd_adv * effective_mask
 
     info_dict = {}
     if action_mask is not None:
-        masked_rkl = reverse_kl * action_mask
-        info_dict["opd_reverse_kl"] = masked_rkl.sum(-1) / action_mask.sum(-1).clamp(min=1)
+        masked_rkl = reverse_kl * effective_mask
+        info_dict["opd_reverse_kl"] = masked_rkl.sum(-1) / effective_mask.sum(-1).clamp(min=1)
 
     return opd_adv, info_dict
 
@@ -911,11 +932,10 @@ def get_advantage_calculator(estimator_name: str, config) -> AdvantageCalculator
 @torch.no_grad()
 def normalize_advantages_cross_batch(experiences: List, advantage_estimator: str, args) -> List:
     """
-    Apply cross-batch advantage normalization for GAE, REINFORCE, and REINFORCE-baseline.
+    Apply cross-batch advantage normalization across all data-parallel ranks.
 
-    This method normalizes advantages across all experiences in a batch using their action masks.
-    Reference: https://github.com/OpenRLHF/OpenRLHF/blob/main/openrlhf/trainer/ppo_utils/
-    experience_maker.py#L794-L816
+    Matches Slime's distributed_masked_whiten: computes global mean/variance
+    via all_reduce across all ranks, then whitens locally.
 
     :param experiences: List of Experience objects.
     :type experiences: List
@@ -941,21 +961,42 @@ def normalize_advantages_cross_batch(experiences: List, advantage_estimator: str
 
     # Concatenate into vectors
     advantages_vector = torch.cat(all_advantages, dim=0).float()
-    action_masks_vector = torch.cat(all_action_masks, dim=0)
-    num_actions = action_masks_vector.sum()
+    action_masks_vector = torch.cat(all_action_masks, dim=0).float()
 
-    # Compute mean
-    mean = (advantages_vector * action_masks_vector).sum() / num_actions
+    # Compute local intermediate statistics
+    local_sum = (advantages_vector * action_masks_vector).sum()
+    local_sum_sq = ((advantages_vector ** 2) * action_masks_vector).sum()
+    local_count = action_masks_vector.sum()
+
+    # Aggregate across all data-parallel ranks via all_reduce
+    # (matching Slime's distributed_masked_whiten)
+    stats = torch.stack([local_sum, local_sum_sq, local_count]).to(
+        device=advantages_vector.device, dtype=torch.float32
+    )
+    if dist.is_initialized():
+        dist.all_reduce(stats, op=dist.ReduceOp.SUM)
+
+    global_sum, global_sum_sq, global_count = stats
+
+    if global_count.item() == 0:
+        return experiences
+
+    global_mean = global_sum / global_count
+    global_var = global_sum_sq / global_count - global_mean ** 2
+
+    # Bessel's correction for unbiased variance estimate (matching Slime)
+    if global_count.item() >= 2:
+        bessel_correction = global_count / (global_count - 1)
+        global_var = global_var * bessel_correction
 
     # Compute std (if not disabled)
     if not getattr(args, "no_advantage_std_norm", False):
-        var = ((advantages_vector - mean).pow(2) * action_masks_vector).sum() / num_actions
-        rstd = var.clamp(min=1e-8).rsqrt()
+        rstd = global_var.clamp(min=1e-8).rsqrt()
     else:
         rstd = 1
 
     # Apply normalization to each experience
     for exp in experiences:
-        exp.advantages = (exp.advantages - mean) * rstd
+        exp.advantages = (exp.advantages - global_mean) * rstd
 
     return experiences

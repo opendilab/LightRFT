@@ -82,9 +82,10 @@ async def get_teacher_logprobs_by_ids(
     teacher_lp_list = []
     for response, resp_len in zip(results, response_lengths):
         logprobs = response["meta_info"]["input_token_logprobs"]
-        # Extract logprob values; skip first token (no logprob for BOS)
-        lp_values = [item[0] if isinstance(item, list) else item for item in logprobs]
-        teacher_lp = torch.tensor(lp_values[1:], dtype=torch.float32)
+        # Align with Slime: first [1:] to skip BOS/None, then take item[0] for each
+        # SGLang returns list of [logprob, token_id] pairs, first element is None (BOS)
+        lp_values = [item[0] for item in logprobs[1:]]
+        teacher_lp = torch.tensor(lp_values, dtype=torch.float32)
         # Take the last resp_len tokens (response part only)
         teacher_lp = teacher_lp[-resp_len:]
         teacher_lp_list.append(teacher_lp)
@@ -160,8 +161,9 @@ def extract_teacher_logprobs(
     for response, response_length in zip(teacher_responses, response_lengths):
         if "meta_info" in response and "input_token_logprobs" in response["meta_info"]:
             logprobs = response["meta_info"]["input_token_logprobs"]
-            logprob_values = [item[0] if isinstance(item, list) else item for item in logprobs]
-            teacher_log_probs = torch.tensor(logprob_values[1:], dtype=torch.float32)
+            # Align with Slime: first [1:] to skip BOS/None, then take item[0]
+            logprob_values = [item[0] for item in logprobs[1:]]
+            teacher_log_probs = torch.tensor(logprob_values, dtype=torch.float32)
             teacher_log_probs = teacher_log_probs[-response_length:]
         else:
             raise ValueError(
