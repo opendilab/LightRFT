@@ -133,7 +133,6 @@ def add_arguments(parser: argparse.ArgumentParser) -> None:
         help="Interval (in training steps) for plotting and saving the generated sequence length distribution. "
         "Only effective if `--log_dir` is set.",
     )
-
     # for rewards models
     parser.add_argument(
         "--rm_use_engine",

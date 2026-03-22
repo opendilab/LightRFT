@@ -136,7 +136,6 @@ class StrategyConfig:
     plot_every: int = -1
     # (bool): Use TensorBoard for logging, defaults to False
     use_tensorboard: bool = False
-
     # Additional arguments for backward compatibility
     # (Dict[str, Any]): Extra arguments for backward compatibility, defaults to {}
     extra_args: Dict[str, Any] = field(default_factory=dict)

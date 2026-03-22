@@ -1055,7 +1055,6 @@ class PPOTrainerVL(ABC):
                     for k, v in self.experience_maker.perf_stats.items():
                         all_wandb_logs[f"perf/experience_maker/{k}"] = v
 
-                # Commit Train/Rollout logs with unique system step
                 if all_wandb_logs:
                     self.wandb_log_counter += 1
                     self._wandb.log(all_wandb_logs, step=self.wandb_log_counter, commit=True)
@@ -1090,10 +1089,6 @@ class PPOTrainerVL(ABC):
                     eval_logs["eval/train_step"] = global_step
                     eval_logs["eval/episode"] = episode
 
-                    # IMPORTANT:
-                    # Use wandb_log_counter to ensure eval has a unique system step
-                    # This prevents eval metrics from being overwritten by train metrics
-                    # The plots will still use eval/global_step as X-axis due to define_metric
                     self.wandb_log_counter += 1
                     self._wandb.log(eval_logs, step=self.wandb_log_counter, commit=True)
 
