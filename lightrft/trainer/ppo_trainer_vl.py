@@ -253,6 +253,28 @@ class PPOTrainerVL(ABC):
             log_dir = os.path.join(self.strategy.args.use_tensorboard, strategy.args.wandb_run_name)
             self._tensorboard = SummaryWriter(log_dir=log_dir)
 
+    def _update_wandb_summary(self, logs: Dict[str, Any]) -> None:
+        if self._wandb is None or not self.strategy.is_rank_0() or not logs:
+            return
+
+        summary_logs = {}
+        for key, value in logs.items():
+            if isinstance(value, torch.Tensor):
+                if value.numel() != 1:
+                    continue
+                value = value.item()
+            elif hasattr(value, "item") and not isinstance(value, (str, bytes)):
+                try:
+                    value = value.item()
+                except (TypeError, ValueError):
+                    pass
+
+            if isinstance(value, (int, float, bool, str)):
+                summary_logs[key] = value
+
+        if summary_logs and self._wandb.run is not None:
+            self._wandb.run.summary.update(summary_logs)
+
     def fit(
         self,
         args,
@@ -1058,6 +1080,7 @@ class PPOTrainerVL(ABC):
                 if all_wandb_logs:
                     self.wandb_log_counter += 1
                     self._wandb.log(all_wandb_logs, step=self.wandb_log_counter, commit=True)
+                    self._update_wandb_summary(all_wandb_logs)
 
             # TensorBoard Logging
             elif self._tensorboard is not None and self.strategy.is_rank_0():
@@ -1091,6 +1114,7 @@ class PPOTrainerVL(ABC):
 
                     self.wandb_log_counter += 1
                     self._wandb.log(eval_logs, step=self.wandb_log_counter, commit=True)
+                    self._update_wandb_summary(eval_logs)
 
                 # TensorBoard Logging for Eval
                 elif self._tensorboard is not None:

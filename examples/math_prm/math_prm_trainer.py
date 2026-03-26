@@ -1,0 +1,232 @@
+from contextlib import contextmanager
+from typing import Dict
+
+import torch
+
+from lightrft.trainer.spmd_ppo_trainer import SPMDPPOTrainerVL
+
+
+class MathPRMSPMDPPOTrainerVL(SPMDPPOTrainerVL):
+    _ROLLOUT_KEY_SOURCES = {
+        "reward": ("rollout_reward", "step_reward_mean", "reward"),
+        "reward_std": ("rollout_reward_std", "step_reward_std"),
+        "outcome_correct": ("rollout_outcome_correct", "outcome_correct_mean", "reward_metrics/outcome_correct"),
+        "has_drop_moment": ("rollout_has_drop_moment", "has_drop_moment_mean", "reward_metrics/has_drop_moment"),
+        "model_reward": ("rollout_model_reward", "model_reward_mean", "reward_metrics/model_reward"),
+        "response_length": ("rollout_response_length", "response_length_mean", "response_length"),
+    }
+    _TRAIN_KEY_SOURCES = {
+        "policy_loss": ("policy_loss",),
+        "kl": ("kl",),
+        "actor_lr": ("actor_lr",),
+        "critic_loss": ("critic_loss",),
+        "critic_lr": ("critic_lr",),
+        "values": ("values",),
+        "values_std": ("values_std",),
+        "reward": ("reward",),
+        "reward_std": ("step_reward_std",),
+        "return": ("return",),
+        "return_std": ("returns_std",),
+        "response_length": ("response_length",),
+        "total_length": ("total_length",),
+        "num_actions": ("num_actions",),
+        "approx_kl": ("approx_kl",),
+        "clipfrac": ("clipfrac",),
+        "ratio_mean": ("ratio_mean",),
+        "ratio_max": ("ratio_max",),
+        "advantages": ("advantages_mean",),
+        "advantages_std": ("advantages_std",),
+        "ptx_loss": ("ptx_loss",),
+    }
+    _EVAL_KEY_SOURCES = {
+        "reward": ("reward", "reward_mean"),
+        "outcome_correct": ("outcome_correct", "outcome_correct_mean"),
+        "has_drop_moment": ("has_drop_moment", "has_drop_moment_mean"),
+        "model_reward": ("model_reward", "model_reward_mean"),
+        "response_length": ("response_length", "response_length_mean"),
+        "answer_extraction_failed": ("answer_extraction_failed", "answer_extraction_failed_mean"),
+    }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._train_generate_kwargs = dict(self.generate_kwargs)
+        self._eval_generate_kwargs = self._build_eval_generate_kwargs()
+        if self._wandb is not None and self.strategy.is_rank_0():
+            self._wandb.define_metric("rollout/*", step_metric=None, step_sync=False, overwrite=True)
+            self._wandb.define_metric("train/*", step_metric=None, step_sync=False, overwrite=True)
+            self._wandb.define_metric("eval/train_step")
+            self._wandb.define_metric("eval/*", step_metric="eval/train_step", step_sync=True, overwrite=True)
+
+    def _build_eval_generate_kwargs(self) -> Dict:
+        eval_generate_kwargs = dict(self._train_generate_kwargs)
+        eval_generate_kwargs["do_sample"] = bool(getattr(self.strategy.args, "eval_do_sample", False))
+        eval_generate_kwargs["max_new_tokens"] = (
+            getattr(self.strategy.args, "eval_generate_max_len", None) or
+            self._train_generate_kwargs.get("max_new_tokens")
+        )
+        eval_generate_kwargs["temperature"] = getattr(self.strategy.args, "eval_temperature", 0.0)
+        eval_generate_kwargs["top_p"] = getattr(self.strategy.args, "eval_top_p", 1.0)
+        eval_generate_kwargs["top_k"] = getattr(self.strategy.args, "eval_top_k", -1)
+        eval_generate_kwargs["repetition_penalty"] = getattr(self.strategy.args, "eval_repetition_penalty", 1.0)
+        eval_generate_kwargs["no_repeat_ngram_size"] = getattr(
+            self.strategy.args,
+            "eval_no_repeat_ngram_size",
+            0,
+        )
+        return eval_generate_kwargs
+
+    @contextmanager
+    def _runtime_eval_context(self):
+        original_generate_kwargs = self.generate_kwargs
+        original_n_samples = self.strategy.args.n_samples_per_prompt
+        original_advantage_estimator = self.strategy.args.advantage_estimator
+        original_config_n_samples = getattr(self.strategy.config, "n_samples_per_prompt", None)
+        original_config_advantage_estimator = getattr(self.strategy.config, "advantage_estimator", None)
+
+        self.generate_kwargs = dict(self._eval_generate_kwargs)
+        self.strategy.args.n_samples_per_prompt = max(1, int(getattr(self.strategy.args, "eval_n_samples_per_prompt", 1)))
+        self.strategy.args.advantage_estimator = "reinforce"
+        if original_config_n_samples is not None:
+            self.strategy.config.n_samples_per_prompt = self.strategy.args.n_samples_per_prompt
+        if original_config_advantage_estimator is not None:
+            self.strategy.config.advantage_estimator = "reinforce"
+
+        try:
+            yield
+        finally:
+            self.generate_kwargs = original_generate_kwargs
+            self.strategy.args.n_samples_per_prompt = original_n_samples
+            self.strategy.args.advantage_estimator = original_advantage_estimator
+            if original_config_n_samples is not None:
+                self.strategy.config.n_samples_per_prompt = original_config_n_samples
+            if original_config_advantage_estimator is not None:
+                self.strategy.config.advantage_estimator = original_config_advantage_estimator
+
+    def _build_rollout_metrics(self, logs_dict: Dict[str, float]) -> Dict[str, float]:
+        rollout_metrics = {}
+        for target_key, source_keys in self._ROLLOUT_KEY_SOURCES.items():
+            for source_key in source_keys:
+                if source_key in logs_dict:
+                    rollout_metrics[target_key] = logs_dict[source_key]
+                    break
+        return rollout_metrics
+
+    def _build_train_metrics(self, logs_dict: Dict[str, float]) -> Dict[str, float]:
+        train_metrics = {}
+        for target_key, source_keys in self._TRAIN_KEY_SOURCES.items():
+            for source_key in source_keys:
+                if source_key in logs_dict:
+                    train_metrics[target_key] = logs_dict[source_key]
+                    break
+        return train_metrics
+
+    def _build_eval_metrics(self, raw_eval_metrics: Dict[str, float]) -> Dict[str, float]:
+        eval_metrics = {}
+        for target_key, source_keys in self._EVAL_KEY_SOURCES.items():
+            for source_key in source_keys:
+                if source_key in raw_eval_metrics:
+                    eval_metrics[target_key] = raw_eval_metrics[source_key]
+                    break
+        return eval_metrics
+
+    def _aggregate_eval_metrics(self, raw_eval_metrics: Dict[str, float]) -> Dict[str, float]:
+        if not torch.distributed.is_available() or not torch.distributed.is_initialized():
+            return raw_eval_metrics
+
+        gathered_metrics = [None] * torch.distributed.get_world_size()
+        torch.distributed.all_gather_object(gathered_metrics, raw_eval_metrics or {})
+
+        total_samples = sum(float(metrics.get("num_samples", 0.0)) for metrics in gathered_metrics if metrics)
+        if total_samples <= 0:
+            return {}
+
+        aggregated_metrics = {"num_samples": total_samples}
+        mean_keys = {
+            key
+            for metrics in gathered_metrics
+            if metrics
+            for key in metrics.keys()
+            if key.endswith("_mean")
+        }
+        for key in mean_keys:
+            weighted_sum = 0.0
+            for metrics in gathered_metrics:
+                if not metrics or key not in metrics:
+                    continue
+                weighted_sum += float(metrics["num_samples"]) * float(metrics[key])
+            aggregated_metrics[key] = weighted_sum / total_samples
+        return aggregated_metrics
+
+    def evaluate(self, eval_dataloader, global_step):
+        with self._runtime_eval_context():
+            raw_eval_metrics = super().evaluate(eval_dataloader, global_step)
+        aggregated_eval_metrics = self._aggregate_eval_metrics(raw_eval_metrics)
+        eval_metrics = self._build_eval_metrics(aggregated_eval_metrics)
+        if self.strategy.is_rank_0() and eval_metrics:
+            self.strategy.print(f"Aggregated runtime eval metrics (Step {global_step}):")
+            for key, value in eval_metrics.items():
+                self.strategy.print(f"  {key}: {value:.4f}")
+        return eval_metrics
+
+    def save_logs_and_checkpoints(self, args, global_step, step_bar, logs_dict={}, client_states={}, episode=0):
+        if global_step % args.logging_steps == 0:
+            rollout_metrics = self._build_rollout_metrics(logs_dict)
+            train_metrics = self._build_train_metrics(logs_dict)
+
+            if self._wandb is not None and self.strategy.is_rank_0():
+                all_wandb_logs = {}
+
+                for key, value in rollout_metrics.items():
+                    all_wandb_logs[f"rollout/{key}"] = value
+                all_wandb_logs["rollout/episode"] = episode
+
+                for key, value in train_metrics.items():
+                    all_wandb_logs[f"train/{key}"] = value
+                all_wandb_logs["train/episode"] = episode
+
+                if all_wandb_logs:
+                    self.wandb_log_counter += 1
+                    self._wandb.log(all_wandb_logs, step=self.wandb_log_counter, commit=True)
+                    self._update_wandb_summary(all_wandb_logs)
+
+            elif self._tensorboard is not None and self.strategy.is_rank_0():
+                for key, value in rollout_metrics.items():
+                    self._tensorboard.add_scalar(f"rollout/{key}", value, global_step)
+                for key, value in train_metrics.items():
+                    self._tensorboard.add_scalar(f"train/{key}", value, global_step)
+
+        if global_step % args.eval_steps == 0 and self.eval_dataloader is not None:
+            raw_eval_metrics = self.evaluate(self.eval_dataloader, global_step)
+
+            if raw_eval_metrics and self.strategy.is_rank_0():
+                self.eval_step_counter += 1
+
+                if self._wandb is not None:
+                    eval_logs = {}
+                    for key, value in raw_eval_metrics.items():
+                        eval_logs[f"eval/{key}"] = value
+
+                    eval_logs["eval/train_step"] = global_step
+                    eval_logs["eval/episode"] = episode
+
+                    self.wandb_log_counter += 1
+                    self._wandb.log(eval_logs, step=self.wandb_log_counter, commit=True)
+                    self._update_wandb_summary(eval_logs)
+
+                elif self._tensorboard is not None:
+                    for key, value in raw_eval_metrics.items():
+                        self._tensorboard.add_scalar(f"eval/{key}", value, global_step)
+
+        if global_step % args.save_steps == 0:
+            tag = f"global_step{global_step}"
+            self._save_checkpoint(args, tag, client_states)
+
+    def save_trajectories(self, global_step: int):
+        if self.trajectory_saver is not None and self.replay_buffer.items:
+            self.trajectory_saver.save_trajectories(
+                experiences=self.replay_buffer.items,
+                step=global_step,
+                num_samples=self.num_trajectories_to_save,
+                prefix="trajectories",
+                compute_stats=self.args.trajectory_analysis,
+            )

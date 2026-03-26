@@ -24,7 +24,7 @@ The runtime baseline is frozen by `/data/LightRFT/Dockerfile`.
 
 - Do not treat package-version changes as the first-line fix.
 - Prefer fixing code, schema conversion, prompt formatting, rollout configuration, and reward wiring first.
-- `vllm` / `sglang` support for URSA is not part of this minimal upstream example surface; the active Stage 3 path is the local `hf` rollout path.
+- The active Stage 3 path in this branch is the local `hf` rollout path; `vllm` / `sglang` experiments are optional and go through the engine-wrapper helper only.
 
 ## Directory Map
 
@@ -33,15 +33,16 @@ examples/math_prm/
 ├── README.md                    # English guide for the current URSA-MATH Stage 3 layout
 ├── README_zh.md                 # Chinese guide
 ├── train_colocate.py            # Main LightRFT training entry
+├── math_prm_trainer.py          # Example-local trainer wrapper for reduced W&B keys and runtime eval
 ├── run_grpo_math_prm_ursa_8b.sh # Main Stage 3 launcher
 ├── ursa_actor.py                # URSA-specific actor wrapper
 ├── reward_models.py             # Math-only URSA-RM reward implementation
 ├── reward_models_utils.py       # Math-only reward loading, recipe, and reward aggregation
 ├── sitecustomize.py             # Local runtime compatibility hook for this example stack
-├── tools/                       # Minimal data-prep and engine-prep helpers kept with the example
+├── tools/                       # Support scripts kept in the slim PR branch
 │   ├── __init__.py
 │   ├── prepare_ursa_stage3_manifest.py
-│   ├── prepare_ursa_engine_checkpoint.py
+│   └── prepare_ursa_engine_checkpoint.py
 └── ursa_model/                  # Self-contained URSA model code used by actor and PRM loading
 ```
 
@@ -55,6 +56,9 @@ examples/math_prm/
 - `train_colocate.py`
   - Real `torchrun` entry.
   - Builds actor, reference model, reward model, dataset, trainer, and rollout engine.
+- `math_prm_trainer.py`
+  - Example-local trainer wrapper for math PRM runs.
+  - Keeps rollout/train/eval W&B metrics compact and applies runtime eval generation defaults.
 - `ursa_actor.py`
   - URSA-specific actor wrapper used to load `UrsaForConditionalGeneration`.
 
@@ -77,14 +81,12 @@ examples/math_prm/
 
 ## What Lives Under `tools/`
 
-The current upstream example keeps only the minimum helper scripts needed by the documented Stage 3 path.
+Everything under `tools/` is support infrastructure, not the main training entry.
 
 - `tools/prepare_ursa_stage3_manifest.py`
   - Converts raw `MMathCoT-1M` Stage 3 jsonl into the LightRFT manifest schema.
 - `tools/prepare_ursa_engine_checkpoint.py`
   - Builds a wrapper checkpoint for engine experiments when testing `vllm` / `sglang` loading.
-
-Additional validation, profiling, and migration helpers are maintained outside this minimal upstream PR surface.
 
 ## Active Entry Points
 
@@ -92,6 +94,7 @@ If you only want the current Stage 3 reproduction path, the usual files are:
 
 - `run_grpo_math_prm_ursa_8b.sh`
 - `train_colocate.py`
+- `math_prm_trainer.py`
 - `reward_models.py`
 - `reward_models_utils.py`
 - `tools/prepare_ursa_stage3_manifest.py`
@@ -177,6 +180,27 @@ Run training:
 bash examples/math_prm/run_grpo_math_prm_ursa_8b.sh
 ```
 
+Current default launcher values now follow the explicit Stage 3 settings documented in the local `URSA-MATH` repo where available:
+
+```bash
+EPISODE=10
+N_SAMPLES=8
+RBS=128
+TBS=128
+MICRO_TRAIN_BATCH_SIZE=4
+MICRO_ROLLOUT_BATCH_SIZE=4
+LR=1e-6
+KL=0.001
+PROMPT_MAX_LEN=1024
+GENERATE_MAX_LEN=3072
+MAX_SAMPLES=15360
+```
+
+Notes:
+
+- The paper reports a one-time filtered `20K -> ~15K+` RL set. The exact filtered subset is not present locally, so the launcher keeps the converted manifest path and uses `MAX_SAMPLES=15360` as a scale proxy.
+- The paper's default hardware is `32 x H100`; the current machine default remains `1 node x 8 A100`.
+
 ## Reward Labels
 
 - `math_prm`
@@ -196,8 +220,10 @@ bash examples/math_prm/run_grpo_math_prm_ursa_8b.sh
 python examples/math_prm/tools/prepare_ursa_stage3_manifest.py
 ```
 
-- Rebuild the engine wrapper checkpoint when testing engine loading:
+- Build the engine-wrapper checkpoint for non-`hf` experiments:
 
 ```bash
-python examples/math_prm/tools/prepare_ursa_engine_checkpoint.py
+python examples/math_prm/tools/prepare_ursa_engine_checkpoint.py \
+  --source-model-path /path/to/URSA-8B \
+  --output-path /path/to/URSA-8B-engine-ready
 ```

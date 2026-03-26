@@ -1216,11 +1216,15 @@ class FastExperienceMaker(NaiveExperienceMaker):
                 ignore_eos=os.environ.get("IGNORE_EOS", "0") == "1",
             )
         elif config.engine_type == "hf":
+            max_new_tokens = generate_kwargs.get("max_new_tokens", 1024)
+            local_hf_max_new_tokens = int(getattr(config, "local_hf_max_new_tokens", 0) or 0)
+            if local_hf_max_new_tokens > 0:
+                max_new_tokens = min(max_new_tokens, local_hf_max_new_tokens)
             sampling_params = dict(
                 temperature=generate_kwargs.get("temperature", 1.0),
                 top_p=generate_kwargs.get("top_p", 1.0),
                 top_k=generate_kwargs.get("top_k", -1),
-                max_new_tokens=generate_kwargs.get("max_new_tokens", 1024),
+                max_new_tokens=max_new_tokens,
                 min_new_tokens=generate_kwargs.get("min_new_tokens", 1),
                 do_sample=generate_kwargs.get("do_sample", True),
                 repetition_penalty=generate_kwargs.get("repetition_penalty", 1.0),

@@ -24,7 +24,7 @@
 
 - 不要把升级/降级依赖包当作日常调试手段。
 - 优先修代码、数据转换、prompt 格式、rollout 配置和 reward wiring。
-- `vllm` / `sglang` 对 URSA 的适配不属于这次最小化 upstream 示例面；当前 Stage 3 主线是本地 `hf` rollout。
+- 当前分支里的 Stage 3 主线是本地 `hf` rollout；如果要做 `vllm` / `sglang` 试验，只保留了 engine wrapper 这条辅助路径。
 
 ## 目录结构
 
@@ -33,15 +33,16 @@ examples/math_prm/
 ├── README.md                    # 当前 URSA-MATH Stage 3 布局说明（英文）
 ├── README_zh.md                 # 当前目录说明（中文）
 ├── train_colocate.py            # 主训练入口
+├── math_prm_trainer.py          # 仅供本示例使用的 trainer wrapper，负责精简 W&B 指标和 runtime eval
 ├── run_grpo_math_prm_ursa_8b.sh # 主 Stage 3 启动脚本
 ├── ursa_actor.py                # URSA 专用 actor wrapper
 ├── reward_models.py             # 仅保留 math-only 的 URSA-RM reward 实现
 ├── reward_models_utils.py       # 仅保留 math-only 的 reward loader / recipe / reward_fn
 ├── sitecustomize.py             # 当前示例栈的本地运行时兼容钩子
-├── tools/                       # 这次示例保留的最小数据准备与引擎准备工具
+├── tools/                       # 精简 PR 分支里保留的辅助脚本
 │   ├── __init__.py
 │   ├── prepare_ursa_stage3_manifest.py
-│   ├── prepare_ursa_engine_checkpoint.py
+│   └── prepare_ursa_engine_checkpoint.py
 └── ursa_model/                  # 自包含的 URSA 模型代码
 ```
 
@@ -55,6 +56,9 @@ examples/math_prm/
 - `train_colocate.py`
   - 真实的 `torchrun` 入口。
   - 构建 actor、reference model、reward model、dataset、trainer 和 rollout engine。
+- `math_prm_trainer.py`
+  - 仅供 math PRM 示例使用的 trainer wrapper。
+  - 负责把 rollout/train/eval 的 W&B 指标收敛到更小的 key 集，并应用 runtime eval 的生成参数。
 - `ursa_actor.py`
   - URSA 专用 actor wrapper。
   - 让 LightRFT 按 `UrsaForConditionalGeneration` 加载 actor。
@@ -78,14 +82,12 @@ examples/math_prm/
 
 ## `tools/` 里放的是什么
 
-当前 upstream 示例只保留了文档主线真正需要的最小辅助脚本。
+`tools/` 下的东西都不是主训练入口，而是辅助基础设施。
 
 - `tools/prepare_ursa_stage3_manifest.py`
   - 把原始 `MMathCoT-1M` Stage 3 jsonl 转成 LightRFT manifest。
 - `tools/prepare_ursa_engine_checkpoint.py`
   - 给 `vllm` / `sglang` 兼容性实验生成 wrapper checkpoint。
-
-更多校验、profiling 和迁移辅助脚本会在最小 upstream PR 面之外单独维护。
 
 ## 当前主入口
 
@@ -93,6 +95,7 @@ examples/math_prm/
 
 - `run_grpo_math_prm_ursa_8b.sh`
 - `train_colocate.py`
+- `math_prm_trainer.py`
 - `reward_models.py`
 - `reward_models_utils.py`
 - `tools/prepare_ursa_stage3_manifest.py`
@@ -178,6 +181,27 @@ EXPECTED_REWARD_LABEL="math_psgrpo"
 bash examples/math_prm/run_grpo_math_prm_ursa_8b.sh
 ```
 
+当前 launcher 默认值已经尽量切到本地 `URSA-MATH` 仓库里明确写出的 Stage 3 配置：
+
+```bash
+EPISODE=10
+N_SAMPLES=8
+RBS=128
+TBS=128
+MICRO_TRAIN_BATCH_SIZE=4
+MICRO_ROLLOUT_BATCH_SIZE=4
+LR=1e-6
+KL=0.001
+PROMPT_MAX_LEN=1024
+GENERATE_MAX_LEN=3072
+MAX_SAMPLES=15360
+```
+
+说明：
+
+- 论文里的 Stage 3 数据是先从 `20K` 候选做一次静态筛选后得到约 `15K+`。本地目前没有这份精确筛选子集，所以 launcher 继续读取转换后的全量 manifest，但默认用 `MAX_SAMPLES=15360` 近似这个训练规模。
+- 论文默认硬件规模是 `32 x H100`，当前机器默认仍然是 `1 节点 x 8 张 A100`。
+
 ## Reward Label 语义
 
 - `math_prm`
@@ -197,8 +221,10 @@ bash examples/math_prm/run_grpo_math_prm_ursa_8b.sh
 python examples/math_prm/tools/prepare_ursa_stage3_manifest.py
 ```
 
-- 测试引擎加载时重建 wrapper checkpoint：
+- 为非 `hf` 实验生成 engine wrapper checkpoint：
 
 ```bash
-python examples/math_prm/tools/prepare_ursa_engine_checkpoint.py
+python examples/math_prm/tools/prepare_ursa_engine_checkpoint.py \
+  --source-model-path /path/to/URSA-8B \
+  --output-path /path/to/URSA-8B-engine-ready
 ```

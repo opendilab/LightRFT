@@ -141,14 +141,30 @@ export GPUS_PER_NODE=$MLP_WORKER_GPU
 # URSA-8B-RM (8B params) runs on a single GPU; this controls the actor engine.
 ENGINE_TYPE="${ENGINE_TYPE:-hf}"
 HF_SEPARATE_ROLLOUT_ACTOR="${HF_SEPARATE_ROLLOUT_ACTOR:-1}"
+HF_SEPARATE_ROLLOUT_KEEP_ON_GPU="${HF_SEPARATE_ROLLOUT_KEEP_ON_GPU:-1}"
 if [[ "${ENGINE_TYPE}" == "hf" ]]; then
     ENGINE_TP="${ENGINE_TP:-1}"
     LOCAL_HF_GENERATE_MAX_BATCH_SIZE="${LOCAL_HF_GENERATE_MAX_BATCH_SIZE:-4}"
+    LOCAL_HF_MAX_NEW_TOKENS="${LOCAL_HF_MAX_NEW_TOKENS:-512}"
 else
     ENGINE_TP="${ENGINE_TP:-2}"
     LOCAL_HF_GENERATE_MAX_BATCH_SIZE="${LOCAL_HF_GENERATE_MAX_BATCH_SIZE:-0}"
+    LOCAL_HF_MAX_NEW_TOKENS="${LOCAL_HF_MAX_NEW_TOKENS:-0}"
 fi
+PATH_TO_YOUR_EVAL_DATASET="${PATH_TO_YOUR_EVAL_DATASET:-}"
 EVAL_SPLIT="${EVAL_SPLIT:-}"
+EVAL_STEPS="${EVAL_STEPS:--1}"
+EVAL_MAX_SAMPLES="${EVAL_MAX_SAMPLES:-500}"
+EVAL_HOLDOUT_SIZE="${EVAL_HOLDOUT_SIZE:-500}"
+EVAL_HOLDOUT_SEED="${EVAL_HOLDOUT_SEED:-42}"
+EVAL_N_SAMPLES="${EVAL_N_SAMPLES:-1}"
+EVAL_DO_SAMPLE="${EVAL_DO_SAMPLE:-0}"
+EVAL_GENERATE_MAX_LEN="${EVAL_GENERATE_MAX_LEN:-${GENERATE_MAX_LEN}}"
+EVAL_TEMPERATURE="${EVAL_TEMPERATURE:-0.0}"
+EVAL_TOP_P="${EVAL_TOP_P:-1.0}"
+EVAL_TOP_K="${EVAL_TOP_K:--1}"
+EVAL_REPETITION_PENALTY="${EVAL_REPETITION_PENALTY:-1.0}"
+EVAL_NO_REPEAT_NGRAM_SIZE="${EVAL_NO_REPEAT_NGRAM_SIZE:-0}"
 USE_URSA_ENGINE_WRAPPER="${USE_URSA_ENGINE_WRAPPER:-1}"
 URSA_ENGINE_CHECKPOINT_DIR="${URSA_ENGINE_CHECKPOINT_DIR:-/data/LightRFT/tmp/ursa_stage3/URSA-8B-engine-ready}"
 SYSTEM_PROMPT="${SYSTEM_PROMPT:-A conversation between the User and Assistant. The User asks a question that may require mathematical or visual reasoning, and the Assistant solves it step by step. Each step MUST begin with \"Step N:\" (e.g. \"Step 1:\", \"Step 2:\") on its own line. After all steps, output exactly one final answer line prefixed with \"†Answer:\" (e.g. \"†Answer: 42\"). Stop immediately after the \"†Answer:\" line and do not output any extra text, repeated answer markers, or additional steps.}"
@@ -168,7 +184,12 @@ mkdir -p "rft_logs/${EXPERIMENT_NAME}"
 export TORCH_NCCL_AVOID_RECORD_STREAMS=1
 export NCCL_DEBUG="WARN"
 export IGNORE_EOS=0
-export WANDB_MODE="${WANDB_MODE:-offline}"   # Set to "online" for real-time W&B logging.
+if [[ -n "${WANDB_API_KEY}" && "${WANDB_API_KEY}" != "YOUR_WANDB_API_KEY" ]]; then
+    export WANDB_MODE="${WANDB_MODE:-online}"
+else
+    export WANDB_MODE="${WANDB_MODE:-offline}"
+fi
+WANDB_HEARTBEAT_INTERVAL_SECS="${WANDB_HEARTBEAT_INTERVAL_SECS:-60}"
 export PATH_TO_YOUR_BASE_MODEL
 export PATH_TO_URSA_RM
 export PATH_TO_YOUR_MATH_DATASET
@@ -190,7 +211,10 @@ export GENERATE_MAX_LEN
 export MAX_SAMPLES
 export ENGINE_TYPE
 export LOCAL_HF_GENERATE_MAX_BATCH_SIZE
+export LOCAL_HF_MAX_NEW_TOKENS
+export HF_SEPARATE_ROLLOUT_KEEP_ON_GPU
 export NUM_TRAJECTORIES_TO_SAVE
+export WANDB_HEARTBEAT_INTERVAL_SECS
 
 python - <<'PY'
 import json
@@ -275,6 +299,8 @@ for name, (env_key, expected_value) in ursa_stage3_targets.items():
 print(
     "[run_grpo_math_prm_ursa_8b.sh] URSA Stage 3 preflight: "
     f"engine_type={os.environ['ENGINE_TYPE']}, "
+    f"local_hf_max_new_tokens={os.environ['LOCAL_HF_MAX_NEW_TOKENS']}, "
+    f"hf_separate_rollout_keep_on_gpu={os.environ['HF_SEPARATE_ROLLOUT_KEEP_ON_GPU']}, "
     f"world_size={world_size}, "
     f"train_batch_size={train_batch_size}, "
     f"micro_train_batch_size={micro_train_batch_size}, "
@@ -298,9 +324,23 @@ PY
 REWARD_PRETRAIN_PATHS="{\"math_prm\":\"${PATH_TO_URSA_RM}\"}"
 
 WANDB_ARGS=()
+WANDB_ENABLE_REASON="disabled"
+WANDB_USE_WANDB_ARG=""
 if [[ -n "${WANDB_API_KEY}" && "${WANDB_API_KEY}" != "YOUR_WANDB_API_KEY" ]]; then
+    WANDB_ENABLE_REASON="${WANDB_KEY_SOURCE}"
+    WANDB_USE_WANDB_ARG="__env__"
+elif python - <<'PY' >/dev/null 2>&1
+import wandb
+raise SystemExit(0 if bool(wandb.api.api_key) else 1)
+PY
+then
+    WANDB_ENABLE_REASON="existing_wandb_login"
+    WANDB_USE_WANDB_ARG="__existing_login__"
+fi
+
+if [[ -n "${WANDB_USE_WANDB_ARG}" ]]; then
     WANDB_ARGS=(
-        --use_wandb "__env__"
+        --use_wandb "${WANDB_USE_WANDB_ARG}"
         --wandb_project "${WANDB_PROJECT}"
         --wandb_run_name "${WANDB_RUN_NAME}"
     )
@@ -309,7 +349,7 @@ if [[ -n "${WANDB_API_KEY}" && "${WANDB_API_KEY}" != "YOUR_WANDB_API_KEY" ]]; th
             --wandb_org "${WANDB_ORG}"
         )
     fi
-    echo "[run_grpo_math_prm_ursa_8b.sh] WANDB enabled for this run via ${WANDB_KEY_SOURCE}."
+    echo "[run_grpo_math_prm_ursa_8b.sh] WANDB enabled for this run via ${WANDB_ENABLE_REASON}."
 else
     echo "[run_grpo_math_prm_ursa_8b.sh] WANDB disabled for this run."
 fi
@@ -319,16 +359,52 @@ if [[ "${ENGINE_TYPE}" == "hf" && "${HF_SEPARATE_ROLLOUT_ACTOR}" == "1" ]]; then
     HF_ROLLOUT_ARGS=(
         --hf_separate_rollout_actor
     )
+    if [[ "${HF_SEPARATE_ROLLOUT_KEEP_ON_GPU}" == "1" ]]; then
+        HF_ROLLOUT_ARGS+=(
+            --hf_separate_rollout_keep_on_gpu
+        )
+    fi
     echo "[run_grpo_math_prm_ursa_8b.sh] Separate local HF rollout actor enabled."
 fi
 
 EVAL_ARGS=()
-if [[ -n "${EVAL_SPLIT}" ]]; then
+if [[ "${EVAL_MAX_SAMPLES}" -gt 0 ]]; then
     EVAL_ARGS=(
-        --eval_split "${EVAL_SPLIT}"
+        --eval_steps "${EVAL_STEPS}"
+        --max_eval_samples "${EVAL_MAX_SAMPLES}"
+        --eval_holdout_size "${EVAL_HOLDOUT_SIZE}"
+        --eval_holdout_seed "${EVAL_HOLDOUT_SEED}"
+        --eval_n_samples_per_prompt "${EVAL_N_SAMPLES}"
+        --eval_generate_max_len "${EVAL_GENERATE_MAX_LEN}"
+        --eval_temperature "${EVAL_TEMPERATURE}"
+        --eval_top_p "${EVAL_TOP_P}"
+        --eval_top_k "${EVAL_TOP_K}"
+        --eval_repetition_penalty "${EVAL_REPETITION_PENALTY}"
+        --eval_no_repeat_ngram_size "${EVAL_NO_REPEAT_NGRAM_SIZE}"
     )
+    if [[ "${EVAL_DO_SAMPLE}" == "1" ]]; then
+        EVAL_ARGS+=(
+            --eval_do_sample
+        )
+    fi
+
+    if [[ -n "${PATH_TO_YOUR_EVAL_DATASET}" ]]; then
+        EVAL_ARGS+=(
+            --eval_data "${PATH_TO_YOUR_EVAL_DATASET}"
+        )
+        echo "[run_grpo_math_prm_ursa_8b.sh] Runtime eval uses explicit eval_data: ${PATH_TO_YOUR_EVAL_DATASET}"
+    elif [[ -n "${EVAL_SPLIT}" ]]; then
+        EVAL_ARGS+=(
+            --eval_split "${EVAL_SPLIT}"
+        )
+        echo "[run_grpo_math_prm_ursa_8b.sh] Runtime eval uses split '${EVAL_SPLIT}'."
+    elif [[ "${EVAL_HOLDOUT_SIZE}" -gt 0 ]]; then
+        echo "[run_grpo_math_prm_ursa_8b.sh] Runtime eval uses a deterministic held-out subset from prompt_data (size=${EVAL_HOLDOUT_SIZE}, seed=${EVAL_HOLDOUT_SEED}) to mirror the paper's fixed in-domain eval protocol."
+    else
+        echo "[run_grpo_math_prm_ursa_8b.sh] Runtime eval disabled because no eval_data/eval_split/heldout subset is configured."
+    fi
 else
-    echo "[run_grpo_math_prm_ursa_8b.sh] Eval split disabled for this run."
+    echo "[run_grpo_math_prm_ursa_8b.sh] Runtime eval disabled because EVAL_MAX_SAMPLES=${EVAL_MAX_SAMPLES}."
 fi
 
 if [[ "${ENGINE_TYPE}" != "hf" && "${USE_URSA_ENGINE_WRAPPER}" == "1" && -d "${PATH_TO_YOUR_BASE_MODEL}" ]]; then
@@ -401,6 +477,7 @@ torchrun \
     --engine_mem_util 0.6 \
     --engine_tp_size $ENGINE_TP \
     --local_hf_generate_max_batch_size ${LOCAL_HF_GENERATE_MAX_BATCH_SIZE} \
+    --local_hf_max_new_tokens ${LOCAL_HF_MAX_NEW_TOKENS} \
     --enable_engine_sleep \
     "${HF_ROLLOUT_ARGS[@]}" \
     --system_prompt "${SYSTEM_PROMPT}" \
@@ -462,9 +539,8 @@ torchrun \
 #                                                                              #
 # Step 5: Run training                                                         #
 #   bash examples/math_prm/run_grpo_math_prm_ursa_8b.sh                       #
-#   - For the Phase 3 baseline smoke path, use                                #
-#       bash examples/math_prm/tools/run_phase3_smoke.sh                       #
-#     which exports a math_prm-labeled manifest and time-boxed settings.      #
+#   - For the Phase 3 baseline, override EXPECTED_REWARD_LABEL and point       #
+#     PATH_TO_YOUR_MATH_DATASET at a manifest whose label is math_prm.         #
 #   - For data/resource smoke checks before RL training, you can reuse:        #
 #       python /home/ubuntu/URSA-MATH/examples/run_dataset_loading_example.py  #
 #       python /home/ubuntu/URSA-MATH/examples/validate_dataset_entrypoints.py \

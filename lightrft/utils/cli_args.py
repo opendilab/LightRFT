@@ -57,11 +57,25 @@ def add_arguments(parser: argparse.ArgumentParser) -> None:
         "when multimodal models would otherwise OOM.",
     )
     parser.add_argument(
+        "--local_hf_max_new_tokens",
+        type=int,
+        default=0,
+        help="Optional hard cap for max_new_tokens applied only to the local HuggingFace rollout path. "
+        "A value <= 0 keeps the launcher-provided generation length unchanged.",
+    )
+    parser.add_argument(
         "--hf_separate_rollout_actor",
         action="store_true",
         default=False,
         help="Use a dedicated local HF rollout actor instead of reusing the training actor directly. "
         "The current implementation is intended for FSDP-based quick rollout experiments.",
+    )
+    parser.add_argument(
+        "--hf_separate_rollout_keep_on_gpu",
+        action="store_true",
+        default=False,
+        help="For local HF separate rollout: keep the rollout actor resident on GPU instead of sleeping/offloading "
+        "it between rollout and training phases. Use this when per-rank memory headroom is sufficient.",
     )
     parser.add_argument(
         "--enable_engine_sleep",
