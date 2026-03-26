@@ -445,7 +445,7 @@ def train(args):
         return_eval=False,
         train_split=args.prompt_split,
     )
-    
+
     heldout_eval_data = None
     if not args.eval_data and not args.eval_split:
         prompts_data, heldout_eval_data = split_runtime_eval_dataset(prompts_data, args, strategy)
@@ -469,7 +469,7 @@ def train(args):
                  strategy.print(f"Warning: Evaluation dataset at {eval_data_path} with split '{args.eval_split}' is empty. Skipping evaluation.")
             else:
                 eval_data = eval_data.select(range(min(args.max_eval_samples, len(eval_data))))
-                
+
                 eval_dataset = PromptDatasetVL(eval_data, tokenizer, processor, args.prompt_max_len, strategy, input_template=args.input_template)
                 eval_dataloader = strategy.setup_dataloader(
                     eval_dataset,
@@ -513,7 +513,7 @@ def train(args):
             # Calculate total samples needed for pretraining
             total_pretrain_samples = args.max_epochs * len(prompts_dataset) * args.n_samples_per_prompt
             pretrain_data_subset = pretrain_data.select(range(min(len(pretrain_data), total_pretrain_samples)))
-            
+
             pretrain_dataset = SFTDatasetVL(
                 pretrain_data_subset, tokenizer, pretrain_max_len, strategy, pretrain_mode=True,
             )
@@ -781,7 +781,7 @@ if __name__ == "__main__":
         ),
     )
     parser.add_argument("--adam_betas", type=float, nargs=2, default=(0.9, 0.95), help="Betas for Adam optimizer")
-    
+
     # Reward/Advantage Norm/Clip Arguments
     parser.add_argument("--reward_running_norm", action="store_true", default=False, help="Enable running normalization for rewards.")
     parser.add_argument("--reward_running_norm_minus_mean", action="store_true", default=False, help="When using reward normalization, subtract the mean; otherwise, only scale by the std.")
@@ -895,7 +895,7 @@ if __name__ == "__main__":
         default=0,
         help="Eval no-repeat-ngram size (default: 0)",
     )
-    
+
     parser.add_argument("--pretrain_data", type=str, default=None, help="HF dataset name or path")
     parser.add_argument(
         "--pretrain_data_probs",
