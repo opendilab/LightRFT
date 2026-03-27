@@ -112,6 +112,11 @@ class StrategyConfig:
     # Dynamic sampling and advantage estimation
     # (bool): Enable dynamic sampling for advantage estimation, defaults to False
     dynamic_sampling: bool = False
+    # (str): Metric used for dynamic sampling group filtering ("acc", "reward"), defaults to "reward"
+    dynamic_sampling_metric: str = "reward"
+    # (int): Max number of generation batches for dynamic sampling accumulation.
+    #        Non-positive values mean no upper limit. defaults to 10
+    max_num_gen_batches: int = 10
     # (str): Advantage estimator method, defaults to "gae"
     advantage_estimator: str = "group_norm"
 
@@ -280,7 +285,7 @@ class StrategyConfig:
 
         # Dynamic Sampling and Advantage Estimation Parameters
         print("\nDynamic Sampling and Advantage Estimation Parameters:")
-        for attr in ['dynamic_sampling', 'advantage_estimator']:
+        for attr in ['dynamic_sampling', 'dynamic_sampling_metric', 'max_num_gen_batches', 'advantage_estimator']:
             current = getattr(self, attr)
             default = getattr(default_config, attr)
             status = "Overridden" if current != default else "Default"
