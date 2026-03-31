@@ -901,6 +901,15 @@ class StrategyBase(ABC):
         self._copy_local_hf_rollout_actor_state(actor, self.inference_engine)
         copy_state_s = time.time() - copy_state_t0
 
+        reload_rollout_t0 = time.time()
+        rollout_reloaded = False
+        if keep_on_gpu:
+            # `keep_on_gpu=True` skips the wakeup path, so we must explicitly
+            # rematerialize the rollout actor here after copying the updated state.
+            self.reload_model(self.inference_engine)
+            rollout_reloaded = True
+        reload_rollout_s = time.time() - reload_rollout_t0
+
         prepare_t0 = time.time()
         self._prepare_separate_hf_rollout_actor_for_generation()
         prepare_s = time.time() - prepare_t0
@@ -919,9 +928,11 @@ class StrategyBase(ABC):
             "keep_on_gpu": keep_on_gpu,
             "actor_offloaded": actor_offloaded,
             "rollout_offloaded": rollout_offloaded,
+            "rollout_reloaded": rollout_reloaded,
             "offload_actor_s": round(offload_actor_s, 4),
             "offload_rollout_s": round(offload_rollout_s, 4),
             "copy_state_s": round(copy_state_s, 4),
+            "reload_rollout_s": round(reload_rollout_s, 4),
             "prepare_s": round(prepare_s, 4),
             "sync_clear_s": round(sync_clear_s, 4),
         }
