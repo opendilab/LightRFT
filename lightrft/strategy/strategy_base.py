@@ -771,9 +771,19 @@ class StrategyBase(ABC):
             # - If `prompt_token_ids` is provided, it indicates a pure LLM (text-only) generation.
             # - If `prompts` (i.e., `multi_modal_inputs`) is provided, it indicates a VLM (multimodal) generation.
             if multi_modal_inputs is not None:
-                prompt = multi_modal_inputs
+                prompt = []
+                for item in multi_modal_inputs:
+                    prompt_item = {"prompt": item["prompt"]}
+                    if item.get("prompt_token_ids") is not None:
+                        prompt_item["prompt_token_ids"] = item["prompt_token_ids"]
+                    if item.get("multi_modal_data") is not None:
+                        prompt_item["multi_modal_data"] = item["multi_modal_data"]
+                    prompt.append(prompt_item)
             elif prompt_token_ids is not None:
-                prompt = prompt_token_ids
+                if len(prompt_token_ids) > 0 and isinstance(prompt_token_ids[0], int):
+                    prompt = [{"prompt_token_ids": prompt_token_ids}]
+                else:
+                    prompt = [{"prompt_token_ids": token_ids} for token_ids in prompt_token_ids]
             else:
                 raise ValueError("Either prompt (multi_modal_inputs) or prompt_token_ids must be provided.")
 
@@ -832,7 +842,15 @@ class StrategyBase(ABC):
             raise ValueError(f"Unsupported engine type: {self.inference_engine_type}")
 
     @classmethod
-    def _build_multimodal_inputs(cls, all_prompts, all_images, images_num, all_videos, videos_num):
+    def _build_multimodal_inputs(
+        cls,
+        all_prompts,
+        all_images,
+        images_num,
+        all_videos,
+        videos_num,
+        all_prompt_token_ids=None,
+    ):
         """
         Build multimodal inputs for inference engine (vLLM/SGLang).
 
@@ -862,6 +880,7 @@ class StrategyBase(ABC):
         for i, prompt in enumerate(all_prompts):
             img_num = images_num[i] if images_num is not None else 0
             vid_num = videos_num[i] if videos_num is not None else 0
+            prompt_token_ids = all_prompt_token_ids[i] if all_prompt_token_ids is not None else None
 
             # Support two input formats:
             # 1. Nested list: all_images[i] is already a list of images for this prompt
@@ -892,16 +911,22 @@ class StrategyBase(ABC):
             if not multi_modal_data:
                 # remove the vision start and end tokens for data after apply chat template.
                 # Use regex to handle multiple <|image_pad|> tokens (e.g., for high-res images)
-                prompt = re.sub(r'<\|vision_start\|>(<\|image_pad\|>)+<\|vision_end\|>', '', prompt)
-                prompt = re.sub(r'<\|vision_start\|>(<\|video_pad\|>)+<\|vision_end\|>', '', prompt)
-                inputs.append({
-                    "prompt": prompt,
-                })
+                cleaned_prompt = re.sub(r'<\|vision_start\|>(<\|image_pad\|>)+<\|vision_end\|>', '', prompt)
+                cleaned_prompt = re.sub(r'<\|vision_start\|>(<\|video_pad\|>)+<\|vision_end\|>', '', cleaned_prompt)
+                input_item = {
+                    "prompt": cleaned_prompt,
+                }
+                if prompt_token_ids is not None and cleaned_prompt == prompt:
+                    input_item["prompt_token_ids"] = prompt_token_ids
+                inputs.append(input_item)
             else:
-                inputs.append({
+                input_item = {
                     "prompt": prompt,
                     "multi_modal_data": multi_modal_data,
-                })
+                }
+                if prompt_token_ids is not None:
+                    input_item["prompt_token_ids"] = prompt_token_ids
+                inputs.append(input_item)
             img_start_idx += img_num
             vid_start_idx += vid_num
         return inputs
@@ -972,6 +997,7 @@ class StrategyBase(ABC):
                 images_num=images_num,
                 all_videos=all_videos,
                 videos_num=videos_num,
+                all_prompt_token_ids=all_prompt_token_ids,
             )
         else:
             inputs = all_prompt_token_ids
