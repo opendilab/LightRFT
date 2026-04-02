@@ -141,14 +141,14 @@ docker run --gpus all -it --rm \
 
 #### 标准安装
 
-LightRFT 默认使用 **SGLang** 作为推理后端，并包含 **Flash-Attention** 以优化性能。
+LightRFT 默认安装 **SGLang**，因此 GSM8K/Geo3K demo 在默认后端下开箱即可运行。
 
 ```bash
 # 克隆仓库
 git clone https://github.com/opendilab/LightRFT.git
 cd LightRFT
 
-# 安装 LightRFT 及所有核心依赖
+# 安装 LightRFT，并默认带上 SGLang 后端
 pip install -e .
 ```
 
@@ -156,14 +156,18 @@ pip install -e .
 
 #### 可选：安装 vLLM 后端
 
-如果您想使用 vLLM 替代（或配合）SGLang：
+如果您想把同一套 demo 切换到 vLLM，而不是默认的 SGLang：
 
 ```bash
-# 安装 vLLM 后端
-pip install ".[vllm]"
+# 在默认安装基础上额外安装 vLLM 后端（当前适配并测试到 vLLM 0.18.1）
+pip install -e ".[vllm]"
+```
 
-# 或直接安装 vLLM
-pip install vllm>=0.13.3
+也可以直接安装 vLLM：
+
+```bash
+# 直接安装 vLLM
+pip install "vllm>=0.18.1"
 ```
 
 #### Flash-Attention 安装问题排查
@@ -194,11 +198,14 @@ docker pull opendilab/lightrft:v0.1.0
 # 单节点 8 GPU 训练示例
 cd LightRFT
 
-# 运行 GRPO 训练 (GSM8K 数学推理任务)
-bash examples/gsm8k_geo3k/run_grpo_gsm8k_qwen2.5_0.5b.sh
+# 用 SGLang 跑 GSM8K GRPO 训练
+ENGINE_TYPE=sglang bash examples/gsm8k_geo3k/run_grpo_gsm8k_qwen2.5_0.5b.sh
 
-# 或者运行 Geo3K 几何问题训练 (VLM 多模态)
-bash examples/gsm8k_geo3k/run_grpo_geo3k_qwen2.5_vl_7b.sh
+# 同一个 demo 切换到 vLLM
+ENGINE_TYPE=vllm bash examples/gsm8k_geo3k/run_grpo_gsm8k_qwen2.5_0.5b.sh
+
+# 运行 Geo3K 几何问题训练 (VLM 多模态)
+ENGINE_TYPE=sglang bash examples/gsm8k_geo3k/run_grpo_geo3k_qwen2.5_vl_7b.sh
 ```
 
 ---

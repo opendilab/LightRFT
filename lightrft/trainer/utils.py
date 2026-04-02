@@ -17,6 +17,7 @@ import copy
 import torch
 from collections import Counter
 from copy import deepcopy
+from packaging.version import InvalidVersion, Version
 from typing import Callable, List, Tuple, Union, Optional, Any
 
 # Conditional import: vLLM is optional and only needed when using vLLM backend
@@ -438,8 +439,7 @@ def vllm_ge_0130():
         return True
 
     try:
-        version_digits = int("".join(list(filter(str.isdigit, vllm.__version__))))
-        return version_digits >= 130
-    except (AttributeError, ValueError):
+        return Version(vllm.__version__) >= Version("0.13.0")
+    except (AttributeError, InvalidVersion):
         # If version cannot be determined, assume newer version for safety
         return True

@@ -446,7 +446,14 @@ def train(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--engine_type", type=str, default="vllm", help="Choose inference engine type: vllm, sglang")
+    parser.add_argument(
+        "--engine_type",
+        type=str,
+        choices=["vllm", "sglang"],
+        default=os.environ.get("LIGHTRFT_ENGINE_TYPE", "sglang"),
+        help="Choose inference engine type: vllm or sglang. "
+        "Defaults to LIGHTRFT_ENGINE_TYPE if set, otherwise sglang.",
+    )
     parser.add_argument("--text_only", action="store_true", default=False)
 
     # Checkpoint

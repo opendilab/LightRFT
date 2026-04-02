@@ -39,7 +39,6 @@ from lightrft.strategy.utils.parallel_utils import (
 )
 from lightrft.strategy.utils.statistic import GenLenAnalyser
 from lightrft.strategy.config import StrategyConfig
-from .sglang_utils import get_sglang_engine_for_rollout
 
 ModelOptimPair = Tuple[nn.Module, Optimizer]
 ModelOrModelOptimPair = Union[nn.Module, ModelOptimPair]
@@ -677,7 +676,8 @@ class StrategyBase(ABC):
             self.inference_engine = get_vllm_engine_for_rollout(args)
             self.inference_engine_status = EngineStatus.WAKEUP
         elif engine_type == "sglang":
-            # Default inference engine: SGLang (no additional dependencies required)
+            # Conditional import: SGLang is optional and only imported when explicitly requested
+            from .sglang_utils import get_sglang_engine_for_rollout
             self.inference_engine = get_sglang_engine_for_rollout(args)
             self.inference_engine_status = EngineStatus.WAKEUP
         else:
