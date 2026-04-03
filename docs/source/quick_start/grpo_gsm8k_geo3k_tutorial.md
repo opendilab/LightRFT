@@ -111,22 +111,37 @@ torchrun --nnodes 1 --nproc-per-node 8 \
     examples/gsm8k_geo3k/train_colocate.py \
     --pretrain Qwen/Qwen2.5-0.5B-Instruct \
     --prompt_data /path/to/gsm8k_dataset \
+    --input_key prompt --label_key label \
     --text_only \
+    --loss_agg_mode seq-mean-token-mean \
     --advantage_estimator group_norm \
     --n_samples_per_prompt 5 \
     --num_episodes 30 \
+    --max_epochs 1 \
     --train_batch_size 128 \
     --rollout_batch_size 128 \
+    --micro_train_batch_size 4 \
+    --micro_rollout_batch_size 4 \
     --actor_learning_rate 1e-6 \
+    --lr_warmup_ratio 0.03 \
     --init_kl_coef 0.01 \
     --kl_estimator k3 \
     --use_kl_loss \
+    --l2 1.0e-2 \
     --fsdp --zero_stage 3 --bf16 \
     --flash_attn --gradient_checkpointing \
+    --apply_chat_template \
+    --freeze_prefix \
+    --adam_offload \
+    --rm_use_engine \
+    --reward_pretrain "{}" \
     --engine_type sglang --engine_tp_size 2 \
     --engine_mem_util 0.6 --enable_engine_sleep \
+    --eval_steps 20 --eval_split test \
+    --max_eval_samples 1319 \
     --save_path results/gsm8k_grpo \
-    --eval_steps 20 --save_steps 20
+    --save_steps 20 --max_ckpt_num 3 \
+    --system_prompt 'A conversation between the User and Assistant. The User asks a question, and the Assistant provides a solution. The Assistant first thinks through the reasoning process internally with self-reflection and consistency check and then gives the final analysis and answer. The reasoning process should be enclosed within <think></think>, followed directly by the final thought and answer, the final answer MUST BE put in \\boxed{}, like this: <think> reasoning process here </think> final thought and \\boxed{answer} here.'
 ```
 
 ### 2.2 Geo3K — Multi-Modal GRPO Training
@@ -143,24 +158,39 @@ torchrun --nnodes 1 --nproc-per-node 8 \
     examples/gsm8k_geo3k/train_colocate.py \
     --pretrain Qwen/Qwen2.5-VL-7B-Instruct \
     --prompt_data /path/to/geo3k_dataset \
+    --input_key prompt --label_key label \
     --mixed_mm_data \
     --images_key images \
+    --loss_agg_mode seq-mean-token-mean \
     --advantage_estimator group_norm \
     --n_samples_per_prompt 8 \
     --num_episodes 20 \
+    --max_epochs 1 \
     --train_batch_size 128 \
     --rollout_batch_size 128 \
+    --micro_train_batch_size 4 \
+    --micro_rollout_batch_size 8 \
     --actor_learning_rate 1e-6 \
+    --lr_warmup_ratio 0.03 \
     --init_kl_coef 0.01 \
     --kl_estimator k3 \
     --use_kl_loss \
+    --l2 1.0e-2 \
     --fsdp --zero_stage 3 --bf16 \
     --flash_attn --gradient_checkpointing \
+    --apply_chat_template \
+    --freeze_prefix \
+    --adam_offload \
+    --rm_use_engine \
+    --reward_pretrain "{}" \
     --engine_type sglang --engine_tp_size 2 \
     --engine_mem_util 0.6 --enable_engine_sleep \
     --limit_mm_image_per_prompt 10 \
+    --eval_steps 20 --eval_split test \
+    --max_eval_samples 700 \
     --save_path results/geo3k_grpo \
-    --eval_steps 20 --save_steps 20
+    --save_steps 20 --max_ckpt_num 2 \
+    --system_prompt 'A conversation between the User and Assistant. The User asks a question, and the Assistant provides a solution. The Assistant first thinks through the reasoning process internally with self-reflection and consistency check and then gives the final analysis and answer. The reasoning process should be enclosed within <think></think>, followed directly by the final thought and answer, the final answer MUST BE put in \\boxed{}, like this: <think> reasoning process here </think> final thought and \\boxed{answer} here.'
 ```
 
 ### 2.3 Geo3K — LoRA GRPO Training (Parameter-Efficient)
@@ -289,15 +319,27 @@ export WANDB_MODE="online"  # "offline" for local-only logging
 
 #### rollout/reward
 
-![WandB rollout/reward curve](TODO:_INSERT_IMAGE_LINK_HERE)
+**GSM8K (Qwen2.5-0.5B-Instruct)**:
 
-**Expected trend**: The `rollout/reward` curve should show a steady upward trend over training steps. In early episodes, the reward typically starts low (around 0.1–0.3) as the model has not yet learned the correct format and reasoning patterns. As training progresses, the reward should gradually increase and stabilize around 0.7–0.9 for GSM8K and 0.5–0.8 for Geo3K. A healthy training run shows smooth, monotonic improvement with minor fluctuations. If the reward plateaus early or drops sharply, consider adjusting the KL coefficient or learning rate.
+![GSM8K rollout/reward curve](../_static/images/gsm8k_qwen25-0.5b_grpo/rollout_reward.png)
+
+**Geo3K (Qwen2.5-VL-7B-Instruct)**:
+
+![Geo3K rollout/reward curve](../_static/images/geo3k_qwen25-vl-7b_grpo/rollout_reward.png)
+
+**Expected trend**: The `rollout/reward` curve should show a steady upward trend over training steps. In early episodes, the reward typically starts low as the model has not yet learned the correct format and reasoning patterns. As training progresses, the reward should increase smoothly and monotonically with minor fluctuations, eventually converging to a stable level. If the reward plateaus early or drops sharply, consider adjusting the KL coefficient or learning rate.
 
 #### eval/accuracy
 
-![WandB eval/accuracy curve](TODO:_INSERT_IMAGE_LINK_HERE)
+**GSM8K (Qwen2.5-0.5B-Instruct)**:
 
-**Expected trend**: The `eval/accuracy` curve reflects the model's actual problem-solving ability on the held-out test set. It should correlate with the reward curve but may lag slightly. For GSM8K (Qwen2.5-0.5B), expect accuracy to climb from the base model's level (~30–40%) toward 50–60%+ after full training. For Geo3K (Qwen2.5-VL-7B), accuracy typically improves from ~40% to 60–70%+. The eval curve is noisier than the reward curve due to smaller evaluation sample sizes. Sudden drops may indicate overfitting or KL divergence issues.
+![GSM8K eval/accuracy curve](../_static/images/gsm8k_qwen25-0.5b_grpo/eval_accuracy.png)
+
+**Geo3K (Qwen2.5-VL-7B-Instruct)**:
+
+![Geo3K eval/accuracy curve](../_static/images/geo3k_qwen25-vl-7b_grpo/eval_accuracy.png)
+
+**Expected trend**: The `eval/accuracy` curve reflects the model's actual problem-solving ability on the held-out test set. It should correlate with the reward curve but may lag slightly. Accuracy is expected to gradually improve from the base model's initial level, showing an overall upward trend before eventually converging. The eval curve is noisier than the reward curve due to smaller evaluation sample sizes. Sudden drops may indicate overfitting or KL divergence issues — consider adjusting the KL coefficient or learning rate accordingly.
 
 ### 5.3 Additional Useful Metrics
 

@@ -111,22 +111,37 @@ torchrun --nnodes 1 --nproc-per-node 8 \
     examples/gsm8k_geo3k/train_colocate.py \
     --pretrain Qwen/Qwen2.5-0.5B-Instruct \
     --prompt_data /path/to/gsm8k_dataset \
+    --input_key prompt --label_key label \
     --text_only \
+    --loss_agg_mode seq-mean-token-mean \
     --advantage_estimator group_norm \
     --n_samples_per_prompt 5 \
     --num_episodes 30 \
+    --max_epochs 1 \
     --train_batch_size 128 \
     --rollout_batch_size 128 \
+    --micro_train_batch_size 4 \
+    --micro_rollout_batch_size 4 \
     --actor_learning_rate 1e-6 \
+    --lr_warmup_ratio 0.03 \
     --init_kl_coef 0.01 \
     --kl_estimator k3 \
     --use_kl_loss \
+    --l2 1.0e-2 \
     --fsdp --zero_stage 3 --bf16 \
     --flash_attn --gradient_checkpointing \
+    --apply_chat_template \
+    --freeze_prefix \
+    --adam_offload \
+    --rm_use_engine \
+    --reward_pretrain "{}" \
     --engine_type sglang --engine_tp_size 2 \
     --engine_mem_util 0.6 --enable_engine_sleep \
+    --eval_steps 20 --eval_split test \
+    --max_eval_samples 1319 \
     --save_path results/gsm8k_grpo \
-    --eval_steps 20 --save_steps 20
+    --save_steps 20 --max_ckpt_num 3 \
+    --system_prompt 'A conversation between the User and Assistant. The User asks a question, and the Assistant provides a solution. The Assistant first thinks through the reasoning process internally with self-reflection and consistency check and then gives the final analysis and answer. The reasoning process should be enclosed within <think></think>, followed directly by the final thought and answer, the final answer MUST BE put in \\boxed{}, like this: <think> reasoning process here </think> final thought and \\boxed{answer} here.'
 ```
 
 ### 2.2 Geo3K — 多模态 GRPO 训练
@@ -143,24 +158,39 @@ torchrun --nnodes 1 --nproc-per-node 8 \
     examples/gsm8k_geo3k/train_colocate.py \
     --pretrain Qwen/Qwen2.5-VL-7B-Instruct \
     --prompt_data /path/to/geo3k_dataset \
+    --input_key prompt --label_key label \
     --mixed_mm_data \
     --images_key images \
+    --loss_agg_mode seq-mean-token-mean \
     --advantage_estimator group_norm \
     --n_samples_per_prompt 8 \
     --num_episodes 20 \
+    --max_epochs 1 \
     --train_batch_size 128 \
     --rollout_batch_size 128 \
+    --micro_train_batch_size 4 \
+    --micro_rollout_batch_size 8 \
     --actor_learning_rate 1e-6 \
+    --lr_warmup_ratio 0.03 \
     --init_kl_coef 0.01 \
     --kl_estimator k3 \
     --use_kl_loss \
+    --l2 1.0e-2 \
     --fsdp --zero_stage 3 --bf16 \
     --flash_attn --gradient_checkpointing \
+    --apply_chat_template \
+    --freeze_prefix \
+    --adam_offload \
+    --rm_use_engine \
+    --reward_pretrain "{}" \
     --engine_type sglang --engine_tp_size 2 \
     --engine_mem_util 0.6 --enable_engine_sleep \
     --limit_mm_image_per_prompt 10 \
+    --eval_steps 20 --eval_split test \
+    --max_eval_samples 700 \
     --save_path results/geo3k_grpo \
-    --eval_steps 20 --save_steps 20
+    --save_steps 20 --max_ckpt_num 2 \
+    --system_prompt 'A conversation between the User and Assistant. The User asks a question, and the Assistant provides a solution. The Assistant first thinks through the reasoning process internally with self-reflection and consistency check and then gives the final analysis and answer. The reasoning process should be enclosed within <think></think>, followed directly by the final thought and answer, the final answer MUST BE put in \\boxed{}, like this: <think> reasoning process here </think> final thought and \\boxed{answer} here.'
 ```
 
 ### 2.3 Geo3K — LoRA GRPO 训练（参数高效微调）
@@ -289,15 +319,27 @@ export WANDB_MODE="online"  # "offline" 表示仅本地记录
 
 #### rollout/reward
 
-![WandB rollout/reward 曲线](TODO:_INSERT_IMAGE_LINK_HERE)
+**GSM8K (Qwen2.5-0.5B-Instruct)**:
 
-**预期走势**：`rollout/reward` 曲线应随训练步数呈现稳定上升趋势。在训练初期，奖励通常较低（约 0.1–0.3），因为模型尚未学会正确的格式和推理模式。随着训练推进，奖励应逐步提升并稳定在 GSM8K 约 0.7–0.9、Geo3K 约 0.5–0.8 的水平。健康的训练过程表现为平滑、单调递增，伴有轻微波动。若奖励过早停滞或急剧下降，建议调整 KL 系数或学习率。
+![GSM8K rollout/reward 曲线](../_static/images/gsm8k_qwen25-0.5b_grpo/rollout_reward.png)
+
+**Geo3K (Qwen2.5-VL-7B-Instruct)**:
+
+![Geo3K rollout/reward 曲线](../_static/images/geo3k_qwen25-vl-7b_grpo/rollout_reward.png)
+
+**预期走势**：`rollout/reward` 曲线应随训练步数呈现稳定上升趋势。在训练初期，奖励通常较低，因为模型尚未学会正确的格式和推理模式。随着训练推进，奖励应逐步平滑、单调递增，伴有轻微波动，并最终趋于稳定。若奖励过早停滞或急剧下降，建议调整 KL 系数或学习率。
 
 #### eval/accuracy
 
-![WandB eval/accuracy 曲线](TODO:_INSERT_IMAGE_LINK_HERE)
+**GSM8K (Qwen2.5-0.5B-Instruct)**:
 
-**预期走势**：`eval/accuracy` 曲线反映模型在测试集上的实际解题能力，应与奖励曲线正相关但可能略有滞后。对于 GSM8K（Qwen2.5-0.5B），准确率预计从基座模型水平（约 30–40%）提升至 50–60%+。对于 Geo3K（Qwen2.5-VL-7B），准确率通常从约 40% 提升至 60–70%+。由于评估样本量较小，eval 曲线的波动会比 reward 曲线更大。突然下降可能表明过拟合或 KL 散度问题。
+![GSM8K eval/accuracy 曲线](../_static/images/gsm8k_qwen25-0.5b_grpo/eval_accuracy.png)
+
+**Geo3K (Qwen2.5-VL-7B-Instruct)**:
+
+![Geo3K eval/accuracy 曲线](../_static/images/geo3k_qwen25-vl-7b_grpo/eval_accuracy.png)
+
+**预期走势**：`eval/accuracy` 曲线反映模型在测试集上的实际解题能力，应与奖励曲线正相关但可能略有滞后。准确率预计从基座模型的初始水平逐步提升，整体呈上升趋势并最终趋于收敛。由于评估样本量较小，eval 曲线的波动会比 reward 曲线更大。若出现突然下降，可能表明过拟合或 KL 散度问题，建议适当调整 KL 系数或学习率。
 
 ### 5.3 其他有用指标
 
