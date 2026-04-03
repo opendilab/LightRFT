@@ -730,12 +730,6 @@ def _apply_opd_kl_penalty(
     Shared helper for both pure and hybrid OPD modes.
     Aligned with Slime's apply_opd_kl_to_advantages.
 
-    Safety guards:
-    - Masks out positions where teacher_log_probs == 0 (uninitialized/padded),
-      since teacher_logp=0 means P(token)=1, which is nonsensical and would
-      produce a large spurious KL penalty.
-    - Clamps per-token reverse KL to [-20, 20] to prevent extreme gradients.
-
     :return: Tuple of (opd_advantages, info_dict with opd_reverse_kl metric)
     """
     reverse_kl = student_log_probs - teacher_log_probs
@@ -746,21 +740,17 @@ def _apply_opd_kl_penalty(
 
     opd_adv = -opd_kl_coef * reverse_kl
 
-    # Mask out positions where teacher_log_probs == 0 (padded/uninitialized)
-    # teacher_logp=0 means exp(0)=1 probability, which is nonsensical
-    valid_teacher_mask = (teacher_log_probs != 0.0).float()
-
+    # Rely solely on action_mask for padding filtering.
+    # Previous code also masked teacher_log_probs == 0.0, but log_prob=0 is a
+    # legitimate value (P=1). With the padding-strip fix in _fetch_teacher_logprobs,
+    # teacher logprobs are now correctly aligned and action_mask is sufficient.
     if action_mask is not None:
-        effective_mask = action_mask * valid_teacher_mask
-    else:
-        effective_mask = valid_teacher_mask
-
-    opd_adv = opd_adv * effective_mask
+        opd_adv = opd_adv * action_mask
 
     info_dict = {}
     if action_mask is not None:
-        masked_rkl = reverse_kl * effective_mask
-        info_dict["opd_reverse_kl"] = masked_rkl.sum(-1) / effective_mask.sum(-1).clamp(min=1)
+        masked_rkl = reverse_kl * action_mask
+        info_dict["opd_reverse_kl"] = masked_rkl.sum(-1) / action_mask.sum(-1).clamp(min=1)
 
     return opd_adv, info_dict
 
@@ -948,7 +938,7 @@ def normalize_advantages_cross_batch(experiences: List, advantage_estimator: str
     """
     if advantage_estimator not in [
         "gae", "reinforce", "reinforce_baseline",
-        "on_policy_distillation", "on_policy_distillation_hybrid",
+        "on_policy_distillation_hybrid",
     ]:
         return experiences
 

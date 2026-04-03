@@ -1481,17 +1481,23 @@ class FastExperienceMaker(NaiveExperienceMaker):
         Timer.start('  fetch_teacher_logprobs')
 
         for exp in experiences:
-            sequences = exp.sequences  # [batch_size, seq_len]
-            action_mask = exp.action_mask  # [batch_size, num_actions]
+            sequences = exp.sequences        # [batch_size, seq_len]
+            attention_mask = exp.attention_mask  # [batch_size, seq_len]
+            action_mask = exp.action_mask     # [batch_size, num_actions]
 
-            # Get response lengths (number of generated tokens per sequence)
-            response_lengths = action_mask.sum(dim=-1).tolist()
-            num_actions = action_mask.shape[1]  # action_log_probs dim
+            # response_lengths must be int for slicing
+            response_lengths = action_mask.sum(dim=-1).int().tolist()
+            num_actions = action_mask.shape[1]
 
-            # Use input_ids for teacher query to ensure token-level alignment
-            input_ids_list = sequences.cpu().tolist()
+            # Strip padding tokens before sending to SGLang.
+            # sequences is [prompt, response, eos, pad, pad, ...] — the padding
+            # tokens would cause SGLang to return logprobs for pad positions,
+            # making the [-resp_len:] slice grab wrong tokens.
+            input_ids_list = []
+            for j in range(sequences.shape[0]):
+                valid_len = int(attention_mask[j].sum().item())
+                input_ids_list.append(sequences[j, :valid_len].cpu().tolist())
 
-            # Query teacher model for log probs
             try:
                 loop = asyncio.new_event_loop()
                 asyncio.set_event_loop(loop)
@@ -1506,22 +1512,17 @@ class FastExperienceMaker(NaiveExperienceMaker):
                 finally:
                     loop.close()
 
-                # Align teacher log probs to action_log_probs shape [batch_size, num_actions]
-                # teacher_lp_list[i] has shape [resp_len_i], need to pad/align to [num_actions]
+                # Align teacher log probs to action_log_probs shape [batch_size, num_actions].
+                # Use action_mask indices directly — works regardless of left/right padding.
                 batch_size = sequences.shape[0]
                 aligned_teacher_lp = torch.zeros(batch_size, num_actions, dtype=torch.float32)
                 for i, (tlp, resp_len) in enumerate(zip(teacher_lp_list, response_lengths)):
-                    # Right-align: teacher log probs fill the last resp_len positions
-                    # (matching where action_mask == 1)
-                    actual_len = min(len(tlp), resp_len, num_actions)
-                    start_pos = num_actions - resp_len
-                    if start_pos >= 0:
-                        aligned_teacher_lp[i, start_pos:start_pos + actual_len] = tlp[:actual_len]
-                    else:
-                        # resp_len > num_actions (shouldn't happen, but handle gracefully)
-                        aligned_teacher_lp[i, :] = tlp[-num_actions:]
+                    if resp_len == 0:
+                        continue
+                    valid_indices = torch.where(action_mask[i] == 1)[0]
+                    actual_len = min(len(tlp), len(valid_indices))
+                    aligned_teacher_lp[i, valid_indices[:actual_len]] = tlp[:actual_len]
 
-                # Store in experience info for advantage calculator
                 exp.info["teacher_log_probs"] = aligned_teacher_lp
 
             except Exception as e:
