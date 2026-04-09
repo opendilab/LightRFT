@@ -64,7 +64,7 @@ NAME="ds-uni-1221"
 # --- Reward Models ---
 # A JSON-formatted string specifying paths to different pretrained reward models.
 # The training script uses multiple reward models for different aspects (e.g., safety, value).
-# svkng
+# general outcome reward demo
 REWARD_PRETRAIN_PATHS='{"safety":"/mnt/shared-storage-user/puyuan/rft_20250828/reward_model_20250828/safe_orm/","value":"/mnt/shared-storage-user/puyuan/rft_20250828/reward_model_20250828/value_orm/","knowledge":"/mnt/shared-storage-user/puyuan/rft_20250828/reward_model_20250828/knowledge_orm/","normal":"/mnt/shared-storage-user/puyuan/rft_20250828/reward_model_20250828/knowledge_orm/","general":"/mnt/shared-storage-user/puyuan/rft_20250828/reward_model_20250828/knowledge_orm/"}'
 
 # only for debug
@@ -112,7 +112,7 @@ export WANDB_MODE="offline" # TODO
 export WANDB_API_KEY="968275bc822c87ac741ecce2f06cdfb54dbc1608" # Replace with your key
 
 WANDB_PROJECT="Deepseek-r1-distill-llama70B-MultiORM-RL"
-WANDB_RUN_NAME="Deepseek-r1-distill-llama70B-svki-grpo-${current_time}"
+WANDB_RUN_NAME="Deepseek-r1-distill-llama70B-orm-demo-grpo-${current_time}"
 
 
 # ==============================================================================
@@ -163,7 +163,7 @@ set -x
 #    --text_only \
 #    --fsdp_cpu_offload \
 
-torchrun --nnodes $NNODES --nproc-per-node $GPUS_PER_NODE --node_rank $NODE_RANK --master-port $MASTER_PORT --master-addr $MASTER_ADDR examples/safework_t1/train_colocate.py \
+torchrun --nnodes $NNODES --nproc-per-node $GPUS_PER_NODE --node_rank $NODE_RANK --master-port $MASTER_PORT --master-addr $MASTER_ADDR examples/orm_rl_demo/train_colocate.py \
    --pretrain ${PRETRAIN_PATH} \
    --text_only \
    --loss_agg_mode seq-mean-token-mean \
@@ -212,9 +212,9 @@ torchrun --nnodes $NNODES --nproc-per-node $GPUS_PER_NODE --node_rank $NODE_RANK
    --use_wandb "${WANDB_API_KEY}" \
    --wandb_project "${WANDB_PROJECT}" \
    --wandb_run_name "${WANDB_RUN_NAME}" \
-   2>&1 | tee "${WRITABLE_BASE_DIR}/rft_logs/$NAME/deepseek72b-after-kg_svkng-orm_no-kl_1node_node${NODE_RANK}_$(date +%Y%m%d_%H%M%S).log"
+   2>&1 | tee "${WRITABLE_BASE_DIR}/rft_logs/$NAME/deepseek72b-after-kg_orm-demo_no-kl_1node_node${NODE_RANK}_$(date +%Y%m%d_%H%M%S).log"
    
 
 
 # cd /mnt/shared-storage-user/puyuan/code/code_refactor/LightRFT
-# bash /mnt/shared-storage-user/puyuan/code/code_refactor/LightRFT/examples/safework_t1/run_grpo_svki_fsdp_deepseek.sh 2>&1 | tee "/mnt/shared-storage-user/puyuan/code/code_refactor/LightRFT/rft_logs/${NAME}/deepseek_${NAME}_1node_node${NODE_RANK}_$(date +%Y%m%d_%H%M%S).log"
+# bash /mnt/shared-storage-user/puyuan/code/code_refactor/LightRFT/examples/orm_rl_demo/run_fsdp_deepseek.sh 2>&1 | tee "/mnt/shared-storage-user/puyuan/code/code_refactor/LightRFT/rft_logs/${NAME}/deepseek_${NAME}_1node_node${NODE_RANK}_$(date +%Y%m%d_%H%M%S).log"

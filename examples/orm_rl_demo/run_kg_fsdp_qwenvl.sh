@@ -63,10 +63,10 @@ export WANDB_MODE="offline" # TODO
 # It's recommended to set this as an environment variable rather than hardcoding.
 export WANDB_API_KEY="968275bc822c87ac741ecce2f06cdfb54dbc1608" # Replace with your key
 
-WANDB_PROJECT="QwenVL-7B-MultiORM-GRPO-SVKG-0908"
-WANDB_RUN_NAME="QwenVL-7B-MultiORM-SVKG-grpo-${current_time}"
+WANDB_PROJECT="ORM-RL-Demo-QwenVL-7B-KG"
+WANDB_RUN_NAME="ORM-RL-Demo-KG-grpo-${current_time}"
 
-torchrun --nnodes $NNODES --nproc-per-node $GPUS_PER_NODE --node_rank $NODE_RANK --master-port $MASTER_PORT --master-addr $MASTER_ADDR examples/safework_t1/train_colocate.py \
+torchrun --nnodes $NNODES --nproc-per-node $GPUS_PER_NODE --node_rank $NODE_RANK --master-port $MASTER_PORT --master-addr $MASTER_ADDR examples/orm_rl_demo/train_colocate.py \
    --pretrain ${PRETRAIN_PATH} \
    --fsdp \
    --use_kl_loss \

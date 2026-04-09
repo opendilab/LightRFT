@@ -1,6 +1,6 @@
 #############################  kwargs  ##########################
 
-NAME="svkng-1230-cpgd"
+NAME="orm-rl-demo-general"
 GROUP_METHOD=normal
 N_SAMPLES=8
 EPISODE=3
@@ -59,7 +59,7 @@ export GPUS_PER_NODE=$MLP_WORKER_GPU
 export MASTER_PORT=$MLP_WORKER_0_PORT
 ###############################  volcengine env  #####################
 
-SAVE_MODEL_NAME=LightRFT-len_${MAX_LENGTH-}tbs_${TBS}-rbs_${RBS}-sample_$N_SAMPLES-kl_${KL}-warmup_${WARMUP}-ep_${EPISODE}-plr_${LR}-rm-colocate-svkg-20251205
+SAVE_MODEL_NAME=LightRFT-len_${MAX_LENGTH-}tbs_${TBS}-rbs_${RBS}-sample_$N_SAMPLES-kl_${KL}-warmup_${WARMUP}-ep_${EPISODE}-plr_${LR}-orm-rl-demo-general-20251205
 
 mkdir -p results/$NAME/$SAVE_MODEL_NAME
 # Create log directory
@@ -73,10 +73,10 @@ export WANDB_MODE="offline"
 # It's recommended to set this as an environment variable rather than hardcoding.
 export WANDB_API_KEY="968275bc822c87ac741ecce2f06cdfb54dbc1608" # Replace with your key
 
-WANDB_PROJECT="QwenVL-7B-MultiORM-GRPO-SVKG"
-WANDB_RUN_NAME="QwenVL-7B-MultiORM-SVKG-grpo-${current_time}"
+WANDB_PROJECT="ORM-RL-Demo-QwenVL-7B-General"
+WANDB_RUN_NAME="ORM-RL-Demo-General-grpo-${current_time}"
 
-torchrun --nnodes $NNODES --nproc-per-node $GPUS_PER_NODE --node_rank $NODE_RANK --master-port $MASTER_PORT --master-addr $MASTER_ADDR examples/safework_t1_runnable/train_colocate.py \
+torchrun --nnodes $NNODES --nproc-per-node $GPUS_PER_NODE --node_rank $NODE_RANK --master-port $MASTER_PORT --master-addr $MASTER_ADDR examples/orm_rl_demo/train_colocate.py \
    --pretrain ${PRETRAIN_PATH} \
    --use_cpg_loss \
    --loss_agg_mode seq-mean-token-mean \
@@ -129,4 +129,4 @@ torchrun --nnodes $NNODES --nproc-per-node $GPUS_PER_NODE --node_rank $NODE_RANK
    2>&1 | tee "/mnt/shared-storage-user/puyuan/code/code_refactor/LightRFT/rft_logs/${NAME}/${NAME}_7b_1node_node${NODE_RANK}_$(date +%Y%m%d_%H%M%S).log"
 
 
-# bash /mnt/shared-storage-user/puyuan/code/code_refactor/LightRFT/examples/safework_t1_runnable/run_svkng_fsdp_qwenvl.sh > /mnt/shared-storage-user/puyuan/code/code_refactor/LightRFT/rft_logs/${NAME}/${NAME}_7b_1node_node${NODE_RANK}_$(date +%Y%m%d_%H%M%S).log 2>&1
+# bash /mnt/shared-storage-user/puyuan/code/code_refactor/LightRFT/examples/orm_rl_demo/run_general_fsdp_qwenvl.sh > /mnt/shared-storage-user/puyuan/code/code_refactor/LightRFT/rft_logs/${NAME}/${NAME}_7b_1node_node${NODE_RANK}_$(date +%Y%m%d_%H%M%S).log 2>&1

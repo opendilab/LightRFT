@@ -306,7 +306,7 @@ def _load_engine(
         # engine_mem_util=0.3,  # Increased from 0.2 to avoid CUDA graph buffer allocation failure
         tp_size=tp_size,
         skip_tokenizer_init=False,
-        disable_cuda_graph=True, # only for deepseek, TODO: why deepseek pipeline (examples/safework_t1/run_grpo_svki_fsdp_deepseek.sh) need this?
+        disable_cuda_graph=True, # only for deepseek, TODO: why deepseek pipeline (examples/orm_rl_demo/run_fsdp_deepseek.sh) need this?
     )
 
     print(f"[reward_models_utils] Loaded engine from {pretrain_path} with tp_size={tp_size}")
