@@ -117,6 +117,10 @@ class Experience:
         that determine reasoning directions), improving training efficiency. Shape: (B, A).
         See: https://arxiv.org/abs/2506.01939
     :type action_entropy: Optional[torch.Tensor]
+    :param labels: List of label strings (e.g., "gsm8k_rule" for recipe-based reward).
+    :type labels: Optional[list[str]]
+    :param references: List of reference strings (e.g., ground truth answers).
+    :type references: Optional[list[str]]
     """
 
     sequences: torch.Tensor
@@ -130,6 +134,8 @@ class Experience:
     info: Optional[dict]
     kl: Optional[torch.Tensor] = None
     action_entropy: Optional[torch.Tensor] = None  # Entropy for high-entropy token filtering
+    labels: Optional[list[str]] = None
+    references: Optional[list[str]] = None
 
     @torch.no_grad()
     def to_device(self, device: torch.device) -> None:
@@ -191,7 +197,8 @@ class Samples:
         - response_length: (B,) - number of tokens in the response
         - total_length: (B,) - total number of tokens in sequences
         - prompts: list[str] - the prompts used to generate responses
-        - labels: list[str] - ground truth labels (if available)
+        - labels: list[str] - ground truth labels (if available, e.g., "gsm8k_rule")
+        - references: list[str] - ground truth references (if available, e.g., correct answers)
 
     :param sequences: Token sequences including both prompt and response.
     :type sequences: torch.Tensor
@@ -209,8 +216,10 @@ class Samples:
     :type total_length: torch.Tensor
     :param prompts: List of prompt strings.
     :type prompts: list[str]
-    :param labels: List of label strings.
-    :type labels: list[str]
+    :param labels: List of label strings (e.g., "gsm8k_rule" for recipe-based reward).
+    :type labels: Optional[list[str]]
+    :param references: List of reference strings (e.g., ground truth answers).
+    :type references: Optional[list[str]]
     :param pad_len: Padding length applied.
     :type pad_len: Optional[int]
     """
@@ -223,8 +232,9 @@ class Samples:
     response_length: torch.Tensor
     total_length: torch.Tensor
     prompts: list[str]
-    labels: list[str]
-    pad_len: Optional[int]
+    labels: Optional[list[str]] = None
+    references: Optional[list[str]] = None
+    pad_len: Optional[int] = None
 
 
 class NaiveExperienceMaker(ABC):
@@ -416,7 +426,7 @@ class NaiveExperienceMaker(ABC):
 
         :param all_prompts: List of prompt strings.
         :type all_prompts: List[str]
-        :param generate_kwargs: Additional generation parameters.
+        :param generate_kwargs: Additional generation parameters (may include all_labels, all_references).
         :type generate_kwargs: dict
         :return: List of Samples objects.
         :rtype: List[Samples]
@@ -424,11 +434,26 @@ class NaiveExperienceMaker(ABC):
         assert not getattr(self, "packing_samples", False)
         args = self.strategy.args
         self.actor.eval()
+
+        # Extract labels and references from generate_kwargs if provided
+        all_labels = generate_kwargs.pop('all_labels', None)
+        all_references = generate_kwargs.pop('all_references', None)
+
         # Sample multiple responses per prompt
         all_prompts = sum([[prompt] * args.n_samples_per_prompt for prompt in all_prompts], [])
+
+        # Replicate labels and references to match n_samples_per_prompt
+        if all_labels is not None:
+            all_labels = sum([[label] * args.n_samples_per_prompt for label in all_labels], [])
+        if all_references is not None:
+            all_references = sum([[ref] * args.n_samples_per_prompt for ref in all_references], [])
+
         samples_list = []
         for i in range(0, len(all_prompts), args.micro_rollout_batch_size):
             prompts = all_prompts[i:i + args.micro_rollout_batch_size]
+            labels = all_labels[i:i + args.micro_rollout_batch_size] if all_labels is not None else None
+            references = all_references[i:i + args.micro_rollout_batch_size] if all_references is not None else None
+
             inputs = self.tokenize_fn(prompts, self.prompt_max_len, device="cuda")
             sequences, attention_mask, action_mask = self.actor.generate(**inputs, **generate_kwargs)
             samples = Samples(
@@ -440,6 +465,8 @@ class NaiveExperienceMaker(ABC):
                 response_length=action_mask.float().sum(dim=-1),
                 total_length=attention_mask.float().sum(dim=-1),
                 prompts=prompts,
+                labels=labels,
+                references=references,
             )
             samples_list.append(samples)
         return samples_list
@@ -521,6 +548,7 @@ class NaiveExperienceMaker(ABC):
         return Experience(
             sequences,
             action_log_probs,
+            base_action_log_probs,
             value,
             None,
             None,
@@ -528,6 +556,9 @@ class NaiveExperienceMaker(ABC):
             action_mask,
             info,
             kl,
+            None,  # action_entropy
+            samples.labels,  # labels from Samples
+            samples.references,  # references from Samples
         )
 
     @torch.no_grad()

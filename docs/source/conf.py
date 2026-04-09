@@ -120,6 +120,7 @@ html_theme = 'pytorch_sphinx_theme'
 html_theme_path = [pytorch_sphinx_theme.get_html_theme_path()]
 html_static_path = ['_static']
 html_css_files = ['css/readthedocs.css']
+html_js_files = ['js/language_switch.js']
 rtd_lang = 'en'
 
 html_theme_options = {

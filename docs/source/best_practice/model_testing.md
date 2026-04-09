@@ -107,7 +107,7 @@ Available commands in interactive mode:
 | `--max_tokens` | `8192` | Maximum generation tokens |
 | `--temperature` | `0.7` | Sampling temperature (0 for greedy) |
 | `--top_p` | `0.95` | Top-p sampling parameter |
-| `--system_prompt` | (default) | Custom system prompt |
+| `--system_prompt` | `None` | Custom system prompt |
 | `--batch` | `None` | Batch test JSON file path |
 | `--output` | `None` | Batch test results output file |
 

@@ -212,26 +212,20 @@ max_norm = config.max_norm  # Type: float
 
 ## Conclusion
 
-The LightRFT strategy module represents a paradigm shift in distributed training abstraction design, establishing a new standard for flexibility, type safety, and developer experience in RLHF training systems. By embracing a holistic design philosophy centered on abstraction unification and configuration-driven development, the module achieves unprecedented levels of interoperability across diverse distributed training frameworks.
+The LightRFT Strategy module optimizes the abstract design of distributed training, aiming to enhance the flexibility, type safety, and development efficiency of RLHF systems. Through a unified abstraction layer and configuration-driven development, this module achieves interoperability between different training frameworks.
 
-### Foundational Design Innovations
+### Core Design
 
-**Unified Abstraction Architecture**: The module introduces a sophisticated abstraction layer that seamlessly unifies DeepSpeed, FSDP, and other distributed training backends under a single, consistent API. This architectural breakthrough eliminates the traditional fragmentation between different distributed training approaches, enabling developers to switch between strategies with zero code changes.
+*   **Unified Interface Architecture**: Encapsulates distributed backends like DeepSpeed and FSDP, providing a consistent API. Developers can switch underlying strategies without modifying business code.
+*   **Type-Safe Configuration**: Converts dynamic configuration into strongly typed objects via [`StrategyConfig`](../../lightrft/strategy/config.py), reducing runtime errors and supporting IDE autocompletion.
+*   **Factory Pattern Selection**: [`get_strategy()`](../../lightrft/strategy/strategy.py) automatically instantiates strategies based on configuration parameters, simplifying calls while retaining control over backends.
 
-**Type-Safe Configuration Ecosystem**: By replacing dynamic attribute access patterns with strongly-typed configuration objects through [`StrategyConfig`](lightrft/strategy/config.py:16), the module establishes a new paradigm for configuration management that eliminates runtime errors, enables IDE autocompletion, and provides compile-time safety guarantees.
+### Feature Highlights
 
-**Intelligent Strategy Selection**: The factory-based approach in [`get_strategy()`](lightrft/strategy/strategy.py:21) implements automatic strategy selection based on configuration parameters, abstracting away the complexity of backend selection while maintaining full control through explicit configuration.
+*   **Inference Engine Integration**: Supports plain text and multimodal generation through a unified interface, compatible with vLLM and SGLang backends.
+*   **Convenient Testing Support**: Provides [`FakeStrategy`](../../lightrft/strategy/fake_strategy.py), allowing testing of training workflows without a distributed environment, reducing debugging costs.
+*   **Resource Efficiency Optimization**: Supports advanced features like inference engine sleep/wake, gradient accumulation, and memory-aware checkpointing to optimize resource usage during large-scale training.
 
-### Advanced Capabilities
+### Summary
 
-**Multi-Modal Inference Engine Integration**: The strategy module pioneers unified support for both text-only and multi-modal generation through sophisticated engine management, supporting vLLM and SGLang backends with consistent interfaces for diverse AI workloads.
-
-**Comprehensive Testing Infrastructure**: Through [`FakeStrategy`](lightrft/strategy/fake_strategy.py:24), the module enables full-featured testing of distributed training workflows without requiring complex distributed environments, dramatically improving development velocity and test coverage.
-
-**Memory-Efficient Training Orchestration**: Advanced features like inference engine sleep/wake cycles, gradient accumulation optimizations, and memory-aware checkpointing demonstrate the module's commitment to resource efficiency at scale.
-
-### Industry Impact
-
-This design philosophy has established new best practices for distributed training abstraction, demonstrating that type safety, developer experience, and performance optimization are not mutually exclusive goals. The module's extensible architecture ensures long-term viability, providing a solid foundation for integrating future distributed training technologies while maintaining backward compatibility with existing codebases.
-
-The LightRFT strategy module stands as a reference implementation for next-generation distributed training systems, proving that thoughtful abstraction design can simultaneously achieve simplicity for beginners and powerful customization for experts across the entire spectrum of RLHF training requirements.
+The module strikes a balance between ease of use and flexibility. Its architectural design balances development experience with performance requirements, lowering the barrier to entry for distributed training while providing a scalable technical foundation for diverse scenarios from RLHF to RLVR.

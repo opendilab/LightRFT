@@ -63,15 +63,44 @@ def _fetch_label(example: dict[str, Any], label_key: str | None) -> str:
     return ""
 
 
+def _fetch_reference(example: dict[str, Any]) -> str:
+    """
+    Safely extract the reference (ground truth answer) from the data sample.
+
+    Search order:
+        1. example['extra_info']['reference']
+        2. example['reward_model']['ground_truth']
+
+    If no reference is found, returns an empty string.
+
+    :param example: The data sample
+    :type example: dict[str, Any]
+    :return: The extracted reference, or an empty string if not found
+    :rtype: str
+    """
+    # Check under 'extra_info' first (GSM8K format)
+    extra = example.get("extra_info", {})
+    if isinstance(extra, dict) and "reference" in extra:
+        return extra["reference"]
+
+    # Fallback to 'reward_model.ground_truth'
+    rm = example.get("reward_model", {})
+    if isinstance(rm, dict) and "ground_truth" in rm:
+        return rm["ground_truth"]
+
+    # If not found, return an empty string.
+    return ""
+
+
 def preprocess_data(
     example: dict[str, Any],
     input_template: str | None = None,
     input_key: str | None = None,
     label_key: str | None = None,
     apply_chat_template: Callable | None = None,
-) -> Tuple[str, str]:
+) -> Tuple[str, str, str]:
     """
-    Process a single example into a (prompt, label) tuple.
+    Process a single example into a (prompt, label, reference) tuple.
 
     It supports the following input formats:
         - Plain text: example["input"] or example["prompt"]
@@ -88,8 +117,8 @@ def preprocess_data(
     :type label_key: str | None
     :param apply_chat_template: Function to apply a chat template
     :type apply_chat_template: Callable | None
-    :return: The processed (prompt, label) tuple
-    :rtype: Tuple[str, str]
+    :return: The processed (prompt, label, reference) tuple
+    :rtype: Tuple[str, str, str]
     """
     # --- Extract prompt ---
     real_input_key = _auto_pick_input_key(example, input_key)
@@ -124,14 +153,17 @@ def preprocess_data(
     # --- Extract label ---
     label = _fetch_label(example, label_key)
 
-    return prompt, label
+    # --- Extract reference (ground truth answer) ---
+    reference = _fetch_reference(example)
+
+    return prompt, label, reference
 
 
 class PromptDataset(Dataset):
     """
     Dataset for PPO (Proximal Policy Optimization) model training.
 
-    This dataset processes and stores prompts and labels by applying templates
+    This dataset processes and stores prompts, labels, and references by applying templates
     and tokenization as specified by the strategy and tokenizer.
 
     :param dataset: The raw dataset used for training
@@ -166,10 +198,12 @@ class PromptDataset(Dataset):
 
         self.prompts = []
         self.labels = []
+        self.references = []
         for data in tqdm(dataset, desc="Preprocessing data", disable=not self.strategy.is_rank_0()):
-            prompt, label = preprocess_data(data, input_template, input_key, label_key, apply_chat_template)
+            prompt, label, reference = preprocess_data(data, input_template, input_key, label_key, apply_chat_template)
             self.prompts.append(prompt)
             self.labels.append(label)
+            self.references.append(reference)
 
     def __len__(self) -> int:
         """
@@ -180,29 +214,31 @@ class PromptDataset(Dataset):
         """
         return len(self.prompts)
 
-    def __getitem__(self, idx: int) -> tuple[str, str]:
+    def __getitem__(self, idx: int) -> tuple[str, str, str]:
         """
-        Retrieve the prompt and label at the specified index.
+        Retrieve the prompt, label, and reference at the specified index.
 
         :param idx: The index of the desired sample
         :type idx: int
-        :return: A tuple containing the prompt and corresponding label
-        :rtype: tuple[str, str]
+        :return: A tuple containing the prompt, label, and reference
+        :rtype: tuple[str, str, str]
         """
-        return self.prompts[idx], self.labels[idx]
+        return self.prompts[idx], self.labels[idx], self.references[idx]
 
-    def collate_fn(self, item_list: list[tuple[str, str]]) -> tuple[list[str], list[str]]:
+    def collate_fn(self, item_list: list[tuple[str, str, str]]) -> tuple[list[str], list[str], list[str]]:
         """
-        Collate a list of samples into separate lists for prompts and labels.
+        Collate a list of samples into separate lists for prompts, labels, and references.
 
-        :param item_list: A list of (prompt, label) tuples
-        :type item_list: list[tuple[str, str]]
-        :return: Two lists containing prompts and labels, respectively
-        :rtype: tuple[list[str], list[str]]
+        :param item_list: A list of (prompt, label, reference) tuples
+        :type item_list: list[tuple[str, str, str]]
+        :return: Three lists containing prompts, labels, and references, respectively
+        :rtype: tuple[list[str], list[str], list[str]]
         """
         prompts_list = []
         labels_list = []
-        for prompt, label in item_list:
+        references_list = []
+        for prompt, label, reference in item_list:
             prompts_list.append(prompt)
             labels_list.append(label)
-        return prompts_list, labels_list
+            references_list.append(reference)
+        return prompts_list, labels_list, references_list

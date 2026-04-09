@@ -28,7 +28,8 @@ ModuleNotFoundError: No module named 'lightrft'
 ```bash
 # Ensure you're in the correct directory
 cd /path/to/LightRFT
-pip install -r requirements.txt
+
+# Install LightRFT (includes all core dependencies)
 pip install -e .
 ```
 
@@ -46,26 +47,58 @@ nvcc --version
 python -c "import torch; print(torch.version.cuda)"
 
 # Reinstall PyTorch with correct CUDA version
-pip install torch==2.5.1+cu118 --index-url https://download.pytorch.org/whl/cu118
+# For CUDA 12.8:
+pip install torch>=2.9.1 --index-url https://download.pytorch.org/whl/cu128
 ```
 
-### Problem: vLLM installation fails
+### Problem: vLLM not available (but needed)
 
 **Symptoms**:
 ```
-ERROR: Failed building wheel for vllm
+ImportError: vLLM is not installed but engine_type is set to 'vllm'
 ```
 
 **Solution**:
 ```bash
+# Install vLLM backend (optional)
+pip install ".[vllm]"
+
+# Or install vLLM directly
+pip install vllm>=0.13.3
+
+# Alternatively, use SGLang engine (default, already installed)
+# Change --engine_type vllm to --engine_type sglang in your training script
+```
+
+### Problem: Flash-Attention installation fails
+
+**Symptoms**:
+```
+ERROR: Failed building wheel for flash-attn
+```
+
+**Solution**:
+
+**Option 1: Use pre-compiled wheel (Recommended)**
+```bash
+# Download from https://github.com/Dao-AILab/flash-attention/releases
+# Example for CUDA 12.x with PyTorch 2.9 and Python 3.12:
+pip install flash_attn-2.8.3+cu12torch2.9cxx11abiTRUE-cp312-cp312-linux_x86_64.whl
+```
+
+**Option 2: Use Docker (Easiest)**
+```bash
+# Official Docker image includes all dependencies
+docker pull opendilab/lightrft:v0.1.0
+```
+
+**Option 3: Install build dependencies**
+```bash
 # Install build dependencies
 pip install ninja packaging wheel
 
-# Install vLLM from source
-pip install vllm --no-build-isolation
-
-# Or use pre-built wheel
-pip install vllm==0.5.3.post1
+# Try installing flash-attn again
+pip install flash-attn>=2.8.3 --no-build-isolation
 ```
 
 ## Memory Issues
@@ -186,25 +219,6 @@ torch.cuda.empty_cache()
 
 ## Training Problems
 
-### Problem: `num_rollouts_per_episodes = 0`
-
-**Symptoms**:
-```
-AssertionError: num_rollouts_per_episodes should be > 0
-```
-
-**Root Cause**:
-`train_batch_size` < `rollout_batch_size × n_samples_per_prompt`
-
-**Solution**:
-```bash
-# Ensure TBS >= RBS × n_samples
-# Example: RBS=64, n_samples=8
---train_batch_size 512  # Must be >= 64×8=512
---rollout_batch_size 64
---n_samples_per_prompt 8
-```
-
 ### Problem: Training Not Converging
 
 **Symptoms**:
@@ -244,38 +258,6 @@ AssertionError: num_rollouts_per_episodes should be > 0
 # Switch from GRPO to CPGD
 --advantage_estimator cpgd \
 --kl_target 0.01
-```
-
-**5. Check Reward Model Quality**
-```python
-# Test reward model separately
-python test_reward_model.py --model /path/to/rm
-```
-
-### Problem: NaN Loss or Gradients
-
-**Symptoms**:
-```
-Loss: nan
-Gradient: nan
-```
-
-**Solution**:
-```bash
-# 1. Enable gradient clipping
---max_norm 1.0
-
-# 2. Lower learning rate
---actor_learning_rate 1e-7
-
-# 3. Use BF16 instead of FP16
---bf16
-
-# 4. Enable reward clipping
---reward_clip 10.0
-
-# 5. Check for division by zero
---advantages_norm  # Normalizes before use
 ```
 
 ### Problem: Training Extremely Slow
@@ -559,28 +541,6 @@ all_outputs = self.strategy.gather_and_generate(
 ```
 
 ## Checkpoint Issues
-
-### Problem: Cannot Load Checkpoint
-
-**Symptoms**:
-```
-FileNotFoundError: Checkpoint not found
-RuntimeError: Error loading state dict
-```
-
-**Solution**:
-```bash
-# 1. Check checkpoint path
-ls -la /path/to/checkpoint
-
-# 2. Load with relaxed matching
---load_checkpoint \
---ckpt_path /path/to/checkpoint
-
-# 3. Skip optimizer states if incompatible
-# Edit code to load model only:
-model.load_state_dict(torch.load(ckpt_path))
-```
 
 ### Problem: Checkpoint Saving Fails
 

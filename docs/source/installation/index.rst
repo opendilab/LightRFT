@@ -11,9 +11,9 @@ Requirements
 
 Before installing LightRFT, ensure your environment meets the following requirements:
 
-* Python >= 3.10
-* CUDA >= 11.8
-* PyTorch >= 2.5.1
+* Python >= 3.12
+* CUDA >= 12.8
+* PyTorch >= 2.9.1
 * CUDA-compatible GPU(s)
 
 Docker Images
@@ -27,7 +27,7 @@ Installation
 Standard Installation
 ----------------------
 
-Clone and install LightRFT:
+LightRFT uses **SGLang** as the default inference backend and includes **Flash-Attention** for performance optimization.
 
 .. code-block:: bash
 
@@ -35,11 +35,43 @@ Clone and install LightRFT:
    git clone https://github.com/opendilab/LightRFT.git
    cd LightRFT
 
-   # Install dependencies
-   pip install -r requirements.txt
-
-   # Install LightRFT
+   # Install LightRFT and all core dependencies
    pip install -e .
+
+**What's Installed**: PyTorch, SGLang, Flash-Attention, Transformers, DeepSpeed, and other core dependencies.
+
+Optional: Install vLLM Backend
+-------------------------------
+
+If you want to use vLLM as an alternative (or in addition) to SGLang:
+
+.. code-block:: bash
+
+   # Install vLLM backend
+   pip install ".[vllm]"
+
+   # Or install vLLM directly
+   pip install vllm>=0.13.3
+
+Flash-Attention Installation Troubleshooting
+---------------------------------------------
+
+Flash-Attention is included by default, but may fail on some systems due to CUDA compatibility. If you encounter issues, try:
+
+**Option 1: Use Pre-compiled Wheel (Recommended)**
+
+.. code-block:: bash
+
+   # Download the appropriate wheel from https://github.com/Dao-AILab/flash-attention/releases
+   # For example, CUDA 12.x with PyTorch 2.9:
+   pip install flash_attn-2.8.3+cu12torch2.9cxx11abiTRUE-cp312-cp312-linux_x86_64.whl
+
+**Option 2: Use Docker (Easiest)**
+
+.. code-block:: bash
+
+   # Official Docker image includes all dependencies
+   docker pull opendilab/lightrft:v0.1.0
 
 
 Documentation Generation (Optional)
