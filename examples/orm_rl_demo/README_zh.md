@@ -2,19 +2,17 @@
 
 # ORM RL Demo 训练示例
 
-LightRFT 中用于 ORM 强化学习训练的最小化示例材料。
+LightRFT 中面向 Geo3K 的最小 ORM 强化学习示例。
 
 </div>
 
 ## 概述
 
-这个目录正在统一为更中性的 `orm_rl_demo` 命名。
-
-当前保留的材料主要包括：
-- 基于 Qwen2.5-VL 风格模型的多模态 actor 训练
-- 协同部署的 outcome reward model 打分
-- 基于 FSDP 的训练方式，以及 SGLang / vLLM 生成后端
-- 用于调试的轻量 trajectory 保存能力
+这个示例目录现在收敛为一个单独可运行的 ORM RL demo，用来理清已有训练流程：
+- 数据集：Geo3K
+- actor：Qwen2.5-VL 7B actor checkpoint
+- reward 侧：单一路 general outcome reward model
+- 后端：FSDP 训练 + engine 侧 reward 推理
 
 ## 项目结构
 
@@ -24,32 +22,39 @@ orm_rl_demo/
 ├── reward_models.py
 ├── reward_models_utils.py
 ├── test_reward_models.py
-├── run_general_fsdp_qwenvl.sh
-├── run_kg_fsdp_qwenvl.sh
-└── run_fsdp_deepseek.sh
+└── run_general_fsdp_qwenvl.sh
 ```
 
 ## 快速开始
 
-当前目录中的主要通用入口脚本是：
+这个 demo 只保留一个入口脚本：
 
 ```bash
 bash examples/orm_rl_demo/run_general_fsdp_qwenvl.sh
 ```
 
-这个脚本保持现有训练流程不变，只把目录名和示例名统一到了 `orm_rl_demo`。
+这个脚本尽量复用了仓库里已经出现过的集群路径风格，继续使用当前示例中已有的 actor / reward model 路径。
+
+## Demo 流程
+
+这个 demo 的目标是更直观地看到 ORM RL 的主流程：
+- actor 在 Geo3K 上生成 trajectory
+- general ORM 对 trajectory 打分
+- 保留 trajectory 保存，便于调试和理解训练过程
+
+为了不去改写现有 Geo3K 数据文件，这个 demo 在运行时把数据标签覆盖成 `general`，这样可以沿用原始数据路径，同时走 general ORM 的 reward recipe。
 
 ## 环境要求
 
 - Python >= 3.8
 - CUDA >= 11.8（用于 GPU 训练）
-- 更大的奖励模型配置建议使用 8x A100 (80GB) 或类似规格硬件
+- 72B 奖励模型配置建议使用 8x A100 (80GB) 或类似规格硬件
 
 ## 说明
 
-- 当前目录中的训练逻辑仍然保持原样。
-- 这次提交只做命名和路径引用的统一，不调整训练流程本身。
-- 后续如果需要进一步缩减示例范围，可以在当前命名统一的基础上继续进行。
+- 这个 demo 有意只保留一个 shell 入口。
+- Geo3K 的 reward 路由通过运行时标签覆盖完成，不直接改写数据集本身。
+- 当前 reward model 路径继续保留为这个示例目录原本使用的集群路径风格。
 
 ## 许可证
 

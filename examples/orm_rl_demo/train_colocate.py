@@ -59,6 +59,25 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from reward_models_utils import load_reward_models, reward_fn, RECIPE
 
 
+def _apply_label_override(dataset, label_key: str, label_override: str, strategy, dataset_name: str):
+    """Apply a demo-local label override without touching the shared dataset library."""
+    if not label_override:
+        return dataset
+
+    strategy.print(f"Applying label override '{label_override}' to {dataset_name}")
+
+    def override_label(example):
+        example[label_key] = label_override
+        extra = example.get("extra_info")
+        if isinstance(extra, dict):
+            extra = dict(extra)
+            extra[label_key] = label_override
+            example["extra_info"] = extra
+        return example
+
+    return dataset.map(override_label)
+
+
 def train(args):
     """
     Main training function for GRPO with co-located reward models.
@@ -219,6 +238,9 @@ def train(args):
         return_eval=False,
         train_split=args.prompt_split,
     )
+    prompts_data = _apply_label_override(
+        prompts_data, args.label_key, args.label_override, strategy, "prompt dataset"
+    )
     
     prompts_data = prompts_data.select(range(min(args.max_samples, len(prompts_data))))
     prompts_dataset = PromptDatasetVL(prompts_data, tokenizer, processor, args.prompt_max_len, strategy, input_template=args.input_template)
@@ -234,6 +256,9 @@ def train(args):
                 eval_data_path, "1.0", strategy, args.seed, return_eval=False,
                 # Note: `train_split` parameter is used to specify the desired split name for evaluation data.
                 train_split=args.eval_split,
+            )
+            eval_data = _apply_label_override(
+                eval_data, args.label_key, args.label_override, strategy, "evaluation dataset"
             )
             if len(eval_data) == 0:
                  strategy.print(f"Warning: Evaluation dataset at {eval_data_path} with split '{args.eval_split}' is empty. Skipping evaluation.")
@@ -574,6 +599,12 @@ if __name__ == "__main__":
     parser.add_argument("--images_key", type=str, default="image", help="JSON dataser key for images")
     parser.add_argument("--reference_key", type=str, default="reference", help="JSON dataset key for reference answers")
     parser.add_argument("--label_key", type=str, default="label", help="JSON dataset key")
+    parser.add_argument(
+        "--label_override",
+        type=str,
+        default=None,
+        help="Optional label override applied after dataset loading.",
+    )
     parser.add_argument("--input_template", type=str, default=None)
     parser.add_argument(
         "--apply_chat_template", action="store_true", default=False, help="Use HF tokenizer chat template"
