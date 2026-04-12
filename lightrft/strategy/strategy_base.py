@@ -732,6 +732,45 @@ class StrategyBase(ABC):
 
         self.inference_engine_status = EngineStatus.WAKEUP
 
+    def _sanitize_vllm_sampling_params(self, sampling_params: Any) -> Any:
+        """
+        Clamp vLLM sampling parameters that must respect the engine context length.
+
+        Newer vLLM releases validate ``truncate_prompt_tokens`` against the engine's
+        ``max_model_len``. Some callers already clamp this during ``SamplingParams``
+        construction, but this centralized guard keeps generation safe for every
+        call path that reaches the strategy layer.
+
+        :param sampling_params: Sampling parameters passed to vLLM.
+        :type sampling_params: Any
+        :return: Sanitized sampling parameters.
+        :rtype: Any
+        """
+        if sampling_params is None or self.inference_engine_type != "vllm" or self.inference_engine is None:
+            return sampling_params
+
+        truncate_prompt_tokens = getattr(sampling_params, "truncate_prompt_tokens", None)
+        if truncate_prompt_tokens is None:
+            return sampling_params
+
+        model_config = getattr(getattr(self.inference_engine, "llm_engine", None), "model_config", None)
+        max_model_len = getattr(model_config, "max_model_len", None)
+        if max_model_len is None:
+            return sampling_params
+
+        try:
+            if truncate_prompt_tokens > max_model_len:
+                sampling_params.truncate_prompt_tokens = max_model_len
+        except TypeError:
+            logger.warning(
+                "Skipping vLLM truncate_prompt_tokens validation because values are not directly comparable: "
+                "truncate_prompt_tokens={}, max_model_len={}",
+                truncate_prompt_tokens,
+                max_model_len,
+            )
+
+        return sampling_params
+
     def engine_generate_local(
         self,
         sampling_params: Any,
@@ -767,6 +806,7 @@ class StrategyBase(ABC):
 
         # if inference engine is vllm
         if self.inference_engine_type == "vllm":
+            sampling_params = self._sanitize_vllm_sampling_params(sampling_params)
             # For vLLM:
             # - If `prompt_token_ids` is provided, it indicates a pure LLM (text-only) generation.
             # - If `prompts` (i.e., `multi_modal_inputs`) is provided, it indicates a VLM (multimodal) generation.
@@ -774,8 +814,10 @@ class StrategyBase(ABC):
                 prompt = []
                 for item in multi_modal_inputs:
                     prompt_item = {"prompt": item["prompt"]}
-                    if item.get("prompt_token_ids") is not None:
-                        prompt_item["prompt_token_ids"] = item["prompt_token_ids"]
+                    # Do not forward multimodal prompt_token_ids to vLLM.
+                    # vLLM's multimodal processor applies placeholder expansion
+                    # itself; passing already-expanded token IDs causes image
+                    # placeholders to be expanded a second time.
                     if item.get("multi_modal_data") is not None:
                         prompt_item["multi_modal_data"] = item["multi_modal_data"]
                     prompt.append(prompt_item)
@@ -880,7 +922,6 @@ class StrategyBase(ABC):
         for i, prompt in enumerate(all_prompts):
             img_num = images_num[i] if images_num is not None else 0
             vid_num = videos_num[i] if videos_num is not None else 0
-            prompt_token_ids = all_prompt_token_ids[i] if all_prompt_token_ids is not None else None
 
             # Support two input formats:
             # 1. Nested list: all_images[i] is already a list of images for this prompt
@@ -916,16 +957,12 @@ class StrategyBase(ABC):
                 input_item = {
                     "prompt": cleaned_prompt,
                 }
-                if prompt_token_ids is not None and cleaned_prompt == prompt:
-                    input_item["prompt_token_ids"] = prompt_token_ids
                 inputs.append(input_item)
             else:
                 input_item = {
                     "prompt": prompt,
                     "multi_modal_data": multi_modal_data,
                 }
-                if prompt_token_ids is not None:
-                    input_item["prompt_token_ids"] = prompt_token_ids
                 inputs.append(input_item)
             img_start_idx += img_num
             vid_start_idx += vid_num
