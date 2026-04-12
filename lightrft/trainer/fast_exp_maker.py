@@ -1770,7 +1770,7 @@ class FastExperienceMaker(NaiveExperienceMaker):
         num_tokens = (sequences == image_token_id).sum()
         vision_config = getattr(config, "vision_config", None)
         spatial_merge_size = getattr(vision_config, "spatial_merge_size", 2)
-        merge_length = spatial_merge_size**2
+        merge_length = spatial_merge_size ** 2
 
         if sample.image_grid_thws is not None and sample.image_grid_thws.numel() > 0:
             num_patches = int(torch.prod(sample.image_grid_thws, dim=-1).sum().item() // merge_length)

@@ -19,9 +19,6 @@ import torch
 # Local application imports
 from lightrft.strategy.utils.distributed_util import create_sub_group
 
-if TYPE_CHECKING:
-    from .sglang_engine import RLGenerationEngine
-
 
 def _import_rl_generation_engine():
     try:

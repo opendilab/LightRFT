@@ -450,9 +450,8 @@ if __name__ == "__main__":
         "--engine_type",
         type=str,
         choices=["vllm", "sglang"],
-        default=os.environ.get("LIGHTRFT_ENGINE_TYPE", "sglang"),
-        help="Choose inference engine type: vllm or sglang. "
-        "Defaults to LIGHTRFT_ENGINE_TYPE if set, otherwise sglang.",
+        default="sglang",
+        help="Choose inference engine type: vllm or sglang. Defaults to sglang",
     )
     parser.add_argument("--text_only", action="store_true", default=False)
 
