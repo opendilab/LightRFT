@@ -7,6 +7,8 @@ inference scenarios where model weights need to be synchronized across multiple 
 """
 
 import torch
+import vllm
+from packaging.version import Version
 # vLLM version compatibility notes:
 # --------------------------------
 # In older versions of vLLM (< 0.13.0), the Worker class is located under:
@@ -16,11 +18,22 @@ import torch
 #     vllm.v1.worker.gpu_worker.Worker
 #
 # To maintain compatibility across different vLLM versions, we try importing Worker
-# from the new v1 path first (for vllm>=0.13.0). If the import fails (ModuleNotFoundError),
-# we fall back to importing from the old path (for vllm<0.13.0).
-try:
-    from vllm.v1.worker.gpu_worker import Worker
-except (ModuleNotFoundError, ImportError):
+# from the new v1 path only for vllm>=0.13.0. Older releases like v0.7.x may
+# already expose a v1 module tree, but their uniproc executor still expects the
+# legacy Worker implementation with methods such as determine_num_available_blocks.
+if Version(vllm.__version__) >= Version("0.13.0"):
+    try:
+        from vllm.v1.worker.gpu_worker import Worker
+    except (ModuleNotFoundError, ImportError):
+        try:
+            from vllm.worker.worker import Worker
+        except (ModuleNotFoundError, ImportError):
+            raise ImportError(
+                "Could not import Worker from vllm. "
+                "Please ensure you have a compatible version of vllm installed. "
+                "Supported versions: vllm>=0.6.3 or vllm>=0.13.0"
+            )
+else:
     try:
         from vllm.worker.worker import Worker
     except (ModuleNotFoundError, ImportError):

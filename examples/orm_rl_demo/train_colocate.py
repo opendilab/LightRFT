@@ -47,16 +47,20 @@ from lightrft.utils import add_arguments, ensure_video_input_available
 ensure_video_input_available()
 
 from lightrft.datasets import PromptDatasetVL, SFTDatasetVL
-from lightrft.models.utils import get_vlm_for_sequence_regression
-from lightrft.utils import blending_datasets, get_tokenizer_processor_vl
 from lightrft.models.actor_language import ActorLanguage
 from lightrft.models.actor_vl import ActorVL
+from lightrft.models.critic_vl import CriticVL
+from lightrft.utils import blending_datasets, get_tokenizer_processor_vl
 
 from lightrft.strategy import get_strategy
 from lightrft.trainer.spmd_ppo_trainer import SPMDPPOTrainerVL
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from reward_models_utils import load_reward_models, reward_fn, RECIPE
+
+import torch.multiprocessing
+
+torch.multiprocessing.set_sharing_strategy("file_system")
 
 
 def _apply_label_override(dataset, label_key: str, label_override: str, strategy, dataset_name: str):
@@ -158,23 +162,26 @@ def train(args):
         strategy.print(f"Froze {frozen_params_count}/{total_params_count} parameters based on prefixes: {freeze_prefix}")
 
     if args.critic_pretrain:
-        critic = get_vlm_for_sequence_regression(
-            args.critic_pretrain,
-            "critic",
-            normalize_reward=args.normalize_reward_for_critic,
-            use_flash_attention_2=args.flash_attn,
-            bf16=args.bf16,
-            load_in_4bit=args.load_in_4bit,
-            lora_rank=args.lora_rank,
-            lora_alpha=args.lora_alpha,
-            target_modules=args.target_modules,
-            lora_dropout=args.lora_dropout,
-            ds_config=ds_train_cfg,
-            value_head_prefix=args.value_head_prefix,
-            init_value_head=strategy.args.pretrain == strategy.args.critic_pretrain,
-        )
+        with strategy.init_model_context(meta_init=args.meta_init):
+            critic = CriticVL(
+                args.critic_pretrain,
+                use_flash_attention_2=args.flash_attn,
+                bf16=args.bf16,
+                load_in_4bit=args.load_in_4bit,
+                lora_rank=args.lora_rank,
+                lora_alpha=args.lora_alpha,
+                target_modules=args.target_modules,
+                lora_dropout=args.lora_dropout,
+                normalize_reward=args.normalize_reward_for_critic,
+                ds_config=ds_train_cfg,
+                init_value_head=strategy.args.pretrain == strategy.args.critic_pretrain,
+                value_head_prefix=args.value_head_prefix,
+            )
     else:
         critic = None
+
+    if args.fsdp and critic is not None:
+        critic = strategy.prepare_model(critic, is_training=True)
 
     # Load reward models (multiple types: value, safety, knowledge, etc.)
     strategy.report_memory(f"before loaded reward models in main entry")
@@ -204,7 +211,7 @@ def train(args):
         )
 
         if args.fsdp:
-            initial_model = strategy.prepare_model(initial_model, is_training=False, shard_size=8)
+            initial_model = strategy.prepare_model(initial_model, is_training=False, shard_size=strategy.world_size)
             strategy.offload_model(initial_model)
 
     if args.enable_ema:
@@ -220,7 +227,7 @@ def train(args):
 
     # configure tokenizer and processor
     tokenizer, processor = get_tokenizer_processor_vl(
-        args.pretrain, actor.model, "left", strategy, use_fast=not strategy.args.disable_fast_tokenizer
+        args.pretrain, actor.model, "left", use_fast=not strategy.args.disable_fast_tokenizer
     )
     assert processor is not None, "processor is None"
 

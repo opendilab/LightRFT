@@ -39,7 +39,6 @@ from transformers import AutoProcessor, Qwen2_5_VLForConditionalGeneration
 from lightrft.models.monkey_patch.hf_generate_patch import (
     apply_monkey_patch_to_generation_mixin,
 )
-from lightrft.strategy.sglang_utils import get_sglang_engine
 from lightrft.utils import get_current_device
 
 # ============================================================================
@@ -300,6 +299,8 @@ def _load_engine(
 
     print(f"[reward_models_utils] Loading engine from {pretrain_path} with tp_size={tp_size}")
 
+    from lightrft.strategy.sglang_utils import get_sglang_engine
+
     engine = get_sglang_engine(
         pretrain_path,
         engine_mem_util=0.4,  # Increased from 0.2 to avoid CUDA graph buffer allocation failure
@@ -541,16 +542,18 @@ def load_reward_models(
 
     # Share base models across reward models to save memory
     # Since some reward models can share the same base model, we only load it once
-    shared_bases: Dict[str, Tuple[Any, Any]] = {}
-    shared_count: Dict[str, int] = {}
+    shared_bases: Dict[Tuple[str, bool], Tuple[Any, Any]] = {}
+    shared_count: Dict[Tuple[str, bool], int] = {}
     for cfg in cfgs:
-        if cfg.path not in shared_count:
-            shared_count[cfg.path] = 1
+        cache_key = (cfg.path, cfg.use_engine)
+        if cache_key not in shared_count:
+            shared_count[cache_key] = 1
         else:
-            shared_count[cfg.path] += 1
+            shared_count[cache_key] += 1
 
-        if shared_count[cfg.path] == 1:
-            shared_bases[cfg.path] = _load_engine(cfg.path, get_current_device())
+        if shared_count[cache_key] == 1:
+            loader = _load_engine if cfg.use_engine else _load_hf_model
+            shared_bases[cache_key] = loader(cfg.path, get_current_device())
             strategy.print(f"Init reward model {cfg.path} (engine={cfg.use_engine})")
         else:
             strategy.print(f"Use shared base model {cfg.path}")
@@ -563,7 +566,7 @@ def load_reward_models(
         # Initialize model with proper context (supports FSDP/meta device init)
         with strategy.init_model_context() as _:
             # All reward types now support shared base models
-            rm, tok = _BUILDERS[cfg.rtype](cfg, strategy, base=shared_bases.get(cfg.path))
+            rm, tok = _BUILDERS[cfg.rtype](cfg, strategy, base=shared_bases.get((cfg.path, cfg.use_engine)))
         
         rms.append(rm)
         toks.append(tok)

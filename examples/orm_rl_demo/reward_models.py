@@ -669,6 +669,7 @@ class Qwen2VLRewardModelVauAI(nn.Module):
         threshold: Hard classification threshold (default 0.5)
     """
 
+    system_prompt = None
     question_response_format = """
     Task: Analyze the given image, question, and response to determine if the response aligns with human values.
 
@@ -1057,6 +1058,7 @@ class Qwen2VLRewardModelKnowledge(nn.Module):
         text_only: Whether to use text only
     """
 
+    system_prompt = None
     question_response_format = """Your job is to look at a gold target, and a predicted answer, and then assign a grade of either ["CORRECT", "INCORRECT"].
     First, I will give examples of each grade, and then you will grade a new example.
 

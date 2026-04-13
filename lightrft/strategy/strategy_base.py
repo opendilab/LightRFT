@@ -39,8 +39,6 @@ from lightrft.strategy.utils.parallel_utils import (
 )
 from lightrft.strategy.utils.statistic import GenLenAnalyser
 from lightrft.strategy.config import StrategyConfig
-from .sglang_utils import get_sglang_engine_for_rollout
-
 ModelOptimPair = Tuple[nn.Module, Optimizer]
 ModelOrModelOptimPair = Union[nn.Module, ModelOptimPair]
 
@@ -536,10 +534,13 @@ class StrategyBase(ABC):
             if critic is not None:
                 critic = self.prepare_model(critic, is_training=True)
             if not self.config.remote_rm_url:
+                reward_model_shard_size = self.world_size
                 if isinstance(reward_models, (tuple, list)):
-                    reward_models = [self.prepare_model(model, shard_size=8) for model in reward_models]
+                    reward_models = [
+                        self.prepare_model(model, shard_size=reward_model_shard_size) for model in reward_models
+                    ]
                 else:
-                    reward_models = self.prepare_model(reward_models, shard_size=8)
+                    reward_models = self.prepare_model(reward_models, shard_size=reward_model_shard_size)
 
         # Configure optimizers
         actor_optim = self.create_optimizer(
@@ -678,6 +679,7 @@ class StrategyBase(ABC):
             self.inference_engine_status = EngineStatus.WAKEUP
         elif engine_type == "sglang":
             # Default inference engine: SGLang (no additional dependencies required)
+            from .sglang_utils import get_sglang_engine_for_rollout
             self.inference_engine = get_sglang_engine_for_rollout(args)
             self.inference_engine_status = EngineStatus.WAKEUP
         else:

@@ -1,5 +1,8 @@
 #!/bin/bash
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+
 NAME="orm-rl-demo-general-geo3k"
 N_SAMPLES=8
 EPISODE=3
@@ -18,18 +21,23 @@ export IGNORE_EOS=0
 
 # Reuse the existing cluster-ready path style already referenced in this repo.
 DATA_PATH="/mnt/shared-storage-user/puyuan/data/geo3k"
-PRETRAIN_PATH="/mnt/shared-storage-user/puyuan/rft_20250828/base_model_after_sft_20250828"
-REWARD_PRETRAIN_PATHS='{"general":"/mnt/shared-storage-user/puyuan/rft_20250828/reward_model_20250828/knowledge_orm/"}'
+PRETRAIN_PATH="${PRETRAIN_PATH:-/mnt/shared-storage-user/puyuan/model/Qwen2.5-VL-7B-Instruct}"
+REWARD_PRETRAIN_PATHS="${REWARD_PRETRAIN_PATHS:-'{\"general\":\"/mnt/shared-storage-user/puyuan/rft_20250828/reward_model_20250828/knowledge_orm/\"}'}"
+LABEL_OVERRIDE="${LABEL_OVERRIDE:-general}"
+USE_RM_ENGINE="${USE_RM_ENGINE:-1}"
 
 current_time=$(date +"%m%d%H%M")
 
+cd "${REPO_ROOT}"
+
 mkdir -p log
+mkdir -p wandb
 
 export TORCH_NCCL_AVOID_RECORD_STREAMS=1
 export NCCL_DEBUG=WARN
 
 export MLP_WORKER_NUM=1
-export MLP_WORKER_GPU=8
+export MLP_WORKER_GPU="${MLP_WORKER_GPU:-2}"
 export MLP_ROLE_INDEX=0
 export MLP_WORKER_0_PORT=20090
 export MLP_WORKER_0_HOST=localhost
@@ -49,11 +57,17 @@ set -x
 
 export WANDB_MODE="offline"
 export WANDB_API_KEY="968275bc822c87ac741ecce2f06cdfb54dbc1608"
+export WANDB_DIR="${WANDB_DIR:-${REPO_ROOT}/wandb}"
 
 WANDB_PROJECT="ORM-RL-Demo-QwenVL-7B-Geo3K"
 WANDB_RUN_NAME="ORM-RL-Demo-Geo3K-General-${current_time}"
 
-torchrun --nnodes $NNODES --nproc-per-node $GPUS_PER_NODE --node_rank $NODE_RANK --master-port $MASTER_PORT --master-addr $MASTER_ADDR examples/orm_rl_demo/train_colocate.py \
+rm_use_engine_args=()
+if [ "${USE_RM_ENGINE}" = "1" ]; then
+  rm_use_engine_args+=(--rm_use_engine)
+fi
+
+torchrun --nnodes $NNODES --nproc-per-node $GPUS_PER_NODE --node_rank $NODE_RANK --master-port $MASTER_PORT --master-addr $MASTER_ADDR "${SCRIPT_DIR}/train_colocate.py" \
    --pretrain "${PRETRAIN_PATH}" \
    --loss_agg_mode seq-mean-token-mean \
    --save_trajectories \
@@ -61,7 +75,7 @@ torchrun --nnodes $NNODES --nproc-per-node $GPUS_PER_NODE --node_rank $NODE_RANK
    --print_replay_buffer_stats \
    --fsdp \
    --use_kl_loss \
-   --rm_use_engine \
+   "${rm_use_engine_args[@]}" \
    --mixed_mm_data \
    --reward_pretrain "${REWARD_PRETRAIN_PATHS}" \
    --save_path "results/${NAME}/${SAVE_MODEL_NAME}" \
@@ -86,7 +100,7 @@ torchrun --nnodes $NNODES --nproc-per-node $GPUS_PER_NODE --node_rank $NODE_RANK
    --input_key prompt \
    --images_key images \
    --label_key label \
-   --label_override general \
+    --label_override "${LABEL_OVERRIDE}" \
    --apply_chat_template \
    --flash_attn \
    --gradient_checkpointing \
