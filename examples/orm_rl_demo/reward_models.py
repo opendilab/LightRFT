@@ -1846,16 +1846,14 @@ class Qwen2VLRewardModelGeneral(nn.Module):
         self.device = torch.cuda.current_device()
         self.text_only = text_only
 
-        if is_engine(self.base_model):
-            self._allowed_token_seqs: list[list[int]] = []
-            for s in self.ALLOWED_STR_TOKENS:
-                ids = self.tokenizer.encode(s, add_special_tokens=False)
-                self._allowed_token_seqs.append(ids)
+        self._allowed_token_seqs: list[list[int]] = []
+        for s in self.ALLOWED_STR_TOKENS:
+            ids = self.tokenizer.encode(s, add_special_tokens=False)
+            self._allowed_token_seqs.append(ids)
 
-            first_ids = {seq[0] for seq in self._allowed_token_seqs}
-            self._logits_proc = [AllowedTokensLogitsProcessor(first_ids)]
-
-            self._max_answer_len = max(len(x) for x in self._allowed_token_seqs)
+        first_ids = {seq[0] for seq in self._allowed_token_seqs}
+        self._logits_proc = [AllowedTokensLogitsProcessor(first_ids)]
+        self._max_answer_len = max(len(x) for x in self._allowed_token_seqs)
 
     @torch.no_grad()
     def forward(
@@ -1866,6 +1864,7 @@ class Qwen2VLRewardModelGeneral(nn.Module):
         image_grid_thw: Optional[torch.Tensor] = None,
         references: List[str] | None = None,
         prompt_and_outputs=None,
+        prompt_and_output=None,
         raw_images=None,
         **kwargs,  # for compatibility
     ):
@@ -1923,17 +1922,22 @@ class Qwen2VLRewardModelGeneral(nn.Module):
         #     chat_msgs, tokenize=False, add_generation_prompt=False
         # )
 
-        raw_texts = []
-        for i in range(len(prompt_and_outputs)):
-            raw_texts = preprocess_inputs_sglang(
-                prompt_and_outputs,
-                references,
-                self.question_response_format_zh,
-                self.question_response_format_en,
-                self.general_system_prompt_zh,
-                self.general_system_prompt_en,
-                system_prompt=True,
-            )
+        if prompt_and_outputs is None:
+            prompt_and_outputs = prompt_and_output
+        if prompt_and_outputs is None:
+            prompt_and_outputs = kwargs.get("prompt_and_output")
+        if prompt_and_outputs is None:
+            raise ValueError("`prompt_and_outputs` or `prompt_and_output` is required")
+
+        raw_texts = preprocess_inputs_sglang(
+            prompt_and_outputs,
+            references,
+            self.question_response_format_zh,
+            self.question_response_format_en,
+            self.general_system_prompt_zh,
+            self.general_system_prompt_en,
+            system_prompt=True,
+        )
 
         if is_engine(self.base_model):
             raw_images = [[img] for img in raw_images]
@@ -1946,14 +1950,14 @@ class Qwen2VLRewardModelGeneral(nn.Module):
             )
         else:
             model_in = self.processor(
-                text=prompt_strs, padding=True, return_tensors="pt"
+                text=raw_texts, padding=True, return_tensors="pt"
             ).to(self.device)
             _, gen_ids = _hf_or_engine_generate(
                 self.base_model,
                 input_ids=model_in["input_ids"],
                 attention_mask=model_in["attention_mask"],
-                pixel_values=None if self.text_only else pixel_values,
-                image_grid_thw=None if self.text_only else image_grid_thw,
+                pixel_values=None,
+                image_grid_thw=None,
                 max_new_tokens=self._max_answer_len,
                 temperature=0.0,
                 do_sample=False,
