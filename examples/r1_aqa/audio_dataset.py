@@ -493,6 +493,7 @@ def build_audio_multimodal_inputs(
     images_num: Optional[List[int]],
     all_videos: Optional[List] = None,
     videos_num: Optional[List[int]] = None,
+    all_prompt_token_ids: Optional[List[List[int]]] = None,
 ) -> List[Dict[str, Any]]:
     """
     Replacement for ``strategy._build_multimodal_inputs`` that maps
@@ -530,10 +531,10 @@ def build_audio_multimodal_inputs(
 
         if not multi_modal_data:
             # Remove audio placeholder tokens if no audio data
-            prompt = re.sub(
+            cleaned_prompt = re.sub(
                 r'<\|audio_bos\|>.*?<\|audio_eos\|>', '', prompt
             )
-            inputs.append({"prompt": prompt})
+            inputs.append({"prompt": cleaned_prompt})
         else:
             inputs.append({
                 "prompt": prompt,
@@ -554,9 +555,15 @@ def patch_strategy_for_audio(strategy):
     original_build = strategy._build_multimodal_inputs
 
     def patched_build(all_prompts, all_images=None, images_num=None,
-                      all_videos=None, videos_num=None):
+                      all_videos=None, videos_num=None, all_prompt_token_ids=None):
         return build_audio_multimodal_inputs(
-            strategy, all_prompts, all_images, images_num, all_videos, videos_num
+            strategy,
+            all_prompts,
+            all_images,
+            images_num,
+            all_videos,
+            videos_num,
+            all_prompt_token_ids,
         )
 
     strategy._build_multimodal_inputs = patched_build
@@ -593,6 +600,4 @@ def patch_experience_maker_for_audio(exp_maker, processor, tokenizer, prompt_max
 
     print("[PATCH] FastExperienceMaker patched for audio")
     return exp_maker
-
-
 

@@ -979,7 +979,7 @@ class StrategyBase(ABC):
 
         inputs = gather_inputs_object_for_inference(input_data=inputs, group=self.engine_mp_group)
 
-        self.print(f"Start VLM gather_and_generate ..., total prompts: {len(inputs)}")
+        self.print(f"Start MLLM gather_and_generate ..., total prompts: {len(inputs)}")
 
         all_outputs = self.engine_generate_local(
             sampling_params=sampling_params,

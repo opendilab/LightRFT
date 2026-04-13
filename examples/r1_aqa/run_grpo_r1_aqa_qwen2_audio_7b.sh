@@ -71,23 +71,16 @@ SAVE_STEPS=50            # Save checkpoint every N steps
 #                    Part 3: Distributed Training Setup                        #
 ################################################################################
 
-# --- Single-Node Setup ---
-export MLP_WORKER_NUM=1
-export MLP_WORKER_GPU=1                 # Number of GPUs per node
-export MLP_ROLE_INDEX=0
-export MLP_WORKER_0_HOST="localhost"
-export MLP_WORKER_0_PORT=20092
-
 # --- PyTorch Distributed ---
-export MASTER_ADDR=$MLP_WORKER_0_HOST
-export MASTER_PORT=$MLP_WORKER_0_PORT
-export NNODES=$MLP_WORKER_NUM
-export NODE_RANK=$MLP_ROLE_INDEX
-export GPUS_PER_NODE=$MLP_WORKER_GPU
+export MASTER_ADDR="localhost"
+export MASTER_PORT=20092
+export NNODES=1
+export NODE_RANK=0
+export GPUS_PER_NODE=8
 
 # --- Inference Engine ---
-ENGINE_TP=1              # Tensor parallelism for inference engine
-ENGINE_MEM_UTIL=0.3      # Memory utilization for inference engine (reduced from 0.6)
+ENGINE_TP=2              # Tensor parallelism for inference engine
+ENGINE_MEM_UTIL=0.6      # Memory utilization for inference engine (reduced from 0.6)
 
 # --- Checkpoint local path (use if NFS causes OSError) ---
 CKPT_PATH_LOCAL=""
@@ -159,13 +152,13 @@ torchrun \
     --gradient_checkpointing \
     --save_steps ${SAVE_STEPS} \
     --max_ckpt_num 3 \
-    --engine_type vllm \
+    --engine_type sglang \
     --engine_mem_util ${ENGINE_MEM_UTIL} \
     --engine_tp_size $ENGINE_TP \
     --enable_engine_sleep \
     --l2 1.0e-2 \
     --adam_offload \
-    --use_wandb "${WANDB_API_KEY}" \
+    --use_tensorboard "tb/r1-aqa-baseline" \
     --wandb_project "${WANDB_PROJECT}" \
     --wandb_run_name "${WANDB_RUN_NAME}" \
     2>&1 | tee "rft_logs/${EXPERIMENT_NAME}/node${NODE_RANK}_${current_time}.log"
@@ -186,7 +179,7 @@ torchrun \
 #   Edit "Part 1: User Configuration" above:                                   #
 #   - Set PATH_TO_YOUR_BASE_MODEL (Qwen2-Audio-7B-Instruct)                   #
 #   - Set PATH_TO_YOUR_AVQA_DATASET                                            #
-#   - Set GPU count in MLP_WORKER_GPU                                          #
+#   - Set GPU count in GPU_PER_NODE                                            #
 #                                                                              #
 # Step 3: Run Training                                                         #
 #   bash examples/r1_aqa/run_grpo_r1_aqa_qwen2_audio_7b.sh                    #
@@ -201,8 +194,8 @@ torchrun \
 #   python /path/to/mmau/evaluation.py --input results/res_mmau_mini.json      #
 #                                                                              #
 # Notes:                                                                       #
-# - This uses the AUDIO pipeline (not VL). Audio is processed via Qwen2-Audio. #
+# - This uses the AUDIO pipeline. Audio is processed via Qwen2-Audio.          #
 # - TBS must >= RBS * N_SAMPLES for GRPO constraint.                           #
-# - For dry-run: set EPISODE=1, RBS=4, TBS=32, N_SAMPLES=4.                   #
-# - For 1-GPU: set MLP_WORKER_GPU=1, ENGINE_TP=1, ENGINE_MEM_UTIL=0.5.        #
+# - For dry-run: set EPISODE=1, RBS=4, TBS=32, N_SAMPLES=4.                    #
+# - For 1-GPU: set GPU_PER_NODE=1, ENGINE_TP=1, ENGINE_MEM_UTIL=0.5.           #
 ################################################################################
