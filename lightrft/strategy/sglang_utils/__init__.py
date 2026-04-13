@@ -1,25 +1,39 @@
 """
 This module provides functionality for initializing and configuring a SGLang generation engine
-for RLHF and RLVR applications. It handles distributed
-training setup, device coordination, and engine initialization with appropriate parameters.
+for RLHF and RLVR applications. It handles distributed training setup, device coordination,
+and engine initialization with appropriate parameters.
 
-The main component is the get_sglang_engine function which creates and returns a configured
-RLGenerationEngine instance based on the provided arguments, taking into account the distributed
-training environment.
+Note:
+    SGLang imports are kept lazy so the rest of LightRFT can still be imported when users
+    only install the vLLM backend. ImportError is raised only when engine_type="sglang"
+    is actually requested.
 """
 
 import datetime
 import os
 import sys
+from typing import TYPE_CHECKING
 
 import torch
 
 # Local application imports
 from lightrft.strategy.utils.distributed_util import create_sub_group
-from .sglang_engine import RLGenerationEngine
 
 
-def get_sglang_engine_for_rollout(args) -> RLGenerationEngine:
+def _import_rl_generation_engine():
+    try:
+        from .sglang_engine import RLGenerationEngine
+    except ImportError as e:
+        raise ImportError(
+            "SGLang is not installed but engine_type is set to 'sglang'. "
+            "To use the SGLang backend, install it with: pip install 'LightRFT[sglang]' "
+            "or pip install 'sglang>=0.5.9'. "
+            "Alternatively, use engine_type='vllm' with: pip install 'LightRFT[vllm]'."
+        ) from e
+    return RLGenerationEngine
+
+
+def get_sglang_engine_for_rollout(args):
     """
     Initialize and configure a SGLang generation engine for reinforcement learning rollout phase.
 
@@ -150,7 +164,9 @@ def get_sglang_engine(
         if k in os.environ:
             del os.environ[k]
 
-    engine = RLGenerationEngine(
+    rl_generation_engine_cls = _import_rl_generation_engine()
+
+    engine = rl_generation_engine_cls(
         model_path=model_name_or_path,
         mem_fraction_static=engine_mem_util,
         tp_group_cpu=sglang_tp_group_cpu,

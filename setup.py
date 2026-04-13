@@ -42,7 +42,7 @@ setup(
         # Optional vLLM backend support
         # Install with: pip install "LightRFT[vllm]"
         "vllm": [
-            "vllm>=0.13.3",
+            "vllm>=0.18.1",
         ],
     },
     keywords=[

@@ -43,10 +43,12 @@ export WANDB_PROJECT="LightRFT-Geo3K-Experiments"
 # --- GRPO Settings ---
 GROUP_METHOD="normal"
 N_SAMPLES=8              # Number of samples per prompt for GRPO (must be > 1).
-EPISODE=20               # Total number of training episodes.
+EPISODE=30               # Total number of training episodes.
 WARMUP=0.03              # Learning rate warmup ratio.
-RBS=128                  # Rollout Batch Size.
-TBS=128                  # Training Batch Size.
+
+# --- Batch Size Configuration ---
+RBS=256       # Rollout Batch Size.
+TBS=256       # Train Batch Size.
 
 # --- Learning and Model Settings ---
 KL=0.01                  # KL divergence coefficient.
@@ -78,6 +80,7 @@ export MASTER_ADDR="localhost"   # IP address of the master node
 export MASTER_PORT=20091         # Port for the master node
 
 # --- vLLM/SGLang Engine Settings ---
+ENGINE_TYPE="${ENGINE_TYPE:-sglang}"  # Supported: sglang, vllm
 ENGINE_TP=2  # Tensor parallelism size for the inference engine. Adjust based on your model and GPU setup.
 
 
@@ -118,9 +121,12 @@ torchrun \
     examples/gsm8k_geo3k/train_colocate.py \
     --pretrain "${PATH_TO_YOUR_BASE_MODEL}" \
     --save_trajectories \
+    --advantage_estimator "group_norm" \
     --print_replay_buffer_stats \
     --loss_agg_mode "seq-mean-token-mean" \
     --fsdp \
+    --use_kl_loss \
+    --flash_attn \
     --rm_use_engine \
     --mixed_mm_data \
     --reward_pretrain "{}" \
@@ -130,7 +136,6 @@ torchrun \
     --train_batch_size ${TBS} \
     --micro_rollout_batch_size 8 \
     --rollout_batch_size ${RBS} \
-    --advantage_estimator "group_norm" \
     --max_epochs 1 \
     --num_episodes ${EPISODE} \
     --lr_warmup_ratio ${WARMUP} \
@@ -140,7 +145,6 @@ torchrun \
     --zero_stage 3 \
     --bf16 \
     --actor_learning_rate $LR \
-    --use_kl_loss \
     --init_kl_coef $KL \
     --kl_estimator "k3" \
     --prompt_data "${PATH_TO_YOUR_GEO3K_DATASET}" \
@@ -150,11 +154,10 @@ torchrun \
     --eval_steps 20 \
     --eval_split "${EVAL_SPLIT}" \
     --apply_chat_template \
-    --flash_attn \
     --gradient_checkpointing \
     --save_steps 20 \
     --max_ckpt_num 2 \
-    --engine_type sglang \
+    --engine_type "${ENGINE_TYPE}" \
     --engine_mem_util 0.6 \
     --engine_tp_size $ENGINE_TP \
     --enable_engine_sleep \
