@@ -306,8 +306,106 @@
             <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
               <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
                 
-  <section id="lightrft-trainer-grm-trainer-vl">
-<h1>lightrft.trainer.grm_trainer_vl<a class="headerlink" href="#lightrft-trainer-grm-trainer-vl" title="Permalink to this heading">¶</a></h1>
+  <section id="module-lightrft.trainer.grm_trainer_vl">
+<span id="lightrft-trainer-grm-trainer-vl"></span><h1>lightrft.trainer.grm_trainer_vl<a class="headerlink" href="#module-lightrft.trainer.grm_trainer_vl" title="Permalink to this heading">¶</a></h1>
+<p>Trainer for generative reward models (vision-language capable).</p>
+<p>This module contains a trainer that optimizes a generative reward model using
+next-token prediction loss (<code class="docutils literal notranslate"><span class="pre">GPTLMLoss</span></code>). It integrates with the Strategy
+abstraction for distributed training, gradient accumulation, checkpointing, and
+logging via Weights &amp; Biases or TensorBoard.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="lightrft.trainer.grm_trainer_vl.GRMTrainerVL">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">lightrft.trainer.grm_trainer_vl.</span></span><span class="sig-name descname"><span class="pre">GRMTrainerVL</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.nn.Module</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strategy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.optim.Optimizer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_dataloader</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scheduler</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tokenizer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eval_dataloader</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_epochs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loss</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'GPTLMLoss'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/trainer/grm_trainer_vl.html#GRMTrainerVL"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.trainer.grm_trainer_vl.GRMTrainerVL" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Trainer for generative reward models.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> (<em>torch.nn.Module</em>) – The model to be trained. Expected to return logits for
+next-token prediction when called with token ids and optional image or
+video features.</p></li>
+<li><p><strong>strategy</strong> (<em>Strategy</em>) – The training strategy to apply, handling distributed
+setup, gradient accumulation, logging and checkpointing.</p></li>
+<li><p><strong>optim</strong> (<em>torch.optim.Optimizer</em>) – Optimizer to use during training.</p></li>
+<li><p><strong>train_dataloader</strong> (<em>torch.utils.data.DataLoader</em>) – Dataloader for the training dataset.</p></li>
+<li><p><strong>scheduler</strong> (<em>torch.optim.lr_scheduler._LRScheduler</em>) – Learning rate scheduler for dynamic adjustments during
+training.</p></li>
+<li><p><strong>tokenizer</strong> (<em>Callable</em>) – Tokenizer for input data (used when padding/processing
+sequences as needed by some helpers).</p></li>
+<li><p><strong>eval_dataloader</strong> (<em>Optional</em><em>[</em><em>torch.utils.data.DataLoader</em><em>]</em>) – Dataloader for the evaluation dataset.</p></li>
+<li><p><strong>max_epochs</strong> (<em>int</em>) – Maximum number of training epochs.</p></li>
+<li><p><strong>loss</strong> (<em>str</em>) – The loss function selector.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.trainer.grm_trainer_vl.GRMTrainerVL.evaluate">
+<span class="sig-name descname"><span class="pre">evaluate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eval_dataloader</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">steps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/lightrft/trainer/grm_trainer_vl.html#GRMTrainerVL.evaluate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.trainer.grm_trainer_vl.GRMTrainerVL.evaluate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluate the model on the provided dataloader by generating text responses and saving them to a
+JSON file. This method handles distributed gathering of generated text, extracted assistant
+responses, and extra metadata across all processes, with the rank 0 process writing the final
+results to disk. Evaluation results and metrics are also logged to Weights &amp; Biases or
+TensorBoard if configured.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>args</strong> (<em>Any</em>) – Training arguments containing generation configurations.</p></li>
+<li><p><strong>eval_dataloader</strong> (<em>torch.utils.data.DataLoader</em>) – Dataloader for evaluation samples.</p></li>
+<li><p><strong>steps</strong> (<em>int</em>) – Global step id for logging and naming the output file.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>NoneType</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.trainer.grm_trainer_vl.GRMTrainerVL.fit">
+<span class="sig-name descname"><span class="pre">fit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">consumed_samples</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_update_steps_per_epoch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/lightrft/trainer/grm_trainer_vl.html#GRMTrainerVL.fit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.trainer.grm_trainer_vl.GRMTrainerVL.fit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Main training loop for generative reward model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>args</strong> (<em>argparse.Namespace</em>) – Training arguments containing hyperparameters and configurations.</p></li>
+<li><p><strong>consumed_samples</strong> (<em>int</em>) – Number of samples already consumed (for resuming).</p></li>
+<li><p><strong>num_update_steps_per_epoch</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – Number of update steps per epoch. Used for
+eval scheduling, determining epoch boundaries, and resuming training from checkpoints.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.trainer.grm_trainer_vl.GRMTrainerVL.save_logs_and_checkpoints">
+<span class="sig-name descname"><span class="pre">save_logs_and_checkpoints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">global_step</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_bar</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">logs_dict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">client_states</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">{}</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/lightrft/trainer/grm_trainer_vl.html#GRMTrainerVL.save_logs_and_checkpoints"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.trainer.grm_trainer_vl.GRMTrainerVL.save_logs_and_checkpoints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Log metrics and optionally run evaluation and checkpointing.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>args</strong> (<em>Any</em>) – Training arguments providing logging/eval/save intervals
+and checkpoint configurations.</p></li>
+<li><p><strong>global_step</strong> (<em>int</em>) – Current global optimization step.</p></li>
+<li><p><strong>step_bar</strong> (<em>tqdm.tqdm</em>) – Progress bar for step-level updates.</p></li>
+<li><p><strong>logs_dict</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>float</em><em>]</em>) – Dictionary of metrics to log.</p></li>
+<li><p><strong>client_states</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – Extra state to persist with checkpoints (e.g.,
+consumed samples).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>NoneType</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 
 
@@ -353,7 +451,15 @@
           <div class="pytorch-right-menu" id="pytorch-right-menu">
             <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
               <ul>
-<li><a class="reference internal" href="#">lightrft.trainer.grm_trainer_vl</a></li>
+<li><a class="reference internal" href="#">lightrft.trainer.grm_trainer_vl</a><ul>
+<li><a class="reference internal" href="#lightrft.trainer.grm_trainer_vl.GRMTrainerVL"><code class="docutils literal notranslate"><span class="pre">GRMTrainerVL</span></code></a><ul>
+<li><a class="reference internal" href="#lightrft.trainer.grm_trainer_vl.GRMTrainerVL.evaluate"><code class="docutils literal notranslate"><span class="pre">GRMTrainerVL.evaluate()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.trainer.grm_trainer_vl.GRMTrainerVL.fit"><code class="docutils literal notranslate"><span class="pre">GRMTrainerVL.fit()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.trainer.grm_trainer_vl.GRMTrainerVL.save_logs_and_checkpoints"><code class="docutils literal notranslate"><span class="pre">GRMTrainerVL.save_logs_and_checkpoints()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 
             </div>

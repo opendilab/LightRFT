@@ -309,11 +309,14 @@
   <section id="module-lightrft.strategy.sglang_utils">
 <span id="lightrft-strategy-sglang-utils"></span><h1>lightrft.strategy.sglang_utils<a class="headerlink" href="#module-lightrft.strategy.sglang_utils" title="Permalink to this heading">¶</a></h1>
 <p>This module provides functionality for initializing and configuring a SGLang generation engine
-for RLHF and RLVR applications. It handles distributed
-training setup, device coordination, and engine initialization with appropriate parameters.</p>
-<p>The main component is the get_sglang_engine function which creates and returns a configured
-RLGenerationEngine instance based on the provided arguments, taking into account the distributed
-training environment.</p>
+for RLHF and RLVR applications. It handles distributed training setup, device coordination,
+and engine initialization with appropriate parameters.</p>
+<dl class="simple">
+<dt>Note:</dt><dd><p>SGLang imports are kept lazy so the rest of LightRFT can still be imported when users
+only install the vLLM backend. ImportError is raised only when engine_type=”sglang”
+is actually requested.</p>
+</dd>
+</dl>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="sglang_engine.html">lightrft.strategy.sglang_utils.sglang_engine</a><ul>

@@ -341,7 +341,6 @@
 <span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">lightrft.strategy.utils.statistic</span><span class="w"> </span><span class="kn">import</span> <span class="n">GenLenAnalyser</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">lightrft.strategy.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">StrategyConfig</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">.sglang_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_sglang_engine_for_rollout</span>
 
 <span class="n">ModelOptimPair</span> <span class="o">=</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span> <span class="n">Optimizer</span><span class="p">]</span>
 <span class="n">ModelOrModelOptimPair</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span> <span class="n">ModelOptimPair</span><span class="p">]</span>
@@ -979,7 +978,8 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">inference_engine</span> <span class="o">=</span> <span class="n">get_vllm_engine_for_rollout</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">inference_engine_status</span> <span class="o">=</span> <span class="n">EngineStatus</span><span class="o">.</span><span class="n">WAKEUP</span>
         <span class="k">elif</span> <span class="n">engine_type</span> <span class="o">==</span> <span class="s2">&quot;sglang&quot;</span><span class="p">:</span>
-            <span class="c1"># Default inference engine: SGLang (no additional dependencies required)</span>
+            <span class="c1"># Conditional import: SGLang is optional and only imported when explicitly requested</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">.sglang_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_sglang_engine_for_rollout</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">inference_engine</span> <span class="o">=</span> <span class="n">get_sglang_engine_for_rollout</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">inference_engine_status</span> <span class="o">=</span> <span class="n">EngineStatus</span><span class="o">.</span><span class="n">WAKEUP</span>
         <span class="k">else</span><span class="p">:</span>
@@ -1034,6 +1034,45 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">inference_engine_status</span> <span class="o">=</span> <span class="n">EngineStatus</span><span class="o">.</span><span class="n">WAKEUP</span></div>
 
+    <span class="k">def</span><span class="w"> </span><span class="nf">_sanitize_vllm_sampling_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sampling_params</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Clamp vLLM sampling parameters that must respect the engine context length.</span>
+
+<span class="sd">        Newer vLLM releases (&gt;=0.11.0) validate ``truncate_prompt_tokens`` against the engine&#39;s</span>
+<span class="sd">        ``max_model_len``. Some callers already clamp this during ``SamplingParams``</span>
+<span class="sd">        construction, but this centralized guard keeps generation safe for every</span>
+<span class="sd">        call path that reaches the strategy layer.</span>
+
+<span class="sd">        :param sampling_params: Sampling parameters passed to vLLM.</span>
+<span class="sd">        :type sampling_params: Any</span>
+<span class="sd">        :return: Sanitized sampling parameters.</span>
+<span class="sd">        :rtype: Any</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">sampling_params</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">inference_engine_type</span> <span class="o">!=</span> <span class="s2">&quot;vllm&quot;</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">inference_engine</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">sampling_params</span>
+
+        <span class="n">truncate_prompt_tokens</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">sampling_params</span><span class="p">,</span> <span class="s2">&quot;truncate_prompt_tokens&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">truncate_prompt_tokens</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">sampling_params</span>
+
+        <span class="n">model_config</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">inference_engine</span><span class="p">,</span> <span class="s2">&quot;llm_engine&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="s2">&quot;model_config&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">max_model_len</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">model_config</span><span class="p">,</span> <span class="s2">&quot;max_model_len&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">max_model_len</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">sampling_params</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">truncate_prompt_tokens</span> <span class="o">&gt;</span> <span class="n">max_model_len</span><span class="p">:</span>
+                <span class="n">sampling_params</span><span class="o">.</span><span class="n">truncate_prompt_tokens</span> <span class="o">=</span> <span class="n">max_model_len</span>
+        <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="s2">&quot;Skipping vLLM truncate_prompt_tokens validation because values are not directly comparable: &quot;</span>
+                <span class="s2">&quot;truncate_prompt_tokens=</span><span class="si">{}</span><span class="s2">, max_model_len=</span><span class="si">{}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="n">truncate_prompt_tokens</span><span class="p">,</span>
+                <span class="n">max_model_len</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">sampling_params</span>
+
 <div class="viewcode-block" id="StrategyBase.engine_generate_local"><a class="viewcode-back" href="../../../api_doc/strategy/strategy_base.html#lightrft.strategy.strategy_base.StrategyBase.engine_generate_local">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">engine_generate_local</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">sampling_params</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
@@ -1069,13 +1108,26 @@
 
         <span class="c1"># if inference engine is vllm</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">inference_engine_type</span> <span class="o">==</span> <span class="s2">&quot;vllm&quot;</span><span class="p">:</span>
+            <span class="n">sampling_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sanitize_vllm_sampling_params</span><span class="p">(</span><span class="n">sampling_params</span><span class="p">)</span>
             <span class="c1"># For vLLM:</span>
             <span class="c1"># - If `prompt_token_ids` is provided, it indicates a pure LLM (text-only) generation.</span>
             <span class="c1"># - If `prompts` (i.e., `multi_modal_inputs`) is provided, it indicates a VLM (multimodal) generation.</span>
             <span class="k">if</span> <span class="n">multi_modal_inputs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">prompt</span> <span class="o">=</span> <span class="n">multi_modal_inputs</span>
+                <span class="n">prompt</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">multi_modal_inputs</span><span class="p">:</span>
+                    <span class="n">prompt_item</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;prompt&quot;</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;prompt&quot;</span><span class="p">]}</span>
+                    <span class="c1"># Do not forward multimodal prompt_token_ids to vLLM.</span>
+                    <span class="c1"># vLLM&#39;s multimodal processor applies placeholder expansion</span>
+                    <span class="c1"># itself; passing already-expanded token IDs causes image</span>
+                    <span class="c1"># placeholders to be expanded a second time.</span>
+                    <span class="k">if</span> <span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;multi_modal_data&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="n">prompt_item</span><span class="p">[</span><span class="s2">&quot;multi_modal_data&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;multi_modal_data&quot;</span><span class="p">]</span>
+                    <span class="n">prompt</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">prompt_item</span><span class="p">)</span>
             <span class="k">elif</span> <span class="n">prompt_token_ids</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">prompt</span> <span class="o">=</span> <span class="n">prompt_token_ids</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">prompt_token_ids</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">prompt_token_ids</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">int</span><span class="p">):</span>
+                    <span class="n">prompt</span> <span class="o">=</span> <span class="p">[{</span><span class="s2">&quot;prompt_token_ids&quot;</span><span class="p">:</span> <span class="n">prompt_token_ids</span><span class="p">}]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">prompt</span> <span class="o">=</span> <span class="p">[{</span><span class="s2">&quot;prompt_token_ids&quot;</span><span class="p">:</span> <span class="n">token_ids</span><span class="p">}</span> <span class="k">for</span> <span class="n">token_ids</span> <span class="ow">in</span> <span class="n">prompt_token_ids</span><span class="p">]</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Either prompt (multi_modal_inputs) or prompt_token_ids must be provided.&quot;</span><span class="p">)</span>
 
@@ -1134,7 +1186,14 @@
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unsupported engine type: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">inference_engine_type</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="StrategyBase._build_multimodal_inputs"><a class="viewcode-back" href="../../../api_doc/strategy/strategy_base.html#lightrft.strategy.strategy_base.StrategyBase._build_multimodal_inputs">[docs]</a>    <span class="nd">@classmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">_build_multimodal_inputs</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">all_prompts</span><span class="p">,</span> <span class="n">all_images</span><span class="p">,</span> <span class="n">images_num</span><span class="p">,</span> <span class="n">all_videos</span><span class="p">,</span> <span class="n">videos_num</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_build_multimodal_inputs</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">all_prompts</span><span class="p">,</span>
+        <span class="n">all_images</span><span class="p">,</span>
+        <span class="n">images_num</span><span class="p">,</span>
+        <span class="n">all_videos</span><span class="p">,</span>
+        <span class="n">videos_num</span><span class="p">,</span>
+    <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Build multimodal inputs for inference engine (vLLM/SGLang).</span>
 
@@ -1194,16 +1253,18 @@
             <span class="k">if</span> <span class="ow">not</span> <span class="n">multi_modal_data</span><span class="p">:</span>
                 <span class="c1"># remove the vision start and end tokens for data after apply chat template.</span>
                 <span class="c1"># Use regex to handle multiple &lt;|image_pad|&gt; tokens (e.g., for high-res images)</span>
-                <span class="n">prompt</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;&lt;\|vision_start\|&gt;(&lt;\|image_pad\|&gt;)+&lt;\|vision_end\|&gt;&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">prompt</span><span class="p">)</span>
-                <span class="n">prompt</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;&lt;\|vision_start\|&gt;(&lt;\|video_pad\|&gt;)+&lt;\|vision_end\|&gt;&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">prompt</span><span class="p">)</span>
-                <span class="n">inputs</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
-                    <span class="s2">&quot;prompt&quot;</span><span class="p">:</span> <span class="n">prompt</span><span class="p">,</span>
-                <span class="p">})</span>
+                <span class="n">cleaned_prompt</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;&lt;\|vision_start\|&gt;(&lt;\|image_pad\|&gt;)+&lt;\|vision_end\|&gt;&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">prompt</span><span class="p">)</span>
+                <span class="n">cleaned_prompt</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;&lt;\|vision_start\|&gt;(&lt;\|video_pad\|&gt;)+&lt;\|vision_end\|&gt;&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">cleaned_prompt</span><span class="p">)</span>
+                <span class="n">input_item</span> <span class="o">=</span> <span class="p">{</span>
+                    <span class="s2">&quot;prompt&quot;</span><span class="p">:</span> <span class="n">cleaned_prompt</span><span class="p">,</span>
+                <span class="p">}</span>
+                <span class="n">inputs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">input_item</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">inputs</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+                <span class="n">input_item</span> <span class="o">=</span> <span class="p">{</span>
                     <span class="s2">&quot;prompt&quot;</span><span class="p">:</span> <span class="n">prompt</span><span class="p">,</span>
                     <span class="s2">&quot;multi_modal_data&quot;</span><span class="p">:</span> <span class="n">multi_modal_data</span><span class="p">,</span>
-                <span class="p">})</span>
+                <span class="p">}</span>
+                <span class="n">inputs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">input_item</span><span class="p">)</span>
             <span class="n">img_start_idx</span> <span class="o">+=</span> <span class="n">img_num</span>
             <span class="n">vid_start_idx</span> <span class="o">+=</span> <span class="n">vid_num</span>
         <span class="k">return</span> <span class="n">inputs</span></div>

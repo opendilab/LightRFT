@@ -308,8 +308,41 @@
             <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
               <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
                 
-  <section id="lightrft-models-monkey-patch-apply">
-<h1>lightrft.models.monkey_patch.apply<a class="headerlink" href="#lightrft-models-monkey-patch-apply" title="Permalink to this heading">¶</a></h1>
+  <section id="module-lightrft.models.monkey_patch.apply">
+<span id="lightrft-models-monkey-patch-apply"></span><h1>lightrft.models.monkey_patch.apply<a class="headerlink" href="#module-lightrft.models.monkey_patch.apply" title="Permalink to this heading">¶</a></h1>
+<p>This module provides monkey patching functionality for attention mechanisms in LLaMA and Qwen2 models.
+It allows replacing the original attention forward methods with custom implementations for better
+performance or different behavior.</p>
+<p>The module supports patching both LlamaAttention and Qwen2Attention classes by replacing their
+forward methods with custom implementations defined in separate modules.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="lightrft.models.monkey_patch.apply.apply_monkey_patch_to_llama">
+<span class="sig-prename descclassname"><span class="pre">lightrft.models.monkey_patch.apply.</span></span><span class="sig-name descname"><span class="pre">apply_monkey_patch_to_llama</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/lightrft/models/monkey_patch/apply.html#apply_monkey_patch_to_llama"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.models.monkey_patch.apply.apply_monkey_patch_to_llama" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply monkey patch to LlamaAttention class by replacing its forward method.</p>
+<p>This function replaces the original forward method of LlamaAttention with a custom
+implementation defined in llama_attn_forward. This can be used to modify the attention
+mechanism’s behavior or improve its performance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="lightrft.models.monkey_patch.apply.apply_monkey_patch_to_qwen2">
+<span class="sig-prename descclassname"><span class="pre">lightrft.models.monkey_patch.apply.</span></span><span class="sig-name descname"><span class="pre">apply_monkey_patch_to_qwen2</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/lightrft/models/monkey_patch/apply.html#apply_monkey_patch_to_qwen2"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.models.monkey_patch.apply.apply_monkey_patch_to_qwen2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply monkey patch to Qwen2Attention class by replacing its forward method.</p>
+<p>This function replaces the original forward method of Qwen2Attention with a custom
+implementation defined in qwen2_attn_forward. This can be used to modify the attention
+mechanism’s behavior or improve its performance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 
 
@@ -355,7 +388,11 @@
           <div class="pytorch-right-menu" id="pytorch-right-menu">
             <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
               <ul>
-<li><a class="reference internal" href="#">lightrft.models.monkey_patch.apply</a></li>
+<li><a class="reference internal" href="#">lightrft.models.monkey_patch.apply</a><ul>
+<li><a class="reference internal" href="#lightrft.models.monkey_patch.apply.apply_monkey_patch_to_llama"><code class="docutils literal notranslate"><span class="pre">apply_monkey_patch_to_llama()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.models.monkey_patch.apply.apply_monkey_patch_to_qwen2"><code class="docutils literal notranslate"><span class="pre">apply_monkey_patch_to_qwen2()</span></code></a></li>
+</ul>
+</li>
 </ul>
 
             </div>

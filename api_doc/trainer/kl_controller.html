@@ -306,8 +306,58 @@
             <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
               <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
                 
-  <section id="lightrft-trainer-kl-controller">
-<h1>lightrft.trainer.kl_controller<a class="headerlink" href="#lightrft-trainer-kl-controller" title="Permalink to this heading">¶</a></h1>
+  <section id="module-lightrft.trainer.kl_controller">
+<span id="lightrft-trainer-kl-controller"></span><h1>lightrft.trainer.kl_controller<a class="headerlink" href="#module-lightrft.trainer.kl_controller" title="Permalink to this heading">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="lightrft.trainer.kl_controller.AdaptiveKLController">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">lightrft.trainer.kl_controller.</span></span><span class="sig-name descname"><span class="pre">AdaptiveKLController</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">init_kl_coef</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">horizon</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/trainer/kl_controller.html#AdaptiveKLController"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.trainer.kl_controller.AdaptiveKLController" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Adaptive KL controller for PPO training.</p>
+<p>Implements the adaptive KL penalty coefficient adjustment described in:
+“Fine-Tuning Language Models from Human Preferences”
+(<a class="reference external" href="https://arxiv.org/pdf/1909.08593.pdf">https://arxiv.org/pdf/1909.08593.pdf</a>)</p>
+<p>This controller dynamically adjusts the KL penalty coefficient based on how
+the current KL divergence compares to a target value, helping maintain stable
+training while preventing the policy from deviating too far from the reference.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.trainer.kl_controller.AdaptiveKLController.update">
+<span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">current</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_steps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/lightrft/trainer/kl_controller.html#AdaptiveKLController.update"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.trainer.kl_controller.AdaptiveKLController.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update KL coefficient using adaptive algorithm.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>current</strong> (<em>float</em>) – Current KL divergence value.</p></li>
+<li><p><strong>n_steps</strong> (<em>int</em>) – Number of training steps taken.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="lightrft.trainer.kl_controller.FixedKLController">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">lightrft.trainer.kl_controller.</span></span><span class="sig-name descname"><span class="pre">FixedKLController</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">kl_coef</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/trainer/kl_controller.html#FixedKLController"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.trainer.kl_controller.FixedKLController" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Fixed KL controller that maintains a constant KL penalty coefficient.</p>
+<p>Unlike the adaptive controller, this keeps the KL coefficient fixed throughout
+training, providing consistent regularization strength.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.trainer.kl_controller.FixedKLController.update">
+<span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">current</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_steps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/lightrft/trainer/kl_controller.html#FixedKLController.update"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.trainer.kl_controller.FixedKLController.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update KL controller state (no-op for fixed KL).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>current</strong> (<em>float</em>) – Current KL divergence value (unused).</p></li>
+<li><p><strong>n_steps</strong> (<em>int</em>) – Number of training steps (unused).</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 
 
@@ -353,7 +403,17 @@
           <div class="pytorch-right-menu" id="pytorch-right-menu">
             <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
               <ul>
-<li><a class="reference internal" href="#">lightrft.trainer.kl_controller</a></li>
+<li><a class="reference internal" href="#">lightrft.trainer.kl_controller</a><ul>
+<li><a class="reference internal" href="#lightrft.trainer.kl_controller.AdaptiveKLController"><code class="docutils literal notranslate"><span class="pre">AdaptiveKLController</span></code></a><ul>
+<li><a class="reference internal" href="#lightrft.trainer.kl_controller.AdaptiveKLController.update"><code class="docutils literal notranslate"><span class="pre">AdaptiveKLController.update()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#lightrft.trainer.kl_controller.FixedKLController"><code class="docutils literal notranslate"><span class="pre">FixedKLController</span></code></a><ul>
+<li><a class="reference internal" href="#lightrft.trainer.kl_controller.FixedKLController.update"><code class="docutils literal notranslate"><span class="pre">FixedKLController.update()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 
             </div>

@@ -302,26 +302,40 @@
   <h1>Source code for lightrft.strategy.sglang_utils</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">This module provides functionality for initializing and configuring a SGLang generation engine</span>
-<span class="sd">for RLHF and RLVR applications. It handles distributed</span>
-<span class="sd">training setup, device coordination, and engine initialization with appropriate parameters.</span>
+<span class="sd">for RLHF and RLVR applications. It handles distributed training setup, device coordination,</span>
+<span class="sd">and engine initialization with appropriate parameters.</span>
 
-<span class="sd">The main component is the get_sglang_engine function which creates and returns a configured</span>
-<span class="sd">RLGenerationEngine instance based on the provided arguments, taking into account the distributed</span>
-<span class="sd">training environment.</span>
+<span class="sd">Note:</span>
+<span class="sd">    SGLang imports are kept lazy so the rest of LightRFT can still be imported when users</span>
+<span class="sd">    only install the vLLM backend. ImportError is raised only when engine_type=&quot;sglang&quot;</span>
+<span class="sd">    is actually requested.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
 
 <span class="c1"># Local application imports</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">lightrft.strategy.utils.distributed_util</span><span class="w"> </span><span class="kn">import</span> <span class="n">create_sub_group</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">.sglang_engine</span><span class="w"> </span><span class="kn">import</span> <span class="n">RLGenerationEngine</span>
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">get_sglang_engine_for_rollout</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RLGenerationEngine</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_import_rl_generation_engine</span><span class="p">():</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">.sglang_engine</span><span class="w"> </span><span class="kn">import</span> <span class="n">RLGenerationEngine</span>
+    <span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
+            <span class="s2">&quot;SGLang is not installed but engine_type is set to &#39;sglang&#39;. &quot;</span>
+            <span class="s2">&quot;To use the SGLang backend, install it with: pip install &#39;LightRFT[sglang]&#39; &quot;</span>
+            <span class="s2">&quot;or pip install &#39;sglang&gt;=0.5.9&#39;. &quot;</span>
+            <span class="s2">&quot;Alternatively, use engine_type=&#39;vllm&#39; with: pip install &#39;LightRFT[vllm]&#39;.&quot;</span>
+        <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+    <span class="k">return</span> <span class="n">RLGenerationEngine</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">get_sglang_engine_for_rollout</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Initialize and configure a SGLang generation engine for reinforcement learning rollout phase.</span>
 
@@ -452,7 +466,9 @@
         <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">:</span>
             <span class="k">del</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
 
-    <span class="n">engine</span> <span class="o">=</span> <span class="n">RLGenerationEngine</span><span class="p">(</span>
+    <span class="n">rl_generation_engine_cls</span> <span class="o">=</span> <span class="n">_import_rl_generation_engine</span><span class="p">()</span>
+
+    <span class="n">engine</span> <span class="o">=</span> <span class="n">rl_generation_engine_cls</span><span class="p">(</span>
         <span class="n">model_path</span><span class="o">=</span><span class="n">model_name_or_path</span><span class="p">,</span>
         <span class="n">mem_fraction_static</span><span class="o">=</span><span class="n">engine_mem_util</span><span class="p">,</span>
         <span class="n">tp_group_cpu</span><span class="o">=</span><span class="n">sglang_tp_group_cpu</span><span class="p">,</span>

@@ -306,8 +306,128 @@
             <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
               <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
                 
-  <section id="lightrft-models-srm-al">
-<h1>lightrft.models.srm_al<a class="headerlink" href="#lightrft-models-srm-al" title="Permalink to this heading">¶</a></h1>
+  <section id="module-lightrft.models.srm_al">
+<span id="lightrft-models-srm-al"></span><h1>lightrft.models.srm_al<a class="headerlink" href="#module-lightrft.models.srm_al" title="Permalink to this heading">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="lightrft.models.srm_al.ScalarRewardModelAL">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">lightrft.models.srm_al.</span></span><span class="sig-name descname"><span class="pre">ScalarRewardModelAL</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/models/srm_al.html#ScalarRewardModelAL"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.models.srm_al.ScalarRewardModelAL" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>Scalar Reward Model for reinforcement learning applications with audio-language backbones.</p>
+<p>This class wraps around a pretrained audio-language model and adds reward heads to produce scalar scores.
+Reward heads are feed-forward networks that take the hidden states from a specific layer of the backbone
+model and output scalar values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pretrain_or_model</strong> (<em>Union</em><em>[</em><em>str</em><em>, </em><em>nn.Module</em><em>]</em>) – Either a string path to a pretrained model or a model instance</p></li>
+<li><p><strong>use_flash_attention_2</strong> (<em>bool</em>) – Whether to utilize Flash Attention 2.0 for improved performance</p></li>
+<li><p><strong>bf16</strong> (<em>bool</em>) – Enable bfloat16 precision for model computations</p></li>
+<li><p><strong>lora_rank</strong> (<em>int</em>) – Rank for LoRA adaptation (0 disables LoRA)</p></li>
+<li><p><strong>lora_alpha</strong> (<em>int</em>) – Alpha parameter for LoRA scaling</p></li>
+<li><p><strong>lora_dropout</strong> (<em>float</em>) – Dropout rate for LoRA layers</p></li>
+<li><p><strong>target_modules</strong> (<em>Optional</em><em>[</em><em>list</em><em>]</em>) – List of target modules for applying LoRA (auto-detected if None)</p></li>
+<li><p><strong>ds_config</strong> (<em>Optional</em><em>[</em><em>Dict</em><em>]</em>) – Configuration for DeepSpeed distributed training</p></li>
+<li><p><strong>device_map</strong> (<em>Optional</em><em>[</em><em>Dict</em><em>]</em>) – Device mapping for loading the model onto specific devices</p></li>
+<li><p><strong>pooling_method</strong> (<em>str</em>) – Pooling method for aggregating hidden states (‘attn’ or ‘last’).
+Default to ‘attn’, which delivers best performance.</p></li>
+<li><p><strong>probing_layer</strong> (<em>int</em>) – Index of the layer from which to extract hidden states for reward heads.
+Default to -1, which means the last layer.</p></li>
+<li><p><strong>scale_for_train</strong> (<em>bool</em>) – Whether to scale the scores for training. Default to True.
+We recommend enabling this for better performance.</p></li>
+<li><p><strong>head_types</strong> (<em>list</em><em>[</em><em>str</em><em>]</em>) – List of head types for scoring (e.g., [“preference”, “alignment”]). Default to [“preference”].
+Must be consistent with the training data annotations.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.models.srm_al.ScalarRewardModelAL.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sequences</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.LongTensor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">attention_mask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_features</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature_attention_mask</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.Tensor</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span></span></span><a class="reference internal" href="../../_modules/lightrft/models/srm_al.html#ScalarRewardModelAL.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.models.srm_al.ScalarRewardModelAL.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>The forward takes sequences and audio content as input and returns a dictionary
+containing reward scores of different heads.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sequences</strong> (<em>torch.LongTensor</em>) – Input token sequences</p></li>
+<li><p><strong>attention_mask</strong> (<em>Optional</em><em>[</em><em>torch.Tensor</em><em>]</em>) – Attention mask for the sequences</p></li>
+<li><p><strong>input_features</strong> (<em>torch.Tensor</em>) – Preprocessed audio features of input audio</p></li>
+<li><p><strong>feature_attention_mask</strong> (<em>Optional</em><em>[</em><em>torch.Tensor</em><em>]</em>) – Attention mask for the audio features</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A dictionary containing reward scores from different heads</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dict</p>
+</dd>
+</dl>
+<p><strong>Example:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Compute reward scores from sequences and audio inputs</span>
+<span class="c1"># Suppose `reward_model` has two heads: &quot;preference&quot; and &quot;alignment&quot;</span>
+<span class="n">scores</span> <span class="o">=</span> <span class="n">reward_model</span><span class="p">(</span>
+    <span class="n">sequences</span><span class="o">=</span><span class="n">input_ids</span><span class="p">,</span>
+    <span class="n">attention_mask</span><span class="o">=</span><span class="n">attention_mask</span><span class="p">,</span>
+    <span class="n">input_features</span><span class="o">=</span><span class="n">input_features</span><span class="p">,</span>
+    <span class="n">feature_attention_mask</span><span class="o">=</span><span class="n">feature_attention_mask</span>
+<span class="p">)</span>
+<span class="n">preference_score</span> <span class="o">=</span> <span class="n">scores</span><span class="p">[</span><span class="s2">&quot;preference&quot;</span><span class="p">]</span>
+<span class="n">alignment_score</span> <span class="o">=</span> <span class="n">scores</span><span class="p">[</span><span class="s2">&quot;alignment&quot;</span><span class="p">]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.models.srm_al.ScalarRewardModelAL.gradient_checkpointing_disable">
+<span class="sig-name descname"><span class="pre">gradient_checkpointing_disable</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/models/srm_al.html#ScalarRewardModelAL.gradient_checkpointing_disable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.models.srm_al.ScalarRewardModelAL.gradient_checkpointing_disable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Disable gradient checkpointing to use normal forward/backward computation.</p>
+<p>This method restores the default behavior where all intermediate activations
+are stored during the forward pass for use in the backward pass. This increases
+memory usage but reduces computation time.</p>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Disable gradient checkpointing</span>
+<span class="n">actor</span><span class="o">.</span><span class="n">gradient_checkpointing_disable</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.models.srm_al.ScalarRewardModelAL.gradient_checkpointing_enable">
+<span class="sig-name descname"><span class="pre">gradient_checkpointing_enable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gradient_checkpointing_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{'use_reentrant':</span> <span class="pre">False}</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/models/srm_al.html#ScalarRewardModelAL.gradient_checkpointing_enable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.models.srm_al.ScalarRewardModelAL.gradient_checkpointing_enable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Enable gradient checkpointing to reduce memory usage during training.</p>
+<p>Gradient checkpointing trades compute for memory by recomputing intermediate
+activations during the backward pass instead of storing them. This is particularly
+useful for training large audio-language models with limited GPU memory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>gradient_checkpointing_kwargs</strong> (<em>dict</em>) – Additional arguments for gradient checkpointing</p>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Enable gradient checkpointing with default settings</span>
+<span class="n">actor</span><span class="o">.</span><span class="n">gradient_checkpointing_enable</span><span class="p">()</span>
+
+<span class="c1"># Enable with custom settings</span>
+<span class="n">actor</span><span class="o">.</span><span class="n">gradient_checkpointing_enable</span><span class="p">({</span><span class="s2">&quot;use_reentrant&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">})</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.models.srm_al.ScalarRewardModelAL.print_trainable_parameters">
+<span class="sig-name descname"><span class="pre">print_trainable_parameters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/models/srm_al.html#ScalarRewardModelAL.print_trainable_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.models.srm_al.ScalarRewardModelAL.print_trainable_parameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print information about trainable parameters in the model.</p>
+<p>This method displays the number and percentage of trainable parameters,
+which is particularly useful when using parameter-efficient methods like LoRA.
+It helps monitor the efficiency of the fine-tuning approach.</p>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Print trainable parameter statistics</span>
+<span class="n">actor</span><span class="o">.</span><span class="n">print_trainable_parameters</span><span class="p">()</span>
+<span class="c1"># Output: trainable params: 4,194,304 || all params: 7,241,732,096 || trainable%: 0.058</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 
 
@@ -353,7 +473,16 @@
           <div class="pytorch-right-menu" id="pytorch-right-menu">
             <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
               <ul>
-<li><a class="reference internal" href="#">lightrft.models.srm_al</a></li>
+<li><a class="reference internal" href="#">lightrft.models.srm_al</a><ul>
+<li><a class="reference internal" href="#lightrft.models.srm_al.ScalarRewardModelAL"><code class="docutils literal notranslate"><span class="pre">ScalarRewardModelAL</span></code></a><ul>
+<li><a class="reference internal" href="#lightrft.models.srm_al.ScalarRewardModelAL.forward"><code class="docutils literal notranslate"><span class="pre">ScalarRewardModelAL.forward()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.models.srm_al.ScalarRewardModelAL.gradient_checkpointing_disable"><code class="docutils literal notranslate"><span class="pre">ScalarRewardModelAL.gradient_checkpointing_disable()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.models.srm_al.ScalarRewardModelAL.gradient_checkpointing_enable"><code class="docutils literal notranslate"><span class="pre">ScalarRewardModelAL.gradient_checkpointing_enable()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.models.srm_al.ScalarRewardModelAL.print_trainable_parameters"><code class="docutils literal notranslate"><span class="pre">ScalarRewardModelAL.print_trainable_parameters()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 
             </div>
