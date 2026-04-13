@@ -736,7 +736,7 @@ class StrategyBase(ABC):
         """
         Clamp vLLM sampling parameters that must respect the engine context length.
 
-        Newer vLLM releases validate ``truncate_prompt_tokens`` against the engine's
+        Newer vLLM releases (>=0.11.0) validate ``truncate_prompt_tokens`` against the engine's
         ``max_model_len``. Some callers already clamp this during ``SamplingParams``
         construction, but this centralized guard keeps generation safe for every
         call path that reaches the strategy layer.
@@ -891,7 +891,6 @@ class StrategyBase(ABC):
         images_num,
         all_videos,
         videos_num,
-        all_prompt_token_ids=None,
     ):
         """
         Build multimodal inputs for inference engine (vLLM/SGLang).
@@ -1034,7 +1033,6 @@ class StrategyBase(ABC):
                 images_num=images_num,
                 all_videos=all_videos,
                 videos_num=videos_num,
-                all_prompt_token_ids=all_prompt_token_ids,
             )
         else:
             inputs = all_prompt_token_ids
