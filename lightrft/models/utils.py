@@ -21,11 +21,10 @@ import torch
 import torch.distributions as dist
 import torch.nn as nn
 import torch.nn.functional as F
-from flash_attn.utils.distributed import all_gather
-from lightrft.utils.logging_utils import init_logger
 from peft import LoraConfig, TaskType, get_peft_model
 from peft.tuners.lora import LoraLayer
 from transformers import (AutoConfig, AutoModel)
+from lightrft.utils.logging_utils import init_logger
 
 logger = init_logger(__name__)
 

@@ -99,6 +99,7 @@ export MASTER_ADDR="localhost"  # IP address of the master node (node 0).
 export MASTER_PORT=20091        # Port for the master node.
 
 # --- vLLM/SGLang Engine Settings ---
+ENGINE_TYPE="${ENGINE_TYPE:-sglang}"  # Supported: sglang, vllm
 ENGINE_TP=2  # Tensor parallelism size for the inference engine. Adjust based on your model and GPU setup.
 
 
@@ -178,7 +179,7 @@ torchrun \
     --gradient_checkpointing \
     --save_steps 20 \
     --max_ckpt_num 2 \
-    --engine_type sglang \
+    --engine_type "${ENGINE_TYPE}" \
     --engine_mem_util 0.6 \
     --engine_tp_size $ENGINE_TP \
     --enable_engine_sleep \
