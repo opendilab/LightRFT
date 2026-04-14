@@ -197,6 +197,7 @@ class RLGenerationEngine:
                 sampling_params=sampling_params,
                 input_ids=input_ids,
                 image_data=image_data,
+                audio_data=audio_data,
                 return_logprob=return_logprob,
                 logprob_start_len=logprob_start_len,
                 top_logprobs_num=top_logprobs_num,

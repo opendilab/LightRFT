@@ -77,9 +77,11 @@ class BufferItemVL:
     sequences: torch.Tensor
 
     pixel_values: Optional[torch.Tensor] = None  # image pixel processed by HF processor
+    audio_values: Optional[torch.Tensor] = None  # audio features processed by HF processor
     image_grid_thws: Optional[torch.Tensor] = None  # image grid thw
     pixel_values_videos: Optional[torch.Tensor] = None  # video pixel processed by HF processor
     video_grid_thws: Optional[torch.Tensor] = None  # video grid thw
+    feature_attention_mask: Optional[torch.Tensor] = None  # audio feature mask
     raw_images: Optional[List[Image.Image]] = None  # raw images before processing
 
     action_log_probs: torch.Tensor = None
@@ -282,6 +284,8 @@ def _split_experience_batch_vl(experience: ExperienceVL) -> List:
         "attention_mask",
         "action_mask",
         "action_entropy",
+        "audio_values",
+        "feature_attention_mask",
     )
     for key in keys:
         # Use getattr with default None to handle optional attributes like action_entropy
@@ -354,6 +358,13 @@ def _split_experience_batch_vl(experience: ExperienceVL) -> List:
                 # Slice from the flattened pixel_values
                 batch_kwargs[i]["pixel_values"] = pixel_values[index:index + num_image_tokens]
                 index += num_image_tokens
+
+    if getattr(experience, "audio_values", None) is not None:
+        audio_values = experience.audio_values
+        vals = torch.unbind(audio_values) if isinstance(audio_values, torch.Tensor) else audio_values
+        assert batch_size == len(vals), f"audio_values size mismatch: {len(vals)} vs {batch_size}"
+        for i, v in enumerate(vals):
+            batch_kwargs[i]["audio_values"] = v
 
     # Split video data
     if experience.pixel_values_videos is not None:
@@ -619,6 +630,7 @@ def _make_experience_batch_vl(items: List, packing_samples: bool = False) -> Exp
         "advantages",
         "attention_mask",
         "action_mask",
+        "feature_attention_mask",
     )
     for key in keys:
         vals = [getattr(item, key) for item in items]
@@ -654,6 +666,9 @@ def _make_experience_batch_vl(items: List, packing_samples: bool = False) -> Exp
         item.pixel_values for item in items if item.pixel_values is not None and item.pixel_values.numel() > 0
     ]
     kwargs["pixel_values"] = torch.cat(pixel_values_list, dim=0) if pixel_values_list else None
+
+    audio_values_list = [item.audio_values for item in items if getattr(item, "audio_values", None) is not None]
+    kwargs["audio_values"] = torch.stack(audio_values_list, dim=0) if audio_values_list else None
 
     image_grid_thws_list = [
         item.image_grid_thws.unsqueeze(0) if

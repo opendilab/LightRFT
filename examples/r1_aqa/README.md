@@ -197,14 +197,11 @@ The reward function automatically handles both modes. When `enable_think=True`, 
 ### 1. Reward Summation (not Weighting)
 R1-AQA sums accuracy and format rewards (max=2.0) while GSM8K/Geo3K in LightRFT uses weighted combination (0.9×accuracy + 0.1×format, max=1.0). We keep R1-AQA's summation to ensure identical reward signal. The GRPO normalization handles the scale difference.
 
-### 2. Audio Pipeline via Image Slot
-LightRFT's VL pipeline is built for images/videos. We repurpose the image data slots to carry audio data:
-- `pixel_values` → `input_features` (audio features)
-- `image_grid_thw` → `feature_attention_mask`
-- `raw_images` → raw audio tuples `(np.array, sr)`
-- `multi_modal_data["image"]` → `multi_modal_data["audio"]`
-
-This is done via targeted monkey patches in `audio_dataset.py` rather than modifying core LightRFT code.
+### 2. Native Audio Rollout Path
+Audio RL now uses a dedicated rollout path in core LightRFT code:
+- raw audio payloads stay on the generation side and are passed to SGLang as `audio_data`
+- processed mel features are stored explicitly as `audio_values`
+- Qwen2-Audio feature masking is stored explicitly as `feature_attention_mask`
 
 ### 3. ActorAL (Audio Language Actor)
 Qwen2-Audio uses `Qwen2AudioForConditionalGeneration` (not `AutoModelForVision2Seq`), and its forward pass expects `audio_values` instead of `pixel_values` + `image_grid_thw`. We use `ActorAL` from `lightrft.models.actor_al`, which natively supports Qwen2-Audio's parameter interface.

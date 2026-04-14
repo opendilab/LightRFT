@@ -10,6 +10,7 @@ import os
 import re
 import random
 import time
+import io
 from loguru import logger
 from abc import ABC, abstractmethod
 from collections import defaultdict
@@ -20,6 +21,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union, Callable
 
 import deepspeed
 import numpy as np
+import soundfile as sf
 import torch
 from easydict import EasyDict
 from torch import distributed as dist
@@ -43,6 +45,36 @@ from .sglang_utils import get_sglang_engine_for_rollout
 
 ModelOptimPair = Tuple[nn.Module, Optimizer]
 ModelOrModelOptimPair = Union[nn.Module, ModelOptimPair]
+
+
+def _extract_audio_array(audio_item: Any, default_sr: int = 16000) -> Tuple[np.ndarray, int]:
+    """Normalize supported raw audio payloads to ``(waveform, sampling_rate)``."""
+    if isinstance(audio_item, tuple) and len(audio_item) == 2:
+        audio_array, sr = audio_item
+        return np.asarray(audio_array, dtype=np.float32), int(sr)
+    if isinstance(audio_item, list) and len(audio_item) == 2 and isinstance(audio_item[0], np.ndarray):
+        audio_array, sr = audio_item
+        return np.asarray(audio_array, dtype=np.float32), int(sr)
+    if isinstance(audio_item, np.ndarray):
+        return np.asarray(audio_item, dtype=np.float32), default_sr
+    raise TypeError(f"Unsupported audio payload type: {type(audio_item).__name__}")
+
+
+def _serialize_audio_for_sglang(audio_item: Any, default_sr: int = 16000):
+    """
+    Convert local audio payloads into the form accepted by SGLang.
+
+    SGLang accepts file paths / URLs / bytes, but not ``(waveform, sr)`` tuples directly.
+    """
+    if audio_item is None:
+        return None
+    if isinstance(audio_item, (str, bytes, dict)):
+        return audio_item
+
+    audio_array, sr = _extract_audio_array(audio_item, default_sr=default_sr)
+    buffer = io.BytesIO()
+    sf.write(buffer, audio_array, sr, format="WAV")
+    return buffer.getvalue()
 
 
 class EngineStatus(Enum):
@@ -771,6 +803,11 @@ class StrategyBase(ABC):
             # - If `prompt_token_ids` is provided, it indicates a pure LLM (text-only) generation.
             # - If `prompts` (i.e., `multi_modal_inputs`) is provided, it indicates a VLM (multimodal) generation.
             if multi_modal_inputs is not None:
+                # Audio generation is only wired through SGLang for now, so fail early instead of
+                # silently passing an unsupported payload into vLLM.
+                has_audio = any("audio" in payload.get("multi_modal_data", {}) for payload in multi_modal_inputs)
+                if has_audio:
+                    raise ValueError("Audio-language rollout currently requires the SGLang inference backend.")
                 prompt = multi_modal_inputs
             elif prompt_token_ids is not None:
                 prompt = prompt_token_ids
@@ -793,6 +830,25 @@ class StrategyBase(ABC):
             if multi_modal_inputs is not None:  # VLM case
                 logger.debug(f"rank {dist.get_rank()} VLM branch")
                 prompt = [p["prompt"] for p in multi_modal_inputs]
+                has_audio = any("audio" in p.get("multi_modal_data", {}) for p in multi_modal_inputs)
+                has_image = any("image" in p.get("multi_modal_data", {}) for p in multi_modal_inputs)
+                has_video = any("video" in p.get("multi_modal_data", {}) for p in multi_modal_inputs)
+
+                if has_audio and not has_image and not has_video:
+                    # Pure audio-language generation uses SGLang's dedicated ``audio_data`` input
+                    # instead of overloading the image branch.
+                    audio = [p.get("multi_modal_data", {}).get("audio") for p in multi_modal_inputs]
+                    sglang_outputs = self.inference_engine.generate(
+                        sampling_params=sampling_params,
+                        prompt=prompt,
+                        audio_data=audio,
+                    )
+                    return [
+                        EasyDict(
+                            prompt_token_ids=None,
+                            output_token_ids=sglang_outputs[i]["output_ids"],
+                        ) for i in range(len(sglang_outputs))
+                    ]
 
                 # Handle cases where some prompts might not have images
                 # Flatten nested list format if needed: [[PIL.Image]] -> [PIL.Image]
@@ -832,7 +888,16 @@ class StrategyBase(ABC):
             raise ValueError(f"Unsupported engine type: {self.inference_engine_type}")
 
     @classmethod
-    def _build_multimodal_inputs(cls, all_prompts, all_images, images_num, all_videos, videos_num):
+    def _build_multimodal_inputs(
+        cls,
+        all_prompts,
+        all_images,
+        images_num,
+        all_videos,
+        videos_num,
+        all_audios=None,
+        audios_num=None,
+    ):
         """
         Build multimodal inputs for inference engine (vLLM/SGLang).
 
@@ -859,9 +924,11 @@ class StrategyBase(ABC):
         inputs = []
         img_start_idx = 0
         vid_start_idx = 0
+        audio_start_idx = 0
         for i, prompt in enumerate(all_prompts):
             img_num = images_num[i] if images_num is not None else 0
             vid_num = videos_num[i] if videos_num is not None else 0
+            audio_num = audios_num[i] if audios_num is not None else 0
 
             # Support two input formats:
             # 1. Nested list: all_images[i] is already a list of images for this prompt
@@ -883,17 +950,35 @@ class StrategyBase(ABC):
             else:
                 vid_list = []
 
+            if all_audios is not None:
+                if i < len(all_audios) and isinstance(all_audios[i], list) and len(all_audios[i]) == audio_num:
+                    raw_audio_list = all_audios[i]
+                else:
+                    raw_audio_list = all_audios[audio_start_idx:audio_start_idx + audio_num]
+                # Serialize in one place so the rest of the rollout stack can keep audio payloads
+                # in their native Python forms.
+                audio_list = [
+                    _serialize_audio_for_sglang(audio_item) for audio_item in raw_audio_list if audio_item is not None
+                ]
+            else:
+                audio_list = []
+
             multi_modal_data = {}
             if len(img_list) > 0 and img_list[0] is not None:
                 multi_modal_data["image"] = img_list
             if len(vid_list) > 0 and vid_list[0] is not None:
                 multi_modal_data["video"] = vid_list
+            if len(audio_list) > 0 and audio_list[0] is not None:
+                multi_modal_data["audio"] = audio_list
 
             if not multi_modal_data:
                 # remove the vision start and end tokens for data after apply chat template.
                 # Use regex to handle multiple <|image_pad|> tokens (e.g., for high-res images)
                 prompt = re.sub(r'<\|vision_start\|>(<\|image_pad\|>)+<\|vision_end\|>', '', prompt)
                 prompt = re.sub(r'<\|vision_start\|>(<\|video_pad\|>)+<\|vision_end\|>', '', prompt)
+                # Audio prompts should also degrade cleanly to text-only when their payload is absent.
+                prompt = re.sub(r'<\|audio_bos\|>.*?<\|audio_eos\|>', '', prompt, flags=re.DOTALL)
+                prompt = prompt.replace("<|AUDIO|>", "")
                 inputs.append({
                     "prompt": prompt,
                 })
@@ -904,6 +989,7 @@ class StrategyBase(ABC):
                 })
             img_start_idx += img_num
             vid_start_idx += vid_num
+            audio_start_idx += audio_num
         return inputs
 
     def gather_and_generate(
@@ -916,6 +1002,8 @@ class StrategyBase(ABC):
         images_num=None,
         all_videos=None,
         videos_num=None,
+        all_audios=None,
+        audios_num=None,
     ):
         """
         Gather prompts across distributed ranks and perform text/multimodal generation.
@@ -961,9 +1049,10 @@ class StrategyBase(ABC):
         # is_multimodal = all_images is not None
         # NOTE: not only check if all_images is None, but also check if it contains non-None elements
         # If all_images is [None, None, ...], any(img is not None for img in all_images) will return False
-        # Same logic applies to all_videos
+        # Same logic applies to all_videos and all_audios.
         is_multimodal = (((all_images is not None) and any(img is not None for img in all_images))
-                         or ((all_videos is not None) and any(vid is not None for vid in all_videos)))
+                         or ((all_videos is not None) and any(vid is not None for vid in all_videos))
+                         or ((all_audios is not None) and any(audio is not None for audio in all_audios)))
 
         if is_multimodal:
             inputs = self._build_multimodal_inputs(
@@ -972,6 +1061,8 @@ class StrategyBase(ABC):
                 images_num=images_num,
                 all_videos=all_videos,
                 videos_num=videos_num,
+                all_audios=all_audios,
+                audios_num=audios_num,
             )
         else:
             inputs = all_prompt_token_ids

@@ -7,6 +7,7 @@ DeepSpeed, sample packing, gradient checkpointing, and MoE.
 
 """
 
+import os
 from typing import Optional, Tuple, Union
 
 import torch
@@ -16,7 +17,12 @@ from transformers import Qwen2AudioForConditionalGeneration
 from transformers.integrations.deepspeed import HfDeepSpeedConfig
 
 from .actor_modality import ActorModality
-from .utils import apply_lora_configuration, log_probs_from_logits, reset_position_ids
+from .utils import (
+    apply_lora_configuration,
+    canonicalize_left_padded_inputs,
+    log_probs_from_logits,
+    reset_position_ids,
+)
 
 
 class _AudioEmbedPositions(nn.Module):
@@ -291,6 +297,7 @@ class ActorAL(nn.Module):
         return_output=False,
         packed_seq_lens: Optional[list[int]] = None,
         audio_values: Optional[torch.Tensor] = None,
+        feature_attention_mask: Optional[torch.Tensor] = None,
     ) -> torch.Tensor:
         """
         Forward pass to compute action log probabilities for reinforcement learning.
@@ -344,6 +351,14 @@ class ActorAL(nn.Module):
             )
         """
         if not self.packing_samples:
+            pad_token_id = getattr(self.model.config, "pad_token_id", 0)
+            if pad_token_id is None:
+                pad_token_id = 0
+            sequences, attention_mask = canonicalize_left_padded_inputs(
+                sequences=sequences,
+                attention_mask=attention_mask,
+                pad_token_id=pad_token_id,
+            )
             position_ids = attention_mask.long().cumsum(-1) - 1
             position_ids.masked_fill_(attention_mask == 0, 1)
         else:
@@ -383,7 +398,22 @@ class ActorAL(nn.Module):
             has_audio_placeholder = (audio_token_id is not None and (sequences == audio_token_id).any().item())
 
             if has_audio_placeholder:
-                input_features, feature_attention_mask = self._prepare_audio_features(input_features)
+                input_features, feature_attention_mask = self._prepare_audio_features(
+                    input_features,
+                    feature_attention_mask=feature_attention_mask,
+                    sequences=sequences,
+                    audio_token_id=audio_token_id,
+                )
+                if os.environ.get("LIGHTRFT_AUDIO_DEBUG", "0") == "1":
+                    rank = dist.get_rank() if dist.is_initialized() else 0
+                    print(
+                        f"[ActorAL][rank={rank}] sequences={tuple(sequences.shape)} "
+                        f"audio_values={tuple(input_features.shape)} "
+                        f"feature_attention_mask={tuple(feature_attention_mask.shape)} "
+                        f"audio_token_count={(sequences == audio_token_id).sum(dim=1).tolist()} "
+                        f"feature_len={feature_attention_mask.sum(dim=1).tolist()}",
+                        flush=True,
+                    )
                 model_kwargs["input_features"] = input_features
                 model_kwargs["feature_attention_mask"] = feature_attention_mask
             # else: audio_token_id absent → text-only forward (see comment above)
@@ -417,6 +447,9 @@ class ActorAL(nn.Module):
     def _prepare_audio_features(
         input_features: torch.Tensor,
         expected_mel_len: int = 3000,
+        feature_attention_mask: Optional[torch.Tensor] = None,
+        sequences: Optional[torch.Tensor] = None,
+        audio_token_id: Optional[int] = None,
     ) -> Tuple[torch.Tensor, torch.Tensor]:
         """
         Normalize audio features to the expected mel length and build a feature mask.
@@ -433,13 +466,36 @@ class ActorAL(nn.Module):
             input_features = input_features[..., :expected_mel_len]
             actual_len = expected_mel_len
 
-        feature_attention_mask = torch.zeros(
-            input_features.shape[0],
-            expected_mel_len,
-            dtype=torch.long,
-            device=input_features.device,
-        )
-        feature_attention_mask[:, :actual_len] = 1
+        if feature_attention_mask is None:
+            inferred_lengths = None
+            if sequences is not None and audio_token_id is not None:
+                # Qwen2AudioProcessor expands one audio placeholder to N consecutive audio_token_ids, where:
+                #   N = floor(floor((mel_len + 1) / 2) / 2)
+                # So the original mel length lies in [4N - 1, 4N]. We choose 4N and clamp to 3000.
+                audio_token_counts = (sequences == audio_token_id).sum(dim=1)
+                inferred_lengths = torch.clamp(audio_token_counts * 4, min=1, max=expected_mel_len)
+
+            feature_attention_mask = torch.zeros(
+                input_features.shape[0],
+                expected_mel_len,
+                dtype=torch.long,
+                device=input_features.device,
+            )
+
+            if inferred_lengths is None:
+                feature_attention_mask[:, :actual_len] = 1
+            else:
+                for row_idx, inferred_len in enumerate(inferred_lengths.tolist()):
+                    feature_attention_mask[row_idx, :inferred_len] = 1
+        else:
+            feature_attention_mask = feature_attention_mask.to(device=input_features.device, dtype=torch.long)
+            if feature_attention_mask.shape[-1] < expected_mel_len:
+                feature_attention_mask = torch.nn.functional.pad(
+                    feature_attention_mask, (0, expected_mel_len - feature_attention_mask.shape[-1]), value=0
+                )
+            elif feature_attention_mask.shape[-1] > expected_mel_len:
+                feature_attention_mask = feature_attention_mask[..., :expected_mel_len]
+
         return input_features, feature_attention_mask
 
     def gradient_checkpointing_enable(self, gradient_checkpointing_kwargs={"use_reentrant": False}):

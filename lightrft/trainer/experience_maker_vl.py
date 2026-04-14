@@ -110,6 +110,7 @@ class ExperienceVL:
     sequences: torch.Tensor
     # Image processing related
     pixel_values: Optional[torch.Tensor] = None
+    audio_values: Optional[torch.Tensor] = None
     image_grid_thws: Optional[torch.Tensor] = None
     raw_images: Optional[List[Image.Image]] = None
 
@@ -129,6 +130,7 @@ class ExperienceVL:
     action_entropy: Optional[torch.Tensor] = None  # Entropy for high-entropy token filtering
     labels: Optional[List[str]] = None  # data source labels (if available, e.g., "gsm8k_rule")
     references: Optional[List[str]] = None  # ground truth references (if available, e.g., correct answers)
+    feature_attention_mask: Optional[torch.Tensor] = None  # audio feature mask for audio-language models
 
     @torch.no_grad()
     def to_device(self, device: torch.device):
@@ -147,12 +149,16 @@ class ExperienceVL:
         self.advantages = to(self.advantages, device)
         if self.pixel_values is not None:
             self.pixel_values = to(self.pixel_values, device)
+        if self.audio_values is not None:
+            self.audio_values = to(self.audio_values, device)
         if self.image_grid_thws is not None:
             self.image_grid_thws = to(self.image_grid_thws, device)
         if self.pixel_values_videos is not None:
             self.pixel_values_videos = to(self.pixel_values_videos, device)
         if self.video_grid_thws is not None:
             self.video_grid_thws = to(self.video_grid_thws, device)
+        if self.feature_attention_mask is not None:
+            self.feature_attention_mask = to(self.feature_attention_mask, device)
         self.values = to(self.values, device)
         self.attention_mask = to(self.attention_mask, device)
         self.action_mask = to(self.action_mask, device)
@@ -176,12 +182,16 @@ class ExperienceVL:
         self.advantages = pin_memory(self.advantages)
         if self.pixel_values is not None:
             self.pixel_values = pin_memory(self.pixel_values)
+        if self.audio_values is not None:
+            self.audio_values = pin_memory(self.audio_values)
         if self.image_grid_thws is not None:
             self.image_grid_thws = pin_memory(self.image_grid_thws)
         if self.pixel_values_videos is not None:
             self.pixel_values_videos = pin_memory(self.pixel_values_videos)
         if self.video_grid_thws is not None:
             self.video_grid_thws = pin_memory(self.video_grid_thws)
+        if self.feature_attention_mask is not None:
+            self.feature_attention_mask = pin_memory(self.feature_attention_mask)
         self.values = pin_memory(self.values)
         self.attention_mask = pin_memory(self.attention_mask)
         self.action_mask = pin_memory(self.action_mask)
@@ -260,6 +270,7 @@ class SamplesVL:
     action_mask: Optional[torch.BoolTensor] = None
 
     pixel_values: Optional[torch.Tensor] = None
+    audio_values: Optional[torch.Tensor] = None
     image_grid_thws: Optional[torch.Tensor] = None
     raw_images: Optional[List[Image.Image]] = None
     image_num: Optional[List[int]] = None
@@ -278,6 +289,7 @@ class SamplesVL:
     prompts: list[str] = None
 
     output_texts: list[str] = None
+    feature_attention_mask: Optional[torch.Tensor] = None
 
 
 class NaiveExperienceMakerVL(ABC):

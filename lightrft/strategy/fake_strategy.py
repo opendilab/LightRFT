@@ -332,7 +332,11 @@ class FakeStrategy(StrategyBase):
         all_prompts=None,
         all_images=None,
         sleep_engine=True,
-        images_num=None
+        images_num=None,
+        all_videos=None,
+        videos_num=None,
+        all_audios=None,
+        audios_num=None,
     ):
         """
         Fake gather and generate - returns empty results.

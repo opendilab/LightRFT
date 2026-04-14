@@ -34,11 +34,7 @@ from lightrft.utils import blending_datasets, get_tokenizer_processor_vl
 # Local imports
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from reward_models_utils import reward_fn
-from audio_dataset import (
-    AudioPromptDataset,
-    patch_strategy_for_audio,
-    patch_experience_maker_for_audio,
-)
+from audio_dataset import AudioPromptDataset
 
 
 def train(args):
@@ -52,7 +48,7 @@ def train(args):
         4. Setup audio prompt dataloader
         5. Configure optimizers and schedulers
         6. Setup inference engine (vLLM or SGLang)
-        7. Apply audio pipeline patches
+        7. Route audio rollout through the native core trainer/strategy audio path
         8. Run training loop via SPMDPPOTrainerVL
         9. Save final model
     """
@@ -277,10 +273,6 @@ def train(args):
     strategy.setup_inference_engine(args, engine_type=args.engine_type, actor=actor)
     strategy.report_memory("after setup_inference_engine")
 
-    # ==================== Apply Audio Patches ====================
-    # Patch strategy for audio multimodal inputs
-    patch_strategy_for_audio(strategy)
-
     # ==================== Trainer ====================
     trainer = SPMDPPOTrainerVL(
         strategy,
@@ -335,11 +327,6 @@ def train(args):
         overlong_buffer_len=args.overlong_buffer_len,
         overlong_buffer_penalty_factor=args.overlong_buffer_penalty_factor,
         print_replay_buffer_stats=args.print_replay_buffer_stats,
-    )
-
-    # Patch the experience maker for audio processing
-    patch_experience_maker_for_audio(
-        trainer.experience_maker, processor, tokenizer, args.prompt_max_len
     )
 
     # ==================== Training ====================

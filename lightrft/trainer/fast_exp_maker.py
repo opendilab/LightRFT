@@ -55,7 +55,9 @@ from lightrft.utils.remote_rm_utils import remote_rm_fn
 from lightrft.utils import Timer, get_current_device
 from .utils import RunningMoments, compute_clip_fraction, get_cpgd_advantages_returns, fire_sampling, vllm_ge_0130
 from .advantage_calculator import get_advantage_calculator, normalize_advantages_cross_batch
+from .audio_utils import AudioDataProcessor, get_audios_num, normalize_audios
 from .image_utils import normalize_images, get_images_num
+from .modality_utils import build_supported_model_kwargs
 from .video_utils import normalize_videos, get_videos_num
 
 # ============================================================================
@@ -114,6 +116,7 @@ class _SamplesOutput:
 
     # Vision-Language Model fields
     pixel_values: Optional[torch.Tensor] = None
+    audio_values: Optional[torch.Tensor] = None
     image_grid_thw: Optional[torch.Tensor] = None
     pixel_values_videos: Optional[torch.Tensor] = None
     video_grid_thw: Optional[torch.Tensor] = None
@@ -121,6 +124,7 @@ class _SamplesOutput:
     references: Optional[list] = None
     image_num: Optional[List[int]] = None
     video_num: Optional[List[int]] = None
+    feature_attention_mask: Optional[torch.Tensor] = None
 
     # Model outputs
     action_log_probs: Optional[torch.Tensor] = None
@@ -914,14 +918,25 @@ class FastExperienceMaker(NaiveExperienceMaker):
         self.advantage_calculator = get_advantage_calculator(advantage_estimator, self.strategy.config)
 
         # Initialize helper modules
+        actor_modality = self.actor.modality
         if self.processor is not None:
-            self.multimodal_processor = MultimodalDataProcessor(
-                tokenizer=self.tokenizer,
-                processor=self.processor,
-                prompt_max_len=self.prompt_max_len,
-            )
+            if actor_modality == ActorModality.AUDIO_LANGUAGE:
+                self.audio_processor = AudioDataProcessor(
+                    tokenizer=self.tokenizer,
+                    processor=self.processor,
+                    prompt_max_len=self.prompt_max_len,
+                )
+                self.multimodal_processor = None
+            else:
+                self.multimodal_processor = MultimodalDataProcessor(
+                    tokenizer=self.tokenizer,
+                    processor=self.processor,
+                    prompt_max_len=self.prompt_max_len,
+                )
+                self.audio_processor = None
         else:
             self.multimodal_processor = None
+            self.audio_processor = None
 
         self.reward_engine = RewardComputationEngine(
             reward_model=self.reward_model,
@@ -937,7 +952,6 @@ class FastExperienceMaker(NaiveExperienceMaker):
 
         # Cache actor's supported parameters based on its modality
         # Default to VISION_LANGUAGE for backward compatibility with models without modality attribute
-        actor_modality = self.actor.modality
         self._actor_supported_params = get_supported_parameters(actor_modality)
 
     # ========================================================================
@@ -950,6 +964,7 @@ class FastExperienceMaker(NaiveExperienceMaker):
         all_prompts: List[str],
         all_images: Optional[List] = None,
         all_videos: Optional[List] = None,
+        all_audios: Optional[List] = None,
         all_references: Optional[List[str]] = None,
         all_labels: Optional[List] = None,
         **generate_kwargs,
@@ -977,7 +992,7 @@ class FastExperienceMaker(NaiveExperienceMaker):
         """
         config = self.strategy.config
 
-        # Normalize images if provided
+        # Normalize vision inputs if provided
         if all_images is not None:
             if self.multimodal_processor is None:
                 raise ValueError(
@@ -995,11 +1010,20 @@ class FastExperienceMaker(NaiveExperienceMaker):
                 )
             all_videos = normalize_videos(all_videos)
 
+        if all_audios is not None:
+            if self.audio_processor is None:
+                raise ValueError(
+                    "Audio data provided but the experience maker was not initialized for audio-language rollout."
+                )
+            all_audios = normalize_audios(all_audios)
+
         # Get image counts
         images_num = (get_images_num(all_images) if self.multimodal_processor and all_images is not None else None)
 
         # Get video counts
         videos_num = (get_videos_num(all_videos) if self.multimodal_processor and all_videos is not None else None)
+
+        audio_num = (get_audios_num(all_audios) if self.audio_processor and all_audios is not None else None)
 
         # ========== Stage 1: Sample Generation ==========
         Timer.start('  generate_samples')
@@ -1009,6 +1033,8 @@ class FastExperienceMaker(NaiveExperienceMaker):
             images_num=images_num,
             all_videos=all_videos,
             videos_num=videos_num,
+            all_audios=all_audios,
+            audios_num=audio_num,
             all_references=all_references,
             all_labels=all_labels,
             **generate_kwargs,
@@ -1057,8 +1083,10 @@ class FastExperienceMaker(NaiveExperienceMaker):
         all_prompts: List[str],
         all_images: Optional[List] = None,
         all_videos: Optional[List] = None,
+        all_audios: Optional[List] = None,
         images_num: Optional[List[int]] = None,
         videos_num: Optional[List[int]] = None,
+        audios_num: Optional[List[int]] = None,
         all_references: Optional[List[str]] = None,
         all_labels: Optional[List] = None,
         **generate_kwargs,
@@ -1097,7 +1125,8 @@ class FastExperienceMaker(NaiveExperienceMaker):
         start_time = time.time()
 
         config = self.strategy.config
-        is_multimodal = all_images is not None or all_videos is not None
+        is_audio_batch = all_audios is not None
+        is_multimodal = all_images is not None or all_videos is not None or is_audio_batch
         n_samples = config.n_samples_per_prompt
 
         # Initialize multimodal-specific variables to None
@@ -1107,6 +1136,9 @@ class FastExperienceMaker(NaiveExperienceMaker):
         all_videos_pixel_values = None
         all_images_grid_thw = None
         all_videos_grid_thw = None
+        all_feature_attention_mask = None
+        all_audio_num = None
+        all_audio_values = None
 
         # ========== Configure Sampling Parameters ==========
         if config.engine_type == "vllm":
@@ -1158,26 +1190,45 @@ class FastExperienceMaker(NaiveExperienceMaker):
 
         # ========== Process Multimodal Data ==========
         if is_multimodal:
-            processed_data = self.multimodal_processor.process_multimodal_batch(
-                all_prompts=all_prompts,
-                all_images=all_images,
-                all_references=all_references,
-                images_num=images_num,
-                n_samples_per_prompt=n_samples,
-                all_videos=all_videos,
-                videos_num=videos_num,
-            )
-            all_prompt_token_ids = processed_data["all_prompt_token_ids"]
-            all_prompts = processed_data["all_prompts"]
-            all_images = processed_data["all_images"]
-            all_videos = processed_data["all_videos"]
-            all_images_num = processed_data["all_images_num"]
-            all_videos_num = processed_data["all_videos_num"]
-            all_images_grid_thw = processed_data["all_images_grid_thw"]
-            all_videos_grid_thw = processed_data["all_videos_grid_thw"]
-            all_images_pixel_values = processed_data["all_images_pixel_values"]
-            all_videos_pixel_values = processed_data["all_videos_pixel_values"]
-            all_references = processed_data.get("all_references", None)
+            if is_audio_batch:
+                processed_data = self.audio_processor.process_audio_batch(
+                    all_prompts=all_prompts,
+                    all_audios=all_audios,
+                    all_references=all_references,
+                    n_samples_per_prompt=n_samples,
+                )
+                all_prompt_token_ids = processed_data["all_prompt_token_ids"]
+                all_prompts = processed_data["all_prompts"]
+                all_audios = processed_data["all_audios"]
+                all_audio_num = processed_data["all_audio_num"]
+                all_audio_values = processed_data["all_audio_values"]
+                all_feature_attention_mask = processed_data["all_feature_attention_mask"]
+                all_references = processed_data.get("all_references", None)
+            else:
+                processed_data = self.multimodal_processor.process_multimodal_batch(
+                    all_prompts=all_prompts,
+                    all_images=all_images,
+                    all_references=all_references,
+                    images_num=images_num,
+                    n_samples_per_prompt=n_samples,
+                    all_videos=all_videos,
+                    videos_num=videos_num,
+                )
+                all_prompt_token_ids = processed_data["all_prompt_token_ids"]
+                all_prompts = processed_data["all_prompts"]
+                all_images = processed_data["all_images"]
+                all_videos = processed_data["all_videos"]
+                all_images_num = processed_data["all_images_num"]
+                all_videos_num = processed_data["all_videos_num"]
+                all_images_grid_thw = processed_data["all_images_grid_thw"]
+                all_videos_grid_thw = processed_data["all_videos_grid_thw"]
+                all_images_pixel_values = processed_data["all_images_pixel_values"]
+                all_videos_pixel_values = processed_data["all_videos_pixel_values"]
+                all_feature_attention_mask = processed_data.get(
+                    "all_feature_attention_mask",
+                    processed_data.get("_audio_feature_attention_mask", None),
+                )
+                all_references = processed_data.get("all_references", None)
         else:
             # Text-only processing
             tokenized = self.tokenize_fn(all_prompts, self.prompt_max_len, padding=False)
@@ -1199,8 +1250,10 @@ class FastExperienceMaker(NaiveExperienceMaker):
                     all_prompts=None,
                     all_images=None,
                     all_videos=None,
+                    all_audios=None,
                     images_num=None,
                     videos_num=None,
+                    audios_num=None,
                 ):
                     return self.strategy.gather_and_generate(
                         sampling_params=sampling_params,
@@ -1208,8 +1261,10 @@ class FastExperienceMaker(NaiveExperienceMaker):
                         all_prompts=all_prompts,
                         all_images=all_images,
                         all_videos=all_videos,
+                        all_audios=all_audios,
                         images_num=images_num,
                         videos_num=videos_num,
+                        audios_num=audios_num,
                         sleep_engine=sleep_engine,
                     )
 
@@ -1228,8 +1283,10 @@ class FastExperienceMaker(NaiveExperienceMaker):
                     all_prompts=all_prompts,
                     all_images=all_images,
                     all_videos=all_videos,
+                    all_audios=all_audios,
                     all_images_num=all_images_num,
                     all_videos_num=all_videos_num,
+                    all_audio_num=all_audio_num,
                     sampling_params=sampling_params,
                     tokenizer=self.tokenizer,
                 )
@@ -1243,8 +1300,10 @@ class FastExperienceMaker(NaiveExperienceMaker):
                     sleep_engine=self.strategy.args.enable_engine_sleep,
                     all_images=all_images if is_multimodal else None,
                     all_videos=all_videos if is_multimodal else None,
+                    all_audios=all_audios if is_multimodal else None,
                     images_num=all_images_num if is_multimodal else None,
                     videos_num=all_videos_num if is_multimodal else None,
+                    audios_num=all_audio_num if is_multimodal else None,
                 )
         except ValueError as e:
             if "prompt" in str(e) and "too long" in str(e):
@@ -1263,13 +1322,32 @@ class FastExperienceMaker(NaiveExperienceMaker):
         for i in range(0, len(all_outputs), config.micro_rollout_batch_size):
             micro_batch_outputs = all_outputs[i:i + config.micro_rollout_batch_size]
             micro_batch_prompts = all_prompts[i:i + config.micro_rollout_batch_size]
+            micro_batch_references = (all_references[i:i + config.micro_rollout_batch_size] if all_references else None)
+            micro_batch_labels = (all_labels[i:i + config.micro_rollout_batch_size] if all_labels else None)
 
             # Extract micro-batch data
             micro_batch_grid_thw = None
             micro_batch_video_grid_thw = None
             micro_batch_raw_images = None
 
-            if is_multimodal:
+            if is_audio_batch:
+                micro_batch_audio_values = (
+                    all_audio_values[i:i + config.micro_rollout_batch_size] if all_audio_values is not None else None
+                )
+                micro_batch_feature_attention_mask = (
+                    all_feature_attention_mask[i:i + config.micro_rollout_batch_size]
+                    if all_feature_attention_mask is not None else None
+                )
+                sample = self._build_unpacked_audio_sample(
+                    outputs=micro_batch_outputs,
+                    prompts=micro_batch_prompts,
+                    labels=micro_batch_labels,
+                    references=micro_batch_references,
+                    audio_values=micro_batch_audio_values,
+                    feature_attention_mask=micro_batch_feature_attention_mask,
+                )
+                samples_list.append(sample)
+            elif is_multimodal:
                 rollout_image_count = sum(all_images_num[i:i + config.micro_rollout_batch_size])
                 micro_batch_grid_thw = all_images_grid_thw[image_start_idx:image_start_idx + rollout_image_count]
                 micro_batch_raw_images = all_images[i:i + config.micro_rollout_batch_size]
@@ -1279,10 +1357,10 @@ class FastExperienceMaker(NaiveExperienceMaker):
                 micro_batch_video_grid_thw = all_videos_grid_thw[video_start_idx:video_start_idx + rollout_video_count]
                 video_start_idx += rollout_video_count
 
-            micro_batch_references = (all_references[i:i + config.micro_rollout_batch_size] if all_references else None)
-            micro_batch_labels = (all_labels[i:i + config.micro_rollout_batch_size] if all_labels else None)
-
             # Build samples
+            if is_audio_batch:
+                continue
+
             if not self.packing_samples:
                 sample, updated_patch_idx, updated_video_patch_idx = self._build_unpacked_sample(
                     outputs=micro_batch_outputs,
@@ -1295,6 +1373,7 @@ class FastExperienceMaker(NaiveExperienceMaker):
                     raw_images=micro_batch_raw_images,
                     pixel_values=all_images_pixel_values if is_multimodal else None,
                     pixel_values_videos=all_videos_pixel_values if is_multimodal else None,
+                    feature_attention_mask=all_feature_attention_mask if is_multimodal else None,
                     images_num=all_images_num[i:i + config.micro_rollout_batch_size] if is_multimodal else None,
                     videos_num=all_videos_num[i:i + config.micro_rollout_batch_size] if is_multimodal else None,
                     image_patch_idx=image_patch_idx,
@@ -1699,23 +1778,7 @@ class FastExperienceMaker(NaiveExperienceMaker):
         # Only include parameters that the actor's modality supports
         extra_kwargs = {}
         if vlm:
-            # Candidate parameters to pass
-            candidate_params = {
-                "pixel_values": sample.pixel_values,
-                "image_grid_thw": sample.image_grid_thws,
-                "pixel_values_videos": sample.pixel_values_videos,
-                "video_grid_thw": sample.video_grid_thws,
-            }
-            # Audio-language actors expect audio_values; pipeline stores them in pixel_values slot
-            if "audio_values" in self._actor_supported_params:
-                candidate_params["audio_values"] = candidate_params.get("pixel_values")
-
-            # Filter to only include supported parameters
-            extra_kwargs = {
-                key: value
-                for key, value in candidate_params.items()
-                if key in self._actor_supported_params
-            }
+            extra_kwargs = build_supported_model_kwargs(sample, self._actor_supported_params)
 
         # Fix Qwen-VL image token count bug
         self._fix_qwen_vl_image_tokens(sequences, sample, vlm)
@@ -1731,9 +1794,11 @@ class FastExperienceMaker(NaiveExperienceMaker):
             prompts=prompts,
             labels=labels,
             pixel_values=getattr(sample, "pixel_values", None),
+            audio_values=getattr(sample, "audio_values", None),
             image_grid_thw=getattr(sample, "image_grid_thws", None),
             pixel_values_videos=getattr(sample, "pixel_values_videos", None),
             video_grid_thw=getattr(sample, "video_grid_thws", None),
+            feature_attention_mask=getattr(sample, "feature_attention_mask", None),
             raw_images=getattr(sample, "raw_images", None),
             image_num=getattr(sample, "image_num", None),
             video_num=getattr(sample, "video_num", None),
@@ -1844,10 +1909,12 @@ class FastExperienceMaker(NaiveExperienceMaker):
             return ExperienceVL(
                 sequences=output.sequences,
                 pixel_values=output.pixel_values,
+                audio_values=output.audio_values,
                 image_grid_thws=output.image_grid_thw,
                 raw_images=output.raw_images,
                 pixel_values_videos=output.pixel_values_videos,
                 video_grid_thws=output.video_grid_thw,
+                feature_attention_mask=output.feature_attention_mask,
                 action_log_probs=output.action_log_probs,
                 base_action_log_probs=output.base_action_log_probs,
                 values=output.value,
@@ -1921,6 +1988,7 @@ class FastExperienceMaker(NaiveExperienceMaker):
             pixel_values = []
             image_grid_thw_list = []
             all_img_num = []
+            feature_attention_mask_list = []
 
             pixel_values_videos = []
             video_grid_thw_list = []
@@ -1929,6 +1997,7 @@ class FastExperienceMaker(NaiveExperienceMaker):
             grid_thw = kwargs["grid_thw"]
             raw_images = kwargs["raw_images"]
             pixel_values_tensor = kwargs["pixel_values"]
+            feature_attention_mask_tensor = kwargs.get("feature_attention_mask")
             images_num = kwargs["images_num"]
             image_patch_idx = kwargs["image_patch_idx"]
 
@@ -1965,6 +2034,10 @@ class FastExperienceMaker(NaiveExperienceMaker):
                         if num_patch > 0:
                             pixel_slice = pixel_values_tensor[image_patch_idx:image_patch_idx + num_patch]
                             pixel_values.append(pixel_slice.clone())
+                            if feature_attention_mask_tensor is not None:
+                                mask_slice = feature_attention_mask_tensor[local_grid_idx + img_idx:local_grid_idx +
+                                                                           img_idx + 1]
+                                feature_attention_mask_list.append(mask_slice.clone())
                         image_patch_idx += num_patch
 
                     local_grid_idx += image_num
@@ -2031,6 +2104,9 @@ class FastExperienceMaker(NaiveExperienceMaker):
                 raw_images=raw_images,
                 pixel_values=pixel_values,
                 pixel_values_videos=pixel_values_videos,
+                feature_attention_mask=(
+                    torch.cat(feature_attention_mask_list, dim=0).to("cuda") if feature_attention_mask_list else None
+                ),
                 num_actions=action_mask.size(1),
                 packed_seq_lens=None,
                 response_length=action_mask.float().sum(dim=-1),
@@ -2042,6 +2118,61 @@ class FastExperienceMaker(NaiveExperienceMaker):
                 image_num=all_img_num,
                 video_num=all_vid_num,
             ), image_patch_idx, video_patch_idx
+
+    def _build_unpacked_audio_sample(
+        self,
+        outputs: List,
+        prompts: List[str],
+        labels: Optional[List],
+        references: Optional[List],
+        audio_values: Optional[torch.Tensor],
+        feature_attention_mask: Optional[torch.Tensor],
+    ) -> SamplesVL:
+        """
+        Build an unpacked audio-language sample batch.
+        """
+        max_input_len = max(len(out.prompt_token_ids) for out in outputs)
+        max_output_len = max(len(out.output_token_ids) for out in outputs)
+
+        pad_token_id = self.tokenizer.pad_token_id
+        eos_token_id = self.tokenizer.eos_token_id
+
+        sequences = []
+        all_output_ids = []
+        for output in outputs:
+            input_len = len(output.prompt_token_ids)
+            input_ids = [pad_token_id] * (max_input_len - input_len) + list(output.prompt_token_ids)
+
+            output_len = len(output.output_token_ids)
+            output_ids = list(output.output_token_ids) + [pad_token_id] * (max_output_len - output_len)
+            all_output_ids.append(output.output_token_ids)
+            sequences.append(input_ids + output_ids)
+
+        output_texts = self.tokenizer.batch_decode(all_output_ids)
+
+        sequences = torch.tensor(sequences)
+        sequences, attention_mask, action_mask = self.actor.process_sequences(
+            sequences, max_input_len, eos_token_id, pad_token_id
+        )
+        sequences = sequences.to("cuda")
+        attention_mask = attention_mask.to("cuda")
+        action_mask = action_mask.to("cuda")
+
+        return SamplesVL(
+            sequences=sequences,
+            attention_mask=attention_mask,
+            action_mask=action_mask,
+            audio_values=(audio_values.to("cuda") if audio_values is not None else None),
+            feature_attention_mask=(feature_attention_mask.to("cuda") if feature_attention_mask is not None else None),
+            num_actions=action_mask.size(1),
+            packed_seq_lens=None,
+            response_length=action_mask.float().sum(dim=-1),
+            total_length=attention_mask.float().sum(dim=-1),
+            references=references,
+            labels=labels,
+            prompts=prompts,
+            output_texts=output_texts,
+        )
 
     def _build_packed_sample(
         self,

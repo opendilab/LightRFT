@@ -42,6 +42,8 @@ def fire_sampling(
     all_images_num: Optional[List[int]] = None,
     all_videos: Optional[List] = None,
     all_videos_num: Optional[List[int]] = None,
+    all_audios: Optional[List] = None,
+    all_audio_num: Optional[List[int]] = None,
     sampling_params: Optional[Union[dict, object]] = None,
     tokenizer: Optional[Any] = None,
 ) -> List:
@@ -116,8 +118,10 @@ def fire_sampling(
         all_prompts=all_prompts if is_multimodal else None,
         all_images=all_images,
         all_videos=all_videos,
+        all_audios=all_audios,
         images_num=all_images_num if is_multimodal else None,
         videos_num=all_videos_num if is_multimodal else None,
+        audios_num=all_audio_num if is_multimodal else None,
     )
 
     # Log first-token top-k frequency distribution
@@ -182,8 +186,10 @@ def fire_sampling(
         all_prompts=all_prompts_rest if is_multimodal else None,
         all_images=all_images,
         all_videos=all_videos,
+        all_audios=all_audios,
         images_num=all_images_num if is_multimodal else None,
         videos_num=all_videos_num if is_multimodal else None,
+        audios_num=all_audio_num if is_multimodal else None,
     )
 
     # Merge the first token with the remaining tokens
