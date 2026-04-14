@@ -183,7 +183,11 @@ def run_inference_hf(
         try:
             audio, _ = librosa.load(audio_path, sr=sr)
             inputs = processor(
-                text=text, audios=[audio], return_tensors="pt", padding=True
+                text=text,
+                audios=[audio],
+                sampling_rate=sr,
+                return_tensors="pt",
+                padding=True,
             )
         except Exception as e:
             print(f"[WARNING] Audio load failed for {audio_path}: {e}")

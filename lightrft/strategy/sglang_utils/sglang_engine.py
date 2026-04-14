@@ -14,6 +14,7 @@ The module is designed to work with the SGLang runtime (srt) system and supports
 such as batch processing, custom sampling parameters, and LoRA fine-tuning.
 """
 
+import inspect
 import os
 from typing import Dict, List, Optional, Union
 
@@ -121,6 +122,7 @@ class RLGenerationEngine:
         # The image input. It can be a file name, a url, or base64 encoded string.
         # See also python/sglang/srt/utils.py:load_image.
         image_data: Optional[Union[List[str], str]] = None,
+        audio_data: Optional[Union[List[str], str, bytes, List[bytes]]] = None,
         return_logprob: Optional[Union[List[bool], bool]] = False,
         logprob_start_len: Optional[Union[List[int], int]] = None,
         top_logprobs_num: Optional[Union[List[int], int]] = None,
@@ -146,6 +148,8 @@ class RLGenerationEngine:
         :type input_ids: Optional[Union[List[List[int]], List[int]]]
         :param image_data: Image input as file name, URL, or base64 encoded string
         :type image_data: Optional[Union[List[str], str]]
+        :param audio_data: Audio input as file name, URL, WAV bytes, or a batch of them
+        :type audio_data: Optional[Union[List[str], str, bytes, List[bytes]]]
         :param return_logprob: Whether to return log probabilities for generated tokens
         :type return_logprob: Optional[Union[List[bool], bool]]
         :param logprob_start_len: Start position for log probability calculation
@@ -184,6 +188,8 @@ class RLGenerationEngine:
                 input_ids = gather_inputs_object_for_inference(input_ids, group=self.tp_group_cpu)
             if image_data is not None:
                 image_data = gather_inputs_object_for_inference(image_data, group=self.tp_group_cpu)
+            if audio_data is not None:
+                audio_data = gather_inputs_object_for_inference(audio_data, group=self.tp_group_cpu)
 
         if self._tp_rank == 0:
             output = self._engine.generate(

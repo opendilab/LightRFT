@@ -728,7 +728,7 @@ class StrategyBase(ABC):
             raise ValueError(f"Unsupported engine type: {self.inference_engine_type}")
         # torch.cuda.reset_max_memory_allocated()
         self.report_memory("after ppo training, after wakeup inference engine")
-        self.print(f"Finished {self.inference_engine_type} wakeup, TIMECOST {time.time() - wkup_t0}")
+        self.print(f"Finished {self.inference_engine_type} wakeup, TIMECOST {time.time() - wkup_t0:.4f}s")
 
         self.inference_engine_status = EngineStatus.WAKEUP
 

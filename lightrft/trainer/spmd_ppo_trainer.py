@@ -387,7 +387,7 @@ class SPMDPPOTrainerBase:
                     model_tensor = torch.tensor(all_model_rewards, dtype=torch.float32, device=device)
                 if model_tensor.abs().sum() > 0:  # Only log if model rewards are non-zero
                     status_mean["model_reward_mean"] = model_tensor.mean().item()
-                    self.strategy.print(f" model_reward_mean: {status_mean['model_reward_mean']}")
+                    self.strategy.print(f"model_reward_mean: {status_mean['model_reward_mean']}")
 
             if all_rule_rewards:
                 # [TENSOR-FIX] Handle both tensor lists and scalar lists
@@ -467,7 +467,7 @@ class SPMDPPOTrainerBase:
         self.strategy.maybe_offload_optimizer(self.actor_optim)
         torch.cuda.synchronize()
         torch.cuda.empty_cache()
-        self.strategy.print(f"PPO Train TIMECOST {time.time() - train_begin}")
+        self.strategy.print(f"PPO Train TIMECOST {time.time() - train_begin:.4f}s")
         self.strategy.report_memory("after train, opt offloaded, before update weights")
         self.strategy.print(torch.cuda.memory_summary())
         self.strategy.update_engine_weights(self.actor)

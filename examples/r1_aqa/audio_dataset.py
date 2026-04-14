@@ -26,7 +26,9 @@ Key Mapping (image pipeline → audio pipeline):
 
 from __future__ import annotations
 
+import copy
 import inspect
+import io
 import os
 import re
 from typing import Any, Dict, List, Optional, Tuple, Union
@@ -34,6 +36,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 import librosa
 from easydict import EasyDict
 import numpy as np
+import soundfile as sf
 import torch
 import torch.nn as nn
 from torch.utils.data import Dataset
@@ -46,6 +49,117 @@ from torch.utils.data import Dataset
 def load_audio(audio_path: str, sr: int = 16000) -> Tuple[np.ndarray, int]:
     """Load audio file with librosa; returns (waveform, sample_rate)."""
     return librosa.load(audio_path, sr=sr)
+
+
+def sanitize_qwen2_audio_messages(messages) -> List[Dict[str, Any]]:
+    """
+    Remove misleading keys from text segments before applying Qwen2-Audio's chat template.
+
+    The upstream template treats the mere presence of ``audio_url`` as an audio segment, even if the
+    value is ``None``. Our parquet stores text items as ``{"audio_url": None, "text": ..., "type": "text"}``,
+    which causes every text segment to be rendered as another audio placeholder.
+    """
+    sanitized = copy.deepcopy(messages)
+    for message in sanitized:
+        content = message.get("content")
+        if not isinstance(content, list):
+            continue
+        for segment in content:
+            if not isinstance(segment, dict):
+                continue
+            segment_type = segment.get("type")
+            if segment_type == "text":
+                segment.pop("audio_url", None)
+            elif segment_type == "audio":
+                segment.pop("text", None)
+    return sanitized
+
+
+def extract_audio_array(audio_item: Any, default_sr: int = 16000) -> Tuple[np.ndarray, int]:
+    """Normalize supported audio payloads to ``(waveform, sampling_rate)``."""
+    if isinstance(audio_item, tuple) and len(audio_item) == 2:
+        audio_array, sr = audio_item
+        return np.asarray(audio_array, dtype=np.float32), int(sr)
+    if isinstance(audio_item, list) and len(audio_item) == 2 and isinstance(audio_item[0], np.ndarray):
+        audio_array, sr = audio_item
+        return np.asarray(audio_array, dtype=np.float32), int(sr)
+    if isinstance(audio_item, np.ndarray):
+        return np.asarray(audio_item, dtype=np.float32), default_sr
+    raise TypeError(f"Unsupported audio payload type: {type(audio_item).__name__}")
+
+
+def serialize_audio_for_sglang(audio_item: Any, default_sr: int = 16000) -> Union[str, bytes, Dict[str, Any]]:
+    """
+    Convert local audio payloads into a SGLang-compatible audio input.
+
+    SGLang accepts file paths / URLs / bytes, but not ``(waveform, sr)`` tuples directly.
+    """
+    if audio_item is None:
+        return None
+    if isinstance(audio_item, dict):
+        return audio_item
+    if isinstance(audio_item, (str, bytes)):
+        return audio_item
+
+    audio_array, sr = extract_audio_array(audio_item, default_sr=default_sr)
+    buffer = io.BytesIO()
+    sf.write(buffer, audio_array, sr, format="WAV")
+    return buffer.getvalue()
+
+
+def normalize_qwen2_audio_features(
+    input_features: torch.Tensor,
+    feature_attention_mask: Optional[torch.Tensor],
+    expected_mel_len: int = 3000,
+) -> Tuple[torch.Tensor, Optional[torch.Tensor], Tuple[int, ...], Tuple[int, ...]]:
+    """
+    Normalize Qwen2-Audio features to ``(B, mel_bins, expected_mel_len)``.
+
+    Returns the normalized tensor, normalized mask, original shape, and normalized shape.
+    """
+    if input_features is None:
+        raise RuntimeError("input_features must not be None for audio batches")
+
+    if not isinstance(input_features, torch.Tensor):
+        input_features = torch.as_tensor(input_features)
+    if feature_attention_mask is not None and not isinstance(feature_attention_mask, torch.Tensor):
+        feature_attention_mask = torch.as_tensor(feature_attention_mask)
+
+    original_shape = tuple(input_features.shape)
+    if input_features.dim() != 3:
+        raise RuntimeError(
+            f"Expected 3D audio features, but got shape {original_shape}. "
+            "Qwen2-Audio should return (batch, mel_bins, time)."
+        )
+
+    # Most processors return (B, mel_bins, T). Keep that if mel bins look valid.
+    if input_features.shape[1] in (80, 128):
+        normalized = input_features
+    # Some variants may return (B, T, mel_bins).
+    elif input_features.shape[-1] in (80, 128):
+        normalized = input_features.transpose(1, 2).contiguous()
+    else:
+        raise RuntimeError(
+            f"Unexpected Qwen2-Audio feature shape {original_shape}: unable to identify mel-bin dimension. "
+            "This usually means the processor received malformed audio inputs."
+        )
+
+    current_len = normalized.shape[-1]
+    if current_len < expected_mel_len:
+        normalized = torch.nn.functional.pad(normalized, (0, expected_mel_len - current_len), value=0.0)
+    elif current_len > expected_mel_len:
+        normalized = normalized[..., :expected_mel_len]
+
+    if feature_attention_mask is not None:
+        current_mask_len = feature_attention_mask.shape[-1]
+        if current_mask_len < expected_mel_len:
+            feature_attention_mask = torch.nn.functional.pad(
+                feature_attention_mask, (0, expected_mel_len - current_mask_len), value=0,
+            )
+        elif current_mask_len > expected_mel_len:
+            feature_attention_mask = feature_attention_mask[..., :expected_mel_len]
+
+    return normalized, feature_attention_mask, original_shape, tuple(normalized.shape)
 
 
 # ============================================================================
@@ -125,6 +239,8 @@ class AudioPromptDataset(Dataset):
                 prompt_messages = [{"role": "user", "content": prompt_messages}]
 
         # ---- 2. Render via processor's chat template ----
+        prompt_messages = sanitize_qwen2_audio_messages(prompt_messages)
+
         try:
             prompt_text = self.processor.apply_chat_template(
                 prompt_messages,
@@ -224,6 +340,32 @@ class AudioMultimodalProcessor:
         if all_images is None:
             all_images = [None] * L
 
+        audio_token_str = getattr(self.processor, "audio_token", "<|AUDIO|>")
+        audio_bos_str = getattr(self.processor, "audio_bos_token", "<|audio_bos|>")
+        audio_eos_str = getattr(self.processor, "audio_eos_token", "<|audio_eos|>")
+        rank = (
+            torch.distributed.get_rank()
+            if torch.distributed.is_available() and torch.distributed.is_initialized()
+            else 0
+        )
+
+        # In the audio-only AQA pipeline, a prompt that still contains audio placeholders but
+        # has no loaded audio payload is a hard data inconsistency. Let it fail here instead of
+        # silently falling into the text-only branch and hanging later in distributed forward.
+        # Clean the parquet first with examples/r1_aqa/data_preprocess/clean_audio_dataset.py.
+        missing_audio_indices = [
+            idx
+            for idx, (prompt, audio) in enumerate(zip(all_prompts, all_images))
+            if audio is None and (
+                audio_token_str in prompt or audio_bos_str in prompt or audio_eos_str in prompt
+            )
+        ]
+        if missing_audio_indices:
+            raise RuntimeError(
+                f"[AudioPipeline][rank={rank}] Found {len(missing_audio_indices)} prompts with audio "
+                f"placeholders but no audio payload before processing. sample_indices={missing_audio_indices[:8]}"
+            )
+
         # ===== Stage 1: Separation (text-only vs audio) =====
         all_prompts_text, all_prompts_audio = [], []
         all_audios_valid = []
@@ -265,11 +407,10 @@ class AudioMultimodalProcessor:
             # Extract audio arrays for the processor
             flat_audios = []
             for audio_tuple in all_audios_valid:
-                if isinstance(audio_tuple, tuple) and len(audio_tuple) == 2:
-                    flat_audios.append(audio_tuple[0])  # numpy array
-                elif isinstance(audio_tuple, np.ndarray):
-                    flat_audios.append(audio_tuple)
-                else:
+                try:
+                    audio_array, _ = extract_audio_array(audio_tuple, default_sr=16000)
+                    flat_audios.append(audio_array)
+                except TypeError:
                     # Fallback: create silence
                     flat_audios.append(np.zeros(16000, dtype=np.float32))
 
@@ -278,9 +419,6 @@ class AudioMultimodalProcessor:
             # Each audio prompt must contain exactly one <|AUDIO|> token.
             # Mismatches can occur when the chat template or data serialization
             # inserts duplicate tokens (e.g. template + processor both add one).
-            audio_token_str = getattr(self.processor, "audio_token", "<|AUDIO|>")
-            audio_bos_str = getattr(self.processor, "audio_bos_token", "<|audio_bos|>")
-            audio_eos_str = getattr(self.processor, "audio_eos_token", "<|audio_eos|>")
             sanitized_prompts = []
             n_fixed = 0
             for prompt_str in all_prompts_audio:
@@ -345,12 +483,17 @@ class AudioMultimodalProcessor:
                 "truncation": True,
                 "padding": True,
                 "return_tensors": "pt",
+                "sampling_rate": getattr(self.processor.feature_extractor, "sampling_rate", 16000),
             }
 
             print(f"[AudioPipeline] Processor type: {type(self.processor).__name__}")
             print(f"[AudioPipeline] Processing {len(flat_audios)} audio samples")
             total_audio_tokens = sum(p.count(audio_token_str) for p in all_prompts_audio)
-            print(f"[AudioPipeline] Total <|AUDIO|> tokens in text: {total_audio_tokens}, audios: {len(flat_audios)}")
+            print(
+                f"[AudioPipeline][rank={rank}] Total <|AUDIO|> tokens in text: {total_audio_tokens}, "
+                f"audios: {len(flat_audios)}, text_only_prompts: {len(all_prompts_text)}, "
+                f"audio_prompts: {len(all_prompts_audio)}"
+            )
 
             inputs_audio = self.processor(**processor_kwargs)
             print(f"[AudioPipeline] Processor output keys: {list(inputs_audio.keys())}")
@@ -361,26 +504,18 @@ class AudioMultimodalProcessor:
                 "feature_attention_mask", None
             )
 
-            # ------------------------------------------------------------------
-            # Qwen2Audio's Whisper encoder requires mel features of exactly 3000
-            # frames.  When ``padding=True`` is forwarded to the feature
-            # extractor it pads to the batch-max instead of 3000.  Fix here.
-            # ------------------------------------------------------------------
             if all_input_features is not None:
-                EXPECTED_MEL_LEN = 3000
-                actual_len = all_input_features.shape[-1]
-                if actual_len < EXPECTED_MEL_LEN:
-                    pad_len = EXPECTED_MEL_LEN - actual_len
-                    all_input_features = torch.nn.functional.pad(
-                        all_input_features, (0, pad_len), value=0.0,
+                all_input_features, all_feature_attention_mask, input_shape_before, input_shape_after = (
+                    normalize_qwen2_audio_features(
+                        all_input_features,
+                        all_feature_attention_mask,
+                        expected_mel_len=3000,
                     )
-                    if all_feature_attention_mask is not None:
-                        all_feature_attention_mask = torch.nn.functional.pad(
-                            all_feature_attention_mask, (0, pad_len), value=0,
-                        )
+                )
+                if input_shape_before != input_shape_after:
                     print(
-                        f"[AudioPipeline] Padded input_features from "
-                        f"{actual_len} → {EXPECTED_MEL_LEN} frames"
+                        f"[AudioPipeline] Normalized input_features shape "
+                        f"{input_shape_before} -> {input_shape_after}"
                     )
 
             if all_input_features is None:
@@ -446,6 +581,7 @@ class AudioMultimodalProcessor:
             all_images_grid_thw=all_images_grid_thw,
             all_videos_grid_thw=all_videos_grid_thw,
             all_references=all_references,
+            all_feature_attention_mask=all_feature_attention_mask,
             # Audio-specific: store feature mask separately
             _audio_feature_attention_mask=all_feature_attention_mask,
         )
@@ -519,11 +655,10 @@ def build_audio_multimodal_inputs(
                 idx = audio_start_idx + j
                 if idx < len(all_images) and all_images[idx] is not None:
                     audio_item = all_images[idx]
-                    if isinstance(audio_item, tuple):
-                        audio_list.append(audio_item)  # (array, sr)
-                    elif isinstance(audio_item, np.ndarray):
-                        audio_list.append((audio_item, 16000))
-                    # else skip
+                    try:
+                        audio_list.append(serialize_audio_for_sglang(audio_item))
+                    except TypeError:
+                        continue
 
         multi_modal_data = {}
         if audio_list:
@@ -553,6 +688,7 @@ def patch_strategy_for_audio(strategy):
     Replaces ``_build_multimodal_inputs`` with audio-aware version.
     """
     original_build = strategy._build_multimodal_inputs
+    original_engine_generate_local = strategy.engine_generate_local
 
     def patched_build(all_prompts, all_images=None, images_num=None,
                       all_videos=None, videos_num=None, all_prompt_token_ids=None):
@@ -566,8 +702,52 @@ def patch_strategy_for_audio(strategy):
             all_prompt_token_ids,
         )
 
+    def patched_engine_generate_local(
+        sampling_params,
+        prompt_token_ids=None,
+        multi_modal_inputs=None,
+    ):
+        if multi_modal_inputs is None or strategy.inference_engine_type != "sglang":
+            return original_engine_generate_local(
+                sampling_params=sampling_params,
+                prompt_token_ids=prompt_token_ids,
+                multi_modal_inputs=multi_modal_inputs,
+            )
+
+        has_audio = any(
+            "audio" in prompt.get("multi_modal_data", {})
+            for prompt in multi_modal_inputs
+        )
+        has_image = any(
+            "image" in prompt.get("multi_modal_data", {})
+            for prompt in multi_modal_inputs
+        )
+        if not has_audio or has_image:
+            return original_engine_generate_local(
+                sampling_params=sampling_params,
+                prompt_token_ids=prompt_token_ids,
+                multi_modal_inputs=multi_modal_inputs,
+            )
+
+        prompt = [p["prompt"] for p in multi_modal_inputs]
+        audio_data = [p.get("multi_modal_data", {}).get("audio") for p in multi_modal_inputs]
+
+        sglang_outputs = strategy.inference_engine.generate(
+            sampling_params=sampling_params,
+            prompt=prompt,
+            audio_data=audio_data,
+        )
+        return [
+            EasyDict(
+                prompt_token_ids=None,
+                output_token_ids=sglang_outputs[i]["output_ids"],
+            ) for i in range(len(sglang_outputs))
+        ]
+
     strategy._build_multimodal_inputs = patched_build
+    strategy.engine_generate_local = patched_engine_generate_local
     strategy.print("[PATCH] Strategy._build_multimodal_inputs patched for audio")
+    strategy.print("[PATCH] Strategy.engine_generate_local patched for SGLang audio_data")
     return strategy
 
 
@@ -600,4 +780,3 @@ def patch_experience_maker_for_audio(exp_maker, processor, tokenizer, prompt_max
 
     print("[PATCH] FastExperienceMaker patched for audio")
     return exp_maker
-
