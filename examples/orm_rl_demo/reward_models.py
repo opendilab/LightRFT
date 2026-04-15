@@ -22,6 +22,7 @@ import re
 import json
 import math
 import copy
+import os
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -510,6 +511,96 @@ def preprocess_inputs_sglang(
             raw_texts.append(raw_text)
 
     return raw_texts
+
+
+def build_general_engine_queries(
+    processor,
+    prompt_and_outputs: list,
+    references: list,
+    raw_images: list | None,
+    question_response_format_zh: str,
+    question_response_format_en: str,
+    system_prompt_zh: str,
+    system_prompt_en: str,
+):
+    """
+    Build general-RM engine prompts using the model's chat template.
+
+    The vLLM engine path for Qwen2.5-VL is much more stable when we append the
+    assistant generation prompt explicitly. Without this, the engine often
+    returns empty strings or prompt-continuation fragments instead of verdicts.
+    """
+    test_data = []
+    expected_image_counts = []
+    normalized_image_data = []
+
+    if raw_images is None:
+        raw_images = [None] * len(prompt_and_outputs)
+
+    for i, prompt_and_output in enumerate(prompt_and_outputs):
+        dialog = _parse_dialog(prompt_and_output)
+
+        if "user" in dialog:
+            question_raw = dialog["user"]
+        else:
+            question_raw = next(
+                (txt for role, txt in dialog.items() if role != "assistant"),
+                prompt_and_output,
+            )
+
+        if "assistant" in dialog:
+            response = dialog["assistant"]
+        else:
+            response = prompt_and_output.split("</think>")[-1].strip()
+
+        question = _clean_vision_token(question_raw)
+        reference = references[i] if references is not None and i < len(references) else ""
+        is_zh = is_chinese(question)
+        fmt = question_response_format_zh if is_zh else question_response_format_en
+        system_prompt = system_prompt_zh if is_zh else system_prompt_en
+        user_text = fmt.format(question=question, response=response, reference=reference)
+
+        raw_image = raw_images[i] if i < len(raw_images) else None
+        has_image = raw_image is not None
+        expected_image_counts.append(1 if has_image else 0)
+        normalized_image_data.append([raw_image] if has_image else [])
+
+        user_content = [{"type": "text", "text": user_text}]
+        if has_image:
+            user_content = [
+                {
+                    "type": "image",
+                    "image": [],
+                    "min_pixels": 224 * 224,
+                    "max_pixels": 1280 * 1280,
+                },
+                {"type": "text", "text": user_text},
+            ]
+
+        test_data.append(
+            [
+                {"role": "system", "content": [{"type": "text", "text": system_prompt}]},
+                {"role": "user", "content": user_content},
+            ]
+        )
+
+    queries = processor.apply_chat_template(
+        test_data,
+        tokenize=False,
+        add_generation_prompt=True,
+    )
+    if isinstance(queries, str):
+        queries = [queries]
+
+    fixed_queries = []
+    for query, expected_image_count in zip(queries, expected_image_counts):
+        query_image_token_count = query.count("<|image_pad|>")
+        if query_image_token_count > expected_image_count:
+            excess_tokens = query_image_token_count - expected_image_count
+            query = query.replace("<|image_pad|>", "", excess_tokens)
+        fixed_queries.append(query)
+
+    return fixed_queries, normalized_image_data
 
 
 def preprocess_inputs(
@@ -1896,6 +1987,10 @@ class Qwen2VLRewardModelGeneral(nn.Module):
             ids = self.tokenizer.encode(s, add_special_tokens=False)
             self._allowed_token_seqs.append(ids)
 
+        self._verdict_log_enabled = os.environ.get("ORM_RL_DEMO_RM_VERDICT_LOG", "0") == "1"
+        self._verdict_log_max = int(os.environ.get("ORM_RL_DEMO_RM_VERDICT_LOG_MAX", "128"))
+        self._verdict_log_count = 0
+
         first_ids = {seq[0] for seq in self._allowed_token_seqs}
         self._logits_proc = [AllowedTokensLogitsProcessor(first_ids)]
         self._max_answer_len = max(len(x) for x in self._allowed_token_seqs)
@@ -1934,7 +2029,16 @@ class Qwen2VLRewardModelGeneral(nn.Module):
         )
 
         if is_engine(self.base_model):
-            raw_images = [[img] for img in raw_images]
+            raw_texts, raw_images = build_general_engine_queries(
+                self.processor,
+                prompt_and_outputs,
+                references,
+                raw_images,
+                self.question_response_format_zh,
+                self.question_response_format_en,
+                self.general_system_prompt_zh,
+                self.general_system_prompt_en,
+            )
             gen_texts, _ = _hf_or_engine_generate(
                 self.base_model,
                 prompts=raw_texts,
@@ -1961,19 +2065,92 @@ class Qwen2VLRewardModelGeneral(nn.Module):
                 gen_ids, skip_special_tokens=True
             )
 
+        log_on_rank0 = (not dist.is_initialized()) or dist.get_rank() == 0
+
+        def _log_verdict_detail(tag: str, sample_idx: int, raw_text: str, **fields) -> None:
+            if not (self._verdict_log_enabled and log_on_rank0):
+                return
+            if self._verdict_log_count >= self._verdict_log_max:
+                return
+            raw_text = raw_text if isinstance(raw_text, str) else str(raw_text)
+            preview = " ".join(raw_text.split())
+            if len(preview) > 200:
+                preview = preview[:200] + "..."
+            extras = " ".join(f"{key}={value}" for key, value in fields.items())
+            print(
+                f"[ORM_RM_GENERAL_VERDICT_{tag}] "
+                f"sample_idx={sample_idx} text_len={len(raw_text)} raw={preview!r} {extras}".rstrip(),
+                flush=True,
+            )
+            self._verdict_log_count += 1
+
+        verdict_summary = {
+            "total": len(gen_texts),
+            "empty": 0,
+            "no_numeric": 0,
+            "value_error": 0,
+            "parsed": 0,
+            "parsed_0": 0,
+            "parsed_0_5": 0,
+            "parsed_1": 0,
+        }
+
         scores = []
-        for txt in gen_texts:
+        for sample_idx, txt in enumerate(gen_texts):
+            txt = txt if isinstance(txt, str) else str(txt)
+            if txt == "":
+                verdict_summary["empty"] += 1
+                scores.append(0.0)
+                _log_verdict_detail("EMPTY", sample_idx, txt, fallback="0.0")
+                continue
+
             m = re.search(r"[-+]?\d*\.?\d+", txt)
             if not m:
+                verdict_summary["no_numeric"] += 1
                 scores.append(0.0)
+                _log_verdict_detail("NO_NUMERIC", sample_idx, txt, fallback="0.0")
                 continue
+
+            matched_token = m.group()
             try:
-                val = float(m.group())
-            except ValueError:
+                val = float(matched_token)
+            except ValueError as exc:
+                verdict_summary["value_error"] += 1
                 scores.append(0.0)
+                _log_verdict_detail(
+                    "VALUE_ERROR",
+                    sample_idx,
+                    txt,
+                    token=repr(matched_token),
+                    error=repr(exc),
+                    fallback="0.0",
+                )
                 continue
+
             nearest = min(self.general_scores, key=lambda x: abs(x - val))
+            verdict_summary["parsed"] += 1
+            if nearest == 0.0:
+                verdict_summary["parsed_0"] += 1
+            elif nearest == 0.5:
+                verdict_summary["parsed_0_5"] += 1
+            elif nearest == 1.0:
+                verdict_summary["parsed_1"] += 1
+            _log_verdict_detail(
+                "PARSED",
+                sample_idx,
+                txt,
+                token=repr(matched_token),
+                parsed=repr(val),
+                snapped=repr(nearest),
+            )
             scores.append(nearest)
+
+        if self._verdict_log_enabled and log_on_rank0:
+            print(
+                "[ORM_RM_GENERAL_VERDICT_SUMMARY] "
+                + " ".join(f"{key}={value}" for key, value in verdict_summary.items()),
+                flush=True,
+            )
 
         return {"score": torch.tensor(scores, device=self.device)}
 
