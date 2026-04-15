@@ -1,33 +1,8 @@
 """
-GRPO Training with Co-located Reward Models
+Training entry for the Geo3K ORM RL demo with a co-located general reward model.
 
-This script implements Group Relative Policy Optimization (GRPO) training
-with co-located reward models for reinforcement learning from human feedback (RLHF).
-
-Key Features:
-    - Supports both text-only and vision-language models
-    - Multiple reward models (Value, Safety, Knowledge, Normal, General)
-    - Flexible strategy: DeepSpeed ZeRO or FSDP
-    - Meta device initialization for memory optimization
-    - EMA (Exponential Moving Average) model support
-    - Dynamic sampling and overlong buffer penalties (DAPO)
-
-Main Components:
-    - Actor: Policy model being trained
-    - Critic: Value model for advantage estimation (optional for GRPO)
-    - Reward Models: Multiple models for evaluating different aspects
-    - Initial Model: Reference model for KL divergence
-
-Training Pipeline:
-    1. Load and initialize models (actor, critic, reward models)
-    2. Setup data loaders (prompts + optional pretrain data)
-    3. Configure optimizers and schedulers
-    4. Run PPO/GRPO training loop via SPMDPPOTrainerVL
-
-Usage:
-    python train_grpo_rm_colocate.py --pretrain <model_path> --reward_pretrain <rm_config> ...
-
-For more details on arguments, see the argument parser at the bottom of this file.
+This script keeps the demo-specific dataset override and reward wiring local to
+`examples/orm_rl_demo` while reusing the shared GRPO training stack.
 """
 import argparse
 import itertools

@@ -858,24 +858,6 @@ def gsm8k_combined_reward_fn(
     fmt_reward = gsm8k_format_reward_fn(sol)
     return (1.0 - format_weight) * acc_reward + format_weight * fmt_reward
 
-# orig reward recipe for svkg dataset training after trained on kg dataset
-# RECIPE: Dict[str, List[Tuple[str, Optional[str], float]]] = {
-#     "safety":          [("model", "safety", 1.0)],
-#     "knowledge":       [("model", "knowledge", 1.0),
-#                         ("model", "normal",    0.5)],
-#     "knowledge_rule":  [("rule",  None,        1.0),
-#                         ("model", "normal",    0.5)],
-#     "value":           [("model", "value",     1.0)],
-#     "normal":          [("model", "normal",    1.0)],
-#     "general":         [("model", "general",   1.0)],
-#     "general_rule":    [("rule",  None,        1.0)],
-#     # Geo3K dataset: pure rule-based reward (no reward model needed)
-#     "geo3k_rule":      [("geo3k_rule", None,  1.0)],
-#     # GSM8K dataset: pure rule-based reward (no reward model needed)
-#     "gsm8k_rule":      [("gsm8k_rule", None,  1.0)],
-# }
-
-# Current reward recipe for SVKI dataset training (DeepSeek model)
 RECIPE: Dict[str, List[Tuple[str, Optional[str], float]]] = {
     "safety":          [("model", "safety", 1.0)],
     "knowledge":       [("model", "knowledge", 1.0),

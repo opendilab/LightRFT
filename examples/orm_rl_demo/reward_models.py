@@ -1916,57 +1916,6 @@ class Qwen2VLRewardModelGeneral(nn.Module):
         """
         Returns: {'score':  FloatTensor[B]}, only in 0/0.5/1
         """
-        # if input_ids is not None:
-        #     batch_size = input_ids.size(0)
-        #     if references is None or len(references) != batch_size:
-        #         raise ValueError("`references` must be the same length of batch_size")
-
-        #     raw_dialogs = self.tokenizer.batch_decode(
-        #         input_ids, skip_special_tokens=False
-        #     )
-        # else:
-        #     assert prompt_and_outputs is not None
-        #     raw_dialogs = prompt_and_outputs
-        # # TODO(nyz)
-        # raw_dialogs = prompt_and_outputs
-
-        # qa_pairs: list[tuple[str, str]] = []
-        # p = re.compile(r"<\|im_start\|>(\w+)\n(.*?)<\|im_end\|>", re.S)
-
-        # for dlg in raw_dialogs:
-        #     roles = {role: text.strip() for role, text in p.findall(dlg)}
-        #     ans = roles.get("assistant", "")
-        #     if "<think>" in ans and "</think>" in ans:
-        #         end = ans.rfind("</think>")
-        #         ans = ans[end + len("</think>"):].strip()
-        #     qa_pairs.append((roles.get("user", ""), ans))
-
-        # chat_msgs, image_data = [], []
-        # for (question, response), ref in zip(qa_pairs, references):
-        #     if self.text_only:
-        #         question = _clean_vision_token(question)
-        #         response = _clean_vision_token(response)
-
-        #     user_txt = self.PROMPT_TEMPLATE.format(
-        #         question=question, response=response, ground_truth=ref
-        #     )
-        #     if self.text_only:
-        #         content = [{"type": "text", "text": user_txt}]
-        #     else:
-        #         content = [{"type": "text", "text": user_txt}]
-        #     chat_msgs.append(
-        #         [
-        #             {"role": "system",
-        #              "content": [{"type": "text", "text": self.SYSTEM_PROMPT}]},
-        #             {"role": "user", "content": content},
-        #         ]
-        #     )
-        #     image_data.append([[None]])     # placeholder
-
-        # prompt_strs = self.processor.apply_chat_template(
-        #     chat_msgs, tokenize=False, add_generation_prompt=False
-        # )
-
         if prompt_and_outputs is None:
             prompt_and_outputs = prompt_and_output
         if prompt_and_outputs is None:
