@@ -928,7 +928,7 @@ def mix_rewards(
     metrics_dict: Dict[str, torch.Tensor] = {
         'format_reward': torch.zeros(B, dtype=torch.float32, device=device),
         'accuracy_reward': torch.zeros(B, dtype=torch.float32, device=device),
-        'model_reward': torch.zeros(B, dtype=torch.float32, device=device),
+        'general_model_reward': torch.zeros(B, dtype=torch.float32, device=device),
         'rule_reward': torch.zeros(B, dtype=torch.float32, device=device),
     }
 
@@ -976,7 +976,7 @@ def mix_rewards(
             )
             metrics_dict['format_reward'][i] = fmt_r
             metrics_dict['accuracy_reward'][i] = acc_r
-            metrics_dict['model_reward'][i] = geo3k_model_w * model_score
+            metrics_dict['general_model_reward'][i] = geo3k_model_w * model_score
             metrics_dict['rule_reward'][i] = geo3k_fmt_w * fmt_r + geo3k_acc_w * acc_r
             continue
 
@@ -995,7 +995,7 @@ def mix_rewards(
             if typ == "model":
                 model_r = w * get_model_reward(key, i)
                 r += model_r
-                metrics_dict['model_reward'][i] += model_r
+                metrics_dict['general_model_reward'][i] += model_r
 
             elif typ == "rule":
                 rule_r = w * rule_reward_fn(sol_completion, gt)
