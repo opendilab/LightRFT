@@ -131,6 +131,32 @@ def register_builder(rtype: RewardModelType) -> Callable:
 RawRewardInput = Union[str, Dict[str, str], List[Dict[str, str]], None]
 
 
+def extract_response(text: str) -> str:
+    """
+    Extract assistant completion from a full chat transcript.
+
+    Running format/accuracy checks on the full decoded sequence can produce
+    false positives because the system prompt itself contains formatting
+    examples such as ``<think>...</think>`` and ``\\boxed{}``.
+    """
+    if not isinstance(text, str):
+        return ""
+
+    s = text.strip()
+    if not s:
+        return s
+
+    assistant_marker = "<|im_start|>assistant"
+    if assistant_marker in s:
+        start = s.rfind(assistant_marker) + len(assistant_marker)
+        tail = s[start:]
+        end_idx = tail.find("<|im_end|>")
+        if end_idx != -1:
+            tail = tail[:end_idx]
+        return tail.strip()
+    return s
+
+
 # ============================================================================
 # Configuration Parsing
 # ============================================================================
@@ -233,6 +259,42 @@ def parse_reward_pretrain(
     return cfgs, label_map
 
 
+def _normalized_geo3k_general_weights() -> Tuple[float, float, float]:
+    """
+    Return normalized (format, model, accuracy) weights for the Geo3K+ORM mix.
+    """
+    format_w = float(os.environ.get("ORM_RL_DEMO_GEO3K_FORMAT_WEIGHT", "0.1"))
+    model_w = float(os.environ.get("ORM_RL_DEMO_GEO3K_MODEL_WEIGHT", "0.2"))
+    accuracy_w = float(os.environ.get("ORM_RL_DEMO_GEO3K_ACCURACY_WEIGHT", "0.7"))
+    total = format_w + model_w + accuracy_w
+    if total <= 0:
+        return 0.1, 0.2, 0.7
+    return format_w / total, model_w / total, accuracy_w / total
+
+
+def _infer_rm_engine_tp_size(pretrain_path: str) -> int:
+    override = os.environ.get("ORM_RL_DEMO_RM_ENGINE_TP")
+    if override:
+        return int(override)
+
+    path = pretrain_path.lower()
+    if "72b" in path:
+        return 8
+    if "32b" in path:
+        return 4
+    if "14b" in path:
+        return 2
+    if "8b" in path or "7b" in path:
+        return 1
+    if "value" in path:
+        return 2
+    return 1
+
+
+def _rm_engine_mem_util() -> float:
+    return float(os.environ.get("ORM_RL_DEMO_RM_ENGINE_MEM_UTIL", "0.15"))
+
+
 # ============================================================================
 # Model Loading Functions
 # ============================================================================
@@ -268,12 +330,11 @@ def _load_engine(
     device: torch.device
 ) -> Tuple[Any, Any]:
     """
-    Load SGLang engine and processor.
+    Load reward-model inference engine and processor.
 
     Automatically determines tensor parallelism size based on reward model type:
-        - value: 7B model → tp_size = 2
-        - safety/safe: 72B model → tp_size = 8
-        - knowledge/normal/general: 72B models → tp_size = 8
+        - 7B/8B models default to tp_size = 1
+        - larger models scale tp_size by model size
 
     :param pretrain_path: Model path or HuggingFace model name
     :type pretrain_path: str
@@ -283,37 +344,63 @@ def _load_engine(
     :rtype: Tuple[Any, Any]
 
     Note:
-        Engine is set to sleep mode after loading to save memory
+        Engine is set to sleep mode after loading to save memory.
+        Backend selection is controlled by ORM_RL_DEMO_RM_ENGINE_BACKEND:
+        - sglang: use SGLang only
+        - vllm: use vLLM only
+        - auto: try SGLang first, then fall back to vLLM
     """
-    # TODO: more adaptive implementation
-    # Determine tp_size based on model name in path
-    if "value" in pretrain_path:
-        # value-orm is 7B
-        tp_size = 2
-    elif ("safety" in pretrain_path) or ("safe" in pretrain_path):
-        # safety-orm is 72B
-        tp_size = 8
-    else:
-        # knowledge-orm, normal, general are all 72B
-        tp_size = 8
+    tp_size = _infer_rm_engine_tp_size(pretrain_path)
+    engine_mem_util = _rm_engine_mem_util()
+    backend = os.environ.get("ORM_RL_DEMO_RM_ENGINE_BACKEND", "auto").strip().lower()
 
-    print(f"[reward_models_utils] Loading engine from {pretrain_path} with tp_size={tp_size}")
-
-    from lightrft.strategy.sglang_utils import get_sglang_engine
-
-    engine = get_sglang_engine(
-        pretrain_path,
-        engine_mem_util=0.4,  # Increased from 0.2 to avoid CUDA graph buffer allocation failure
-        # engine_mem_util=0.3,  # Increased from 0.2 to avoid CUDA graph buffer allocation failure
-        tp_size=tp_size,
-        skip_tokenizer_init=False,
-        disable_cuda_graph=True, # only for deepseek, TODO: why deepseek pipeline (examples/orm_rl_demo/run_fsdp_deepseek.sh) need this?
+    print(
+        f"[reward_models_utils] Loading engine from {pretrain_path} "
+        f"with tp_size={tp_size}, engine_mem_util={engine_mem_util}, backend={backend}"
     )
 
-    print(f"[reward_models_utils] Loaded engine from {pretrain_path} with tp_size={tp_size}")
+    engine = None
 
+    if backend in ("auto", "sglang"):
+        try:
+            from lightrft.strategy.sglang_utils import get_sglang_engine
 
-    engine.sleep()  # Sleep to save memory
+            engine = get_sglang_engine(
+                pretrain_path,
+                engine_mem_util=engine_mem_util,
+                tp_size=tp_size,
+                skip_tokenizer_init=False,
+                disable_cuda_graph=True, # only for deepseek, TODO: why deepseek pipeline (examples/orm_rl_demo/run_fsdp_deepseek.sh) need this?
+            )
+            print(f"[reward_models_utils] Loaded SGLang engine from {pretrain_path} with tp_size={tp_size}")
+        except Exception as exc:
+            if backend == "sglang":
+                raise
+            print(
+                f"[reward_models_utils] SGLang engine init failed for {pretrain_path}: "
+                f"{type(exc).__name__}: {exc}. Falling back to vLLM."
+            )
+
+    if engine is None:
+        from lightrft.strategy.vllm_utils import get_vllm_engine
+
+        max_model_len = int(os.environ.get("ORM_RL_DEMO_RM_ENGINE_MAX_MODEL_LEN", "4096"))
+        engine = get_vllm_engine(
+            pretrain_path,
+            dtype="bfloat16",
+            tp_size=tp_size,
+            mem_util=engine_mem_util,
+            max_model_len=max_model_len,
+            enable_sleep=False,
+            limit_mm_per_prompt={"image": 1},
+        )
+        print(
+            f"[reward_models_utils] Loaded vLLM engine from {pretrain_path} "
+            f"with tp_size={tp_size}, max_model_len={max_model_len}, enable_sleep=False"
+        )
+
+    if not hasattr(engine, "llm_engine") or engine.llm_engine.vllm_config.model_config.enable_sleep_mode:
+        engine.sleep()  # Sleep to save memory
 
     processor = AutoProcessor.from_pretrained(
         pretrain_path, min_pixels=256 * 28 * 28, max_pixels=1280 * 28 * 28
@@ -888,12 +975,31 @@ def mix_rewards(
         return float(model_scores[idx, i].item())
 
     # ---------- Main loop ----------
+    geo3k_fmt_w, geo3k_model_w, geo3k_acc_w = _normalized_geo3k_general_weights()
+
     for i, lab in enumerate(labels):
         sol = solution_strs[i]
+        sol_completion = extract_response(sol)
         gt  = refs[i] if i < len(refs) else ""
 
+        if lab == "geo3k_general":
+            fmt_r = geo3k_format_reward_fn(sol_completion)
+            acc_r = geo3k_accuracy_reward_fn(sol_completion, gt)
+            model_score = get_model_reward("general", i)
+
+            final_reward[i] = (
+                geo3k_fmt_w * fmt_r
+                + geo3k_model_w * model_score
+                + geo3k_acc_w * acc_r
+            )
+            metrics_dict['format_reward'][i] = fmt_r
+            metrics_dict['accuracy_reward'][i] = acc_r
+            metrics_dict['model_reward'][i] = geo3k_model_w * model_score
+            metrics_dict['rule_reward'][i] = geo3k_fmt_w * fmt_r + geo3k_acc_w * acc_r
+            continue
+
         # 1) format reward (always present)
-        r = format_reward_fn(sol)
+        r = format_reward_fn(sol_completion)
         # Track separately
         metrics_dict['format_reward'][i] = r
 
@@ -910,14 +1016,14 @@ def mix_rewards(
                 metrics_dict['model_reward'][i] += model_r
 
             elif typ == "rule":
-                rule_r = w * rule_reward_fn(sol, gt)
+                rule_r = w * rule_reward_fn(sol_completion, gt)
                 r += rule_r
                 metrics_dict['rule_reward'][i] += rule_r
                 metrics_dict['accuracy_reward'][i] = rule_r
 
             elif typ == "if_rule":
                 # refs is actually constraints for instruction_following data
-                if_r = w * if_reward_fn(solution_str=sol, ground_truth=None, constraints=gt)
+                if_r = w * if_reward_fn(solution_str=sol_completion, ground_truth=None, constraints=gt)
                 r += if_r
                 metrics_dict['rule_reward'][i] += if_r
             elif typ == "geo3k_rule":
@@ -927,8 +1033,8 @@ def mix_rewards(
                 metrics_dict['format_reward'][i] = 0
                 # Geo3K pure rule-based reward (format + accuracy)
                 # Get individual components
-                acc_r = geo3k_accuracy_reward_fn(sol, gt)
-                fmt_r = geo3k_format_reward_fn(sol)
+                acc_r = geo3k_accuracy_reward_fn(sol_completion, gt)
+                fmt_r = geo3k_format_reward_fn(sol_completion)
                 combined_r = (1.0 - 0.1) * acc_r + 0.1 * fmt_r
                 r += w * combined_r
                 # Track separately
@@ -941,8 +1047,8 @@ def mix_rewards(
                 metrics_dict['format_reward'][i] = 0
                 # GSM8K pure rule-based reward (format + accuracy)
                 # Get individual components
-                acc_r = gsm8k_accuracy_reward_fn(sol, gt)
-                fmt_r = gsm8k_format_reward_fn(sol)
+                acc_r = gsm8k_accuracy_reward_fn(sol_completion, gt)
+                fmt_r = gsm8k_format_reward_fn(sol_completion)
                 combined_r = (1.0 - 0.1) * acc_r + 0.1 * fmt_r
                 r += w * combined_r
                 # Track separately

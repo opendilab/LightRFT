@@ -7,7 +7,7 @@ REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 
 NAME="${NAME:-orm-rl-demo-general-geo3k}"
 N_SAMPLES=8
-EPISODE=3
+EPISODE="${EPISODE:-20}"
 WARMUP=0.03
 RBS=128
 TBS=128
@@ -16,6 +16,8 @@ LR=1e-6
 
 PROMPT_MAX_LEN=1024
 GENERATE_MAX_LEN=2048
+EVAL_SPLIT="${EVAL_SPLIT:-test}"
+MAX_EVAL_SAMPLES="${MAX_EVAL_SAMPLES:-700}"
 limit_mm_image_per_prompt=1
 ENGINE_TP=1
 
@@ -24,9 +26,18 @@ export IGNORE_EOS=0
 # Reuse the existing cluster-ready path style already referenced in this repo.
 DATA_PATH="/mnt/shared-storage-user/puyuan/data/geo3k"
 PRETRAIN_PATH="${PRETRAIN_PATH:-/mnt/shared-storage-user/puyuan/model/Qwen2.5-VL-7B-Instruct}"
-REWARD_PRETRAIN_PATHS="${REWARD_PRETRAIN_PATHS:-'{\"general\":\"/mnt/shared-storage-user/puyuan/rft_20250828/reward_model_20250828/knowledge_orm/\"}'}"
-LABEL_OVERRIDE="${LABEL_OVERRIDE:-general}"
+if [ -z "${REWARD_PRETRAIN_PATHS:-}" ]; then
+  REWARD_PRETRAIN_PATHS='{"general":"/mnt/shared-storage-user/puyuan/model/Qwen2.5-VL-7B-Instruct"}'
+fi
+LABEL_OVERRIDE="${LABEL_OVERRIDE:-geo3k_general}"
 USE_RM_ENGINE="${USE_RM_ENGINE:-1}"
+export ORM_RL_DEMO_GEO3K_FORMAT_WEIGHT="${ORM_RL_DEMO_GEO3K_FORMAT_WEIGHT:-0.1}"
+export ORM_RL_DEMO_GEO3K_MODEL_WEIGHT="${ORM_RL_DEMO_GEO3K_MODEL_WEIGHT:-0.2}"
+export ORM_RL_DEMO_GEO3K_ACCURACY_WEIGHT="${ORM_RL_DEMO_GEO3K_ACCURACY_WEIGHT:-0.7}"
+export ORM_RL_DEMO_RM_ENGINE_TP="${ORM_RL_DEMO_RM_ENGINE_TP:-1}"
+export ORM_RL_DEMO_RM_ENGINE_MEM_UTIL="${ORM_RL_DEMO_RM_ENGINE_MEM_UTIL:-0.15}"
+export ORM_RL_DEMO_RM_ENGINE_BACKEND="${ORM_RL_DEMO_RM_ENGINE_BACKEND:-vllm}"
+export ORM_RL_DEMO_RM_ENGINE_MAX_MODEL_LEN="${ORM_RL_DEMO_RM_ENGINE_MAX_MODEL_LEN:-4096}"
 
 current_time=$(date +"%m%d%H%M")
 
@@ -112,7 +123,10 @@ torchrun --nnodes $NNODES --nproc-per-node $GPUS_PER_NODE --node_rank $NODE_RANK
    --input_key prompt \
    --images_key images \
    --label_key label \
-    --label_override "${LABEL_OVERRIDE}" \
+   --label_override "${LABEL_OVERRIDE}" \
+   --eval_steps 20 \
+   --eval_split "${EVAL_SPLIT}" \
+   --max_eval_samples "${MAX_EVAL_SAMPLES}" \
    --apply_chat_template \
    --flash_attn \
    --gradient_checkpointing \

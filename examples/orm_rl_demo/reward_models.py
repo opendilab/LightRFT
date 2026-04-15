@@ -177,52 +177,97 @@ def _hf_or_engine_generate(
     """
     if is_engine(model):
         assert input_ids is None, "Cannot pass input_ids in engine mode"
-        
-        model.wake_up()
+        enable_sleep_mode = True
+        if hasattr(model, "llm_engine"):
+            enable_sleep_mode = model.llm_engine.vllm_config.model_config.enable_sleep_mode
 
-        sampling_params = {
-            **{k: v for k, v in gen_kwargs.items() if k not in ("do_sample")}
-        }
+        if enable_sleep_mode:
+            model.wake_up()
 
-        prompt_and_output = gather_inputs_object_for_inference(prompts, model.tp_group_cpu)
-        image_data = gather_inputs_object_for_inference(image_data, model.tp_group_cpu)
+        if hasattr(model, "tp_group_cpu"):
+            sampling_params = {
+                **{k: v for k, v in gen_kwargs.items() if k not in ("do_sample")}
+            }
 
-        text_prompts, text_inds, mm_prompts, mm_images = _align_prompts_images(prompt_and_output, image_data)
-        text_output = []
-        mm_output = []
-        
-        if len(text_prompts) > 0:
-            sgl_outputs = model.generate(prompt=text_prompts, sampling_params=sampling_params, gather_inputs=False)
-            text_output = [sgl_out['text'] for sgl_out in sgl_outputs]
+            prompt_and_output = gather_inputs_object_for_inference(prompts, model.tp_group_cpu)
+            image_data = gather_inputs_object_for_inference(image_data, model.tp_group_cpu)
 
-        if len(mm_prompts) > 0:
-            sgl_outputs = model.generate(prompt=mm_prompts, image_data=mm_images, sampling_params=sampling_params, gather_inputs=False)
-            mm_output = [sgl_out['text'] for sgl_out in sgl_outputs]
+            text_prompts, text_inds, mm_prompts, mm_images = _align_prompts_images(prompt_and_output, image_data)
+            text_output = []
+            mm_output = []
 
-        texts = []
-        text_output_iter = iter(text_output)
-        mm_output_iter = iter(mm_output)
-        # merge results in original order
-        if len(text_inds) > 0:
-            for i in range(len(prompt_and_output)):
-                if i in text_inds:
-                    texts.append(next(text_output_iter))
-                else:
-                    texts.append(next(mm_output_iter))
+            if len(text_prompts) > 0:
+                sgl_outputs = model.generate(prompt=text_prompts, sampling_params=sampling_params, gather_inputs=False)
+                text_output = [sgl_out["text"] for sgl_out in sgl_outputs]
+
+            if len(mm_prompts) > 0:
+                sgl_outputs = model.generate(
+                    prompt=mm_prompts,
+                    image_data=mm_images,
+                    sampling_params=sampling_params,
+                    gather_inputs=False,
+                )
+                mm_output = [sgl_out["text"] for sgl_out in sgl_outputs]
+
+            texts = []
+            text_output_iter = iter(text_output)
+            mm_output_iter = iter(mm_output)
+            # merge results in original order
+            if len(text_inds) > 0:
+                for i in range(len(prompt_and_output)):
+                    if i in text_inds:
+                        texts.append(next(text_output_iter))
+                    else:
+                        texts.append(next(mm_output_iter))
+            else:
+                texts = mm_output
+
+            if model._tp_size > 1:
+                num_per_rank = len(texts) // model._tp_size
+                texts = texts[model._tp_rank * num_per_rank : (model._tp_rank + 1) * num_per_rank]
         else:
-            texts = mm_output
+            from vllm import SamplingParams
 
-        if model._tp_size > 1:
-            num_per_rank = len(texts) // model._tp_size
-            texts = texts[model._tp_rank * num_per_rank : (model._tp_rank+1) * num_per_rank]
-        
-        # 【增加检查】在返回前检查生成结果是否为空
+            sampling_kwargs = dict(gen_kwargs)
+            max_tokens = sampling_kwargs.pop("max_new_tokens", None)
+            if max_tokens is not None:
+                sampling_kwargs["max_tokens"] = max_tokens
+            sampling_kwargs.pop("do_sample", None)
+            sampling_params = SamplingParams(**sampling_kwargs)
+
+            prompt_and_output = prompts or []
+            prompt_and_output, image_data = _pack_engine_inputs(
+                prompt_and_output,
+                image_data,
+            )
+            if image_data is None:
+                image_data = [None] * len(prompt_and_output)
+
+            vllm_prompts = []
+            for prompt, imgs in zip(prompt_and_output, image_data):
+                prompt_item = {"prompt": prompt}
+                if imgs:
+                    prompt_item["multi_modal_data"] = {
+                        "image": imgs[0] if len(imgs) == 1 else imgs
+                    }
+                vllm_prompts.append(prompt_item)
+
+            vllm_outputs = model.generate(
+                vllm_prompts,
+                sampling_params=sampling_params,
+                use_tqdm=False,
+            )
+            texts = [
+                out.outputs[0].text if getattr(out, "outputs", None) else ""
+                for out in vllm_outputs
+            ]
+
         if dist.is_initialized() and dist.get_rank() == 0:
             if not texts or all(not t for t in texts):
                 print("WARNING: _hf_or_engine_generate produced empty output for all prompts.")
-        
 
-        model.sleep()
+        if enable_sleep_mode:
+            model.sleep()
         torch.cuda.empty_cache()
         return texts, None
 
