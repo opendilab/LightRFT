@@ -11,6 +11,7 @@ import re
 import random
 import time
 import io
+import numbers
 from loguru import logger
 from abc import ABC, abstractmethod
 from collections import defaultdict
@@ -74,6 +75,48 @@ def _serialize_audio_for_sglang(audio_item: Any, default_sr: int = 16000):
     buffer = io.BytesIO()
     sf.write(buffer, audio_array, sr, format="WAV")
     return buffer.getvalue()
+
+
+def _prepare_audio_for_vllm(audio_item: Any, default_sr: int = 16000):
+    """
+    Convert local audio payloads into the form accepted by vLLM.
+
+    vLLM expects waveform-like objects such as ``(audio, sampling_rate)`` tuples,
+    arrays, lists of floats, or tensors. Unlike SGLang, passing serialized WAV bytes
+    through ``multi_modal_data["audio"]`` causes the parser to fail.
+    """
+    if audio_item is None:
+        return None
+    if isinstance(audio_item, tuple) and len(audio_item) == 2:
+        audio_array, sr = audio_item
+        return np.asarray(audio_array, dtype=np.float32), int(sr)
+    if isinstance(audio_item, list):
+        if len(audio_item) == 2 and isinstance(audio_item[1], numbers.Number):
+            audio_array, sr = audio_item
+            return np.asarray(audio_array, dtype=np.float32), int(sr)
+        return np.asarray(audio_item, dtype=np.float32)
+    if isinstance(audio_item, np.ndarray):
+        return np.asarray(audio_item, dtype=np.float32)
+    if isinstance(audio_item, torch.Tensor):
+        return audio_item.detach().cpu()
+    if isinstance(audio_item, bytes):
+        audio_array, sr = sf.read(io.BytesIO(audio_item), dtype="float32")
+        return np.asarray(audio_array, dtype=np.float32), int(sr)
+    if isinstance(audio_item, str):
+        if os.path.exists(audio_item):
+            audio_array, sr = sf.read(audio_item, dtype="float32")
+            return np.asarray(audio_array, dtype=np.float32), int(sr)
+        raise TypeError(
+            "Unsupported vLLM audio payload: string paths or URLs must be loaded into waveform data before rollout."
+        )
+    if isinstance(audio_item, dict):
+        if "array" in audio_item:
+            sr = audio_item.get("sampling_rate", audio_item.get("sample_rate", default_sr))
+            return np.asarray(audio_item["array"], dtype=np.float32), int(sr)
+        raise TypeError(
+            "Unsupported vLLM audio payload dict: expected an 'array' field and optional sampling rate metadata."
+        )
+    raise TypeError(f"Unsupported vLLM audio payload type: {type(audio_item).__name__}")
 
 
 class EngineStatus(Enum):
@@ -944,6 +987,7 @@ class StrategyBase(ABC):
         videos_num,
         all_audios=None,
         audios_num=None,
+        engine_type: str = "sglang",
     ):
         """
         Build multimodal inputs for inference engine (vLLM/SGLang).
@@ -1002,11 +1046,18 @@ class StrategyBase(ABC):
                     raw_audio_list = all_audios[i]
                 else:
                     raw_audio_list = all_audios[audio_start_idx:audio_start_idx + audio_num]
-                # Serialize in one place so the rest of the rollout stack can keep audio payloads
-                # in their native Python forms.
-                audio_list = [
-                    _serialize_audio_for_sglang(audio_item) for audio_item in raw_audio_list if audio_item is not None
-                ]
+                if engine_type == "vllm":
+                    audio_list = [
+                        _prepare_audio_for_vllm(audio_item) for audio_item in raw_audio_list if audio_item is not None
+                    ]
+                else:
+                    # Serialize in one place so the rest of the rollout stack can keep audio
+                    # payloads in their native Python forms.
+                    audio_list = [
+                        _serialize_audio_for_sglang(audio_item)
+                        for audio_item in raw_audio_list
+                        if audio_item is not None
+                    ]
             else:
                 audio_list = []
 
@@ -1111,6 +1162,7 @@ class StrategyBase(ABC):
                 videos_num=videos_num,
                 all_audios=all_audios,
                 audios_num=audios_num,
+                engine_type=self.inference_engine_type,
             )
         else:
             inputs = all_prompt_token_ids

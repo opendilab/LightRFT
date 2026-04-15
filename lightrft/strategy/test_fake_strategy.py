@@ -11,6 +11,7 @@ import tempfile
 import unittest
 from unittest.mock import MagicMock
 
+import numpy as np
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader, TensorDataset
@@ -320,6 +321,49 @@ class TestFakeStrategyWithConfig(unittest.TestCase):
         self.assertEqual(strategy.config.max_norm, 3.0)
         self.assertEqual(strategy.config.adam_offload, True)
         self.assertEqual(strategy.config.zpg, 2)
+
+
+class TestBuildMultimodalInputs(unittest.TestCase):
+    """Focused tests for engine-specific multimodal payload construction."""
+
+    def test_keeps_waveform_audio_for_vllm(self):
+        """vLLM audio inputs should stay waveform-native instead of being WAV bytes."""
+        audio = (np.asarray([0.1, -0.2, 0.3], dtype=np.float32), 16000)
+
+        inputs = FakeStrategy._build_multimodal_inputs(
+            all_prompts=["prompt"],
+            all_images=None,
+            images_num=None,
+            all_videos=None,
+            videos_num=None,
+            all_audios=[audio],
+            audios_num=[1],
+            engine_type="vllm",
+        )
+
+        payload = inputs[0]["multi_modal_data"]["audio"][0]
+        self.assertIsInstance(payload, tuple)
+        self.assertEqual(payload[1], 16000)
+        self.assertTrue(np.array_equal(payload[0], audio[0]))
+
+    def test_serializes_audio_for_sglang(self):
+        """SGLang audio inputs should still be serialized to WAV bytes."""
+        audio = (np.asarray([0.1, -0.2, 0.3], dtype=np.float32), 16000)
+
+        inputs = FakeStrategy._build_multimodal_inputs(
+            all_prompts=["prompt"],
+            all_images=None,
+            images_num=None,
+            all_videos=None,
+            videos_num=None,
+            all_audios=[audio],
+            audios_num=[1],
+            engine_type="sglang",
+        )
+
+        payload = inputs[0]["multi_modal_data"]["audio"][0]
+        self.assertIsInstance(payload, bytes)
+        self.assertTrue(payload.startswith(b"RIFF"))
 
 
 if __name__ == "__main__":

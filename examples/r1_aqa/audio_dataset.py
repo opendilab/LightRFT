@@ -120,6 +120,8 @@ class AudioPromptDataset(Dataset):
         except Exception as exc:
             self.strategy.print(f"[WARNING] Chat template failed for idx {idx}: {exc}")
             prompt_text = self._extract_text_from_messages(prompt_messages)
+        
+        prompt_text = prompt_text.replace('<answer></answer>', '<answer> </answer>')
 
         # ---- 3. Load audio ----
         audio_path = data.get(self.audio_path_key, "")

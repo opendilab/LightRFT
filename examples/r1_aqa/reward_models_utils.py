@@ -73,6 +73,15 @@ def accuracy_reward_fn(content: str, solution: str) -> float:
                 reward = 1.0
         except Exception:
             pass
+    if reward == 0.0:
+        sol_match = re.search(r"<answer>(.*?)</answer>", solution)
+        ground_truth = sol_match.group(1).strip() if sol_match else solution.strip()
+        student_answer = content.strip()
+        import torch.distributed as dist
+        if dist.is_initialized() and dist.get_rank() == 0:
+            print(f"student_answer: {student_answer}, ground_truth: {ground_truth}")
+        if student_answer == ground_truth:
+            reward = 1.0
 
     return reward
 
@@ -134,6 +143,19 @@ def avqa_combined_reward_fn(
     return total_r, acc_r, fmt_r
 
 
+def clean_solution(sol: str) -> str:
+    # <|im_start|>assistantat sea<|im_end|>
+    """
+    Extract the string between <|im_start|>assistant and <|im_end|> tags.
+
+    Example:
+        input: "<|im_start|>assistantat sea<|im_end|>"
+        output: "at sea"
+    """
+    import re
+    # Pattern matches text between <|im_start|>assistant and <|im_end|>
+    match = re.search(r"<\|im_start\|>assistant(.*?)<\|im_end\|>", sol, re.DOTALL)
+    return match.group(1).strip() if match else sol.strip()
 # ============================================================================
 # Reward Function (LightRFT interface — called by the trainer)
 # ============================================================================
@@ -170,6 +192,7 @@ def reward_fn(
 
     for i in range(B):
         sol = queries[i]
+        sol = clean_solution(sol)
         gt = refs[i] if i < len(refs) else ""
         total_r, acc_r, fmt_r = avqa_combined_reward_fn(sol, gt)
         final_reward[i] = total_r
