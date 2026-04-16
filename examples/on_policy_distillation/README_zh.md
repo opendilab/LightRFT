@@ -28,7 +28,7 @@ CUDA_VISIBLE_DEVICES=7 python3 -m sglang.launch_server \
 ### 2. 运行训练
 
 ```bash
-bash examples/on_policy_distillation/run_opd_qwen_2.sh
+bash examples/on_policy_distillation/run_opd_qwen.sh
 ```
 
 或手动运行：
@@ -234,9 +234,9 @@ nvidia-smi
 examples/on_policy_distillation/
 ├── README.md                           # 英文文档
 ├── README_zh.md                        # 本文件
-├── run_opd_qwen.sh                   # 一体化训练脚本
-├── start_teacher.sh                  # 仅启动教师服务器
-├── start_training.sh                 # 仅启动训练（需要 TEACHER_URL）
+├── run_opd_qwen.sh                   # 一体化训练脚本（模板）
+├── start_teacher.sh                  # 仅启动教师服务器（模板）
+├── start_training.sh                 # 仅启动训练（模板，需要 TEACHER_URL）
 ├── test_opd.py                       # 单元测试
 └── on_policy_distillation_reward.py   # 教师对数概率获取器
 ```

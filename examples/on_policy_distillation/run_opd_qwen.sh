@@ -6,12 +6,12 @@
 # Features:
 #   - Auto GPU detection and allocation (teacher + training)
 #   - Robust teacher server with health monitoring
-#   - Two OPD modes: pure distillation / hybrid (GRPO + OPD)
+#   - Two advantage estimators: pure distillation / hybrid (GRPO + OPD)
 #
 # Usage:
 #   # Edit paths below, then:
 #   bash examples/on_policy_distillation/run_opd_qwen.sh
-#   OPD_MODE=hybrid bash examples/on_policy_distillation/run_opd_qwen.sh
+#   ADVANTAGE_ESTIMATOR=on_policy_distillation_hybrid USE_TASK_REWARD=true bash examples/on_policy_distillation/run_opd_qwen.sh
 #
 
 set -euo pipefail
@@ -66,10 +66,11 @@ echo "GPU Allocation: ${TOTAL_GPUS} total → Teacher: GPU ${TEACHER_GPU}, Train
 #                       Part 3: Training Hyperparameters                       #
 ################################################################################
 
-# --- OPD Mode (override via env: OPD_MODE=hybrid) ---
-#   "pure"   - Pure distillation (Slime default): rewards=0, only OPD KL signal
-#   "hybrid" - GRPO task rewards + OPD KL penalty with advantage whitening
-OPD_MODE="${OPD_MODE:-pure}"
+# --- Mode control (override via env) ---
+#   ADVANTAGE_ESTIMATOR=on_policy_distillation         - Pure distillation: rewards=0, only OPD KL signal
+#   ADVANTAGE_ESTIMATOR=on_policy_distillation_hybrid   - GRPO task rewards + OPD KL penalty
+ADVANTAGE_ESTIMATOR="${ADVANTAGE_ESTIMATOR:-on_policy_distillation}"
+USE_TASK_REWARD="${USE_TASK_REWARD:-false}"
 
 N_SAMPLES=${N_SAMPLES:-8}
 EPISODE=${EPISODE:-30}
@@ -88,16 +89,18 @@ TBS=$(( (${TBS:-128} / ALIGN) * ALIGN ))
 
 echo "Batch sizes: TBS=${TBS}, RBS=${RBS} (aligned to micro=${MICRO_TRAIN_BS} * world=${WORLD_SIZE} = ${ALIGN})"
 
-if [ "$OPD_MODE" = "hybrid" ]; then
-    ADVANTAGE_ESTIMATOR="on_policy_distillation_hybrid"
-    KL=${KL:-0.01}
-    LR=${LR:-5e-7}
+if [ "$USE_TASK_REWARD" = "true" ]; then
     TASK_REWARD_FLAG="--use_task_reward"
 else
-    ADVANTAGE_ESTIMATOR="on_policy_distillation"
+    TASK_REWARD_FLAG="--no_task_reward"
+fi
+
+if [ "$ADVANTAGE_ESTIMATOR" = "on_policy_distillation_hybrid" ]; then
+    KL=${KL:-0.01}
+    LR=${LR:-5e-7}
+else
     KL=${KL:-0.00}
     LR=${LR:-5e-7}
-    TASK_REWARD_FLAG="--no_task_reward"
 fi
 
 PROMPT_MAX_LEN=${PROMPT_MAX_LEN:-1024}
@@ -182,8 +185,8 @@ sleep 3
 ################################################################################
 
 current_time=$(date +"%Y%m%d_%H%M%S")
-SAVE_MODEL_NAME="${EXPERIMENT_NAME}-${OPD_MODE}-ep${EPISODE}-kl${KL}-lr${LR}-${current_time}"
-WANDB_RUN_NAME="${EXPERIMENT_NAME}-${OPD_MODE}-${current_time}"
+SAVE_MODEL_NAME="${EXPERIMENT_NAME}-${ADVANTAGE_ESTIMATOR}-ep${EPISODE}-kl${KL}-lr${LR}-${current_time}"
+WANDB_RUN_NAME="${EXPERIMENT_NAME}-${ADVANTAGE_ESTIMATOR}-${current_time}"
 TEACHER_URL="http://$TEACHER_IP:$TEACHER_PORT/generate"
 
 mkdir -p "results/${EXPERIMENT_NAME}/${SAVE_MODEL_NAME}"
@@ -197,7 +200,7 @@ export WANDB_MODE="${WANDB_MODE:-offline}"
 echo "========================================="
 echo "On-Policy Distillation Training"
 echo "========================================="
-echo "Mode:    $OPD_MODE ($ADVANTAGE_ESTIMATOR)"
+echo "Estimator: $ADVANTAGE_ESTIMATOR"
 echo "Student: $STUDENT_MODEL_PATH"
 echo "Teacher: $TEACHER_URL"
 echo "GPUs:    Training=0-$((TRAIN_GPUS-1)), Teacher=$TEACHER_GPU"

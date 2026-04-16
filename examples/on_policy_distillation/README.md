@@ -234,9 +234,9 @@ nvidia-smi
 examples/on_policy_distillation/
 ├── README.md                           # This file
 ├── README_zh.md                        # Chinese version
-├── run_opd_qwen.sh                   # All-in-one training script
-├── start_teacher.sh                  # Teacher server only
-├── start_training.sh                 # Training only (requires TEACHER_URL)
+├── run_opd_qwen.sh                   # All-in-one training script (template)
+├── start_teacher.sh                  # Teacher server only (template)
+├── start_training.sh                 # Training only (template, requires TEACHER_URL)
 ├── test_opd.py                       # Unit tests
 └── on_policy_distillation_reward.py   # Teacher logprob fetcher
 ```
