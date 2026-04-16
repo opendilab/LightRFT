@@ -63,7 +63,6 @@ from examples.on_policy_distillation.on_policy_distillation_reward import (
 )
 import asyncio
 
-
 # ============================================================================
 # Data Structures
 # ============================================================================
@@ -455,10 +454,8 @@ class RewardComputationEngine:
         elif isinstance(remote_rm_url, (list, tuple)):
             self.remote_rm_url = list(remote_rm_url)
         else:
-            raise TypeError(
-                f"remote_rm_url must be str, list, tuple, or None, got {type(remote_rm_url).__name__}"
-            )
-            
+            raise TypeError(f"remote_rm_url must be str, list, tuple, or None, got {type(remote_rm_url).__name__}")
+
         self.custom_reward_func = custom_reward_func
         self.reward_fn = reward_fn
         self.reward_fn_label_map = reward_fn_label_map or {}
@@ -1487,9 +1484,9 @@ class FastExperienceMaker(NaiveExperienceMaker):
         Timer.start('  fetch_teacher_logprobs')
 
         for exp in experiences:
-            sequences = exp.sequences        # [batch_size, seq_len]
+            sequences = exp.sequences  # [batch_size, seq_len]
             attention_mask = exp.attention_mask  # [batch_size, seq_len]
-            action_mask = exp.action_mask     # [batch_size, num_tokens]
+            action_mask = exp.action_mask  # [batch_size, num_tokens]
 
             # response_lengths must be int for slicing
             response_lengths = action_mask.sum(dim=-1).int().tolist()
@@ -1538,9 +1535,7 @@ class FastExperienceMaker(NaiveExperienceMaker):
                 exp.info["teacher_log_probs"] = aligned_teacher_lp
 
             except Exception as e:
-                raise RuntimeError(
-                    f"Failed to fetch teacher log probs from {teacher_url}: {e}"
-                ) from e
+                raise RuntimeError(f"Failed to fetch teacher log probs from {teacher_url}: {e}") from e
 
         Timer.stop('  fetch_teacher_logprobs')
 

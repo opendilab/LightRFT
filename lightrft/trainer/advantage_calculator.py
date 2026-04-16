@@ -754,7 +754,6 @@ def _apply_opd_kl_penalty(
     return opd_adv, info_dict
 
 
-
 class OnPolicyDistillationCalculator(AdvantageCalculator):
     """
     On-Policy Distillation calculator.
@@ -790,9 +789,7 @@ class OnPolicyDistillationCalculator(AdvantageCalculator):
         teacher_lp = experience.info["teacher_log_probs"].to(base_advantages.device)
         student_lp = experience.action_log_probs
 
-        opd_adv, opd_info = _apply_opd_kl_penalty(
-            student_lp, teacher_lp, experience.action_mask, self.opd_kl_coef
-        )
+        opd_adv, opd_info = _apply_opd_kl_penalty(student_lp, teacher_lp, experience.action_mask, self.opd_kl_coef)
         info_dict.update(opd_info)
 
         # Step 3: Combine
@@ -870,7 +867,9 @@ def normalize_advantages_cross_batch(experiences: List, advantage_estimator: str
     :rtype: List
     """
     if advantage_estimator not in [
-        "gae", "reinforce", "reinforce_baseline",
+        "gae",
+        "reinforce",
+        "reinforce_baseline",
         "on_policy_distillation",
     ]:
         return experiences
@@ -893,9 +892,7 @@ def normalize_advantages_cross_batch(experiences: List, advantage_estimator: str
 
     # Aggregate across all data-parallel ranks via all_reduce
     # (matching Slime's distributed_masked_whiten)
-    stats = torch.stack([local_sum, local_sum_sq, local_count]).to(
-        device=advantages.device, dtype=torch.float32
-    )
+    stats = torch.stack([local_sum, local_sum_sq, local_count]).to(device=advantages.device, dtype=torch.float32)
     if dist.is_initialized():
         dist.all_reduce(stats, op=dist.ReduceOp.SUM)
 
