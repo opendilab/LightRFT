@@ -141,14 +141,14 @@ If you need to customize the environment or build from a specific branch, you ca
 
 #### Standard Installation
 
-LightRFT uses **SGLang** as the default inference backend with **Flash-Attention** for optimized performance.
+LightRFT installs **SGLang** by default, so the GSM8K/Geo3K demos can run out of the box with the default backend.
 
 ```bash
 # Clone the repository
 git clone https://github.com/opendilab/LightRFT.git
 cd LightRFT
 
-# Install LightRFT with all core dependencies
+# Install LightRFT with the default SGLang backend
 pip install -e .
 ```
 
@@ -156,14 +156,18 @@ pip install -e .
 
 #### Optional: Install vLLM Backend
 
-If you want to use vLLM instead of (or alongside) SGLang:
+If you want to run the same demos with vLLM instead of the default SGLang backend:
 
 ```bash
-# Install vLLM backend
-pip install ".[vllm]"
+# Install vLLM backend on top of the default installation
+pip install -e ".[vllm]"
+```
 
-# Or install vLLM directly
-pip install vllm>=0.13.3
+You can also install vLLM directly:
+
+```bash
+# Install vLLM directly
+pip install "vllm>=0.18.1"
 ```
 
 #### Troubleshooting Flash-Attention Installation
@@ -192,11 +196,14 @@ docker pull opendilab/lightrft:v0.1.0
 # Single node, 8 GPU training example
 cd LightRFT
 
-# Run GRPO training (GSM8K math reasoning task)
-bash examples/gsm8k_geo3k/run_grpo_gsm8k_qwen2.5_0.5b.sh
+# Run GRPO training (GSM8K math reasoning task) with SGLang
+ENGINE_TYPE=sglang bash examples/gsm8k_geo3k/run_grpo_gsm8k_qwen2.5_0.5b.sh
 
-# Or run Geo3K geometry problem training (VLM multimodal)
-bash examples/gsm8k_geo3k/run_grpo_geo3k_qwen2.5_vl_7b.sh
+# Or switch the same demo to vLLM
+ENGINE_TYPE=vllm bash examples/gsm8k_geo3k/run_grpo_gsm8k_qwen2.5_0.5b.sh
+
+# Geo3K geometry problem training (VLM multimodal)
+ENGINE_TYPE=sglang bash examples/gsm8k_geo3k/run_grpo_geo3k_qwen2.5_vl_7b.sh
 ```
 
 ---

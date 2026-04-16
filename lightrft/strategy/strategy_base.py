@@ -39,6 +39,7 @@ from lightrft.strategy.utils.parallel_utils import (
 )
 from lightrft.strategy.utils.statistic import GenLenAnalyser
 from lightrft.strategy.config import StrategyConfig
+
 ModelOptimPair = Tuple[nn.Module, Optimizer]
 ModelOrModelOptimPair = Union[nn.Module, ModelOptimPair]
 
@@ -678,7 +679,7 @@ class StrategyBase(ABC):
             self.inference_engine = get_vllm_engine_for_rollout(args)
             self.inference_engine_status = EngineStatus.WAKEUP
         elif engine_type == "sglang":
-            # Default inference engine: SGLang (no additional dependencies required)
+            # Conditional import: SGLang is optional and only imported when explicitly requested
             from .sglang_utils import get_sglang_engine_for_rollout
             self.inference_engine = get_sglang_engine_for_rollout(args)
             self.inference_engine_status = EngineStatus.WAKEUP
@@ -734,6 +735,45 @@ class StrategyBase(ABC):
 
         self.inference_engine_status = EngineStatus.WAKEUP
 
+    def _sanitize_vllm_sampling_params(self, sampling_params: Any) -> Any:
+        """
+        Clamp vLLM sampling parameters that must respect the engine context length.
+
+        Newer vLLM releases (>=0.11.0) validate ``truncate_prompt_tokens`` against the engine's
+        ``max_model_len``. Some callers already clamp this during ``SamplingParams``
+        construction, but this centralized guard keeps generation safe for every
+        call path that reaches the strategy layer.
+
+        :param sampling_params: Sampling parameters passed to vLLM.
+        :type sampling_params: Any
+        :return: Sanitized sampling parameters.
+        :rtype: Any
+        """
+        if sampling_params is None or self.inference_engine_type != "vllm" or self.inference_engine is None:
+            return sampling_params
+
+        truncate_prompt_tokens = getattr(sampling_params, "truncate_prompt_tokens", None)
+        if truncate_prompt_tokens is None:
+            return sampling_params
+
+        model_config = getattr(getattr(self.inference_engine, "llm_engine", None), "model_config", None)
+        max_model_len = getattr(model_config, "max_model_len", None)
+        if max_model_len is None:
+            return sampling_params
+
+        try:
+            if truncate_prompt_tokens > max_model_len:
+                sampling_params.truncate_prompt_tokens = max_model_len
+        except TypeError:
+            logger.warning(
+                "Skipping vLLM truncate_prompt_tokens validation because values are not directly comparable: "
+                "truncate_prompt_tokens={}, max_model_len={}",
+                truncate_prompt_tokens,
+                max_model_len,
+            )
+
+        return sampling_params
+
     def engine_generate_local(
         self,
         sampling_params: Any,
@@ -769,13 +809,26 @@ class StrategyBase(ABC):
 
         # if inference engine is vllm
         if self.inference_engine_type == "vllm":
+            sampling_params = self._sanitize_vllm_sampling_params(sampling_params)
             # For vLLM:
             # - If `prompt_token_ids` is provided, it indicates a pure LLM (text-only) generation.
             # - If `prompts` (i.e., `multi_modal_inputs`) is provided, it indicates a VLM (multimodal) generation.
             if multi_modal_inputs is not None:
-                prompt = multi_modal_inputs
+                prompt = []
+                for item in multi_modal_inputs:
+                    prompt_item = {"prompt": item["prompt"]}
+                    # Do not forward multimodal prompt_token_ids to vLLM.
+                    # vLLM's multimodal processor applies placeholder expansion
+                    # itself; passing already-expanded token IDs causes image
+                    # placeholders to be expanded a second time.
+                    if item.get("multi_modal_data") is not None:
+                        prompt_item["multi_modal_data"] = item["multi_modal_data"]
+                    prompt.append(prompt_item)
             elif prompt_token_ids is not None:
-                prompt = prompt_token_ids
+                if len(prompt_token_ids) > 0 and isinstance(prompt_token_ids[0], int):
+                    prompt = [{"prompt_token_ids": prompt_token_ids}]
+                else:
+                    prompt = [{"prompt_token_ids": token_ids} for token_ids in prompt_token_ids]
             else:
                 raise ValueError("Either prompt (multi_modal_inputs) or prompt_token_ids must be provided.")
 
@@ -834,7 +887,14 @@ class StrategyBase(ABC):
             raise ValueError(f"Unsupported engine type: {self.inference_engine_type}")
 
     @classmethod
-    def _build_multimodal_inputs(cls, all_prompts, all_images, images_num, all_videos, videos_num):
+    def _build_multimodal_inputs(
+        cls,
+        all_prompts,
+        all_images,
+        images_num,
+        all_videos,
+        videos_num,
+    ):
         """
         Build multimodal inputs for inference engine (vLLM/SGLang).
 
@@ -894,16 +954,18 @@ class StrategyBase(ABC):
             if not multi_modal_data:
                 # remove the vision start and end tokens for data after apply chat template.
                 # Use regex to handle multiple <|image_pad|> tokens (e.g., for high-res images)
-                prompt = re.sub(r'<\|vision_start\|>(<\|image_pad\|>)+<\|vision_end\|>', '', prompt)
-                prompt = re.sub(r'<\|vision_start\|>(<\|video_pad\|>)+<\|vision_end\|>', '', prompt)
-                inputs.append({
-                    "prompt": prompt,
-                })
+                cleaned_prompt = re.sub(r'<\|vision_start\|>(<\|image_pad\|>)+<\|vision_end\|>', '', prompt)
+                cleaned_prompt = re.sub(r'<\|vision_start\|>(<\|video_pad\|>)+<\|vision_end\|>', '', cleaned_prompt)
+                input_item = {
+                    "prompt": cleaned_prompt,
+                }
+                inputs.append(input_item)
             else:
-                inputs.append({
+                input_item = {
                     "prompt": prompt,
                     "multi_modal_data": multi_modal_data,
-                })
+                }
+                inputs.append(input_item)
             img_start_idx += img_num
             vid_start_idx += vid_num
         return inputs
