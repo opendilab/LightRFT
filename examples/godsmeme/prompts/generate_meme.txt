@@ -1,0 +1,77 @@
+**Meme Text Generation Framework** 
+Based on the meme basemap and user input, analyze what can be written on this basemap that meets the user's needs and is as humorous as possible.
+**Phase 1: Base Image Analysis**  
+[Comprehensive Description Section]  
+- **Visual Deconstruction**:  
+- Primary subjects (demeanor/movement/apparel of entities)  
+- Composition logic (focal points/color contrast/spatial relationships)  
+- Cultural signifiers (recognizable meme formats/pop culture references)  
+- Narrative cues (body language implications/prop symbolism)  
+- Keep the tone vivid and concrete; avoid flat, purely descriptive lists.
+
+[Usage Scenarios Section]  
+- **Scenario Modeling**:  
+- Social contexts (group chats/comment sections/private conversations)  
+- Topic alignment (workplace culture/life struggles/viral trends)  
+- Emotional mapping (sarcasm/self-deprecation/absurdist/dark humor)  
+- Cross-platform adaptation (short video captions/chat stickers/forum posts)  
+- Highlight why the scenario is funny or relatable instead of just stating where it fits.
+
+[Text Analysis Section]  
+- **Humor Engineering**:  
+- Wordplay (puns/homophones/semantic reversal)  
+- Cognitive dissonance (expectation subversion/scale exaggeration/role mismatch)  
+- Emotional resonance (generational gaps/life frustrations/cringe moments)  
+- Format optimization (suspenseful opening line/punchline reversal/rhyme schemes)  
+- Use the tone and rhythm of the sentences demonstrated in this framework in the [Text Analysis Section] to create a consistent overall sense of language, defaulting to the two-line setup → punchline cadence shown in the example (e.g., “When… / But…”).
+
+---
+
+**Phase 2: Customization Process**  
+[Specific Analysis with User Input]  
+
+**Step 1: Contextual Bridging**  
+- **Input Decoding**:  
+- Quantify [Intensity] as dramatic escalation (0-10 scale)  
+- Map [Intent] to visual elements' interactive potential  
+- Establish topological connections between [Context/Theme] and meme formats  
+- Even if the user does not supply sentences, treat the demonstration’s setup/punchline cadence as the blueprint; only replace the thematic nouns/adjectives with the requested keywords to build the new contrast.
+
+**Step 2: Humor Optimization**  
+- **Multidimensional Strategies**:  
+- Tone calibration: Adjust phrasing sharpness using [Keywords]  
+- Tension building: Create contrast between static imagery and dynamic text  
+- Cultural alignment: Balance trending phrases with evergreen humor elements  
+- Prioritize concise, impactful punchlines (1-2 sentences per box) that stay faithful to the user's emotional tone and amplify the humorous contrast they hinted at, retaining the setup → punchline rhythm unless the user explicitly requests another format.
+
+**Text on the Meme**:  
+[Read the chart from top to bottom, from left to right in each red box should be put what text in turn, with box1: text fragment 1\nbox2: text fragment 2\n, there are several boxes to correspond to the output of a few paragraphs of the text corresponds to each other, here pay attention to the combination of the box in the map position, the meaning of the map, the user input, and the previous reasoning to generate the theme of the humor of the text. Unless told otherwise, deliver two fragments that mirror the demonstration’s “When… / But…” cadence with updated thematic wording.]
+---
+
+**Output Demonstration Example**
+
+[Comprehensive Description Section]  
+The image employs the classic \"Shocked Cat\" meme template, featuring a close-up of an orange tabby cat with dilated circular pupils and forward-stretched whiskers creating visual tension. The explosive radial gradient background suggests sudden disruption. The cat's flattened ears convey \"alertness-meets-absurdity\" duality, adhering to reaction meme visual grammar.
+
+[Usage Scenarios Section]  
+Optimal use cases include:  
+1. Social media rants about last-minute work demands  
+2. Gaming group reactions to unexpected team failures  
+3. E-commerce shoppers encountering bizarre product descriptions  
+Ideal scenarios should follow \"unexpected shock → exaggerated response\" narrative structures
+
+[Text Analysis Section]  
+Suggested text:  \n\"Friday 5:55 PM\" (top line establishes time pressure)  
+\"Client says 'Just one more thing...'\" (bottom line triggers conflict)  
+Humor mechanisms: Amplifies workplace frustrations through the cat's dramatic expression, using cross-dimensional analogy between time constraints and animal reactions
+
+[Specific Analysis with User Input]  
+Step 1: Given [Emotion: Frustration][Intensity: 8][Theme: Fitness failures], emphasize exaggerated body-text correlation. The cat's puffed fur visually parallels a gym-goer's reaction to disappointing scale numbers.  
+Step 2: Implement absurd escalation: \"When your trainer says\" (setup) → \"'One more rep' actually means 20\" (absurd payoff). Combines fitness jargon with numerical exaggeration for comedic contrast.
+
+Text on the Meme:  
+\"When the pre-workout kicks in  
+But your willpower checks out early\" 
+
+
+Now please generate the analysis and text results based on this image <image> and user input parameters.

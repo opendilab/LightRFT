@@ -1,100 +1,309 @@
-from typing import Callable, Dict, List, Tuple, Union, Sequence, Optional
-import re
 import json
+import os
+import re
+from typing import Any, Dict, List, Optional, Sequence, Tuple
+
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 from qwen_vl_utils import process_vision_info
-from transformers import AutoProcessor, AutoModel, PreTrainedModel, AutoConfig, Qwen2_5_VLForConditionalGeneration
+from transformers import AutoConfig, AutoProcessor, Qwen2_5_VLForConditionalGeneration
 
 from lightrft.utils import get_current_device
 
+from meme_utils import (
+    MemeRenderConfig,
+    PairwisePreference,
+    aggregate_pairwise_preferences,
+    compute_meme_format_reward,
+    extract_box_texts,
+    get_first_image,
+    get_user_request,
+    load_text_file,
+    normalize_detections,
+    render_meme_image,
+    resolve_expected_box_count,
+    sample_group_pairs,
+)
 
-class AttentionPooling(nn.Module):
-    """
-    Overview:
-        Attention pooling layer on the sequence dimension of LLM/VLM hidden states.
-    """
+_PAIRWISE_LABEL_KEY = "pairwise"
+_REWARD_STATE = {
+    "model_reward_weight": 1.0,
+    "format_reward_weight": 0.1,
+}
+
+
+def _as_torch_device(device_like: Any) -> torch.device:
+    if isinstance(device_like, torch.device):
+        return device_like
+    if isinstance(device_like, int):
+        return torch.device(f"cuda:{device_like}")
+    return torch.device(device_like)
+
+
+def _default_reward_prompt_path() -> str:
+    return os.path.join(os.path.dirname(os.path.abspath(__file__)), "prompts", "reward_compare.txt")
+
+
+def _load_reward_prompt(path: Optional[str] = None) -> str:
+    prompt_path = path or _default_reward_prompt_path()
+    if os.path.exists(prompt_path):
+        return load_text_file(prompt_path)
+    return (
+        "You are a strict meme reward model.\n"
+        "Compare the two meme images and return exactly:\n"
+        "Image 1 score: <0-10>\n"
+        "Image 2 score: <0-10>\n"
+        "Winner: <1 or 2 or tie>\n"
+        "Reason: <short sentence>"
+    )
+
+
+def _parse_reward_config(raw_reward_pretrain: str) -> Dict[str, Any]:
+    if raw_reward_pretrain is None or not str(raw_reward_pretrain).strip():
+        raise ValueError("`reward_pretrain` must point to a meme judge model or a JSON config")
+
+    text = str(raw_reward_pretrain).strip()
+    try:
+        cfg = json.loads(text)
+    except json.JSONDecodeError:
+        cfg = {"pairwise": {"path": text}}
+
+    if isinstance(cfg, str):
+        cfg = {"pairwise": {"path": cfg}}
+    if not isinstance(cfg, dict):
+        raise ValueError("Unsupported meme reward config format")
+
+    if "pairwise" in cfg:
+        pairwise_cfg = cfg["pairwise"]
+    elif "outcome" in cfg:
+        pairwise_cfg = cfg["outcome"]
+    else:
+        first_key = next(iter(cfg.keys()))
+        pairwise_cfg = cfg[first_key]
+
+    if isinstance(pairwise_cfg, str):
+        pairwise_cfg = {"path": pairwise_cfg}
+    if not isinstance(pairwise_cfg, dict) or not pairwise_cfg.get("path"):
+        raise ValueError("Meme reward config must contain a model path")
+    return pairwise_cfg
+
+
+def build_pairwise_judge_message(
+    reward_prompt: str,
+    image_a,
+    image_b,
+    text_a: str,
+    text_b: str,
+    user_request: str,
+) -> List[Dict[str, Any]]:
+    prompt = reward_prompt.format(
+        user_request=user_request or "N/A",
+        text_a=text_a or "(empty)",
+        text_b=text_b or "(empty)",
+    )
+    return [{
+        "role": "user",
+        "content": [
+            {
+                "type": "text",
+                "text": f"{prompt}\n\nCandidate 1 image:"
+            },
+            {
+                "type": "image",
+                "image": image_a
+            },
+            {
+                "type": "text",
+                "text": "Candidate 2 image:"
+            },
+            {
+                "type": "image",
+                "image": image_b
+            },
+        ],
+    }]
+
+
+def parse_pair_judge_response(response: str) -> Tuple[float, float]:
+    response = (response or "").strip()
+    if not response:
+        return 0.5, 0.5
+
+    def _extract_score(image_idx: int) -> Optional[float]:
+        pattern = rf"Image\s*{image_idx}\s*score\s*[:：]\s*([0-9]+(?:\.[0-9]+)?)"
+        match = re.search(pattern, response, re.IGNORECASE)
+        if not match:
+            return None
+        try:
+            return float(match.group(1))
+        except ValueError:
+            return None
+
+    score_a = _extract_score(1)
+    score_b = _extract_score(2)
+    if score_a is not None and score_b is not None:
+        return score_a, score_b
+
+    winner_match = re.search(r"Winner\s*[:：]\s*(1|2|tie)", response, re.IGNORECASE)
+    if winner_match:
+        winner = winner_match.group(1).lower()
+        if winner == "1":
+            return 1.0, 0.0
+        if winner == "2":
+            return 0.0, 1.0
+        return 0.5, 0.5
+
+    numeric_scores = re.findall(r"([0-9]+(?:\.[0-9]+)?)", response)
+    if len(numeric_scores) >= 2:
+        try:
+            return float(numeric_scores[0]), float(numeric_scores[1])
+        except ValueError:
+            pass
+    return 0.5, 0.5
+
+
+def group_meme_rollout_indices(
+    refs: Optional[Sequence[Any]],
+    batch_size: int,
+    n_samples_per_prompt: int = 1,
+) -> List[List[int]]:
+    if refs and len(refs) >= batch_size:
+        groups: List[List[int]] = []
+        current_group: List[int] = []
+        current_group_id: Optional[str] = None
+        usable = True
+
+        for idx in range(batch_size):
+            ref = refs[idx]
+            group_id = None
+            if isinstance(ref, dict):
+                for key in ("group_id", "sample_id", "id"):
+                    value = ref.get(key)
+                    if value is not None:
+                        group_id = str(value)
+                        break
+            if group_id is None:
+                usable = False
+                break
+
+            if current_group and group_id != current_group_id:
+                groups.append(current_group)
+                current_group = [idx]
+            else:
+                current_group.append(idx)
+            current_group_id = group_id
+
+        if usable and current_group:
+            groups.append(current_group)
+        if usable and sum(len(group) for group in groups) == batch_size and any(len(group) > 1 for group in groups):
+            return groups
+
+    chunk_size = max(1, int(n_samples_per_prompt))
+    return [list(range(start, min(start + chunk_size, batch_size))) for start in range(0, batch_size, chunk_size)]
+
+
+class MemePairwiseJudge(nn.Module):
     def __init__(
         self,
-        hidden_size: int,
-        num_heads: int = 4,
-        qkv_bias: bool = False,
-        position_bias: bool = False,
-        position_bias_scale: float = 3.0,
+        base_model: Qwen2_5_VLForConditionalGeneration,
+        processor,
+        reward_prompt: str,
+        max_new_tokens: int = 96,
+        pair_batch_size: int = 4,
+        n_samples_per_prompt: int = 1,
+        max_pairs_per_group: int = 0,
+        render_config: Optional[MemeRenderConfig] = None,
     ):
-        super(AttentionPooling, self).__init__()
-        self.num_heads = num_heads
-        self.head_dim = hidden_size // num_heads
-        self.scale = self.head_dim ** -0.5
-        self.position_bias = position_bias
-        self.position_bias_scale = position_bias_scale
+        super().__init__()
+        self.base_model = base_model
+        self.processor = processor
+        self.reward_prompt = reward_prompt
+        self.max_new_tokens = int(max_new_tokens)
+        self.pair_batch_size = int(pair_batch_size)
+        self.n_samples_per_prompt = int(n_samples_per_prompt)
+        self.max_pairs_per_group = int(max_pairs_per_group)
+        self.render_config = render_config or MemeRenderConfig()
 
-        self.k = nn.Linear(hidden_size, hidden_size, bias=qkv_bias)
-        self.v = nn.Linear(hidden_size, hidden_size, bias=qkv_bias)
-        # Using 0.02 for better initialization
-        self.query = nn.Parameter(torch.randn(hidden_size) * 0.02)
+    def _render_candidates(
+        self,
+        raw_images: Sequence[Any],
+        references: Sequence[Any],
+        prompt_and_outputs: Sequence[str],
+    ) -> Tuple[List[Any], List[str]]:
+        rendered_images: List[Any] = []
+        extracted_texts: List[str] = []
 
-    def forward(self, hidden_states):
-        B, S, C = hidden_states.shape
+        for raw_image, reference, prompt_and_output in zip(raw_images, references, prompt_and_outputs):
+            extracted_boxes = extract_box_texts(prompt_and_output or "")
+            extracted_texts.append("\\n".join(extracted_boxes) if extracted_boxes else "")
 
-        # Multi-head projection for key and value
-        k = self.k(hidden_states).reshape(B, S, self.num_heads, self.head_dim).permute(0, 2, 1, 3)  # B, H, S, D
-        v = self.v(hidden_states).reshape(B, S, self.num_heads, self.head_dim).permute(0, 2, 1, 3)  # B, H, S, D
+            image = get_first_image(raw_image)
+            if image is None:
+                rendered_images.append(None)
+                continue
 
-        # Expand query for batch dimension
-        q = self.query.unsqueeze(0).expand(B, -1, -1)  # B, H, C
-        q = q.unsqueeze(2)  # B, H, 1, C
-        q = q.reshape(B, self.num_heads, 1, self.head_dim)  # B, H, 1, C
+            detections = normalize_detections(reference if isinstance(reference, dict) else None)
+            rendered_images.append(
+                render_meme_image(
+                    image=image,
+                    texts=extracted_boxes,
+                    detections=detections,
+                    reference=reference if isinstance(reference, dict) else None,
+                    config=self.render_config,
+                )
+            )
 
-        # Attention weights
-        attn = (q @ k.transpose(-2, -1)) * self.scale  # B, H, 1, S
+        return rendered_images, extracted_texts
 
-        # Add position bias
-        if self.position_bias:
-            position_bias = torch.arange(S, device=k.device).float() / S * self.position_bias_scale
-            attn = attn + position_bias.view(1, 1, 1, -1)  # Add position bias
+    def _generate_pair_scores(self, pair_jobs: List[Dict[str, Any]], device: torch.device) -> List[Tuple[float, float]]:
+        scores: List[Tuple[float, float]] = []
+        if not pair_jobs:
+            return scores
 
-        # Attention pooling
-        attn = torch.softmax(attn, dim=-1)  # B, H, 1, S
-        attn = attn.to(v.dtype)
-        out = (attn @ v).squeeze(2)  # B, H, D
-        out = out.reshape(B, -1)  # B, C
+        step = max(1, self.pair_batch_size)
+        for start in range(0, len(pair_jobs), step):
+            batch_jobs = pair_jobs[start:start + step]
+            messages = [job["message"] for job in batch_jobs]
+            texts = [
+                self.processor.apply_chat_template(message, tokenize=False, add_generation_prompt=True)
+                for message in messages
+            ]
+            image_inputs = []
+            for message in messages:
+                processed = process_vision_info(message)
+                if isinstance(processed, tuple):
+                    image_inputs.append(processed[0])
+                else:
+                    image_inputs.append(processed)
 
-        return out
+            inputs = self.processor(
+                text=texts,
+                images=image_inputs,
+                padding=True,
+                truncation=True,
+                return_tensors="pt",
+            )
+            for key, value in list(inputs.items()):
+                if torch.is_tensor(value):
+                    inputs[key] = value.to(device)
 
+            generation_kwargs = {
+                "input_ids": inputs["input_ids"],
+                "attention_mask": inputs["attention_mask"],
+                "max_new_tokens": self.max_new_tokens,
+                "do_sample": False,
+            }
+            if "pixel_values" in inputs:
+                generation_kwargs["pixel_values"] = inputs["pixel_values"]
+            if "image_grid_thw" in inputs:
+                generation_kwargs["image_grid_thw"] = inputs["image_grid_thw"]
 
-class Qwen2VLRewardModelMemeOutcome(PreTrainedModel):
-    def __init__(self, pretrained_model):
-        super().__init__(pretrained_model.config)
-        self.pretrained_model = pretrained_model
+            generated = self.base_model.generate(**generation_kwargs)
+            trimmed = [output_ids[len(input_ids):] for input_ids, output_ids in zip(inputs["input_ids"], generated)]
+            decoded = self.processor.batch_decode(trimmed, skip_special_tokens=True, clean_up_tokenization_spaces=False)
+            scores.extend(parse_pair_judge_response(text) for text in decoded)
 
-        if hasattr(pretrained_model.config, 'hidden_size'):
-            hidden_size = pretrained_model.config.hidden_size
-        elif hasattr(pretrained_model.config, 'd_model'):
-            hidden_size = pretrained_model.config.d_model
-        else:
-            raise ValueError("Cannot determine hidden size from model config")
-
-        self.attention_pooling = AttentionPooling(
-            hidden_size=hidden_size,
-            num_heads=4,
-            qkv_bias=False,
-            position_bias=True,
-            position_bias_scale=3.0,
-        )
-
-        self.classification_head = nn.Linear(hidden_size, 2)
-        nn.init.normal_(self.classification_head.weight, std=0.02)
-        nn.init.zeros_(self.classification_head.bias)
-
-        self.attention_pooling.bfloat16()
-        self.classification_head.bfloat16()
-
-    @classmethod
-    def from_pretrained(cls, pretrained_model: PreTrainedModel):
-        """Create a binary classification model from a pretrained model."""
-        return cls(pretrained_model)
+        return scores
 
     @torch.no_grad()
     def forward(
@@ -107,245 +316,76 @@ class Qwen2VLRewardModelMemeOutcome(PreTrainedModel):
         output_attentions: Optional[bool] = None,
         output_hidden_states: Optional[bool] = None,
         **kwargs,
-    ):
-        """Forward pass for meme reward evaluation."""
-        # Forward through base model
-        prompt_and_outputs = kwargs.get('prompt_and_output')
-        raw_images = kwargs.get('raw_images')
-        outputs = self.pretrained_model(
-            input_ids=input_ids.cuda(),
-            attention_mask=attention_mask.cuda(),
-            pixel_values=pixel_values,
-            image_grid_thw=image_grid_thw,
-            return_dict=True,
-            output_attentions=output_attentions,
-            output_hidden_states=True,
-        )
+    ) -> Dict[str, torch.Tensor]:
+        del attention_mask, pixel_values, image_grid_thw, return_dict, output_attentions, output_hidden_states
 
-        # Extract hidden states
-        if hasattr(outputs, 'last_hidden_state'):
-            hidden_states = outputs.last_hidden_state
-        elif hasattr(outputs, 'hidden_states') and outputs.hidden_states is not None:
-            hidden_states = outputs.hidden_states[-1]
+        prompt_and_output = kwargs.get("prompt_and_output") or []
+        raw_images = kwargs.get("raw_images") or []
+        references = kwargs.get("references") or []
+
+        batch_size = len(prompt_and_output)
+        if input_ids is not None:
+            device = input_ids.device
         else:
-            raise ValueError("Cannot extract hidden states from model output")
+            device = _as_torch_device(get_current_device()) if torch.cuda.is_available() else torch.device("cpu")
+        if batch_size == 0:
+            return {"score": torch.zeros(0, dtype=torch.float32, device=device)}
 
-        # Use attention pooling
-        pooled_output = self.attention_pooling(hidden_states)
-
-        # Get logits
-        logits = self.classification_head(pooled_output)
-
-        # Get logits [batch_size, 2], first dimension is probability of 0, second dimension is probability of 1
-        logits = self.classification_head(pooled_output)
-
-        # Calculate probabilities and binarize
-        probabilities = F.softmax(logits, dim=-1)  # [batch_size, 2]
-        # If the second dimension (probability of 1) is larger, output 1, otherwise output 0
-        binary_scores = (probabilities[:, 1] > probabilities[:, 0]).float()
-
-        return {
-            'score': binary_scores,  # Binary result of 0/1
-            'logits': logits  # Original logits, containing scores for two dimensions
-        }
-
-
-class Qwen2VLRewardModelMemeContent(PreTrainedModel):
-    system_prompt = f"""
-    You are a professional meme text generation evaluation expert who is good at evaluating the quality of the current reasoning process in combination with images.\n\n
-    """
-    eval_prompt = """
-    You are a professional and strict-scoring expert in evaluating meme text generation, responsible for scoring the quality of the reasoning process (Chain of Thought, CoT) generated by the model.
-    This reasoning process is a text generation reasoning conducted based on the first text-free base image and input parameters (i.e., the user's requirements for the meme).
-
-    Details of the evaluation task:
-    1. Input parameters:
-    {input_params}
-
-    2. Standard reasoning process (reference standard answer):
-    {standard_cot}
-
-    3. Actual reasoning process to be evaluated: (The generated text is after "Text on the Meme")
-    {actual_cot}
-
-    Please conduct the evaluation by combining the two provided images (the base image and the standard meme image with text), and the scoring must be strict. The evaluation criteria are as follows:
-
-    1. Whether the chain of thought process includes an analysis of the expressions/actions/facial features/relationships/scenes of the entities in the image, and check its correctness: (Total 10 points)
-    a. Rough description: For example, there is a woman in this picture; 1 point;
-    b. With some details but no description of actions/facial expressions: For example, there is a woman in this picture, wearing a hat, sitting in a car; 4 points;
-    c. With details and actions/facial expressions: For example, there is a woman in this picture, wearing a hat, sitting in a car, looking very happy; 7 points;
-    d. Not only explaining the details such as the actions and expressions of the characters in the picture, but also immediately associating the character relationships/scenes where the actions occur; 10 points;
-
-    2. Analysis of further scene associations based on the relationships between entities in the image: (Total 10 points)
-    a. Only roughly describing possible scenes without specificity: For example, this may happen in daily life; 1 point;
-    b. Describing a relatively specific scene: For example, this may be the scene when you went out with friends to drink and found yourself vomiting; 4 points;
-    c. Describing multiple relatively specific scenes: For example, this may be the scene when you went out with friends to drink and found yourself vomiting, or the scene when the teacher checks homework but you find you haven't finished it; 10 points;
-
-    Next, evaluate the content after [Specific analysis with user input]:
-
-    1. Whether the chain of thought further specifies the scene based on the previously associated scenes combined with user needs, or re-associates a scene more in line with user needs: (5 points for each satisfied item, total 20 points)
-    a. Whether the intention expressed in the sentence is consistent with the user's emotions;
-    b. Whether the intention expressed in the sentence is consistent with the user's intentions and the theme;
-    c. Whether the topic of the entire sentence is consistent with the keyword topic;
-    d. Whether some humorous techniques are used, such as puns/homophones/semantic reversal/subverting expectations/exaggeration/role dislocation/suspenseful beginning/punchline reversal/rhyming structure/internet memes;
-
-    2. Logical fluency and text length between the final generated text and the reasoning process: (Total 10 points)
-    a. The reasoning is very forced, and the humor of the answer paired with this base image is much worse than that of the standard meme, and the text length is much longer than that of the standard meme; 1 point;
-    b. The reasoning is roughly valid, and the length of the answer divided by boxes is roughly similar to that of the standard meme; 4 points;
-    c. The reasoning is very fluent, the length of the answer divided by boxes is roughly similar to that of the standard meme, and it is humorous when paired with the image (for humorous techniques, refer to the rhetoric I just mentioned); 7 points;
-    d. The reasoning is very fluent, the length of the answer divided by boxes is roughly similar to that of the standard meme, or even more interesting than the standard meme; 10 points;
-
-    The total score is 50 points. It is necessary to provide the reasons and scores for each scoring criterion.
-    Output a line similar to the following at the end:
-    "Final score: 41 points"
-    """
-
-    def __init__(self, pretrained_model):
-        super().__init__(pretrained_model.config)
-        self.pretrained_model = pretrained_model
-        self.processor = None
-
-    def set_processor(self, processor):
-        self.processor = processor
-
-    @classmethod
-    def from_pretrained(cls, pretrained_model: PreTrainedModel):
-        return cls(pretrained_model)
-
-    def _get_message(self, input_params, standard_cot, actual_cot, base_image, standard_meme_image):
-        message = [
-            {
-                "role": "system",
-                "content": [{
-                    "type": "text",
-                    "text": self.system_prompt
-                }]
-            },
-            {
-                "role": "user",
-                "content": [
-                    {
-                        "type": "text",
-                        "text": "The first image is the base map (no text, only a frame):"
-                    },
-                    {
-                        "type": "image",
-                        "image": base_image
-                    },
-                    #{"type": "text", "text": "The second image is a standard meme image (with the correct answer in text):"},
-                    #{"type": "image", "image": standard_meme_image}
-                    {
-                        "type": "text",
-                        "text": self.eval_prompt.format(
-                            input_params=input_params, standard_cot=standard_cot, actual_cot=actual_cot
-                        )
-                    }
-                ]
-            }
-        ]
-        return message
-
-    @torch.no_grad()
-    def forward(
-        self,
-        input_ids,
-        attention_mask,
-        pixel_values,
-        image_grid_thw,
-        return_dict=None,
-        output_attentions=None,
-        output_hidden_states=None,
-        **kwargs
-    ):
-        raw_images = kwargs.get('raw_images')
-        references = kwargs.get('references')
-        texts = self.processor.batch_decode(input_ids, skip_special_tokens=True, clean_up_tokenization_spaces=False)
-        texts = [t.split("user\n")[1] for t in texts]
-
-        messages = []
-        images = []
-        for img, ref, text in zip(raw_images, references, texts):
-            input_params_match = re.search(r'\*\*Input Parameters\*\*:\s*\[(.*?)\]', text, re.DOTALL)
-            input_params = input_params_match.group(1) if input_params_match else "not found input params"
-            message = self._get_message(
-                input_params=input_params, standard_cot=ref, actual_cot=text, base_image=img, standard_meme_image=None
-            )
-            processed_img, _ = process_vision_info(message)
-            messages.append(message)
-            images.append(processed_img)
-
-        messages = [
-            self.processor.apply_chat_template(message, tokenize=False, add_generation_prompt=True)
-            for message in messages
-        ]
-        if torch.distributed.get_rank() % 8 == 0:
-            print(f"messages: {messages[0]}, {len(messages)}")
-        inputs = self.processor(
-            text=messages,
-            images=images,
-            max_length=5000,
-            padding=True,
-            truncation=True,
-            return_tensors="pt",
+        rendered_images, extracted_texts = self._render_candidates(raw_images, references, prompt_and_output)
+        groups = group_meme_rollout_indices(
+            references, batch_size=batch_size, n_samples_per_prompt=self.n_samples_per_prompt
         )
-        inputs = inputs.to("cuda")
 
-        gen_ids = self.pretrained_model.generate(
-            input_ids=inputs.input_ids,
-            attention_mask=inputs.attention_mask,
-            pixel_values=inputs.pixel_values,
-            image_grid_thw=inputs.image_grid_thw,
-            temperature=0.3,
-            top_p=0.9,
-            max_new_tokens=128,
-            do_sample=False,
-        )
-        outputs_trim = [o[len(i):] for i, o in zip(inputs.input_ids, gen_ids)]
-        outputs_text = self.processor.batch_decode(
-            outputs_trim, skip_special_tokens=True, clean_up_tokenization_spaces=False
-        )
-        if torch.distributed.get_rank() % 8 == 0:
-            print(f"outputs_text: {outputs_text}, {inputs.input_ids.shape}")
-        score = [self._extract_numeric_score(o) for o in outputs_text]
-        return score
+        pair_jobs: List[Dict[str, Any]] = []
+        preferences: List[PairwisePreference] = []
+        comparison_counts = [0 for _ in range(batch_size)]
 
-    def _extract_numeric_score(self, response: str) -> float:
-        """Helper function: Extract score from model response and normalize to 0-1 range"""
-        # Match numeric scores in 50-point scale (e.g., "Final score: 41 points" or "35/50")
-        numeric_patterns = [
-            r"Final score[:：]\s*([0-9.]+)\s*points?", r"Score[:：]\s*([0-9.]+)\s*points?", r"([0-9.]+)\s*/\s*50"
-        ]
-
-        for pattern in numeric_patterns:
-            match = re.search(pattern, response, re.IGNORECASE)
-            if match:
-                try:
-                    score = float(match.group(1))
-                    normalized_score = score * 0.02  # Convert 50-point scale to 0-1
-                    return max(0.0, min(1.0, normalized_score))  # Clamp boundary values
-                except ValueError:
+        for group in groups:
+            if len(group) < 2:
+                continue
+            for local_a, local_b in sample_group_pairs(len(group), max_pairs=self.max_pairs_per_group):
+                global_a = group[local_a]
+                global_b = group[local_b]
+                if rendered_images[global_a] is None or rendered_images[global_b] is None:
                     continue
 
-        # If no numeric score found, infer score from text description
-        positive_indicators = ["excellent", "outstanding", "perfect", "very good", "meets requirements"]
-        neutral_indicators = ["average", "acceptable", "basically meets", "partially meets"]
-        negative_indicators = ["poor", "does not meet", "bad", "completely mismatched"]
+                reference = references[global_a] if global_a < len(references) else None
+                fallback_prompt = prompt_and_output[global_a] if global_a < len(prompt_and_output) else None
+                user_request = get_user_request(reference if isinstance(reference, dict) else None, fallback_prompt)
+                pair_jobs.append({
+                    "index_a": global_a,
+                    "index_b": global_b,
+                    "message": build_pairwise_judge_message(
+                        reward_prompt=self.reward_prompt,
+                        image_a=rendered_images[global_a],
+                        image_b=rendered_images[global_b],
+                        text_a=extracted_texts[global_a],
+                        text_b=extracted_texts[global_b],
+                        user_request=user_request,
+                    ),
+                })
 
-        response_lower = response.lower()
-        for idx, indicator in enumerate(positive_indicators):
-            if indicator.lower() in response_lower:
-                return 0.8 + (idx * 0.05)
+        pair_scores = self._generate_pair_scores(pair_jobs, device=device)
+        for job, (score_a, score_b) in zip(pair_jobs, pair_scores):
+            index_a = job["index_a"]
+            index_b = job["index_b"]
+            preferences.append(
+                PairwisePreference(
+                    index_a=index_a,
+                    index_b=index_b,
+                    score_a=float(score_a),
+                    score_b=float(score_b),
+                )
+            )
+            comparison_counts[index_a] += 1
+            comparison_counts[index_b] += 1
 
-        for idx, indicator in enumerate(neutral_indicators):
-            if indicator.lower() in response_lower:
-                return 0.5 + (idx * 0.05)
+        pairwise_rewards = aggregate_pairwise_preferences(batch_size, preferences)
+        for idx, count in enumerate(comparison_counts):
+            if count == 0:
+                pairwise_rewards[idx] = 0.5
 
-        for idx, indicator in enumerate(negative_indicators):
-            if indicator.lower() in response_lower:
-                return 0.2 + (idx * 0.05)
-
-        # Return 0.0 when unable to infer
-        return 0.0
+        return {"score": torch.tensor(pairwise_rewards, dtype=torch.float32, device=device)}
 
 
 def load_reward_models(
@@ -354,111 +394,94 @@ def load_reward_models(
     use_engine: bool = False,
 ):
     if use_engine:
-        raise NotImplementedError("Engine is not supported for reward model")
+        raise NotImplementedError("Engine is not supported for the meme reward model")
 
-    model_list = []
-    tokenizer_list = []
-    processor_list = []
+    cfg = _parse_reward_config(reward_pretrain)
+    _REWARD_STATE["model_reward_weight"] = float(cfg.get("model_reward_weight", 1.0))
+    _REWARD_STATE["format_reward_weight"] = float(cfg.get("format_reward_weight", 0.1))
+
+    pretrain_path = cfg["path"]
+    reward_prompt = _load_reward_prompt(cfg.get("reward_prompt_path"))
+
     with strategy.init_model_context() as _:
-        cfg = json.loads(reward_pretrain)
-        device = get_current_device()
+        model_config = AutoConfig.from_pretrained(pretrain_path, trust_remote_code=True)
+        base_model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
+            pretrain_path,
+            config=model_config,
+            torch_dtype=torch.bfloat16,
+            attn_implementation=cfg.get("attn_implementation", "flash_attention_2"),
+            trust_remote_code=True,
+        )
+        processor = AutoProcessor.from_pretrained(
+            pretrain_path,
+            min_pixels=cfg.get("min_pixels", 256 * 28 * 28),
+            max_pixels=cfg.get("max_pixels", 1280 * 28 * 28),
+            trust_remote_code=True,
+        )
+        processor.tokenizer.padding_side = "left"
 
-        for key in cfg.keys():
-            pretrain_path = cfg[key]
-            model_config = AutoConfig.from_pretrained(
-                pretrain_path,
-                trust_remote_code=True,
-            )
-            base = Qwen2_5_VLForConditionalGeneration.from_pretrained(
-                pretrain_path,
-                config=model_config,
-                torch_dtype=torch.bfloat16,
-                attn_implementation="flash_attention_2",
-                trust_remote_code=True,
-            )
+        model = MemePairwiseJudge(
+            base_model=base_model,
+            processor=processor,
+            reward_prompt=reward_prompt,
+            max_new_tokens=cfg.get("max_new_tokens", 96),
+            pair_batch_size=cfg.get("pair_batch_size", 4),
+            n_samples_per_prompt=cfg.get("n_samples_per_prompt", 1),
+            max_pairs_per_group=cfg.get("max_pairs_per_group", 0),
+            render_config=MemeRenderConfig(
+                font_name=cfg.get("font_name", "DejaVuSans.ttf"),
+                min_font_size=cfg.get("min_font_size", 14),
+                max_font_size=cfg.get("max_font_size", 72),
+                line_spacing=cfg.get("line_spacing", 4),
+                outline_width=cfg.get("outline_width", 2),
+                margin=cfg.get("margin", 6),
+                default_padding_ratio=cfg.get("default_padding_ratio", 0.06),
+            ),
+        )
+        model.eval()
 
-            processor = AutoProcessor.from_pretrained(
-                pretrain_path, min_pixels=256 * 28 * 28, max_pixels=1280 * 28 * 28
-            )
-            processor.tokenizer.padding_side = "left"
-
-            if key == "outcome":
-                model = Qwen2VLRewardModelMemeOutcome.from_pretrained(base)
-            elif key == "content":
-                model = Qwen2VLRewardModelMemeContent.from_pretrained(base)
-                model.set_processor(processor)
-            # for some case about meta device
-            model.to_empty(device=device)
-            model.eval()
-            model_list.append(model)
-            tokenizer_list.append(processor.tokenizer)
-            processor_list.append(processor)
-        return model_list, tokenizer_list, processor_list
-
-
-def get_format_reward(response: str) -> float:
-    """
-    Evaluate the format compliance of model response, returns a score between 0-1
-    
-    Args:
-        response: The model response content to be evaluated (string)
-        
-    Returns:
-        Format compliance score (0-1), where 1 means fully compliant with format requirements, 0 means completely non-compliant
-    """
-    # Initialize score and total check items
-    score = 0.0
-    total_checks = 0
-
-    # 1. Check if all required sections exist
-    required_sections = [
-        r'\[Comprehensive Description Section\]', r'\[Usage Scenarios Section\]', r'\[Text Analysis Section\]',
-        r'\[Specific analysis with user input\]', r'Text on the Meme:'
-    ]
-
-    for section in required_sections:
-        total_checks += 1
-        if re.search(section, response, re.IGNORECASE):
-            score += 1
-
-    # 2. Check box format in 'Text on the Meme' section
-    total_checks += 1
-    meme_text_match = re.search(r'Text on the Meme:\s*(.*?)(?=\n\n|$)', response, re.DOTALL | re.IGNORECASE)
-    if meme_text_match and re.search(r'box\d+:\s*[^\n]+', meme_text_match.group(1)):
-        score += 1
-
-    # 3. Check Step 1 and Step 2 in 'Specific analysis' section
-    total_checks += 2
-    specific_analysis_match = re.search(
-        r'\[Specific analysis with user input\]\s*(.*?)(?=\n\[|Text on the Meme:|$)', response,
-        re.DOTALL | re.IGNORECASE
-    )
-    if specific_analysis_match:
-        analysis_content = specific_analysis_match.group(1)
-        if re.search(r'Step 1:', analysis_content, re.IGNORECASE):
-            score += 1
-        if re.search(r'Step 2:', analysis_content, re.IGNORECASE):
-            score += 1
-
-    # Normalize to 0-1 range
-    return round(score / total_checks, 4) if total_checks > 0 else 0.0
+    return [model], [processor.tokenizer], {_PAIRWISE_LABEL_KEY: 0}
 
 
 def reward_fn(
-    model_reward_list: List[torch.Tensor],  # len = n_model , each shape=(B,)
+    model_reward_list: List[torch.Tensor],
     labels: Sequence[str],
     queries: Sequence[str],
-    refs: Sequence[str],
+    refs: Sequence[Any],
+    label_map: Optional[Dict[str, int]] = None,
     **kwargs,
-) -> torch.Tensor:
-    # outcome reward
-    # model_reward_list: Shapes [2]
-    outcome_reward = model_reward_list[0]
-    dtype, device = outcome_reward.dtype, outcome_reward.device
-    # rule reward
-    format_reward = [get_format_reward(q) for q in queries]
-    format_reward = torch.tensor(format_reward, dtype=dtype, device=device)
-    if torch.distributed.get_rank() % 8 == 0:
-        print(f"queries: {queries[0]}")
-        print(f"model_reward_list: {model_reward_list}, format_reward: {format_reward}")
-    return format_reward + outcome_reward
+) -> Tuple[torch.Tensor, Dict[str, torch.Tensor]]:
+    del labels, kwargs
+
+    if model_reward_list:
+        device = model_reward_list[0].device
+        dtype = model_reward_list[0].dtype
+    else:
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        dtype = torch.float32
+
+    batch_size = len(queries)
+    model_reward = torch.zeros(batch_size, dtype=dtype, device=device)
+    if model_reward_list:
+        pairwise_idx = 0
+        if label_map:
+            pairwise_idx = label_map.get(_PAIRWISE_LABEL_KEY, 0)
+        pairwise_idx = min(pairwise_idx, len(model_reward_list) - 1)
+        model_reward = torch.as_tensor(model_reward_list[pairwise_idx], dtype=dtype, device=device)
+
+    format_values = []
+    for idx, query in enumerate(queries):
+        reference = refs[idx] if refs is not None and idx < len(refs) else None
+        expected_boxes = resolve_expected_box_count(reference if isinstance(reference, dict) else None)
+        format_values.append(compute_meme_format_reward(query, expected_boxes=expected_boxes))
+
+    format_reward = torch.tensor(format_values, dtype=dtype, device=device)
+    final_reward = (
+        _REWARD_STATE["model_reward_weight"] * model_reward + _REWARD_STATE["format_reward_weight"] * format_reward
+    )
+    metrics = {
+        "model_reward": model_reward,
+        "format_reward": format_reward,
+        "rule_reward": final_reward,
+    }
+    return final_reward, metrics

@@ -1,16 +1,8 @@
 import argparse
-import itertools
 import math
-import re
 import os
 import sys
-import json
 from datetime import datetime
-from typing import Callable, Dict, List, Tuple, Union
-
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
 
 from lightrft.utils import get_tokenizer_processor_vl, ensure_video_input_available
 from lightrft.models import ActorVL
@@ -81,7 +73,7 @@ def train(args):
     critic = None
 
     strategy.report_memory("before loaded reward models in main entry")
-    reward_models, reward_tokenizers, reward_processors, label_map = load_reward_models(
+    reward_models, reward_tokenizers, label_map = load_reward_models(
         args.reward_pretrain, strategy, use_engine=args.rm_use_engine
     )
     strategy.print(f"label_map: {label_map}")
@@ -333,6 +325,7 @@ if __name__ == "__main__":
     parser.add_argument("--pretrain", type=str, default=None, help="HF model name or path")
     parser.add_argument("--reward_pretrain", type=str, default=None, help="HF model name or path")
     parser.add_argument("--remote_rm_url", type=str, default=None, help="remote RM API")
+    parser.add_argument("--critic_pretrain", type=str, default=None, help="Optional critic path for GAE runs")
 
     # Custom dataset (GodsMeme)
     parser.add_argument(
@@ -356,7 +349,6 @@ if __name__ == "__main__":
         help="sampling probs for datasets",
     )
     parser.add_argument("--prompt_split", type=str, default="train")
-
     # wandb parameters
     parser.add_argument("--use_wandb", type=str, default=None)
     parser.add_argument("--wandb_org", type=str, default=None)
@@ -396,6 +388,9 @@ if __name__ == "__main__":
 
     if args.advantage_estimator in ["rloo", "reinforce_baseline", "group_norm"]:
         assert args.n_samples_per_prompt > 1, f"{args.advantage_estimator} requires n_samples_per_prompt > 1"
+        assert args.micro_rollout_batch_size % args.n_samples_per_prompt == 0, (
+            "meme pairwise reward requires micro_rollout_batch_size to be divisible by n_samples_per_prompt"
+        )
 
     if args.use_kl_loss:
         if args.kl_estimator not in ["k2", "k3"]:
