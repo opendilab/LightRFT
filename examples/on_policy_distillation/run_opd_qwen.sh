@@ -6,12 +6,11 @@
 # Features:
 #   - Auto GPU detection and allocation (teacher + training)
 #   - Robust teacher server with health monitoring
-#   - Two advantage estimators: pure distillation / hybrid (GRPO + OPD)
 #
 # Usage:
 #   # Edit paths below, then:
 #   bash examples/on_policy_distillation/run_opd_qwen.sh
-#   ADVANTAGE_ESTIMATOR=on_policy_distillation_hybrid USE_TASK_REWARD=true bash examples/on_policy_distillation/run_opd_qwen.sh
+#   USE_TASK_REWARD=true bash examples/on_policy_distillation/run_opd_qwen.sh
 #
 
 set -euo pipefail
@@ -67,8 +66,8 @@ echo "GPU Allocation: ${TOTAL_GPUS} total → Teacher: GPU ${TEACHER_GPU}, Train
 ################################################################################
 
 # --- Mode control (override via env) ---
-#   ADVANTAGE_ESTIMATOR=on_policy_distillation         - Pure distillation: rewards=0, only OPD KL signal
-#   ADVANTAGE_ESTIMATOR=on_policy_distillation_hybrid   - GRPO task rewards + OPD KL penalty
+#   USE_TASK_REWARD=false  - Pure distillation: rewards=0, only OPD KL signal
+#   USE_TASK_REWARD=true   - GRPO task rewards + OPD KL penalty
 ADVANTAGE_ESTIMATOR="${ADVANTAGE_ESTIMATOR:-on_policy_distillation}"
 USE_TASK_REWARD="${USE_TASK_REWARD:-false}"
 
@@ -95,7 +94,7 @@ else
     TASK_REWARD_FLAG="--no_task_reward"
 fi
 
-if [ "$ADVANTAGE_ESTIMATOR" = "on_policy_distillation_hybrid" ]; then
+if [ "$USE_TASK_REWARD" = "true" ]; then
     KL=${KL:-0.01}
     LR=${LR:-5e-7}
 else

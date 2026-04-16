@@ -458,10 +458,7 @@ class PPOTrainerVL(ABC):
                             format_tensor = torch.tensor(all_format_rewards, dtype=torch.float32, device=device)
 
                         mean_format_reward = format_tensor.mean().item()
-
-                        # Only display if mean is significantly non-zero
-                        if abs(mean_format_reward) > 1e-6:
-                            rollout_status["rollout_format_reward"] = mean_format_reward
+                        rollout_status["rollout_format_reward"] = mean_format_reward
 
                     if all_accuracy_rewards:
                         # [TENSOR-FIX] Handle both tensor lists and scalar lists
@@ -471,10 +468,7 @@ class PPOTrainerVL(ABC):
                             accuracy_tensor = torch.tensor(all_accuracy_rewards, dtype=torch.float32, device=device)
 
                         mean_accuracy_reward = accuracy_tensor.mean().item()
-
-                        # Only display if mean is significantly non-zero
-                        if abs(mean_accuracy_reward) > 1e-6:
-                            rollout_status["rollout_accuracy_reward"] = mean_accuracy_reward
+                        rollout_status["rollout_accuracy_reward"] = mean_accuracy_reward
 
                     if all_response_lengths:
                         # [TENSOR-FIX] Handle both tensor lists and scalar lists

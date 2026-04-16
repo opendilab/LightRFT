@@ -942,7 +942,7 @@ class FastExperienceMaker(NaiveExperienceMaker):
 
         # For On-Policy Distillation (OPD), prefer dedicated teacher_model_url.
         # Fall back to remote_rm_url with deprecation warning for backwards compatibility.
-        if advantage_estimator in ("on_policy_distillation", "on_policy_distillation_hybrid"):
+        if advantage_estimator == "on_policy_distillation":
             teacher_url = getattr(self.strategy.args, 'teacher_model_url', None)
             if teacher_url is not None:
                 self.teacher_model_url = teacher_url
@@ -1086,7 +1086,7 @@ class FastExperienceMaker(NaiveExperienceMaker):
             self._process_multi_image_video_thws(experiences, expanded_images_num, expanded_videos_num)
 
         # ========== Stage 6.5: On-Policy Distillation Teacher Log-Probs ==========
-        if config.advantage_estimator in ("on_policy_distillation", "on_policy_distillation_hybrid"):
+        if config.advantage_estimator == "on_policy_distillation":
             self._fetch_teacher_logprobs(experiences)
 
         # ========== Stage 7: Advantage Computation ==========

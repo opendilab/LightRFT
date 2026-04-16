@@ -28,7 +28,7 @@ CUDA_VISIBLE_DEVICES=7 python3 -m sglang.launch_server \
 ### 2. Run Training
 
 ```bash
-bash examples/on_policy_distillation/run_opd_qwen_2.sh
+bash examples/on_policy_distillation/run_opd_qwen.sh
 ```
 
 Or manually:

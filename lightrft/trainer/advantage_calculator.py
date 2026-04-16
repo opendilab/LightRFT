@@ -757,58 +757,15 @@ def _apply_opd_kl_penalty(
 
 class OnPolicyDistillationCalculator(AdvantageCalculator):
     """
-    On-Policy Distillation calculator — pure distillation mode.
+    On-Policy Distillation calculator.
 
-    Following Slime's design:
-    - Task rewards are zeroed out
-    - The ONLY learning signal is the OPD KL penalty:
-        advantages = -opd_kl_coef * (student_logp - teacher_logp)
-    - Advantage whitening is applied for training stability
+    When USE_TASK_REWARD=true: advantages = GRPO_base(task_rewards) + OPD_KL_penalty
+    When USE_TASK_REWARD=false: task rewards are all zeros, so advantages = OPD_KL_penalty only
+
+    This unified calculator handles both cases automatically.
+    Whitening is done cross-batch in normalize_advantages_cross_batch.
 
     Use --advantage_estimator on_policy_distillation
-    """
-    def __init__(self, config):
-        super().__init__(config)
-        self.opd_kl_coef = getattr(config, 'opd_kl_coef', 1.0)
-
-    def preprocess_rewards(self, rewards, experiences, max_new_tokens):
-        """Pass through rewards — zeroing is handled upstream via --no_task_reward."""
-        return experiences, list(rewards.chunk(len(experiences)))
-
-    def compute(self, experience, final_reward, gamma, generate_kwargs):
-        """advantages = -opd_kl_coef * (student_logp - teacher_logp).
-        Whitening is done cross-batch in normalize_advantages_cross_batch."""
-        if "teacher_log_probs" not in experience.info:
-            raise ValueError("teacher_log_probs not found in experience.info.")
-
-        teacher_lp = experience.info["teacher_log_probs"].to(experience.action_log_probs.device)
-        student_lp = experience.action_log_probs
-
-        advantages, info_dict = _apply_opd_kl_penalty(
-            student_lp, teacher_lp, experience.action_mask, self.opd_kl_coef
-        )
-
-        returns = advantages.clone()
-
-        if self.config.advantage_clip > 0:
-            clip_val = self.config.advantage_clip
-            info_dict["advantage_clip_frac"] = compute_clip_fraction(advantages, clip_val, -clip_val)
-            advantages = torch.clamp(advantages, -clip_val, clip_val)
-
-        return advantages, returns, info_dict
-
-
-class OnPolicyDistillationHybridCalculator(AdvantageCalculator):
-    """
-    Hybrid On-Policy Distillation calculator — GRPO task rewards + OPD KL penalty.
-
-    Combines GRPO (group normalization) base advantages from task rewards with
-    OPD KL penalty from teacher model. Advantage whitening is applied AFTER
-    combining both signals to resolve scale mismatch.
-
-        advantages = whiten(GRPO_base_advantages + OPD_KL_penalty)
-
-    Use --advantage_estimator on_policy_distillation_hybrid
     """
     def __init__(self, config):
         super().__init__(config)
@@ -820,9 +777,8 @@ class OnPolicyDistillationHybridCalculator(AdvantageCalculator):
         return self.base_calculator.preprocess_rewards(rewards, experiences, max_new_tokens)
 
     def compute(self, experience, final_reward, gamma, generate_kwargs):
-        """advantages = GRPO_base + OPD_KL_penalty.
-        Whitening is done cross-batch in normalize_advantages_cross_batch."""
-        # Step 1: GRPO base advantages from task rewards
+        """advantages = GRPO_base + OPD_KL_penalty."""
+        # Step 1: GRPO base advantages from task rewards (zeros if no_task_reward)
         base_advantages, returns, info_dict = self.base_calculator.compute(
             experience, final_reward, gamma, generate_kwargs
         )
@@ -839,7 +795,7 @@ class OnPolicyDistillationHybridCalculator(AdvantageCalculator):
         )
         info_dict.update(opd_info)
 
-        # Step 3: Combine (whitening done cross-batch later)
+        # Step 3: Combine
         advantages = base_advantages + opd_adv
 
         if self.config.advantage_clip > 0:
@@ -859,7 +815,7 @@ def get_advantage_calculator(estimator_name: str, config) -> AdvantageCalculator
     """
     Factory function to create an advantage calculator instance.
 
-    :param estimator_name: Name of the advantage estimation method
+    :param estimator_name: Name of the advantage estimation method.
                           Options: "gae", "cpgd", "reinforce", "rloo",
                                    "reinforce_baseline", "group_norm", "grpo",
                                    "on_policy_distillation"
@@ -879,7 +835,6 @@ def get_advantage_calculator(estimator_name: str, config) -> AdvantageCalculator
         "cpgd": CPGDCalculator,
         "grpo": GroupNormCalculator,  # Alias for group_norm
         "on_policy_distillation": OnPolicyDistillationCalculator,
-        "on_policy_distillation_hybrid": OnPolicyDistillationHybridCalculator,
     }
 
     calculator_class = calculator_map.get(estimator_name)
@@ -916,7 +871,7 @@ def normalize_advantages_cross_batch(experiences: List, advantage_estimator: str
     """
     if advantage_estimator not in [
         "gae", "reinforce", "reinforce_baseline",
-        "on_policy_distillation_hybrid",
+        "on_policy_distillation",
     ]:
         return experiences
 

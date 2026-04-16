@@ -577,7 +577,7 @@ class NaiveExperienceMaker(ABC):
         args = self.strategy.args
 
         # On-policy distillation is only supported via FastExperienceMaker
-        if args.advantage_estimator in ("on_policy_distillation", "on_policy_distillation_hybrid"):
+        if args.advantage_estimator == "on_policy_distillation":
             raise NotImplementedError(
                 "On-policy distillation is only supported with FastExperienceMaker "
                 "(use train_colocate.py / SpmdPPOTrainer). "

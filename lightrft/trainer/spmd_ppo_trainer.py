@@ -400,9 +400,8 @@ class SPMDPPOTrainerBase:
                     rule_tensor = torch.cat([t.to(device).float() for t in all_rule_rewards])
                 else:
                     rule_tensor = torch.tensor(all_rule_rewards, dtype=torch.float32, device=device)
-                if rule_tensor.abs().sum() > 0:  # Only log if rule rewards are non-zero
-                    status_mean["rule_reward_mean"] = rule_tensor.mean().item()
-                    self.strategy.print(f"rule_reward_mean: {status_mean['rule_reward_mean']}")
+                status_mean["rule_reward_mean"] = rule_tensor.mean().item()
+                self.strategy.print(f"rule_reward_mean: {status_mean['rule_reward_mean']}")
 
             # For advantages, returns, and lengths, they are already lists of tensors,
             # so torch.cat() is the correct function to use.

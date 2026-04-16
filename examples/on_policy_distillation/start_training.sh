@@ -52,7 +52,7 @@ else
     TASK_REWARD_FLAG="--no_task_reward"
 fi
 
-if [ "$ADVANTAGE_ESTIMATOR" = "on_policy_distillation_hybrid" ]; then
+if [ "$USE_TASK_REWARD" = "true" ]; then
     KL=${KL:-0.01}
 else
     KL=${KL:-0.00}

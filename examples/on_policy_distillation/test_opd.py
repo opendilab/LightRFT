@@ -1,7 +1,7 @@
 """
 Pytest suite for On-Policy Distillation implementation in LightRFT.
 
-Tests both pure and hybrid OPD modes, KL penalty computation,
+Tests the unified OPD calculator, KL penalty computation,
 teacher logprob extraction, dimension alignment, and reward engine validation.
 """
 
@@ -10,7 +10,6 @@ import torch
 
 from lightrft.trainer.advantage_calculator import (
     OnPolicyDistillationCalculator,
-    OnPolicyDistillationHybridCalculator,
     _apply_opd_kl_penalty,
     get_advantage_calculator,
     normalize_advantages_cross_batch,
@@ -73,13 +72,12 @@ def mock_experience():
 
 class TestFactory:
     def test_all_estimators_registered(self, mock_config):
-        """All estimators including both OPD modes are registered."""
+        """All estimators are registered."""
         config = mock_config()
         estimators = [
             "gae", "reinforce", "rloo", "reinforce_baseline",
             "group_norm", "grpo", "cpgd",
             "on_policy_distillation",
-            "on_policy_distillation_hybrid",
         ]
         for name in estimators:
             calc = get_advantage_calculator(name, config)
@@ -90,21 +88,28 @@ class TestFactory:
         with pytest.raises(ValueError):
             get_advantage_calculator("nonexistent", mock_config())
 
+    def test_hybrid_removed(self, mock_config):
+        """on_policy_distillation_hybrid is no longer registered."""
+        with pytest.raises(ValueError):
+            get_advantage_calculator("on_policy_distillation_hybrid", mock_config())
+
 
 # ---------------------------------------------------------------------------
-# Test: Pure OPD calculator
+# Test: Unified OPD calculator
 # ---------------------------------------------------------------------------
 
-class TestPureOPD:
-    def test_preprocess_rewards_passthrough(self, mock_config, mock_experience):
-        """Pure OPD preprocess_rewards passes through rewards (zeroing done upstream)."""
-        calc = OnPolicyDistillationCalculator(mock_config(opd_kl_coef=1.0))
-        rewards = torch.tensor([0.5, 0.8, 0.3, 0.9, 0.1, 0.7, 0.2, 0.4])
+class TestOPDCalculator:
+    def test_preprocess_rewards_grpo_normalization(self, mock_config, mock_experience):
+        """OPD applies GRPO normalization to rewards."""
+        calc = OnPolicyDistillationCalculator(
+            mock_config(opd_kl_coef=1.0, n_samples_per_prompt=4)
+        )
+        rewards = torch.tensor([0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0, 0.0])
         experiences = [mock_experience(batch_size=4), mock_experience(batch_size=4)]
         _, reward_chunks = calc.preprocess_rewards(rewards, experiences, max_new_tokens=100)
-        # Rewards are passed through; upstream --no_task_reward zeroes them
         combined = torch.cat(reward_chunks)
-        assert combined.shape == rewards.shape
+        # Non-uniform rewards should produce non-zero normalized values
+        assert not (combined == 0).all(), "Should apply GRPO normalization"
 
     def test_compute_advantages_shape_and_masking(self, mock_config, mock_experience):
         """Advantages have correct shape and padding positions are zero."""
@@ -125,35 +130,6 @@ class TestPureOPD:
         final_reward = torch.zeros(4, 10)
         with pytest.raises(ValueError):
             calc.compute(exp, final_reward, gamma=1.0, generate_kwargs={})
-
-
-# ---------------------------------------------------------------------------
-# Test: Hybrid OPD calculator
-# ---------------------------------------------------------------------------
-
-class TestHybridOPD:
-    def test_preprocess_rewards_grpo_normalization(self, mock_config, mock_experience):
-        """Hybrid mode applies GRPO normalization (rewards not zeroed)."""
-        calc = OnPolicyDistillationHybridCalculator(
-            mock_config(opd_kl_coef=1.0, n_samples_per_prompt=4)
-        )
-        rewards = torch.tensor([0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0, 0.0])
-        experiences = [mock_experience(batch_size=4), mock_experience(batch_size=4)]
-        _, reward_chunks = calc.preprocess_rewards(rewards, experiences, max_new_tokens=100)
-        combined = torch.cat(reward_chunks)
-        assert not (combined == 0).all(), "Hybrid should NOT zero rewards"
-
-    def test_compute_advantages(self, mock_config, mock_experience):
-        """Hybrid compute produces correct shape and includes KL metric."""
-        calc = OnPolicyDistillationHybridCalculator(
-            mock_config(opd_kl_coef=1.0, n_samples_per_prompt=4)
-        )
-        exp = mock_experience(batch_size=4, num_tokens=10, teacher_offset=-0.3)
-        final_reward = torch.randn(4, 10) * 0.5
-        adv, _ret, info = calc.compute(exp, final_reward, gamma=1.0, generate_kwargs={})
-
-        assert adv.shape == (4, 10)
-        assert "opd_reverse_kl" in info
 
 
 # ---------------------------------------------------------------------------
@@ -217,15 +193,15 @@ class TestNormalizeAdvantages:
             pass
 
         args = _Args()
-        # on_policy_distillation_hybrid triggers normalization
+        # on_policy_distillation triggers normalization
         result = normalize_advantages_cross_batch(
-            [exp1, exp2], "on_policy_distillation_hybrid", args
+            [exp1, exp2], "on_policy_distillation", args
         )
         assert len(result) == 2
         assert result[0].advantages.shape == (4, 10)
 
-    def test_pure_opd_skips_normalization(self, mock_experience):
-        """Pure OPD mode skips cross-batch normalization."""
+    def test_group_norm_skips_normalization(self, mock_experience):
+        """group_norm mode skips cross-batch normalization."""
         exp = mock_experience(batch_size=4, num_tokens=10)
         exp.advantages = torch.randn(4, 10) * 5 + 2
         original = exp.advantages.clone()
@@ -234,10 +210,36 @@ class TestNormalizeAdvantages:
             pass
 
         result = normalize_advantages_cross_batch(
-            [exp], "on_policy_distillation", _Args()
+            [exp], "group_norm", _Args()
         )
         # Should return unchanged (not in whitening list)
         assert torch.equal(result[0].advantages, original)
+
+
+# ---------------------------------------------------------------------------
+# Test: Zero vs non-zero rewards (replaces TestPureVsHybrid)
+# ---------------------------------------------------------------------------
+
+class TestZeroVsNonZeroRewards:
+    def test_advantages_differ_with_rewards(self, mock_config, mock_experience):
+        """OPD with zero rewards vs non-zero rewards produces different advantages."""
+        config = mock_config(opd_kl_coef=1.0, n_samples_per_prompt=4)
+        calc = OnPolicyDistillationCalculator(config)
+
+        torch.manual_seed(42)
+        exp = mock_experience(batch_size=4, num_tokens=10, teacher_offset=-0.5)
+
+        # Zero rewards (pure distillation mode)
+        final_reward_zero = torch.zeros(4, 10)
+        adv_zero, _, _ = calc.compute(exp, final_reward_zero, 1.0, {})
+
+        # Non-zero rewards (hybrid mode with task rewards)
+        final_reward_nonzero = torch.randn(4, 10) * 0.5
+        adv_nonzero, _, _ = calc.compute(exp, final_reward_nonzero, 1.0, {})
+
+        assert adv_zero.shape == adv_nonzero.shape
+        # With non-zero task rewards, advantages should differ
+        assert not torch.allclose(adv_zero, adv_nonzero, atol=0.01)
 
 
 # ---------------------------------------------------------------------------
@@ -330,37 +332,6 @@ class TestDimensionAlignment:
         final_reward = torch.zeros(2, 8)
         with pytest.raises(RuntimeError):
             calc.compute(exp, final_reward, gamma=1.0, generate_kwargs={})
-
-
-# ---------------------------------------------------------------------------
-# Test: Pure vs Hybrid produce different results
-# ---------------------------------------------------------------------------
-
-class TestPureVsHybrid:
-    def test_advantages_differ(self, mock_config, mock_experience):
-        """Pure and hybrid modes produce meaningfully different advantages."""
-        config = mock_config(opd_kl_coef=1.0, n_samples_per_prompt=4)
-        pure_calc = OnPolicyDistillationCalculator(config)
-        hybrid_calc = OnPolicyDistillationHybridCalculator(config)
-
-        torch.manual_seed(42)
-        exp = mock_experience(batch_size=4, num_tokens=10, teacher_offset=-0.5)
-
-        rewards = torch.tensor([0.0, 1.0, 0.0, 1.0, 0.5, 0.5, 0.8, 0.2])
-        _, pure_rewards = pure_calc.preprocess_rewards(rewards.clone(), [exp, exp], 100)
-        _, hybrid_rewards = hybrid_calc.preprocess_rewards(rewards.clone(), [exp, exp], 100)
-
-        hybrid_r = torch.cat(hybrid_rewards)
-        assert not (hybrid_r == 0).all(), "Hybrid should keep rewards"
-
-        final_reward_pure = torch.zeros(4, 10)
-        final_reward_hybrid = torch.randn(4, 10) * 0.5
-
-        adv_pure, _, _ = pure_calc.compute(exp, final_reward_pure, 1.0, {})
-        adv_hybrid, _, _ = hybrid_calc.compute(exp, final_reward_hybrid, 1.0, {})
-
-        assert adv_pure.shape == adv_hybrid.shape
-        assert not torch.allclose(adv_pure, adv_hybrid, atol=0.01)
 
 
 # ---------------------------------------------------------------------------
