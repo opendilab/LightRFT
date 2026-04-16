@@ -56,6 +56,7 @@ from lightrft.utils import blending_datasets, get_tokenizer_processor_vl
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from reward_models_utils import RECIPE, load_reward_models, reward_fn
 
+import functools
 import torch.multiprocessing
 
 # Fix "multiprocessing.context.AuthenticationError: digest received was wrong" error
@@ -411,7 +412,7 @@ def train(args):
         eos_token_id=tokenizer.eos_token_id,
         # reward model / teacher model URL (used for OPD)
         remote_rm_url=args.remote_rm_url,
-        reward_fn=reward_fn,
+        reward_fn=functools.partial(reward_fn, use_task_reward=args.use_task_reward),
         reward_fn_label_map=label_map,
         reward_recipe=RECIPE,
         reward_tokenizers=reward_tokenizers,
@@ -568,6 +569,8 @@ if __name__ == "__main__":
 
     parser.add_argument("--use_kl_loss", action="store_true", default=False, help="whether to use KL loss from GRPO")
     parser.add_argument("--opd_kl_coef", type=float, default=1.0, help="KL coefficient for on-policy distillation penalty")
+    parser.add_argument("--use_task_reward", action="store_true", dest="use_task_reward", default=True, help="Use task reward in final reward (default)")
+    parser.add_argument("--no_task_reward", action="store_false", dest="use_task_reward", help="Zero out task reward (metrics still logged)")
 
     # LoRA
     parser.add_argument("--load_in_4bit", action="store_true", default=False)
@@ -580,6 +583,7 @@ if __name__ == "__main__":
     parser.add_argument("--pretrain", type=str, default=None, help="HF model name or path")
     parser.add_argument("--reward_pretrain", type=str, default=None, help="HF model name or path")
     parser.add_argument("--remote_rm_url", type=str, default=None, help="remote RM API")
+    parser.add_argument("--teacher_model_url", type=str, default=None, help="Teacher model URL for OPD (overrides --remote_rm_url for teacher)")
     parser.add_argument("--critic_pretrain", type=str, default=None, help="HF model name or path")
     parser.add_argument("--value_head_prefix", type=str, default="score")
 

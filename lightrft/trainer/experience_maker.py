@@ -301,6 +301,7 @@ class NaiveExperienceMaker(ABC):
         self.reward_recipe = reward_recipe
         self.perf_stats = None
         self.advantage_estimator = strategy.args.advantage_estimator
+        self.teacher_model_url = getattr(strategy.args, 'teacher_model_url', None)
 
         # Custom reward function for reinforced fine-tuning
         self.custom_reward_func = None
@@ -393,16 +394,7 @@ class NaiveExperienceMaker(ABC):
                     generate_kwargs["gamma"],
                     generate_kwargs["lambd"],
                 )
-            elif self.advantage_estimator in ["reinforce", "rloo", "reinforce_baseline", "group_norm"]:
-                experience.returns = self.get_cumulative_returns(
-                    reward,
-                    experience.action_mask,
-                    generate_kwargs["gamma"],
-                )
-                experience.advantages = deepcopy(experience.returns)
-            elif self.advantage_estimator in ("on_policy_distillation", "on_policy_distillation_hybrid"):
-                # OPD: cumulative returns from rewards (0 for pure, task rewards for hybrid)
-                # The OPD KL penalty is applied in the advantage calculator
+            elif self.advantage_estimator in ["reinforce", "rloo", "reinforce_baseline", "group_norm", "on_policy_distillation", "on_policy_distillation_hybrid"]:
                 experience.returns = self.get_cumulative_returns(
                     reward,
                     experience.action_mask,
@@ -586,14 +578,25 @@ class NaiveExperienceMaker(ABC):
 
         # On-policy distillation: query teacher model for log probs, then use GRPO reward shaping
         if args.advantage_estimator in ("on_policy_distillation", "on_policy_distillation_hybrid"):
-            if self.remote_rm_url is None or len(self.remote_rm_url) == 0:
-                raise ValueError(
-                    "On-policy distillation requires a teacher model URL. "
-                    "Please set --remote_rm_url to the teacher model inference server."
-                )
+            # Prefer dedicated teacher_model_url, fall back to remote_rm_url
+            teacher_url = self.teacher_model_url
+            if teacher_url is None:
+                if self.remote_rm_url is not None and len(self.remote_rm_url) > 0:
+                    import warnings
+                    warnings.warn(
+                        "Using --remote_rm_url as teacher URL is deprecated. "
+                        "Use --teacher_model_url instead.",
+                        DeprecationWarning,
+                        stacklevel=2,
+                    )
+                    teacher_url = self.remote_rm_url[0] if isinstance(self.remote_rm_url, list) else self.remote_rm_url
+                else:
+                    raise ValueError(
+                        "On-policy distillation requires a teacher model URL. "
+                        "Please set --teacher_model_url to the teacher model inference server."
+                    )
 
             import asyncio
-            teacher_url = self.remote_rm_url[0] if isinstance(self.remote_rm_url, list) else self.remote_rm_url
 
             # Collect all sequences as input_ids and response lengths
             all_input_ids = []
@@ -624,21 +627,21 @@ class NaiveExperienceMaker(ABC):
                 finally:
                     loop.close()
 
-                # Align teacher log probs to action_log_probs shape [batch, num_actions]
+                # Align teacher log probs to action_log_probs shape [batch, num_tokens]
                 idx = 0
                 for experience in experiences:
                     batch_size = experience.sequences.size(0)
-                    num_actions = experience.action_mask.shape[1]
-                    aligned = torch.zeros(batch_size, num_actions, dtype=torch.float32)
+                    num_tokens = experience.action_mask.shape[1]
+                    aligned = torch.zeros(batch_size, num_tokens, dtype=torch.float32)
                     for j in range(batch_size):
                         tlp = teacher_lp_list[idx + j]
                         resp_len = all_response_lengths[idx + j]
-                        actual_len = min(len(tlp), resp_len, num_actions)
-                        start_pos = num_actions - resp_len
+                        actual_len = min(len(tlp), resp_len, num_tokens)
+                        start_pos = num_tokens - resp_len
                         if start_pos >= 0:
                             aligned[j, start_pos:start_pos + actual_len] = tlp[:actual_len]
                         else:
-                            aligned[j, :] = tlp[-num_actions:]
+                            aligned[j, :] = tlp[-num_tokens:]
                     experience.info["teacher_log_probs"] = aligned
                     idx += batch_size
 

@@ -57,17 +57,12 @@ from .utils import RunningMoments, compute_clip_fraction, get_cpgd_advantages_re
 from .advantage_calculator import get_advantage_calculator, normalize_advantages_cross_batch
 from .image_utils import normalize_images, get_images_num
 from .video_utils import normalize_videos, get_videos_num
+from examples.on_policy_distillation.on_policy_distillation_reward import (
+    get_teacher_logprobs_for_experiences,
+    get_teacher_logprobs_by_ids,
+)
+import asyncio
 
-# On-Policy Distillation imports
-try:
-    from examples.on_policy_distillation.on_policy_distillation_reward import (
-        get_teacher_logprobs_for_experiences,
-        get_teacher_logprobs_by_ids,
-    )
-    import asyncio
-    OPD_AVAILABLE = True
-except ImportError:
-    OPD_AVAILABLE = False
 
 # ============================================================================
 # Data Structures
@@ -457,8 +452,13 @@ class RewardComputationEngine:
             self.remote_rm_url = None
         elif isinstance(remote_rm_url, str):
             self.remote_rm_url = [remote_rm_url]
-        else:
+        elif isinstance(remote_rm_url, (list, tuple)):
             self.remote_rm_url = list(remote_rm_url)
+        else:
+            raise TypeError(
+                f"remote_rm_url must be str, list, tuple, or None, got {type(remote_rm_url).__name__}"
+            )
+            
         self.custom_reward_func = custom_reward_func
         self.reward_fn = reward_fn
         self.reward_fn_label_map = reward_fn_label_map or {}
@@ -940,12 +940,23 @@ class FastExperienceMaker(NaiveExperienceMaker):
         else:
             self.multimodal_processor = None
 
-        # For On-Policy Distillation (OPD), remote_rm_url is used for teacher model,
-        # not for reward model. So we don't pass it to RewardComputationEngine.
-        # Instead, we store it separately for _fetch_teacher_logprobs().
+        # For On-Policy Distillation (OPD), prefer dedicated teacher_model_url.
+        # Fall back to remote_rm_url with deprecation warning for backwards compatibility.
         if advantage_estimator in ("on_policy_distillation", "on_policy_distillation_hybrid"):
-            # Store teacher URL separately for OPD
-            self.teacher_model_url = self.remote_rm_url
+            teacher_url = getattr(self.strategy.args, 'teacher_model_url', None)
+            if teacher_url is not None:
+                self.teacher_model_url = teacher_url
+            elif self.remote_rm_url is not None:
+                import warnings
+                warnings.warn(
+                    "Using --remote_rm_url as teacher URL is deprecated. "
+                    "Use --teacher_model_url instead.",
+                    DeprecationWarning,
+                    stacklevel=2,
+                )
+                self.teacher_model_url = self.remote_rm_url
+            else:
+                self.teacher_model_url = None
             rm_url_for_reward_engine = None  # Don't use remote_rm_url for rewards in OPD mode
         else:
             self.teacher_model_url = None
@@ -1462,11 +1473,6 @@ class FastExperienceMaker(NaiveExperienceMaker):
         :param experiences: List of experiences to add teacher log probs to
         :type experiences: List[Union[Experience, ExperienceVL]]
         """
-        if not OPD_AVAILABLE:
-            raise RuntimeError(
-                "On-policy distillation module not available. "
-                "Make sure examples/on_policy_distillation/on_policy_distillation_reward.py exists."
-            )
 
         # Get teacher URL from config
         teacher_url = self.teacher_model_url
@@ -1475,7 +1481,7 @@ class FastExperienceMaker(NaiveExperienceMaker):
         if teacher_url is None:
             raise ValueError(
                 "Teacher model URL not specified. "
-                "Please set --remote_rm_url to the teacher model server URL."
+                "Please set --teacher_model_url to the teacher model server URL."
             )
 
         Timer.start('  fetch_teacher_logprobs')
@@ -1483,11 +1489,11 @@ class FastExperienceMaker(NaiveExperienceMaker):
         for exp in experiences:
             sequences = exp.sequences        # [batch_size, seq_len]
             attention_mask = exp.attention_mask  # [batch_size, seq_len]
-            action_mask = exp.action_mask     # [batch_size, num_actions]
+            action_mask = exp.action_mask     # [batch_size, num_tokens]
 
             # response_lengths must be int for slicing
             response_lengths = action_mask.sum(dim=-1).int().tolist()
-            num_actions = action_mask.shape[1]
+            num_tokens = action_mask.shape[1]
 
             # Strip padding tokens before sending to SGLang.
             # sequences is [prompt, response, eos, pad, pad, ...] — the padding
@@ -1512,10 +1518,16 @@ class FastExperienceMaker(NaiveExperienceMaker):
                 finally:
                     loop.close()
 
-                # Align teacher log probs to action_log_probs shape [batch_size, num_actions].
+                # Align teacher log probs to action_log_probs shape [batch_size, num_tokens].
                 # Use action_mask indices directly — works regardless of left/right padding.
+                #
+                # Correctness: teacher_lp_list[i] contains teacher logprobs for response
+                # tokens in first→last order (from teacher_lp[-resp_len:]).
+                # valid_indices = ascending positions where action_mask==1 (real response tokens).
+                # So aligned_teacher_lp[i, valid_indices[k]] = tlp[k] correctly maps the k-th
+                # teacher logprob to the k-th response token position, regardless of padding direction.
                 batch_size = sequences.shape[0]
-                aligned_teacher_lp = torch.zeros(batch_size, num_actions, dtype=torch.float32)
+                aligned_teacher_lp = torch.zeros(batch_size, num_tokens, dtype=torch.float32)
                 for i, (tlp, resp_len) in enumerate(zip(teacher_lp_list, response_lengths)):
                     if resp_len == 0:
                         continue

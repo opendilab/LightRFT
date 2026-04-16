@@ -37,12 +37,25 @@ Or manually:
 torchrun --nproc-per-node 2 examples/gsm8k_geo3k/train_colocate.py \
     --pretrain "Qwen/Qwen2.5-0.5B-Instruct" \
     --advantage_estimator "on_policy_distillation" \
-    --remote_rm_url "http://127.0.0.1:13141/generate" \
+    --teacher_model_url "http://127.0.0.1:13141/generate" \
+    --no_task_reward \
     --reward_pretrain "" \
     --n_samples_per_prompt 4 \
     --actor_learning_rate 1e-6 \
     --init_kl_coef 0.01 \
     --num_episodes 30
+```
+
+### Separate Deployment
+
+For multi-node setups or when teacher and training run on different machines:
+
+```bash
+# Terminal 1: Start teacher server
+TEACHER_GPU=7 bash examples/on_policy_distillation/start_teacher.sh
+
+# Terminal 2: Start training (after teacher is ready)
+TEACHER_URL=http://127.0.0.1:13141/generate bash examples/on_policy_distillation/start_training.sh
 ```
 
 ## Architecture
@@ -97,7 +110,7 @@ class OnPolicyDistillationCalculator(AdvantageCalculator):
 
 **File**: `lightrft/trainer/fast_exp_maker.py`
 
-- `--remote_rm_url` is used as teacher URL (not reward model) when `--advantage_estimator "on_policy_distillation"`
+- `--teacher_model_url` specifies the teacher server when `--advantage_estimator "on_policy_distillation"` (falls back to `--remote_rm_url` with deprecation warning)
 - Teacher log probs stored in `experience.info["teacher_log_probs"]`
 - OPD metrics (`opd_reverse_kl_mean/std/min/max`) logged to wandb
 
@@ -108,7 +121,7 @@ class OnPolicyDistillationCalculator(AdvantageCalculator):
 | Argument | Value | Description |
 |----------|-------|-------------|
 | `--advantage_estimator` | `"on_policy_distillation"` | Enable OPD mode |
-| `--remote_rm_url` | `"http://host:port/generate"` | Teacher server URL |
+| `--teacher_model_url` | `"http://host:port/generate"` | Teacher server URL |
 | `--reward_pretrain` | `""` | Empty (no reward model needed) |
 
 ### Recommended Hyperparameters
@@ -221,7 +234,10 @@ nvidia-smi
 examples/on_policy_distillation/
 ├── README.md                           # This file
 ├── README_zh.md                        # Chinese version
-├── run_opd_qwen_2.sh                   # Training script
+├── run_opd_qwen.sh                   # All-in-one training script
+├── start_teacher.sh                  # Teacher server only
+├── start_training.sh                 # Training only (requires TEACHER_URL)
+├── test_opd.py                       # Unit tests
 └── on_policy_distillation_reward.py   # Teacher logprob fetcher
 ```
 

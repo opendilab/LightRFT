@@ -37,12 +37,25 @@ bash examples/on_policy_distillation/run_opd_qwen_2.sh
 torchrun --nproc-per-node 2 examples/gsm8k_geo3k/train_colocate.py \
     --pretrain "Qwen/Qwen2.5-0.5B-Instruct" \
     --advantage_estimator "on_policy_distillation" \
-    --remote_rm_url "http://127.0.0.1:13141/generate" \
+    --teacher_model_url "http://127.0.0.1:13141/generate" \
+    --no_task_reward \
     --reward_pretrain "" \
     --n_samples_per_prompt 4 \
     --actor_learning_rate 1e-6 \
     --init_kl_coef 0.01 \
     --num_episodes 30
+```
+
+### 分离部署
+
+教师服务器和训练可以在不同终端或不同机器上运行：
+
+```bash
+# 终端 1：启动教师服务器
+TEACHER_GPU=7 bash examples/on_policy_distillation/start_teacher.sh
+
+# 终端 2：启动训练（教师就绪后）
+TEACHER_URL=http://127.0.0.1:13141/generate bash examples/on_policy_distillation/start_training.sh
 ```
 
 ## 架构
@@ -91,13 +104,13 @@ class OnPolicyDistillationCalculator(AdvantageCalculator):
 
 - 异步 HTTP 请求到教师服务器
 - 支持 SGLang 和 vLLM 响应格式
-- 自动重试（指数退避）
+- 自动重试（指数退避）：当教师服务器出现瞬态故障时，重试延迟按指数增长（1s → 2s → 4s → ...），避免在服务器暂时过载期间发送大量重试请求
 
 ### 3. Experience Maker 集成
 
 **文件**: `lightrft/trainer/fast_exp_maker.py`
 
-- 当 `--advantage_estimator "on_policy_distillation"` 时，`--remote_rm_url` 作为教师 URL（而非奖励模型）
+- 当 `--advantage_estimator "on_policy_distillation"` 时，`--teacher_model_url` 指定教师 URL（也可通过 `--remote_rm_url` 传递，但已弃用）
 - 教师对数概率存储在 `experience.info["teacher_log_probs"]`
 - OPD 指标（`opd_reverse_kl_mean/std/min/max`）记录到 wandb
 
@@ -108,7 +121,7 @@ class OnPolicyDistillationCalculator(AdvantageCalculator):
 | 参数 | 值 | 描述 |
 |------|---|------|
 | `--advantage_estimator` | `"on_policy_distillation"` | 启用 OPD 模式 |
-| `--remote_rm_url` | `"http://host:port/generate"` | 教师服务器 URL |
+| `--teacher_model_url` | `"http://host:port/generate"` | 教师服务器 URL |
 | `--reward_pretrain` | `""` | 空值（不需要奖励模型） |
 
 ### 推荐超参数
@@ -204,7 +217,7 @@ nvidia-smi
 
 ### 优势
 
-- 无需单独训练奖励模型
+- 无需单独训练奖励模型：与 GRPO/PPO 等方法不同，OPD 不需要序列级的结果奖励模型（Outcome Reward Model）。教师模型本身充当 token 粒度的奖励信号——通过在每个 token 位置提供对数概率监督，教师直接指导学生在生成过程中的每一步决策，而非仅在完整序列结束后给出单一的好/坏评分。
 - Token 级监督（比序列级更精细）
 - 在线策略：适应学生不断变化的分布
 - 适用于任何有好教师模型的任务
@@ -221,7 +234,10 @@ nvidia-smi
 examples/on_policy_distillation/
 ├── README.md                           # 英文文档
 ├── README_zh.md                        # 本文件
-├── run_opd_qwen_2.sh                   # 训练脚本
+├── run_opd_qwen.sh                   # 一体化训练脚本
+├── start_teacher.sh                  # 仅启动教师服务器
+├── start_training.sh                 # 仅启动训练（需要 TEACHER_URL）
+├── test_opd.py                       # 单元测试
 └── on_policy_distillation_reward.py   # 教师对数概率获取器
 ```
 
@@ -230,3 +246,4 @@ examples/on_policy_distillation/
 - [LightRFT 文档](../../README.md)
 - [优势值计算器源码](../../lightrft/trainer/advantage_calculator.py)
 - [Fast Experience Maker 源码](../../lightrft/trainer/fast_exp_maker.py)
+- [On-Policy Distillation Blog](https://thinkingmachines.ai/blog/on-policy-distillation/)

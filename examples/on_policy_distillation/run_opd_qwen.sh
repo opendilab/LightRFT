@@ -92,10 +92,12 @@ if [ "$OPD_MODE" = "hybrid" ]; then
     ADVANTAGE_ESTIMATOR="on_policy_distillation_hybrid"
     KL=${KL:-0.01}
     LR=${LR:-5e-7}
+    TASK_REWARD_FLAG="--use_task_reward"
 else
     ADVANTAGE_ESTIMATOR="on_policy_distillation"
     KL=${KL:-0.00}
     LR=${LR:-5e-7}
+    TASK_REWARD_FLAG="--no_task_reward"
 fi
 
 PROMPT_MAX_LEN=${PROMPT_MAX_LEN:-1024}
@@ -221,7 +223,8 @@ torchrun \
     --enable_engine_sleep \
     --rm_use_engine \
     --reward_pretrain "" \
-    --remote_rm_url "$TEACHER_URL" \
+    --teacher_model_url "$TEACHER_URL" \
+    ${TASK_REWARD_FLAG} \
     --save_path "results/${EXPERIMENT_NAME}/${SAVE_MODEL_NAME}" \
     --ckpt_path "results/${EXPERIMENT_NAME}/${SAVE_MODEL_NAME}" \
     --micro_train_batch_size ${MICRO_TRAIN_BS} \

@@ -728,7 +728,6 @@ def _apply_opd_kl_penalty(
     Compute OPD reverse KL penalty: -opd_kl_coef * (student_logp - teacher_logp).
 
     Shared helper for both pure and hybrid OPD modes.
-    Aligned with Slime's apply_opd_kl_to_advantages.
 
     :return: Tuple of (opd_advantages, info_dict with opd_reverse_kl metric)
     """
@@ -745,7 +744,7 @@ def _apply_opd_kl_penalty(
     # legitimate value (P=1). With the padding-strip fix in _fetch_teacher_logprobs,
     # teacher logprobs are now correctly aligned and action_mask is sufficient.
     if action_mask is not None:
-        opd_adv = opd_adv * action_mask
+        opd_adv *= action_mask
 
     info_dict = {}
     if action_mask is not None:
@@ -754,26 +753,6 @@ def _apply_opd_kl_penalty(
 
     return opd_adv, info_dict
 
-
-def _whiten_advantages(advantages: torch.Tensor, action_mask: Optional[torch.Tensor], eps: float = 1e-8) -> torch.Tensor:
-    """
-    Whiten advantages using masked mean/std (matching Slime's distributed_masked_whiten).
-
-    This normalizes advantages to zero mean and unit variance, which stabilizes
-    training when OPD KL penalty has different scale from base advantages.
-    """
-    if action_mask is not None:
-        mask = action_mask.bool()
-        masked_adv = torch.masked_select(advantages, mask)
-    else:
-        masked_adv = advantages.flatten()
-
-    if masked_adv.numel() < 2:
-        return advantages
-
-    mean = masked_adv.mean()
-    std = masked_adv.std()
-    return (advantages - mean) / (std + eps)
 
 
 class OnPolicyDistillationCalculator(AdvantageCalculator):
@@ -793,9 +772,8 @@ class OnPolicyDistillationCalculator(AdvantageCalculator):
         self.opd_kl_coef = getattr(config, 'opd_kl_coef', 1.0)
 
     def preprocess_rewards(self, rewards, experiences, max_new_tokens):
-        """Zero out all rewards — pure distillation mode."""
-        zero_rewards = torch.zeros_like(rewards)
-        return experiences, list(zero_rewards.chunk(len(experiences)))
+        """Pass through rewards — zeroing is handled upstream via --no_task_reward."""
+        return experiences, list(rewards.chunk(len(experiences)))
 
     def compute(self, experience, final_reward, gamma, generate_kwargs):
         """advantages = -opd_kl_coef * (student_logp - teacher_logp).
@@ -950,18 +928,18 @@ def normalize_advantages_cross_batch(experiences: List, advantage_estimator: str
         all_action_masks.append(exp.action_mask.flatten())
 
     # Concatenate into vectors
-    advantages_vector = torch.cat(all_advantages, dim=0).float()
-    action_masks_vector = torch.cat(all_action_masks, dim=0).float()
+    advantages = torch.cat(all_advantages, dim=0).float()
+    action_masks = torch.cat(all_action_masks, dim=0).float()
 
     # Compute local intermediate statistics
-    local_sum = (advantages_vector * action_masks_vector).sum()
-    local_sum_sq = ((advantages_vector ** 2) * action_masks_vector).sum()
-    local_count = action_masks_vector.sum()
+    local_sum = (advantages * action_masks).sum()
+    local_sum_sq = ((advantages ** 2) * action_masks).sum()
+    local_count = action_masks.sum()
 
     # Aggregate across all data-parallel ranks via all_reduce
     # (matching Slime's distributed_masked_whiten)
     stats = torch.stack([local_sum, local_sum_sq, local_count]).to(
-        device=advantages_vector.device, dtype=torch.float32
+        device=advantages.device, dtype=torch.float32
     )
     if dist.is_initialized():
         dist.all_reduce(stats, op=dist.ReduceOp.SUM)
