@@ -30,10 +30,13 @@ orm_rl_demo/
 这个 demo 只保留一个入口脚本：
 
 ```bash
+export DATA_PATH=/path/to/geo3k
+export PRETRAIN_PATH=/path/to/Qwen2.5-VL-7B-Instruct
+export REWARD_PRETRAIN_PATHS='{"general":"/path/to/general-reward-model"}'
 bash examples/orm_rl_demo/run_general_fsdp_qwenvl.sh
 ```
 
-这个脚本尽量复用了仓库里已经出现过的集群路径风格，继续使用当前示例中已有的 actor / reward model 路径。
+脚本本身是模板，不内置任何集群或个人路径；运行前请先按上面方式显式设置数据和模型路径。
 
 ## Demo 流程
 
@@ -42,19 +45,17 @@ bash examples/orm_rl_demo/run_general_fsdp_qwenvl.sh
 - general ORM 对 trajectory 打分
 - 保留 trajectory 保存，便于调试和理解训练过程
 
-为了不去改写现有 Geo3K 数据文件，这个 demo 在运行时把数据标签覆盖成 `general`，这样可以沿用原始数据路径，同时走 general ORM 的 reward recipe。
+为了不去改写现有 Geo3K 数据文件，这个 demo 在运行时把数据标签覆盖成 `geo3k_general`，这样可以沿用原始数据路径，同时走本 demo 的 general ORM reward 融合逻辑。
 
 ## 环境要求
 
-- Python >= 3.8
-- CUDA >= 11.8（用于 GPU 训练）
-- 72B 奖励模型配置建议使用 8x A100 (80GB) 或类似规格硬件
+环境要求与仓库根目录 [README_zh.md](../../README_zh.md#环境要求) 保持一致，请直接参考主文档。
 
 ## 说明
 
 - 这个 demo 有意只保留一个 shell 入口。
 - Geo3K 的 reward 路由通过运行时标签覆盖完成，不直接改写数据集本身。
-- 当前 reward model 路径继续保留为这个示例目录原本使用的集群路径风格。
+- 运行所需路径通过环境变量传入，避免把集群或个人信息写进示例脚本。
 
 ## 许可证
 

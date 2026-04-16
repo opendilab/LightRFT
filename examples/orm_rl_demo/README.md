@@ -30,10 +30,13 @@ orm_rl_demo/
 The only entry script kept for this demo is:
 
 ```bash
+export DATA_PATH=/path/to/geo3k
+export PRETRAIN_PATH=/path/to/Qwen2.5-VL-7B-Instruct
+export REWARD_PRETRAIN_PATHS='{"general":"/path/to/general-reward-model"}'
 bash examples/orm_rl_demo/run_general_fsdp_qwenvl.sh
 ```
 
-The script keeps the existing cluster-ready path style and reuses the current Qwen-VL actor / reward-model locations already referenced in this repo.
+The script is a template and does not hardcode cluster-specific or personal paths. Set the dataset and model paths explicitly before running it.
 
 ## Demo Flow
 
@@ -42,19 +45,17 @@ This demo is intended to make the ORM RL pipeline easier to inspect:
 - the general ORM path scores those trajectories
 - trajectory saving stays enabled for debugging and flow inspection
 
-To avoid rewriting the existing Geo3K dataset files, the demo overrides the dataset label to `general` at runtime so the samples are routed through the general ORM reward recipe while keeping the original dataset path unchanged.
+To avoid rewriting the existing Geo3K dataset files, the demo overrides the dataset label to `geo3k_general` at runtime so the samples are routed through the demo's general-ORM reward mix while keeping the original dataset path unchanged.
 
 ## Environment
 
-- Python >= 3.8
-- CUDA >= 11.8 for GPU training
-- 8x A100 (80GB) or similar hardware is recommended for the 72B reward-model setup
+Environment requirements stay aligned with the repository-level [README_zh.md](../../README_zh.md#环境要求). Refer to the main project document instead of duplicating version constraints here.
 
 ## Notes
 
 - The demo intentionally keeps a single shell entrypoint.
 - Geo3K reward routing is handled through runtime label override instead of rewriting the dataset itself.
-- The current reward-model path is left in the existing cluster-ready style already used by this example directory.
+- Runtime paths are provided via environment variables so the example can stay free of cluster-specific or personal information.
 
 ## License
 

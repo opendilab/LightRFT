@@ -23,27 +23,26 @@ ENGINE_TP=1
 
 export IGNORE_EOS=0
 
-# Reuse the existing cluster-ready path style already referenced in this repo.
-DATA_PATH="/mnt/shared-storage-user/puyuan/data/geo3k"
-PRETRAIN_PATH="${PRETRAIN_PATH:-/mnt/shared-storage-user/puyuan/model/Qwen2.5-VL-7B-Instruct}"
-if [ -z "${REWARD_PRETRAIN_PATHS:-}" ]; then
-  REWARD_PRETRAIN_PATHS='{"general":"/mnt/shared-storage-user/puyuan/model/Qwen2.5-VL-7B-Instruct"}'
-fi
+DEFAULT_DATA_PATH="/path/to/geo3k"
+DEFAULT_PRETRAIN_PATH="/path/to/Qwen2.5-VL-7B-Instruct"
+DEFAULT_REWARD_PRETRAIN_PATHS='{"general":"/path/to/general-reward-model"}'
+
+DATA_PATH="${DATA_PATH:-${DEFAULT_DATA_PATH}}"
+PRETRAIN_PATH="${PRETRAIN_PATH:-${DEFAULT_PRETRAIN_PATH}}"
+REWARD_PRETRAIN_PATHS="${REWARD_PRETRAIN_PATHS:-${DEFAULT_REWARD_PRETRAIN_PATHS}}"
 LABEL_OVERRIDE="${LABEL_OVERRIDE:-geo3k_general}"
 USE_RM_ENGINE="${USE_RM_ENGINE:-1}"
-export ORM_RL_DEMO_GEO3K_FORMAT_WEIGHT="${ORM_RL_DEMO_GEO3K_FORMAT_WEIGHT:-0.1}"
-export ORM_RL_DEMO_GEO3K_MODEL_WEIGHT="${ORM_RL_DEMO_GEO3K_MODEL_WEIGHT:-0.2}"
-export ORM_RL_DEMO_GEO3K_ACCURACY_WEIGHT="${ORM_RL_DEMO_GEO3K_ACCURACY_WEIGHT:-0.7}"
-export ORM_RL_DEMO_RM_ENGINE_TP="${ORM_RL_DEMO_RM_ENGINE_TP:-1}"
-export ORM_RL_DEMO_RM_ENGINE_MEM_UTIL="${ORM_RL_DEMO_RM_ENGINE_MEM_UTIL:-0.15}"
-export ORM_RL_DEMO_RM_ENGINE_BACKEND="${ORM_RL_DEMO_RM_ENGINE_BACKEND:-vllm}"
-export ORM_RL_DEMO_RM_ENGINE_MAX_MODEL_LEN="${ORM_RL_DEMO_RM_ENGINE_MAX_MODEL_LEN:-4096}"
 
 current_time=$(date +"%m%d%H%M")
 
 cd "${REPO_ROOT}"
 
 export PYTHONPATH="${REPO_ROOT}:${PYTHONPATH:-}"
+
+if [ "${DATA_PATH}" = "${DEFAULT_DATA_PATH}" ] || [ "${PRETRAIN_PATH}" = "${DEFAULT_PRETRAIN_PATH}" ] || [ "${REWARD_PRETRAIN_PATHS}" = "${DEFAULT_REWARD_PRETRAIN_PATHS}" ]; then
+  echo "Set DATA_PATH, PRETRAIN_PATH, and REWARD_PRETRAIN_PATHS before running this template." >&2
+  exit 1
+fi
 
 mkdir -p log
 mkdir -p wandb
@@ -71,12 +70,11 @@ mkdir -p "rft_logs/${NAME}"
 set -x
 
 export WANDB_MODE="${WANDB_MODE:-offline}"
-export WANDB_API_KEY="${WANDB_API_KEY:-968275bc822c87ac741ecce2f06cdfb54dbc1608}"
 export WANDB_DIR="${WANDB_DIR:-${REPO_ROOT}/wandb}"
 mkdir -p "${WANDB_DIR}"
 
-WANDB_PROJECT="${WANDB_PROJECT:-ORM-RL-Demo-QwenVL-7B-Geo3K}"
-WANDB_RUN_NAME="${WANDB_RUN_NAME:-ORM-RL-Demo-Geo3K-General-${current_time}}"
+WANDB_PROJECT="${WANDB_PROJECT:-orm-rl-demo-geo3k}"
+WANDB_RUN_NAME="${WANDB_RUN_NAME:-orm-rl-demo-general-${current_time}}"
 WANDB_ORG="${WANDB_ORG:-}"
 ENGINE_MEM_UTIL="${ENGINE_MEM_UTIL:-0.4}"
 
@@ -88,6 +86,14 @@ fi
 wandb_org_args=()
 if [ -n "${WANDB_ORG}" ]; then
   wandb_org_args+=(--wandb_org "${WANDB_ORG}")
+fi
+
+wandb_args=()
+if [ -n "${WANDB_API_KEY:-}" ]; then
+  wandb_args+=(--use_wandb "${WANDB_API_KEY}")
+  wandb_args+=(--wandb_project "${WANDB_PROJECT}")
+  wandb_args+=(--wandb_run_name "${WANDB_RUN_NAME}")
+  wandb_args+=("${wandb_org_args[@]}")
 fi
 
 torchrun --nnodes $NNODES --nproc-per-node $GPUS_PER_NODE --node_rank $NODE_RANK --master-port $MASTER_PORT --master-addr $MASTER_ADDR "${SCRIPT_DIR}/train_colocate.py" \
@@ -140,8 +146,5 @@ torchrun --nnodes $NNODES --nproc-per-node $GPUS_PER_NODE --node_rank $NODE_RANK
    --freeze_prefix \
    --adam_offload \
    --limit_mm_image_per_prompt ${limit_mm_image_per_prompt} \
-   --use_wandb "${WANDB_API_KEY}" \
-   "${wandb_org_args[@]}" \
-   --wandb_project "${WANDB_PROJECT}" \
-   --wandb_run_name "${WANDB_RUN_NAME}" \
+   "${wandb_args[@]}" \
    2>&1 | tee "rft_logs/${NAME}/${NAME}_node${NODE_RANK}_$(date +%Y%m%d_%H%M%S).log"

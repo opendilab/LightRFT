@@ -33,13 +33,24 @@ from lightrft.trainer.spmd_ppo_trainer import SPMDPPOTrainerVL
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from reward_models_utils import load_reward_models, reward_fn, RECIPE
 
-import torch.multiprocessing
-
-torch.multiprocessing.set_sharing_strategy("file_system")
-
 
 def _apply_label_override(dataset, label_key: str, label_override: str, strategy, dataset_name: str):
-    """Apply a demo-local label override without touching the shared dataset library."""
+    """
+    Apply a demo-local label override without touching the shared dataset library.
+
+    :param dataset: Source dataset to update.
+    :type dataset: Any
+    :param label_key: Dataset field storing the reward label.
+    :type label_key: str
+    :param label_override: Override value to inject when non-empty.
+    :type label_override: str
+    :param strategy: Training strategy used for logging.
+    :type strategy: Any
+    :param dataset_name: Human-readable dataset name for logs.
+    :type dataset_name: str
+    :return: Updated dataset.
+    :rtype: Any
+    """
     if not label_override:
         return dataset
 
@@ -61,24 +72,8 @@ def train(args):
     """
     Main training function for GRPO with co-located reward models.
 
-    Training workflow:
-        1. Initialize strategy (DeepSpeed or FSDP)
-        2. Initialize models with meta_init option for memory efficiency
-        3. Load reward models (multiple types supported)
-        4. Setup dataloaders for prompts and optional pretrain data
-        5. Configure optimizers and schedulers
-        6. Setup inference engine (vLLM or SGLang)
-        7. Run training loop via SPMDPPOTrainerVL
-        8. Save final model
-
-    Args:
-        args: Parsed command-line arguments containing all training configuration
-
-    Key configurations:
-        - meta_init: Initialize models on meta device to save CPU RAM
-        - freeze_prefix: Freeze vision encoder during training
-        - fsdp: Use FSDP instead of DeepSpeed
-        - rm_use_engine: Use SGLang engine for reward models
+    :param args: Parsed command-line arguments containing all training configuration.
+    :type args: argparse.Namespace
     """
     # configure strategy
     strategy = get_strategy(args)
@@ -158,7 +153,7 @@ def train(args):
     if args.fsdp and critic is not None:
         critic = strategy.prepare_model(critic, is_training=True)
 
-    # Load reward models (multiple types: value, safety, knowledge, etc.)
+    # Load the general reward model used by this demo.
     strategy.report_memory(f"before loaded reward models in main entry")
     reward_models, reward_tokenizers, label_map = load_reward_models(
         raw_reward_pretrain=args.reward_pretrain,

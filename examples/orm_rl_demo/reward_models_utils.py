@@ -1,27 +1,9 @@
 """
-Reward Models Utility Module
+General reward model utilities for the ORM RL Geo3K demo.
 
-This module provides utility functions for loading, configuring, and managing reward models.
-Supports multiple reward model types and flexible configuration parsing.
-
-Main Features:
-    - Reward model configuration parsing from various formats (JSON, CSV, dict, list)
-    - Model loading for HuggingFace and SGLang engine backends
-    - Builder pattern for different reward model types
-    - Reward score mixing and computation
-    - Rule-based reward functions
-
-Supported Reward Types:
-    - Knowledge: Factual accuracy evaluation
-    - Safety: Safety and risk assessment
-    - Value: Value alignment evaluation
-    - General: General quality scoring
-    - Normal: Normal conversation quality
-
-Dependencies:
-    - reward_models: Core reward model implementations
-    - lightrft: Model loading and inference utilities
-    - transformers: HuggingFace model support
+This example intentionally keeps a single general reward-model path, plus the
+Geo3K-specific reward mixing logic that combines format, general-model, and
+accuracy rewards during training and evaluation.
 """
 from __future__ import annotations
 
@@ -33,7 +15,6 @@ from enum import Enum
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union, Sequence
 
 import torch
-import torch.nn as nn
 from transformers import AutoProcessor, Qwen2_5_VLForConditionalGeneration
 
 from lightrft.models.monkey_patch.hf_generate_patch import (
@@ -41,48 +22,15 @@ from lightrft.models.monkey_patch.hf_generate_patch import (
 )
 from lightrft.utils import get_current_device
 
-# ============================================================================
-# Optional Dependencies
-# ============================================================================
-
-try:
-    # Attempt to import instruction following reward function
-    # This function is part of the 'if_reward' library for deepseek model training
-    from if_reward_fn import if_reward_fn
-except ImportError:
-    # If import fails, warn user and set to None
-    print(
-        "Error: The 'if_reward' library is not installed. "
-        "This is required to support the instruction following reward function."
-    )
-    print(
-        "Please install it directly from GitHub using: "
-        "pip install git+https://github.com/opendilab/if_reward.git"
-    )
-    print(
-        "Note: This reward function is currently utilized for the training of deepseek models."
-    )
-    if_reward_fn = None
-
-from reward_models import (
-    Qwen2VLRewardModelVauAI,
-    Qwen2VLRewardModelSafety,
-    Qwen2VLRewardModelKnowledge,
-    Qwen2VLRewardModelGeneral,
-    Qwen2VLRewardModelNormal,
-)
+from reward_models import Qwen2VLRewardModelGeneral
 
 # ============================================================================
 # Configuration Classes
 # ============================================================================
 
 class RewardModelType(str, Enum):
-    """Enumeration of supported reward model types."""
-    KNOWLEDGE = "knowledge"
-    SAFETY    = "safety"
-    VALUE     = "value"
-    GENERAL   = "general"
-    NORMAL    = "normal"
+    """Enumeration of reward model types supported by this demo."""
+    GENERAL = "general"
 
 
 @dataclass
@@ -90,7 +38,7 @@ class RewardModelConfig:
     """
     Configuration for a single reward model.
 
-    :param rtype: Reward model type (e.g., RewardModelType.VALUE)
+    :param rtype: Reward model type.
     :type rtype: RewardModelType
     :param path: Model directory path or HuggingFace model name
     :type path: str
@@ -113,8 +61,8 @@ def register_builder(rtype: RewardModelType) -> Callable:
     Decorator to register a builder function for a specific reward model type.
 
     Usage:
-        @register_builder(RewardModelType.VALUE)
-        def build_value(cfg, strategy):
+        @register_builder(RewardModelType.GENERAL)
+        def build_general(cfg, strategy):
             ...
 
     :param rtype: Reward model type to register builder for
@@ -170,11 +118,6 @@ def _guess_rtype_from_path(path: str) -> RewardModelType:
     :return: Inferred reward type
     :rtype: RewardModelType
     """
-    p = path.lower()
-    if "safety"   in p: return RewardModelType.SAFETY
-    if "value"    in p or "vauai" in p: return RewardModelType.VALUE
-    if "knowledge" in p or "qwen2.5-vl-72b" in p: return RewardModelType.KNOWLEDGE
-    if "normal"   in p: return RewardModelType.NORMAL
     return RewardModelType.GENERAL
 
 def parse_reward_pretrain(
@@ -186,13 +129,13 @@ def parse_reward_pretrain(
     Parse reward model configuration from various input formats.
 
     Supported formats:
-        1. JSON: '{"knowledge":"/k", "value":"/v"}'
-        2. CSV: 'knowledge:/k,value:/v'
-        3. Path list: '/k,/v' (rtype auto-guessed)
-        4. Dict/List: {'type':'value','path':'/v'} or [{'type':'value','path':'/v'}]
+        1. JSON: '{"general":"/path/to/rm"}'
+        2. CSV: 'general:/path/to/rm'
+        3. Plain path: '/path/to/rm' (treated as the general reward model)
+        4. Dict/List: {'type':'general','path':'/path/to/rm'} or [{'type':'general','path':'/path/to/rm'}]
 
     Extra feature: Append ?engine=true to path to override global engine setting
-    Example: 'knowledge:/path/to/model?engine=true'
+    Example: 'general:/path/to/model?engine=true'
 
     :param raw: Raw configuration input (string, dict, list, or None)
     :type raw: RawRewardInput
@@ -204,7 +147,7 @@ def parse_reward_pretrain(
     :raises TypeError: If raw input format is not supported
 
     Note:
-        If RewardModelType.GENERAL is not present, it will be automatically added to label_map
+        The demo only supports RewardModelType.GENERAL.
     """
     if raw is None: raw = ""
 
@@ -246,7 +189,21 @@ def parse_reward_pretrain(
             use_engine = qs.lower() in ("1", "true", "yes")
         if flag is not None:
             use_engine = flag
-        rtype = _guess_rtype_from_path(path) if key == "?" else RewardModelType(key)
+        if key == "?":
+            rtype = _guess_rtype_from_path(path)
+        else:
+            try:
+                rtype = RewardModelType(key)
+            except ValueError as exc:
+                raise ValueError(
+                    "examples/orm_rl_demo only supports the general reward model. "
+                    f"Got reward type: {key}"
+                ) from exc
+        if rtype is not RewardModelType.GENERAL:
+            raise ValueError(
+                "examples/orm_rl_demo only supports the general reward model. "
+                f"Got reward type: {rtype.value}"
+            )
         cfgs.append(RewardModelConfig(rtype, path, use_engine))
 
     # Ensure label_map order is stable and contains general
@@ -286,8 +243,6 @@ def _infer_rm_engine_tp_size(pretrain_path: str) -> int:
         return 2
     if "8b" in path or "7b" in path:
         return 1
-    if "value" in path:
-        return 2
     return 1
 
 
@@ -413,114 +368,6 @@ def _load_engine(
 # Model Builders for Each Reward Type
 # ============================================================================
 
-@register_builder(RewardModelType.VALUE)
-def build_value(
-    cfg: RewardModelConfig,
-    strategy: Any,
-    base: Optional[Tuple[Any, Any]] = None
-) -> Tuple[Qwen2VLRewardModelVauAI, Any]:
-    """
-    Build Value Alignment reward model.
-
-    :param cfg: Reward model configuration
-    :type cfg: RewardModelConfig
-    :param strategy: Training strategy instance
-    :type strategy: Any
-    :param base: Optional pre-loaded (engine, processor) tuple for sharing
-    :type base: Optional[Tuple[Any, Any]]
-    :return: Tuple of (model, tokenizer)
-    :rtype: Tuple[Qwen2VLRewardModelVauAI, Any]
-    """
-    if cfg.use_engine:
-        if base:
-            engine, proc = base
-        else:
-            engine, proc = _load_engine(cfg.path, get_current_device())
-        model = Qwen2VLRewardModelVauAI(
-            base_model=engine,
-            tokenizer=proc.tokenizer,
-            processor=proc,
-            text_only=strategy.args.text_only,
-            output_mode="hard",
-        )
-        return model, proc.tokenizer
-    else:
-        base, proc = _load_hf_model(cfg.path, get_current_device())
-        model = Qwen2VLRewardModelVauAI(
-            base_model=base,
-            tokenizer=proc.tokenizer,
-            processor=proc,
-            text_only=strategy.args.text_only,
-            output_mode="hard",
-        )
-        model.eval()
-        return model, proc.tokenizer
-
-
-@register_builder(RewardModelType.SAFETY)
-def build_safety(
-    cfg: RewardModelConfig,
-    strategy: Any,
-    base: Optional[Tuple[Any, Any]] = None
-) -> Tuple[Qwen2VLRewardModelSafety, Any]:
-    """
-    Build Safety reward model.
-
-    :param cfg: Reward model configuration
-    :type cfg: RewardModelConfig
-    :param strategy: Training strategy instance
-    :type strategy: Any
-    :param base: Optional pre-loaded (engine, processor) tuple for sharing
-    :type base: Optional[Tuple[Any, Any]]
-    :return: Tuple of (model, tokenizer)
-    :rtype: Tuple[Qwen2VLRewardModelSafety, Any]
-    """
-    if cfg.use_engine:
-        if base:
-            engine, proc = base
-        else:
-            engine, proc = _load_engine(cfg.path, get_current_device())
-        model = Qwen2VLRewardModelSafety(engine, proc.tokenizer, proc, text_only=strategy.args.text_only)
-        return model, proc.tokenizer
-    else:
-        base, proc = _load_hf_model(cfg.path, get_current_device())
-        model = Qwen2VLRewardModelSafety(base, proc.tokenizer, proc, text_only=strategy.args.text_only)
-        model.eval()
-        return model, proc.tokenizer
-
-
-@register_builder(RewardModelType.KNOWLEDGE)
-def build_knowledge(
-    cfg: RewardModelConfig,
-    strategy: Any,
-    base: Optional[Tuple[Any, Any]] = None
-) -> Tuple[Qwen2VLRewardModelKnowledge, Any]:
-    """
-    Build Knowledge reward model.
-
-    :param cfg: Reward model configuration
-    :type cfg: RewardModelConfig
-    :param strategy: Training strategy instance
-    :type strategy: Any
-    :param base: Optional shared base model (engine, processor) tuple. Default to None
-    :type base: Optional[Tuple[Any, Any]]
-    :return: Tuple of (model, tokenizer)
-    :rtype: Tuple[Qwen2VLRewardModelKnowledge, Any]
-    """
-    if cfg.use_engine:
-        if base:
-            engine, proc = base
-        else:
-            engine, proc = _load_engine(cfg.path, get_current_device())
-        model = Qwen2VLRewardModelKnowledge(engine, proc.tokenizer, proc, text_only=strategy.args.text_only)
-        return model, proc.tokenizer
-    else:
-        base_model, proc = _load_hf_model(cfg.path, get_current_device())
-        model = Qwen2VLRewardModelKnowledge(base_model, proc.tokenizer, proc, text_only=strategy.args.text_only)
-        model.eval()
-        return model, proc.tokenizer
-
-
 @register_builder(RewardModelType.GENERAL)
 def build_general(
     cfg: RewardModelConfig,
@@ -549,38 +396,6 @@ def build_general(
     else:
         base_model, proc = _load_hf_model(cfg.path, get_current_device())
         model = Qwen2VLRewardModelGeneral(base_model, proc.tokenizer, proc, text_only=strategy.args.text_only)
-        model.eval()
-        return model, proc.tokenizer
-
-
-@register_builder(RewardModelType.NORMAL)
-def build_normal(
-    cfg: RewardModelConfig,
-    strategy: Any,
-    base: Optional[Tuple[Any, Any]] = None
-) -> Tuple[Qwen2VLRewardModelNormal, Any]:
-    """
-    Build Normal conversation quality reward model.
-
-    :param cfg: Reward model configuration
-    :type cfg: RewardModelConfig
-    :param strategy: Training strategy instance
-    :type strategy: Any
-    :param base: Optional shared base model (engine, processor) tuple. Default to None
-    :type base: Optional[Tuple[Any, Any]]
-    :return: Tuple of (model, tokenizer)
-    :rtype: Tuple[Qwen2VLRewardModelNormal, Any]
-    """
-    if cfg.use_engine:
-        if base:
-            engine, proc = base
-        else:
-            engine, proc = _load_engine(cfg.path, get_current_device())
-        model = Qwen2VLRewardModelNormal(engine, proc.tokenizer, proc, text_only=strategy.args.text_only)
-        return model, proc.tokenizer
-    else:
-        base_model, proc = _load_hf_model(cfg.path, get_current_device())
-        model = Qwen2VLRewardModelNormal(base_model, proc.tokenizer, proc, text_only=strategy.args.text_only)
         model.eval()
         return model, proc.tokenizer
 
@@ -859,23 +674,7 @@ def gsm8k_combined_reward_fn(
     return (1.0 - format_weight) * acc_reward + format_weight * fmt_reward
 
 RECIPE: Dict[str, List[Tuple[str, Optional[str], float]]] = {
-    "safety":          [("model", "safety", 1.0)],
-    "knowledge":       [("model", "knowledge", 1.0),
-                        ("model", "normal",    1.0)],
-    "knowledge_rule":  [("rule",  None,        1.0),
-                        ("model", "normal",    1.0)],
-    "value":           [("model", "value",     1.0)],
-    "normal":          [("model", "normal",    1.0)],
-    "general":         [("model", "general",   1.0)],
-    "general_rule":    [("rule",  None,        1.0)],
-    "muldimif": [
-        ("if_rule", None, 1.0),
-         ("model", "normal",    1.0)
-    ],
-    # Geo3K dataset: pure rule-based reward (no reward model needed)
-    "geo3k_rule":      [("geo3k_rule", None,  1.0)],
-    # GSM8K dataset: pure rule-based reward (no reward model needed)
-    "gsm8k_rule":      [("gsm8k_rule", None,  1.0)],
+    "general": [("model", "general", 1.0)],
 }
 
 
@@ -1003,11 +802,6 @@ def mix_rewards(
                 metrics_dict['rule_reward'][i] += rule_r
                 metrics_dict['accuracy_reward'][i] = rule_r
 
-            elif typ == "if_rule":
-                # refs is actually constraints for instruction_following data
-                if_r = w * if_reward_fn(solution_str=sol_completion, ground_truth=None, constraints=gt)
-                r += if_r
-                metrics_dict['rule_reward'][i] += if_r
             elif typ == "geo3k_rule":
                 r = 0 # TODO: geo3k have own format reward
                 # Track separately
