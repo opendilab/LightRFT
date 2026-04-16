@@ -8,13 +8,15 @@ and tensor dimensions.
 """
 
 from unittest.mock import Mock, patch
+import importlib.util
 import os
+import pathlib
 import pytest
+import sys
 import torch
+import types
 
-# Add the lightrft package to the path
-
-from lightrft.models import ActorAL
+from lightrft.models.actor_al import ActorAL, AUDIO_MODEL_TYPE_QWEN2_5_OMNI, create_audio_processor
 
 
 class TestActorAL:
@@ -40,19 +42,51 @@ class TestActorAL:
         }
 
     @pytest.fixture
+    def mock_omni_config(self):
+        config = Mock()
+        config.model_type = "qwen2_5_omni"
+        config.use_cache = True
+        config.pad_token_id = 0
+        return config
+
+    @pytest.fixture
+    def mock_omni_thinker_config(self):
+        config = Mock()
+        config.model_type = "qwen2_5_omni_thinker"
+        config.audio_token_id = 151646
+        config.use_cache = True
+        return config
+
+    @pytest.fixture
     def mock_model(self, mock_config, mock_output):
         """Set up mock model fixture."""
         model = Mock()
         model.config = mock_config
+        model.audio_tower = None
+        model.audio_encoder = None
         model.generate.return_value = torch.randint(0, 32000, (2, 15))  # batch_size=2, seq_len=15
         model.return_value = mock_output
         return model
 
-    @patch('lightrft.models.actor_al.Qwen2AudioForConditionalGeneration')
-    def test_actor_al_initialization(self, mock_qwen2_audio, mock_model):
+    @pytest.fixture
+    def mock_omni_model(self, mock_omni_config, mock_omni_thinker_config, mock_output):
+        model = Mock()
+        model.config = mock_omni_config
+        model.generate.return_value = torch.randint(0, 32000, (2, 15))
+
+        thinker = Mock()
+        thinker.config = mock_omni_thinker_config
+        thinker.audio_tower = None
+        thinker.audio_encoder = None
+        thinker.return_value = mock_output
+        model.thinker = thinker
+        return model
+
+    @patch('lightrft.models.actor_al.get_audio_model_and_type')
+    def test_actor_al_initialization(self, mock_get_audio_model, mock_model):
         """Test ActorAL initialization with mock model."""
         # Set up mock
-        mock_qwen2_audio.from_pretrained.return_value = mock_model
+        mock_get_audio_model.return_value = (mock_model, "qwen2_audio")
 
         # Initialize ActorAL
         actor = ActorAL(
@@ -196,6 +230,101 @@ class TestActorAL:
         # Test print trainable parameters
         actor.print_trainable_parameters()
         mock_model.print_trainable_parameters.assert_called_once()
+
+    def test_forward_with_qwen2_5_omni_routes_to_thinker(self, mock_omni_model):
+        actor = ActorAL(pretrain_or_model=mock_omni_model, packing_samples=False)
+
+        sequences = torch.randint(0, 32000, (2, 10))
+        attention_mask = torch.ones(2, 10)
+
+        with patch('lightrft.models.actor_al.log_probs_from_logits') as mock_log_probs:
+            mock_log_probs.return_value = torch.randn(2, 9)
+            result = actor.forward(
+                sequences=sequences,
+                num_actions=4,
+                attention_mask=attention_mask,
+                audio_values=None,
+            )
+
+        assert isinstance(result, torch.Tensor)
+        assert actor.model_type == AUDIO_MODEL_TYPE_QWEN2_5_OMNI
+        mock_omni_model.thinker.assert_called_once()
+        _, kwargs = mock_omni_model.thinker.call_args
+        assert kwargs["position_ids"] is None
+        assert kwargs["attention_mask"] is attention_mask
+
+    def test_generate_with_qwen2_5_omni_uses_text_mode(self, mock_omni_model):
+        actor = ActorAL(pretrain_or_model=mock_omni_model, packing_samples=False)
+
+        input_ids = torch.randint(0, 32000, (2, 5))
+        sequences, attention_mask, action_mask = actor.generate(
+            input_ids=input_ids,
+            max_new_tokens=12,
+            temperature=0.8,
+            do_sample=True,
+            eos_token_id=2,
+            pad_token_id=0,
+        )
+
+        assert sequences.shape[0] == 2
+        assert attention_mask.shape[0] == 2
+        assert action_mask.shape[0] == 2
+
+        _, kwargs = mock_omni_model.generate.call_args
+        assert kwargs["generation_mode"] == "text"
+        assert kwargs["thinker_max_new_tokens"] == 12
+
+    def test_get_fsdp_target_model_uses_root_for_qwen2_audio(self, mock_model):
+        actor = ActorAL(pretrain_or_model=mock_model, packing_samples=False)
+        assert actor.get_fsdp_target_model() is mock_model
+
+    def test_get_fsdp_target_model_uses_thinker_for_qwen2_5_omni(self, mock_omni_model):
+        actor = ActorAL(pretrain_or_model=mock_omni_model, packing_samples=False)
+        assert actor.get_fsdp_target_model() is mock_omni_model.thinker
+
+    @patch("lightrft.models.actor_al.get_audio_processor_class")
+    @patch("lightrft.models.actor_al.infer_audio_model_type")
+    def test_create_audio_processor_reuses_matching_instance(
+        self,
+        mock_infer_audio_model_type,
+        mock_get_audio_processor_class,
+    ):
+        dummy_processor_cls = type("DummyProcessor", (), {})
+        existing_processor = dummy_processor_cls()
+
+        mock_infer_audio_model_type.return_value = "qwen2_audio"
+        mock_get_audio_processor_class.return_value = dummy_processor_cls
+
+        assert create_audio_processor("test_model_path", processor=existing_processor) is existing_processor
+
+    @patch("lightrft.models.actor_al.get_audio_processor_class")
+    @patch("lightrft.models.actor_al.infer_audio_model_type")
+    def test_create_audio_processor_reloads_mismatched_instance(
+        self,
+        mock_infer_audio_model_type,
+        mock_get_audio_processor_class,
+    ):
+        reloaded_processor = Mock()
+        dummy_processor_cls = type("DummyProcessor", (), {})
+        dummy_processor_cls.from_pretrained = Mock(return_value=reloaded_processor)
+        print_fn = Mock()
+
+        mock_infer_audio_model_type.return_value = "qwen2_5_omni"
+        mock_get_audio_processor_class.return_value = dummy_processor_cls
+
+        result = create_audio_processor(
+            "test_model_path",
+            processor=Mock(),
+            trust_remote_code=True,
+            print_fn=print_fn,
+        )
+
+        assert result is reloaded_processor
+        dummy_processor_cls.from_pretrained.assert_called_once_with(
+            "test_model_path",
+            trust_remote_code=True,
+        )
+        print_fn.assert_called_once()
 
 
 class TestActorALWithRealData:

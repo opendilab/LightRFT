@@ -35,12 +35,20 @@ Usage:
 """
 
 import argparse
+import inspect
 import json
 import os
 import re
 from typing import Dict, List, Optional
 
 import torch
+
+from lightrft.models.actor_al import (
+    AUDIO_MODEL_TYPE_QWEN2_5_OMNI,
+    create_audio_processor,
+    get_audio_model_class,
+    infer_audio_model_type,
+)
 
 
 # ---------------------------------------------------------------------------
@@ -137,16 +145,16 @@ def run_inference_hf(
     """
     Run inference using HuggingFace Transformers (sequential).
     """
-    from transformers import AutoProcessor
+    model_type = infer_audio_model_type(model_path)
 
     try:
-        from transformers import Qwen2AudioForConditionalGeneration
-        model = Qwen2AudioForConditionalGeneration.from_pretrained(
+        model_cls = get_audio_model_class(model_type)
+        model = model_cls.from_pretrained(
             model_path,
             torch_dtype=torch.bfloat16,
             trust_remote_code=True,
         ).to("cuda").eval()
-    except (ImportError, OSError):
+    except (ImportError, OSError, NotImplementedError):
         from transformers import AutoModelForCausalLM
         model = AutoModelForCausalLM.from_pretrained(
             model_path,
@@ -154,7 +162,7 @@ def run_inference_hf(
             trust_remote_code=True,
         ).to("cuda").eval()
 
-    processor = AutoProcessor.from_pretrained(model_path, trust_remote_code=True)
+    processor = create_audio_processor(model_path, trust_remote_code=True)
 
     try:
         import librosa
@@ -162,6 +170,8 @@ def run_inference_hf(
         raise ImportError("librosa is required for audio loading: pip install librosa")
 
     sr = getattr(processor.feature_extractor, "sampling_rate", 16000)
+    proc_sig = inspect.signature(processor.__call__)
+    audio_kwarg = "audio" if "audio" in proc_sig.parameters else "audios"
 
     def get_audio_path(sample: Dict) -> str:
         raw = sample.get("audio_path") or sample.get("audio_id", "")
@@ -184,7 +194,7 @@ def run_inference_hf(
             audio, _ = librosa.load(audio_path, sr=sr)
             inputs = processor(
                 text=text,
-                audios=[audio],
+                **{audio_kwarg: [audio]},
                 sampling_rate=sr,
                 return_tensors="pt",
                 padding=True,
@@ -195,12 +205,21 @@ def run_inference_hf(
 
         inputs = {k: v.to("cuda") for k, v in inputs.items()}
 
-        with torch.no_grad():
-            outputs = model.generate(
-                **inputs,
-                max_new_tokens=max_new_tokens,
-                do_sample=False,
+        generation_kwargs = {
+            "do_sample": False,
+        }
+        if model_type == AUDIO_MODEL_TYPE_QWEN2_5_OMNI:
+            generation_kwargs.update(
+                {
+                    "generation_mode": "text",
+                    "thinker_max_new_tokens": max_new_tokens,
+                }
             )
+        else:
+            generation_kwargs["max_new_tokens"] = max_new_tokens
+
+        with torch.no_grad():
+            outputs = model.generate(**inputs, **generation_kwargs)
 
         input_len = inputs["input_ids"].shape[-1]
         generated = outputs[0][input_len:]

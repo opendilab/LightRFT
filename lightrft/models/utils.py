@@ -61,11 +61,15 @@ def find_all_linear_modules(model: "nn.Module", freeze_vision_tower: bool) -> Li
         forbidden.add("multi_modal_projector")
     elif model_type in ["qwen2_vl", "qwen2_5_vl"]:
         forbidden.add("merger")
+    elif model_type == "qwen2_5_omni":
+        forbidden.update({"talker", "token2wav"})
 
     if freeze_vision_tower:
         if model_type in ["mllama"]:
             forbidden.add("vision_model")
         elif model_type in ["qwen2_vl", "qwen2_5_vl"]:
+            forbidden.add("visual")
+        elif model_type == "qwen2_5_omni":
             forbidden.add("visual")
         else:
             forbidden.add("vision_tower")

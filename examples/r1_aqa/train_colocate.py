@@ -25,7 +25,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from lightrft.utils import add_arguments
 from lightrft.datasets import SFTDatasetVL
-from lightrft.models.actor_al import ActorAL
+from lightrft.models.actor_al import ActorAL, create_audio_processor
 from lightrft.models.actor_language import ActorLanguage
 from lightrft.strategy import get_strategy
 from lightrft.trainer.spmd_ppo_trainer import SPMDPPOTrainerVL
@@ -153,21 +153,13 @@ def train(args):
         use_fast=not strategy.args.disable_fast_tokenizer,
     )
 
-    # Ensure we have the correct Qwen2AudioProcessor (AutoProcessor may
-    # fall back to a generic text processor that ignores the `audios` kwarg).
-    try:
-        from transformers import Qwen2AudioProcessor
-        if not isinstance(processor, Qwen2AudioProcessor):
-            strategy.print(
-                f"[WARN] AutoProcessor loaded {type(processor).__name__}, "
-                "re-loading as Qwen2AudioProcessor"
-            )
-            processor = Qwen2AudioProcessor.from_pretrained(
-                args.pretrain, trust_remote_code=True
-            )
-    except ImportError:
-        strategy.print("[WARN] Qwen2AudioProcessor not available in this transformers version")
-    assert processor is not None, "Qwen2-Audio processor is required"
+    processor = create_audio_processor(
+        args.pretrain,
+        processor=processor,
+        print_fn=strategy.print,
+    )
+
+    assert processor is not None, "Audio-language processor is required"
 
     # ==================== Data Loading ====================
     strategy.print(f"Loading prompts dataset from: {args.prompt_data}")

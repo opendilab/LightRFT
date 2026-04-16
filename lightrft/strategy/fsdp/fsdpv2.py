@@ -69,6 +69,7 @@ manual_transformer_cls_names_to_wrap = [
     "Qwen2VLVisionBlock",
     "Qwen2_5_VLVisionBlock",
     "Qwen2_5_VLDecoderLayer",
+    "Qwen2_5OmniDecoderLayer",
     "Qwen2DecoderLayer",
     "LlamaDecoderLayer",  # for DeepSeek-R1-Distill-Llama-70B
     "DeepseekDecoderLayer",
@@ -77,7 +78,26 @@ manual_transformer_cls_names_to_wrap = [
 vit_transformer_cls_names = [
     "Qwen2VLVisionBlock",
     "Qwen2_5_VLVisionBlock",
+    "Qwen2_5OmniVisionEncoder",
+    "Qwen2_5OmniAudioEncoder",
 ]
+
+
+def _get_fsdp_training_target(model: nn.Module) -> nn.Module:
+    """
+    Resolve the module FSDP should shard/optimize.
+
+    Actor wrappers may keep extra inference-only branches on ``model.model``; when
+    available, prefer the actor-provided FSDP target instead of assuming the full
+    wrapped backbone should be sharded.
+    """
+    if not is_actor(model):
+        return model
+
+    get_target = getattr(model, "get_fsdp_target_model", None)
+    if callable(get_target):
+        return get_target()
+    return model.model
 
 
 class FSDPV2Strategy(StrategyBase):
@@ -162,8 +182,7 @@ class FSDPV2Strategy(StrategyBase):
 
             >>> optimizer = strategy.create_optimizer(model, lr=1e-4, weight_decay=0.01)
         """
-        if is_actor(model):
-            model = model.model
+        model = _get_fsdp_training_target(model)
         # group params by (dtype, dtensor shard size, weight_dacay) to avoid error in clip_grad and opt.step
         self.grouped_params = group_parameters_for_optimizer_dtensor(model, kwargs["weight_decay"])
         # Convert the grouped parameters into the final format for the optimizer
@@ -219,8 +238,7 @@ class FSDPV2Strategy(StrategyBase):
         """
         self.cur_step[name] += 1
         if self.cur_step[name] == self.accumulated_gradient:
-            if is_actor(model):
-                model = model.model
+            model = _get_fsdp_training_target(model)
 
             grad_norms = []
             for param_group in self.grouped_params.values():
@@ -314,7 +332,7 @@ class FSDPV2Strategy(StrategyBase):
 
         naive_mp_training = self.use_naive_opt and is_training
 
-        model_to_wrap = model.model if is_actor(model) else model
+        model_to_wrap = _get_fsdp_training_target(model)
 
         if isinstance(model_to_wrap, FSDPModule):
             return model
@@ -322,7 +340,7 @@ class FSDPV2Strategy(StrategyBase):
         self.report_memory("before FSDP2 wrap model pos2")
 
         # this is not sufficient enough, for example, it will only return Qwen2DecoderLayer for qwen2
-        default_transformer_cls_names_to_wrap = getattr(model_to_wrap, "_no_split_modules", [])
+        default_transformer_cls_names_to_wrap = list(getattr(model_to_wrap, "_no_split_modules", []))
 
         # so we add some manual rules
         transformer_cls_names_to_wrap = default_transformer_cls_names_to_wrap
@@ -336,7 +354,8 @@ class FSDPV2Strategy(StrategyBase):
             # we either keep vision model in full state, or keep it in FSDP's root module.
             # below we keep vit in root module to avoid stuck
             for cls_name in vit_transformer_cls_names:
-                transformer_cls_names_to_wrap.remove(cls_name)
+                if cls_name in transformer_cls_names_to_wrap:
+                    transformer_cls_names_to_wrap.remove(cls_name)
 
         transformer_cls_to_wrap = list()  # noqa
         vit_transformer_cls = list()  # noqa
