@@ -394,7 +394,7 @@ class NaiveExperienceMaker(ABC):
                     generate_kwargs["gamma"],
                     generate_kwargs["lambd"],
                 )
-            elif self.advantage_estimator in ["reinforce", "rloo", "reinforce_baseline", "group_norm", "on_policy_distillation", "on_policy_distillation_hybrid"]:
+            elif self.advantage_estimator in ["reinforce", "rloo", "reinforce_baseline", "group_norm"]:
                 experience.returns = self.get_cumulative_returns(
                     reward,
                     experience.action_mask,
@@ -576,93 +576,13 @@ class NaiveExperienceMaker(ABC):
         """
         args = self.strategy.args
 
-        # On-policy distillation: query teacher model for log probs, then use GRPO reward shaping
+        # On-policy distillation is only supported via FastExperienceMaker
         if args.advantage_estimator in ("on_policy_distillation", "on_policy_distillation_hybrid"):
-            # Prefer dedicated teacher_model_url, fall back to remote_rm_url
-            teacher_url = self.teacher_model_url
-            if teacher_url is None:
-                if self.remote_rm_url is not None and len(self.remote_rm_url) > 0:
-                    import warnings
-                    warnings.warn(
-                        "Using --remote_rm_url as teacher URL is deprecated. "
-                        "Use --teacher_model_url instead.",
-                        DeprecationWarning,
-                        stacklevel=2,
-                    )
-                    teacher_url = self.remote_rm_url[0] if isinstance(self.remote_rm_url, list) else self.remote_rm_url
-                else:
-                    raise ValueError(
-                        "On-policy distillation requires a teacher model URL. "
-                        "Please set --teacher_model_url to the teacher model inference server."
-                    )
-
-            import asyncio
-
-            # Collect all sequences as input_ids and response lengths
-            all_input_ids = []
-            all_response_lengths = []
-            for experience in experiences:
-                sequences_batch = experience.sequences
-                response_lengths = experience.info["response_length"]
-                for i, seq in enumerate(sequences_batch):
-                    all_input_ids.append(seq.cpu().tolist())
-                    all_response_lengths.append(int(response_lengths[i].item()))
-
-            # Query teacher model for log probs using input_ids
-            try:
-                from examples.on_policy_distillation.on_policy_distillation_reward import (
-                    get_teacher_logprobs_by_ids
-                )
-
-                loop = asyncio.new_event_loop()
-                asyncio.set_event_loop(loop)
-                try:
-                    teacher_lp_list = loop.run_until_complete(
-                        get_teacher_logprobs_by_ids(
-                            url=teacher_url,
-                            input_ids_list=all_input_ids,
-                            response_lengths=all_response_lengths,
-                        )
-                    )
-                finally:
-                    loop.close()
-
-                # Align teacher log probs to action_log_probs shape [batch, num_tokens]
-                idx = 0
-                for experience in experiences:
-                    batch_size = experience.sequences.size(0)
-                    num_tokens = experience.action_mask.shape[1]
-                    aligned = torch.zeros(batch_size, num_tokens, dtype=torch.float32)
-                    for j in range(batch_size):
-                        tlp = teacher_lp_list[idx + j]
-                        resp_len = all_response_lengths[idx + j]
-                        actual_len = min(len(tlp), resp_len, num_tokens)
-                        start_pos = num_tokens - resp_len
-                        if start_pos >= 0:
-                            aligned[j, start_pos:start_pos + actual_len] = tlp[:actual_len]
-                        else:
-                            aligned[j, :] = tlp[-num_tokens:]
-                    experience.info["teacher_log_probs"] = aligned
-                    idx += batch_size
-
-            except Exception as e:
-                logger.error(f"Failed to get teacher log probs: {e}")
-                raise
-
-            # Return rewards based on mode
-            if args.advantage_estimator == "on_policy_distillation":
-                # Pure distillation: zero rewards, learning signal from OPD KL only
-                zero_rewards = torch.zeros(sum(exp.sequences.size(0) for exp in experiences))
-                rewards = zero_rewards.chunk(len(experiences))
-                return experiences, list(rewards)
-            else:
-                # Hybrid: use task rewards with GRPO normalization
-                rewards = torch.cat([experience.info["reward"] for experience in experiences])
-                rewards = rewards.reshape(-1, args.n_samples_per_prompt)
-                baseline = rewards.mean(-1, keepdim=True)
-                rewards = (rewards - baseline) / (rewards.std(-1, keepdim=True) + 1e-9)
-                rewards = rewards.flatten().chunk(len(experiences))
-                return experiences, list(rewards)
+            raise NotImplementedError(
+                "On-policy distillation is only supported with FastExperienceMaker "
+                "(use train_colocate.py / SpmdPPOTrainer). "
+                "NaiveExperienceMaker does not support OPD."
+            )
 
         # Reward shaping for RLOO
         if args.advantage_estimator == "rloo":
