@@ -390,9 +390,7 @@ class SPMDPPOTrainerBase:
                     model_tensor = torch.tensor(all_general_model_rewards, dtype=torch.float32, device=device)
                 if model_tensor.abs().sum() > 0:  # Only log if model rewards are non-zero
                     status_mean["general_model_reward_mean"] = model_tensor.mean().item()
-                    self.strategy.print(
-                        f" general_model_reward_mean: {status_mean['general_model_reward_mean']}"
-                    )
+                    self.strategy.print(f" general_model_reward_mean: {status_mean['general_model_reward_mean']}")
 
             if all_rule_rewards:
                 # [TENSOR-FIX] Handle both tensor lists and scalar lists
@@ -450,9 +448,7 @@ class SPMDPPOTrainerBase:
                     )
 
                 if all_general_model_rewards and "general_model_reward_mean" in status_mean:
-                    self.strategy.print(
-                        f"🧠 General RM Reward:{status_mean['general_model_reward_mean']:.4f}"
-                    )
+                    self.strategy.print(f"🧠 General RM Reward:{status_mean['general_model_reward_mean']:.4f}")
 
                 if all_advantages:
                     self.strategy.print(

@@ -484,9 +484,7 @@ class PPOTrainerVL(ABC):
 
                     if all_general_model_rewards:
                         if isinstance(all_general_model_rewards[0], torch.Tensor):
-                            general_model_tensor = torch.cat(
-                                [t.to(device).float() for t in all_general_model_rewards]
-                            )
+                            general_model_tensor = torch.cat([t.to(device).float() for t in all_general_model_rewards])
                         else:
                             general_model_tensor = torch.tensor(
                                 all_general_model_rewards, dtype=torch.float32, device=device
