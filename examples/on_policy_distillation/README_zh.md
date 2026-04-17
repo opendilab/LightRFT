@@ -1,6 +1,6 @@
 # LightRFT 在线策略蒸馏 (OPD)
 
-在线策略知识蒸馏使小型学生模型能够在强化学习训练过程中从大型教师模型学习。
+在线策略蒸馏（[On-Policy Distillation Blog](https://thinkingmachines.ai/blog/on-policy-distillation/)）使小型学生模型能够在强化学习训练过程中从大型教师模型学习。
 
 ## 概述
 
@@ -239,10 +239,3 @@ examples/on_policy_distillation/
 ├── start_training.sh                 # 仅启动训练（模板，需要 TEACHER_URL）
 └── test_opd.py                       # 单元测试
 ```
-
-## 参考资料
-
-- [LightRFT 文档](../../README.md)
-- [优势值计算器源码](../../lightrft/trainer/advantage_calculator.py)
-- [Fast Experience Maker 源码](../../lightrft/trainer/fast_exp_maker.py)
-- [On-Policy Distillation Blog](https://thinkingmachines.ai/blog/on-policy-distillation/)

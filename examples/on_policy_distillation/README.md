@@ -1,6 +1,6 @@
 # On-Policy Distillation (OPD) for LightRFT
 
-On-policy knowledge distillation enables smaller student models to learn from larger teacher models during reinforcement learning training.
+[On-Policy Distillation](https://thinkingmachines.ai/blog/on-policy-distillation/) enables smaller student models to learn from larger teacher models during reinforcement learning training.
 
 ## Overview
 
@@ -239,9 +239,3 @@ examples/on_policy_distillation/
 ├── start_training.sh                 # Training only (template, requires TEACHER_URL)
 └── test_opd.py                       # Unit tests
 ```
-
-## References
-
-- [LightRFT Documentation](../../README.md)
-- [Advantage Calculator Source](../../lightrft/trainer/advantage_calculator.py)
-- [Fast Experience Maker Source](../../lightrft/trainer/fast_exp_maker.py)
