@@ -71,9 +71,7 @@ async def get_teacher_logprobs_by_ids(
                     await asyncio.sleep(delay)
                     return await query_single(input_ids, attempt + 1)
                 else:
-                    raise RuntimeError(
-                        f"Failed to query teacher model after {max_retries} attempts: {e}"
-                    ) from e
+                    raise RuntimeError(f"Failed to query teacher model after {max_retries} attempts: {e}") from e
 
         tasks = [query_single(ids) for ids in input_ids_list]
         results = await asyncio.gather(*tasks)
@@ -135,9 +133,7 @@ async def get_teacher_logprobs_async(
                 await asyncio.sleep(delay)
                 return await query_single(sequence, attempt + 1)
             else:
-                raise RuntimeError(
-                    f"Failed to query teacher model after {max_retries} attempts: {e}"
-                ) from e
+                raise RuntimeError(f"Failed to query teacher model after {max_retries} attempts: {e}") from e
 
     try:
         tasks = [query_single(seq) for seq in sequences]
@@ -148,11 +144,9 @@ async def get_teacher_logprobs_async(
             await session.close()
 
 
-def extract_teacher_logprobs(
-    teacher_responses: List[Dict[str, Any]],
-    response_lengths: List[int],
-    device: str = "cpu"
-) -> List[torch.Tensor]:
+def extract_teacher_logprobs(teacher_responses: List[Dict[str, Any]],
+                             response_lengths: List[int],
+                             device: str = "cpu") -> List[torch.Tensor]:
     """
     Extract teacher log probabilities for response tokens only.
     """
@@ -174,10 +168,7 @@ def extract_teacher_logprobs(
 
         if len(teacher_log_probs) < response_length:
             padding_length = response_length - len(teacher_log_probs)
-            teacher_log_probs = torch.cat([
-                torch.zeros(padding_length, dtype=torch.float32),
-                teacher_log_probs
-            ])
+            teacher_log_probs = torch.cat([torch.zeros(padding_length, dtype=torch.float32), teacher_log_probs])
 
         teacher_log_probs_list.append(teacher_log_probs.to(device))
 
@@ -193,10 +184,7 @@ def reward_func(queries: List[str], prompts: List[str], **kwargs) -> torch.Tenso
 
 
 async def get_teacher_logprobs_for_experiences(
-    teacher_url: str,
-    sequences: List[str],
-    response_lengths: List[int],
-    device: str = "cpu"
+    teacher_url: str, sequences: List[str], response_lengths: List[int], device: str = "cpu"
 ) -> torch.Tensor:
     """
     [Legacy] Get teacher log probabilities using text sequences.
@@ -224,10 +212,7 @@ async def get_teacher_logprobs_for_experiences(
 
 
 def get_teacher_logprobs_sync(
-    teacher_url: str,
-    sequences: List[str],
-    response_lengths: List[int],
-    device: str = "cpu"
+    teacher_url: str, sequences: List[str], response_lengths: List[int], device: str = "cpu"
 ) -> torch.Tensor:
     """
     [Legacy] Synchronous wrapper for text-based teacher log prob queries.
@@ -238,21 +223,12 @@ def get_teacher_logprobs_sync(
             import concurrent.futures
             with concurrent.futures.ThreadPoolExecutor() as executor:
                 future = executor.submit(
-                    asyncio.run,
-                    get_teacher_logprobs_for_experiences(
-                        teacher_url, sequences, response_lengths, device
-                    )
+                    asyncio.run, get_teacher_logprobs_for_experiences(teacher_url, sequences, response_lengths, device)
                 )
                 return future.result()
         else:
             return loop.run_until_complete(
-                get_teacher_logprobs_for_experiences(
-                    teacher_url, sequences, response_lengths, device
-                )
+                get_teacher_logprobs_for_experiences(teacher_url, sequences, response_lengths, device)
             )
     except RuntimeError:
-        return asyncio.run(
-            get_teacher_logprobs_for_experiences(
-                teacher_url, sequences, response_lengths, device
-            )
-        )
+        return asyncio.run(get_teacher_logprobs_for_experiences(teacher_url, sequences, response_lengths, device))

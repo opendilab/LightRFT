@@ -85,6 +85,7 @@ For detailed algorithm descriptions, implementation details, and usage guide, se
 | **REINFORCE++** | Advantage Estimation | Improved baseline estimation | [arXiv:2501.03262](https://arxiv.org/abs/2501.03262) |
 | **CPGD** | Advantage Estimation | KL-based drift constraint | [arXiv:2505.12504](https://arxiv.org/abs/2505.12504) |
 | **FIRE Sampling** | Sampling Strategy | High-temperature first token sampling for improved diversity | [arXiv:2410.21236](https://arxiv.org/abs/2410.21236) |
+| **OPD** | Knowledge Distillation | On-policy teacher-student token-level distillation | [Blog](https://thinkingmachines.ai/blog/on-policy-distillation/) |
 
 ---
 
