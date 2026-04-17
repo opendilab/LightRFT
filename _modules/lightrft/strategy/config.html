@@ -416,6 +416,13 @@
     <span class="n">dynamic_sampling</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="c1"># (str): Advantage estimator method, defaults to &quot;gae&quot;</span>
     <span class="n">advantage_estimator</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;group_norm&quot;</span>
+    <span class="c1"># (float): OPD KL coefficient for on-policy distillation penalty</span>
+    <span class="n">opd_kl_coef</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span>
+    <span class="c1"># (str): Dedicated teacher model URL for OPD (falls back to remote_rm_url if not set)</span>
+    <span class="n">teacher_model_url</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="c1"># (bool): Use task reward in final reward computation. When False, rewards are zeroed</span>
+    <span class="c1"># but metrics (accuracy_reward, etc.) are still computed for logging.</span>
+    <span class="n">use_task_reward</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
 
     <span class="c1"># KL loss and estimation</span>
     <span class="c1"># (bool): Use KL loss in training, defaults to False</span>

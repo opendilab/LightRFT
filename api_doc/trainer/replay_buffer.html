@@ -325,11 +325,11 @@
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="lightrft.trainer.replay_buffer.NaiveReplayBuffer.append">
-<span class="sig-name descname"><span class="pre">append</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">experience</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.Experience" title="lightrft.trainer.experience_maker.Experience"><span class="pre">Experience</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#lightrft.trainer.replay_buffer.NaiveReplayBuffer.append" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">append</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">experience</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Experience</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#lightrft.trainer.replay_buffer.NaiveReplayBuffer.append" title="Permalink to this definition">¶</a></dt>
 <dd><p>Append experience to the replay buffer.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>experience</strong> (<a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.Experience" title="lightrft.trainer.experience_maker.Experience"><em>Experience</em></a>) – Experience batch to append.</p>
+<dd class="field-odd"><p><strong>experience</strong> (<em>Experience</em>) – Experience batch to append.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -342,7 +342,7 @@
 
 <dl class="py method">
 <dt class="sig sig-object py" id="lightrft.trainer.replay_buffer.NaiveReplayBuffer.collate_fn">
-<span class="sig-name descname"><span class="pre">collate_fn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.Experience" title="lightrft.trainer.experience_maker.Experience"><span class="pre">Experience</span></a></span></span><a class="reference internal" href="../../_modules/lightrft/trainer/replay_buffer.html#NaiveReplayBuffer.collate_fn"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.trainer.replay_buffer.NaiveReplayBuffer.collate_fn" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">collate_fn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Experience</span></span></span><a class="reference internal" href="../../_modules/lightrft/trainer/replay_buffer.html#NaiveReplayBuffer.collate_fn"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.trainer.replay_buffer.NaiveReplayBuffer.collate_fn" title="Permalink to this definition">¶</a></dt>
 <dd><p>Collate function for DataLoader.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -352,7 +352,7 @@
 <dd class="field-even"><p>Batched experience.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.Experience" title="lightrft.trainer.experience_maker.Experience">Experience</a></p>
+<dd class="field-odd"><p>Experience</p>
 </dd>
 </dl>
 </dd></dl>
@@ -375,14 +375,14 @@ across all items and normalizes them. Currently only supports “advantages”.<
 
 <dl class="py method">
 <dt class="sig sig-object py" id="lightrft.trainer.replay_buffer.NaiveReplayBuffer.sample">
-<span class="sig-name descname"><span class="pre">sample</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.Experience" title="lightrft.trainer.experience_maker.Experience"><span class="pre">Experience</span></a></span></span><a class="headerlink" href="#lightrft.trainer.replay_buffer.NaiveReplayBuffer.sample" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">sample</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Experience</span></span></span><a class="headerlink" href="#lightrft.trainer.replay_buffer.NaiveReplayBuffer.sample" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sample a batch of experiences from the replay buffer.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>Batch of sampled experiences.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.Experience" title="lightrft.trainer.experience_maker.Experience">Experience</a></p>
+<dd class="field-even"><p>Experience</p>
 </dd>
 </dl>
 </dd></dl>

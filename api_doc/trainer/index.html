@@ -304,58 +304,11 @@
             <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
               <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
                 
-  <section id="module-lightrft.trainer">
-<span id="lightrft-trainer"></span><h1>lightrft.trainer<a class="headerlink" href="#module-lightrft.trainer" title="Permalink to this heading">¶</a></h1>
+  <section id="lightrft-trainer">
+<h1>lightrft.trainer<a class="headerlink" href="#lightrft-trainer" title="Permalink to this heading">¶</a></h1>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="experience_maker.html">lightrft.trainer.experience_maker</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.Experience"><code class="docutils literal notranslate"><span class="pre">Experience</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.Experience.action_entropy"><code class="docutils literal notranslate"><span class="pre">Experience.action_entropy</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.Experience.action_log_probs"><code class="docutils literal notranslate"><span class="pre">Experience.action_log_probs</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.Experience.action_mask"><code class="docutils literal notranslate"><span class="pre">Experience.action_mask</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.Experience.advantages"><code class="docutils literal notranslate"><span class="pre">Experience.advantages</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.Experience.attention_mask"><code class="docutils literal notranslate"><span class="pre">Experience.attention_mask</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.Experience.base_action_log_probs"><code class="docutils literal notranslate"><span class="pre">Experience.base_action_log_probs</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.Experience.info"><code class="docutils literal notranslate"><span class="pre">Experience.info</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.Experience.kl"><code class="docutils literal notranslate"><span class="pre">Experience.kl</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.Experience.labels"><code class="docutils literal notranslate"><span class="pre">Experience.labels</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.Experience.pin_memory"><code class="docutils literal notranslate"><span class="pre">Experience.pin_memory()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.Experience.references"><code class="docutils literal notranslate"><span class="pre">Experience.references</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.Experience.returns"><code class="docutils literal notranslate"><span class="pre">Experience.returns</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.Experience.sequences"><code class="docutils literal notranslate"><span class="pre">Experience.sequences</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.Experience.to_device"><code class="docutils literal notranslate"><span class="pre">Experience.to_device()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.Experience.values"><code class="docutils literal notranslate"><span class="pre">Experience.values</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.NaiveExperienceMaker"><code class="docutils literal notranslate"><span class="pre">NaiveExperienceMaker</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.NaiveExperienceMaker.generate_samples"><code class="docutils literal notranslate"><span class="pre">NaiveExperienceMaker.generate_samples()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.NaiveExperienceMaker.get_advantages_and_returns"><code class="docutils literal notranslate"><span class="pre">NaiveExperienceMaker.get_advantages_and_returns()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.NaiveExperienceMaker.get_cumulative_returns"><code class="docutils literal notranslate"><span class="pre">NaiveExperienceMaker.get_cumulative_returns()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.NaiveExperienceMaker.make_experience"><code class="docutils literal notranslate"><span class="pre">NaiveExperienceMaker.make_experience()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.NaiveExperienceMaker.make_experience_list"><code class="docutils literal notranslate"><span class="pre">NaiveExperienceMaker.make_experience_list()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.NaiveExperienceMaker.process_experiences"><code class="docutils literal notranslate"><span class="pre">NaiveExperienceMaker.process_experiences()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.NaiveExperienceMaker.tokenize_fn"><code class="docutils literal notranslate"><span class="pre">NaiveExperienceMaker.tokenize_fn()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.Samples"><code class="docutils literal notranslate"><span class="pre">Samples</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.Samples.action_mask"><code class="docutils literal notranslate"><span class="pre">Samples.action_mask</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.Samples.attention_mask"><code class="docutils literal notranslate"><span class="pre">Samples.attention_mask</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.Samples.labels"><code class="docutils literal notranslate"><span class="pre">Samples.labels</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.Samples.num_actions"><code class="docutils literal notranslate"><span class="pre">Samples.num_actions</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.Samples.packed_seq_lens"><code class="docutils literal notranslate"><span class="pre">Samples.packed_seq_lens</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.Samples.pad_len"><code class="docutils literal notranslate"><span class="pre">Samples.pad_len</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.Samples.prompts"><code class="docutils literal notranslate"><span class="pre">Samples.prompts</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.Samples.references"><code class="docutils literal notranslate"><span class="pre">Samples.references</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.Samples.response_length"><code class="docutils literal notranslate"><span class="pre">Samples.response_length</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.Samples.sequences"><code class="docutils literal notranslate"><span class="pre">Samples.sequences</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.Samples.total_length"><code class="docutils literal notranslate"><span class="pre">Samples.total_length</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.clip_filter_like_weight_func"><code class="docutils literal notranslate"><span class="pre">clip_filter_like_weight_func()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.pin_memory"><code class="docutils literal notranslate"><span class="pre">pin_memory()</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.to"><code class="docutils literal notranslate"><span class="pre">to()</span></code></a></li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="experience_maker.html">lightrft.trainer.experience_maker</a></li>
 <li class="toctree-l1"><a class="reference internal" href="experience_maker_vl.html">lightrft.trainer.experience_maker_vl</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="experience_maker_vl.html#lightrft.trainer.experience_maker_vl.ExperienceVL"><code class="docutils literal notranslate"><span class="pre">ExperienceVL</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="experience_maker_vl.html#lightrft.trainer.experience_maker_vl.ExperienceVL.action_entropy"><code class="docutils literal notranslate"><span class="pre">ExperienceVL.action_entropy</span></code></a></li>
@@ -418,21 +371,10 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="fast_exp_maker.html">lightrft.trainer.fast_exp_maker</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="fast_exp_maker.html#fastexperiencemaker">FastExperienceMaker</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="fast_exp_maker.html#lightrft.trainer.fast_exp_maker.FastExperienceMaker"><code class="docutils literal notranslate"><span class="pre">FastExperienceMaker</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="fast_exp_maker.html#fastexperiencemaker">FastExperienceMaker</a></li>
 </ul>
 </li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="grm_trainer_vl.html">lightrft.trainer.grm_trainer_vl</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="grm_trainer_vl.html#lightrft.trainer.grm_trainer_vl.GRMTrainerVL"><code class="docutils literal notranslate"><span class="pre">GRMTrainerVL</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="grm_trainer_vl.html#lightrft.trainer.grm_trainer_vl.GRMTrainerVL.evaluate"><code class="docutils literal notranslate"><span class="pre">GRMTrainerVL.evaluate()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="grm_trainer_vl.html#lightrft.trainer.grm_trainer_vl.GRMTrainerVL.fit"><code class="docutils literal notranslate"><span class="pre">GRMTrainerVL.fit()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="grm_trainer_vl.html#lightrft.trainer.grm_trainer_vl.GRMTrainerVL.save_logs_and_checkpoints"><code class="docutils literal notranslate"><span class="pre">GRMTrainerVL.save_logs_and_checkpoints()</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="grm_trainer_vl.html">lightrft.trainer.grm_trainer_vl</a></li>
 <li class="toctree-l1"><a class="reference internal" href="kl_controller.html">lightrft.trainer.kl_controller</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="kl_controller.html#lightrft.trainer.kl_controller.AdaptiveKLController"><code class="docutils literal notranslate"><span class="pre">AdaptiveKLController</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="kl_controller.html#lightrft.trainer.kl_controller.AdaptiveKLController.update"><code class="docutils literal notranslate"><span class="pre">AdaptiveKLController.update()</span></code></a></li>
@@ -531,42 +473,13 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="spmd_ppo_trainer.html">lightrft.trainer.spmd_ppo_trainer</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="spmd_ppo_trainer.html#spmdppotrainerbase">SPMDPPOTrainerBase</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="spmd_ppo_trainer.html#lightrft.trainer.spmd_ppo_trainer.SPMDPPOTrainerBase"><code class="docutils literal notranslate"><span class="pre">SPMDPPOTrainerBase</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="spmd_ppo_trainer.html#spmdppotrainerbase">SPMDPPOTrainerBase</a></li>
+<li class="toctree-l2"><a class="reference internal" href="spmd_ppo_trainer.html#spmdppotrainer">SPMDPPOTrainer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="spmd_ppo_trainer.html#spmdppotrainervl">SPMDPPOTrainerVL</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="spmd_ppo_trainer.html#spmdppotrainer">SPMDPPOTrainer</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="spmd_ppo_trainer.html#lightrft.trainer.spmd_ppo_trainer.SPMDPPOTrainer"><code class="docutils literal notranslate"><span class="pre">SPMDPPOTrainer</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="spmd_ppo_trainer.html#spmdppotrainervl">SPMDPPOTrainerVL</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="spmd_ppo_trainer.html#lightrft.trainer.spmd_ppo_trainer.SPMDPPOTrainerVL"><code class="docutils literal notranslate"><span class="pre">SPMDPPOTrainerVL</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="srm_trainer_al.html">lightrft.trainer.srm_trainer_al</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="srm_trainer_al.html#lightrft.trainer.srm_trainer_al.SRMTrainerAL"><code class="docutils literal notranslate"><span class="pre">SRMTrainerAL</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="srm_trainer_al.html#lightrft.trainer.srm_trainer_al.SRMTrainerAL.concatenated_forward"><code class="docutils literal notranslate"><span class="pre">SRMTrainerAL.concatenated_forward()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="srm_trainer_al.html#lightrft.trainer.srm_trainer_al.SRMTrainerAL.concatenated_inputs"><code class="docutils literal notranslate"><span class="pre">SRMTrainerAL.concatenated_inputs()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="srm_trainer_al.html#lightrft.trainer.srm_trainer_al.SRMTrainerAL.evaluate"><code class="docutils literal notranslate"><span class="pre">SRMTrainerAL.evaluate()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="srm_trainer_al.html#lightrft.trainer.srm_trainer_al.SRMTrainerAL.fit"><code class="docutils literal notranslate"><span class="pre">SRMTrainerAL.fit()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="srm_trainer_al.html#lightrft.trainer.srm_trainer_al.SRMTrainerAL.save_logs_and_checkpoints"><code class="docutils literal notranslate"><span class="pre">SRMTrainerAL.save_logs_and_checkpoints()</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="srm_trainer_vl.html">lightrft.trainer.srm_trainer_vl</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="srm_trainer_vl.html#lightrft.trainer.srm_trainer_vl.SRMTrainerVL"><code class="docutils literal notranslate"><span class="pre">SRMTrainerVL</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="srm_trainer_vl.html#lightrft.trainer.srm_trainer_vl.SRMTrainerVL.concatenated_forward"><code class="docutils literal notranslate"><span class="pre">SRMTrainerVL.concatenated_forward()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="srm_trainer_vl.html#lightrft.trainer.srm_trainer_vl.SRMTrainerVL.concatenated_inputs"><code class="docutils literal notranslate"><span class="pre">SRMTrainerVL.concatenated_inputs()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="srm_trainer_vl.html#lightrft.trainer.srm_trainer_vl.SRMTrainerVL.evaluate"><code class="docutils literal notranslate"><span class="pre">SRMTrainerVL.evaluate()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="srm_trainer_vl.html#lightrft.trainer.srm_trainer_vl.SRMTrainerVL.fit"><code class="docutils literal notranslate"><span class="pre">SRMTrainerVL.fit()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="srm_trainer_vl.html#lightrft.trainer.srm_trainer_vl.SRMTrainerVL.save_logs_and_checkpoints"><code class="docutils literal notranslate"><span class="pre">SRMTrainerVL.save_logs_and_checkpoints()</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
+<li class="toctree-l1"><a class="reference internal" href="srm_trainer_al.html">lightrft.trainer.srm_trainer_al</a></li>
+<li class="toctree-l1"><a class="reference internal" href="srm_trainer_vl.html">lightrft.trainer.srm_trainer_vl</a></li>
 <li class="toctree-l1"><a class="reference internal" href="utils.html">lightrft.trainer.utils</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="utils.html#lightrft.trainer.utils.RunningMoments"><code class="docutils literal notranslate"><span class="pre">RunningMoments</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="utils.html#lightrft.trainer.utils.RunningMoments.update"><code class="docutils literal notranslate"><span class="pre">RunningMoments.update()</span></code></a></li>
