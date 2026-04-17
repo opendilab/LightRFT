@@ -1,0 +1,946 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js" lang="en">
+<!--<![endif]-->
+
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>GRPO 训练教程：GSM8K 与 Geo3K 数据集 &mdash; LightRFT v0.1.1 documentation</title>
+  
+
+  <link rel="shortcut icon" href="../_static/images/favicon.ico" />
+  
+  
+
+  
+
+  
+  
+  
+
+  
+
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!-- <link rel="stylesheet" href="../_static/pygments.css" type="text/css" /> -->
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/readthedocs.css" type="text/css" />
+  <link rel="index" title="Index" href="../genindex.html" />
+  <link rel="search" title="Search" href="../search.html" />
+  <!-- Google Analytics -->
+  <script type="text/javascript">
+    var collapsedSections = [];
+  </script>
+  
+  <!-- End Google Analytics -->
+  
+
+  
+  <script src="../_static/js/modernizr.min.js"></script>
+  <script>
+    MathJax = {
+        chtml: {
+            scale: 1,
+            minScale: 1,
+        },
+        svg: {
+            scale: 1,
+            minScale: 1,
+        }
+    }
+</script>
+
+  <!-- Preload the theme fonts -->
+
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-book.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/IBMPlexMono/IBMPlexMono-Medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/FreightSans/freight-sans-medium-italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../_static/fonts/IBMPlexMono/IBMPlexMono-SemiBold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+
+<!-- Preload the katex fonts -->
+
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Math-Italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size1-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size4-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size2-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size3-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Caligraphic-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.2/css/all.css"
+    integrity="sha384-vSIIfh2YWi9wW0r9iZe7RJPrKwp6bG+s9QZMoITbCckVJqGCCRhc+ccxNcdpHuYu" crossorigin="anonymous">
+</head>
+
+<div class="container-fluid header-holder tutorials-header" id="header-holder">
+  <div class="container">
+    <div class="header-container">
+      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+        aria-label="OpenMMLab"></a>
+
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://github.com/opendilab/LightRFT" target="_blank">GitHub</a>
+          </li>
+          <li >
+            <div id="resourcesDropdownButton" data-toggle="resources-dropdown" class="resources-dropdown">
+              <a
+                class="resource-option with-down-arrow">
+                OpenDILab
+              </a>
+              <div class="resources-dropdown-menu">
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-engine" target="_blank">
+                  <span class="dropdown-title">DI-engine </span>
+                  <p>OpenDILab Decision AI Engine</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/LightZero" target="_blank">
+                  <span class="dropdown-title">LightZero </span>
+                  <p>OpenDILab Decision Monte Carlo Tree Search Framework</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/GenerativeRL" target="_blank">
+                  <span class="dropdown-title">GenerativeRL </span>
+                  <p>OpenDILab Generative AI Framework</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-star" target="_blank">
+                  <span class="dropdown-title">DI-star </span>
+                  <p>OpenDILab Decision AI in StarCraftII</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-drive" target="_blank">
+                  <span class="dropdown-title">DI-drive </span>
+                  <p>OpenDILab Auto-driving platform</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/GoBigger" target="_blank">
+                  <span class="dropdown-title">GoBigger </span>
+                  <p>OpenDILab Multi-Agent Environment</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-smartcross" target="_blank">
+                  <span class="dropdown-title">DI-smartcross </span>
+                  <p>Decision Intelligence Platform for Traffic Crossing Signal Control</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-treetensor" target="_blank">
+                  <span class="dropdown-title">DI-treetensor </span>
+                  <p>Tree Nested PyTorch Tensor Lib</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-sheep" target="_blank">
+                  <span class="dropdown-title">DI-sheep </span>
+                  <p>Deep Reinforcement Learning + 3 Tiles Game</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-model-based-RL" target="_blank">
+                  <span class="dropdown-title">awesome-model-based-RL </span>
+                  <p>A curated list of awesome model based RL resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-decision-transformer" target="_blank">
+                  <span class="dropdown-title">awesome-decision-transformer </span>
+                  <p>A curated list of Decision Transformer resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-exploration-rl" target="_blank">
+                  <span class="dropdown-title">awesome-exploration-rl </span>
+                  <p>A curated list of awesome exploration RL resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-multi-modal-reinforcement-learning" target="_blank">
+                  <span class="dropdown-title">awesome-multi-modal-reinforcement-learning </span>
+                  <p>A curated list of Multi-Modal Reinforcement Learning resources (continually updated)</p>
+                </a>
+              </div>
+          </li>
+        </ul>
+      </div>
+
+      <a class="main-menu-open-button" href="#" data-behavior="open-mobile-menu"></a>
+    </div>
+  </div>
+</div>
+
+<body class="pytorch-body">
+
+   
+
+  
+
+  <div class="table-of-contents-link-wrapper">
+    <span>Table of Contents</span>
+    <a href="#" class="toggle-table-of-contents" data-behavior="toggle-table-of-contents"></a>
+  </div>
+
+  <nav data-toggle="wy-nav-shift" class="pytorch-left-menu" id="pytorch-left-menu">
+    <div class="pytorch-side-scroll">
+      <div class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        <div class="pytorch-left-menu-search">
+          
+
+          
+          
+          
+          
+
+          
+
+
+
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search Docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        
+        
+        
+        
+        
+        <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../installation/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index.html">Quick Start</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide &amp; Best Practices</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../best_practice/index.html">Best Practices</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/utils/index.html">lightrft.utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/datasets/index.html">lightrft.datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/models/index.html">lightrft.models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/strategy/index.html">lightrft.strategy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../api_doc/trainer/index.html">lightrft.trainer</a></li>
+</ul>
+
+        
+        
+      </div>
+    </div>
+  </nav>
+
+  <div class="pytorch-container">
+    <div class="pytorch-page-level-bar" id="pytorch-page-level-bar">
+      <div class="pytorch-breadcrumbs-wrapper">
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="pytorch-breadcrumbs">
+    
+      <li>
+        <a href="../index.html">
+            Docs
+        </a> &gt;
+      </li>
+
+        
+      <li>GRPO 训练教程：GSM8K 与 Geo3K 数据集</li>
+    
+    
+      <li class="pytorch-breadcrumbs-aside">
+        
+            
+            <a href="../_sources/quick_start/grpo_gsm8k_geo3k_tutorial_zh.md.txt" rel="nofollow"><img src="../_static/images/view-page-source-icon.svg"></a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+</div>
+      </div>
+
+      <div class="pytorch-shortcuts-wrapper" id="pytorch-shortcuts-wrapper">
+        Shortcuts
+      </div>
+    </div>
+
+    <section data-toggle="wy-nav-shift" id="pytorch-content-wrap" class="pytorch-content-wrap">
+      <div class="pytorch-content-left">
+        
+          <div class="rst-content">
+            
+            <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
+              <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
+                
+  <section id="grpo-gsm8k-geo3k">
+<h1>GRPO 训练教程：GSM8K 与 Geo3K 数据集<a class="headerlink" href="#grpo-gsm8k-geo3k" title="Permalink to this heading">¶</a></h1>
+<p>本教程介绍如何使用 LightRFT 在两个数学推理数据集上进行 GRPO（Group Relative Policy Optimization）训练：<strong>GSM8K</strong>（纯文本）和 <strong>Geo3K</strong>（多模态，含几何图形）。</p>
+<section id="id1">
+<h2>概述<a class="headerlink" href="#id1" title="Permalink to this heading">¶</a></h2>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>项目</p></th>
+<th class="head"><p>GSM8K</p></th>
+<th class="head"><p>Geo3K</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>任务</p></td>
+<td><p>小学数学应用题</p></td>
+<td><p>几何问题求解</p></td>
+</tr>
+<tr class="row-odd"><td><p>模态</p></td>
+<td><p>纯文本</p></td>
+<td><p>多模态（文本 + 图像）</p></td>
+</tr>
+<tr class="row-even"><td><p>数据来源</p></td>
+<td><p><a class="reference external" href="https://huggingface.co/datasets/openai/gsm8k">openai/gsm8k</a></p></td>
+<td><p><a class="reference external" href="https://huggingface.co/datasets/hiyouga/geometry3k">hiyouga/geometry3k</a></p></td>
+</tr>
+<tr class="row-odd"><td><p>训练集 / 测试集</p></td>
+<td><p>7,473 / 1,319</p></td>
+<td><p>~2,100 / 601</p></td>
+</tr>
+<tr class="row-even"><td><p>奖励机制</p></td>
+<td><p>纯规则奖励（无需神经奖励模型）</p></td>
+<td><p>纯规则奖励（无需神经奖励模型）</p></td>
+</tr>
+<tr class="row-odd"><td><p>基座模型</p></td>
+<td><p>Qwen2.5-0.5B-Instruct（或更大模型）</p></td>
+<td><p>Qwen2.5-VL-7B-Instruct</p></td>
+</tr>
+</tbody>
+</table>
+<p>两个任务均使用<strong>纯规则奖励</strong>机制：</p>
+<ul class="simple">
+<li><p><strong>格式奖励（10%）</strong>：检查输出是否包含 <code class="docutils literal notranslate"><span class="pre">&lt;think&gt;...&lt;/think&gt;</span></code> 推理标签和 <code class="docutils literal notranslate"><span class="pre">\boxed{}</span></code> 答案标记。</p></li>
+<li><p><strong>准确率奖励（90%）</strong>：使用 <a class="reference external" href="https://github.com/open-compass/mathruler">mathruler</a> 验证最终答案的正确性。</p></li>
+</ul>
+<p>无需额外的神经奖励模型。</p>
+</section>
+<hr class="docutils" />
+<section id="id2">
+<h2>1. 数据集预处理<a class="headerlink" href="#id2" title="Permalink to this heading">¶</a></h2>
+<p>训练前，需要将 HuggingFace 原始数据集转换为 LightRFT 兼容的 parquet 格式。</p>
+<section id="gsm8k">
+<h3>1.1 GSM8K 预处理<a class="headerlink" href="#gsm8k" title="Permalink to this heading">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>examples/gsm8k_geo3k/data_preprocess/gsm8k.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--local_save_dir<span class="w"> </span>~/data/gsm8k
+</pre></div>
+</div>
+<p>脚本执行以下步骤：</p>
+<ol class="arabic simple">
+<li><p>从 HuggingFace 加载 <code class="docutils literal notranslate"><span class="pre">openai/gsm8k</span></code>（也可通过 <code class="docutils literal notranslate"><span class="pre">--local_dataset_path</span></code> 指定本地路径）。</p></li>
+<li><p>从每个解答中通过 <code class="docutils literal notranslate"><span class="pre">####</span> <span class="pre">ANSWER</span></code> 模式提取数值答案（去除逗号，如 <code class="docutils literal notranslate"><span class="pre">1,000</span></code> → <code class="docutils literal notranslate"><span class="pre">1000</span></code>）。</p></li>
+<li><p>将每个问题封装为 chat 结构的 prompt：</p></li>
+</ol>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;prompt&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span><span class="nt">&quot;role&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;system&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;content&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;You FIRST think about the reasoning process step by step ... The final answer MUST BE put in \\boxed{} after the reasoning.&quot;</span><span class="p">},</span>
+<span class="w">    </span><span class="p">{</span><span class="nt">&quot;role&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;user&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;content&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&lt;原始问题&gt;&quot;</span><span class="p">}</span>
+<span class="w">  </span><span class="p">],</span>
+<span class="w">  </span><span class="nt">&quot;extra_info&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;label&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;gsm8k_rule&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;reference&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&lt;提取的数值答案&gt;&quot;</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<ol class="arabic simple" start="4">
+<li><p>将 <code class="docutils literal notranslate"><span class="pre">train.parquet</span></code> 和 <code class="docutils literal notranslate"><span class="pre">test.parquet</span></code> 保存到指定目录。</p></li>
+</ol>
+</section>
+<section id="geo3k">
+<h3>1.2 Geo3K 预处理<a class="headerlink" href="#geo3k" title="Permalink to this heading">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>examples/gsm8k_geo3k/data_preprocess/geo3k.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--local_save_dir<span class="w"> </span>~/data/geo3k
+</pre></div>
+</div>
+<p>脚本执行以下步骤：</p>
+<ol class="arabic simple">
+<li><p>从 HuggingFace 加载 <code class="docutils literal notranslate"><span class="pre">hiyouga/geometry3k</span></code>（也可通过 <code class="docutils literal notranslate"><span class="pre">--local_dataset_path</span></code> 指定本地路径）。</p></li>
+<li><p>保留数据集中的几何图形图像。</p></li>
+<li><p>将每个问题封装为包含图像引用的 chat 结构 prompt：</p></li>
+</ol>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;prompt&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span><span class="nt">&quot;role&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;system&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;content&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;You FIRST think about the reasoning process ... The final answer MUST BE put in \\boxed{}.&quot;</span><span class="p">},</span>
+<span class="w">    </span><span class="p">{</span><span class="nt">&quot;role&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;user&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;content&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&lt;几何问题文本&gt;&quot;</span><span class="p">}</span>
+<span class="w">  </span><span class="p">],</span>
+<span class="w">  </span><span class="nt">&quot;images&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;&lt;PIL Image&gt;&quot;</span><span class="p">],</span>
+<span class="w">  </span><span class="nt">&quot;extra_info&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;label&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;geo3k_rule&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;reference&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&lt;标准答案&gt;&quot;</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<ol class="arabic simple" start="4">
+<li><p>将 <code class="docutils literal notranslate"><span class="pre">train.parquet</span></code> 和 <code class="docutils literal notranslate"><span class="pre">test.parquet</span></code> 保存到指定目录。</p></li>
+</ol>
+</section>
+<section id="id3">
+<h3>1.3 输出格式总结<a class="headerlink" href="#id3" title="Permalink to this heading">¶</a></h3>
+<p>两个预处理脚本产出统一的数据格式：</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>字段</p></th>
+<th class="head"><p>说明</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">prompt</span></code></p></td>
+<td><p>Chat 结构列表 <code class="docutils literal notranslate"><span class="pre">[{role,</span> <span class="pre">content},</span> <span class="pre">...]</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">images</span></code></p></td>
+<td><p>PIL 图像列表（仅 Geo3K；GSM8K 无此字段）</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">extra_info.label</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">&quot;gsm8k_rule&quot;</span></code> 或 <code class="docutils literal notranslate"><span class="pre">&quot;geo3k_rule&quot;</span></code> — 映射到奖励 RECIPE</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">extra_info.reference</span></code></p></td>
+<td><p>标准答案字符串，用于规则奖励评估</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<hr class="docutils" />
+<section id="id4">
+<h2>2. 训练<a class="headerlink" href="#id4" title="Permalink to this heading">¶</a></h2>
+<section id="gsm8k-grpo">
+<h3>2.1 GSM8K — 纯文本 GRPO 训练<a class="headerlink" href="#gsm8k-grpo" title="Permalink to this heading">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># 先编辑脚本中的路径配置，然后执行：</span>
+bash<span class="w"> </span>examples/gsm8k_geo3k/run_grpo_gsm8k_qwen2.5_0.5b.sh
+</pre></div>
+</div>
+<p>也可直接使用 <code class="docutils literal notranslate"><span class="pre">torchrun</span></code> 启动：</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>torchrun<span class="w"> </span>--nnodes<span class="w"> </span><span class="m">1</span><span class="w"> </span>--nproc-per-node<span class="w"> </span><span class="m">8</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>examples/gsm8k_geo3k/train_colocate.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--pretrain<span class="w"> </span>Qwen/Qwen2.5-0.5B-Instruct<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--prompt_data<span class="w"> </span>/path/to/gsm8k_dataset<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--input_key<span class="w"> </span>prompt<span class="w"> </span>--label_key<span class="w"> </span>label<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--text_only<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--loss_agg_mode<span class="w"> </span>seq-mean-token-mean<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--advantage_estimator<span class="w"> </span>group_norm<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--n_samples_per_prompt<span class="w"> </span><span class="m">5</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--num_episodes<span class="w"> </span><span class="m">30</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--max_epochs<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--train_batch_size<span class="w"> </span><span class="m">128</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--rollout_batch_size<span class="w"> </span><span class="m">128</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--micro_train_batch_size<span class="w"> </span><span class="m">4</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--micro_rollout_batch_size<span class="w"> </span><span class="m">4</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--actor_learning_rate<span class="w"> </span>1e-6<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--lr_warmup_ratio<span class="w"> </span><span class="m">0</span>.03<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--init_kl_coef<span class="w"> </span><span class="m">0</span>.01<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--kl_estimator<span class="w"> </span>k3<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--use_kl_loss<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--l2<span class="w"> </span><span class="m">1</span>.0e-2<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--fsdp<span class="w"> </span>--zero_stage<span class="w"> </span><span class="m">3</span><span class="w"> </span>--bf16<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--flash_attn<span class="w"> </span>--gradient_checkpointing<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--apply_chat_template<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--freeze_prefix<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--adam_offload<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--rm_use_engine<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--reward_pretrain<span class="w"> </span><span class="s2">&quot;{}&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--engine_type<span class="w"> </span>sglang<span class="w"> </span>--engine_tp_size<span class="w"> </span><span class="m">2</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--engine_mem_util<span class="w"> </span><span class="m">0</span>.6<span class="w"> </span>--enable_engine_sleep<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--eval_steps<span class="w"> </span><span class="m">20</span><span class="w"> </span>--eval_split<span class="w"> </span><span class="nb">test</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--max_eval_samples<span class="w"> </span><span class="m">1319</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--save_path<span class="w"> </span>results/gsm8k_grpo<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--save_steps<span class="w"> </span><span class="m">20</span><span class="w"> </span>--max_ckpt_num<span class="w"> </span><span class="m">3</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--system_prompt<span class="w"> </span><span class="s1">&#39;A conversation between the User and Assistant. The User asks a question, and the Assistant provides a solution. The Assistant first thinks through the reasoning process internally with self-reflection and consistency check and then gives the final analysis and answer. The reasoning process should be enclosed within &lt;think&gt;&lt;/think&gt;, followed directly by the final thought and answer, the final answer MUST BE put in \\boxed{}, like this: &lt;think&gt; reasoning process here &lt;/think&gt; final thought and \\boxed{answer} here.&#39;</span>
+</pre></div>
+</div>
+</section>
+<section id="geo3k-grpo">
+<h3>2.2 Geo3K — 多模态 GRPO 训练<a class="headerlink" href="#geo3k-grpo" title="Permalink to this heading">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># 先编辑脚本中的路径配置，然后执行：</span>
+bash<span class="w"> </span>examples/gsm8k_geo3k/run_grpo_geo3k_qwen2.5_vl_7b.sh
+</pre></div>
+</div>
+<p>也可直接使用 <code class="docutils literal notranslate"><span class="pre">torchrun</span></code> 启动：</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>torchrun<span class="w"> </span>--nnodes<span class="w"> </span><span class="m">1</span><span class="w"> </span>--nproc-per-node<span class="w"> </span><span class="m">8</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>examples/gsm8k_geo3k/train_colocate.py<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--pretrain<span class="w"> </span>Qwen/Qwen2.5-VL-7B-Instruct<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--prompt_data<span class="w"> </span>/path/to/geo3k_dataset<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--input_key<span class="w"> </span>prompt<span class="w"> </span>--label_key<span class="w"> </span>label<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--mixed_mm_data<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--images_key<span class="w"> </span>images<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--loss_agg_mode<span class="w"> </span>seq-mean-token-mean<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--advantage_estimator<span class="w"> </span>group_norm<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--n_samples_per_prompt<span class="w"> </span><span class="m">8</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--num_episodes<span class="w"> </span><span class="m">20</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--max_epochs<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--train_batch_size<span class="w"> </span><span class="m">128</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--rollout_batch_size<span class="w"> </span><span class="m">128</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--micro_train_batch_size<span class="w"> </span><span class="m">4</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--micro_rollout_batch_size<span class="w"> </span><span class="m">8</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--actor_learning_rate<span class="w"> </span>1e-6<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--lr_warmup_ratio<span class="w"> </span><span class="m">0</span>.03<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--init_kl_coef<span class="w"> </span><span class="m">0</span>.01<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--kl_estimator<span class="w"> </span>k3<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--use_kl_loss<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--l2<span class="w"> </span><span class="m">1</span>.0e-2<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--fsdp<span class="w"> </span>--zero_stage<span class="w"> </span><span class="m">3</span><span class="w"> </span>--bf16<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--flash_attn<span class="w"> </span>--gradient_checkpointing<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--apply_chat_template<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--freeze_prefix<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--adam_offload<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--rm_use_engine<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--reward_pretrain<span class="w"> </span><span class="s2">&quot;{}&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--engine_type<span class="w"> </span>sglang<span class="w"> </span>--engine_tp_size<span class="w"> </span><span class="m">2</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--engine_mem_util<span class="w"> </span><span class="m">0</span>.6<span class="w"> </span>--enable_engine_sleep<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--limit_mm_image_per_prompt<span class="w"> </span><span class="m">10</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--eval_steps<span class="w"> </span><span class="m">20</span><span class="w"> </span>--eval_split<span class="w"> </span><span class="nb">test</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--max_eval_samples<span class="w"> </span><span class="m">700</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--save_path<span class="w"> </span>results/geo3k_grpo<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--save_steps<span class="w"> </span><span class="m">20</span><span class="w"> </span>--max_ckpt_num<span class="w"> </span><span class="m">2</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--system_prompt<span class="w"> </span><span class="s1">&#39;A conversation between the User and Assistant. The User asks a question, and the Assistant provides a solution. The Assistant first thinks through the reasoning process internally with self-reflection and consistency check and then gives the final analysis and answer. The reasoning process should be enclosed within &lt;think&gt;&lt;/think&gt;, followed directly by the final thought and answer, the final answer MUST BE put in \\boxed{}, like this: &lt;think&gt; reasoning process here &lt;/think&gt; final thought and \\boxed{answer} here.&#39;</span>
+</pre></div>
+</div>
+</section>
+<section id="geo3k-lora-grpo">
+<h3>2.3 Geo3K — LoRA GRPO 训练（参数高效微调）<a class="headerlink" href="#geo3k-lora-grpo" title="Permalink to this heading">¶</a></h3>
+<p>在资源受限的环境下，可使用 LoRA 仅微调少量参数：</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>bash<span class="w"> </span>examples/gsm8k_geo3k/run_grpo_geo3k_lora_qwen2.5_vl_7b.sh
+</pre></div>
+</div>
+<p>LoRA 相关的关键参数：</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>--lora_rank<span class="w"> </span><span class="m">128</span><span class="w"> </span><span class="se">\</span>
+--lora_alpha<span class="w"> </span><span class="m">256</span><span class="w"> </span><span class="se">\</span>
+--target_modules<span class="w"> </span>all-linear
+</pre></div>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<section id="id5">
+<h2>3. 关键超参数<a class="headerlink" href="#id5" title="Permalink to this heading">¶</a></h2>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>参数</p></th>
+<th class="head text-center"><p>GSM8K 默认值</p></th>
+<th class="head text-center"><p>Geo3K 默认值</p></th>
+<th class="head"><p>说明</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--n_samples_per_prompt</span></code></p></td>
+<td class="text-center"><p>5</p></td>
+<td class="text-center"><p>8</p></td>
+<td><p>每个 prompt 的 rollout 采样数（GRPO 组大小）</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--num_episodes</span></code></p></td>
+<td class="text-center"><p>30</p></td>
+<td class="text-center"><p>20</p></td>
+<td><p>总训练轮数</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--train_batch_size</span></code></p></td>
+<td class="text-center"><p>128</p></td>
+<td class="text-center"><p>128</p></td>
+<td><p>全局训练批次大小</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--rollout_batch_size</span></code></p></td>
+<td class="text-center"><p>128</p></td>
+<td class="text-center"><p>128</p></td>
+<td><p>全局 rollout 批次大小</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--micro_train_batch_size</span></code></p></td>
+<td class="text-center"><p>4</p></td>
+<td class="text-center"><p>4</p></td>
+<td><p>每张卡的微训练批次大小</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--micro_rollout_batch_size</span></code></p></td>
+<td class="text-center"><p>4</p></td>
+<td class="text-center"><p>8</p></td>
+<td><p>每张卡的微 rollout 批次大小</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--actor_learning_rate</span></code></p></td>
+<td class="text-center"><p>1e-6</p></td>
+<td class="text-center"><p>1e-6</p></td>
+<td><p>Actor 学习率</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--lr_warmup_ratio</span></code></p></td>
+<td class="text-center"><p>0.03</p></td>
+<td class="text-center"><p>0.03</p></td>
+<td><p>学习率预热比例</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--init_kl_coef</span></code></p></td>
+<td class="text-center"><p>0.01</p></td>
+<td class="text-center"><p>0.01</p></td>
+<td><p>KL 散度惩罚系数</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--kl_estimator</span></code></p></td>
+<td class="text-center"><p>k3</p></td>
+<td class="text-center"><p>k3</p></td>
+<td><p>KL 估计器类型</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--prompt_max_len</span></code></p></td>
+<td class="text-center"><p>1024</p></td>
+<td class="text-center"><p>1024</p></td>
+<td><p>最大 prompt 长度</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--generate_max_len</span></code></p></td>
+<td class="text-center"><p>2048</p></td>
+<td class="text-center"><p>2048</p></td>
+<td><p>最大生成长度</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--advantage_estimator</span></code></p></td>
+<td class="text-center"><p>group_norm</p></td>
+<td class="text-center"><p>group_norm</p></td>
+<td><p>GRPO 优势估计方法</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--engine_tp_size</span></code></p></td>
+<td class="text-center"><p>2</p></td>
+<td class="text-center"><p>2</p></td>
+<td><p>推理引擎张量并行度</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--l2</span></code></p></td>
+<td class="text-center"><p>1e-2</p></td>
+<td class="text-center"><p>1e-2</p></td>
+<td><p>L2 正则化权重</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--text_only</span></code></p></td>
+<td class="text-center"><p>是</p></td>
+<td class="text-center"><p>否</p></td>
+<td><p>纯文本模式（不处理图像）</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--mixed_mm_data</span></code></p></td>
+<td class="text-center"><p>否</p></td>
+<td class="text-center"><p>是</p></td>
+<td><p>启用多模态数据处理</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<hr class="docutils" />
+<section id="id6">
+<h2>4. 奖励机制<a class="headerlink" href="#id6" title="Permalink to this heading">¶</a></h2>
+<section id="recipe">
+<h3>4.1 RECIPE 配置<a class="headerlink" href="#recipe" title="Permalink to this heading">¶</a></h3>
+<p>奖励系统由 <code class="docutils literal notranslate"><span class="pre">examples/gsm8k_geo3k/reward_models_utils.py</span></code> 中基于标签的 RECIPE 映射驱动：</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">RECIPE</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;geo3k_rule&quot;</span><span class="p">:</span> <span class="p">[(</span><span class="s2">&quot;geo3k_rule&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)],</span>
+    <span class="s2">&quot;gsm8k_rule&quot;</span><span class="p">:</span> <span class="p">[(</span><span class="s2">&quot;gsm8k_rule&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)],</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>每个样本的 <code class="docutils literal notranslate"><span class="pre">label</span></code> 字段（在预处理阶段设置）决定了应用哪个奖励函数。</p>
+</section>
+<section id="id7">
+<h3>4.2 格式奖励（权重 10%）<a class="headerlink" href="#id7" title="Permalink to this heading">¶</a></h3>
+<p>验证模型输出是否遵循要求的推理格式：</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">think</span><span class="o">&gt;</span> <span class="n">推理过程</span> <span class="o">&lt;/</span><span class="n">think</span><span class="o">&gt;</span> <span class="n">最终分析和</span> \<span class="n">boxed</span><span class="p">{</span><span class="n">答案</span><span class="p">}</span>
+</pre></div>
+</div>
+<p>检查逻辑使用正则表达式验证：</p>
+<ol class="arabic simple">
+<li><p>存在 <code class="docutils literal notranslate"><span class="pre">&lt;think&gt;...&lt;/think&gt;</span></code> 标签。</p></li>
+<li><p>存在 <code class="docutils literal notranslate"><span class="pre">\boxed{...}</span></code> 标记。</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&lt;/think&gt;</span></code> 闭合标签出现在 <code class="docutils literal notranslate"><span class="pre">\boxed{}</span></code> <strong>之前</strong>。</p></li>
+</ol>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">format_reward_fn</span><span class="p">(</span><span class="n">sol</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="n">think_match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;&lt;think&gt;.*?&lt;/think&gt;&#39;</span><span class="p">,</span> <span class="n">sol</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">DOTALL</span><span class="p">)</span>
+    <span class="n">boxed_match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;</span><span class="se">\\</span><span class="s1">boxed\{.*?\}&#39;</span><span class="p">,</span> <span class="n">sol</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">DOTALL</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">think_match</span> <span class="ow">and</span> <span class="n">boxed_match</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mf">1.0</span> <span class="k">if</span> <span class="n">think_match</span><span class="o">.</span><span class="n">end</span><span class="p">()</span> <span class="o">&lt;=</span> <span class="n">boxed_match</span><span class="o">.</span><span class="n">start</span><span class="p">()</span> <span class="k">else</span> <span class="mf">0.0</span>
+    <span class="k">return</span> <span class="mf">0.0</span>
+</pre></div>
+</div>
+</section>
+<section id="id8">
+<h3>4.3 准确率奖励（权重 90%）<a class="headerlink" href="#id8" title="Permalink to this heading">¶</a></h3>
+<p>从 <code class="docutils literal notranslate"><span class="pre">\boxed{}</span></code> 中提取答案并与标准答案比对：</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">accuracy_reward_fn</span><span class="p">(</span><span class="n">sol</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">gt</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">mathruler.grader</span><span class="w"> </span><span class="kn">import</span> <span class="n">extract_boxed_content</span><span class="p">,</span> <span class="n">grade_answer</span>
+    <span class="n">pred</span> <span class="o">=</span> <span class="n">extract_boxed_content</span><span class="p">(</span><span class="n">sol</span><span class="p">)</span>
+    <span class="k">return</span> <span class="mf">1.0</span> <span class="k">if</span> <span class="n">grade_answer</span><span class="p">(</span><span class="n">pred</span><span class="p">,</span> <span class="n">gt</span><span class="p">)</span> <span class="k">else</span> <span class="mf">0.0</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">mathruler.grader</span></code> 处理数值等价、分数化简等数学归一化。</p>
+</section>
+<section id="id9">
+<h3>4.4 综合奖励<a class="headerlink" href="#id9" title="Permalink to this heading">¶</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">final_reward</span> <span class="o">=</span> <span class="mf">0.9</span> <span class="o">*</span> <span class="n">accuracy_reward</span> <span class="o">+</span> <span class="mf">0.1</span> <span class="o">*</span> <span class="n">format_reward</span>
+</pre></div>
+</div>
+</section>
+<section id="id10">
+<h3>4.5 响应提取<a class="headerlink" href="#id10" title="Permalink to this heading">¶</a></h3>
+<p>在计算奖励前，会从完整的对话文本中提取 assistant 的回复，避免系统提示中的示例导致误判：</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">extract_response</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="c1"># 查找最后一个 &lt;|im_start|&gt;assistant ... &lt;|im_end|&gt; 片段</span>
+    <span class="o">...</span>
+</pre></div>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<section id="w-b">
+<h2>5. 训练监控（W&amp;B）<a class="headerlink" href="#w-b" title="Permalink to this heading">¶</a></h2>
+<section id="id11">
+<h3>5.1 启用 W&amp;B 日志<a class="headerlink" href="#id11" title="Permalink to this heading">¶</a></h3>
+<p>在训练脚本中设置以下环境变量：</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">WANDB_API_KEY</span><span class="o">=</span><span class="s2">&quot;your_api_key&quot;</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">WANDB_PROJECT</span><span class="o">=</span><span class="s2">&quot;LightRFT-Experiments&quot;</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">WANDB_MODE</span><span class="o">=</span><span class="s2">&quot;online&quot;</span><span class="w">  </span><span class="c1"># &quot;offline&quot; 表示仅本地记录</span>
+</pre></div>
+</div>
+</section>
+<section id="id12">
+<h3>5.2 关键指标<a class="headerlink" href="#id12" title="Permalink to this heading">¶</a></h3>
+<section id="rollout-reward">
+<h4>rollout/reward<a class="headerlink" href="#rollout-reward" title="Permalink to this heading">¶</a></h4>
+<p><strong>GSM8K (Qwen2.5-0.5B-Instruct)</strong>:</p>
+<p><img alt="GSM8K rollout/reward 曲线" src="../_images/rollout_reward.png" /></p>
+<p><strong>Geo3K (Qwen2.5-VL-7B-Instruct)</strong>:</p>
+<p><img alt="Geo3K rollout/reward 曲线" src="../_images/rollout_reward1.png" /></p>
+<p><strong>预期走势</strong>：<code class="docutils literal notranslate"><span class="pre">rollout/reward</span></code> 曲线应随训练步数呈现稳定上升趋势。在训练初期，奖励通常较低，因为模型尚未学会正确的格式和推理模式。随着训练推进，奖励应逐步平滑、单调递增，伴有轻微波动，并最终趋于稳定。若奖励过早停滞或急剧下降，建议调整 KL 系数或学习率。</p>
+</section>
+<section id="eval-accuracy">
+<h4>eval/accuracy<a class="headerlink" href="#eval-accuracy" title="Permalink to this heading">¶</a></h4>
+<p><strong>GSM8K (Qwen2.5-0.5B-Instruct)</strong>:</p>
+<p><img alt="GSM8K eval/accuracy 曲线" src="../_images/eval_accuracy.png" /></p>
+<p><strong>Geo3K (Qwen2.5-VL-7B-Instruct)</strong>:</p>
+<p><img alt="Geo3K eval/accuracy 曲线" src="../_images/eval_accuracy1.png" /></p>
+<p><strong>预期走势</strong>：<code class="docutils literal notranslate"><span class="pre">eval/accuracy</span></code> 曲线反映模型在测试集上的实际解题能力，应与奖励曲线正相关但可能略有滞后。准确率预计从基座模型的初始水平逐步提升，整体呈上升趋势并最终趋于收敛。由于评估样本量较小，eval 曲线的波动会比 reward 曲线更大。若出现突然下降，可能表明过拟合或 KL 散度问题，建议适当调整 KL 系数或学习率。</p>
+</section>
+</section>
+<section id="id13">
+<h3>5.3 其他有用指标<a class="headerlink" href="#id13" title="Permalink to this heading">¶</a></h3>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>指标</p></th>
+<th class="head"><p>说明</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">rollout/format_reward</span></code></p></td>
+<td><p>格式合规率</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">rollout/accuracy_reward</span></code></p></td>
+<td><p>答案正确率</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">train/actor_loss</span></code></p></td>
+<td><p>Actor 策略损失（应逐步下降）</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">train/kl_divergence</span></code></p></td>
+<td><p>与参考策略的 KL 散度（应保持有界）</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">train/entropy</span></code></p></td>
+<td><p>策略熵（逐步下降表明模型在学习）</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<hr class="docutils" />
+<section id="id14">
+<h2>6. 常见问题与建议<a class="headerlink" href="#id14" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p><strong>OOM（显存不足）</strong>：减小 <code class="docutils literal notranslate"><span class="pre">micro_train_batch_size</span></code> / <code class="docutils literal notranslate"><span class="pre">micro_rollout_batch_size</span></code>，或降低 <code class="docutils literal notranslate"><span class="pre">--engine_mem_util</span></code>。</p></li>
+<li><p><strong>收敛缓慢</strong>：增大 <code class="docutils literal notranslate"><span class="pre">--n_samples_per_prompt</span></code> 以获得更好的 GRPO 优势估计。</p></li>
+<li><p><strong>格式奖励始终为 0</strong>：检查 <code class="docutils literal notranslate"><span class="pre">--system_prompt</span></code> 和 <code class="docutils literal notranslate"><span class="pre">--apply_chat_template</span></code> 是否正确传入。</p></li>
+<li><p><strong>Geo3K 图像加载错误</strong>：确保预处理后的 parquet 文件包含有效的 PIL 图像对象，且设置了 <code class="docutils literal notranslate"><span class="pre">--images_key</span> <span class="pre">images</span></code>。</p></li>
+<li><p><strong>LoRA 训练</strong>：使用 <code class="docutils literal notranslate"><span class="pre">--lora_rank</span> <span class="pre">128</span> <span class="pre">--lora_alpha</span> <span class="pre">256</span></code> 在效率和模型容量之间取得良好平衡。</p></li>
+</ul>
+</section>
+<hr class="docutils" />
+<section id="id15">
+<h2>相关资源<a class="headerlink" href="#id15" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="algorithms_zh.html"><span class="std std-doc">支持的算法</span></a> — 完整算法文档</p></li>
+<li><p><a class="reference internal" href="configuration_zh.html"><span class="std std-doc">配置参数参考</span></a> — 完整参数文档</p></li>
+<li><p><a class="reference internal" href="#../best_practice/strategy_usage_zh.md"><span class="xref myst">训练策略指南</span></a> — FSDP、DeepSpeed 和推理引擎配置</p></li>
+</ul>
+</section>
+</section>
+
+
+              </article>
+              
+            </div>
+            <footer>
+  
+
+  <hr>
+
+  <div role="contentinfo">
+    <p>
+      &copy; Copyright 2025, OpenDILab.
+
+    </p>
+  </div>
+  
+  <div>
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a
+      href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the
+      Docs</a>.
+  </div>
+   
+
+</footer>
+          </div>
+        </div>
+
+        <div class="pytorch-content-right" id="pytorch-content-right">
+          <div class="pytorch-right-menu" id="pytorch-right-menu">
+            <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
+              <ul>
+<li><a class="reference internal" href="#">GRPO 训练教程：GSM8K 与 Geo3K 数据集</a><ul>
+<li><a class="reference internal" href="#id1">概述</a></li>
+<li><a class="reference internal" href="#id2">1. 数据集预处理</a><ul>
+<li><a class="reference internal" href="#gsm8k">1.1 GSM8K 预处理</a></li>
+<li><a class="reference internal" href="#geo3k">1.2 Geo3K 预处理</a></li>
+<li><a class="reference internal" href="#id3">1.3 输出格式总结</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id4">2. 训练</a><ul>
+<li><a class="reference internal" href="#gsm8k-grpo">2.1 GSM8K — 纯文本 GRPO 训练</a></li>
+<li><a class="reference internal" href="#geo3k-grpo">2.2 Geo3K — 多模态 GRPO 训练</a></li>
+<li><a class="reference internal" href="#geo3k-lora-grpo">2.3 Geo3K — LoRA GRPO 训练（参数高效微调）</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id5">3. 关键超参数</a></li>
+<li><a class="reference internal" href="#id6">4. 奖励机制</a><ul>
+<li><a class="reference internal" href="#recipe">4.1 RECIPE 配置</a></li>
+<li><a class="reference internal" href="#id7">4.2 格式奖励（权重 10%）</a></li>
+<li><a class="reference internal" href="#id8">4.3 准确率奖励（权重 90%）</a></li>
+<li><a class="reference internal" href="#id9">4.4 综合奖励</a></li>
+<li><a class="reference internal" href="#id10">4.5 响应提取</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#w-b">5. 训练监控（W&amp;B）</a><ul>
+<li><a class="reference internal" href="#id11">5.1 启用 W&amp;B 日志</a></li>
+<li><a class="reference internal" href="#id12">5.2 关键指标</a><ul>
+<li><a class="reference internal" href="#rollout-reward">rollout/reward</a></li>
+<li><a class="reference internal" href="#eval-accuracy">eval/accuracy</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id13">5.3 其他有用指标</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id14">6. 常见问题与建议</a></li>
+<li><a class="reference internal" href="#id15">相关资源</a></li>
+</ul>
+</li>
+</ul>
+
+            </div>
+          </div>
+        </div>
+    </section>
+  </div>
+
+  
+
+
+  
+
+  
+  <script type="text/javascript" id="documentation_options" data-url_root="../"
+    src="../_static/documentation_options.js"></script>
+  <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+  <script src="../_static/doctools.js"></script>
+  <script src="../_static/sphinx_highlight.js"></script>
+  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+  <script src="../_static/js/language_switch.js"></script>
+  
+
+  
+
+  <script type="text/javascript" src="../_static/js/vendor/popper.min.js"></script>
+  <script type="text/javascript" src="../_static/js/vendor/bootstrap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
+  <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+    jQuery(function () {
+      SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+  <!-- Begin Footer -->
+
+  <div class="container-fluid docs-tutorials-resources" id="docs-tutorials-resources">
+  </div>
+
+  <!-- End Footer -->
+
+  <!-- Begin Mobile Menu -->
+
+  <div class="mobile-main-menu">
+    <div class="container-fluid">
+      <div class="container">
+        <div class="mobile-main-menu-header-container">
+          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
+        </div>
+      </div>
+    </div>
+
+    <div class="mobile-main-menu-links-container">
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://github.com/opendilab/LightRFT" target="_blank">GitHub</a>
+          </li>
+      </div>
+    </div>
+  </div>
+
+  <!-- End Mobile Menu -->
+
+  <script type="text/javascript" src="../_static/js/vendor/anchor.min.js"></script>
+
+  <script type="text/javascript">
+    $(document).ready(function () {
+      mobileMenu.bind();
+      mobileTOC.bind();
+      pytorchAnchors.bind();
+      sideMenus.bind();
+      scrollToAnchor.bind();
+      highlightNavigation.bind();
+      mainMenuDropdown.bind();
+      filterTags.bind();
+
+      // Add class to links that have code blocks, since we cannot create links in code blocks
+      $("article.pytorch-article a span.pre").each(function (e) {
+        $(this).closest("a").addClass("has-code");
+      });
+    })
+  </script>
+</body>
+
+</html>
