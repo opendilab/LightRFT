@@ -301,6 +301,7 @@ class NaiveExperienceMaker(ABC):
         self.reward_recipe = reward_recipe
         self.perf_stats = None
         self.advantage_estimator = strategy.args.advantage_estimator
+        self.teacher_model_url = getattr(strategy.args, 'teacher_model_url', None)
 
         # Custom reward function for reinforced fine-tuning
         self.custom_reward_func = None
@@ -574,6 +575,14 @@ class NaiveExperienceMaker(ABC):
         :rtype: Tuple[List[Experience], List[torch.Tensor]]
         """
         args = self.strategy.args
+
+        # On-policy distillation is only supported via FastExperienceMaker
+        if args.advantage_estimator == "on_policy_distillation":
+            raise NotImplementedError(
+                "On-policy distillation is only supported with FastExperienceMaker "
+                "(use train_colocate.py / SpmdPPOTrainer). "
+                "NaiveExperienceMaker does not support OPD."
+            )
 
         # Reward shaping for RLOO
         if args.advantage_estimator == "rloo":

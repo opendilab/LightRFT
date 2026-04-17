@@ -122,7 +122,7 @@ def add_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
         "--rm_use_engine",
         action="store_true",
-        default=False,
+        default=True,
         help="Use the high-throughput inference engine (e.g., vLLM) for the reward model during RLHF training. "
         "Can significantly speed up reward evaluation compared to standard forward passes.",
     )
