@@ -8,24 +8,15 @@ and tensor dimensions.
 """
 
 from unittest.mock import Mock, patch
-import importlib.util
 import os
-import pathlib
 import pytest
-import sys
 import torch
-import types
 
 from lightrft.models.actor_al import ActorAL, AUDIO_MODEL_TYPE_QWEN2_5_OMNI, create_audio_processor
 
 
 class TestActorAL:
     """Test cases for ActorAL (Audio Language) class."""
-    @pytest.fixture
-    def device(self):
-        """Set up device fixture."""
-        return torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
     @pytest.fixture
     def mock_config(self):
         """Set up mock config fixture."""
@@ -76,11 +67,40 @@ class TestActorAL:
 
         thinker = Mock()
         thinker.config = mock_omni_thinker_config
-        thinker.audio_tower = None
+        thinker.audio_tower = Mock()
+        thinker.audio_tower._get_feat_extract_output_lengths.return_value = (
+            torch.tensor([4, 8]),
+            torch.tensor([1, 2]),
+        )
         thinker.audio_encoder = None
         thinker.return_value = mock_output
         model.thinker = thinker
         return model
+
+    def _make_actor(self, model, *, packing_samples=False):
+        actor = ActorAL(pretrain_or_model=model, packing_samples=packing_samples)
+        actor.packing_samples = packing_samples
+        return actor
+
+    def _make_omni_forward_inputs(self, *, sequences, attention_mask, feature_attention_mask):
+        sequences = torch.tensor(sequences)
+        return {
+            "sequences": sequences,
+            "attention_mask": torch.tensor(attention_mask),
+            "audio_values": torch.randn(sequences.size(0), 80, 10),
+            "feature_attention_mask": torch.tensor(feature_attention_mask),
+        }
+
+    def _run_mocked_omni_forward(self, actor, *, num_actions=2, **forward_kwargs):
+        sequences = forward_kwargs["sequences"]
+        with patch("lightrft.models.actor_al.log_probs_from_logits") as mock_log_probs:
+            mock_log_probs.return_value = torch.randn(sequences.size(0), sequences.size(1) - 1)
+            result = actor.forward(
+                num_actions=num_actions,
+                **forward_kwargs,
+            )
+
+        return result, actor.model.thinker.call_args.kwargs
 
     @patch('lightrft.models.actor_al.get_audio_model_and_type')
     def test_actor_al_initialization(self, mock_get_audio_model, mock_model):
@@ -232,7 +252,7 @@ class TestActorAL:
         mock_model.print_trainable_parameters.assert_called_once()
 
     def test_forward_with_qwen2_5_omni_routes_to_thinker(self, mock_omni_model):
-        actor = ActorAL(pretrain_or_model=mock_omni_model, packing_samples=False)
+        actor = self._make_actor(mock_omni_model)
 
         sequences = torch.randint(0, 32000, (2, 10))
         attention_mask = torch.ones(2, 10)
@@ -252,6 +272,144 @@ class TestActorAL:
         _, kwargs = mock_omni_model.thinker.call_args
         assert kwargs["position_ids"] is None
         assert kwargs["attention_mask"] is attention_mask
+
+    @pytest.mark.parametrize(
+        (
+            "output_lengths",
+            "feature_lengths",
+            "expected_audio_counts",
+            "expected_attention_mask",
+        ),
+        [
+            ([8, 4], [2, 1], [2, 1], [[0, 1, 1, 1, 1, 1], [0, 0, 1, 1, 1, 1]]),
+            ([4, 8], [1, 2], [1, 2], [[0, 0, 1, 1, 1, 1], [0, 1, 1, 1, 1, 1]]),
+        ],
+    )
+    def test_forward_with_qwen2_5_omni_aligns_audio_placeholders(
+        self,
+        mock_omni_model,
+        output_lengths,
+        feature_lengths,
+        expected_audio_counts,
+        expected_attention_mask,
+    ):
+        actor = self._make_actor(mock_omni_model)
+        mock_omni_model.thinker.audio_tower._get_feat_extract_output_lengths.return_value = (
+            torch.tensor(output_lengths),
+            torch.tensor(feature_lengths),
+        )
+        audio_token_id = mock_omni_model.thinker.config.audio_token_id
+
+        inputs = self._make_omni_forward_inputs(
+            sequences=[
+                [0, 0, audio_token_id, 11, 12, 13],
+                [0, audio_token_id, audio_token_id, 21, 22, 23],
+            ],
+            attention_mask=[
+                [0, 0, 1, 1, 1, 1],
+                [0, 1, 1, 1, 1, 1],
+            ],
+            feature_attention_mask=[
+                [1, 1, 1, 1],
+                [1, 1, 1, 1, 1, 1, 1, 1],
+            ],
+        )
+
+        result, kwargs = self._run_mocked_omni_forward(actor, **inputs)
+        assert isinstance(result, torch.Tensor)
+        assert "input_features" in kwargs
+        assert "feature_attention_mask" in kwargs
+        assert (kwargs["input_ids"] == audio_token_id).sum(dim=1).tolist() == expected_audio_counts
+        assert kwargs["attention_mask"].tolist() == expected_attention_mask
+
+    def test_forward_with_qwen2_5_omni_trims_response_audio_placeholders(self, mock_omni_model):
+        actor = self._make_actor(mock_omni_model)
+        mock_omni_model.thinker.audio_tower._get_feat_extract_output_lengths.return_value = (
+            torch.tensor([8, 8]),
+            torch.tensor([2, 2]),
+        )
+
+        audio_token_id = mock_omni_model.thinker.config.audio_token_id
+        inputs = self._make_omni_forward_inputs(
+            sequences=[
+                [0, 0, audio_token_id, audio_token_id, 11, audio_token_id],
+                [0, audio_token_id, audio_token_id, 21, 22, audio_token_id],
+            ],
+            attention_mask=[
+                [0, 1, 1, 1, 1, 1],
+                [0, 1, 1, 1, 1, 1],
+            ],
+            feature_attention_mask=[
+                [1, 1, 1, 1, 1, 1, 1, 1],
+                [1, 1, 1, 1, 1, 1, 1, 1],
+            ],
+        )
+
+        result, kwargs = self._run_mocked_omni_forward(actor, **inputs)
+        assert isinstance(result, torch.Tensor)
+        assert (kwargs["input_ids"] == audio_token_id).sum(dim=1).tolist() == [2, 2]
+
+    def test_forward_can_return_aligned_inputs_for_audio_replay(self, mock_omni_model):
+        actor = self._make_actor(mock_omni_model)
+        mock_omni_model.thinker.audio_tower._get_feat_extract_output_lengths.return_value = (
+            torch.tensor([8]),
+            torch.tensor([2]),
+        )
+
+        audio_token_id = mock_omni_model.thinker.config.audio_token_id
+        inputs = self._make_omni_forward_inputs(
+            sequences=[[0, 0, audio_token_id, 11, 12, 13]],
+            attention_mask=[[0, 0, 1, 1, 1, 1]],
+            feature_attention_mask=[[1, 1, 1, 1, 1, 1, 1, 1]],
+        )
+
+        (
+            action_log_probs,
+            model_output,
+            aligned_sequences,
+            aligned_attention_mask,
+        ), _ = self._run_mocked_omni_forward(
+            actor,
+            return_output=True,
+            return_aligned_inputs=True,
+            **inputs,
+        )
+
+        assert isinstance(action_log_probs, torch.Tensor)
+        assert model_output is not None
+        assert (aligned_sequences == audio_token_id).sum(dim=1).tolist() == [2]
+        assert aligned_attention_mask.tolist() == [[0, 1, 1, 1, 1, 1]]
+
+    def test_align_audio_placeholders_is_batch_invariant_to_num_actions(self, mock_omni_model):
+        actor = self._make_actor(mock_omni_model)
+        audio_token_id = mock_omni_model.thinker.config.audio_token_id
+
+        sequences = torch.tensor(
+            [[11, 12, 13, 14, audio_token_id, audio_token_id, audio_token_id, audio_token_id, 31, 41, 42, 43]]
+        )
+        attention_mask = torch.ones_like(sequences)
+        expected_counts = torch.tensor([5])
+
+        aligned_short, mask_short = actor._align_audio_placeholder_counts(
+            sequences=sequences,
+            attention_mask=attention_mask,
+            audio_token_id=audio_token_id,
+            expected_audio_token_counts=expected_counts,
+            pad_token_id=0,
+            num_actions=3,
+        )
+        aligned_long, mask_long = actor._align_audio_placeholder_counts(
+            sequences=sequences,
+            attention_mask=attention_mask,
+            audio_token_id=audio_token_id,
+            expected_audio_token_counts=expected_counts,
+            pad_token_id=0,
+            num_actions=6,
+        )
+
+        assert torch.equal(aligned_short, aligned_long)
+        assert torch.equal(mask_short, mask_long)
+        assert (aligned_short == audio_token_id).sum(dim=1).tolist() == [5]
 
     def test_generate_with_qwen2_5_omni_uses_text_mode(self, mock_omni_model):
         actor = ActorAL(pretrain_or_model=mock_omni_model, packing_samples=False)
@@ -279,7 +437,7 @@ class TestActorAL:
         assert actor.get_fsdp_target_model() is mock_model
 
     def test_get_fsdp_target_model_uses_thinker_for_qwen2_5_omni(self, mock_omni_model):
-        actor = ActorAL(pretrain_or_model=mock_omni_model, packing_samples=False)
+        actor = self._make_actor(mock_omni_model)
         assert actor.get_fsdp_target_model() is mock_omni_model.thinker
 
     @patch("lightrft.models.actor_al.get_audio_processor_class")

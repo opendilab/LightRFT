@@ -1221,3 +1221,4 @@ build/*
 examples/math_benchmarks/eval_results/
 .llmconfig.yaml
 tb/*
+debug*.py

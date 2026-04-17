@@ -100,6 +100,27 @@ def _get_fsdp_training_target(model: nn.Module) -> nn.Module:
     return model.model
 
 
+def _collect_floating_param_dtypes(module: nn.Module) -> dict[torch.dtype, list[str]]:
+    """
+    Collect floating-point parameter dtypes for diagnostics before FSDP wrapping.
+    """
+    dtype_to_names: dict[torch.dtype, list[str]] = defaultdict(list)
+    for name, param in module.named_parameters():
+        if param is None or not torch.is_floating_point(param):
+            continue
+        dtype_to_names[param.dtype].append(name)
+    return dict(dtype_to_names)
+
+
+def _format_dtype_summary(dtype_to_names: dict[torch.dtype, list[str]], limit: int = 8) -> str:
+    parts = []
+    for dtype, names in dtype_to_names.items():
+        shown = names[:limit]
+        suffix = "" if len(names) <= limit else f" ... (+{len(names) - limit} more)"
+        parts.append(f"{dtype}: {shown}{suffix}")
+    return "; ".join(parts)
+
+
 class FSDPV2Strategy(StrategyBase):
     """
     The strategy for training with PyTorch's Fully Sharded Data Parallel V2.
@@ -336,6 +357,27 @@ class FSDPV2Strategy(StrategyBase):
 
         if isinstance(model_to_wrap, FSDPModule):
             return model
+
+        floating_param_dtypes = _collect_floating_param_dtypes(model_to_wrap)
+        if len(floating_param_dtypes) > 1:
+            summary = _format_dtype_summary(floating_param_dtypes)
+            if self.bf16:
+                self.print(
+                    "[FSDP] Detected mixed floating parameter dtypes before sharding; "
+                    f"casting to bfloat16. {summary}"
+                )
+                model_to_wrap = model_to_wrap.to(torch.bfloat16)
+                floating_param_dtypes = _collect_floating_param_dtypes(model_to_wrap)
+                if len(floating_param_dtypes) > 1:
+                    raise RuntimeError(
+                        "Failed to normalize model parameter dtypes before FSDP wrap. "
+                        f"Remaining dtypes: {_format_dtype_summary(floating_param_dtypes)}"
+                    )
+            else:
+                raise RuntimeError(
+                    "Mixed floating parameter dtypes before FSDP wrap with bf16 disabled. "
+                    f"{summary}"
+                )
 
         self.report_memory("before FSDP2 wrap model pos2")
 

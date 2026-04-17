@@ -1674,17 +1674,32 @@ class FastExperienceMaker(NaiveExperienceMaker):
         Timer.start('    actor_logprob')
         # Check if we need to compute entropy for high-entropy token filtering
         need_entropy = hasattr(self.actor, 'high_entropy_token_ratio') and self.actor.high_entropy_token_ratio > 0.0
+        # Qwen2.5-Omni may rewrite audio placeholder positions to match the local HF audio tower's
+        # expected token count. Replay must reuse that aligned layout verbatim, otherwise current
+        # and old/reference logprobs are scored on different tokenizations of the same sample.
+        should_capture_aligned_audio_inputs = "audio_values" in self._actor_supported_params
         for output in outputs:
-            if need_entropy:
-                # Request full output to get action_entropy
-                action_log_probs, model_output = self.actor(
+            if need_entropy or should_capture_aligned_audio_inputs:
+                actor_forward_result = self.actor(
                     output.sequences,
                     output.num_actions,
                     output.attention_mask,
                     packed_seq_lens=output.packed_seq_lens,
                     return_output=True,
+                    return_aligned_inputs=should_capture_aligned_audio_inputs,
                     **output.inputs_extra_kwargs
                 )
+                if should_capture_aligned_audio_inputs:
+                    # Persist the aligned ids/mask from rollout so policy/ref/critic all replay
+                    # exactly the same post-alignment inputs during PPO updates.
+                    action_log_probs, model_output, aligned_sequences, aligned_attention_mask = actor_forward_result
+                    output.sequences = aligned_sequences
+                    output.attention_mask = aligned_attention_mask
+                    if aligned_attention_mask is not None:
+                        output.total_length = aligned_attention_mask.float().sum(dim=-1)
+                else:
+                    action_log_probs, model_output = actor_forward_result
+
                 output.action_log_probs = action_log_probs
                 # Extract action_entropy if available
                 if "action_entropy" in model_output:

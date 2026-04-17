@@ -176,6 +176,66 @@ class PolicyLoss(nn.Module):
         self.use_dapo = use_dapo
         self.use_cpg_loss = use_cpg_loss
         self.high_entropy_token_ratio = high_entropy_token_ratio
+        self._last_stats: dict[str, float] = {}
+
+    @staticmethod
+    def _stats_over_mask(values: torch.Tensor, mask: Optional[torch.Tensor], prefix: str) -> dict[str, float]:
+        if mask is None:
+            selected = values.reshape(-1)
+        else:
+            selected = values.masked_select(mask.to(dtype=torch.bool))
+
+        if selected.numel() == 0:
+            return {
+                f"{prefix}_mean": 0.0,
+                f"{prefix}_min": 0.0,
+                f"{prefix}_max": 0.0,
+            }
+
+        selected = selected.detach().float()
+        return {
+            f"{prefix}_mean": selected.mean().item(),
+            f"{prefix}_min": selected.min().item(),
+            f"{prefix}_max": selected.max().item(),
+        }
+
+    def get_last_stats(self) -> dict[str, float]:
+        return dict(self._last_stats)
+
+    def _update_last_stats(
+        self,
+        *,
+        stats_mask: torch.Tensor,
+        advantages: torch.Tensor,
+        logprob_delta: torch.Tensor,
+        token_loss: torch.Tensor,
+        log_probs: Optional[torch.Tensor] = None,
+        old_log_probs: Optional[torch.Tensor] = None,
+        ratio: Optional[torch.Tensor] = None,
+    ) -> None:
+        valid_token_count = float(stats_mask.sum().item())
+        stats = {
+            "policy/valid_tokens": valid_token_count,
+            **self._stats_over_mask(advantages, stats_mask, "policy/adv"),
+            **self._stats_over_mask(logprob_delta, stats_mask, "policy/logprob_delta"),
+            **self._stats_over_mask(token_loss, stats_mask, "policy/token_loss"),
+        }
+
+        if ratio is not None:
+            denom = max(valid_token_count, 1.0)
+            clipped_high = (ratio > 1 + self.clip_eps).masked_select(stats_mask)
+            clipped_low = (ratio < 1 - self.clip_eps).masked_select(stats_mask)
+            stats.update(
+                {
+                    "policy/clipfrac_high": float(clipped_high.numel() / denom),
+                    "policy/clipfrac_low": float(clipped_low.numel() / denom),
+                    **self._stats_over_mask(log_probs, stats_mask, "policy/logprob"),
+                    **self._stats_over_mask(old_log_probs, stats_mask, "policy/old_logprob"),
+                    **self._stats_over_mask(ratio, stats_mask, "policy/ratio"),
+                }
+            )
+
+        self._last_stats = stats
 
     def forward(
         self,
@@ -236,21 +296,44 @@ class PolicyLoss(nn.Module):
         else:
             # No entropy masking, use action_mask only
             final_mask = action_mask
+
+        stats_mask = final_mask
+        if stats_mask is None:
+            stats_mask = torch.ones_like(log_probs, dtype=torch.bool)
+        else:
+            stats_mask = stats_mask.to(dtype=torch.bool)
+
+        logprob_delta = log_probs - old_log_probs
         if self.use_cpg_loss:
             clipped_log_probs = torch.where(
                 advantages > 0, torch.clamp(log_probs, max=torch.log(torch.tensor(1 + self.clip_eps)) + old_log_probs),
                 torch.clamp(log_probs, min=torch.log(torch.tensor(1 - self.clip_eps)) + old_log_probs)
             )
-            loss = -clipped_log_probs * advantages
-            loss = masked_mean(loss, final_mask, dim=-1).mean()
+            token_loss = -clipped_log_probs * advantages
+            loss = masked_mean(token_loss, final_mask, dim=-1).mean()
+            self._update_last_stats(
+                stats_mask=stats_mask,
+                advantages=advantages,
+                logprob_delta=logprob_delta,
+                token_loss=token_loss,
+            )
             return loss
 
         # PPO loss
-        ratio = (log_probs - old_log_probs).exp()
+        ratio = logprob_delta.exp()
         surr1 = ratio * advantages
         surr2 = ratio.clamp(1 - self.clip_eps, 1 + self.clip_eps) * advantages
-        loss = -torch.min(surr1, surr2)
-        loss = masked_mean(loss, final_mask, dim=-1).mean()
+        token_loss = -torch.min(surr1, surr2)
+        loss = masked_mean(token_loss, final_mask, dim=-1).mean()
+        self._update_last_stats(
+            stats_mask=stats_mask,
+            advantages=advantages,
+            logprob_delta=logprob_delta,
+            token_loss=token_loss,
+            log_probs=log_probs,
+            old_log_probs=old_log_probs,
+            ratio=ratio,
+        )
 
         return loss
 

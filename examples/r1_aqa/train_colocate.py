@@ -25,7 +25,12 @@ import torch.nn as nn
 import torch.nn.functional as F
 from lightrft.utils import add_arguments
 from lightrft.datasets import SFTDatasetVL
-from lightrft.models.actor_al import ActorAL, create_audio_processor
+from lightrft.models.actor_al import (
+    AUDIO_MODEL_TYPE_QWEN2_5_OMNI,
+    ActorAL,
+    create_audio_processor,
+    infer_audio_model_type,
+)
 from lightrft.models.actor_language import ActorLanguage
 from lightrft.strategy import get_strategy
 from lightrft.trainer.spmd_ppo_trainer import SPMDPPOTrainerVL
@@ -35,6 +40,17 @@ from lightrft.utils import blending_datasets, get_tokenizer_processor_vl
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from reward_models_utils import reward_fn
 from audio_dataset import AudioPromptDataset
+
+
+def _validate_inference_engine(args) -> None:
+    if args.text_only:
+        return
+
+    model_type = infer_audio_model_type(args.pretrain)
+    if model_type == AUDIO_MODEL_TYPE_QWEN2_5_OMNI and args.engine_type == "sglang":
+        raise ValueError(
+            "Qwen2.5-Omni audio demo currently requires --engine_type vllm; sglang is not supported."
+        )
 
 
 def train(args):
@@ -52,6 +68,8 @@ def train(args):
         8. Run training loop via SPMDPPOTrainerVL
         9. Save final model
     """
+    _validate_inference_engine(args)
+
     # ==================== Strategy ====================
     strategy = get_strategy(args)
 

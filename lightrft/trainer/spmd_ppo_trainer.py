@@ -275,6 +275,10 @@ class SPMDPPOTrainerBase:
                         "kl": status["kl"],  # KL divergence
                         "act_lr": status["actor_lr"],  # actor learning rate
                     }
+                    if "policy/ratio_max" in status:
+                        short_status["rmax"] = status["policy/ratio_max"]
+                    if "policy/logprob_delta_max" in status:
+                        short_status["dmax"] = status["policy/logprob_delta_max"]
 
                 if "critic_loss" in status:
                     short_status["cri"] = status["critic_loss"]
