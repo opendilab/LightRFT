@@ -4,6 +4,8 @@ import os
 import sys
 from datetime import datetime
 
+import torch
+
 from lightrft.utils import get_tokenizer_processor_vl, ensure_video_input_available
 from lightrft.models import ActorVL
 from lightrft.strategy import get_strategy
