@@ -57,7 +57,7 @@ from .utils import RunningMoments, compute_clip_fraction, get_cpgd_advantages_re
 from .advantage_calculator import get_advantage_calculator, normalize_advantages_cross_batch
 from .image_utils import normalize_images, get_images_num
 from .video_utils import normalize_videos, get_videos_num
-from examples.on_policy_distillation.on_policy_distillation_reward import (
+from lightrft.trainer.opd_utils import (
     get_teacher_logprobs_for_experiences,
     get_teacher_logprobs_by_ids,
 )

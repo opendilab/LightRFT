@@ -100,7 +100,7 @@ class OnPolicyDistillationCalculator(AdvantageCalculator):
 
 ### 2. Teacher Log Prob Fetcher
 
-**File**: `examples/on_policy_distillation/on_policy_distillation_reward.py`
+**File**: `lightrft/trainer/opd_utils.py`
 
 - Async HTTP requests to teacher server
 - Supports SGLang and vLLM response formats
@@ -237,8 +237,7 @@ examples/on_policy_distillation/
 ├── run_opd_qwen.sh                   # All-in-one training script (template)
 ├── start_teacher.sh                  # Teacher server only (template)
 ├── start_training.sh                 # Training only (template, requires TEACHER_URL)
-├── test_opd.py                       # Unit tests
-└── on_policy_distillation_reward.py   # Teacher logprob fetcher
+└── test_opd.py                       # Unit tests
 ```
 
 ## References

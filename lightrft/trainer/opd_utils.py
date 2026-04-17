@@ -1,5 +1,5 @@
 """
-On-Policy Distillation Reward Function for LightRFT
+On-Policy Distillation Utility Functions for LightRFT
 
 This module provides functions to query a teacher model for log probabilities
 used in knowledge distillation during RL training.

@@ -92,8 +92,6 @@ torchrun \
     --use_kl_loss \
     --flash_attn \
     --engine_type sglang \
-    --enable_engine_sleep \
-    --rm_use_engine \
     --reward_pretrain "" \
     --teacher_model_url "$TEACHER_URL" \
     ${TASK_REWARD_FLAG} \
@@ -103,7 +101,6 @@ torchrun \
     --train_batch_size ${TBS} \
     --micro_rollout_batch_size ${MICRO_ROLLOUT_BS} \
     --rollout_batch_size ${RBS} \
-    --max_epochs 1 \
     --num_episodes ${EPISODE} \
     --lr_warmup_ratio 0.03 \
     --n_samples_per_prompt $N_SAMPLES \

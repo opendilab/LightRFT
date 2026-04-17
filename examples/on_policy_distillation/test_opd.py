@@ -249,9 +249,7 @@ class TestZeroVsNonZeroRewards:
 class TestTeacherLogprobExtraction:
     def test_sglang_format(self):
         """extract_teacher_logprobs handles SGLang format correctly."""
-        from examples.on_policy_distillation.on_policy_distillation_reward import (
-            extract_teacher_logprobs,
-        )
+        from lightrft.trainer.opd_utils import extract_teacher_logprobs
 
         response = {
             "meta_info": {
@@ -275,9 +273,7 @@ class TestTeacherLogprobExtraction:
 
     def test_padding_for_long_response(self):
         """Pads to response_length when requested length > available logprobs."""
-        from examples.on_policy_distillation.on_policy_distillation_reward import (
-            extract_teacher_logprobs,
-        )
+        from lightrft.trainer.opd_utils import extract_teacher_logprobs
 
         response = {
             "meta_info": {
@@ -341,7 +337,7 @@ class TestDimensionAlignment:
 class TestRewardFunc:
     def test_reward_func_returns_zeros(self):
         """Placeholder reward_func returns zeros."""
-        from examples.on_policy_distillation.on_policy_distillation_reward import reward_func
+        from lightrft.trainer.opd_utils import reward_func
 
         result = reward_func(queries=["q1", "q2", "q3"], prompts=["p1", "p2", "p3"])
         assert isinstance(result, torch.Tensor)
