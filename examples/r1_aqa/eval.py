@@ -279,7 +279,9 @@ def run_inference_vllm(
             all_inputs.append({
                 "prompt": text,
                 "multi_modal_data": {
-                    "audio": [(audio, sr)]
+                    # vLLM Qwen2-Audio expects a single audio sample as a scalar
+                    # ``(waveform, sampling_rate)`` payload, not ``[(waveform, sr)]``.
+                    "audio": (audio, sr)
                 },
             })
         except Exception as e:

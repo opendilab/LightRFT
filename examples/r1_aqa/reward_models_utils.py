@@ -77,9 +77,6 @@ def accuracy_reward_fn(content: str, solution: str) -> float:
         sol_match = re.search(r"<answer>(.*?)</answer>", solution)
         ground_truth = sol_match.group(1).strip() if sol_match else solution.strip()
         student_answer = content.strip()
-        import torch.distributed as dist
-        if dist.is_initialized() and dist.get_rank() == 0:
-            print(f"student_answer: {student_answer}, ground_truth: {ground_truth}")
         if student_answer == ground_truth:
             reward = 1.0
 

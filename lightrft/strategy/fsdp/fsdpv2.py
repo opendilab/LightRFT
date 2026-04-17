@@ -74,8 +74,8 @@ manual_transformer_cls_names_to_wrap = [
     "LlamaDecoderLayer",  # for DeepSeek-R1-Distill-Llama-70B
     "DeepseekDecoderLayer",
 ]
-
-vit_transformer_cls_names = [
+# multi-modal modules
+mm_module_cls_names = [
     "Qwen2VLVisionBlock",
     "Qwen2_5_VLVisionBlock",
     "Qwen2_5OmniVisionEncoder",
@@ -394,25 +394,25 @@ class FSDPV2Strategy(StrategyBase):
             # Note:if we have mixed multi-modal data across DP ranks
             # (e.g. some ranks pure text, other ranks contains images)
             # we either keep vision model in full state, or keep it in FSDP's root module.
-            # below we keep vit in root module to avoid stuck
-            for cls_name in vit_transformer_cls_names:
+            # below we keep multi-modal modules in root module to avoid stuck
+            for cls_name in mm_module_cls_names:
                 if cls_name in transformer_cls_names_to_wrap:
                     transformer_cls_names_to_wrap.remove(cls_name)
 
         transformer_cls_to_wrap = list()  # noqa
-        vit_transformer_cls = list()  # noqa
+        mm_module_cls = list()  # noqa
         for layer_class in transformer_cls_names_to_wrap:
             transformer_cls = get_module_class_from_name(model_to_wrap, layer_class)
             if transformer_cls is not None:
                 transformer_cls_to_wrap.append(transformer_cls)
 
-        # Note: in this way, we keep vit in full state by passing no_shard_mesh
-        #       this is less memory efficient compared to keep vit in root module
-        # vit_transformer_cls = list()
-        # for layer_class in vit_transformer_cls_names:
+        # Note: in this way, we keep multi-modal modules in full state by passing no_shard_mesh
+        #       this is less memory efficient compared to keep multi-modal modules in root module
+        # mm_module_cls = list()
+        # for layer_class in mm_module_cls_names:
         #     transformer_cls = get_module_class_from_name(model_to_wrap, layer_class)
         #     if transformer_cls is not None:
-        #         vit_transformer_cls.append(transformer_cls)
+        #         mm_module_cls.append(transformer_cls)
 
         if len(transformer_cls_to_wrap) == 0:
             self.print("len(transformer_cls_to_wrap)=0", model_to_wrap)
@@ -444,13 +444,13 @@ class FSDPV2Strategy(StrategyBase):
         # fsdp_kwargs_no_shard = fsdp_kwargs.copy()
         # fsdp_kwargs_no_shard['mesh'] = no_shard_mesh
         # fsdp_kwargs_no_shard['reshard_after_forward'] = True
-        # fsdp_kwargs_vit = fsdp_kwargs_no_shard if self.no_shard_vit else fsdp_kwargs
+        # fsdp_kwargs_mm = fsdp_kwargs_no_shard if self.no_shard_mm else fsdp_kwargs
 
         for cls_to_wrap in transformer_cls_to_wrap:
             for module in model_to_wrap.modules():
                 if isinstance(module, cls_to_wrap):
-                    # if cls_to_wrap in vit_transformer_cls:
-                    #     fully_shard(module, **fsdp_kwargs_vit)
+                    # if cls_to_wrap in mm_module_cls:
+                    #     fully_shard(module, **fsdp_kwargs_mm)
                     fully_shard(module, **fsdp_kwargs)
 
         if not self.args.fused_linear_logprob:

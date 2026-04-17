@@ -83,6 +83,7 @@ def get_vllm_engine_for_rollout(args: Any):
         mem_util=args.engine_mem_util,
         max_model_len=args.prompt_max_len + args.generate_max_len,
         enable_sleep=args.enable_engine_sleep,
+        seed=getattr(args, "seed", 42),
         **kwargs,
     )
     return vllm_engine
@@ -95,6 +96,7 @@ def get_vllm_engine(
     mem_util: float = 0.5,
     max_model_len: int = 4096,
     enable_sleep: bool = True,
+    seed: int = 42,
     **kwargs: Any
 ):
     """
@@ -116,6 +118,9 @@ def get_vllm_engine(
     :type max_model_len: int
     :param enable_sleep: Whether to enable sleep mode for memory efficiency. Defaults to True.
     :type enable_sleep: bool
+    :param seed: Random seed forwarded to vLLM. Required by newer vLLM releases when
+        using the external launcher backend so workers share the same sampling config.
+    :type seed: int
     :param kwargs: Additional keyword arguments passed to the LLM constructor.
     :type kwargs: Any
 
@@ -160,6 +165,7 @@ def get_vllm_engine(
         worker_cls="lightrft.strategy.vllm_utils.vllm_worker_wrap_no_ray.WorkerWrap",
         enable_sleep_mode=enable_sleep,
         max_model_len=max_model_len,
+        seed=seed,
         # enforce_eager=True,
         **kwargs,
     )

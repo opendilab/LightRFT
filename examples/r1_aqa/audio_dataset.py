@@ -16,7 +16,6 @@ the explicit audio-language interface in the trainer/model stack.
 
 from __future__ import annotations
 
-import copy
 import json
 import os
 from typing import Any, Dict, List, Optional, Tuple
@@ -32,29 +31,6 @@ from torch.utils.data import Dataset
 def load_audio(audio_path: str, sr: int = 16000) -> Tuple[Any, int]:
     """Load an audio file as ``(waveform, sampling_rate)``."""
     return librosa.load(audio_path, sr=sr)
-
-
-def sanitize_qwen2_audio_messages(messages) -> List[Dict[str, Any]]:
-    """
-    Remove misleading keys before applying the Qwen2-Audio chat template.
-
-    Some parquet rows keep ``audio_url=None`` on text segments, and the upstream
-    template interprets the presence of that key as an audio placeholder.
-    """
-    sanitized = copy.deepcopy(messages)
-    for message in sanitized:
-        content = message.get("content")
-        if not isinstance(content, list):
-            continue
-        for segment in content:
-            if not isinstance(segment, dict):
-                continue
-            segment_type = segment.get("type")
-            if segment_type == "text":
-                segment.pop("audio_url", None)
-            elif segment_type == "audio":
-                segment.pop("text", None)
-    return sanitized
 
 
 class AudioPromptDataset(Dataset):
@@ -109,7 +85,6 @@ class AudioPromptDataset(Dataset):
                 prompt_messages = [{"role": "user", "content": prompt_messages}]
 
         # ---- 2. Render via processor's chat template ----
-        prompt_messages = sanitize_qwen2_audio_messages(prompt_messages)
         try:
             prompt_text = self.processor.apply_chat_template(
                 prompt_messages,
@@ -119,8 +94,6 @@ class AudioPromptDataset(Dataset):
         except Exception as exc:
             self.strategy.print(f"[WARNING] Chat template failed for idx {idx}: {exc}")
             prompt_text = self._extract_text_from_messages(prompt_messages)
-
-        prompt_text = prompt_text.replace('<answer></answer>', '<answer> </answer>')
 
         # ---- 3. Load audio ----
         audio_path = data.get(self.audio_path_key, "")

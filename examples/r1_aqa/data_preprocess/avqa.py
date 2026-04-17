@@ -82,15 +82,16 @@ def build_prompt_and_solution(
 
     # Build question template (matches R1-AQA)
     choice_str = f"Please choose the answer from the following options: {multi_choice}."
+    # There should be a space between <answer> and </answer>
     if enable_think:
         question_template = (
             f"{question_text} {choice_str} "
             "Output the thinking process in <think> </think> "
-            "and final answer in <answer></answer>."
+            "and final answer in <answer> </answer>."
         )
     else:
         question_template = (f"{question_text} {choice_str} "
-                             "Output the final answer in <answer></answer>.")
+                             "Output the final answer in <answer> </answer>.")
 
     # Chat-format prompt with audio content type (Qwen2-Audio format)
     prompt = [{
