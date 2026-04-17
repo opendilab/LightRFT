@@ -48,9 +48,7 @@ def _validate_inference_engine(args) -> None:
 
     model_type = infer_audio_model_type(args.pretrain)
     if model_type == AUDIO_MODEL_TYPE_QWEN2_5_OMNI and args.engine_type == "sglang":
-        raise ValueError(
-            "Qwen2.5-Omni audio demo currently requires --engine_type vllm; sglang is not supported."
-        )
+        raise ValueError("Qwen2.5-Omni audio demo currently requires --engine_type vllm; sglang is not supported.")
 
 
 def train(args):
@@ -145,9 +143,7 @@ def train(args):
         )
         if args.fsdp:
             shard_size = (
-                args.initial_model_shard_size
-                if args.initial_model_shard_size is not None
-                else strategy.world_size
+                args.initial_model_shard_size if args.initial_model_shard_size is not None else strategy.world_size
             )
             initial_model = strategy.prepare_model(initial_model, is_training=False, shard_size=shard_size)
             strategy.offload_model(initial_model)
@@ -209,19 +205,28 @@ def train(args):
         if eval_data_path:
             strategy.print(f"Loading evaluation dataset from {eval_data_path}")
             eval_data = blending_datasets(
-                eval_data_path, "1.0", strategy, args.seed,
-                return_eval=False, train_split=args.eval_split,
+                eval_data_path,
+                "1.0",
+                strategy,
+                args.seed,
+                return_eval=False,
+                train_split=args.eval_split,
             )
             if len(eval_data) > 0:
                 eval_data = eval_data.select(range(min(args.max_eval_samples, len(eval_data))))
                 eval_dataset = AudioPromptDataset(
-                    eval_data, tokenizer, processor, args.prompt_max_len, strategy,
+                    eval_data,
+                    tokenizer,
+                    processor,
+                    args.prompt_max_len,
+                    strategy,
                     input_template=args.input_template,
                 )
                 eval_dataloader = strategy.setup_dataloader(
                     eval_dataset,
                     args.rollout_batch_size // strategy.world_size,
-                    False, False,
+                    False,
+                    False,
                     collate_fn=eval_dataset.collate_fn,
                 )
                 strategy.print(f"Evaluation dataset: {len(eval_dataset)} samples")
@@ -233,7 +238,8 @@ def train(args):
     prompts_dataloader = strategy.setup_dataloader(
         prompts_dataset,
         args.rollout_batch_size // strategy.world_size,
-        True, True,
+        True,
+        True,
         collate_fn=prompts_dataset.collate_fn,
     )
 
@@ -255,9 +261,7 @@ def train(args):
         (critic, critic_optim, critic_scheduler),
         reward_models,
         initial_model,
-    ) = strategy.prepare_models_and_optimizers(
-        actor, critic, reward_models, initial_model, args, max_steps
-    )
+    ) = strategy.prepare_models_and_optimizers(actor, critic, reward_models, initial_model, args, max_steps)
 
     strategy.print(reward_models)
 
@@ -269,8 +273,10 @@ def train(args):
     consumed_samples = 0
     if args.load_checkpoint and os.path.exists(os.path.join(args.ckpt_path, "_actor")):
         _, states = strategy.load_ckpt(
-            actor.model, os.path.join(args.ckpt_path, "_actor"),
-            optimizer=actor_optim, scheduler=actor_scheduler,
+            actor.model,
+            os.path.join(args.ckpt_path, "_actor"),
+            optimizer=actor_optim,
+            scheduler=actor_scheduler,
         )
         consumed_samples = states["consumed_samples"]
         strategy.print(f"Loaded checkpoint: {args.ckpt_path}, consumed_samples: {consumed_samples}")
@@ -361,10 +367,13 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     # Engine
-    parser.add_argument("--engine_type", type=str, default="vllm",
-                        help="Inference engine: vllm or sglang")
-    parser.add_argument("--text_only", action="store_true", default=False,
-                        help="Text-only mode (no multimodal). Default False for audio tasks.")
+    parser.add_argument("--engine_type", type=str, default="vllm", help="Inference engine: vllm or sglang")
+    parser.add_argument(
+        "--text_only",
+        action="store_true",
+        default=False,
+        help="Text-only mode (no multimodal). Default False for audio tasks."
+    )
 
     # Checkpoint
     parser.add_argument("--save_path", type=str, default="./ckpt")
@@ -396,10 +405,10 @@ if __name__ == "__main__":
     parser.add_argument("--micro_rollout_batch_size", type=int, default=8)
     parser.add_argument("--max_epochs", type=int, default=1)
     # R1-AQA default: max_prompt_length=512
-    parser.add_argument("--prompt_max_len", type=int, default=512,
-                        help="Max tokens for each prompt (R1-AQA default: 512)")
-    parser.add_argument("--generate_max_len", type=int, default=1024,
-                        help="Max tokens to generate")
+    parser.add_argument(
+        "--prompt_max_len", type=int, default=512, help="Max tokens for each prompt (R1-AQA default: 512)"
+    )
+    parser.add_argument("--generate_max_len", type=int, default=1024, help="Max tokens to generate")
     parser.add_argument("--max_len", type=int, default=None)
     parser.add_argument("--max_samples", type=int, default=1000000)
     parser.add_argument("--max_norm", type=float, default=1.0)
@@ -422,8 +431,12 @@ if __name__ == "__main__":
     parser.add_argument("--freeze_prefix", action="store_true", default=False)
     parser.add_argument("--freezing_actor_steps", type=int, default=-1)
     # R1-AQA default: num_generations=8
-    parser.add_argument("--n_samples_per_prompt", type=int, default=8,
-                        help="Number of responses per prompt in GRPO (R1-AQA default: 8)")
+    parser.add_argument(
+        "--n_samples_per_prompt",
+        type=int,
+        default=8,
+        help="Number of responses per prompt in GRPO (R1-AQA default: 8)"
+    )
     parser.add_argument("--save_value_network", action="store_true", default=False)
     # R1-AQA default: lr not explicitly set, using 1e-6 as reasonable default
     parser.add_argument("--actor_learning_rate", type=float, default=1e-6)
@@ -431,9 +444,9 @@ if __name__ == "__main__":
     parser.add_argument("--lr_warmup_ratio", type=float, default=0.03)
     parser.add_argument("--kl_target", type=float, default=None)
     parser.add_argument("--init_kl_coef", type=float, default=0.01)
-    parser.add_argument("--kl_estimator", type=str, default="k3",
-                        choices=["k1", "k2", "k3"],
-                        help="GRPO uses k3 as KL estimator")
+    parser.add_argument(
+        "--kl_estimator", type=str, default="k3", choices=["k1", "k2", "k3"], help="GRPO uses k3 as KL estimator"
+    )
     parser.add_argument("--adam_betas", type=float, nargs=2, default=(0.9, 0.95))
 
     # Reward/Advantage Norm/Clip
@@ -467,10 +480,13 @@ if __name__ == "__main__":
     parser.add_argument("--initial_model_shard_size", type=int, default=None)
 
     # Advantage estimator
-    parser.add_argument("--advantage_estimator", type=str,
-                        choices=["gae", "reinforce", "rloo", "reinforce_baseline", "group_norm", "cpgd", "reinforce++"],
-                        default="group_norm",
-                        help="Advantage estimation method. R1-AQA uses GRPO = group_norm")
+    parser.add_argument(
+        "--advantage_estimator",
+        type=str,
+        choices=["gae", "reinforce", "rloo", "reinforce_baseline", "group_norm", "cpgd", "reinforce++"],
+        default="group_norm",
+        help="Advantage estimation method. R1-AQA uses GRPO = group_norm"
+    )
     parser.add_argument("--use_kl_loss", action="store_true", default=False)
 
     # LoRA
@@ -510,8 +526,7 @@ if __name__ == "__main__":
     parser.add_argument("--wandb_org", type=str, default=None)
     parser.add_argument("--wandb_group", type=str, default=None)
     parser.add_argument("--wandb_project", type=str, default="lightrft_r1_aqa")
-    parser.add_argument("--wandb_run_name", type=str,
-                        default="r1_aqa_%s" % datetime.now().strftime("%m%dT%H:%M"))
+    parser.add_argument("--wandb_run_name", type=str, default="r1_aqa_%s" % datetime.now().strftime("%m%dT%H:%M"))
 
     # TensorBoard
     parser.add_argument("--use_tensorboard", type=str, default=None)
@@ -539,9 +554,7 @@ if __name__ == "__main__":
         args.critic_pretrain = args.pretrain
 
     if args.advantage_estimator in ["rloo", "reinforce_baseline", "group_norm"]:
-        assert args.n_samples_per_prompt > 1, (
-            f"{args.advantage_estimator} requires n_samples_per_prompt > 1"
-        )
+        assert args.n_samples_per_prompt > 1, (f"{args.advantage_estimator} requires n_samples_per_prompt > 1")
 
     if args.use_kl_loss:
         if args.kl_estimator not in ["k2", "k3"]:

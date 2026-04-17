@@ -325,7 +325,6 @@ class TestFakeStrategyWithConfig(unittest.TestCase):
 
 class TestBuildMultimodalInputs(unittest.TestCase):
     """Focused tests for engine-specific multimodal payload construction."""
-
     def test_keeps_waveform_audio_for_vllm(self):
         """vLLM audio inputs should stay waveform-native instead of being WAV bytes."""
         audio = (np.asarray([0.1, -0.2, 0.3], dtype=np.float32), 16000)

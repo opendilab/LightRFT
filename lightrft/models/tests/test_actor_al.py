@@ -384,9 +384,9 @@ class TestActorAL:
         actor = self._make_actor(mock_omni_model)
         audio_token_id = mock_omni_model.thinker.config.audio_token_id
 
-        sequences = torch.tensor(
-            [[11, 12, 13, 14, audio_token_id, audio_token_id, audio_token_id, audio_token_id, 31, 41, 42, 43]]
-        )
+        sequences = torch.tensor([[
+            11, 12, 13, 14, audio_token_id, audio_token_id, audio_token_id, audio_token_id, 31, 41, 42, 43
+        ]])
         attention_mask = torch.ones_like(sequences)
         expected_counts = torch.tensor([5])
 

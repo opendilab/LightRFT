@@ -225,15 +225,13 @@ class PolicyLoss(nn.Module):
             denom = max(valid_token_count, 1.0)
             clipped_high = (ratio > 1 + self.clip_eps).masked_select(stats_mask)
             clipped_low = (ratio < 1 - self.clip_eps).masked_select(stats_mask)
-            stats.update(
-                {
-                    "policy/clipfrac_high": float(clipped_high.numel() / denom),
-                    "policy/clipfrac_low": float(clipped_low.numel() / denom),
-                    **self._stats_over_mask(log_probs, stats_mask, "policy/logprob"),
-                    **self._stats_over_mask(old_log_probs, stats_mask, "policy/old_logprob"),
-                    **self._stats_over_mask(ratio, stats_mask, "policy/ratio"),
-                }
-            )
+            stats.update({
+                "policy/clipfrac_high": float(clipped_high.numel() / denom),
+                "policy/clipfrac_low": float(clipped_low.numel() / denom),
+                **self._stats_over_mask(log_probs, stats_mask, "policy/logprob"),
+                **self._stats_over_mask(old_log_probs, stats_mask, "policy/old_logprob"),
+                **self._stats_over_mask(ratio, stats_mask, "policy/ratio"),
+            })
 
         self._last_stats = stats
 

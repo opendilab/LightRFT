@@ -50,10 +50,10 @@ from lightrft.models.actor_al import (
     infer_audio_model_type,
 )
 
-
 # ---------------------------------------------------------------------------
 # Message building (MMAU and MMAR share question/choices + <answer> format)
 # ---------------------------------------------------------------------------
+
 
 def build_message(obj_dict: Dict, audio_dir: Optional[str] = None) -> list:
     """
@@ -66,10 +66,8 @@ def build_message(obj_dict: Dict, audio_dir: Optional[str] = None) -> list:
     :return: Chat messages list.
     """
     choice_str = f"Please choose the answer from the following options: {obj_dict['choices']}."
-    question_template = (
-        f"{obj_dict['question']} {choice_str} "
-        "Output the final answer in <answer></answer>."
-    )
+    question_template = (f"{obj_dict['question']} {choice_str} "
+                         "Output the final answer in <answer></answer>.")
 
     # MMAU uses audio_id; MMAR uses audio_path (e.g. ./audio/xxx.wav)
     raw_path = obj_dict.get("audio_path") or obj_dict.get("audio_id", "")
@@ -79,15 +77,19 @@ def build_message(obj_dict: Dict, audio_dir: Optional[str] = None) -> list:
     else:
         audio_path = raw_path
 
-    message = [
-        {
-            "role": "user",
-            "content": [
-                {"type": "audio", "audio_url": audio_path},
-                {"type": "text", "text": question_template},
-            ],
-        }
-    ]
+    message = [{
+        "role": "user",
+        "content": [
+            {
+                "type": "audio",
+                "audio_url": audio_path
+            },
+            {
+                "type": "text",
+                "text": question_template
+            },
+        ],
+    }]
     return message
 
 
@@ -108,6 +110,7 @@ def extract_answer(output_str: str) -> str:
 # ---------------------------------------------------------------------------
 # MMAR official evaluation uses token-based string_match; optional local use
 # ---------------------------------------------------------------------------
+
 
 def _string_match_mmar(answer: str, prediction: str, choices: List[str]) -> bool:
     """
@@ -134,6 +137,7 @@ def _string_match_mmar(answer: str, prediction: str, choices: List[str]) -> bool
 # ---------------------------------------------------------------------------
 # Inference
 # ---------------------------------------------------------------------------
+
 
 def run_inference_hf(
     model_path: str,
@@ -185,9 +189,7 @@ def run_inference_hf(
             print(f"Processing {i + 1}/{len(data)}...")
 
         message = build_message(sample, audio_dir)
-        text = processor.apply_chat_template(
-            message, tokenize=False, add_generation_prompt=True
-        )
+        text = processor.apply_chat_template(message, tokenize=False, add_generation_prompt=True)
         audio_path = get_audio_path(sample)
 
         try:
@@ -209,12 +211,10 @@ def run_inference_hf(
             "do_sample": False,
         }
         if model_type == AUDIO_MODEL_TYPE_QWEN2_5_OMNI:
-            generation_kwargs.update(
-                {
-                    "generation_mode": "text",
-                    "thinker_max_new_tokens": max_new_tokens,
-                }
-            )
+            generation_kwargs.update({
+                "generation_mode": "text",
+                "thinker_max_new_tokens": max_new_tokens,
+            })
         else:
             generation_kwargs["max_new_tokens"] = max_new_tokens
 
@@ -271,16 +271,16 @@ def run_inference_vllm(
     all_inputs = []
     for sample in data:
         message = build_message(sample, audio_dir)
-        text = processor.apply_chat_template(
-            message, tokenize=False, add_generation_prompt=True
-        )
+        text = processor.apply_chat_template(message, tokenize=False, add_generation_prompt=True)
         audio_path = get_audio_path(sample)
 
         try:
             audio, _ = librosa.load(audio_path, sr=sr)
             all_inputs.append({
                 "prompt": text,
-                "multi_modal_data": {"audio": [(audio, sr)]},
+                "multi_modal_data": {
+                    "audio": [(audio, sr)]
+                },
             })
         except Exception as e:
             print(f"[WARNING] Audio load failed for {audio_path}: {e}")
@@ -296,6 +296,7 @@ def run_inference_vllm(
 # Main
 # ---------------------------------------------------------------------------
 
+
 def load_data(data_file: str, benchmark: str) -> List[Dict]:
     """Load MMAU (JSON array) or MMAR (JSONL) data."""
     with open(data_file, "r", encoding="utf-8") as f:
@@ -307,27 +308,19 @@ def load_data(data_file: str, benchmark: str) -> List[Dict]:
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="MMAU and MMAR evaluation for R1-AQA"
+    parser = argparse.ArgumentParser(description="MMAU and MMAR evaluation for R1-AQA")
+    parser.add_argument(
+        "--benchmark", type=str, required=True, choices=["mmau", "mmar"], help="Benchmark: mmau or mmar"
     )
-    parser.add_argument("--benchmark", type=str, required=True,
-                        choices=["mmau", "mmar"],
-                        help="Benchmark: mmau or mmar")
-    parser.add_argument("--model_path", type=str, required=True,
-                        help="Path to the trained model (HF format)")
-    parser.add_argument("--data_file", type=str, required=True,
-                        help="Path to benchmark data (MMAU: .json, MMAR: .jsonl)")
-    parser.add_argument("--audio_dir", type=str, default=None,
-                        help="Base directory for audio files")
-    parser.add_argument("--out_file", type=str, required=True,
-                        help="Output file for evaluation results")
-    parser.add_argument("--batch_size", type=int, default=32,
-                        help="Batch size for inference")
-    parser.add_argument("--max_new_tokens", type=int, default=1024,
-                        help="Maximum new tokens to generate")
-    parser.add_argument("--engine", type=str, default="hf",
-                        choices=["hf", "vllm"],
-                        help="Inference engine: hf or vllm")
+    parser.add_argument("--model_path", type=str, required=True, help="Path to the trained model (HF format)")
+    parser.add_argument(
+        "--data_file", type=str, required=True, help="Path to benchmark data (MMAU: .json, MMAR: .jsonl)"
+    )
+    parser.add_argument("--audio_dir", type=str, default=None, help="Base directory for audio files")
+    parser.add_argument("--out_file", type=str, required=True, help="Output file for evaluation results")
+    parser.add_argument("--batch_size", type=int, default=32, help="Batch size for inference")
+    parser.add_argument("--max_new_tokens", type=int, default=1024, help="Maximum new tokens to generate")
+    parser.add_argument("--engine", type=str, default="hf", choices=["hf", "vllm"], help="Inference engine: hf or vllm")
     args = parser.parse_args()
 
     # Load data
@@ -339,13 +332,19 @@ def main():
     print(f"Running inference with {args.engine} engine...")
     if args.engine == "vllm":
         all_outputs = run_inference_vllm(
-            args.model_path, data, args.audio_dir,
-            args.batch_size, args.max_new_tokens,
+            args.model_path,
+            data,
+            args.audio_dir,
+            args.batch_size,
+            args.max_new_tokens,
         )
     else:
         all_outputs = run_inference_hf(
-            args.model_path, data, args.audio_dir,
-            args.batch_size, args.max_new_tokens,
+            args.model_path,
+            data,
+            args.audio_dir,
+            args.batch_size,
+            args.max_new_tokens,
         )
 
     # Prediction key per benchmark

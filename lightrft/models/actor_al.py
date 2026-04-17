@@ -24,7 +24,6 @@ from .utils import (
     reset_position_ids,
 )
 
-
 AUDIO_MODEL_TYPE_QWEN2_AUDIO = "qwen2_audio"
 AUDIO_MODEL_TYPE_QWEN2_5_OMNI = "qwen2_5_omni"
 
@@ -155,10 +154,8 @@ def create_audio_processor(
         )
 
     if processor is not None and print_fn is not None:
-        print_fn(
-            f"[WARN] AutoProcessor loaded {type(processor).__name__}, "
-            f"re-loading as {processor_cls.__name__}"
-        )
+        print_fn(f"[WARN] AutoProcessor loaded {type(processor).__name__}, "
+                 f"re-loading as {processor_cls.__name__}")
 
     return processor_cls.from_pretrained(
         source,
@@ -619,19 +616,14 @@ class ActorAL(nn.Module):
                     sequences=sequences,
                     audio_token_id=audio_token_id,
                 )
-                original_audio_token_counts = (
-                    (sequences == audio_token_id).sum(dim=1)
-                    if audio_token_id is not None
-                    else None
-                )
+                original_audio_token_counts = ((sequences == audio_token_id).sum(dim=1)
+                                               if audio_token_id is not None else None)
                 expected_audio_token_counts = self._infer_audio_output_token_counts(
                     forward_model,
                     feature_attention_mask,
                 )
                 if (
-                    not self.packing_samples
-                    and audio_token_id is not None
-                    and expected_audio_token_counts is not None
+                    not self.packing_samples and audio_token_id is not None and expected_audio_token_counts is not None
                 ):
                     sequences, attention_mask = self._align_audio_placeholder_counts(
                         sequences=sequences,
@@ -641,14 +633,10 @@ class ActorAL(nn.Module):
                         pad_token_id=pad_token_id,
                         num_actions=(num_actions if isinstance(num_actions, int) else None),
                     )
-                actual_audio_token_counts = (
-                    (sequences == audio_token_id).sum(dim=1)
-                    if audio_token_id is not None
-                    else None
-                )
+                actual_audio_token_counts = ((sequences == audio_token_id).sum(dim=1)
+                                             if audio_token_id is not None else None)
                 if (
-                    actual_audio_token_counts is not None
-                    and expected_audio_token_counts is not None
+                    actual_audio_token_counts is not None and expected_audio_token_counts is not None
                     and torch.any(actual_audio_token_counts > expected_audio_token_counts)
                 ):
                     raise RuntimeError(
@@ -662,7 +650,7 @@ class ActorAL(nn.Module):
                         f"[ActorAL][rank={rank}] sequences={tuple(sequences.shape)} "
                         f"audio_values={tuple(input_features.shape)} "
                         f"feature_attention_mask={tuple(feature_attention_mask.shape)} "
-                        f"audio_token_count={actual_audio_token_counts.tolist() if actual_audio_token_counts is not None else None} "
+                        f"audio_token_count={actual_audio_token_counts.tolist() if actual_audio_token_counts is not None else None} "  # noqa
                         f"original_audio_token_count="
                         f"{original_audio_token_counts.tolist() if original_audio_token_counts is not None else None} "
                         f"feature_len={feature_attention_mask.sum(dim=1).tolist()} "
@@ -834,7 +822,7 @@ class ActorAL(nn.Module):
                 if expected_count == 0:
                     row_tokens = active_tokens.clone()
                 else:
-                    new_audio_block = active_tokens.new_full((expected_count,), audio_token_id)
+                    new_audio_block = active_tokens.new_full((expected_count, ), audio_token_id)
                     row_tokens = torch.cat((new_audio_block, active_tokens), dim=0)
             else:
                 block_start = int(audio_positions[0].item())
@@ -848,7 +836,7 @@ class ActorAL(nn.Module):
                 else:
                     prompt_prefix = active_tokens[:block_start]
                     prompt_suffix = active_tokens[block_end + 1:]
-                    new_audio_block = active_tokens.new_full((expected_count,), audio_token_id)
+                    new_audio_block = active_tokens.new_full((expected_count, ), audio_token_id)
                     row_tokens = torch.cat((prompt_prefix, new_audio_block, prompt_suffix), dim=0)
 
             # If the response contains stray audio placeholders, keep the sequence

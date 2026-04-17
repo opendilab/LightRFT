@@ -24,10 +24,10 @@ from typing import Any, Dict, List, Optional, Tuple
 import librosa
 from torch.utils.data import Dataset
 
-
 # ============================================================================
 # Audio Loading
 # ============================================================================
+
 
 def load_audio(audio_path: str, sr: int = 16000) -> Tuple[Any, int]:
     """Load an audio file as ``(waveform, sampling_rate)``."""
@@ -66,7 +66,6 @@ class AudioPromptDataset(Dataset):
     - ``audio_payload`` is kept as raw waveform + sampling rate for rollout-side processing
     - ``reference`` and ``label`` are passed through to reward computation
     """
-
     def __init__(
         self,
         dataset,
@@ -120,7 +119,7 @@ class AudioPromptDataset(Dataset):
         except Exception as exc:
             self.strategy.print(f"[WARNING] Chat template failed for idx {idx}: {exc}")
             prompt_text = self._extract_text_from_messages(prompt_messages)
-        
+
         prompt_text = prompt_text.replace('<answer></answer>', '<answer> </answer>')
 
         # ---- 3. Load audio ----

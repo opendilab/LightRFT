@@ -60,9 +60,7 @@ def clean_split(dataset, verify_decode: bool) -> tuple[list[int], list[dict[str,
         if verify_decode:
             ok, error = can_decode_audio(audio_path)
             if not ok:
-                dropped_rows.append(
-                    {"index": idx, "audio_path": audio_path, "reason": "decode_error", "error": error}
-                )
+                dropped_rows.append({"index": idx, "audio_path": audio_path, "reason": "decode_error", "error": error})
                 continue
 
         keep_indices.append(idx)
