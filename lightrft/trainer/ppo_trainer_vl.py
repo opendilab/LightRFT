@@ -522,8 +522,7 @@ class PPOTrainerVL(ABC):
                         else:
                             format_tensor = torch.tensor(all_format_rewards, dtype=torch.float32, device=device)
                         mean_format_reward = format_tensor.mean().item()
-                        if abs(mean_format_reward) > 1e-6:
-                            rollout_status["rollout_format_reward"] = mean_format_reward
+                        rollout_status["rollout_format_reward"] = mean_format_reward
 
                     if all_accuracy_rewards:
                         if isinstance(all_accuracy_rewards[0], torch.Tensor):
@@ -531,8 +530,7 @@ class PPOTrainerVL(ABC):
                         else:
                             accuracy_tensor = torch.tensor(all_accuracy_rewards, dtype=torch.float32, device=device)
                         mean_accuracy_reward = accuracy_tensor.mean().item()
-                        if abs(mean_accuracy_reward) > 1e-6:
-                            rollout_status["rollout_accuracy_reward"] = mean_accuracy_reward
+                        rollout_status["rollout_accuracy_reward"] = mean_accuracy_reward
 
                     if all_response_lengths:
                         if isinstance(all_response_lengths[0], torch.Tensor):

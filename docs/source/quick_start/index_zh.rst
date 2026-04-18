@@ -17,3 +17,9 @@
 
    algorithms_zh
    configuration_zh
+
+.. toctree::
+   :maxdepth: 2
+   :caption: 实战教程
+
+   grpo_gsm8k_geo3k_tutorial_zh

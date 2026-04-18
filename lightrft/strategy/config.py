@@ -114,6 +114,13 @@ class StrategyConfig:
     dynamic_sampling: bool = False
     # (str): Advantage estimator method, defaults to "gae"
     advantage_estimator: str = "group_norm"
+    # (float): OPD KL coefficient for on-policy distillation penalty
+    opd_kl_coef: float = 1.0
+    # (str): Dedicated teacher model URL for OPD (falls back to remote_rm_url if not set)
+    teacher_model_url: Optional[str] = None
+    # (bool): Use task reward in final reward computation. When False, rewards are zeroed
+    # but metrics (accuracy_reward, etc.) are still computed for logging.
+    use_task_reward: bool = True
 
     # KL loss and estimation
     # (bool): Use KL loss in training, defaults to False

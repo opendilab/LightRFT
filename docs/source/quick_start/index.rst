@@ -17,3 +17,9 @@ This guide helps you get started with LightRFT quickly, from basic concepts, use
 
    algorithms
    configuration
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Tutorials
+
+   grpo_gsm8k_geo3k_tutorial

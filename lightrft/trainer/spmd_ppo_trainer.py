@@ -329,6 +329,7 @@ class SPMDPPOTrainerBase:
             all_advantages = []
             all_returns = []
             all_response_lengths = []
+            all_opd_reverse_kl = []  # For on-policy distillation metrics
 
             for item in self.replay_buffer.items:
                 # Collect rewards
@@ -354,6 +355,10 @@ class SPMDPPOTrainerBase:
                     all_returns.append(item.returns)
                 if hasattr(item, 'info') and item.info is not None and 'response_length' in item.info:
                     all_response_lengths.append(item.info['response_length'])
+
+                # Collect on-policy distillation reverse KL
+                if hasattr(item, 'info') and item.info is not None and 'opd_reverse_kl' in item.info:
+                    all_opd_reverse_kl.append(item.info['opd_reverse_kl'])
 
             # Compute statistics
             # [TENSOR-FIX] Handle both tensor lists and scalar lists for all reward types
@@ -403,9 +408,8 @@ class SPMDPPOTrainerBase:
                     rule_tensor = torch.cat([t.to(device).float() for t in all_rule_rewards])
                 else:
                     rule_tensor = torch.tensor(all_rule_rewards, dtype=torch.float32, device=device)
-                if rule_tensor.abs().sum() > 0:  # Only log if rule rewards are non-zero
-                    status_mean["rule_reward_mean"] = rule_tensor.mean().item()
-                    self.strategy.print(f"rule_reward_mean: {status_mean['rule_reward_mean']}")
+                status_mean["rule_reward_mean"] = rule_tensor.mean().item()
+                self.strategy.print(f"rule_reward_mean: {status_mean['rule_reward_mean']}")
 
             # For advantages, returns, and lengths, they are already lists of tensors,
             # so torch.cat() is the correct function to use.
@@ -429,6 +433,22 @@ class SPMDPPOTrainerBase:
                     lengths_tensor = torch.tensor(all_response_lengths, dtype=torch.float32, device=device)
                 status_mean["response_length_mean"] = lengths_tensor.float().mean().item()
                 status_mean["response_length_std"] = lengths_tensor.float().std().item()
+
+            # On-Policy Distillation metrics
+            if all_opd_reverse_kl:
+                # Collect reverse KL from all experiences
+                if isinstance(all_opd_reverse_kl[0], torch.Tensor):
+                    opd_kl_tensor = torch.cat([t.to(device).float() for t in all_opd_reverse_kl])
+                else:
+                    opd_kl_tensor = torch.tensor(all_opd_reverse_kl, dtype=torch.float32, device=device)
+                # Mask out zero values (padding)
+                non_zero_mask = opd_kl_tensor != 0
+                if non_zero_mask.any():
+                    masked_kl = opd_kl_tensor[non_zero_mask]
+                    status_mean["opd_reverse_kl_mean"] = masked_kl.mean().item()
+                    status_mean["opd_reverse_kl_std"] = masked_kl.std().item()
+                    status_mean["opd_reverse_kl_max"] = masked_kl.max().item()
+                    status_mean["opd_reverse_kl_min"] = masked_kl.min().item()
 
             # Print detailed reward breakdown (only on rank 0)
             if self.print_replay_buffer_stats and self.strategy.is_rank_0():
@@ -466,6 +486,12 @@ class SPMDPPOTrainerBase:
                 if all_response_lengths:
                     self.strategy.print(
                         f"📏 Response Length:  {status_mean['response_length_mean']:.1f} ± {status_mean['response_length_std']:.1f} tokens"  # noqa
+                    )
+
+                if all_opd_reverse_kl and 'opd_reverse_kl_mean' in status_mean:
+                    self.strategy.print(
+                        f"🎓 OPD Reverse KL:   {status_mean['opd_reverse_kl_mean']:.4f} ± {status_mean['opd_reverse_kl_std']:.4f} "  # noqa
+                        f"(min={status_mean['opd_reverse_kl_min']:.4f}, max={status_mean['opd_reverse_kl_max']:.4f})"
                     )
 
                 self.strategy.print("=" * 60 + "\n")

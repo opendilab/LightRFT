@@ -59,6 +59,11 @@ from .audio_utils import AudioDataProcessor, get_audios_num, normalize_audios
 from .image_utils import normalize_images, get_images_num
 from .modality_utils import build_supported_model_kwargs
 from .video_utils import normalize_videos, get_videos_num
+from lightrft.trainer.opd_utils import (
+    get_teacher_logprobs_for_experiences,
+    get_teacher_logprobs_by_ids,
+)
+import asyncio
 
 # ============================================================================
 # Data Structures
@@ -445,7 +450,16 @@ class RewardComputationEngine:
         :type packing_samples: bool
         """
         self.reward_model = reward_model
-        self.remote_rm_url = remote_rm_url
+        # Ensure remote_rm_url is a list for consistent iteration
+        if remote_rm_url is None:
+            self.remote_rm_url = None
+        elif isinstance(remote_rm_url, str):
+            self.remote_rm_url = [remote_rm_url]
+        elif isinstance(remote_rm_url, (list, tuple)):
+            self.remote_rm_url = list(remote_rm_url)
+        else:
+            raise TypeError(f"remote_rm_url must be str, list, tuple, or None, got {type(remote_rm_url).__name__}")
+
         self.custom_reward_func = custom_reward_func
         self.reward_fn = reward_fn
         self.reward_fn_label_map = reward_fn_label_map or {}
@@ -938,9 +952,31 @@ class FastExperienceMaker(NaiveExperienceMaker):
             self.multimodal_processor = None
             self.audio_processor = None
 
+        # For On-Policy Distillation (OPD), prefer dedicated teacher_model_url.
+        # Fall back to remote_rm_url with deprecation warning for backwards compatibility.
+        if advantage_estimator == "on_policy_distillation":
+            teacher_url = getattr(self.strategy.args, 'teacher_model_url', None)
+            if teacher_url is not None:
+                self.teacher_model_url = teacher_url
+            elif self.remote_rm_url is not None:
+                import warnings
+                warnings.warn(
+                    "Using --remote_rm_url as teacher URL is deprecated. "
+                    "Use --teacher_model_url instead.",
+                    DeprecationWarning,
+                    stacklevel=2,
+                )
+                self.teacher_model_url = self.remote_rm_url
+            else:
+                self.teacher_model_url = None
+            rm_url_for_reward_engine = None  # Don't use remote_rm_url for rewards in OPD mode
+        else:
+            self.teacher_model_url = None
+            rm_url_for_reward_engine = self.remote_rm_url
+
         self.reward_engine = RewardComputationEngine(
             reward_model=self.reward_model,
-            remote_rm_url=self.remote_rm_url,
+            remote_rm_url=rm_url_for_reward_engine,
             custom_reward_func=getattr(self, "custom_reward_func", None),
             reward_fn=self.reward_fn,
             reward_fn_label_map=getattr(self, "reward_fn_label_map", None),
@@ -1071,6 +1107,10 @@ class FastExperienceMaker(NaiveExperienceMaker):
                                        for num in videos_num], []) if videos_num is not None else None
 
             self._process_multi_image_video_thws(experiences, expanded_images_num, expanded_videos_num)
+
+        # ========== Stage 6.5: On-Policy Distillation Teacher Log-Probs ==========
+        if config.advantage_estimator == "on_policy_distillation":
+            self._fetch_teacher_logprobs(experiences)
 
         # ========== Stage 7: Advantage Computation ==========
         experiences = self._compute_advantages_and_returns(experiences, rewards, generate_kwargs)
@@ -1518,6 +1558,91 @@ class FastExperienceMaker(NaiveExperienceMaker):
                     experience.video_grid_thws = video_grid_thw_list
                 else:
                     experience.video_grid_thws = [None] * len(micro_videos_num)
+
+    def _fetch_teacher_logprobs(
+        self,
+        experiences: List[ExperienceVL],
+    ) -> None:
+        """
+        Fetch teacher log probabilities for on-policy distillation.
+
+        Uses input_ids (not text) to query teacher model, ensuring token-level
+        alignment between teacher and student log probabilities.
+
+        Teacher log probs are aligned to the same shape as action_log_probs
+        [batch_size, seq_len], with zeros for prompt positions.
+
+        :param experiences: List of experiences to add teacher log probs to
+        :type experiences: List[Union[Experience, ExperienceVL]]
+        """
+
+        # Get teacher URL from config
+        teacher_url = self.teacher_model_url
+        if isinstance(teacher_url, list):
+            teacher_url = teacher_url[0] if teacher_url else None
+        if teacher_url is None:
+            raise ValueError(
+                "Teacher model URL not specified. "
+                "Please set --teacher_model_url to the teacher model server URL."
+            )
+
+        Timer.start('  fetch_teacher_logprobs')
+
+        for exp in experiences:
+            sequences = exp.sequences  # [batch_size, seq_len]
+            attention_mask = exp.attention_mask  # [batch_size, seq_len]
+            action_mask = exp.action_mask  # [batch_size, num_tokens]
+
+            # response_lengths must be int for slicing
+            response_lengths = action_mask.sum(dim=-1).int().tolist()
+            num_tokens = action_mask.shape[1]
+
+            # Strip padding tokens before sending to SGLang.
+            # sequences is [prompt, response, eos, pad, pad, ...] — the padding
+            # tokens would cause SGLang to return logprobs for pad positions,
+            # making the [-resp_len:] slice grab wrong tokens.
+            input_ids_list = []
+            for j in range(sequences.shape[0]):
+                valid_len = int(attention_mask[j].sum().item())
+                input_ids_list.append(sequences[j, :valid_len].cpu().tolist())
+
+            try:
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+                try:
+                    teacher_lp_list = loop.run_until_complete(
+                        get_teacher_logprobs_by_ids(
+                            url=teacher_url,
+                            input_ids_list=input_ids_list,
+                            response_lengths=response_lengths,
+                        )
+                    )
+                finally:
+                    loop.close()
+
+                # Align teacher log probs to action_log_probs shape [batch_size, num_tokens].
+                # Use action_mask indices directly — works regardless of left/right padding.
+                #
+                # Correctness: teacher_lp_list[i] contains teacher logprobs for response
+                # tokens in first→last order (from teacher_lp[-resp_len:]).
+                # valid_indices = ascending positions where action_mask==1 (real response tokens).
+                # So aligned_teacher_lp[i, valid_indices[k]] = tlp[k] correctly maps the k-th
+                # teacher logprob to the k-th response token position, regardless of padding direction.
+                batch_size = sequences.shape[0]
+                aligned_teacher_lp = torch.zeros(batch_size, num_tokens, dtype=torch.float32)
+                for i, (tlp, resp_len) in enumerate(zip(teacher_lp_list, response_lengths)):
+                    if resp_len == 0:
+                        continue
+                    valid_indices = torch.where(action_mask[i] == 1)[0]
+                    actual_len = min(len(tlp), len(valid_indices))
+                    aligned_teacher_lp[i, valid_indices[:actual_len]] = tlp[:actual_len]
+
+                exp.info["teacher_log_probs"] = aligned_teacher_lp
+
+            except Exception as e:
+                raise RuntimeError(f"Failed to fetch teacher log probs from {teacher_url}: {e}") from e
+
+        Timer.stop('  fetch_teacher_logprobs')
 
     def _process_experiences(
         self,
