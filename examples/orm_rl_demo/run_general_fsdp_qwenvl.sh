@@ -76,7 +76,9 @@ mkdir -p "${WANDB_DIR}"
 WANDB_PROJECT="${WANDB_PROJECT:-orm-rl-demo-geo3k}"
 WANDB_RUN_NAME="${WANDB_RUN_NAME:-orm-rl-demo-general-${current_time}}"
 WANDB_ORG="${WANDB_ORG:-}"
+ENGINE_TYPE="${ENGINE_TYPE:-sglang}"
 ENGINE_MEM_UTIL="${ENGINE_MEM_UTIL:-0.4}"
+export ORM_RL_DEMO_RM_ENGINE_BACKEND="${ORM_RL_DEMO_RM_ENGINE_BACKEND:-sglang}"
 
 rm_use_engine_args=()
 if [ "${USE_RM_ENGINE}" = "1" ]; then
@@ -138,6 +140,7 @@ torchrun --nnodes $NNODES --nproc-per-node $GPUS_PER_NODE --node_rank $NODE_RANK
    --gradient_checkpointing \
    --save_steps 20 \
    --max_ckpt_num 1 \
+   --engine_type "${ENGINE_TYPE}" \
    --engine_mem_util "${ENGINE_MEM_UTIL}" \
    --engine_tp_size ${ENGINE_TP} \
    --enable_engine_sleep \
