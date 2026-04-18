@@ -127,48 +127,60 @@ bash examples/orm_rl_demo/run_general_fsdp_qwenvl.sh
 
 #### Summary Card
 
-![](https://github.com/user-attachments/assets/204dcb59-eda0-49fd-ade2-0a864b1feb93)
+![](assets/verified_full_run_20260417/summary_card.png)
 
 #### Reward Dashboard
 
-![](https://github.com/user-attachments/assets/598c47c7-6078-4a62-b791-ed87782af426)
+![](assets/verified_full_run_20260417/reward_dashboard.png)
 
 #### Optimization Dashboard
 
-![](https://github.com/user-attachments/assets/415ad56e-7e17-4d59-ab6a-95cfda599893)
+![](assets/verified_full_run_20260417/optimization_dashboard.png)
 
-### 从真实 trajectory 抽出的 3 组样例
+### 同题从 Step 80 到 Step 320 的对照样例
 
-下面这 3 组都直接来自本次 run 保存下来的 trajectory 文件，特意覆盖了 3 种不同 reward 形态：
+这次 run 在 `step80` 和 `step320` 之间，实际只有 2 道共同题目，所以最直接、也最不容易歧义的展示方式，就是对这 2 道题分别做“同题早期 vs 同题末期”的真实对照。
 
-- 最终阶段的正确样例
-- accuracy 没过，但 general RM 仍然给到部分正向加分的样例
-- 只有 format 过关、其余 reward 全部拿不到的失败样例
+因此这里改成 4 张真实卡片：
 
-![](https://github.com/user-attachments/assets/924c1612-2562-4141-b7a1-15d05a00e24b)
+- Question A at step 80
+- Question A at step 320
+- Question B at step 80
+- Question B at step 320
 
-#### Case A
+#### Question A：平行四边形面积题
 
-- 来源：`trajectories_step_320.json`, `idx=0`, image `images/step320_exp0_sample0_img0.png`
-- Prompt：`Find the area of the parallelogram. Round to the nearest tenth if necessary.`
-- Output 摘录：`... The area of the parallelogram is approximately \boxed{39.0}.`
-- Reward 拆解：`total=1.0`, `format=1.0`, `accuracy=1.0`, `general_model=0.2`, `rule=0.8`
+这道题体现的是“答案已经接近正确，但还没命中规则答案；后期修正成规则答案后 reward 跳升”的过程。
 
-#### Case B
+![](assets/verified_full_run_20260417/question_a_step80.png)
 
-- 来源：`trajectories_step_80.json`, `idx=0`, image `images/step80_exp0_sample0_img0.png`
-- Prompt：`Find the area of the parallelogram. Round to the nearest tenth if necessary.`
-- Output 摘录：`... The area of the parallelogram is approximately 38.97 square feet. \boxed{38.97}`
-- Reward 拆解：`total=0.3`, `format=1.0`, `accuracy=0.0`, `general_model=0.2`, `rule=0.1`
-- 含义：这个 case 非常典型，答案已经很接近正确值，但没有命中 accuracy 规则，所以总 reward 主要来自 `format(0.1) + general_model(0.2)`。
+![](assets/verified_full_run_20260417/question_a_step320.png)
 
-#### Case C
+- 共同题面：`Find the area of the parallelogram. Round to the nearest tenth if necessary.`
+- Step 80 来源：`trajectories_step_80.json`, `idx=0`, image `images/step80_exp0_sample0_img0.png`
+- Step 320 来源：`trajectories_step_320.json`, `idx=0`, image `images/step320_exp0_sample0_img0.png`
+- Step 80 输出摘录：`... The area of the parallelogram is approximately 38.97 square feet. \boxed{38.97}`
+- Step 320 输出摘录：`... The area of the parallelogram is approximately \boxed{39.0}.`
+- Step 80 reward 拆解：`total=0.3`, `format=1.0`, `accuracy=0.0`, `general_model=0.2`, `rule=0.1`
+- Step 320 reward 拆解：`total=1.0`, `format=1.0`, `accuracy=1.0`, `general_model=0.2`, `rule=0.8`
+- 含义：step 80 时 actor 已经给出了非常接近的答案，所以 `general_model_reward` 已经是正的；到 step 320 时，输出从 `38.97` 修正成规则答案 `39.0`，于是 `accuracy_reward` 从 `0.0` 跳到了 `1.0`。
 
-- 来源：`trajectories_step_160.json`, `idx=8`, image `images/step160_exp8_sample0_img0.png`
-- Prompt：`Find y. Assume that segments that appear to be tangent are tangent. Round to the nearest tenth if necessary.`
-- Output 摘录：`... After calculating, we find that y = 10. </think> The radius y is \boxed{10}.`
-- Reward 拆解：`total=0.1`, `format=1.0`, `accuracy=0.0`, `general_model=0.0`, `rule=0.1`
-- 含义：这是当前 reward mix 的下界失败形态，也就是只有 format reward 还在起作用。
+#### Question B：切线几何 `y`
+
+这道题体现的是更剧烈的变化，也就是从明显错误的解答，演化到完整正确的解答。
+
+![](assets/verified_full_run_20260417/question_b_step80.png)
+
+![](assets/verified_full_run_20260417/question_b_step320.png)
+
+- 共同题面：`Find y. Assume that segments that appear to be tangent are tangent. Round to the nearest tenth if necessary.`
+- Step 80 来源：`trajectories_step_80.json`, `idx=8`, image `images/step80_exp8_sample0_img0.png`
+- Step 320 来源：`trajectories_step_320.json`, `idx=8`, image `images/step320_exp8_sample0_img0.png`
+- Step 80 输出摘录：`... However, the correct value is: \[ y = 10 \] </think> The radius \( y \) is \boxed{10}.`
+- Step 320 输出摘录：`... \[ y = \sqrt{160} = 4\sqrt{10} \approx 12.6 \] </think> The value of \(y\) is approximately \boxed{12.6}.`
+- Step 80 reward 拆解：`total=0.1`, `format=1.0`, `accuracy=0.0`, `general_model=0.0`, `rule=0.1`
+- Step 320 reward 拆解：`total=1.0`, `format=1.0`, `accuracy=1.0`, `general_model=0.2`, `rule=0.8`
+- 含义：step 80 时基本只保住了 format，accuracy 和 general RM 都没有给分；到 step 320 时，这两项都变成了正向贡献。
 
 ## 许可证
 

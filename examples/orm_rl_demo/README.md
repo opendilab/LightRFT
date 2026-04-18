@@ -126,48 +126,60 @@ The practical read is:
 
 #### Summary Card
 
-![](https://github.com/user-attachments/assets/204dcb59-eda0-49fd-ade2-0a864b1feb93)
+![](assets/verified_full_run_20260417/summary_card.png)
 
 #### Reward Dashboard
 
-![](https://github.com/user-attachments/assets/598c47c7-6078-4a62-b791-ed87782af426)
+![](assets/verified_full_run_20260417/reward_dashboard.png)
 
 #### Optimization Dashboard
 
-![](https://github.com/user-attachments/assets/415ad56e-7e17-4d59-ab6a-95cfda599893)
+![](assets/verified_full_run_20260417/optimization_dashboard.png)
 
-### Three Real Samples Saved from This Run
+### Same-Question Comparison from Step 80 to Step 320
 
-The following examples are directly sampled from the saved trajectory files of the run above. They intentionally cover three different reward regimes:
+The run only has two shared question stems between `step80` and `step320`, so the most direct and least ambiguous comparison is to track those same two questions across the early and late saved trajectories.
 
-- a fully correct final-step sample
-- a near-correct sample that still gets `general_model_reward` support while `accuracy_reward=0`
-- a failure case where only `format_reward` survives
+This gives four real cards in total:
 
-![](https://github.com/user-attachments/assets/924c1612-2562-4141-b7a1-15d05a00e24b)
+- Question A at step 80
+- Question A at step 320
+- Question B at step 80
+- Question B at step 320
 
-#### Case A
+#### Question A: Parallelogram Area
 
-- Source: `trajectories_step_320.json`, `idx=0`, image `images/step320_exp0_sample0_img0.png`
-- Prompt: `Find the area of the parallelogram. Round to the nearest tenth if necessary.`
-- Output excerpt: `... The area of the parallelogram is approximately \boxed{39.0}.`
-- Reward breakdown: `total=1.0`, `format=1.0`, `accuracy=1.0`, `general_model=0.2`, `rule=0.8`
+This question shows the classic “near-correct numeric answer becomes rule-correct” transition.
 
-#### Case B
+![](assets/verified_full_run_20260417/question_a_step80.png)
 
-- Source: `trajectories_step_80.json`, `idx=0`, image `images/step80_exp0_sample0_img0.png`
-- Prompt: `Find the area of the parallelogram. Round to the nearest tenth if necessary.`
-- Output excerpt: `... The area of the parallelogram is approximately 38.97 square feet. \boxed{38.97}`
-- Reward breakdown: `total=0.3`, `format=1.0`, `accuracy=0.0`, `general_model=0.2`, `rule=0.1`
-- Interpretation: the answer is very close to the target value, but it misses the accuracy rule; the positive score mainly comes from `format(0.1) + general_model(0.2)`.
+![](assets/verified_full_run_20260417/question_a_step320.png)
 
-#### Case C
+- Shared prompt: `Find the area of the parallelogram. Round to the nearest tenth if necessary.`
+- Step 80 source: `trajectories_step_80.json`, `idx=0`, image `images/step80_exp0_sample0_img0.png`
+- Step 320 source: `trajectories_step_320.json`, `idx=0`, image `images/step320_exp0_sample0_img0.png`
+- Step 80 output excerpt: `... The area of the parallelogram is approximately 38.97 square feet. \boxed{38.97}`
+- Step 320 output excerpt: `... The area of the parallelogram is approximately \boxed{39.0}.`
+- Step 80 rewards: `total=0.3`, `format=1.0`, `accuracy=0.0`, `general_model=0.2`, `rule=0.1`
+- Step 320 rewards: `total=1.0`, `format=1.0`, `accuracy=1.0`, `general_model=0.2`, `rule=0.8`
+- Interpretation: the actor already produced a close answer at step 80, so `general_model_reward` was positive; by step 320, the output moved from `38.97` to the rule-matching `39.0`, which flips `accuracy_reward` from `0.0` to `1.0`.
 
-- Source: `trajectories_step_160.json`, `idx=8`, image `images/step160_exp8_sample0_img0.png`
-- Prompt: `Find y. Assume that segments that appear to be tangent are tangent. Round to the nearest tenth if necessary.`
-- Output excerpt: `... After calculating, we find that y = 10. </think> The radius y is \boxed{10}.`
-- Reward breakdown: `total=0.1`, `format=1.0`, `accuracy=0.0`, `general_model=0.0`, `rule=0.1`
-- Interpretation: this is the current lower-bound failure mode for the reward mix, where only the format rule contributes.
+#### Question B: Tangent Geometry `y`
+
+This question shows the more dramatic transition from a clearly wrong solution to a fully correct one.
+
+![](assets/verified_full_run_20260417/question_b_step80.png)
+
+![](assets/verified_full_run_20260417/question_b_step320.png)
+
+- Shared prompt: `Find y. Assume that segments that appear to be tangent are tangent. Round to the nearest tenth if necessary.`
+- Step 80 source: `trajectories_step_80.json`, `idx=8`, image `images/step80_exp8_sample0_img0.png`
+- Step 320 source: `trajectories_step_320.json`, `idx=8`, image `images/step320_exp8_sample0_img0.png`
+- Step 80 output excerpt: `... However, the correct value is: \[ y = 10 \] </think> The radius \( y \) is \boxed{10}.`
+- Step 320 output excerpt: `... \[ y = \sqrt{160} = 4\sqrt{10} \approx 12.6 \] </think> The value of \(y\) is approximately \boxed{12.6}.`
+- Step 80 rewards: `total=0.1`, `format=1.0`, `accuracy=0.0`, `general_model=0.0`, `rule=0.1`
+- Step 320 rewards: `total=1.0`, `format=1.0`, `accuracy=1.0`, `general_model=0.2`, `rule=0.8`
+- Interpretation: step 80 only preserved the response format, while both accuracy and general RM failed to reward the answer; by step 320, both rule accuracy and general ORM scoring became positive.
 
 ## License
 
