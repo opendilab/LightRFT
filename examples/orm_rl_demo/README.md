@@ -57,6 +57,118 @@ Environment requirements stay aligned with the repository-level [README_zh.md](.
 - Geo3K reward routing is handled through runtime label override instead of rewriting the dataset itself.
 - Runtime paths are provided via environment variables so the example can stay free of cluster-specific or personal information.
 
+## Verified Full-Run Record
+
+This demo has been validated with one real 2-GPU full training run using `sglang` for rollout and `rm_use_engine=True` for the general ORM path, instead of only relying on a local smoke check.
+
+- Reference style for reporting: upstream PR54 <https://github.com/opendilab/LightRFT/pull/54>
+- Upstream PR comment for this run: <https://github.com/opendilab/LightRFT/pull/56#issuecomment-4272514537>
+- W&B run: <https://wandb.ai/hansbug/ORM-RL-Demo-QwenVL-7B-Geo3K/runs/zrekazyw>
+- Run name: `ORM-RL-Demo-Geo3K-General-SGLang-20260417_150451`
+- Worker launch script: `/mnt/shared-storage-user/zhangshaoang/.orm_rl_demo_full_sglang_20260417.sh`
+- Raw training log: `/mnt/shared-storage-user/zhangshaoang/.orm_rl_demo_full_sglang_20260417_150345.log`
+- Result directory: `/mnt/shared-storage-user/zhangshaoang/LightRFT/results/orm-rl-demo-general-geo3k-sglang/LightRFT-geo3k-general-orm-sglang-len_1024_2048-tbs_128-rbs_128-sample_8-kl_0.001-warmup_0.03-ep_20-lr_1e-6-20260417_150451`
+- Trajectory directory: `/mnt/shared-storage-user/zhangshaoang/LightRFT/results/orm-rl-demo-general-geo3k-sglang/LightRFT-geo3k-general-orm-sglang-len_1024_2048-tbs_128-rbs_128-sample_8-kl_0.001-warmup_0.03-ep_20-lr_1e-6-20260417_150451/trajectories`
+
+### Effective Setup
+
+| Item | Value |
+| --- | --- |
+| Cluster resources | `2 GPU / 40 CPU / 500000 memory` |
+| Image | `registry.h.pjlab.org.cn/ailab-rlinfra-rlinfra_gpu/easyr1:lightrft-20260119` |
+| Conda env | `/root/miniconda3/envs/lightrft` |
+| Actor | `/mnt/shared-storage-user/puyuan/model/Qwen2.5-VL-7B-Instruct` |
+| General RM | `/mnt/shared-storage-user/puyuan/model/Qwen2.5-VL-7B-Instruct` |
+| Dataset | `/mnt/shared-storage-user/puyuan/data/geo3k` |
+| Rollout engine | `sglang` |
+| RM inference | `rm_use_engine=True`, backend=`sglang` |
+| Reward mixing | `format 0.1 + general_model 0.2 + accuracy 0.7` |
+| Batch sizes | `train_batch_size=128`, `rollout_batch_size=128` |
+| Micro batch sizes | `micro_train_batch_size=4`, `micro_rollout_batch_size=4` |
+| Sampling | `n_samples_per_prompt=8`, `num_episodes=20` |
+| Sequence length | `prompt_max_len=1024`, `generate_max_len=2048` |
+| Optimizer / KL | `actor_learning_rate=1e-6`, `init_kl_coef=0.001`, `lr_warmup_ratio=0.03` |
+| Saving | `max_ckpt_num=1`, `save_trajectories=True`, `num_trajectories_to_save=16` |
+
+This worker launch also explicitly patched the runtime environment required by `sglang`:
+
+- `conda activate /root/miniconda3/envs/lightrft`
+- `PYTHONPATH=/mnt/shared-storage-user/zhangshaoang/LightRFT:$PYTHONPATH`
+- `LD_LIBRARY_PATH` additionally included:
+- `/usr/local/nvidia/lib`
+- `/usr/local/nvidia/lib64`
+- `/root/miniconda3/envs/lightrft/lib/python3.12/site-packages/nvidia/cuda_runtime/lib`
+- `/root/miniconda3/envs/lightrft/lib/python3.12/site-packages/nvidia/cudnn/lib`
+- `/root/miniconda3/envs/lightrft/lib/python3.12/site-packages/nvidia/cublas/lib`
+- `/root/miniconda3/envs/lightrft/lib/python3.12/site-packages/nvidia/cuda_nvrtc/lib`
+- `/root/miniconda3/envs/lightrft/lib`
+
+### Main Outcome
+
+- The run finished successfully with `train/global_step=320` and `16` eval passes.
+- `eval/reward_mean` improved from `0.4636` to `0.5679`.
+- Best `eval/reward_mean=0.5686` appeared at `train_step=260`.
+- Final `eval/accuracy_reward_mean=0.5166`.
+- Final `eval/format_reward_mean=0.9956`.
+- Final `eval/general_model_reward_mean=0.1067`.
+- Final `train/general_model_reward_mean=0.1309`.
+- Final `train/step_reward_mean=0.6883`.
+- Final `train/kl=0.5952`.
+
+The practical read is:
+
+- this ORM RL path does not only launch, it completes a real full run under `rlaunch`
+- `accuracy_reward` is the main late-stage gain source
+- `general_model_reward` stays positive and contributes additional reward
+- `format_reward` saturates early and stays near `1.0`
+
+### Experiment Figures
+
+#### Summary Card
+
+![](https://github.com/user-attachments/assets/204dcb59-eda0-49fd-ade2-0a864b1feb93)
+
+#### Reward Dashboard
+
+![](https://github.com/user-attachments/assets/598c47c7-6078-4a62-b791-ed87782af426)
+
+#### Optimization Dashboard
+
+![](https://github.com/user-attachments/assets/415ad56e-7e17-4d59-ab6a-95cfda599893)
+
+### Three Real Samples Saved from This Run
+
+The following examples are directly sampled from the saved trajectory files of the run above. They intentionally cover three different reward regimes:
+
+- a fully correct final-step sample
+- a near-correct sample that still gets `general_model_reward` support while `accuracy_reward=0`
+- a failure case where only `format_reward` survives
+
+![](https://github.com/user-attachments/assets/924c1612-2562-4141-b7a1-15d05a00e24b)
+
+#### Case A
+
+- Source: `trajectories_step_320.json`, `idx=0`, image `images/step320_exp0_sample0_img0.png`
+- Prompt: `Find the area of the parallelogram. Round to the nearest tenth if necessary.`
+- Output excerpt: `... The area of the parallelogram is approximately \boxed{39.0}.`
+- Reward breakdown: `total=1.0`, `format=1.0`, `accuracy=1.0`, `general_model=0.2`, `rule=0.8`
+
+#### Case B
+
+- Source: `trajectories_step_80.json`, `idx=0`, image `images/step80_exp0_sample0_img0.png`
+- Prompt: `Find the area of the parallelogram. Round to the nearest tenth if necessary.`
+- Output excerpt: `... The area of the parallelogram is approximately 38.97 square feet. \boxed{38.97}`
+- Reward breakdown: `total=0.3`, `format=1.0`, `accuracy=0.0`, `general_model=0.2`, `rule=0.1`
+- Interpretation: the answer is very close to the target value, but it misses the accuracy rule; the positive score mainly comes from `format(0.1) + general_model(0.2)`.
+
+#### Case C
+
+- Source: `trajectories_step_160.json`, `idx=8`, image `images/step160_exp8_sample0_img0.png`
+- Prompt: `Find y. Assume that segments that appear to be tangent are tangent. Round to the nearest tenth if necessary.`
+- Output excerpt: `... After calculating, we find that y = 10. </think> The radius y is \boxed{10}.`
+- Reward breakdown: `total=0.1`, `format=1.0`, `accuracy=0.0`, `general_model=0.0`, `rule=0.1`
+- Interpretation: this is the current lower-bound failure mode for the reward mix, where only the format rule contributes.
+
 ## License
 
 This project is licensed under the Apache 2.0 License. See [LICENSE](../../LICENSE) for details.

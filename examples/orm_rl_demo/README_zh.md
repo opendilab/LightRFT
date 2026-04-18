@@ -57,6 +57,119 @@ bash examples/orm_rl_demo/run_general_fsdp_qwenvl.sh
 - Geo3K 的 reward 路由通过运行时标签覆盖完成，不直接改写数据集本身。
 - 运行所需路径通过环境变量传入，避免把集群或个人信息写进示例脚本。
 
+## 真实全量实验记录
+
+这个 demo 已经基于一次真实的 2 卡全量训练完成了验通，配置是 `sglang` rollout + `rm_use_engine=True` 的 general ORM 路径，而不是只做本地 smoke。
+
+- 汇报形式参考：upstream PR54 <https://github.com/opendilab/LightRFT/pull/54>
+- 本次 upstream PR 实验汇报 comment：<https://github.com/opendilab/LightRFT/pull/56#issuecomment-4272514537>
+- W&B run：<https://wandb.ai/hansbug/ORM-RL-Demo-QwenVL-7B-Geo3K/runs/zrekazyw>
+- run name：`ORM-RL-Demo-Geo3K-General-SGLang-20260417_150451`
+- worker 启动脚本：`/mnt/shared-storage-user/zhangshaoang/.orm_rl_demo_full_sglang_20260417.sh`
+- 原始训练日志：`/mnt/shared-storage-user/zhangshaoang/.orm_rl_demo_full_sglang_20260417_150345.log`
+- 结果目录：`/mnt/shared-storage-user/zhangshaoang/LightRFT/results/orm-rl-demo-general-geo3k-sglang/LightRFT-geo3k-general-orm-sglang-len_1024_2048-tbs_128-rbs_128-sample_8-kl_0.001-warmup_0.03-ep_20-lr_1e-6-20260417_150451`
+- trajectory 目录：`/mnt/shared-storage-user/zhangshaoang/LightRFT/results/orm-rl-demo-general-geo3k-sglang/LightRFT-geo3k-general-orm-sglang-len_1024_2048-tbs_128-rbs_128-sample_8-kl_0.001-warmup_0.03-ep_20-lr_1e-6-20260417_150451/trajectories`
+
+### 实际生效配置
+
+| 项目 | 值 |
+| --- | --- |
+| 集群资源 | `2 GPU / 40 CPU / 500000 memory` |
+| 镜像 | `registry.h.pjlab.org.cn/ailab-rlinfra-rlinfra_gpu/easyr1:lightrft-20260119` |
+| Conda 环境 | `/root/miniconda3/envs/lightrft` |
+| Actor | `/mnt/shared-storage-user/puyuan/model/Qwen2.5-VL-7B-Instruct` |
+| General RM | `/mnt/shared-storage-user/puyuan/model/Qwen2.5-VL-7B-Instruct` |
+| 数据 | `/mnt/shared-storage-user/puyuan/data/geo3k` |
+| Rollout engine | `sglang` |
+| RM 推理 | `rm_use_engine=True`，backend=`sglang` |
+| Reward 融合 | `format 0.1 + general_model 0.2 + accuracy 0.7` |
+| Batch 大小 | `train_batch_size=128`, `rollout_batch_size=128` |
+| Micro batch 大小 | `micro_train_batch_size=4`, `micro_rollout_batch_size=4` |
+| 采样配置 | `n_samples_per_prompt=8`, `num_episodes=20` |
+| 长度配置 | `prompt_max_len=1024`, `generate_max_len=2048` |
+| 优化 / KL | `actor_learning_rate=1e-6`, `init_kl_coef=0.001`, `lr_warmup_ratio=0.03` |
+| 保存配置 | `max_ckpt_num=1`, `save_trajectories=True`, `num_trajectories_to_save=16` |
+
+这次 worker 在启动训练前，还显式补齐了 `sglang` 所需的 runtime 环境：
+
+- `conda activate /root/miniconda3/envs/lightrft`
+- `PYTHONPATH=/mnt/shared-storage-user/zhangshaoang/LightRFT:$PYTHONPATH`
+- `LD_LIBRARY_PATH` 额外加入：
+- `/usr/local/nvidia/lib`
+- `/usr/local/nvidia/lib64`
+- `/root/miniconda3/envs/lightrft/lib/python3.12/site-packages/nvidia/cuda_runtime/lib`
+- `/root/miniconda3/envs/lightrft/lib/python3.12/site-packages/nvidia/cudnn/lib`
+- `/root/miniconda3/envs/lightrft/lib/python3.12/site-packages/nvidia/cublas/lib`
+- `/root/miniconda3/envs/lightrft/lib/python3.12/site-packages/nvidia/cuda_nvrtc/lib`
+- `/root/miniconda3/envs/lightrft/lib`
+
+### 核心结果
+
+- 训练完整跑完，最终 `train/global_step=320`
+- 整个过程中一共触发了 `16` 次 eval
+- `eval/reward_mean` 从 `0.4636` 提升到 `0.5679`
+- best `eval/reward_mean=0.5686`，出现在 `train_step=260`
+- final `eval/accuracy_reward_mean=0.5166`
+- final `eval/format_reward_mean=0.9956`
+- final `eval/general_model_reward_mean=0.1067`
+- final `train/general_model_reward_mean=0.1309`
+- final `train/step_reward_mean=0.6883`
+- final `train/kl=0.5952`
+
+从结果上看，可以比较明确地得到下面这些结论：
+
+- 这条 ORM RL demo 链路不只是“能启动”，而是已经在真实 `rlaunch` 环境里完整跑完一版
+- `accuracy_reward` 是中后期主要的增益来源
+- `general_model_reward` 始终是正向项，能提供额外加分
+- `format_reward` 很早就接近饱和，后续基本稳定在接近 `1.0`
+
+### 实验图表
+
+#### Summary Card
+
+![](https://github.com/user-attachments/assets/204dcb59-eda0-49fd-ade2-0a864b1feb93)
+
+#### Reward Dashboard
+
+![](https://github.com/user-attachments/assets/598c47c7-6078-4a62-b791-ed87782af426)
+
+#### Optimization Dashboard
+
+![](https://github.com/user-attachments/assets/415ad56e-7e17-4d59-ab6a-95cfda599893)
+
+### 从真实 trajectory 抽出的 3 组样例
+
+下面这 3 组都直接来自本次 run 保存下来的 trajectory 文件，特意覆盖了 3 种不同 reward 形态：
+
+- 最终阶段的正确样例
+- accuracy 没过，但 general RM 仍然给到部分正向加分的样例
+- 只有 format 过关、其余 reward 全部拿不到的失败样例
+
+![](https://github.com/user-attachments/assets/924c1612-2562-4141-b7a1-15d05a00e24b)
+
+#### Case A
+
+- 来源：`trajectories_step_320.json`, `idx=0`, image `images/step320_exp0_sample0_img0.png`
+- Prompt：`Find the area of the parallelogram. Round to the nearest tenth if necessary.`
+- Output 摘录：`... The area of the parallelogram is approximately \boxed{39.0}.`
+- Reward 拆解：`total=1.0`, `format=1.0`, `accuracy=1.0`, `general_model=0.2`, `rule=0.8`
+
+#### Case B
+
+- 来源：`trajectories_step_80.json`, `idx=0`, image `images/step80_exp0_sample0_img0.png`
+- Prompt：`Find the area of the parallelogram. Round to the nearest tenth if necessary.`
+- Output 摘录：`... The area of the parallelogram is approximately 38.97 square feet. \boxed{38.97}`
+- Reward 拆解：`total=0.3`, `format=1.0`, `accuracy=0.0`, `general_model=0.2`, `rule=0.1`
+- 含义：这个 case 非常典型，答案已经很接近正确值，但没有命中 accuracy 规则，所以总 reward 主要来自 `format(0.1) + general_model(0.2)`。
+
+#### Case C
+
+- 来源：`trajectories_step_160.json`, `idx=8`, image `images/step160_exp8_sample0_img0.png`
+- Prompt：`Find y. Assume that segments that appear to be tangent are tangent. Round to the nearest tenth if necessary.`
+- Output 摘录：`... After calculating, we find that y = 10. </think> The radius y is \boxed{10}.`
+- Reward 拆解：`total=0.1`, `format=1.0`, `accuracy=0.0`, `general_model=0.0`, `rule=0.1`
+- 含义：这是当前 reward mix 的下界失败形态，也就是只有 format reward 还在起作用。
+
 ## 许可证
 
 本项目采用 Apache 2.0 许可证。详见 [LICENSE](../../LICENSE)。
