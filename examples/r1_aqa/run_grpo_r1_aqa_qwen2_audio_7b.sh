@@ -13,6 +13,8 @@
 
 # --- Model and Dataset Paths ---
 # Qwen2-Audio-7B-Instruct/Qwen2.5-Omni-7B base model
+# Qwen2-Audio-7B-Instruct can only work with sglang engine, not vllm
+# Qwen2.5-Omni-7B can only work with vllm engine, not sglang
 PATH_TO_YOUR_BASE_MODEL=""
 
 # Path to the cleaned AVQA dataset directory.
@@ -147,7 +149,7 @@ torchrun \
     --gradient_checkpointing \
     --save_steps ${SAVE_STEPS} \
     --max_ckpt_num 3 \
-    --engine_type vllm \
+    --engine_type sglang \
     --engine_mem_util ${ENGINE_MEM_UTIL} \
     --engine_tp_size $ENGINE_TP \
     --enable_engine_sleep \

@@ -73,12 +73,6 @@ def accuracy_reward_fn(content: str, solution: str) -> float:
                 reward = 1.0
         except Exception:
             pass
-    if reward == 0.0:
-        sol_match = re.search(r"<answer>(.*?)</answer>", solution)
-        ground_truth = sol_match.group(1).strip() if sol_match else solution.strip()
-        student_answer = content.strip()
-        if student_answer == ground_truth:
-            reward = 1.0
 
     return reward
 

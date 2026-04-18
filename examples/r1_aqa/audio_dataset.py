@@ -83,6 +83,7 @@ class AudioPromptDataset(Dataset):
                 prompt_messages = json.loads(prompt_messages)
             except (json.JSONDecodeError, TypeError):
                 prompt_messages = [{"role": "user", "content": prompt_messages}]
+        prompt_messages = self._drop_none_fields(prompt_messages)
 
         # ---- 2. Render via processor's chat template ----
         try:
@@ -132,3 +133,19 @@ class AudioPromptDataset(Dataset):
                 if isinstance(segment, dict) and segment.get("type") == "text":
                     texts.append(segment.get("text", ""))
         return " ".join(texts)
+
+    @staticmethod
+    def _drop_none_fields(obj):
+        """
+        Remove ``None`` values from nested prompt content before chat templating.
+
+        The parquet loader materializes a union of nested content keys, so a text
+        block may arrive as ``{"type": "text", "text": "...", "audio_url": None}``.
+        Qwen2-Audio's default chat template checks key existence instead of value,
+        which would misclassify that text block as a second audio placeholder.
+        """
+        if isinstance(obj, list):
+            return [AudioPromptDataset._drop_none_fields(item) for item in obj]
+        if isinstance(obj, dict):
+            return {key: AudioPromptDataset._drop_none_fields(value) for key, value in obj.items() if value is not None}
+        return obj

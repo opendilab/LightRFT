@@ -221,16 +221,20 @@ class SPMDPPOTrainerBase:
 
                 # Step 1: Each rank validates its local data
                 should_skip_local = False
-                if self.VLM and hasattr(self, '_validate_qwen_vl_tensors'):
-                    # Call the same validation logic used in training_step_actor
-                    sequences = experience.sequences
-                    pixel_values = experience.pixel_values
-
-                    # Validate before any forward pass
-                    is_valid = self._validate_qwen_vl_tensors(
-                        sequences, pixel_values, context="pre_training_validation"
-                    )
-                    should_skip_local = not is_valid
+                if self.VLM:
+                    if hasattr(self, "_validate_multimodal_training_batch"):
+                        is_valid = self._validate_multimodal_training_batch(
+                            experience, context="pre_training_validation"
+                        )
+                        should_skip_local = not is_valid
+                    elif hasattr(self, "_validate_qwen_vl_tensors"):
+                        # Backward-compatible fallback for older trainer implementations.
+                        sequences = experience.sequences
+                        pixel_values = experience.pixel_values
+                        is_valid = self._validate_qwen_vl_tensors(
+                            sequences, pixel_values, context="pre_training_validation"
+                        )
+                        should_skip_local = not is_valid
 
                 # Step 2: Synchronize skip decision across all ranks via all_reduce
                 # This ensures all ranks agree on whether to skip, preventing execution divergence

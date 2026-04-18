@@ -723,6 +723,49 @@ class PPOTrainerVL(ABC):
             return False
         return True
 
+    def _validate_multimodal_training_batch(
+        self,
+        experience: ExperienceVL,
+        context: str = "training",
+    ) -> bool:
+        """
+        Validate replay batches before forwarding multimodal actors.
+
+        Vision batches keep the existing image-token consistency check. Audio batches
+        additionally reject replay rows whose attention mask is entirely zero, because
+        Qwen2-Audio cannot infer a valid padding side from a batch that mixes empty
+        rows with normal left-padded rows.
+        """
+        if not self._validate_qwen_vl_tensors(
+            experience.sequences,
+            getattr(experience, "pixel_values", None),
+            context=context,
+        ):
+            return False
+
+        if not self._is_audio_actor:
+            return True
+
+        attention_mask = getattr(experience, "attention_mask", None)
+        if attention_mask is None or attention_mask.ndim != 2:
+            self.strategy.print(
+                f"[CRITICAL WARNING] Skipping batch in '{context}'. "
+                "Audio replay batch is missing a valid 2D attention_mask."
+            )
+            return False
+
+        active_lengths = attention_mask.long().sum(dim=-1)
+        invalid_rows = torch.nonzero(active_lengths <= 0, as_tuple=False).flatten().tolist()
+        if invalid_rows:
+            self.strategy.print(
+                f"[CRITICAL WARNING] Skipping batch in '{context}'. "
+                f"Audio replay batch contains empty attention_mask rows at indices {invalid_rows}. "
+                "This points to a degenerate rollout/replay sample rather than a missing audio file."
+            )
+            return False
+
+        return True
+
     def training_step_actor(
         self,
         experience: ExperienceVL,
@@ -777,11 +820,7 @@ class PPOTrainerVL(ABC):
         # Actor loss.
         # Build modality-aware kwargs from the replay item instead of assuming vision-specific fields.
         actor_kwargs = self._build_model_kwargs(experience)
-        if not self._validate_qwen_vl_tensors(
-            sequences,
-            actor_kwargs.get("pixel_values"),
-            context="actor_rl_update",
-        ):
+        if not self._validate_multimodal_training_batch(experience, context="actor_rl_update"):
             self.strategy.print(
                 "[CRITICAL ERROR] Validation failed inside training_step_actor. "
                 "This should have been caught by pre-validation in spmd_ppo_trainer.py!"

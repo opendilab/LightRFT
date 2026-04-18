@@ -26,7 +26,7 @@ import torch.nn.functional as F
 from lightrft.utils import add_arguments
 from lightrft.datasets import SFTDatasetVL
 from lightrft.models.actor_al import (
-    AUDIO_MODEL_TYPE_QWEN2_5_OMNI,
+    AUDIO_MODEL_TYPE_QWEN2_AUDIO,
     ActorAL,
     create_audio_processor,
     infer_audio_model_type,
@@ -43,12 +43,18 @@ from audio_dataset import AudioPromptDataset
 
 
 def _validate_inference_engine(args) -> None:
-    if args.text_only:
-        return
-
     model_type = infer_audio_model_type(args.pretrain)
-    if model_type == AUDIO_MODEL_TYPE_QWEN2_5_OMNI and args.engine_type == "sglang":
-        raise ValueError("Qwen2.5-Omni audio demo currently requires --engine_type vllm; sglang is not supported.")
+    if model_type == AUDIO_MODEL_TYPE_QWEN2_AUDIO:
+        expected_engine = "sglang"
+    else:
+        expected_engine = "vllm"
+
+    if args.engine_type != expected_engine:
+        model_name = model_type or "non-qwen2-audio"
+        raise ValueError(
+            f"Model type `{model_name}` requires --engine_type {expected_engine}, "
+            f"but got --engine_type {args.engine_type}."
+        )
 
 
 def train(args):
