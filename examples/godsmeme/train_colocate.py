@@ -284,8 +284,12 @@ if __name__ == "__main__":
     parser.add_argument("--load_checkpoint", action="store_true", default=False)
 
     # DAPO
-    parser.add_argument("--dynamic_sampling", action="store_true", default=False, help="Enable DAPO dynamic sampling strategy")
-    parser.add_argument("--overlong_buffer", action="store_true", default=False, help="Apply overlong sequence buffer in DAPO")
+    parser.add_argument(
+        "--dynamic_sampling", action="store_true", default=False, help="Enable DAPO dynamic sampling strategy"
+    )
+    parser.add_argument(
+        "--overlong_buffer", action="store_true", default=False, help="Apply overlong sequence buffer in DAPO"
+    )
     parser.add_argument("--overlong_buffer_len", type=int, default=1024, help="Max token threshold for overlong buffer")
     parser.add_argument(
         "--overlong_buffer_penalty_factor",
@@ -314,8 +318,12 @@ if __name__ == "__main__":
         help="Loss aggregation mode for policy gradients",
     )
     parser.add_argument("--use_gspo", action="store_true", default=False, help="Enable GSPO mode")
-    parser.add_argument("--normalize_advantages", action="store_true", default=True, help="Enable advantage normalization in GSPO")
-    parser.add_argument("--use_sequence_rewards", action="store_true", default=True, help="Use sequence-level rewards in GSPO")
+    parser.add_argument(
+        "--normalize_advantages", action="store_true", default=True, help="Enable advantage normalization in GSPO"
+    )
+    parser.add_argument(
+        "--use_sequence_rewards", action="store_true", default=True, help="Use sequence-level rewards in GSPO"
+    )
     parser.add_argument("--value_clip", type=float, default=0.2, help="PPO value clip range")
     parser.add_argument("--lambd", type=float, default=0.95, help="PPO GAE lambd")
     parser.add_argument("--gamma", type=float, default=1, help="PPO GAE gamma")
@@ -359,7 +367,9 @@ if __name__ == "__main__":
         ),
     )
     parser.add_argument("--adam_betas", type=float, nargs=2, default=(0.9, 0.95), help="Betas for Adam optimizer")
-    parser.add_argument("--reward_running_norm", action="store_true", default=False, help="Enable running normalization for rewards")
+    parser.add_argument(
+        "--reward_running_norm", action="store_true", default=False, help="Enable running normalization for rewards"
+    )
     parser.add_argument(
         "--reward_running_norm_minus_mean",
         action="store_true",
@@ -368,7 +378,9 @@ if __name__ == "__main__":
     )
     parser.add_argument("--reward_clip", type=float, default=0.0, help="Clip rewards to [-reward_clip, reward_clip]")
     parser.add_argument("--advantages_norm", action="store_true", default=False, help="Enable whitening for advantages")
-    parser.add_argument("--advantage_clip", type=float, default=0.0, help="Clip advantages to [-advantage_clip, advantage_clip]")
+    parser.add_argument(
+        "--advantage_clip", type=float, default=0.0, help="Clip advantages to [-advantage_clip, advantage_clip]"
+    )
     parser.add_argument("--reward_clip_range", type=float, nargs=2, default=(-10, 10), help="Reward clip range")
 
     # DeepSpeed
@@ -377,7 +389,9 @@ if __name__ == "__main__":
     parser.add_argument("--zero_stage", type=int, default=2, help="DeepSpeed ZeRO stage")
     parser.add_argument("--gradient_checkpointing", action="store_true", default=False)
     parser.add_argument("--bf16", action="store_true", default=False, help="Enable bfloat16")
-    parser.add_argument("--meta_init", action="store_true", default=False, help="Initialize models on meta device to save CPU memory")
+    parser.add_argument(
+        "--meta_init", action="store_true", default=False, help="Initialize models on meta device to save CPU memory"
+    )
     parser.add_argument("--zpg", type=int, default=1, help="ZeRO++ max partition size")
     parser.add_argument("--adam_offload", action="store_true", default=False, help="Offload Adam Optimizer")
     parser.add_argument("--actor_init_on_gpu", action="store_true", default=False)

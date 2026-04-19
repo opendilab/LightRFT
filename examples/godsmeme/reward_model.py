@@ -68,10 +68,8 @@ def _as_torch_device(device_like: Any) -> torch.device:
     return torch.device(device_like)
 
 
-
 def _default_reward_prompt_path() -> str:
     return os.path.join(os.path.dirname(os.path.abspath(__file__)), "prompts", "reward_compare.txt")
-
 
 
 def _load_reward_prompt(path: Optional[str] = None) -> str:
@@ -79,7 +77,6 @@ def _load_reward_prompt(path: Optional[str] = None) -> str:
     if os.path.exists(prompt_path):
         return load_text_file(prompt_path)
     return "Which meme is funnier?"
-
 
 
 def _parse_reward_config(raw_reward_pretrain: str) -> Dict[str, Any]:
@@ -112,7 +109,6 @@ def _parse_reward_config(raw_reward_pretrain: str) -> Dict[str, Any]:
     return pairwise_cfg
 
 
-
 def _resolve_torch_dtype(dtype_like: Any) -> Optional[torch.dtype]:
     if dtype_like is None or isinstance(dtype_like, torch.dtype):
         return dtype_like
@@ -120,7 +116,6 @@ def _resolve_torch_dtype(dtype_like: Any) -> Optional[torch.dtype]:
     if key not in _DTYPE_MAP:
         raise ValueError(f"Unsupported torch dtype: {dtype_like}")
     return _DTYPE_MAP[key]
-
 
 
 def _resolve_model_file(path_or_repo: str, filename: str) -> str:
@@ -185,7 +180,6 @@ def _patch_keye_fsdp_compat(model: nn.Module) -> None:
     print("[MemePairwiseJudge] Set Keye vision attention to 'eager' for FSDP2 compat")
 
 
-
 def _unwrap_head_state_dict(state_dict: Dict[str, Any]) -> Dict[str, torch.Tensor]:
     nested_keys = ("state_dict", "model", "module", "classification_head", "classifier")
     current = state_dict
@@ -212,12 +206,10 @@ def _unwrap_head_state_dict(state_dict: Dict[str, Any]) -> Dict[str, torch.Tenso
     return tensor_state
 
 
-
 def _strip_common_prefix(state_dict: Dict[str, torch.Tensor], prefix: str) -> Dict[str, torch.Tensor]:
     if not all(key.startswith(prefix) for key in state_dict):
         return state_dict
     return {key[len(prefix):]: value for key, value in state_dict.items()}
-
 
 
 def _normalize_head_state_dict(state_dict: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
@@ -245,7 +237,6 @@ class _TwoLayerTanhHead(nn.Module):
         return self.out_proj(self.activation(self.dense(hidden_states)))
 
 
-
 def _build_classification_head(state_dict: Dict[str, torch.Tensor]) -> nn.Module:
     state_dict = _normalize_head_state_dict(_unwrap_head_state_dict(state_dict))
     keys = set(state_dict.keys())
@@ -258,14 +249,12 @@ def _build_classification_head(state_dict: Dict[str, torch.Tensor]) -> nn.Module
             hidden_features=dense_weight.shape[0],
             out_features=out_proj_weight.shape[0],
         )
-        head.load_state_dict(
-            {
-                "dense.weight": dense_weight,
-                "dense.bias": state_dict["dense.bias"],
-                "out_proj.weight": out_proj_weight,
-                "out_proj.bias": state_dict["out_proj.bias"],
-            }
-        )
+        head.load_state_dict({
+            "dense.weight": dense_weight,
+            "dense.bias": state_dict["dense.bias"],
+            "out_proj.weight": out_proj_weight,
+            "out_proj.bias": state_dict["out_proj.bias"],
+        })
         return head
 
     if "weight" in state_dict and state_dict["weight"].ndim == 2:
@@ -296,14 +285,12 @@ def _build_classification_head(state_dict: Dict[str, torch.Tensor]) -> nn.Module
     )
 
 
-
 def _load_classification_head(path_or_file: str, dtype: Optional[torch.dtype] = None) -> nn.Module:
     head_state = torch.load(path_or_file, map_location="cpu")
     head = _build_classification_head(head_state)
     if dtype is not None:
         head = head.to(dtype=dtype)
     return head
-
 
 
 def _pool_last_non_padding_token(hidden_states: torch.Tensor, attention_mask: Optional[torch.Tensor]) -> torch.Tensor:
@@ -316,7 +303,6 @@ def _pool_last_non_padding_token(hidden_states: torch.Tensor, attention_mask: Op
     last_indices = attention_mask.size(-1) - 1 - last_offsets
     gather_index = last_indices.view(-1, 1, 1).expand(-1, 1, hidden_states.size(-1))
     return hidden_states.gather(dim=1, index=gather_index).squeeze(1)
-
 
 
 def _pair_scores_from_logits(logits: torch.Tensor) -> List[Tuple[float, float]]:
@@ -332,7 +318,6 @@ def _pair_scores_from_logits(logits: torch.Tensor) -> List[Tuple[float, float]]:
         probs_b = probs[:, 1]
 
     return list(zip(probs_a.detach().cpu().tolist(), probs_b.detach().cpu().tolist()))
-
 
 
 def build_pairwise_judge_message(
@@ -357,7 +342,6 @@ def build_pairwise_judge_message(
             },
         ],
     }]
-
 
 
 def group_meme_rollout_indices(
@@ -591,7 +575,6 @@ class MemePairwiseJudge(nn.Module):
         return {"score": torch.tensor(pairwise_rewards, dtype=torch.float32, device=device)}
 
 
-
 def load_reward_models(
     reward_pretrain: str,
     strategy,
@@ -607,9 +590,8 @@ def load_reward_models(
     reward_model_path = cfg["path"]
     reward_prompt = _load_reward_prompt(cfg.get("reward_prompt_path"))
     torch_dtype = _resolve_torch_dtype(cfg.get("torch_dtype", "float16"))
-    classification_head_path = cfg.get("classification_head_path") or _resolve_model_file(
-        reward_model_path, "classification_head.pt"
-    )
+    classification_head_path = cfg.get("classification_head_path"
+                                       ) or _resolve_model_file(reward_model_path, "classification_head.pt")
 
     with strategy.init_model_context() as _:
         base_model = AutoModel.from_pretrained(
@@ -653,7 +635,6 @@ def load_reward_models(
         model.eval()
 
     return [model], [processor.tokenizer], {_PAIRWISE_LABEL_KEY: 0}
-
 
 
 def reward_fn(
