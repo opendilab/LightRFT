@@ -17,7 +17,7 @@ def test_real_dataset_loading():
     # print(len(dataset))
     assert len(dataset) == 3345
 
-    prompt, image_path, label, reference = dataset[0]
+    prompt, image_path, reference, label = dataset[0]
     assert "Meme Text Generation Framework" in prompt
     assert "[Comprehensive Description Section]" in reference
     assert isinstance(image_path[0], str)

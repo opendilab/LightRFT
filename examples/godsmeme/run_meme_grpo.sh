@@ -51,8 +51,8 @@ REWARD_PROMPT_PATH="${REWARD_PROMPT_PATH:-examples/godsmeme/prompts/reward_compa
 
 # Reward cost control. 0 means use all pairs inside each rollout group.
 MAX_PAIRS_PER_GROUP="${MAX_PAIRS_PER_GROUP:-0}"
-PAIR_BATCH_SIZE="${PAIR_BATCH_SIZE:-4}"
-REWARD_MAX_NEW_TOKENS="${REWARD_MAX_NEW_TOKENS:-96}"
+PAIR_BATCH_SIZE="${PAIR_BATCH_SIZE:-1}"
+REWARD_MAX_LENGTH="${REWARD_MAX_LENGTH:-96}"
 
 # Reward composition:
 # final_reward = model_reward_weight * pairwise_reward
@@ -79,8 +79,8 @@ MICRO_TRAIN_BATCH_SIZE="${MICRO_TRAIN_BATCH_SIZE:-4}"
 # --- Learning and Generation Settings ---
 KL="${KL:-0.01}"
 LR="${LR:-1e-6}"
-PROMPT_MAX_LEN="${PROMPT_MAX_LEN:-2048}"
-GENERATE_MAX_LEN="${GENERATE_MAX_LEN:-1024}"
+PROMPT_MAX_LEN="${PROMPT_MAX_LEN:-8192}"
+GENERATE_MAX_LEN="${GENERATE_MAX_LEN:-2048}"
 TEMPERATURE="${TEMPERATURE:-1.0}"
 TOP_P="${TOP_P:-1.0}"
 
@@ -100,35 +100,14 @@ export MASTER_PORT="${MASTER_PORT:-20091}"
 
 # The rollout engine is for the actor only. The meme reward model is loaded
 # directly and kept outside rm_use_engine.
-ENGINE_TYPE="${ENGINE_TYPE:-sglang}"
+ENGINE_TYPE="${ENGINE_TYPE:-vllm}"
 ENGINE_TP="${ENGINE_TP:-2}"
 ENGINE_MEM_UTIL="${ENGINE_MEM_UTIL:-0.4}"
 
 
 ################################################################################
-#                        Part 5: Validation and Launch                         #
+#                        Part 5: Launch                         #
 ################################################################################
-
-if (( N_SAMPLES <= 1 )); then
-    echo "[GodsMeme] N_SAMPLES must be > 1 when using group_norm / GRPO." >&2
-    exit 1
-fi
-
-if (( MICRO_ROLLOUT_BATCH_SIZE % N_SAMPLES != 0 )); then
-    echo "[GodsMeme] MICRO_ROLLOUT_BATCH_SIZE must be divisible by N_SAMPLES." >&2
-    echo "[GodsMeme] This keeps every rollout group inside one micro-batch for pairwise reward computation." >&2
-    exit 1
-fi
-
-if (( ENGINE_TP <= 0 )); then
-    echo "[GodsMeme] ENGINE_TP must be a positive integer." >&2
-    exit 1
-fi
-
-if (( GPUS_PER_NODE % ENGINE_TP != 0 )); then
-    echo "[GodsMeme] GPUS_PER_NODE must be divisible by ENGINE_TP." >&2
-    exit 1
-fi
 
 PAIR_TAG="allpairs"
 if (( MAX_PAIRS_PER_GROUP > 0 )); then
@@ -142,9 +121,9 @@ DEFAULT_REWARD_PRETRAIN="$({
     MAX_PAIRS_PER_GROUP="$MAX_PAIRS_PER_GROUP" \
     MODEL_REWARD_WEIGHT="$MODEL_REWARD_WEIGHT" \
     FORMAT_REWARD_WEIGHT="$FORMAT_REWARD_WEIGHT" \
-    REWARD_MAX_NEW_TOKENS="$REWARD_MAX_NEW_TOKENS" \
+    REWARD_MAX_LENGTH="$REWARD_MAX_LENGTH" \
     N_SAMPLES="$N_SAMPLES" \
-    python - <<'PY'
+    python3 - <<'PY'
 import json
 import os
 
@@ -156,7 +135,7 @@ cfg = {
         "max_pairs_per_group": int(os.environ["MAX_PAIRS_PER_GROUP"]),
         "model_reward_weight": float(os.environ["MODEL_REWARD_WEIGHT"]),
         "format_reward_weight": float(os.environ["FORMAT_REWARD_WEIGHT"]),
-        "max_new_tokens": int(os.environ["REWARD_MAX_NEW_TOKENS"]),
+        "max_length": int(os.environ["REWARD_MAX_LENGTH"]),
         "n_samples_per_prompt": int(os.environ["N_SAMPLES"]),
     }
 }
@@ -234,8 +213,8 @@ torchrun \
 # 2. Do not add --rm_use_engine here: the current meme reward model raises     #
 #    NotImplementedError when rm_use_engine is enabled.                        #
 # 3. LIMIT_MM_IMAGE_PER_PROMPT defaults to 1 because each policy prompt only   #
-#    contains one source image. The pairwise judge images are handled inside   #
-#    examples/godsmeme/reward_model.py.                                        #
+#    contains one source image. The reward model renders and scores both       #
+#    candidate meme images inside examples/godsmeme/reward_model.py.           #
 # 4. If reward evaluation is too slow, first try lowering N_SAMPLES or set     #
 #    MAX_PAIRS_PER_GROUP to a small positive integer.                          #
 #                                                                              #

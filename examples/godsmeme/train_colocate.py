@@ -182,12 +182,18 @@ def train(args):
         tokenizer=tokenizer,
         processor=processor,
         prompt_max_len=args.prompt_max_len,
+        value_clip=args.value_clip,
         eps_clip=args.eps_clip,
+        loss_agg_mode=args.loss_agg_mode,
+        use_gspo=args.use_gspo,
+        normalize_advantages=args.normalize_advantages,
+        use_sequence_rewards=args.use_sequence_rewards,
         gamma=args.gamma,
         lambd=args.lambd,
         init_kl_coef=args.init_kl_coef,
         kl_target=args.kl_target,
         ema_beta=0.992,
+        ptx_coef=args.ptx_coef,
         max_norm=args.max_norm,
         # for GPT generation
         do_sample=True,
@@ -195,6 +201,7 @@ def train(args):
         max_length=args.max_len,
         temperature=args.temperature,
         top_p=args.top_p,
+        first_token_temperature=args.first_token_temperature,
         pad_token_id=tokenizer.pad_token_id,
         eos_token_id=tokenizer.eos_token_id,
         # reward model
@@ -204,6 +211,12 @@ def train(args):
         save_hf_ckpt=args.save_hf_ckpt,
         disable_ds_ckpt=args.disable_ds_ckpt,
         packing_samples=args.packing_samples,
+        high_entropy_token_ratio=args.high_entropy_token_ratio,
+        dynamic_sampling=args.dynamic_sampling,
+        overlong_buffer=args.overlong_buffer,
+        overlong_buffer_len=args.overlong_buffer_len,
+        overlong_buffer_penalty_factor=args.overlong_buffer_penalty_factor,
+        print_replay_buffer_stats=args.print_replay_buffer_stats,
     )
 
     trainer.fit(
@@ -233,12 +246,53 @@ if __name__ == "__main__":
     parser.add_argument("--save_steps", type=int, default=-1)
     parser.add_argument("--save_hf_ckpt", action="store_true", default=False)
     parser.add_argument("--disable_ds_ckpt", action="store_true", default=False)
+    parser.add_argument(
+        "--save_trajectories",
+        action="store_true",
+        default=False,
+        help="Save experience trajectories to JSON for debugging",
+    )
+    parser.add_argument(
+        "--num_trajectories_to_save",
+        type=int,
+        default=10,
+        help="Number of trajectories to save per checkpoint",
+    )
+    parser.add_argument(
+        "--mark_high_entropy_tokens",
+        action="store_true",
+        default=False,
+        help="Create token arrays with high-entropy information for HTML rendering (requires --save_trajectories).",
+    )
+    parser.add_argument(
+        "--trajectory_analysis",
+        action="store_true",
+        default=False,
+        help="Enable trajectory analysis metrics and log them to wandb",
+    )
+    parser.add_argument(
+        "--print_replay_buffer_stats",
+        action="store_true",
+        default=False,
+        help="Print detailed replay buffer statistics during training",
+    )
     parser.add_argument("--logging_steps", type=int, default=1)
     parser.add_argument("--eval_steps", type=int, default=-1)
     parser.add_argument("--ckpt_path", type=str, default="./ckpt/checkpoints_ppo")
     parser.add_argument("--max_ckpt_num", type=int, default=3)
     parser.add_argument("--max_ckpt_mem", type=int, default=1e8)
     parser.add_argument("--load_checkpoint", action="store_true", default=False)
+
+    # DAPO
+    parser.add_argument("--dynamic_sampling", action="store_true", default=False, help="Enable DAPO dynamic sampling strategy")
+    parser.add_argument("--overlong_buffer", action="store_true", default=False, help="Apply overlong sequence buffer in DAPO")
+    parser.add_argument("--overlong_buffer_len", type=int, default=1024, help="Max token threshold for overlong buffer")
+    parser.add_argument(
+        "--overlong_buffer_penalty_factor",
+        type=float,
+        default=1.0,
+        help="Penalty scaling factor for overlong sequences",
+    )
 
     # PPO
     parser.add_argument("--num_episodes", type=int, default=1)
@@ -251,7 +305,18 @@ if __name__ == "__main__":
     parser.add_argument("--max_samples", type=int, default=1000000)
     parser.add_argument("--max_norm", type=float, default=1.0, help="Gradient clipping")
     parser.add_argument("--l2", type=float, default=0.0, help="weight decay loss")
+    parser.add_argument("--ptx_coef", type=float, default=0.05, help="PPO-ptx loss coef")
     parser.add_argument("--eps_clip", type=float, default=0.2, help="PPO clip range")
+    parser.add_argument(
+        "--loss_agg_mode",
+        type=str,
+        default="seq-mean-token-mean",
+        help="Loss aggregation mode for policy gradients",
+    )
+    parser.add_argument("--use_gspo", action="store_true", default=False, help="Enable GSPO mode")
+    parser.add_argument("--normalize_advantages", action="store_true", default=True, help="Enable advantage normalization in GSPO")
+    parser.add_argument("--use_sequence_rewards", action="store_true", default=True, help="Use sequence-level rewards in GSPO")
+    parser.add_argument("--value_clip", type=float, default=0.2, help="PPO value clip range")
     parser.add_argument("--lambd", type=float, default=0.95, help="PPO GAE lambd")
     parser.add_argument("--gamma", type=float, default=1, help="PPO GAE gamma")
     parser.add_argument("--micro_train_batch_size", type=int, default=4, help="batch size per GPU")
@@ -259,6 +324,18 @@ if __name__ == "__main__":
     parser.add_argument("--normalize_reward", action="store_true", default=False, help="Enable Reward Normazation")
     parser.add_argument("--top_p", type=float, default=1.0)
     parser.add_argument("--temperature", type=float, default=1.0)
+    parser.add_argument(
+        "--use_fire",
+        action="store_true",
+        default=False,
+        help="Enable FIRE sampling (Flaming-hot Initiation with Regular Execution)",
+    )
+    parser.add_argument(
+        "--first_token_temperature",
+        type=float,
+        default=10.0,
+        help="Temperature for the first token when --use_fire is enabled",
+    )
     parser.add_argument(
         "--freeze_prefix",
         action="store_true",
@@ -282,6 +359,16 @@ if __name__ == "__main__":
         ),
     )
     parser.add_argument("--adam_betas", type=float, nargs=2, default=(0.9, 0.95), help="Betas for Adam optimizer")
+    parser.add_argument("--reward_running_norm", action="store_true", default=False, help="Enable running normalization for rewards")
+    parser.add_argument(
+        "--reward_running_norm_minus_mean",
+        action="store_true",
+        default=False,
+        help="Subtract mean when using reward running normalization",
+    )
+    parser.add_argument("--reward_clip", type=float, default=0.0, help="Clip rewards to [-reward_clip, reward_clip]")
+    parser.add_argument("--advantages_norm", action="store_true", default=False, help="Enable whitening for advantages")
+    parser.add_argument("--advantage_clip", type=float, default=0.0, help="Clip advantages to [-advantage_clip, advantage_clip]")
     parser.add_argument("--reward_clip_range", type=float, nargs=2, default=(-10, 10), help="Reward clip range")
 
     # DeepSpeed
@@ -290,6 +377,7 @@ if __name__ == "__main__":
     parser.add_argument("--zero_stage", type=int, default=2, help="DeepSpeed ZeRO stage")
     parser.add_argument("--gradient_checkpointing", action="store_true", default=False)
     parser.add_argument("--bf16", action="store_true", default=False, help="Enable bfloat16")
+    parser.add_argument("--meta_init", action="store_true", default=False, help="Initialize models on meta device to save CPU memory")
     parser.add_argument("--zpg", type=int, default=1, help="ZeRO++ max partition size")
     parser.add_argument("--adam_offload", action="store_true", default=False, help="Offload Adam Optimizer")
     parser.add_argument("--actor_init_on_gpu", action="store_true", default=False)
@@ -366,6 +454,7 @@ if __name__ == "__main__":
     parser.add_argument("--use_tensorboard", type=str, default=None, help="TensorBoard logging path")
 
     # MultiModal
+    parser.add_argument("--text_only", action="store_true", default=False)
     parser.add_argument(
         "--limit_mm_image_per_prompt",
         type=int,
@@ -380,10 +469,17 @@ if __name__ == "__main__":
         default=False,
         help="whether to use the clipped policy gradient loss from CPGD"
     )
+    parser.add_argument(
+        "--high_entropy_token_ratio",
+        type=float,
+        default=0.0,
+        help="Ratio of high-entropy tokens to keep for policy updates",
+    )
 
     add_arguments(parser)
 
     args = parser.parse_args()
+    args.use_kl_estimator_k3 = args.kl_estimator == "k3"
 
     if args.advantage_estimator not in ["gae"]:
         args.critic_pretrain = None

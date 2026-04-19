@@ -1,12 +1,13 @@
 import json
 import os
-import re
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 import torch
 import torch.nn as nn
-from qwen_vl_utils import process_vision_info
-from transformers import AutoConfig, AutoProcessor, Qwen2_5_VLForConditionalGeneration
+from transformers import AutoModel, AutoProcessor
+from transformers.utils import cached_file
+
+from keye_vl_utils import process_vision_info
 
 from lightrft.utils import get_current_device
 
@@ -17,7 +18,6 @@ from meme_utils import (
     compute_meme_format_reward,
     extract_box_texts,
     get_first_image,
-    get_user_request,
     load_text_file,
     normalize_detections,
     render_meme_image,
@@ -30,6 +30,34 @@ _REWARD_STATE = {
     "model_reward_weight": 1.0,
     "format_reward_weight": 0.1,
 }
+_DTYPE_MAP = {
+    "auto": None,
+    "float16": torch.float16,
+    "fp16": torch.float16,
+    "bfloat16": torch.bfloat16,
+    "bf16": torch.bfloat16,
+    "float32": torch.float32,
+    "fp32": torch.float32,
+}
+
+
+class _FSDPSafeEmbedding(nn.Module):
+    """Keep embedding weights in the parent FSDP unit.
+
+    Keye's vision tower reads ``position_embedding.weight`` directly in its
+    interpolation path. When FSDP2 individually wraps those embedding modules,
+    the weight can become a DTensor while sibling activations stay regular
+    tensors, which triggers mixed Tensor/DTensor errors on addition.
+    """
+    def __init__(self, embedding: nn.Embedding):
+        super().__init__()
+        self.weight = embedding.weight
+        self.num_embeddings = embedding.num_embeddings
+        self.embedding_dim = embedding.embedding_dim
+        self.padding_idx = embedding.padding_idx
+
+    def forward(self, input_ids: torch.Tensor) -> torch.Tensor:
+        return nn.functional.embedding(input_ids, self.weight, padding_idx=self.padding_idx)
 
 
 def _as_torch_device(device_like: Any) -> torch.device:
@@ -40,22 +68,18 @@ def _as_torch_device(device_like: Any) -> torch.device:
     return torch.device(device_like)
 
 
+
 def _default_reward_prompt_path() -> str:
     return os.path.join(os.path.dirname(os.path.abspath(__file__)), "prompts", "reward_compare.txt")
+
 
 
 def _load_reward_prompt(path: Optional[str] = None) -> str:
     prompt_path = path or _default_reward_prompt_path()
     if os.path.exists(prompt_path):
         return load_text_file(prompt_path)
-    return (
-        "You are a strict meme reward model.\n"
-        "Compare the two meme images and return exactly:\n"
-        "Image 1 score: <0-10>\n"
-        "Image 2 score: <0-10>\n"
-        "Winner: <1 or 2 or tie>\n"
-        "Reason: <short sentence>"
-    )
+    return "Which meme is funnier?"
+
 
 
 def _parse_reward_config(raw_reward_pretrain: str) -> Dict[str, Any]:
@@ -88,33 +112,244 @@ def _parse_reward_config(raw_reward_pretrain: str) -> Dict[str, Any]:
     return pairwise_cfg
 
 
+
+def _resolve_torch_dtype(dtype_like: Any) -> Optional[torch.dtype]:
+    if dtype_like is None or isinstance(dtype_like, torch.dtype):
+        return dtype_like
+    key = str(dtype_like).strip().lower()
+    if key not in _DTYPE_MAP:
+        raise ValueError(f"Unsupported torch dtype: {dtype_like}")
+    return _DTYPE_MAP[key]
+
+
+
+def _resolve_model_file(path_or_repo: str, filename: str) -> str:
+    if os.path.isdir(path_or_repo):
+        local_path = os.path.join(path_or_repo, filename)
+        if os.path.exists(local_path):
+            return local_path
+    try:
+        return cached_file(path_or_repo, filename)
+    except Exception as exc:  # pragma: no cover - exercised only when weights are resolved remotely.
+        raise FileNotFoundError(f"Could not find {filename} under {path_or_repo}") from exc
+
+
+def _replace_module_if_embedding(parent: nn.Module, attr_name: str) -> bool:
+    module = getattr(parent, attr_name, None)
+    if not isinstance(module, nn.Embedding):
+        return False
+
+    setattr(parent, attr_name, _FSDPSafeEmbedding(module))
+    return True
+
+
+def _find_keye_visual_module(model: nn.Module) -> Optional[nn.Module]:
+    for attr_name in ("visual", "vision_tower", "vision_model"):
+        module = getattr(model, attr_name, None)
+        if isinstance(module, nn.Module):
+            return module
+
+    inner_model = getattr(model, "model", None)
+    if isinstance(inner_model, nn.Module):
+        return _find_keye_visual_module(inner_model)
+
+    return None
+
+
+def _patch_keye_fsdp_compat(model: nn.Module) -> None:
+    """Patch Keye vision modules that are fragile under FSDP2 DTensors."""
+    visual_model = _find_keye_visual_module(model)
+    if visual_model is None:
+        return
+
+    replaced_names: List[str] = []
+    for module_name, module in visual_model.named_modules():
+        if _replace_module_if_embedding(module, "position_embedding"):
+            replaced_names.append(f"{module_name}.position_embedding" if module_name else "position_embedding")
+        if _replace_module_if_embedding(module, "packing_position_embedding"):
+            replaced_names.append(
+                f"{module_name}.packing_position_embedding" if module_name else "packing_position_embedding"
+            )
+        if hasattr(module, "_attn_implementation"):
+            module._attn_implementation = "eager"
+
+    if hasattr(getattr(visual_model, "config", None), "_attn_implementation"):
+        visual_model.config._attn_implementation = "eager"
+
+    vision_config = getattr(getattr(model, "config", None), "vision_config", None)
+    if hasattr(vision_config, "_attn_implementation"):
+        vision_config._attn_implementation = "eager"
+
+    if replaced_names:
+        print("[MemePairwiseJudge] FSDP2-safe Keye vision patch:", ", ".join(replaced_names))
+    print("[MemePairwiseJudge] Set Keye vision attention to 'eager' for FSDP2 compat")
+
+
+
+def _unwrap_head_state_dict(state_dict: Dict[str, Any]) -> Dict[str, torch.Tensor]:
+    nested_keys = ("state_dict", "model", "module", "classification_head", "classifier")
+    current = state_dict
+    while isinstance(current, dict):
+        tensor_values = [value for value in current.values() if torch.is_tensor(value)]
+        if tensor_values:
+            break
+        next_state = None
+        for key in nested_keys:
+            candidate = current.get(key)
+            if isinstance(candidate, dict):
+                next_state = candidate
+                break
+        if next_state is None:
+            break
+        current = next_state
+
+    if not isinstance(current, dict):
+        raise ValueError("classification_head.pt does not contain a supported state dict")
+
+    tensor_state = {str(key): value for key, value in current.items() if torch.is_tensor(value)}
+    if not tensor_state:
+        raise ValueError("classification_head.pt does not contain tensor parameters")
+    return tensor_state
+
+
+
+def _strip_common_prefix(state_dict: Dict[str, torch.Tensor], prefix: str) -> Dict[str, torch.Tensor]:
+    if not all(key.startswith(prefix) for key in state_dict):
+        return state_dict
+    return {key[len(prefix):]: value for key, value in state_dict.items()}
+
+
+
+def _normalize_head_state_dict(state_dict: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
+    normalized = dict(state_dict)
+    changed = True
+    while changed:
+        changed = False
+        for prefix in ("module.", "model.", "classification_head.", "classifier.", "head."):
+            stripped = _strip_common_prefix(normalized, prefix)
+            if stripped is not normalized:
+                normalized = stripped
+                changed = True
+                break
+    return normalized
+
+
+class _TwoLayerTanhHead(nn.Module):
+    def __init__(self, in_features: int, hidden_features: int, out_features: int):
+        super().__init__()
+        self.dense = nn.Linear(in_features, hidden_features)
+        self.out_proj = nn.Linear(hidden_features, out_features)
+        self.activation = nn.Tanh()
+
+    def forward(self, hidden_states: torch.Tensor) -> torch.Tensor:
+        return self.out_proj(self.activation(self.dense(hidden_states)))
+
+
+
+def _build_classification_head(state_dict: Dict[str, torch.Tensor]) -> nn.Module:
+    state_dict = _normalize_head_state_dict(_unwrap_head_state_dict(state_dict))
+    keys = set(state_dict.keys())
+
+    if {"dense.weight", "dense.bias", "out_proj.weight", "out_proj.bias"}.issubset(keys):
+        dense_weight = state_dict["dense.weight"]
+        out_proj_weight = state_dict["out_proj.weight"]
+        head = _TwoLayerTanhHead(
+            in_features=dense_weight.shape[1],
+            hidden_features=dense_weight.shape[0],
+            out_features=out_proj_weight.shape[0],
+        )
+        head.load_state_dict(
+            {
+                "dense.weight": dense_weight,
+                "dense.bias": state_dict["dense.bias"],
+                "out_proj.weight": out_proj_weight,
+                "out_proj.bias": state_dict["out_proj.bias"],
+            }
+        )
+        return head
+
+    if "weight" in state_dict and state_dict["weight"].ndim == 2:
+        bias = state_dict.get("bias")
+        head = nn.Linear(state_dict["weight"].shape[1], state_dict["weight"].shape[0], bias=bias is not None)
+        payload = {"weight": state_dict["weight"]}
+        if bias is not None:
+            payload["bias"] = bias
+        head.load_state_dict(payload, strict=False)
+        return head
+
+    for prefix in ("score", "out_proj", "summary"):
+        weight_key = f"{prefix}.weight"
+        if weight_key not in state_dict:
+            continue
+        bias_key = f"{prefix}.bias"
+        bias = state_dict.get(bias_key)
+        head = nn.Linear(state_dict[weight_key].shape[1], state_dict[weight_key].shape[0], bias=bias is not None)
+        payload = {"weight": state_dict[weight_key]}
+        if bias is not None:
+            payload["bias"] = bias
+        head.load_state_dict(payload, strict=False)
+        return head
+
+    raise ValueError(
+        "Unsupported classification head format. Expected a simple linear head or a dense/out_proj head, "
+        f"but found keys: {sorted(state_dict.keys())}"
+    )
+
+
+
+def _load_classification_head(path_or_file: str, dtype: Optional[torch.dtype] = None) -> nn.Module:
+    head_state = torch.load(path_or_file, map_location="cpu")
+    head = _build_classification_head(head_state)
+    if dtype is not None:
+        head = head.to(dtype=dtype)
+    return head
+
+
+
+def _pool_last_non_padding_token(hidden_states: torch.Tensor, attention_mask: Optional[torch.Tensor]) -> torch.Tensor:
+    if attention_mask is None:
+        return hidden_states[:, -1, :]
+
+    attention_mask = attention_mask.to(device=hidden_states.device, dtype=torch.long)
+    reverse_mask = torch.flip(attention_mask, dims=[-1])
+    last_offsets = torch.argmax(reverse_mask, dim=-1)
+    last_indices = attention_mask.size(-1) - 1 - last_offsets
+    gather_index = last_indices.view(-1, 1, 1).expand(-1, 1, hidden_states.size(-1))
+    return hidden_states.gather(dim=1, index=gather_index).squeeze(1)
+
+
+
+def _pair_scores_from_logits(logits: torch.Tensor) -> List[Tuple[float, float]]:
+    if logits.ndim == 1:
+        logits = logits.unsqueeze(-1)
+
+    if logits.size(-1) == 1:
+        probs_a = torch.sigmoid(logits[:, 0].float())
+        probs_b = 1.0 - probs_a
+    else:
+        probs = torch.softmax(logits[:, :2].float(), dim=-1)
+        probs_a = probs[:, 0]
+        probs_b = probs[:, 1]
+
+    return list(zip(probs_a.detach().cpu().tolist(), probs_b.detach().cpu().tolist()))
+
+
+
 def build_pairwise_judge_message(
     reward_prompt: str,
     image_a,
     image_b,
-    text_a: str,
-    text_b: str,
-    user_request: str,
 ) -> List[Dict[str, Any]]:
-    prompt = reward_prompt.format(
-        user_request=user_request or "N/A",
-        text_a=text_a or "(empty)",
-        text_b=text_b or "(empty)",
-    )
     return [{
         "role": "user",
         "content": [
             {
                 "type": "text",
-                "text": f"{prompt}\n\nCandidate 1 image:"
+                "text": reward_prompt
             },
             {
                 "type": "image",
                 "image": image_a
-            },
-            {
-                "type": "text",
-                "text": "Candidate 2 image:"
             },
             {
                 "type": "image",
@@ -123,43 +358,6 @@ def build_pairwise_judge_message(
         ],
     }]
 
-
-def parse_pair_judge_response(response: str) -> Tuple[float, float]:
-    response = (response or "").strip()
-    if not response:
-        return 0.5, 0.5
-
-    def _extract_score(image_idx: int) -> Optional[float]:
-        pattern = rf"Image\s*{image_idx}\s*score\s*[:：]\s*([0-9]+(?:\.[0-9]+)?)"
-        match = re.search(pattern, response, re.IGNORECASE)
-        if not match:
-            return None
-        try:
-            return float(match.group(1))
-        except ValueError:
-            return None
-
-    score_a = _extract_score(1)
-    score_b = _extract_score(2)
-    if score_a is not None and score_b is not None:
-        return score_a, score_b
-
-    winner_match = re.search(r"Winner\s*[:：]\s*(1|2|tie)", response, re.IGNORECASE)
-    if winner_match:
-        winner = winner_match.group(1).lower()
-        if winner == "1":
-            return 1.0, 0.0
-        if winner == "2":
-            return 0.0, 1.0
-        return 0.5, 0.5
-
-    numeric_scores = re.findall(r"([0-9]+(?:\.[0-9]+)?)", response)
-    if len(numeric_scores) >= 2:
-        try:
-            return float(numeric_scores[0]), float(numeric_scores[1])
-        except ValueError:
-            pass
-    return 0.5, 0.5
 
 
 def group_meme_rollout_indices(
@@ -205,23 +403,25 @@ def group_meme_rollout_indices(
 class MemePairwiseJudge(nn.Module):
     def __init__(
         self,
-        base_model: Qwen2_5_VLForConditionalGeneration,
+        base_model: nn.Module,
         processor,
+        reward_head: nn.Module,
         reward_prompt: str,
-        max_new_tokens: int = 96,
         pair_batch_size: int = 4,
         n_samples_per_prompt: int = 1,
         max_pairs_per_group: int = 0,
+        max_length: int = 4096,
         render_config: Optional[MemeRenderConfig] = None,
     ):
         super().__init__()
         self.base_model = base_model
         self.processor = processor
+        self.reward_head = reward_head
         self.reward_prompt = reward_prompt
-        self.max_new_tokens = int(max_new_tokens)
         self.pair_batch_size = int(pair_batch_size)
         self.n_samples_per_prompt = int(n_samples_per_prompt)
         self.max_pairs_per_group = int(max_pairs_per_group)
+        self.max_length = int(max_length)
         self.render_config = render_config or MemeRenderConfig()
 
     def _render_candidates(
@@ -229,13 +429,11 @@ class MemePairwiseJudge(nn.Module):
         raw_images: Sequence[Any],
         references: Sequence[Any],
         prompt_and_outputs: Sequence[str],
-    ) -> Tuple[List[Any], List[str]]:
+    ) -> List[Any]:
         rendered_images: List[Any] = []
-        extracted_texts: List[str] = []
 
         for raw_image, reference, prompt_and_output in zip(raw_images, references, prompt_and_outputs):
             extracted_boxes = extract_box_texts(prompt_and_output or "")
-            extracted_texts.append("\\n".join(extracted_boxes) if extracted_boxes else "")
 
             image = get_first_image(raw_image)
             if image is None:
@@ -253,55 +451,66 @@ class MemePairwiseJudge(nn.Module):
                 )
             )
 
-        return rendered_images, extracted_texts
+        return rendered_images
 
-    def _generate_pair_scores(self, pair_jobs: List[Dict[str, Any]], device: torch.device) -> List[Tuple[float, float]]:
+    def _score_pair_jobs(self, pair_jobs: List[Dict[str, Any]], device: torch.device) -> List[Tuple[float, float]]:
         scores: List[Tuple[float, float]] = []
         if not pair_jobs:
             return scores
 
-        step = max(1, self.pair_batch_size)
-        for start in range(0, len(pair_jobs), step):
-            batch_jobs = pair_jobs[start:start + step]
+        @torch.no_grad()
+        def _run_batch(batch_jobs: List[Dict[str, Any]]) -> List[Tuple[float, float]]:
+            if process_vision_info is None:
+                raise ImportError("keye-vl-utils is required for the GodsMeme reward model")
             messages = [job["message"] for job in batch_jobs]
             texts = [
                 self.processor.apply_chat_template(message, tokenize=False, add_generation_prompt=True)
                 for message in messages
             ]
-            image_inputs = []
-            for message in messages:
-                processed = process_vision_info(message)
-                if isinstance(processed, tuple):
-                    image_inputs.append(processed[0])
-                else:
-                    image_inputs.append(processed)
+            image_inputs, video_inputs = process_vision_info(messages)
 
-            inputs = self.processor(
-                text=texts,
-                images=image_inputs,
-                padding=True,
-                truncation=True,
-                return_tensors="pt",
-            )
+            processor_kwargs = {
+                "text": texts,
+                "padding": True,
+                "truncation": True,
+                "max_length": self.max_length,
+                "return_tensors": "pt",
+            }
+            if image_inputs is not None:
+                processor_kwargs["images"] = image_inputs
+            if video_inputs is not None:
+                processor_kwargs["videos"] = video_inputs
+
+            inputs = self.processor(**processor_kwargs)
             for key, value in list(inputs.items()):
                 if torch.is_tensor(value):
                     inputs[key] = value.to(device)
 
-            generation_kwargs = {
-                "input_ids": inputs["input_ids"],
-                "attention_mask": inputs["attention_mask"],
-                "max_new_tokens": self.max_new_tokens,
-                "do_sample": False,
-            }
-            if "pixel_values" in inputs:
-                generation_kwargs["pixel_values"] = inputs["pixel_values"]
-            if "image_grid_thw" in inputs:
-                generation_kwargs["image_grid_thw"] = inputs["image_grid_thw"]
+            outputs = self.base_model(**inputs, output_hidden_states=True, return_dict=True)
+            hidden_states = getattr(outputs, "hidden_states", None)
+            if hidden_states:
+                last_hidden = hidden_states[-1]
+            else:
+                last_hidden = getattr(outputs, "last_hidden_state", None)
+            if last_hidden is None:
+                raise ValueError("Reward model must return hidden states for pairwise scoring.")
 
-            generated = self.base_model.generate(**generation_kwargs)
-            trimmed = [output_ids[len(input_ids):] for input_ids, output_ids in zip(inputs["input_ids"], generated)]
-            decoded = self.processor.batch_decode(trimmed, skip_special_tokens=True, clean_up_tokenization_spaces=False)
-            scores.extend(parse_pair_judge_response(text) for text in decoded)
+            pooled = _pool_last_non_padding_token(last_hidden, inputs.get("attention_mask"))
+            logits = self.reward_head(pooled)
+            return _pair_scores_from_logits(logits)
+
+        step = max(1, self.pair_batch_size)
+        for start in range(0, len(pair_jobs), step):
+            batch_jobs = pair_jobs[start:start + step]
+            try:
+                scores.extend(_run_batch(batch_jobs))
+            except IndexError as exc:
+                # Some multimodal processors do not align multiple two-image prompts
+                # correctly in one batch. Fall back to one pair per forward pass.
+                if len(batch_jobs) == 1 or "image_grid_thw" not in str(exc):
+                    raise
+                for job in batch_jobs:
+                    scores.extend(_run_batch([job]))
 
         return scores
 
@@ -331,7 +540,7 @@ class MemePairwiseJudge(nn.Module):
         if batch_size == 0:
             return {"score": torch.zeros(0, dtype=torch.float32, device=device)}
 
-        rendered_images, extracted_texts = self._render_candidates(raw_images, references, prompt_and_output)
+        rendered_images = self._render_candidates(raw_images, references, prompt_and_output)
         groups = group_meme_rollout_indices(
             references, batch_size=batch_size, n_samples_per_prompt=self.n_samples_per_prompt
         )
@@ -349,9 +558,6 @@ class MemePairwiseJudge(nn.Module):
                 if rendered_images[global_a] is None or rendered_images[global_b] is None:
                     continue
 
-                reference = references[global_a] if global_a < len(references) else None
-                fallback_prompt = prompt_and_output[global_a] if global_a < len(prompt_and_output) else None
-                user_request = get_user_request(reference if isinstance(reference, dict) else None, fallback_prompt)
                 pair_jobs.append({
                     "index_a": global_a,
                     "index_b": global_b,
@@ -359,13 +565,10 @@ class MemePairwiseJudge(nn.Module):
                         reward_prompt=self.reward_prompt,
                         image_a=rendered_images[global_a],
                         image_b=rendered_images[global_b],
-                        text_a=extracted_texts[global_a],
-                        text_b=extracted_texts[global_b],
-                        user_request=user_request,
                     ),
                 })
 
-        pair_scores = self._generate_pair_scores(pair_jobs, device=device)
+        pair_scores = self._score_pair_jobs(pair_jobs, device=device)
         for job, (score_a, score_b) in zip(pair_jobs, pair_scores):
             index_a = job["index_a"]
             index_b = job["index_b"]
@@ -388,6 +591,7 @@ class MemePairwiseJudge(nn.Module):
         return {"score": torch.tensor(pairwise_rewards, dtype=torch.float32, device=device)}
 
 
+
 def load_reward_models(
     reward_pretrain: str,
     strategy,
@@ -400,34 +604,42 @@ def load_reward_models(
     _REWARD_STATE["model_reward_weight"] = float(cfg.get("model_reward_weight", 1.0))
     _REWARD_STATE["format_reward_weight"] = float(cfg.get("format_reward_weight", 0.1))
 
-    pretrain_path = cfg["path"]
+    reward_model_path = cfg["path"]
     reward_prompt = _load_reward_prompt(cfg.get("reward_prompt_path"))
+    torch_dtype = _resolve_torch_dtype(cfg.get("torch_dtype", "float16"))
+    classification_head_path = cfg.get("classification_head_path") or _resolve_model_file(
+        reward_model_path, "classification_head.pt"
+    )
 
     with strategy.init_model_context() as _:
-        model_config = AutoConfig.from_pretrained(pretrain_path, trust_remote_code=True)
-        base_model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
-            pretrain_path,
-            config=model_config,
-            torch_dtype=torch.bfloat16,
+        base_model = AutoModel.from_pretrained(
+            reward_model_path,
+            torch_dtype=torch_dtype,
             attn_implementation=cfg.get("attn_implementation", "flash_attention_2"),
-            trust_remote_code=True,
+            trust_remote_code=cfg.get("trust_remote_code", True),
         )
+        if getattr(getattr(strategy, "args", None), "fsdp", False):
+            _patch_keye_fsdp_compat(base_model)
+
         processor = AutoProcessor.from_pretrained(
-            pretrain_path,
+            reward_model_path,
             min_pixels=cfg.get("min_pixels", 256 * 28 * 28),
             max_pixels=cfg.get("max_pixels", 1280 * 28 * 28),
-            trust_remote_code=True,
+            trust_remote_code=cfg.get("trust_remote_code", True),
         )
-        processor.tokenizer.padding_side = "left"
+        if hasattr(processor, "tokenizer"):
+            processor.tokenizer.padding_side = "left"
 
+        reward_head = _load_classification_head(classification_head_path, dtype=torch_dtype)
         model = MemePairwiseJudge(
             base_model=base_model,
             processor=processor,
+            reward_head=reward_head,
             reward_prompt=reward_prompt,
-            max_new_tokens=cfg.get("max_new_tokens", 96),
-            pair_batch_size=cfg.get("pair_batch_size", 4),
+            pair_batch_size=cfg.get("pair_batch_size", 1),
             n_samples_per_prompt=cfg.get("n_samples_per_prompt", 1),
             max_pairs_per_group=cfg.get("max_pairs_per_group", 0),
+            max_length=cfg.get("max_length", cfg.get("cutoff_len", 4096)),
             render_config=MemeRenderConfig(
                 font_name=cfg.get("font_name", "DejaVuSans.ttf"),
                 min_font_size=cfg.get("min_font_size", 14),
@@ -441,6 +653,7 @@ def load_reward_models(
         model.eval()
 
     return [model], [processor.tokenizer], {_PAIRWISE_LABEL_KEY: 0}
+
 
 
 def reward_fn(

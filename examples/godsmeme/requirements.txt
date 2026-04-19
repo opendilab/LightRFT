@@ -1,0 +1,2 @@
+transformers==4.56.2
+keye-vl-utils[decord]==1.0.0

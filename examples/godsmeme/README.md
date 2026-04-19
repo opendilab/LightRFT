@@ -1,63 +1,65 @@
-# GodsMeme GRPO Pipeline
+# GodsMeme on LightRFT
 
-This example adapts LightRFT's vision-language GRPO stack to meme generation.
-The policy consumes the already-formatted GodsMeme RL prompt from the dataset, generates the full reasoning-style response, and the reward pipeline renders the final meme text back onto the image before running a pairwise meme judge.
+This example adapts LightRFT's vision-language GRPO pipeline to meme generation.
+The policy sees one source image plus a preformatted GodsMeme prompt, generates a full reasoning-style answer, and is rewarded by a pairwise meme judge that compares rendered meme images within each GRPO group.
 
-## What is included
+## What the training entrypoint actually is
 
-- `train_colocate.py`: main GRPO training entry for meme RL.
-- `meme_dataset.py`: dataset loader for the prepared GodsMeme RL JSON/JSONL rows.
-- `meme_utils.py`: GodsMeme-specific parsing, rendering, and pair aggregation helpers.
-- `reward_model.py`: pairwise meme judge wrapper and reward aggregation logic.
-- `prompts/generate_meme.txt`: reference policy prompt format.
-- `prompts/reward_compare.txt`: pairwise comparison prompt for the meme reward judge.
-- `run_meme_grpo.sh`: example launch script.
-- `test_reward_model_vllm.py`: optional real-model integration smoke test using vLLM.
+There are two entry layers:
 
-## Reward flow
+- `examples/godsmeme/run_meme_grpo.sh`: user-facing launcher. Set paths and training knobs here, then run it with `bash`.
+- `examples/godsmeme/train_colocate.py`: Python training entry used by `torchrun`. It builds the actor, dataset, reward model, inference engine, and PPO trainer.
 
-For each rollout group produced from the same prompt:
+If you only want to start training, edit the shell script or override its environment variables. You usually do not need to call `train_colocate.py` directly.
 
-1. Parse the policy completion and extract the `Text on the Meme` section.
-2. Render the generated text onto the base image using the dataset's detection boxes when available.
-3. Build pairwise comparisons inside the rollout group.
-4. Ask a VLM judge which rendered meme is better.
-5. Convert pairwise wins/scores into one scalar reward per sample.
-6. Add a small format reward that checks the required GodsMeme response structure.
+## End-to-end training flow
 
-The reward weights are read from `--reward_pretrain` JSON config:
+1. `MemeOnlineRLDataset` loads prebuilt RL rows from `annotation_path` and resolves the source image from `root_dir`.
+2. Each row is converted into a multimodal chat prompt with one image placeholder and one text instruction.
+3. GRPO samples `n_samples_per_prompt` policy completions for the same prompt.
+4. The reward pipeline extracts the `Text on the Meme` section from each completion.
+5. The extracted text is rendered back onto the original image by using detection boxes when available, or a simple fallback layout otherwise.
+6. A local VLM judge compares candidate meme images pairwise inside the same rollout group.
+7. Pairwise scores are aggregated into one scalar reward per sample.
+8. A small format reward is added so the policy keeps the expected GodsMeme response structure.
+9. LightRFT runs PPO/GRPO updates and saves checkpoints to the configured output directory.
 
-```text
-final_reward = model_reward_weight * pairwise_reward
-             + format_reward_weight * format_reward
-```
-
-Defaults:
-
-- `model_reward_weight = 1.0`
-- `format_reward_weight = 0.1`
-
-## Important rollout constraint
-
-The pairwise reward is computed inside each rollout micro-batch, so keep every GRPO group fully contained in one micro-batch:
+## Directory map
 
 ```text
-micro_rollout_batch_size % n_samples_per_prompt == 0
+examples/godsmeme/
+├── README.md                    # This guide
+├── run_meme_grpo.sh             # User-facing launch script
+├── train_colocate.py            # Main GRPO training entry
+├── meme_dataset.py              # Dataset loader for GodsMeme RL rows
+├── reward_model.py              # Pairwise reward judge and reward aggregation
+├── meme_utils.py                # Text parsing, rendering, and pair helpers
+├── prompts/
+│   ├── generate_meme.txt        # Reference policy prompt format
+│   └── reward_compare.txt       # Prompt template for the pairwise judge
+├── test_meme_dataset.py         # Dataset test scaffold
+└── test_reward_model_vllm.py    # Optional reward-model smoke test
 ```
 
-For standard GRPO runs, use `--advantage_estimator group_norm` and set `--n_samples_per_prompt > 1`.
+## Dataset format expected by this example
 
-## Dataset expectation
+This example does not build the RL dataset for you. It expects a JSON or JSONL file where each row already looks like a conversation-style GodsMeme training sample.
 
-The RL dataset is expected to already be formatted as conversation-style GodsMeme rows:
+Minimal example:
 
 ```json
 {
   "id": "sample-001",
   "image": "images/cat.jpg",
   "conversations": [
-    {"from": "human", "value": "...GodsMeme prompt... <image>"},
-    {"from": "assistant", "value": "...reference meme response..."}
+    {
+      "from": "human",
+      "value": "...GodsMeme prompt... <image>"
+    },
+    {
+      "from": "assistant",
+      "value": "...reference reasoning and meme text..."
+    }
   ],
   "text_loc_info": {
     "loc": [[40, 60, 420, 170], [40, 330, 420, 430]]
@@ -65,60 +67,97 @@ The RL dataset is expected to already be formatted as conversation-style GodsMem
 }
 ```
 
-Supported box metadata keys include `detections`, `text_loc_info`, `loc`, `bbox_scale`, and `bbox_normalized`.
-If no boxes are available, the renderer falls back to a simple top/bottom banner layout.
+Useful notes:
 
-## Reward model configuration
+- `image`, `image_path`, and `img` are accepted as image keys.
+- The human message must contain `<image>`.
+- The assistant message is treated as the reference output and is also used to infer the expected number of text boxes when box metadata is missing.
+- Supported box metadata includes `detections`, `text_loc_info`, `loc`, `bbox_scale`, `bbox_normalized`, and `expected_box_count`.
+- If no boxes are available, the renderer falls back to a simple top/bottom style layout.
 
-`--reward_pretrain` accepts either:
+## Reward design
 
-1. A plain Hugging Face model path for the pairwise judge.
-2. A JSON object if you want to override judge settings.
+The reward combines two parts:
 
-Plain path example:
-
-```bash
---reward_pretrain /path/to/Qwen2.5-VL-7B-Instruct
+```text
+final_reward = model_reward_weight * pairwise_reward
+             + format_reward_weight * format_reward
 ```
 
-JSON example:
+- `pairwise_reward`: computed by comparing rendered candidate memes from the same rollout group.
+- `format_reward`: checks whether the completion keeps the expected GodsMeme answer structure and box count.
+
+Default weights:
+
+- `model_reward_weight = 1.0`
+- `format_reward_weight = 0.1`
+
+The default launcher builds `--reward_pretrain` as a JSON blob that points to the local judge model and the comparison prompt template.
+
+The current implementation follows the `HUMOR-RM-Keye-VL` inference pattern directly in `reward_model.py`, loading the Keye-based reward model plus `classification_head.pt` without adding a `llamafactory` runtime dependency. The pairwise judge prompt is kept to the same simple question used in the model README: `Which meme is funnier?`
+
+## Quick start
+
+Edit the paths in `examples/godsmeme/run_meme_grpo.sh`, or override them inline:
 
 ```bash
---reward_pretrain '{
-  "pairwise": {
-    "path": "/path/to/Qwen2.5-VL-7B-Instruct",
-    "max_new_tokens": 96,
-    "pair_batch_size": 4,
-    "max_pairs_per_group": 0,
-    "model_reward_weight": 1.0,
-    "format_reward_weight": 0.1,
-    "reward_prompt_path": "examples/godsmeme/prompts/reward_compare.txt"
-  }
-}'
-```
-
-## Running
-
-Edit the environment variables in `run_meme_grpo.sh`, then launch:
-
-```bash
+POLICY_MODEL_PATH=/path/to/policy-model \
+REWARD_MODEL_PATH=/path/to/reward-model \
+ANNOTATION_PATH=/path/to/train_data.jsonl \
+IMAGE_ROOT=/path/to/image_root \
 bash examples/godsmeme/run_meme_grpo.sh
 ```
 
-## Validation
+Default outputs:
 
-Lightweight unit tests:
+- checkpoints: `results/<experiment_name>/<run_name>/`
+- logs: `rft_logs/<experiment_name>/`
+
+## Important constraints before you launch
+
+- `N_SAMPLES` must be greater than `1` for GRPO with `group_norm`.
+- `MICRO_ROLLOUT_BATCH_SIZE % N_SAMPLES == 0` must hold, otherwise one prompt group can be split across micro-batches and pairwise reward becomes invalid.
+- Pairwise judge cost grows roughly quadratically with `N_SAMPLES` unless you cap `MAX_PAIRS_PER_GROUP`.
+- The current meme reward model does not support `--rm_use_engine`; the judge is loaded directly by `reward_model.py`.
+- Each policy prompt uses one source image, so `LIMIT_MM_IMAGE_PER_PROMPT` is set to `1`.
+- This example reads `--annotation_path` and `--root_dir`; it does not use the generic `--prompt_data` path for training data.
+
+## Most useful knobs in `run_meme_grpo.sh`
+
+- `POLICY_MODEL_PATH`: actor checkpoint or HF model id.
+- `REWARD_MODEL_PATH`: Keye-based reward-model checkpoint path. It should contain `classification_head.pt`.
+- `REWARD_MAX_LENGTH`: max sequence length used when scoring rendered meme pairs.
+- `ANNOTATION_PATH` / `IMAGE_ROOT`: GodsMeme RL data location.
+- `N_SAMPLES`: number of rollouts per prompt. Higher is better for ranking quality but much slower.
+- `MAX_PAIRS_PER_GROUP`: limit pairwise comparisons to reduce reward cost.
+- `PAIR_BATCH_SIZE`: judge batch size for pairwise evaluation.
+- `MICRO_ROLLOUT_BATCH_SIZE`: must be divisible by `N_SAMPLES`.
+- `MICRO_TRAIN_BATCH_SIZE`: lower this first if actor training OOMs.
+- `ENGINE_TYPE`, `ENGINE_TP`, `ENGINE_MEM_UTIL`: rollout engine settings for the actor.
+- `PROMPT_MAX_LEN`, `GENERATE_MAX_LEN`: trim these if prompts or responses are too long for your setup.
+
+## Practical tuning advice
+
+- Start with smaller `N_SAMPLES` such as `4` before scaling to `8`.
+- If reward evaluation is the bottleneck, reduce `N_SAMPLES` or set `MAX_PAIRS_PER_GROUP` to a small positive integer.
+- If the actor OOMs, first lower `MICRO_TRAIN_BATCH_SIZE`, then `MICRO_ROLLOUT_BATCH_SIZE`, then `ENGINE_MEM_UTIL`.
+- If generations are too verbose, reduce `GENERATE_MAX_LEN` and revisit the prompt format in `examples/godsmeme/prompts/generate_meme.txt`.
+- If rendered text looks misplaced, verify your box annotations before changing the reward model.
+
+## Optional validation
+
+There are lightweight unit tests for the new reward-model invocation path:
 
 ```bash
-pytest examples/godsmeme/test_meme_dataset.py examples/godsmeme/test_reward_model.py
+pytest examples/godsmeme/test_reward_model_vllm.py
 ```
 
-Optional real-model vLLM smoke test:
+These tests cover the classifier-head loading helpers and the direct pair-scoring flow without requiring a real reward checkpoint.
 
-```bash
-RUN_GODSMEME_VLLM_TEST=1 \
-GODSMEME_REWARD_MODEL_PATH=/path/to/Qwen2.5-VL-7B-Instruct \
-GODSMEME_ANNOTATION_PATH=/path/to/train_data.jsonl \
-GODSMEME_IMAGE_ROOT=/path/to/image_root \
-pytest examples/godsmeme/test_reward_model_vllm.py -k real_data
-```
+## Current limitations
+
+- No data preprocessing script is included in this folder; the RL JSON/JSONL must already be prepared.
+- The reward judge is model-based and local, so training cost is much higher than rule-only GRPO examples.
+- The reward loader expects the Keye multimodal interface used by `HUMOR-RM-Keye-VL`.
+- The fallback renderer is intentionally simple and is mainly a reward-time approximation, not a production meme compositor.
+- The policy is optimized for the GodsMeme response template; changing the prompt schema usually requires updating both parsing and reward logic.

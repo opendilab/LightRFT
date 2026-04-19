@@ -61,22 +61,10 @@ class MemeOnlineRLDataset(Dataset):
             raise FileNotFoundError(f"Image {image_path} does not exist")
         return image_path
 
-    def _extract_user_request_from_prompt(self, prompt_text: str) -> str:
-        patterns = [
-            r"\*\*User Input Parameters\*\*:\s*(.*?)(?=\n\s*\*\*Text on the Meme\*\*:|\Z)",
-            r"Input Parameters\s*:\s*(\[[^\n]+\])",
-        ]
-        for pattern in patterns:
-            match = re.search(pattern, prompt_text, re.IGNORECASE | re.DOTALL)
-            if match:
-                return match.group(1).strip()
-        return ""
-
     def _build_reference(self, data: Dict[str, Any], prompt_text: str, assistant_output: str) -> Dict[str, Any]:
         reference: Dict[str, Any] = {
             "id": data.get("id"),
             "group_id": str(data.get("group_id") or data.get("sample_id") or data.get("id") or ""),
-            "user_request": self._extract_user_request_from_prompt(prompt_text),
             "reference_output": assistant_output,
         }
 
@@ -117,6 +105,7 @@ class MemeOnlineRLDataset(Dataset):
         }]
         prompt = self.processor.apply_chat_template(prompt, tokenize=False, add_generation_prompt=True)
         reference = self._build_reference(data, human_input, assistant_output)
+        reference = reference["reference_output"]
         label = data.get("reward_rule_label", self.DEFAULT_LABEL)
 
         return prompt, [image_path], reference, label
