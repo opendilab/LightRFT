@@ -70,6 +70,60 @@ ENGINE_MEM_UTIL=0.35 \
 bash examples/tiny_python_expr/run_qwen25_3b.sh
 ```
 
+## Build Dataset Separately
+
+`build_dataset.py` exports a Hugging Face `DatasetDict` with `train/` and `test/` splits, and that output can be passed directly to training through `DATA_DIR` or `--prompt_data`.
+
+Minimal copy-paste example:
+
+```bash
+export DATA_DIR=/tmp/tiny_python_expr_dataset
+
+python3 examples/tiny_python_expr/build_dataset.py \
+  --output_dir "${DATA_DIR}" \
+  --train_size 32 \
+  --test_size 16 \
+  --seed 42
+```
+
+Then reuse exactly that exported dataset for training:
+
+```bash
+DATA_DIR=/tmp/tiny_python_expr_dataset \
+SKIP_DATASET_BUILD=1 \
+NAME=tiny-python-expr-from-exported-data \
+N_SAMPLES=4 EPISODE=4 \
+RBS=8 TBS=8 \
+PROMPT_MAX_LEN=128 GENERATE_MAX_LEN=64 \
+ENGINE_MEM_UTIL=0.35 \
+bash examples/tiny_python_expr/run_qwen25_3b.sh
+```
+
+If you want the most explicit connection, the training entry ultimately reads the same directory via `--prompt_data`:
+
+```bash
+torchrun \
+  --nproc-per-node 2 \
+  examples/tiny_python_expr/train_colocate.py \
+  --pretrain /mnt/shared-storage-user/puyuan/model/Qwen2.5-3B-Instruct \
+  --prompt_data /tmp/tiny_python_expr_dataset \
+  --save_path examples/tiny_python_expr/artifacts/results/manual-run \
+  --ckpt_path examples/tiny_python_expr/artifacts/results/manual-run \
+  --micro_train_batch_size 1 \
+  --train_batch_size 8 \
+  --micro_rollout_batch_size 1 \
+  --rollout_batch_size 8 \
+  --num_episodes 1 \
+  --n_samples_per_prompt 2 \
+  --prompt_max_len 128 \
+  --generate_max_len 64 \
+  --actor_learning_rate 1e-6 \
+  --init_kl_coef 0.001 \
+  --engine_type sglang \
+  --engine_mem_util 0.35 \
+  --engine_tp_size 1
+```
+
 ## `rlaunch` Cluster Flow
 
 This example does not keep a separate `run_rlaunch.sh`. The full cluster launch flow is documented here instead.

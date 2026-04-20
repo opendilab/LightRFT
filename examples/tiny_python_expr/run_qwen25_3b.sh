@@ -12,6 +12,7 @@ DATA_DIR="${DATA_DIR:-${SCRIPT_DIR}/data/generated}"
 ARTIFACT_ROOT="${ARTIFACT_ROOT:-${SCRIPT_DIR}/artifacts}"
 RESULTS_ROOT="${RESULTS_ROOT:-${ARTIFACT_ROOT}/results}"
 LOG_ROOT="${LOG_ROOT:-${ARTIFACT_ROOT}/rft_logs}"
+SKIP_DATASET_BUILD="${SKIP_DATASET_BUILD:-0}"
 
 TRAIN_SIZE="${TRAIN_SIZE:-128}"
 TEST_SIZE="${TEST_SIZE:-32}"
@@ -64,11 +65,18 @@ fix_permissions() {
 
 trap fix_permissions EXIT
 
-python3 "${SCRIPT_DIR}/build_dataset.py" \
-    --output_dir "${DATA_DIR}" \
-    --train_size "${TRAIN_SIZE}" \
-    --test_size "${TEST_SIZE}" \
-    --seed "${SEED}"
+if [ "${SKIP_DATASET_BUILD}" = "1" ]; then
+    if [ ! -d "${DATA_DIR}" ]; then
+        echo "DATA_DIR does not exist: ${DATA_DIR}" >&2
+        exit 1
+    fi
+else
+    python3 "${SCRIPT_DIR}/build_dataset.py" \
+        --output_dir "${DATA_DIR}" \
+        --train_size "${TRAIN_SIZE}" \
+        --test_size "${TEST_SIZE}" \
+        --seed "${SEED}"
+fi
 
 current_time="$(date +"%Y%m%d_%H%M%S")"
 SAVE_MODEL_NAME="LightRFT-python-expr-len_${PROMPT_MAX_LEN}_${GENERATE_MAX_LEN}-tbs_${TBS}-rbs_${RBS}-sample_${N_SAMPLES}-ep_${EPISODE}-lr_${LR}-${current_time}"

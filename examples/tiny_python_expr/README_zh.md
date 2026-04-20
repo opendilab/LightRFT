@@ -70,6 +70,60 @@ ENGINE_MEM_UTIL=0.35 \
 bash examples/tiny_python_expr/run_qwen25_3b.sh
 ```
 
+## 单独构建数据集
+
+`build_dataset.py` 导出的是 Hugging Face `DatasetDict` 格式，里面会有 `train/` 和 `test/` 两个 split。这个输出目录可以直接通过 `DATA_DIR` 或 `--prompt_data` 接到训练里。
+
+最小可复制示例：
+
+```bash
+export DATA_DIR=/tmp/tiny_python_expr_dataset
+
+python3 examples/tiny_python_expr/build_dataset.py \
+  --output_dir "${DATA_DIR}" \
+  --train_size 32 \
+  --test_size 16 \
+  --seed 42
+```
+
+然后直接复用这份已经导出的数据做训练：
+
+```bash
+DATA_DIR=/tmp/tiny_python_expr_dataset \
+SKIP_DATASET_BUILD=1 \
+NAME=tiny-python-expr-from-exported-data \
+N_SAMPLES=4 EPISODE=4 \
+RBS=8 TBS=8 \
+PROMPT_MAX_LEN=128 GENERATE_MAX_LEN=64 \
+ENGINE_MEM_UTIL=0.35 \
+bash examples/tiny_python_expr/run_qwen25_3b.sh
+```
+
+如果你想看得更直白一点，训练入口最终读取的就是同一个目录，只不过参数名叫 `--prompt_data`：
+
+```bash
+torchrun \
+  --nproc-per-node 2 \
+  examples/tiny_python_expr/train_colocate.py \
+  --pretrain /mnt/shared-storage-user/puyuan/model/Qwen2.5-3B-Instruct \
+  --prompt_data /tmp/tiny_python_expr_dataset \
+  --save_path examples/tiny_python_expr/artifacts/results/manual-run \
+  --ckpt_path examples/tiny_python_expr/artifacts/results/manual-run \
+  --micro_train_batch_size 1 \
+  --train_batch_size 8 \
+  --micro_rollout_batch_size 1 \
+  --rollout_batch_size 8 \
+  --num_episodes 1 \
+  --n_samples_per_prompt 2 \
+  --prompt_max_len 128 \
+  --generate_max_len 64 \
+  --actor_learning_rate 1e-6 \
+  --init_kl_coef 0.001 \
+  --engine_type sglang \
+  --engine_mem_util 0.35 \
+  --engine_tp_size 1
+```
+
 ## `rlaunch` 集群启动流程
 
 这个 example 不再单独保留 `run_rlaunch.sh`，完整集群启动流程直接写在这里。
