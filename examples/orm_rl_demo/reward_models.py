@@ -31,11 +31,10 @@ def is_chinese(text):
     """
     Detect whether text contains Chinese characters.
 
-    Args:
-        text: Text string to detect
-
-    Returns:
-        bool: True if text contains Chinese characters, False otherwise
+    :param text: Text string to detect
+    :type text: str
+    :return: True if text contains Chinese characters, False otherwise
+    :rtype: bool
     """
     if not isinstance(text, str):
         return False
@@ -50,16 +49,14 @@ def _pack_engine_inputs(
     """
     Pack engine inputs ensuring prompts and image_data have consistent lengths.
 
-    Functionality:
-        1. Maintain equal length for prompt and image_data
-        2. Return None directly when all images are empty to skip redundant parameters
+    Returns None for image_data when all images are empty to skip redundant parameters.
 
-    Args:
-        prompts: List of text prompts
-        image_data: List of image data, each element is a list of images
-
-    Returns:
-        tuple: (processed prompts, processed image_data or None)
+    :param prompts: List of text prompts
+    :type prompts: list[str]
+    :param image_data: List of image data, each element is a list of images
+    :type image_data: list[list] or None
+    :return: Processed (prompts, image_data or None)
+    :rtype: tuple
     """
     if image_data is None:
         return prompts, None
@@ -88,18 +85,15 @@ def _align_prompts_images(
     """
     Align prompts and images, separating text-only and multimodal data.
 
-    Functionality:
-        1. Ensure len(prompts) == len(image_data) (unless image_data=None)
-        2. Prompts containing <|image_pad|> must have at least 1 placeholder image (None acceptable)
-        3. Prompts without placeholders must have no images
-        4. If all imgs are empty in the end, return image_data=None directly
+    Prompts containing ``<|image_pad|>`` must have at least one placeholder image;
+    prompts without placeholders must have no images.
 
-    Args:
-        prompts: List of text prompts
-        image_data: List of image data
-
-    Returns:
-        tuple: (text_prompts, text_indices, mm_prompts, mm_images)
+    :param prompts: List of text prompts
+    :type prompts: list[str]
+    :param image_data: List of image data (None if no images)
+    :type image_data: list[list] or None
+    :return: (text_prompts, text_indices, mm_prompts, mm_images)
+    :rtype: tuple
     """
     if image_data is None:                    # No images passed at all
         return prompts, None
@@ -142,27 +136,25 @@ def _hf_or_engine_generate(
     """
     Unified generation interface supporting both HuggingFace models and SGLang engines.
 
-    Functionality:
-        - Automatically detects model type (HF or Engine)
-        - Engine mode: uses string prompts and image_data
-        - HF mode: uses tensor inputs (input_ids, pixel_values, etc.)
+    Automatically detects model type. Engine mode uses string prompts and image_data;
+    HF mode uses tensor inputs (input_ids, pixel_values, etc.).
 
-    Args:
-        model: HF model or SGLang engine instance
-        input_ids: Input token IDs for HF mode
-        attention_mask: Attention mask for HF mode
-        pixel_values: Image pixel values for HF mode
-        image_grid_thw: Image grid size for HF mode
-        prompts: Text prompts for Engine mode
-        image_data: Image data for Engine mode
-        **gen_kwargs: Generation parameters (max_new_tokens, temperature, etc.)
-
-    Returns:
-        tuple: (list of generated texts, generated token IDs or None)
-
-    Note:
-        - Engine mode returns texts and None
-        - HF mode returns trimmed token IDs
+    :param model: HF model or SGLang engine instance
+    :param input_ids: Input token IDs for HF mode
+    :type input_ids: torch.Tensor or None
+    :param attention_mask: Attention mask for HF mode
+    :type attention_mask: torch.Tensor or None
+    :param pixel_values: Image pixel values for HF mode
+    :type pixel_values: torch.Tensor or None
+    :param image_grid_thw: Image grid size for HF mode
+    :type image_grid_thw: torch.Tensor or None
+    :param prompts: Text prompts for Engine mode
+    :type prompts: list[str] or None
+    :param image_data: Image data for Engine mode
+    :type image_data: list[list] or None
+    :param gen_kwargs: Generation parameters (max_new_tokens, temperature, etc.)
+    :return: (list of generated texts, generated token IDs or None)
+    :rtype: tuple
     """
     if is_engine(model):
         assert input_ids is None, "Cannot pass input_ids in engine mode"
@@ -320,13 +312,14 @@ def _strip_pad_eos(text: str, pad: str, eos: str) -> str:
     """
     Remove leading and trailing pad and eos tokens from text.
 
-    Args:
-        text: Text to process
-        pad: Pad token string
-        eos: EOS token string
-
-    Returns:
-        str: Cleaned text
+    :param text: Text to process
+    :type text: str
+    :param pad: Pad token string
+    :type pad: str
+    :param eos: EOS token string
+    :type eos: str
+    :return: Cleaned text
+    :rtype: str
     """
     pad, eos = map(re.escape, (pad, eos))
     text = re.sub(f"^({eos}|{pad})+", "", text)
@@ -343,20 +336,15 @@ HALF_BAR = "|"  # U+007C ASCII vertical bar
 
 def _parse_dialog(text: str) -> dict:
     """
-    Parses a full conversation string into a dictionary mapping roles to their content.
+    Parse a full conversation string into a dictionary mapping roles to their content.
 
-    This function identifies role tags like "<| role_name |>" and extracts the
-    text that follows each tag. If a role appears multiple times in the text,
-    only the content from its last appearance is retained, overwriting previous
-    entries.
+    Identifies role tags like ``<| role_name |>`` and extracts the text that follows
+    each tag. If a role appears multiple times, only the last occurrence is kept.
 
-    Args:
-        text: A string containing the entire conversation, with roles marked
-              by tags.
-
-    Returns:
-        A dictionary where keys are role names (e.g., 'user', 'assistant')
-        and values are their corresponding message content.
+    :param text: Conversation string with role tags
+    :type text: str
+    :return: Dict mapping role names to their message content
+    :rtype: dict
     """
     # 1. Define the regex pattern to find all possible role tags.
     # The pattern is written in verbose mode (re.X) for clarity.
@@ -419,23 +407,25 @@ def preprocess_inputs_sglang(
     """
     Preprocess batch conversation inputs for SGLang engine.
 
-    Functionality:
-        - Parse conversation text to extract questions and answers
-        - Select format template based on language
-        - Support single template or per-sample template list
-        - Optionally prepend system prompt
+    Parses conversation text, selects a format template based on detected language,
+    and optionally prepends a system prompt.
 
-    Args:
-        prompt_and_outputs: List of conversation texts
-        references: List of reference answers
-        question_response_format_zh: Chinese format template (string or list)
-        question_response_format_en: English format template
-        system_prompt_zh: Chinese system prompt
-        system_prompt_en: English system prompt
-        system_prompt: Whether to add system prompt
-
-    Returns:
-        list: List of formatted texts ready for model input
+    :param prompt_and_outputs: List of conversation texts
+    :type prompt_and_outputs: list
+    :param references: List of reference answers
+    :type references: list
+    :param question_response_format_zh: Chinese format template (string or per-sample list)
+    :type question_response_format_zh: str or list
+    :param question_response_format_en: English format template
+    :type question_response_format_en: str
+    :param system_prompt_zh: Chinese system prompt
+    :type system_prompt_zh: str or None
+    :param system_prompt_en: English system prompt
+    :type system_prompt_en: str or None
+    :param system_prompt: Whether to prepend a system prompt
+    :type system_prompt: bool
+    :return: List of formatted texts ready for model input
+    :rtype: list
     """
     raw_texts = []
     # Process each conversation in the batch.
@@ -612,39 +602,42 @@ def preprocess_inputs(
     """
     Preprocess inputs for HuggingFace models.
 
-    Functionality:
-        - Support building inputs from input_ids or queries
-        - Process vision tokens (clean or replace)
-        - Extract questions and answers
-        - Support chain-of-thought content separation
-        - Generate tokenized inputs or return raw texts
+    Supports building inputs from ``input_ids`` or ``queries``, optional vision-token
+    processing, and chain-of-thought content separation.
 
-    Args:
-        tokenizer: HF tokenizer instance
-        processor: HF processor instance
-        device: Target device
-        system_prompt: System prompt (optional)
-        question_response_format: Q&A format template
-        input_ids: Input token IDs
-        pixel_values: Image pixel values
-        pad_token: Padding token
-        eos_token: End-of-sequence token
-        clean_or_replace_vision_token: Whether to process vision tokens
-        vision_token_process_type: Processing method ('clean' or 'replace')
-        padding_side: Padding direction
-        return_think_content: Whether to separate chain-of-thought content
-        debug: Debug mode
-        queries: List of query texts
-        return_raw_texts: Whether to return raw texts instead of tensors
-
-    Returns:
-        Different formats based on parameters:
-        - Standard mode: (input_ids, attention_mask, response_empty)
-        - CoT mode: (answer_input_ids, answer_mask, think_input_ids, think_mask, valid_think, response_empty)
-        - Raw text mode: (raw_texts, ...)
-
-    Note:
-        Use system_prompt parameter to distinguish value/knowledge data from safety/normal data
+    :param tokenizer: HF tokenizer instance
+    :param processor: HF processor instance
+    :param device: Target device
+    :param system_prompt: System prompt (optional; use to distinguish value/knowledge from safety/normal data)
+    :type system_prompt: str or None
+    :param question_response_format: Q&A format template
+    :type question_response_format: str
+    :param input_ids: Input token IDs
+    :type input_ids: torch.Tensor or None
+    :param pixel_values: Image pixel values
+    :type pixel_values: torch.Tensor or None
+    :param pad_token: Padding token
+    :type pad_token: str
+    :param eos_token: End-of-sequence token
+    :type eos_token: str
+    :param clean_or_replace_vision_token: Whether to process vision tokens
+    :type clean_or_replace_vision_token: bool
+    :param vision_token_process_type: Processing method (``'clean'`` or ``'replace'``)
+    :type vision_token_process_type: str
+    :param padding_side: Padding direction
+    :type padding_side: str
+    :param return_think_content: Whether to separate chain-of-thought content
+    :type return_think_content: bool
+    :param debug: Debug mode
+    :type debug: bool
+    :param queries: List of query texts
+    :type queries: list or None
+    :param return_raw_texts: Whether to return raw texts instead of tensors
+    :type return_raw_texts: bool
+    :return: Standard mode returns ``(input_ids, attention_mask, response_empty)``;
+             CoT mode returns ``(answer_input_ids, answer_mask, think_input_ids, think_mask, valid_think, response_empty)``;
+             raw text mode returns ``(raw_texts, ...)``.
+    :rtype: tuple
     """
     if input_ids is not None:
         processor.tokenizer.padding_side = padding_side
@@ -783,29 +776,19 @@ class AllowedTokensLogitsProcessor(LogitsProcessor):
 
 class Qwen2VLRewardModelGeneral(nn.Module):
     """
-    General Quality Reward Model.
-
-    Functionality:
-        Evaluates correctness and reasonableness of answers based on reference answers.
+    General quality reward model that evaluates answer correctness based on reference answers.
 
     Scoring rules:
-        - 1.0: Completely correct (all sub-questions correct)
-        - 0.5: Partially correct (at least one sub-question correct, but not all)
-        - 0.0: Incorrect (all sub-questions wrong or answer irrelevant)
 
-    Evaluation features:
-        - Answer equivalence judgment
-        - Numerical equivalence (different formats)
-        - Format flexibility
-        - Multiple reference answer support
-        - Multiple sub-question scenario handling
-        - Error tolerance (spelling errors, etc.)
+    - ``1.0``: Completely correct (all sub-questions correct)
+    - ``0.5``: Partially correct (at least one sub-question correct, but not all)
+    - ``0.0``: Incorrect (all sub-questions wrong or answer irrelevant)
 
-    Args:
-        base_model: HF model or Engine instance
-        tokenizer: Tokenizer instance
-        processor: Processor instance
-        text_only: Whether to use text only
+    :param base_model: HF model or Engine instance
+    :param tokenizer: Tokenizer instance
+    :param processor: Processor instance
+    :param text_only: Whether to use text-only mode (no image inputs)
+    :type text_only: bool
     """
 
     general_scores = [0.0, 0.5, 1.0]
