@@ -301,9 +301,34 @@ class PPOTrainerVL(ABC):
             value = value.contiguous()
         return value
 
+    @staticmethod
+    def _cache_identity(value):
+        """
+        Build a lightweight identity signature for replay-cache invalidation.
+
+        Lists are represented by the identity of their elements so packed-sample caches
+        are refreshed if a new list of tensors replaces the old one.
+        """
+        if isinstance(value, list):
+            return tuple(id(item) for item in value)
+        return id(value)
+
     def _build_model_kwargs(self, source, device: Optional[int] = None) -> Dict[str, Any]:
         """
         Select and optionally relocate only the multimodal kwargs supported by the current actor modality.
+
+        Example::
+
+            # Vision-language actor
+            kwargs = self._build_model_kwargs(experience)
+            # -> {"pixel_values": ..., "image_grid_thw": ..., "pixel_values_videos": ..., "video_grid_thw": ...}
+
+            # Audio-language actor
+            kwargs = self._build_model_kwargs(experience)
+            # -> {"audio_values": ..., "feature_attention_mask": ...}
+
+        The trainer therefore keeps one forward call-site while still preserving the original
+        modality-specific tensor names expected by each model family.
 
         :param source: Replay item or mapping containing candidate multimodal tensors.
         :type source: Any
@@ -324,6 +349,16 @@ class PPOTrainerVL(ABC):
         Audio example datasets still produce a 4-field batch, but the second field now maps to
         ``audios`` instead of overloading the image slot.
 
+        Example::
+
+            # Vision dataset collate
+            batch = (prompts, images, references, labels)
+            # -> (prompts, images, None, None, references, labels)
+
+            # Audio dataset collate
+            batch = (prompts, audios, references, labels)
+            # -> (prompts, None, None, audios, references, labels)
+
         :param batch: Raw batch emitted by the prompt dataloader.
         :type batch: tuple or list
         :return: Tuple of ``(prompts, images, videos, audios, references, labels)`` used by rollout code.
@@ -338,6 +373,180 @@ class PPOTrainerVL(ABC):
                 return prompts, None, None, modality_inputs, references, labels
             return prompts, modality_inputs, None, None, references, labels
         raise ValueError(f"Unsupported prompt batch format with {len(batch)} fields.")
+
+    def _materialize_replay_batch_layout(self, experience: ExperienceVL):
+        """
+        Normalize replay-buffer sequence layout for validation and forward passes.
+
+        The replay buffer uses two layouts:
+
+        - padded batches: ``experience.sequences`` is already a ``(B, S)`` tensor and the
+          original ``attention_mask`` can be forwarded directly;
+        - packed batches: ``experience.sequences`` is a Python list of per-sample tensors,
+          so we concatenate them into the single packed row expected by actor/critic forward.
+
+        The result is cached on the ``experience`` object because the same replay batch is
+        typically consumed three times in one PPO step:
+
+        1. pre-validation in ``SPMDPPOTrainer``,
+        2. actor update,
+        3. critic update.
+
+        Without caching, each of those stages would repeat the same ``torch.cat`` work for
+        packed samples.
+
+        Example::
+
+            packed input:
+                sequences = [tensor([11, 12]), tensor([21, 22, 23])]
+
+            returned layout:
+                sequences = tensor([[11, 12, 21, 22, 23]])
+                attention_mask = tensor([[1, 1, 2, 2, 2]])
+                packed_seq_lens = [2, 3]
+                num_actions = [...]
+
+        The synthetic packed attention mask mirrors the one used by the actual forward path,
+        so validation and training reason about exactly the same token layout.
+
+        :param experience: Replay-buffer item or minibatch.
+        :type experience: ExperienceVL
+        :return: Dictionary containing cached normalized replay layout fields.
+        :rtype: Dict[str, Any]
+        """
+        cache = getattr(experience, "_ppo_trainer_vl_cache", None)
+        cache_signature = (
+            self._cache_identity(experience.sequences),
+            self._cache_identity(experience.attention_mask),
+            self._cache_identity(experience.advantages),
+            self._cache_identity(experience.action_mask),
+        )
+        if cache is None:
+            cache = {"signature": cache_signature}
+            setattr(experience, "_ppo_trainer_vl_cache", cache)
+        elif cache.get("signature") != cache_signature:
+            cache = {"signature": cache_signature}
+            setattr(experience, "_ppo_trainer_vl_cache", cache)
+
+        layout = cache.get("layout")
+        if layout is not None:
+            return layout
+
+        is_packed = isinstance(experience.sequences, list)
+        if is_packed:
+            packed_seq_lens = [seq.numel() for seq in experience.sequences]
+            sequences = torch.cat(experience.sequences, dim=0).unsqueeze(0)
+            attention_mask = torch.cat(
+                [torch.full_like(seq, idx + 1) for idx, seq in enumerate(experience.sequences)],
+                dim=0,
+            ).unsqueeze(0)
+            num_actions = [value.numel() for value in experience.advantages]
+        else:
+            packed_seq_lens = None
+            sequences = experience.sequences
+            attention_mask = experience.attention_mask
+            num_actions = experience.action_mask.size(1)
+
+        layout = {
+            "is_packed": is_packed,
+            "sequences": sequences,
+            "attention_mask": attention_mask,
+            "packed_seq_lens": packed_seq_lens,
+            "num_actions": num_actions,
+        }
+        cache["layout"] = layout
+        return layout
+
+    def _materialize_policy_training_inputs(self, experience: ExperienceVL):
+        """
+        Normalize replay-buffer fields needed by the actor PPO update.
+
+        This helper keeps the packed-vs-padded branching in one place. Without it,
+        ``training_step_actor`` would need to partially unpack sequence layout in one helper
+        and then still manually unpack log-probs / advantages / KL references inline, which
+        makes the control flow harder to scan.
+
+        Example::
+
+            packed replay item:
+                experience.sequences = [s0, s1]
+                experience.action_log_probs = [lp0, lp1]
+                experience.advantages = [adv0, adv1]
+
+            normalized actor inputs:
+                sequences.shape == (1, total_len)
+                old_action_log_probs.shape == (1, total_actions)
+                advantages.shape == (1, total_actions)
+                num_actions == [len(adv0), len(adv1)]
+
+        :param experience: Replay-buffer batch for actor optimization.
+        :type experience: ExperienceVL
+        :return: Dictionary of normalized actor inputs.
+        :rtype: Dict[str, Any]
+        """
+        layout = self._materialize_replay_batch_layout(experience)
+        sequences = layout["sequences"]
+        attention_mask = layout["attention_mask"]
+        packed_seq_lens = layout["packed_seq_lens"]
+        num_actions = layout["num_actions"]
+        base_action_log_probs = None
+
+        if layout["is_packed"]:
+            old_action_log_probs = torch.cat(experience.action_log_probs, dim=0).unsqueeze(0)
+            advantages = torch.cat(experience.advantages, dim=0).unsqueeze(0)
+            if self.args.use_kl_loss and experience.base_action_log_probs is not None:
+                base_action_log_probs = torch.cat(experience.base_action_log_probs, dim=0).unsqueeze(0)
+        else:
+            old_action_log_probs = experience.action_log_probs
+            advantages = experience.advantages
+            if self.args.use_kl_loss and experience.base_action_log_probs is not None:
+                base_action_log_probs = experience.base_action_log_probs
+
+        return {
+            "sequences": sequences,
+            "attention_mask": attention_mask,
+            "packed_seq_lens": packed_seq_lens,
+            "old_action_log_probs": old_action_log_probs,
+            "advantages": advantages,
+            "num_actions": num_actions,
+            "base_action_log_probs": base_action_log_probs,
+        }
+
+    def _materialize_value_training_inputs(self, experience: ExperienceVL):
+        """
+        Normalize replay-buffer fields needed by the critic PPO update.
+
+        The critic uses the same packed sequence layout as the actor, but different target
+        tensors (`values` / `returns`). Keeping this in a dedicated helper avoids having
+        `training_step_critic` repeat the same packed-sample branching that already exists
+        in the actor path.
+
+        :param experience: Replay-buffer batch for critic optimization.
+        :type experience: ExperienceVL
+        :return: Dictionary of normalized critic inputs.
+        :rtype: Dict[str, Any]
+        """
+        layout = self._materialize_replay_batch_layout(experience)
+        sequences = layout["sequences"]
+        attention_mask = layout["attention_mask"]
+        packed_seq_lens = layout["packed_seq_lens"]
+        num_actions = layout["num_actions"]
+
+        if layout["is_packed"]:
+            old_values = torch.cat(experience.values, dim=0).unsqueeze(0)
+            returns = torch.cat(experience.returns, dim=0).unsqueeze(0)
+        else:
+            old_values = experience.values
+            returns = experience.returns
+
+        return {
+            "sequences": sequences,
+            "attention_mask": attention_mask,
+            "packed_seq_lens": packed_seq_lens,
+            "old_values": old_values,
+            "returns": returns,
+            "num_actions": num_actions,
+        }
 
     def _make_experience_list(self, prompts, images, videos, audios, references, labels):
         """
@@ -755,9 +964,15 @@ class PPOTrainerVL(ABC):
         additionally reject replay rows whose attention mask is entirely zero, because
         Qwen2-Audio cannot infer a valid padding side from a batch that mixes empty
         rows with normal left-padded rows.
+
+        Packed replay samples are normalized first so validation sees the same concatenated
+        sequence layout that actor/critic forward will later consume.
         """
+        layout = self._materialize_replay_batch_layout(experience)
+        sequences = layout["sequences"]
+        attention_mask = layout["attention_mask"]
         if not self._validate_qwen_vl_tensors(
-            experience.sequences,
+            sequences,
             getattr(experience, "pixel_values", None),
             context=context,
         ):
@@ -766,8 +981,7 @@ class PPOTrainerVL(ABC):
         if not self._is_audio_actor:
             return True
 
-        attention_mask = getattr(experience, "attention_mask", None)
-        if attention_mask is None or attention_mask.ndim != 2:
+        if not isinstance(attention_mask, torch.Tensor) or attention_mask.ndim != 2:
             self.strategy.print(
                 f"[CRITICAL WARNING] Skipping batch in '{context}'. "
                 "Audio replay batch is missing a valid 2D attention_mask."
@@ -806,29 +1020,14 @@ class PPOTrainerVL(ABC):
         """
         self.actor.train()
 
-        # Packed samples concatenate multiple sequences into one row. Unpacked samples stay batched.
-        # This mirrors the old PPOTrainerVL handling while replacing hard-coded VL kwargs with modality-aware ones.
-        if isinstance(experience.sequences, list):
-            sequences = torch.cat(experience.sequences, dim=0).unsqueeze(0)
-            old_action_log_probs = torch.cat(experience.action_log_probs, dim=0).unsqueeze(0)
-            advantages = torch.cat(experience.advantages, dim=0).unsqueeze(0)
-            num_actions = [value.numel() for value in experience.advantages]
-            packed_seq_lens = [seq.numel() for seq in experience.sequences]
-            attention_mask = torch.cat(
-                [torch.full_like(seq, idx + 1) for idx, seq in enumerate(experience.sequences)],
-                dim=0,
-            ).unsqueeze(0)
-            if self.args.use_kl_loss and experience.base_action_log_probs is not None:
-                base_action_log_probs = torch.cat(experience.base_action_log_probs, dim=0).unsqueeze(0)
-        else:
-            sequences = experience.sequences
-            old_action_log_probs = experience.action_log_probs
-            advantages = experience.advantages
-            num_actions = experience.action_mask.size(1)
-            packed_seq_lens = None
-            attention_mask = experience.attention_mask
-            if self.args.use_kl_loss and experience.base_action_log_probs is not None:
-                base_action_log_probs = experience.base_action_log_probs
+        actor_inputs = self._materialize_policy_training_inputs(experience)
+        sequences = actor_inputs["sequences"]
+        attention_mask = actor_inputs["attention_mask"]
+        packed_seq_lens = actor_inputs["packed_seq_lens"]
+        old_action_log_probs = actor_inputs["old_action_log_probs"]
+        advantages = actor_inputs["advantages"]
+        num_actions = actor_inputs["num_actions"]
+        base_action_log_probs = actor_inputs["base_action_log_probs"]
 
         if advantages is not None:
             # Clipping prevents a few extreme group-normalized values from dominating the PPO step.
@@ -839,6 +1038,10 @@ class PPOTrainerVL(ABC):
 
         # Actor loss.
         # Build modality-aware kwargs from the replay item instead of assuming vision-specific fields.
+        # Example outputs:
+        # - vision actor -> {"pixel_values": ..., "image_grid_thw": ...}
+        # - audio actor  -> {"audio_values": ..., "feature_attention_mask": ...}
+        # The call site therefore stays identical even though the underlying model signatures differ.
         actor_kwargs = self._build_model_kwargs(experience)
         if not self._validate_multimodal_training_batch(experience, context="actor_rl_update"):
             self.strategy.print(
@@ -994,29 +1197,19 @@ class PPOTrainerVL(ABC):
         self.critic.train()
         device = torch.cuda.current_device()
 
-        # Match the packed/unpacked normalization used in actor training.
-        if isinstance(experience.sequences, list):
-            sequences = torch.cat(experience.sequences, dim=0).unsqueeze(0)
-            old_values = torch.cat(experience.values, dim=0).unsqueeze(0)
-            returns = torch.cat(experience.returns, dim=0).unsqueeze(0)
-            num_actions = [value.numel() for value in experience.advantages]
-            packed_seq_lens = [seq.numel() for seq in experience.sequences]
-            attention_mask = torch.cat(
-                [torch.full_like(seq, idx + 1) for idx, seq in enumerate(experience.sequences)],
-                dim=0,
-            ).unsqueeze(0)
-        else:
-            sequences = experience.sequences
-            old_values = experience.values
-            returns = experience.returns
-            num_actions = experience.action_mask.size(1)
-            packed_seq_lens = None
-            attention_mask = experience.attention_mask
+        critic_inputs = self._materialize_value_training_inputs(experience)
+        sequences = critic_inputs["sequences"]
+        attention_mask = critic_inputs["attention_mask"]
+        packed_seq_lens = critic_inputs["packed_seq_lens"]
+        old_values = critic_inputs["old_values"]
+        returns = critic_inputs["returns"]
+        num_actions = critic_inputs["num_actions"]
 
         sequences = self._ensure_device_and_contiguous(sequences, device)
         attention_mask = self._ensure_device_and_contiguous(attention_mask, device)
         old_values = self._ensure_device_and_contiguous(old_values, device)
         returns = self._ensure_device_and_contiguous(returns, device)
+        # Reuse the same modality selection logic as actor training so the two updates stay aligned.
         critic_kwargs = self._build_model_kwargs(experience, device=device)
 
         values, output = self.critic(
