@@ -61,11 +61,15 @@ def find_all_linear_modules(model: "nn.Module", freeze_vision_tower: bool) -> Li
         forbidden.add("multi_modal_projector")
     elif model_type in ["qwen2_vl", "qwen2_5_vl"]:
         forbidden.add("merger")
+    elif model_type == "qwen2_5_omni":
+        forbidden.update({"talker", "token2wav"})
 
     if freeze_vision_tower:
         if model_type in ["mllama"]:
             forbidden.add("vision_model")
         elif model_type in ["qwen2_vl", "qwen2_5_vl"]:
+            forbidden.add("visual")
+        elif model_type == "qwen2_5_omni":
             forbidden.add("visual")
         else:
             forbidden.add("vision_tower")
@@ -308,6 +312,52 @@ def reset_position_ids(attention_mask: torch.Tensor) -> torch.Tensor:
             position_ids[i, sample_mask] = new_position_ids
 
     return position_ids
+
+
+def canonicalize_left_padded_inputs(
+    sequences: torch.Tensor,
+    attention_mask: Optional[torch.Tensor],
+    pad_token_id: int,
+) -> Tuple[torch.Tensor, Optional[torch.Tensor]]:
+    """
+    Convert dual-sided padding into left-only padding while preserving token order.
+
+    Qwen2-Audio rejects batches whose ``attention_mask`` contains zeros on both the
+    left and right side because it cannot infer a consistent padding direction.
+    RL rollouts in LightRFT naturally create that layout (left-padded prompts plus
+    right-padded responses). This helper compacts each sample's active span and
+    re-pads it on the left so downstream models see a valid, one-sided mask.
+
+    :param sequences: Batched token ids of shape ``(batch_size, seq_len)``.
+    :type sequences: torch.Tensor
+    :param attention_mask: Optional binary mask aligned with ``sequences``.
+    :type attention_mask: Optional[torch.Tensor]
+    :param pad_token_id: Token id used to fill padding positions.
+    :type pad_token_id: int
+
+    :return: Possibly rewritten ``(sequences, attention_mask)`` pair.
+    :rtype: Tuple[torch.Tensor, Optional[torch.Tensor]]
+    """
+    if attention_mask is None or attention_mask.ndim != 2 or attention_mask.size(0) == 0:
+        return sequences, attention_mask
+
+    has_left_padding = torch.any(attention_mask[:, 0] == 0).item()
+    has_right_padding = torch.any(attention_mask[:, -1] == 0).item()
+    if not (has_left_padding and has_right_padding):
+        return sequences, attention_mask
+
+    normalized_sequences = torch.full_like(sequences, pad_token_id)
+    normalized_attention_mask = torch.zeros_like(attention_mask)
+    active_lengths = attention_mask.long().sum(dim=-1)
+
+    for row_idx, active_len in enumerate(active_lengths.tolist()):
+        if active_len <= 0:
+            continue
+        active_tokens = sequences[row_idx, attention_mask[row_idx].bool()]
+        normalized_sequences[row_idx, -active_len:] = active_tokens
+        normalized_attention_mask[row_idx, -active_len:] = 1
+
+    return normalized_sequences, normalized_attention_mask
 
 
 def apply_lora_configuration(

@@ -221,16 +221,20 @@ class SPMDPPOTrainerBase:
 
                 # Step 1: Each rank validates its local data
                 should_skip_local = False
-                if self.VLM and hasattr(self, '_validate_qwen_vl_tensors'):
-                    # Call the same validation logic used in training_step_actor
-                    sequences = experience.sequences
-                    pixel_values = experience.pixel_values
-
-                    # Validate before any forward pass
-                    is_valid = self._validate_qwen_vl_tensors(
-                        sequences, pixel_values, context="pre_training_validation"
-                    )
-                    should_skip_local = not is_valid
+                if self.VLM:
+                    if hasattr(self, "_validate_multimodal_training_batch"):
+                        is_valid = self._validate_multimodal_training_batch(
+                            experience, context="pre_training_validation"
+                        )
+                        should_skip_local = not is_valid
+                    elif hasattr(self, "_validate_qwen_vl_tensors"):
+                        # Backward-compatible fallback for older trainer implementations.
+                        sequences = experience.sequences
+                        pixel_values = experience.pixel_values
+                        is_valid = self._validate_qwen_vl_tensors(
+                            sequences, pixel_values, context="pre_training_validation"
+                        )
+                        should_skip_local = not is_valid
 
                 # Step 2: Synchronize skip decision across all ranks via all_reduce
                 # This ensures all ranks agree on whether to skip, preventing execution divergence
@@ -275,6 +279,10 @@ class SPMDPPOTrainerBase:
                         "kl": status["kl"],  # KL divergence
                         "act_lr": status["actor_lr"],  # actor learning rate
                     }
+                    if "policy/ratio_max" in status:
+                        short_status["rmax"] = status["policy/ratio_max"]
+                    if "policy/logprob_delta_max" in status:
+                        short_status["dmax"] = status["policy/logprob_delta_max"]
 
                 if "critic_loss" in status:
                     short_status["cri"] = status["critic_loss"]
@@ -392,7 +400,7 @@ class SPMDPPOTrainerBase:
                     model_tensor = torch.tensor(all_model_rewards, dtype=torch.float32, device=device)
                 if model_tensor.abs().sum() > 0:  # Only log if model rewards are non-zero
                     status_mean["model_reward_mean"] = model_tensor.mean().item()
-                    self.strategy.print(f" model_reward_mean: {status_mean['model_reward_mean']}")
+                    self.strategy.print(f"model_reward_mean: {status_mean['model_reward_mean']}")
 
             if all_rule_rewards:
                 # [TENSOR-FIX] Handle both tensor lists and scalar lists
@@ -493,7 +501,7 @@ class SPMDPPOTrainerBase:
         self.strategy.maybe_offload_optimizer(self.actor_optim)
         torch.cuda.synchronize()
         torch.cuda.empty_cache()
-        self.strategy.print(f"PPO Train TIMECOST {time.time() - train_begin}")
+        self.strategy.print(f"PPO Train TIMECOST {time.time() - train_begin:.4f}s")
         self.strategy.report_memory("after train, opt offloaded, before update weights")
         self.strategy.print(torch.cuda.memory_summary())
         self.strategy.update_engine_weights(self.actor)

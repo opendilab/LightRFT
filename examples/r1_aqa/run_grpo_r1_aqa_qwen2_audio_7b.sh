@@ -6,24 +6,23 @@
 # with rule-based rewards, faithfully migrating the R1-AQA training pipeline.
 #
 #
-# Migration from R1-AQA:
-#   R1-AQA num_generations=8      → N_SAMPLES=8
-#   R1-AQA temperature=1.0        → TEMPERATURE=1.0
-#   R1-AQA max_prompt_length=512  → PROMPT_MAX_LEN=512
-#   R1-AQA per_device_batch=1     → MICRO_TRAIN=1
-#   R1-AQA grad_accum=2           → TBS adjusted
-#   R1-AQA DeepSpeed ZeRO3        → --zero_stage 3
-#
 
 ################################################################################
 #                           Part 1: User Configuration                         #
 ################################################################################
 
 # --- Model and Dataset Paths ---
-# Qwen2-Audio-7B-Instruct base model
+# Qwen2-Audio-7B-Instruct/Qwen2.5-Omni-7B base model
+# Qwen2-Audio-7B-Instruct can only work with sglang engine, not vllm
+# Qwen2.5-Omni-7B can only work with vllm engine, not sglang
 PATH_TO_YOUR_BASE_MODEL=""
 
-# Path to the preprocessed AVQA dataset (output of data_preprocess/avqa.py)
+# Path to the cleaned AVQA dataset directory.
+# Recommended workflow:
+#   1. Build parquet with examples/r1_aqa/data_preprocess/avqa.py
+#   2. Clean missing/broken audio rows with
+#      examples/r1_aqa/data_preprocess/clean_audio_dataset.py
+#   3. Point this variable to the cleaned output directory
 PATH_TO_YOUR_AVQA_DATASET=""
 
 # --- Experiment and Logging ---
@@ -42,7 +41,7 @@ export WANDB_PROJECT="LightRFT-R1-AQA"
 
 # --- GRPO Settings (from R1-AQA) ---
 GROUP_METHOD="normal"
-N_SAMPLES=4              # num_generations reduced from 8→4 to save memory
+N_SAMPLES=8              # num_generations per prompt
 EPISODE=10               # Number of training episodes
 WARMUP=0.03              # Learning rate warmup ratio
 TEMPERATURE=1.0          # Sampling temperature (R1-AQA default: 1.0)
@@ -50,10 +49,10 @@ TEMPERATURE=1.0          # Sampling temperature (R1-AQA default: 1.0)
 # --- Batch Size Configuration ---
 # Constraint: train_batch_size >= rollout_batch_size * n_samples_per_prompt
 # Reduced for single-GPU memory constraints (140 GiB GPU).
-RBS=4                    # Rollout Batch Size (reduced from 128 to fit in memory)
-TBS=16                   # Train Batch Size (RBS * N_SAMPLES = 4 * 4 = 16)
-MICRO_ROLLOUT=1          # Micro rollout batch size per GPU (reduced from 2)
-MICRO_TRAIN=1            # Micro train batch size per GPU (R1-AQA: per_device=1)
+RBS=64                   # Rollout Batch Size
+TBS=512                  # Train Batch Size
+MICRO_ROLLOUT=4          # Micro rollout batch size per GPU
+MICRO_TRAIN=4            # Micro train batch size per GPU
 
 # --- Learning and Model Settings ---
 KL=0.01                  # KL divergence coefficient
@@ -71,23 +70,16 @@ SAVE_STEPS=50            # Save checkpoint every N steps
 #                    Part 3: Distributed Training Setup                        #
 ################################################################################
 
-# --- Single-Node Setup ---
-export MLP_WORKER_NUM=1
-export MLP_WORKER_GPU=1                 # Number of GPUs per node
-export MLP_ROLE_INDEX=0
-export MLP_WORKER_0_HOST="localhost"
-export MLP_WORKER_0_PORT=20092
-
 # --- PyTorch Distributed ---
-export MASTER_ADDR=$MLP_WORKER_0_HOST
-export MASTER_PORT=$MLP_WORKER_0_PORT
-export NNODES=$MLP_WORKER_NUM
-export NODE_RANK=$MLP_ROLE_INDEX
-export GPUS_PER_NODE=$MLP_WORKER_GPU
+export MASTER_ADDR="localhost"
+export MASTER_PORT=20092
+export NNODES=1
+export NODE_RANK=0
+export GPUS_PER_NODE=8
 
 # --- Inference Engine ---
-ENGINE_TP=1              # Tensor parallelism for inference engine
-ENGINE_MEM_UTIL=0.3      # Memory utilization for inference engine (reduced from 0.6)
+ENGINE_TP=2              # Tensor parallelism for inference engine
+ENGINE_MEM_UTIL=0.6      # Memory utilization for inference engine (reduced from 0.6)
 
 # --- Checkpoint local path (use if NFS causes OSError) ---
 CKPT_PATH_LOCAL=""
@@ -130,8 +122,6 @@ torchrun \
     --fsdp \
     --use_kl_loss \
     --flash_attn \
-    --rm_use_engine \
-    --reward_pretrain "{}" \
     --save_path "results/${EXPERIMENT_NAME}/${SAVE_MODEL_NAME}" \
     --ckpt_path "results/${EXPERIMENT_NAME}/${SAVE_MODEL_NAME}" \
     $( [ -n "${CKPT_PATH_LOCAL}" ] && echo "--ckpt_path_local ${CKPT_PATH_LOCAL}" ) \
@@ -159,12 +149,13 @@ torchrun \
     --gradient_checkpointing \
     --save_steps ${SAVE_STEPS} \
     --max_ckpt_num 3 \
-    --engine_type vllm \
+    --engine_type sglang \
     --engine_mem_util ${ENGINE_MEM_UTIL} \
     --engine_tp_size $ENGINE_TP \
     --enable_engine_sleep \
     --l2 1.0e-2 \
     --adam_offload \
+    --mixed_mm_data \
     --use_wandb "${WANDB_API_KEY}" \
     --wandb_project "${WANDB_PROJECT}" \
     --wandb_run_name "${WANDB_RUN_NAME}" \
@@ -182,16 +173,25 @@ torchrun \
 #       --audio_dir data/AVQA/audios \                                         #
 #       --local_save_dir /path/to/preprocessed/avqa_lightrft                   #
 #                                                                              #
-# Step 2: Configure the Script                                                 #
+# Step 2: Clean Missing / Broken Audio Rows                                    #
+#   Strongly recommended before training. This avoids distributed hangs caused #
+#   by prompts that still contain audio placeholders while their audio files   #
+#   are missing on disk.                                                       #
+#                                                                              #
+#   python examples/r1_aqa/data_preprocess/clean_audio_dataset.py \            #
+#       --input_dataset /path/to/preprocessed/avqa_lightrft \                  #
+#       --output_dir /path/to/preprocessed/avqa_lightrft_clean                 #
+#                                                                              #
+# Step 3: Configure the Script                                                 #
 #   Edit "Part 1: User Configuration" above:                                   #
 #   - Set PATH_TO_YOUR_BASE_MODEL (Qwen2-Audio-7B-Instruct)                   #
-#   - Set PATH_TO_YOUR_AVQA_DATASET                                            #
-#   - Set GPU count in MLP_WORKER_GPU                                          #
+#   - Set PATH_TO_YOUR_AVQA_DATASET to the cleaned dataset directory           #
+#   - Set GPU count in GPU_PER_NODE                                            #
 #                                                                              #
-# Step 3: Run Training                                                         #
+# Step 4: Run Training                                                         #
 #   bash examples/r1_aqa/run_grpo_r1_aqa_qwen2_audio_7b.sh                    #
 #                                                                              #
-# Step 4: Evaluate on MMAU Test-Mini                                           #
+# Step 5: Evaluate on MMAU Test-Mini                                           #
 #   python examples/r1_aqa/eval_mmau.py \                                      #
 #       --model_path results/lightrft-r1-aqa-grpo-training/... \               #
 #       --data_file /path/to/mmau-test-mini.json \                             #
@@ -201,8 +201,8 @@ torchrun \
 #   python /path/to/mmau/evaluation.py --input results/res_mmau_mini.json      #
 #                                                                              #
 # Notes:                                                                       #
-# - This uses the AUDIO pipeline (not VL). Audio is processed via Qwen2-Audio. #
+# - This uses the AUDIO pipeline. Audio is processed via Qwen2-Audio.          #
 # - TBS must >= RBS * N_SAMPLES for GRPO constraint.                           #
-# - For dry-run: set EPISODE=1, RBS=4, TBS=32, N_SAMPLES=4.                   #
-# - For 1-GPU: set MLP_WORKER_GPU=1, ENGINE_TP=1, ENGINE_MEM_UTIL=0.5.        #
+# - For dry-run: set EPISODE=1, RBS=4, TBS=32, N_SAMPLES=4.                    #
+# - For 1-GPU: set GPU_PER_NODE=1, ENGINE_TP=1, ENGINE_MEM_UTIL=0.5.           #
 ################################################################################

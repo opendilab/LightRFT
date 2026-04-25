@@ -7,16 +7,187 @@ DeepSpeed, sample packing, gradient checkpointing, and MoE.
 
 """
 
-from typing import Optional, Tuple, Union
+import os
+from typing import Any, Callable, Optional, Tuple, Union
 
 import torch
 import torch.distributed as dist
 import torch.nn as nn
-from transformers import Qwen2AudioForConditionalGeneration
+from transformers import AutoConfig, Qwen2AudioForConditionalGeneration, Qwen2_5OmniForConditionalGeneration
 from transformers.integrations.deepspeed import HfDeepSpeedConfig
 
 from .actor_modality import ActorModality
-from .utils import apply_lora_configuration, log_probs_from_logits, reset_position_ids
+from .utils import (
+    apply_lora_configuration,
+    canonicalize_left_padded_inputs,
+    log_probs_from_logits,
+    reset_position_ids,
+)
+
+AUDIO_MODEL_TYPE_QWEN2_AUDIO = "qwen2_audio"
+AUDIO_MODEL_TYPE_QWEN2_5_OMNI = "qwen2_5_omni"
+
+
+def normalize_audio_model_type(model_type: Optional[str]) -> Optional[str]:
+    """
+    Collapse backbone-specific variants into a stable audio model family name.
+    """
+    if model_type in {
+        AUDIO_MODEL_TYPE_QWEN2_AUDIO,
+        AUDIO_MODEL_TYPE_QWEN2_5_OMNI,
+    }:
+        return model_type
+    if model_type == "qwen2_5_omni_thinker":
+        return AUDIO_MODEL_TYPE_QWEN2_5_OMNI
+    return model_type
+
+
+def infer_audio_model_type(pretrain_or_model: Any) -> Optional[str]:
+    """
+    Infer the audio backbone family from a checkpoint path or a loaded model.
+    """
+    if not isinstance(pretrain_or_model, str):
+        config = getattr(pretrain_or_model, "config", None)
+        return normalize_audio_model_type(getattr(config, "model_type", None))
+
+    try:
+        config = AutoConfig.from_pretrained(pretrain_or_model, trust_remote_code=True)
+        model_type = normalize_audio_model_type(getattr(config, "model_type", None))
+        if model_type is not None:
+            return model_type
+    except Exception:
+        pass
+
+    lowered = pretrain_or_model.lower()
+    if "qwen2.5-omni" in lowered or "qwen2_5_omni" in lowered:
+        return AUDIO_MODEL_TYPE_QWEN2_5_OMNI
+    if "qwen2-audio" in lowered or "qwen2_audio" in lowered:
+        return AUDIO_MODEL_TYPE_QWEN2_AUDIO
+    return None
+
+
+def _resolve_audio_model_name_or_path(pretrain_or_model: Any) -> Optional[str]:
+    """
+    Best-effort resolution of a checkpoint path for processor/model loading.
+    """
+    if isinstance(pretrain_or_model, str):
+        return pretrain_or_model
+
+    direct_name = getattr(pretrain_or_model, "name_or_path", None)
+    if direct_name:
+        return direct_name
+
+    config = getattr(pretrain_or_model, "config", None)
+    for attr_name in ("_name_or_path", "name_or_path"):
+        name_or_path = getattr(config, attr_name, None)
+        if name_or_path:
+            return name_or_path
+
+    return None
+
+
+def get_audio_model_class(model_type: Optional[str]):
+    """
+    Return the Hugging Face model class for a supported audio-language backbone.
+    """
+    normalized = normalize_audio_model_type(model_type)
+    if normalized == AUDIO_MODEL_TYPE_QWEN2_AUDIO:
+        return Qwen2AudioForConditionalGeneration
+    if normalized == AUDIO_MODEL_TYPE_QWEN2_5_OMNI:
+        return Qwen2_5OmniForConditionalGeneration
+    raise NotImplementedError(f"Unsupported audio-language model type: {model_type}")
+
+
+def get_audio_processor_class(model_type: Optional[str]):
+    """
+    Return the Hugging Face processor class for a supported audio-language backbone.
+    """
+    normalized = normalize_audio_model_type(model_type)
+    if normalized == AUDIO_MODEL_TYPE_QWEN2_AUDIO:
+        from transformers import Qwen2AudioProcessor
+        return Qwen2AudioProcessor
+    if normalized == AUDIO_MODEL_TYPE_QWEN2_5_OMNI:
+        from transformers import Qwen2_5OmniProcessor
+        return Qwen2_5OmniProcessor
+    return None
+
+
+def create_audio_processor(
+    pretrain_or_model: Any,
+    processor=None,
+    trust_remote_code: bool = True,
+    print_fn: Optional[Callable[[str], None]] = None,
+    **from_pretrained_kwargs,
+):
+    """
+    Create or normalize the audio processor for the given backbone.
+
+    If an existing processor is supplied and already matches the resolved audio
+    backbone, it is reused as-is. Otherwise the correct backbone-specific
+    processor is reloaded from the checkpoint path.
+    """
+    model_type = infer_audio_model_type(pretrain_or_model)
+    try:
+        processor_cls = get_audio_processor_class(model_type)
+    except ImportError as exc:
+        if print_fn is not None:
+            print_fn(f"[WARN] Failed to import audio processor for {model_type}: {exc}")
+        processor_cls = None
+
+    if processor_cls is not None and processor is not None and isinstance(processor, processor_cls):
+        return processor
+
+    source = _resolve_audio_model_name_or_path(pretrain_or_model)
+    if source is None:
+        if processor is not None:
+            return processor
+        raise ValueError("Unable to resolve a checkpoint path for creating the audio processor.")
+
+    if processor_cls is None:
+        from transformers import AutoProcessor
+        if print_fn is not None:
+            print_fn("[WARN] Falling back to AutoProcessor for audio model inputs.")
+        return AutoProcessor.from_pretrained(
+            source,
+            trust_remote_code=trust_remote_code,
+            **from_pretrained_kwargs,
+        )
+
+    if processor is not None and print_fn is not None:
+        print_fn(f"[WARN] AutoProcessor loaded {type(processor).__name__}, "
+                 f"re-loading as {processor_cls.__name__}")
+
+    return processor_cls.from_pretrained(
+        source,
+        trust_remote_code=trust_remote_code,
+        **from_pretrained_kwargs,
+    )
+
+
+def get_audio_forward_model(model: Any):
+    """
+    Return the submodule used for token-level logprob forward passes.
+
+    Qwen2.5-Omni generation is wrapped by the full model, while token scoring should
+    run through its ``thinker`` branch.
+    """
+    model_type = infer_audio_model_type(model)
+    if model_type == AUDIO_MODEL_TYPE_QWEN2_5_OMNI:
+        thinker = getattr(model, "thinker", None)
+        if thinker is None:
+            raise AttributeError("Qwen2.5-Omni model does not expose a `thinker` module.")
+        return thinker
+    return model
+
+
+def get_audio_model_and_type(pretrain_or_model: str, **from_pretrained_kwargs) -> Tuple[Any, str]:
+    """
+    Load a supported audio-language backbone and return ``(model, model_type)``.
+    """
+    model_type = infer_audio_model_type(pretrain_or_model)
+    model_cls = get_audio_model_class(model_type)
+    model = model_cls.from_pretrained(pretrain_or_model, **from_pretrained_kwargs)
+    return model, model_type
 
 
 class _AudioEmbedPositions(nn.Module):
@@ -103,9 +274,11 @@ class ActorAL(nn.Module):
         **kwargs,
     ) -> None:
         super().__init__()
+        self.packing_samples = packing_samples
 
         if isinstance(pretrain_or_model, str):
             self.pretrain_or_model = pretrain_or_model
+            self.model_type = infer_audio_model_type(pretrain_or_model)
             attn_implementation = "flash_attention_2" if use_flash_attention_2 else "eager"
 
             # Note: dschf is defined in function scope to avoid global effects
@@ -115,8 +288,7 @@ class ActorAL(nn.Module):
             else:
                 dschf = None  # noqa: F841
 
-            # Load Qwen2Audio model
-            self.model = Qwen2AudioForConditionalGeneration.from_pretrained(
+            self.model, self.model_type = get_audio_model_and_type(
                 pretrain_or_model,
                 trust_remote_code=True,
                 attn_implementation=attn_implementation,
@@ -138,12 +310,14 @@ class ActorAL(nn.Module):
 
             # https://github.com/huggingface/transformers/issues/26877
             # Use `model.generate(use_cache=True)` instead.`
-            self.model.config.use_cache = False
-
-            # packing samples using Flash Attention 2
-            self.packing_samples = packing_samples
+            if hasattr(self.model.config, "use_cache"):
+                self.model.config.use_cache = False
+            forward_model = get_audio_forward_model(self.model)
+            if hasattr(forward_model.config, "use_cache"):
+                forward_model.config.use_cache = False
         else:
             self.model = pretrain_or_model
+            self.model_type = infer_audio_model_type(pretrain_or_model)
             self.pretrain_or_model = pretrain_or_model.config.model_type
 
         # ------------------------------------------------------------------
@@ -163,7 +337,8 @@ class ActorAL(nn.Module):
         #    The Whisper encoder is small (~12 layers), so using eager
         #    attention has negligible impact on overall training throughput.
         # ------------------------------------------------------------------
-        audio_tower = getattr(self.model, "audio_tower", None) or getattr(self.model, "audio_encoder", None)
+        forward_model = get_audio_forward_model(self.model)
+        audio_tower = getattr(forward_model, "audio_tower", None) or getattr(forward_model, "audio_encoder", None)
         if audio_tower is not None:
             # Fix 1: embed_positions
             if hasattr(audio_tower, "embed_positions") and isinstance(audio_tower.embed_positions, nn.Embedding):
@@ -178,12 +353,42 @@ class ActorAL(nn.Module):
                 if hasattr(module, "_attn_implementation"):
                     module._attn_implementation = "eager"
             # Also patch the config so any lazily-constructed layers use eager
-            audio_cfg = getattr(self.model.config, "audio_config", None)
+            audio_cfg = getattr(forward_model.config, "audio_config", None)
             if audio_cfg is not None:
                 audio_cfg._attn_implementation = "eager"
             print("[ActorAL] Set audio_tower attention to 'eager' for FSDP2 compat")
 
         print("pretrain_or_model: ", self.pretrain_or_model)
+
+    def get_fsdp_target_model(self) -> nn.Module:
+        """
+        Return the concrete module FSDP should shard, optimize, and checkpoint for actor training.
+
+        The actor wrapper intentionally keeps ``self.model`` as the full Hugging Face
+        object so inference-time APIs such as ``generate()`` continue to behave like
+        the original checkpoint. However, RL training does not always optimize that
+        whole object.
+
+        Examples:
+        - ``Qwen2-Audio``: the trainable language/audio path is the root model
+          itself, so FSDP should shard ``self.model`` directly.
+        - ``Qwen2.5-Omni`` during PPO/GRPO actor training: token-level log-prob
+          computation runs through ``self.model.thinker(...)``. The sibling
+          branches such as ``talker`` and ``token2wav`` are generation-only for
+          speech output and are not used in the actor loss.
+        - ``Qwen2.5-Omni`` during text generation: we still call
+          ``self.model.generate(...)`` on the full root object, but that does not
+          mean FSDP should wrap the full root for training.
+
+        Returning the wrong target here is not just inefficient; it can change FSDP
+        behavior materially. In practice, wrapping the full Omni root caused FSDP2
+        to traverse branches that actor training never uses, and that led to invalid
+        nested mesh composition when ``fully_shard`` tried to apply its mesh layout.
+        Returning ``thinker`` keeps sharding aligned with the actual forward path
+        used by ``ActorAL.forward()`` and with the parameter set seen by the actor
+        optimizer.
+        """
+        return get_audio_forward_model(self.model)
 
     @torch.no_grad()
     def generate(
@@ -248,7 +453,11 @@ class ActorAL(nn.Module):
             generate_args["input_features"] = input_features
             generate_args["feature_attention_mask"] = feature_attention_mask
 
-        if kwargs.get("max_new_tokens", None):
+        if self.model_type == AUDIO_MODEL_TYPE_QWEN2_5_OMNI:
+            generate_args["generation_mode"] = "text"
+            if kwargs.get("max_new_tokens", None):
+                generate_args["thinker_max_new_tokens"] = kwargs.get("max_new_tokens")
+        elif kwargs.get("max_new_tokens", None):
             generate_args["max_new_tokens"] = kwargs.get("max_new_tokens")
         if kwargs.get("max_length", None):
             generate_args["max_length"] = kwargs.get("max_length")
@@ -289,8 +498,10 @@ class ActorAL(nn.Module):
         pixel_values_videos: Optional[torch.Tensor] = None,
         video_grid_thw: Optional[torch.Tensor] = None,
         return_output=False,
+        return_aligned_inputs: bool = False,
         packed_seq_lens: Optional[list[int]] = None,
         audio_values: Optional[torch.Tensor] = None,
+        feature_attention_mask: Optional[torch.Tensor] = None,
     ) -> torch.Tensor:
         """
         Forward pass to compute action log probabilities for reinforcement learning.
@@ -318,6 +529,11 @@ class ActorAL(nn.Module):
         :type video_grid_thw: Optional[torch.Tensor]
         :param return_output: Whether to return the full model output along with log probs
         :type return_output: bool
+        :param return_aligned_inputs: Whether to additionally return the exact ``input_ids`` and
+            ``attention_mask`` that were fed into the backbone after audio placeholder alignment.
+            This is primarily used during rollout so replay batches can reuse the identical
+            token layout instead of reconstructing it from the raw engine output.
+        :type return_aligned_inputs: bool
         :param packed_seq_lens: Sequence lengths for packed samples
         :type packed_seq_lens: Optional[list[int]]
         :param audio_values: Preprocessed audio features (mel-spectrogram from pipeline)
@@ -344,9 +560,18 @@ class ActorAL(nn.Module):
             )
         """
         if not self.packing_samples:
-            position_ids = attention_mask.long().cumsum(-1) - 1
-            position_ids.masked_fill_(attention_mask == 0, 1)
+            pad_token_id = getattr(self.model.config, "pad_token_id", 0)
+            if pad_token_id is None:
+                pad_token_id = 0
+            sequences, attention_mask = canonicalize_left_padded_inputs(
+                sequences=sequences,
+                attention_mask=attention_mask,
+                pad_token_id=pad_token_id,
+            )
+            position_ids = None
         else:
+            if self.model_type == AUDIO_MODEL_TYPE_QWEN2_5_OMNI:
+                raise NotImplementedError("packing_samples is not supported for Qwen2.5-Omni audio actors.")
             # convert attention_mask to position_ids
             position_ids = reset_position_ids(attention_mask)
             # explicitly ignore attention_mask for packing_samples
@@ -354,6 +579,8 @@ class ActorAL(nn.Module):
 
         # Pipeline passes audio as audio_values; Qwen2Audio expects input_features.
         input_features = audio_values
+        forward_model = get_audio_forward_model(self.model)
+        forward_config = forward_model.config
 
         model_kwargs = {
             "input_ids": sequences,
@@ -374,21 +601,78 @@ class ActorAL(nn.Module):
             # appears in the token sequence, so the model's merge step
             # would fail with a shape-mismatch error.
             #
-            # When the placeholder is absent we fall back to a text-only
-            # forward.  Both the actor AND the reference model see the
-            # same expanded sequences, so the log-prob *ratio* used for
-            # the policy gradient is still consistent.
+            # When the rollout engine expands the prompt differently from
+            # the local processor, we rewrite the prompt-side placeholder
+            # run to the audio tower's expected token count instead of
+            # dropping audio conditioning.
             # ----------------------------------------------------------
-            audio_token_id = getattr(self.model.config, "audio_token_id", None)
+            audio_token_id = getattr(forward_config, "audio_token_id", None)
             has_audio_placeholder = (audio_token_id is not None and (sequences == audio_token_id).any().item())
 
-            if has_audio_placeholder:
-                input_features, feature_attention_mask = self._prepare_audio_features(input_features)
+            if has_audio_placeholder or (not self.packing_samples and feature_attention_mask is not None):
+                input_features, feature_attention_mask = self._prepare_audio_features(
+                    input_features,
+                    feature_attention_mask=feature_attention_mask,
+                    sequences=sequences,
+                    audio_token_id=audio_token_id,
+                )
+                original_audio_token_counts = ((sequences == audio_token_id).sum(dim=1)
+                                               if audio_token_id is not None else None)
+                expected_audio_token_counts = self._infer_audio_output_token_counts(
+                    forward_model,
+                    feature_attention_mask,
+                )
+                if (
+                    not self.packing_samples and audio_token_id is not None and expected_audio_token_counts is not None
+                ):
+                    sequences, attention_mask = self._align_audio_placeholder_counts(
+                        sequences=sequences,
+                        attention_mask=attention_mask,
+                        audio_token_id=audio_token_id,
+                        expected_audio_token_counts=expected_audio_token_counts,
+                        pad_token_id=pad_token_id,
+                        num_actions=(num_actions if isinstance(num_actions, int) else None),
+                    )
+                actual_audio_token_counts = ((sequences == audio_token_id).sum(dim=1)
+                                             if audio_token_id is not None else None)
+                if (
+                    actual_audio_token_counts is not None and expected_audio_token_counts is not None
+                    and torch.any(actual_audio_token_counts > expected_audio_token_counts)
+                ):
+                    raise RuntimeError(
+                        "Audio placeholder alignment failed before Qwen2.5-Omni merge: "
+                        f"actual={actual_audio_token_counts.tolist()} "
+                        f"expected={expected_audio_token_counts.tolist()}"
+                    )
+                if os.environ.get("LIGHTRFT_AUDIO_DEBUG", "0") == "1":
+                    rank = dist.get_rank() if dist.is_initialized() else 0
+                    print(
+                        f"[ActorAL][rank={rank}] sequences={tuple(sequences.shape)} "
+                        f"audio_values={tuple(input_features.shape)} "
+                        f"feature_attention_mask={tuple(feature_attention_mask.shape)} "
+                        f"audio_token_count={actual_audio_token_counts.tolist() if actual_audio_token_counts is not None else None} "  # noqa
+                        f"original_audio_token_count="
+                        f"{original_audio_token_counts.tolist() if original_audio_token_counts is not None else None} "
+                        f"feature_len={feature_attention_mask.sum(dim=1).tolist()} "
+                        f"expected_audio_token_count="
+                        f"{expected_audio_token_counts.tolist() if expected_audio_token_counts is not None else None} "
+                        f"audio_merge=True",
+                        flush=True,
+                    )
+                model_kwargs["input_ids"] = sequences
+                model_kwargs["attention_mask"] = attention_mask
                 model_kwargs["input_features"] = input_features
                 model_kwargs["feature_attention_mask"] = feature_attention_mask
-            # else: audio_token_id absent → text-only forward (see comment above)
+            # else: no placeholder token and no feature mask to infer expected count from
 
-        output = self.model(**model_kwargs)
+        if not self.packing_samples and self.model_type != AUDIO_MODEL_TYPE_QWEN2_5_OMNI:
+            position_ids = attention_mask.long().cumsum(-1) - 1
+            position_ids.masked_fill_(attention_mask == 0, 1)
+            model_kwargs["position_ids"] = position_ids
+
+        sequences = model_kwargs["input_ids"]
+        attention_mask = model_kwargs["attention_mask"]
+        output = forward_model(**model_kwargs)
 
         if num_actions is None:  # default
             assert return_output
@@ -408,6 +692,8 @@ class ActorAL(nn.Module):
                 offset += seq_len
             action_log_probs = torch.cat(action_log_probs, dim=1)
 
+        if return_output and return_aligned_inputs:
+            return (action_log_probs, output, sequences, attention_mask)
         if return_output:
             return (action_log_probs, output)
         else:
@@ -417,6 +703,9 @@ class ActorAL(nn.Module):
     def _prepare_audio_features(
         input_features: torch.Tensor,
         expected_mel_len: int = 3000,
+        feature_attention_mask: Optional[torch.Tensor] = None,
+        sequences: Optional[torch.Tensor] = None,
+        audio_token_id: Optional[int] = None,
     ) -> Tuple[torch.Tensor, torch.Tensor]:
         """
         Normalize audio features to the expected mel length and build a feature mask.
@@ -433,14 +722,156 @@ class ActorAL(nn.Module):
             input_features = input_features[..., :expected_mel_len]
             actual_len = expected_mel_len
 
-        feature_attention_mask = torch.zeros(
-            input_features.shape[0],
-            expected_mel_len,
-            dtype=torch.long,
-            device=input_features.device,
-        )
-        feature_attention_mask[:, :actual_len] = 1
+        if feature_attention_mask is None:
+            inferred_lengths = None
+            if sequences is not None and audio_token_id is not None:
+                # Qwen2AudioProcessor expands one audio placeholder to N consecutive audio_token_ids, where:
+                #   N = floor(floor((mel_len + 1) / 2) / 2)
+                # So the original mel length lies in [4N - 1, 4N]. We choose 4N and clamp to 3000.
+                audio_token_counts = (sequences == audio_token_id).sum(dim=1)
+                inferred_lengths = torch.clamp(audio_token_counts * 4, min=1, max=expected_mel_len)
+
+            feature_attention_mask = torch.zeros(
+                input_features.shape[0],
+                expected_mel_len,
+                dtype=torch.long,
+                device=input_features.device,
+            )
+
+            if inferred_lengths is None:
+                feature_attention_mask[:, :actual_len] = 1
+            else:
+                for row_idx, inferred_len in enumerate(inferred_lengths.tolist()):
+                    feature_attention_mask[row_idx, :inferred_len] = 1
+        else:
+            feature_attention_mask = feature_attention_mask.to(device=input_features.device, dtype=torch.long)
+            if feature_attention_mask.shape[-1] < expected_mel_len:
+                feature_attention_mask = torch.nn.functional.pad(
+                    feature_attention_mask, (0, expected_mel_len - feature_attention_mask.shape[-1]), value=0
+                )
+            elif feature_attention_mask.shape[-1] > expected_mel_len:
+                feature_attention_mask = feature_attention_mask[..., :expected_mel_len]
+
         return input_features, feature_attention_mask
+
+    @staticmethod
+    def _infer_audio_output_token_counts(
+        forward_model: nn.Module,
+        feature_attention_mask: Optional[torch.Tensor],
+    ) -> Optional[torch.Tensor]:
+        """
+        Infer how many audio placeholder tokens the backbone expects per sample.
+
+        External rollout engines can expand audio placeholders differently from the
+        local processor. If the local audio tower would emit a different number of
+        encoder states than the number of ``audio_token_id`` slots present in
+        ``input_ids``, the subsequent masked scatter would fail on CUDA.
+        """
+        if feature_attention_mask is None:
+            return None
+
+        audio_tower = getattr(forward_model, "audio_tower", None)
+        get_output_lengths = getattr(audio_tower, "_get_feat_extract_output_lengths", None)
+        if get_output_lengths is None:
+            return None
+
+        feature_lengths = feature_attention_mask.to(dtype=torch.long).sum(dim=1)
+        _, output_lengths = get_output_lengths(feature_lengths)
+        return output_lengths.to(device=feature_attention_mask.device, dtype=torch.long)
+
+    @staticmethod
+    def _align_audio_placeholder_counts(
+        sequences: torch.Tensor,
+        attention_mask: Optional[torch.Tensor],
+        audio_token_id: int,
+        expected_audio_token_counts: Optional[torch.Tensor],
+        pad_token_id: int,
+        num_actions: Optional[int] = None,
+    ) -> Tuple[torch.Tensor, Optional[torch.Tensor]]:
+        """
+        Rewrite prompt-side audio placeholders to the expected count per sample.
+
+        The sequence returned by the rollout engine may under/over-expand the
+        audio placeholder block compared with the local HF audio tower.
+
+        This alignment must stay stable when the same sample is replayed in a
+        different PPO micro-batch. Relying on batch-level ``num_actions`` to
+        infer the prompt/response split is unsafe here because replay batches can
+        have a different max response length than the rollout batch that first
+        produced the sample. Instead, rewrite the first contiguous audio-token
+        block directly from the active tokens so the aligned ``input_ids`` are
+        batch-invariant.
+        """
+        if attention_mask is None or expected_audio_token_counts is None:
+            return sequences, attention_mask
+
+        adjusted_rows = []
+        batch_size = sequences.size(0)
+
+        for row_idx in range(batch_size):
+            active_tokens = sequences[row_idx, attention_mask[row_idx].bool()]
+            active_len = int(active_tokens.numel())
+            if active_len == 0:
+                adjusted_rows.append(active_tokens)
+                continue
+
+            expected_count = max(0, int(expected_audio_token_counts[row_idx].item()))
+            audio_positions = torch.nonzero(active_tokens == audio_token_id, as_tuple=False).flatten()
+
+            if audio_positions.numel() == 0:
+                if expected_count == 0:
+                    row_tokens = active_tokens.clone()
+                else:
+                    new_audio_block = active_tokens.new_full((expected_count, ), audio_token_id)
+                    row_tokens = torch.cat((new_audio_block, active_tokens), dim=0)
+            else:
+                block_start = int(audio_positions[0].item())
+                block_end = block_start
+                while block_end + 1 < active_len and int(active_tokens[block_end + 1].item()) == audio_token_id:
+                    block_end += 1
+
+                actual_count = block_end - block_start + 1
+                if actual_count == expected_count:
+                    row_tokens = active_tokens.clone()
+                else:
+                    prompt_prefix = active_tokens[:block_start]
+                    prompt_suffix = active_tokens[block_end + 1:]
+                    new_audio_block = active_tokens.new_full((expected_count, ), audio_token_id)
+                    row_tokens = torch.cat((prompt_prefix, new_audio_block, prompt_suffix), dim=0)
+
+            # If the response contains stray audio placeholders, keep the sequence
+            # length stable and replace surplus placeholders from the end.
+            all_audio_positions = torch.nonzero(row_tokens == audio_token_id, as_tuple=False).flatten()
+            total_count = int(all_audio_positions.numel())
+            if total_count > expected_count:
+                for pos in all_audio_positions.flip(0)[:total_count - expected_count]:
+                    row_tokens[pos] = pad_token_id
+
+            adjusted_rows.append(row_tokens)
+
+        max_active_len = max((int(row.numel()) for row in adjusted_rows), default=0)
+        target_len = max(sequences.size(1), max_active_len)
+
+        aligned_sequences = torch.full(
+            (batch_size, target_len),
+            pad_token_id,
+            dtype=sequences.dtype,
+            device=sequences.device,
+        )
+        aligned_attention_mask = torch.zeros(
+            (batch_size, target_len),
+            dtype=attention_mask.dtype,
+            device=attention_mask.device,
+        )
+
+        for row_idx, row_tokens in enumerate(adjusted_rows):
+            row_len = int(row_tokens.numel())
+            if row_len == 0:
+                continue
+            aligned_sequences[row_idx, -row_len:] = row_tokens
+            aligned_attention_mask[row_idx, -row_len:] = 1
+
+        return aligned_sequences, aligned_attention_mask
 
     def gradient_checkpointing_enable(self, gradient_checkpointing_kwargs={"use_reentrant": False}):
         """

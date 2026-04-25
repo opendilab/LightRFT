@@ -27,10 +27,10 @@ from typing import Dict, List, Sequence, Tuple
 
 import torch
 
-
 # ============================================================================
 # R1-AQA Accuracy Reward (ported from src/utils/rewards.py)
 # ============================================================================
+
 
 def accuracy_reward_fn(content: str, solution: str) -> float:
     """
@@ -81,6 +81,7 @@ def accuracy_reward_fn(content: str, solution: str) -> float:
 # R1-AQA Format Reward (ported from src/utils/rewards.py)
 # ============================================================================
 
+
 def format_reward_fn(content: str, enable_think: bool = False) -> float:
     """
     R1-AQA format reward function.
@@ -109,6 +110,7 @@ def format_reward_fn(content: str, enable_think: bool = False) -> float:
 # Combined Reward (per-sample)
 # ============================================================================
 
+
 def avqa_combined_reward_fn(
     sol: str,
     gt: str,
@@ -134,9 +136,24 @@ def avqa_combined_reward_fn(
     return total_r, acc_r, fmt_r
 
 
+def clean_solution(sol: str) -> str:
+    """
+    Extract the string between <|im_start|>assistant and <|im_end|> tags.
+
+    Example:
+        input: "<|im_start|>assistantat sea<|im_end|>"
+        output: "at sea"
+    """
+    import re
+    # Pattern matches text between <|im_start|>assistant and <|im_end|>
+    match = re.search(r"<\|im_start\|>assistant(.*?)<\|im_end\|>", sol, re.DOTALL)
+    return match.group(1).strip() if match else sol.strip()
+
+
 # ============================================================================
 # Reward Function (LightRFT interface — called by the trainer)
 # ============================================================================
+
 
 def reward_fn(
     model_reward_list: List[torch.Tensor],
@@ -170,6 +187,7 @@ def reward_fn(
 
     for i in range(B):
         sol = queries[i]
+        sol = clean_solution(sol)
         gt = refs[i] if i < len(refs) else ""
         total_r, acc_r, fmt_r = avqa_combined_reward_fn(sol, gt)
         final_reward[i] = total_r

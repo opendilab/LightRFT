@@ -1,5 +1,7 @@
 # R1-AQA on LightRFT: Audio Question Answering with GRPO
 
+**English** | [中文](README_zh.md)
+
 This example migrates [R1-AQA](https://github.com/xiaomi-research/r1-aqa) (Audio Question Answering via GRPO on Qwen2-Audio) into the [LightRFT](https://github.com/opendilab/LightRFT) training framework.
 
 ## Overview
@@ -11,13 +13,15 @@ R1-AQA applies Group Relative Policy Optimization (GRPO) to Qwen2-Audio-7B-Instr
 ```
 examples/r1_aqa/
 ├── data_preprocess/
-│   └── avqa.py                        # Convert R1-AQA JSONL → LightRFT parquet
+│   ├── avqa.py                        # Convert R1-AQA JSONL → LightRFT parquet
+│   └── clean_audio_dataset.py         # Drop rows whose audio files are missing/unreadable
 ├── audio_dataset.py                  # Audio multimodal pipeline extensions and patches
 ├── reward_models_utils.py            # Rule-based reward (accuracy + format)
 ├── train_colocate.py                 # GRPO training entry point
 ├── eval.py                           # Evaluation script (e.g., MMAU-style tests)
 ├── run_grpo_r1_aqa_qwen2_audio_7b.sh # Training launch script
-└── README.md                         # This file
+├── README.md                         # This file
+└── README_zh.md                      # Chinese version
 ```
 
 ## Quick Start
@@ -67,13 +71,44 @@ python examples/r1_aqa/data_preprocess/avqa.py \\
     --local_save_dir ./avqa_lightrft
 ```
 
-### Step 2: Configure and Run Training
+### Step 2: Clean Missing / Broken Audio Rows
+
+Before training, strongly recommend cleaning the parquet once. In distributed GRPO training,
+rows whose prompt still contains audio placeholders but whose `audio_path` points to a missing
+file can make one rank fall into a text-only branch while other ranks still process audio,
+which often shows up later as a hang in actor forward.
+
+Run:
+```bash
+python examples/r1_aqa/data_preprocess/clean_audio_dataset.py \\
+    --input_dataset ./avqa_lightrft \\
+    --output_dir ./avqa_lightrft_clean
+```
+
+Optional stricter validation:
+```bash
+python examples/r1_aqa/data_preprocess/clean_audio_dataset.py \\
+    --input_dataset ./avqa_lightrft \\
+    --output_dir ./avqa_lightrft_clean \\
+    --verify_decode
+```
+
+What this script writes:
+- `train.parquet`: cleaned split with only valid audio rows
+- `train.dropped.jsonl`: dropped rows with original dataset index, `audio_path`, and reason
+
+Recommended workflow:
+1. Run `avqa.py` once to build the parquet dataset.
+2. Run `clean_audio_dataset.py` once on that parquet directory.
+3. Point training to the cleaned output directory, not the raw parquet directory.
+
+### Step 3: Configure and Run Training
 
 Edit the shell script to set your paths:
 ```bash
 # In run_grpo_r1_aqa_qwen2_audio_7b.sh:
 PATH_TO_YOUR_BASE_MODEL="Qwen/Qwen2-Audio-7B-Instruct"
-PATH_TO_YOUR_AVQA_DATASET="/path/to/your/avqa_lightrft"
+PATH_TO_YOUR_AVQA_DATASET="/path/to/your/avqa_lightrft_clean"
 ```
 
 Run training:
@@ -81,7 +116,7 @@ Run training:
 bash examples/r1_aqa/run_grpo_r1_aqa_qwen2_audio_7b.sh
 ```
 
-### Step 3: Evaluate on MMAU / MMAR
+### Step 4: Evaluate on MMAU / MMAR
 
 ```bash
 # MMAU (test-mini)
@@ -128,6 +163,16 @@ For R1-AQA defaults (n_samples=8):
 ### 1. Audio Path Not Found
 Ensure `audio_dir` in the preprocessing script points to the directory containing `.wav` files. Audio paths in the JSONL can be relative or absolute.
 
+If training logs show per-rank audio counts becoming inconsistent, for example one rank logs fewer
+`<|AUDIO|>` prompts or fewer loaded audios than other ranks, clean the parquet first and train on
+the cleaned directory:
+```bash
+python examples/r1_aqa/data_preprocess/clean_audio_dataset.py \\
+    --input_dataset /path/to/avqa_lightrft \\
+    --output_dir /path/to/avqa_lightrft_clean
+```
+Then update `PATH_TO_YOUR_AVQA_DATASET` to the cleaned output.
+
 ### 2. VRAM / OOM
 - Reduce `MICRO_TRAIN` and `MICRO_ROLLOUT` (e.g., 1)
 - Reduce `N_SAMPLES` (e.g., 4 instead of 8)
@@ -155,18 +200,14 @@ The reward function automatically handles both modes. When `enable_think=True`, 
 ### 1. Reward Summation (not Weighting)
 R1-AQA sums accuracy and format rewards (max=2.0) while GSM8K/Geo3K in LightRFT uses weighted combination (0.9×accuracy + 0.1×format, max=1.0). We keep R1-AQA's summation to ensure identical reward signal. The GRPO normalization handles the scale difference.
 
-### 2. Audio Pipeline via Image Slot
-LightRFT's VL pipeline is built for images/videos. We repurpose the image data slots to carry audio data:
-- `pixel_values` → `input_features` (audio features)
-- `image_grid_thw` → `feature_attention_mask`
-- `raw_images` → raw audio tuples `(np.array, sr)`
-- `multi_modal_data["image"]` → `multi_modal_data["audio"]`
-
-This is done via targeted monkey patches in `audio_dataset.py` rather than modifying core LightRFT code.
+### 2. Native Audio Rollout Path
+Audio RL now uses a dedicated rollout path in core LightRFT code:
+- raw audio payloads stay on the generation side and are passed to SGLang as `audio_data`
+- processed mel features are stored explicitly as `audio_values`
+- Qwen2-Audio feature masking is stored explicitly as `feature_attention_mask`
 
 ### 3. ActorAL (Audio Language Actor)
 Qwen2-Audio uses `Qwen2AudioForConditionalGeneration` (not `AutoModelForVision2Seq`), and its forward pass expects `audio_values` instead of `pixel_values` + `image_grid_thw`. We use `ActorAL` from `lightrft.models.actor_al`, which natively supports Qwen2-Audio's parameter interface.
 
 ### 4. Chat Template
 R1-AQA embeds audio URLs in the chat message content as `{"type": "audio", "audio_url": path}`. We preserve this format and use the Qwen2-Audio processor's `apply_chat_template` to convert it to the correct token format with audio placeholders.
-
