@@ -265,6 +265,8 @@ class PPOTrainerVL(ABC):
             wandb.define_metric("rollout/*", step_metric="rollout/global_step")
             wandb.define_metric("train/global_step")
             wandb.define_metric("train/*", step_metric="train/global_step")
+            # eval/* uses its own counter, allowing it to be plotted sequentially
+            # even if evaluations happen rarely
             wandb.define_metric("eval/global_step")
             wandb.define_metric("eval/*", step_metric="eval/global_step")
 
@@ -423,12 +425,18 @@ class PPOTrainerVL(ABC):
             )
 
         # Calculate number of rollouts per episode.
-        # Regardless of the TBS/RBS relationship, rollout count should depend on total sample volume,
-        # not on how those samples are internally split across optimizer steps.
+        # Regardless of TBS and RBS relationship, rollout count should be determined by "total data / rollout size".
+        # Numerator (num_update_steps * train_batch_size) equals "total samples planned for this episode".
+        # Denominator (rollout_batch_size * n_samples) equals "samples produced per rollout".
+        # This calculation ensures data collection volume is constant.
+        # When TBS=64, num_update_steps is naturally twice as large as when TBS=128.
+        # Substituting into formula: (2N * 0.5T) / R = (N * T) / R.
+        # Conclusion: Rollout count unchanged, but internal update loop count doubles due to smaller TBS.
         num_rollouts_per_episodes = (
             num_update_steps_per_episodes * args.train_batch_size // args.max_epochs // args.rollout_batch_size //
             args.n_samples_per_prompt
         )
+        # Safeguard to prevent num_rollouts_per_episodes from being 0
         if num_rollouts_per_episodes == 0:
             # Use ceil as a safeguard when integer division would otherwise drop a fractional rollout.
             num_rollouts_per_episodes = math.ceil(
@@ -489,6 +497,10 @@ class PPOTrainerVL(ABC):
                     all_response_lengths = []
 
                     for item in self.replay_buffer.items:
+                        # Robust handling of reward_metrics
+                        # 1. Check if info exists
+                        # 2. Check if 'reward_metrics' key exists
+                        # 3. Check if reward_metrics is not None (critical!)
                         if hasattr(item, "info") and item.info is not None and "reward" in item.info:
                             all_rewards.append(item.info["reward"])
 
@@ -517,6 +529,10 @@ class PPOTrainerVL(ABC):
                         rollout_status["rollout_reward_std"] = rewards_tensor.std().item()
 
                     if all_format_rewards:
+                        # [TENSOR-FIX] Handle both tensor lists and scalar lists
+                        # Issue: all_format_rewards may contain tensors (from reward_metrics),
+                        # but torch.tensor() cannot convert a list of tensors directly.
+                        # Solution: Use torch.cat() for tensor lists, torch.tensor() for scalar lists
                         if isinstance(all_format_rewards[0], torch.Tensor):
                             format_tensor = torch.cat([t.to(device).float() for t in all_format_rewards])
                         else:
@@ -554,6 +570,10 @@ class PPOTrainerVL(ABC):
 
                 # Progress bar reflects rollout quality; wandb/tensorboard will receive both rollout and train metrics.
                 pbar.set_postfix(rollout_status)
+
+                # Logs/checkpoints: save BOTH ROLLOUT and TRAINING statistics to wandb
+                # [FIX] Merge rollout_status (from inference) and status (from training)
+                # to ensure wandb logs contain both types of metrics
                 client_states = {"consumed_samples": steps * args.rollout_batch_size}
                 logs_dict_combined = {**rollout_status, **status}
                 self.save_logs_and_checkpoints(
@@ -703,11 +723,13 @@ class PPOTrainerVL(ABC):
         :rtype: bool
         """
         if pixel_values is None or pixel_values.numel() == 0:
+            # This is a text-only batch, no validation needed.
             return True
 
         config = self.strategy.unwrap_model(self.actor.model).config
         image_token_id = getattr(config, "image_token_id", None)
         if image_token_id is None:
+            # Model does not use special image tokens.
             return True
 
         num_tokens = (sequences == image_token_id).sum().item()
@@ -850,6 +872,9 @@ class PPOTrainerVL(ABC):
                     experience.action_mask,
                     kl_estimator=self.args.kl_estimator,
                 )
+                # [Protection measure 2] Per-token KL Clamping
+                # NOTE: Adding this causes svkng training to not converge
+                # kl = torch.clamp(kl, min=0.0, max=20.0)
             else:
                 kl = torch.zeros_like(action_log_probs, dtype=action_log_probs.dtype, device=action_log_probs.device)
 
@@ -1081,6 +1106,9 @@ class PPOTrainerVL(ABC):
                         all_wandb_logs[f"perf/experience_maker/{key}"] = value
 
                 if all_wandb_logs:
+                    # Use wandb_log_counter to ensure eval has a unique system step
+                    # This prevents eval metrics from being overwritten by train metrics
+                    # The plots will still use eval/global_step as X-axis due to define_metric
                     self.wandb_log_counter += 1
                     self._wandb.log(all_wandb_logs, step=self.wandb_log_counter, commit=True)
             elif self._tensorboard is not None and self.strategy.is_rank_0():

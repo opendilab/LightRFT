@@ -163,6 +163,9 @@ class PolicyLoss(nn.Module):
     - PPO: https://arxiv.org/abs/1707.06347
     - CPGD: https://arxiv.org/abs/2505.12504
     - High-Entropy Token Filtering: https://arxiv.org/abs/2506.01939
+
+    :ivar dict[str, float] _last_stats: Cached statistics from the most recent
+        ``forward`` call for trainer-side logging and debugging.
     """
     def __init__(
         self,
@@ -180,6 +183,20 @@ class PolicyLoss(nn.Module):
 
     @staticmethod
     def _stats_over_mask(values: torch.Tensor, mask: Optional[torch.Tensor], prefix: str) -> dict[str, float]:
+        """
+        Summarize masked tensor values as mean/min/max scalars.
+
+        :param values: Tensor whose selected elements should be summarized.
+        :type values: torch.Tensor
+        :param mask: Optional boolean-like mask that selects valid elements in ``values``.
+            If ``None``, all elements are used.
+        :type mask: Optional[torch.Tensor]
+        :param prefix: Prefix used to build the output metric keys.
+        :type prefix: str
+        :return: Dictionary with ``{prefix}_mean``, ``{prefix}_min``, and
+            ``{prefix}_max`` entries.
+        :rtype: dict[str, float]
+        """
         if mask is None:
             selected = values.reshape(-1)
         else:
@@ -200,6 +217,12 @@ class PolicyLoss(nn.Module):
         }
 
     def get_last_stats(self) -> dict[str, float]:
+        """
+        Return statistics captured during the most recent policy loss computation.
+
+        :return: Shallow copy of the cached scalar metrics dictionary.
+        :rtype: dict[str, float]
+        """
         return dict(self._last_stats)
 
     def _update_last_stats(
@@ -213,6 +236,26 @@ class PolicyLoss(nn.Module):
         old_log_probs: Optional[torch.Tensor] = None,
         ratio: Optional[torch.Tensor] = None,
     ) -> None:
+        """
+        Refresh cached policy diagnostics for the latest forward pass.
+
+        :param stats_mask: Boolean mask indicating which tokens contribute to the statistics.
+        :type stats_mask: torch.Tensor
+        :param advantages: Advantage tensor associated with the current minibatch.
+        :type advantages: torch.Tensor
+        :param logprob_delta: Difference ``log_probs - old_log_probs`` for each token.
+        :type logprob_delta: torch.Tensor
+        :param token_loss: Per-token policy loss values before masked reduction.
+        :type token_loss: torch.Tensor
+        :param log_probs: Optional current-policy log probabilities used for PPO diagnostics.
+        :type log_probs: Optional[torch.Tensor]
+        :param old_log_probs: Optional old-policy log probabilities used for PPO diagnostics.
+        :type old_log_probs: Optional[torch.Tensor]
+        :param ratio: Optional PPO importance-sampling ratio used to compute clip fractions.
+        :type ratio: Optional[torch.Tensor]
+        :return: ``None``. Metrics are stored in ``self._last_stats``.
+        :rtype: None
+        """
         valid_token_count = float(stats_mask.sum().item())
         stats = {
             "policy/valid_tokens": valid_token_count,
@@ -267,6 +310,9 @@ class PolicyLoss(nn.Module):
 
         :returns: Scalar policy loss averaged over valid (and optionally high-entropy) tokens.
         :rtype: torch.Tensor
+
+        The method also stores token-level summary statistics from the current call
+        in ``self._last_stats`` so the trainer can log them via ``get_last_stats()``.
 
         **Masking Strategy:**
 

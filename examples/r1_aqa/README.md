@@ -1,5 +1,7 @@
 # R1-AQA on LightRFT: Audio Question Answering with GRPO
 
+**English** | [中文](README_zh.md)
+
 This example migrates [R1-AQA](https://github.com/xiaomi-research/r1-aqa) (Audio Question Answering via GRPO on Qwen2-Audio) into the [LightRFT](https://github.com/opendilab/LightRFT) training framework.
 
 ## Overview
@@ -18,7 +20,8 @@ examples/r1_aqa/
 ├── train_colocate.py                 # GRPO training entry point
 ├── eval.py                           # Evaluation script (e.g., MMAU-style tests)
 ├── run_grpo_r1_aqa_qwen2_audio_7b.sh # Training launch script
-└── README.md                         # This file
+├── README.md                         # This file
+└── README_zh.md                      # Chinese version
 ```
 
 ## Quick Start

@@ -29,7 +29,13 @@ from torch.utils.data import Dataset
 
 
 def load_audio(audio_path: str, sr: int = 16000) -> Tuple[Any, int]:
-    """Load an audio file as ``(waveform, sampling_rate)``."""
+    """
+    Load an audio file as ``(waveform, sampling_rate)``.
+
+    :param audio_path: Path to the audio file on disk.
+    :param sr: Target sampling rate used when decoding the audio file.
+    :return: Tuple of ``(waveform, sampling_rate)``.
+    """
     return librosa.load(audio_path, sr=sr)
 
 
@@ -51,6 +57,16 @@ class AudioPromptDataset(Dataset):
         strategy,
         input_template: Optional[str] = None,
     ):
+        """
+        Initialize the R1-AQA audio prompt dataset wrapper.
+
+        :param dataset: Underlying dataset object that stores prompt/audio metadata.
+        :param tokenizer: Tokenizer kept for compatibility with the LightRFT dataset interface.
+        :param processor: Multimodal processor used to render the chat template and expose audio config.
+        :param max_length: Maximum sequence length tracked by the dataset interface.
+        :param strategy: Training strategy object used for config lookup and logging.
+        :param input_template: Optional example-side input template; unused in this dataset.
+        """
         super().__init__()
         self.dataset = dataset
         self.tokenizer = tokenizer
@@ -71,9 +87,20 @@ class AudioPromptDataset(Dataset):
             self.target_sr = getattr(processor.feature_extractor, "sampling_rate", 16000)
 
     def __len__(self) -> int:
+        """
+        Return the number of samples in the wrapped dataset.
+
+        :return: Total sample count.
+        """
         return len(self.dataset)
 
     def __getitem__(self, idx: int) -> Tuple[str, Any, str, str]:
+        """
+        Load and normalize one training sample.
+
+        :param idx: Sample index in the wrapped dataset.
+        :return: Tuple of ``(prompt_text, audio_data, reference, label)``.
+        """
         data = self.dataset[idx]
 
         # ---- 1. Extract prompt (chat messages with audio content) ----
@@ -112,13 +139,23 @@ class AudioPromptDataset(Dataset):
         return prompt_text, audio_data, reference, label
 
     def collate_fn(self, batch: List[Tuple]) -> Tuple[List, List, List, List]:
-        """Keep prompts/audios/references/labels as plain Python lists for the rollout stack."""
+        """
+        Keep prompts, audios, references, and labels as plain Python lists for rollout.
+
+        :param batch: Batch of dataset items produced by ``__getitem__``.
+        :return: Tuple of lists ``(prompts, audios, refs, labels)``.
+        """
         prompts, audios, refs, labels = zip(*batch)
         return list(prompts), list(audios), list(refs), list(labels)
 
     @staticmethod
     def _extract_text_from_messages(messages) -> str:
-        """Fallback text extraction used when the upstream chat template fails."""
+        """
+        Extract fallback text content when the upstream chat template fails.
+
+        :param messages: Chat message payload in the processor input format.
+        :return: Concatenated text segments extracted from the message content.
+        """
         texts = []
         for msg in messages:
             if not isinstance(msg, dict):
@@ -143,6 +180,9 @@ class AudioPromptDataset(Dataset):
         block may arrive as ``{"type": "text", "text": "...", "audio_url": None}``.
         Qwen2-Audio's default chat template checks key existence instead of value,
         which would misclassify that text block as a second audio placeholder.
+
+        :param obj: Nested list/dict structure that may contain ``None`` values.
+        :return: Structure with ``None`` entries removed recursively.
         """
         if isinstance(obj, list):
             return [AudioPromptDataset._drop_none_fields(item) for item in obj]

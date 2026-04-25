@@ -67,7 +67,7 @@ def build_message(obj_dict: Dict, audio_dir: Optional[str] = None) -> list:
     """
     choice_str = f"Please choose the answer from the following options: {obj_dict['choices']}."
     question_template = (f"{obj_dict['question']} {choice_str} "
-                         "Output the final answer in <answer></answer>.")
+                         "Output the final answer in <answer> </answer>.")
 
     # MMAU uses audio_id; MMAR uses audio_path (e.g. ./audio/xxx.wav)
     raw_path = obj_dict.get("audio_path") or obj_dict.get("audio_id", "")

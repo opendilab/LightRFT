@@ -137,7 +137,6 @@ def avqa_combined_reward_fn(
 
 
 def clean_solution(sol: str) -> str:
-    # <|im_start|>assistantat sea<|im_end|>
     """
     Extract the string between <|im_start|>assistant and <|im_end|> tags.
 
