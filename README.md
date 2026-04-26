@@ -501,8 +501,8 @@ If you use this codebase in your research or applications, please cite it as fol
 
 ```bibtex
 @misc{lightrft,
-  title={LightRFT},
-  author={Niu, Yazhe and Pu, Yuan and Shi, Dongxing and Lu, Yudong and Xiong, Yingtong and Ge, Ruijun and Sun, Jiaxuan and Wan, Zunian and Zhang, Shaoang and others},
+  title={LightRFT: Light, Efficient, Omni-modal & Reward-model Driven Reinforcement Fine-Tuning Framework},
+  author={Niu, Yazhe and Pu, Yuan and Shi, Dongxing and Lu, Yudong and Xiong, Yingtong and Ge, Ruijun and Sun, Jiaxuan and Wan, Zunian and Zhang, Shaoang},
   publisher={GitHub},
   howpublished={\url{https://github.com/opendilab/LightRFT}},
   year={2025},
