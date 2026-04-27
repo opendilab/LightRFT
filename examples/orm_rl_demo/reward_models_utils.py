@@ -775,8 +775,9 @@ def mix_rewards(
             )
             metrics_dict['format_reward'][i] = fmt_r
             metrics_dict['accuracy_reward'][i] = acc_r
-            metrics_dict['general_model_reward'][i] = geo3k_model_w * model_score
-            metrics_dict['rule_reward'][i] = geo3k_fmt_w * fmt_r + geo3k_acc_w * acc_r
+            metrics_dict['general_model_reward'][i] = model_score
+            rule_w_total = geo3k_fmt_w + geo3k_acc_w
+            metrics_dict['rule_reward'][i] = (geo3k_fmt_w * fmt_r + geo3k_acc_w * acc_r) / rule_w_total
             continue
 
         # 1) format reward (always present)
