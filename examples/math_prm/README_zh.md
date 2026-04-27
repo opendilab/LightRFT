@@ -24,7 +24,7 @@
 
 - 不要把升级/降级依赖包当作日常调试手段。
 - 优先修代码、数据转换、prompt 格式、rollout 配置和 reward wiring。
-- 当前分支里的 Stage 3 主线是本地 `hf` rollout；如果要做 `vllm` / `sglang` 试验，只保留了 engine wrapper 这条辅助路径。
+- `vllm` / `sglang` 对 URSA 的适配问题单独在迁移文档里记录；当前 Stage 3 主线是本地 `hf` rollout`。
 
 ## 目录结构
 
@@ -32,17 +32,26 @@
 examples/math_prm/
 ├── README.md                    # 当前 URSA-MATH Stage 3 布局说明（英文）
 ├── README_zh.md                 # 当前目录说明（中文）
+├── URSA_MIGRATION.md            # 来自原始 URSA-MATH repo 的迁移记录，属于临时文档
 ├── train_colocate.py            # 主训练入口
-├── math_prm_trainer.py          # 仅供本示例使用的 trainer wrapper，负责精简 W&B 指标和 runtime eval
 ├── run_grpo_math_prm_ursa_8b.sh # 主 Stage 3 启动脚本
 ├── ursa_actor.py                # URSA 专用 actor wrapper
 ├── reward_models.py             # 仅保留 math-only 的 URSA-RM reward 实现
 ├── reward_models_utils.py       # 仅保留 math-only 的 reward loader / recipe / reward_fn
 ├── sitecustomize.py             # 当前示例栈的本地运行时兼容钩子
-├── tools/                       # 精简 PR 分支里保留的辅助脚本
+├── tools/                       # 辅助脚本、回归测试、smoke/observation/profiling 工具
 │   ├── __init__.py
 │   ├── prepare_ursa_stage3_manifest.py
-│   └── prepare_ursa_engine_checkpoint.py
+│   ├── prepare_ursa_engine_checkpoint.py
+│   ├── prm_infer_score.py
+│   ├── check_phase2_alignment.py
+│   ├── check_hf_rollout.py
+│   ├── check_phase6_script_alignment.py
+│   ├── test_phase2_alignment.py
+│   ├── run_phase3_smoke.sh
+│   ├── run_phase7_observation.sh
+│   ├── analyze_phase7_observation.py
+│   └── probe_rollout_speed_candidates.py
 └── ursa_model/                  # 自包含的 URSA 模型代码
 ```
 
@@ -56,9 +65,6 @@ examples/math_prm/
 - `train_colocate.py`
   - 真实的 `torchrun` 入口。
   - 构建 actor、reference model、reward model、dataset、trainer 和 rollout engine。
-- `math_prm_trainer.py`
-  - 仅供 math PRM 示例使用的 trainer wrapper。
-  - 负责把 rollout/train/eval 的 W&B 指标收敛到更小的 key 集，并应用 runtime eval 的生成参数。
 - `ursa_actor.py`
   - URSA 专用 actor wrapper。
   - 让 LightRFT 按 `UrsaForConditionalGeneration` 加载 actor。
@@ -84,10 +90,36 @@ examples/math_prm/
 
 `tools/` 下的东西都不是主训练入口，而是辅助基础设施。
 
+### 数据和兼容性工具
+
 - `tools/prepare_ursa_stage3_manifest.py`
   - 把原始 `MMathCoT-1M` Stage 3 jsonl 转成 LightRFT manifest。
 - `tools/prepare_ursa_engine_checkpoint.py`
   - 给 `vllm` / `sglang` 兼容性实验生成 wrapper checkpoint。
+- `tools/prm_infer_score.py`
+  - 从 URSA-MATH 参考逻辑镜像过来的独立 PRM 辅助脚本。
+
+### 回归和验证工具
+
+- `tools/check_phase2_alignment.py`
+  - 检查 LightRFT scorer 是否和 URSA 参考路径对齐。
+- `tools/check_hf_rollout.py`
+  - 最小化本地 `hf` rollout 校验。
+- `tools/check_phase6_script_alignment.py`
+  - 当前主启动脚本默认配置的静态检查器。
+- `tools/test_phase2_alignment.py`
+  - 当前 URSA-MATH Stage 3 路径的回归测试。
+
+### Smoke / observation / profiling
+
+- `tools/run_phase3_smoke.sh`
+  - 早期阶段的限时 smoke 脚本。
+- `tools/run_phase7_observation.sh`
+  - bounded full-data observation 启动脚本。
+- `tools/analyze_phase7_observation.py`
+  - 离线分析 observation 日志和 trajectory。
+- `tools/probe_rollout_speed_candidates.py`
+  - 不改 `lightrft/` 主库代码时，用来对比 rollout-like decode 速度的最小探针。
 
 ## 当前主入口
 
@@ -95,11 +127,22 @@ examples/math_prm/
 
 - `run_grpo_math_prm_ursa_8b.sh`
 - `train_colocate.py`
-- `math_prm_trainer.py`
 - `reward_models.py`
 - `reward_models_utils.py`
 - `tools/prepare_ursa_stage3_manifest.py`
-- `tools/prepare_ursa_engine_checkpoint.py`
+- `tools/check_hf_rollout.py`
+- `tools/test_phase2_alignment.py`
+
+## 临时工作文档
+
+下面两类文档目前都只是为了支撑迁移/排障过程而保留，等整个工作闭环后应当删除：
+
+- `examples/math_prm/URSA_MIGRATION.md`
+  - 从原始 URSA-MATH repo 迁入 LightRFT 过程中的迁移说明。
+- `/data/LightRFT/plan/*`
+  - 迁移阶段产生的 phase 记录、失败分析、profiling 结论和工作笔记。
+
+这些内容不属于长期稳定训练接口。等迁移彻底完成、关键信息被吸收到正式文档或代码注释里之后，应当把它们清掉。
 
 ## 本机资源路径
 
@@ -221,10 +264,20 @@ MAX_SAMPLES=15360
 python examples/math_prm/tools/prepare_ursa_stage3_manifest.py
 ```
 
-- 为非 `hf` 实验生成 engine wrapper checkpoint：
+- 校验本地 `hf` rollout：
 
 ```bash
-python examples/math_prm/tools/prepare_ursa_engine_checkpoint.py \
-  --source-model-path /path/to/URSA-8B \
-  --output-path /path/to/URSA-8B-engine-ready
+python examples/math_prm/tools/check_hf_rollout.py
+```
+
+- 跑回归测试：
+
+```bash
+python -m unittest -q examples.math_prm.tools.test_phase2_alignment
+```
+
+- 跑 Phase 3 smoke：
+
+```bash
+bash examples/math_prm/tools/run_phase3_smoke.sh
 ```

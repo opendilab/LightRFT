@@ -24,7 +24,7 @@ The runtime baseline is frozen by `/data/LightRFT/Dockerfile`.
 
 - Do not treat package-version changes as the first-line fix.
 - Prefer fixing code, schema conversion, prompt formatting, rollout configuration, and reward wiring first.
-- The active Stage 3 path in this branch is the local `hf` rollout path; `vllm` / `sglang` experiments are optional and go through the engine-wrapper helper only.
+- `vllm` / `sglang` support for URSA is tracked separately in the migration docs; the active Stage 3 path is the local `hf` rollout path.
 
 ## Directory Map
 
@@ -32,17 +32,26 @@ The runtime baseline is frozen by `/data/LightRFT/Dockerfile`.
 examples/math_prm/
 ├── README.md                    # English guide for the current URSA-MATH Stage 3 layout
 ├── README_zh.md                 # Chinese guide
+├── URSA_MIGRATION.md            # Temporary migration notes from the original URSA-MATH repo
 ├── train_colocate.py            # Main LightRFT training entry
-├── math_prm_trainer.py          # Example-local trainer wrapper for reduced W&B keys and runtime eval
 ├── run_grpo_math_prm_ursa_8b.sh # Main Stage 3 launcher
 ├── ursa_actor.py                # URSA-specific actor wrapper
 ├── reward_models.py             # Math-only URSA-RM reward implementation
 ├── reward_models_utils.py       # Math-only reward loading, recipe, and reward aggregation
 ├── sitecustomize.py             # Local runtime compatibility hook for this example stack
-├── tools/                       # Support scripts kept in the slim PR branch
+├── tools/                       # Support scripts, regression checks, smoke runs, and observation tools
 │   ├── __init__.py
 │   ├── prepare_ursa_stage3_manifest.py
-│   └── prepare_ursa_engine_checkpoint.py
+│   ├── prepare_ursa_engine_checkpoint.py
+│   ├── prm_infer_score.py
+│   ├── check_phase2_alignment.py
+│   ├── check_hf_rollout.py
+│   ├── check_phase6_script_alignment.py
+│   ├── test_phase2_alignment.py
+│   ├── run_phase3_smoke.sh
+│   ├── run_phase7_observation.sh
+│   ├── analyze_phase7_observation.py
+│   └── probe_rollout_speed_candidates.py
 └── ursa_model/                  # Self-contained URSA model code used by actor and PRM loading
 ```
 
@@ -56,9 +65,6 @@ examples/math_prm/
 - `train_colocate.py`
   - Real `torchrun` entry.
   - Builds actor, reference model, reward model, dataset, trainer, and rollout engine.
-- `math_prm_trainer.py`
-  - Example-local trainer wrapper for math PRM runs.
-  - Keeps rollout/train/eval W&B metrics compact and applies runtime eval generation defaults.
 - `ursa_actor.py`
   - URSA-specific actor wrapper used to load `UrsaForConditionalGeneration`.
 
@@ -83,10 +89,36 @@ examples/math_prm/
 
 Everything under `tools/` is support infrastructure, not the main training entry.
 
+### Data and compatibility tools
+
 - `tools/prepare_ursa_stage3_manifest.py`
   - Converts raw `MMathCoT-1M` Stage 3 jsonl into the LightRFT manifest schema.
 - `tools/prepare_ursa_engine_checkpoint.py`
   - Builds a wrapper checkpoint for engine experiments when testing `vllm` / `sglang` loading.
+- `tools/prm_infer_score.py`
+  - Standalone PRM helper mirrored from URSA-MATH reference logic.
+
+### Regression and validation tools
+
+- `tools/check_phase2_alignment.py`
+  - Checks scorer parity against the URSA reference path.
+- `tools/check_hf_rollout.py`
+  - Minimal local `hf` rollout validation.
+- `tools/check_phase6_script_alignment.py`
+  - Static checker for current launcher defaults.
+- `tools/test_phase2_alignment.py`
+  - Regression tests for the active URSA-MATH Stage 3 path.
+
+### Smoke, observation, and profiling
+
+- `tools/run_phase3_smoke.sh`
+  - Time-boxed smoke launcher for early-stage training validation.
+- `tools/run_phase7_observation.sh`
+  - Bounded full-data observation launcher.
+- `tools/analyze_phase7_observation.py`
+  - Offline analyzer for saved trajectories and observation logs.
+- `tools/probe_rollout_speed_candidates.py`
+  - Minimal speed probe used to compare rollout-like decode modes without modifying `lightrft/`.
 
 ## Active Entry Points
 
@@ -94,11 +126,22 @@ If you only want the current Stage 3 reproduction path, the usual files are:
 
 - `run_grpo_math_prm_ursa_8b.sh`
 - `train_colocate.py`
-- `math_prm_trainer.py`
 - `reward_models.py`
 - `reward_models_utils.py`
 - `tools/prepare_ursa_stage3_manifest.py`
-- `tools/prepare_ursa_engine_checkpoint.py`
+- `tools/check_hf_rollout.py`
+- `tools/test_phase2_alignment.py`
+
+## Temporary Working Docs
+
+Two kinds of documents still exist only to support the current migration/debugging cycle and are expected to be removed after the work is fully concluded:
+
+- `examples/math_prm/URSA_MIGRATION.md`
+  - Temporary migration notes from the original URSA-MATH repo into LightRFT.
+- `/data/LightRFT/plan/*`
+  - Working notes, phase tracking, failure analyses, and profiling investigations created during the migration.
+
+These are intentionally kept outside the long-term stable training surface. Once the migration is fully closed out and the conclusions have been folded into permanent docs or code comments, they should be deleted.
 
 ## Local Resources
 
@@ -220,10 +263,20 @@ Notes:
 python examples/math_prm/tools/prepare_ursa_stage3_manifest.py
 ```
 
-- Build the engine-wrapper checkpoint for non-`hf` experiments:
+- Validate the local `hf` rollout path:
 
 ```bash
-python examples/math_prm/tools/prepare_ursa_engine_checkpoint.py \
-  --source-model-path /path/to/URSA-8B \
-  --output-path /path/to/URSA-8B-engine-ready
+python examples/math_prm/tools/check_hf_rollout.py
+```
+
+- Run regressions:
+
+```bash
+python -m unittest -q examples.math_prm.tools.test_phase2_alignment
+```
+
+- Run the Phase 3 smoke script:
+
+```bash
+bash examples/math_prm/tools/run_phase3_smoke.sh
 ```

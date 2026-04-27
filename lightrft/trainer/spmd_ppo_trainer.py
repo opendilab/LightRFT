@@ -18,6 +18,7 @@ Key features:
 - Efficient distributed training across multiple devices and nodes
 """
 
+import os
 import time
 from collections import defaultdict
 
@@ -31,7 +32,7 @@ from lightrft.utils.trajectory_saver import create_trajectory_saver
 from lightrft.trainer.replay_buffer import make_experience_batch
 from lightrft.trainer.replay_buffer_vl import make_experience_batch as make_experience_batch_vl
 from lightrft.models.utils import create_high_entropy_mask
-from lightrft.utils import init_logger
+from lightrft.utils import StepProfileRecorder, init_logger
 
 logger = init_logger(__name__)
 
@@ -116,6 +117,11 @@ class SPMDPPOTrainerBase:
         # TODO: here we pass a list of concrete params, this may collapse in future versions.
         # Create experience maker with appropriate parameters
         processor = kwargs.pop("processor", None)
+        self.profiler = StepProfileRecorder(
+            enabled=bool(getattr(self.args, "enable_profile", False)),
+            output_dir=os.path.join(self.args.save_path, "profile"),
+            print_fn=self.strategy.print,
+        )
 
         self.experience_maker = FastExperienceMaker(
             self.actor,
@@ -132,6 +138,7 @@ class SPMDPPOTrainerBase:
             self.reward_recipe,
             packing_samples=self.packing_samples,
             processor=processor,
+            profiler=self.profiler,
         )
 
         # Extract high_entropy_token_ratio for entropy-based token filtering
@@ -193,302 +200,254 @@ class SPMDPPOTrainerBase:
         torch.cuda.synchronize()
         train_begin = time.time()
 
-        torch.cuda.empty_cache()
-        self.strategy.maybe_load_optimizer(self.actor_optim)
-        all_items = self.strategy.sp_data_processor.preprocess(self.replay_buffer.items)
+        with self.profiler.section("learn/total"):
+            torch.cuda.empty_cache()
+            self.strategy.maybe_load_optimizer(self.actor_optim)
+            with self.profiler.section("learn/sp_preprocess"):
+                all_items = self.strategy.sp_data_processor.preprocess(self.replay_buffer.items)
 
-        device = torch.cuda.current_device()
+            device = torch.cuda.current_device()
+            status_list = []
+            status_mean = {}
 
-        status_list = []
-        status_mean = {}
-        for epoch in range(self.max_epochs):
-            pbar = tqdm(
-                range(0, len(all_items), self.micro_train_batch_size),
-                desc=f"Train epoch [{epoch + 1}/{self.max_epochs}]",
-                disable=not self.strategy.is_rank_0(),
-            )
-            for i in pbar:
-                items = all_items[i:i + self.micro_train_batch_size]
-                if self.VLM:
-                    experience = make_experience_batch_vl(items, packing_samples=self.packing_samples)
-                else:
-                    experience = make_experience_batch(items, packing_samples=self.packing_samples)
-                experience.to_device(device)
+            for epoch in range(self.max_epochs):
+                pbar = tqdm(
+                    range(0, len(all_items), self.micro_train_batch_size),
+                    desc=f"Train epoch [{epoch + 1}/{self.max_epochs}]",
+                    disable=not self.strategy.is_rank_0(),
+                )
+                for i in pbar:
+                    items = all_items[i:i + self.micro_train_batch_size]
+                    if self.VLM:
+                        experience = make_experience_batch_vl(items, packing_samples=self.packing_samples)
+                    else:
+                        experience = make_experience_batch(items, packing_samples=self.packing_samples)
+                    experience.to_device(device)
 
-                # ======================================================================================
-                # Validate data BEFORE calling training_step to prevent execution path divergence
-                # If validation is done inside training_step, different ranks may follow different code paths
-                # (some return early, others continue), causing deadlock in collective communication ops.
-
-                # Step 1: Each rank validates its local data
-                should_skip_local = False
-                if self.VLM and hasattr(self, '_validate_qwen_vl_tensors'):
-                    # Call the same validation logic used in training_step_actor
-                    sequences = experience.sequences
-                    pixel_values = experience.pixel_values
-
-                    # Validate before any forward pass
-                    is_valid = self._validate_qwen_vl_tensors(
-                        sequences, pixel_values, context="pre_training_validation"
-                    )
-                    should_skip_local = not is_valid
-
-                # Step 2: Synchronize skip decision across all ranks via all_reduce
-                # This ensures all ranks agree on whether to skip, preventing execution divergence
-                skip_flag = torch.tensor([1.0 if should_skip_local else 0.0], device=device)
-                torch.distributed.all_reduce(skip_flag, op=torch.distributed.ReduceOp.MAX)
-
-                # Step 3: Collectively skip if ANY rank detected invalid data
-                if skip_flag.item() > 0:
-                    if self.strategy.is_rank_0():
-                        pbar.set_description(f"Train epoch [{epoch + 1}/{self.max_epochs}] (skipping invalid batch)")
-                    continue  # All ranks skip together - no deadlock
-                # ======================================================================================
-
-                # Create entropy_mask if high_entropy_token_ratio > 0 and action_entropy is available
-                entropy_mask = None
-                if hasattr(experience, 'action_entropy') and experience.action_entropy is not None:
-                    if self.high_entropy_token_ratio > 0.0:
-                        entropy_mask = create_high_entropy_mask(
-                            experience.action_entropy, experience.action_mask, self.high_entropy_token_ratio
+                    should_skip_local = False
+                    if self.VLM and hasattr(self, '_validate_qwen_vl_tensors'):
+                        sequences = experience.sequences
+                        pixel_values = experience.pixel_values
+                        is_valid = self._validate_qwen_vl_tensors(
+                            sequences, pixel_values, context="pre_training_validation"
                         )
+                        should_skip_local = not is_valid
 
-                # Call training_step which will handle both GSPO and standard modes
-                status = self.training_step(experience, global_steps, entropy_mask=entropy_mask)
+                    skip_flag = torch.tensor([1.0 if should_skip_local else 0.0], device=device)
+                    torch.distributed.all_reduce(skip_flag, op=torch.distributed.ReduceOp.MAX)
+                    if skip_flag.item() > 0:
+                        if self.strategy.is_rank_0():
+                            pbar.set_description(f"Train epoch [{epoch + 1}/{self.max_epochs}] (skipping invalid batch)")
+                        continue
 
-                # for DP
-                # weighted mean for kl
-                if "kl" in status:
-                    status["kl"] *= status["response_length"]
-                    status = self.strategy.all_reduce(status)
-                    status["kl"] /= status["response_length"]
+                    entropy_mask = None
+                    if hasattr(experience, 'action_entropy') and experience.action_entropy is not None:
+                        if self.high_entropy_token_ratio > 0.0:
+                            entropy_mask = create_high_entropy_mask(
+                                experience.action_entropy,
+                                experience.action_mask,
+                                self.high_entropy_token_ratio,
+                            )
 
-                # Training epoch progress bar: show per-batch metrics for detailed monitoring
-                short_status = {}
+                    with self.profiler.section("learn/micro_batch_total"):
+                        status = self.training_step(experience, global_steps, entropy_mask=entropy_mask)
 
-                if "policy_loss" in status:
-                    short_status = {
-                        "pg": status["policy_loss"],  # policy gradient loss
-                        "rm": status["reward"],  # per-batch reward (instantaneous)
-                        "ret": status["return"],  # per-batch return (instantaneous)
-                        "glen": status["response_length"],  # per-batch response length
-                        "tlen": status["total_length"],  # per-batch total length
-                        "kl": status["kl"],  # KL divergence
-                        "act_lr": status["actor_lr"],  # actor learning rate
-                    }
+                    if "kl" in status:
+                        status["kl"] *= status["response_length"]
+                        status = self.strategy.all_reduce(status)
+                        status["kl"] /= status["response_length"]
 
-                if "critic_loss" in status:
-                    short_status["cri"] = status["critic_loss"]
-                    short_status["vals"] = status["values"]
-                    short_status["cri_lr"] = status["critic_lr"]
+                    short_status = {}
+                    if "policy_loss" in status:
+                        short_status = {
+                            "pg": status["policy_loss"],
+                            "rm": status["reward"],
+                            "ret": status["return"],
+                            "glen": status["response_length"],
+                            "tlen": status["total_length"],
+                            "kl": status["kl"],
+                            "act_lr": status["actor_lr"],
+                        }
+                    if "critic_loss" in status:
+                        short_status["cri"] = status["critic_loss"]
+                        short_status["vals"] = status["values"]
+                        short_status["cri_lr"] = status["critic_lr"]
+                    if "ptx_loss" in status:
+                        short_status["ptx"] = status["ptx_loss"]
 
-                if "ptx_loss" in status:
-                    short_status["ptx"] = status["ptx_loss"]
+                    status_list.append(status)
+                    pbar.set_postfix(short_status)
 
-                status_list.append(status)
-                pbar.set_postfix(short_status)
+            if status_list:
+                status_mean = status_list[0]
+                for metric_dict in status_list[1:]:
+                    for key, value in metric_dict.items():
+                        status_mean[key] += value
+                for key in status_mean.keys():
+                    status_mean[key] /= len(status_list)
 
-        # Short status keys added for progress bar display:
-        # "pg": policy_loss
-        # "rm": reward
-        # "ret": return
-        # "glen": response_length
-        # "tlen": total_length
-        # "kl": KL divergence
-        # "act_lr": actor_lr
-        if status_list:
-            status_mean = status_list[0]
-            for m in status_list[1:]:
-                for k, v in m.items():
-                    status_mean[k] += v
-            for k in status_mean.keys():
-                status_mean[k] /= len(status_list)
+            if self.replay_buffer.items:
+                all_rewards = []
+                reward_metric_values = defaultdict(list)
+                all_advantages = []
+                all_returns = []
+                all_response_lengths = []
+                all_total_lengths = []
 
-        # ========== Aggregate step-level reward metrics from replay buffer ==========
-        # NOTE: These metrics are aggregated from ALL experiences in the current step's
-        # replay buffer (e.g., 640 experiences if rollout_batch_size=128, n_samples=5).
-        # They represent the TRUE statistics of the rollout phase, NOT the training phase
-        # micro-batch averages which are less representative.
-        #
-        # Naming convention:
-        # - "*_mean" suffix: mean across all experiences in this step
-        # - "step_*" prefix: clarifies this is per-step aggregation, not per-episode
-        if self.replay_buffer.items:
-            all_rewards = []
-            reward_metric_values = defaultdict(list)
-            all_advantages = []
-            all_returns = []
-            all_response_lengths = []
-            all_total_lengths = []
-
-            for item in self.replay_buffer.items:
-                # Collect rewards
-                if hasattr(item, 'info') and item.info is not None and 'reward' in item.info:
-                    all_rewards.append(item.info['reward'])
-
-                # Collect detailed reward metrics from info dict
-                if hasattr(item, 'info') and item.info is not None and 'reward_metrics' in item.info:
-                    reward_metrics = item.info['reward_metrics']
-                    if reward_metrics is not None:
-                        for key, value in reward_metrics.items():
-                            reward_metric_values[key].append(value)
-
-                # Collect advantages and returns
-                if hasattr(item, 'advantages') and item.advantages is not None:
-                    all_advantages.append(item.advantages)
-                if hasattr(item, 'returns') and item.returns is not None:
-                    all_returns.append(item.returns)
-                if hasattr(item, 'info') and item.info is not None and 'response_length' in item.info:
-                    all_response_lengths.append(item.info['response_length'])
-                if hasattr(item, 'info') and item.info is not None and 'total_length' in item.info:
-                    all_total_lengths.append(item.info['total_length'])
-
-            # Compute statistics
-            # [TENSOR-FIX] Handle both tensor lists and scalar lists for all reward types
-            if all_rewards:
-                # Handle both tensor lists (from batched rewards) and scalar lists
-                if isinstance(all_rewards[0], torch.Tensor):
-                    rewards_tensor = torch.cat([t.to(device).float() for t in all_rewards])
-                else:
-                    rewards_tensor = torch.tensor(all_rewards, dtype=torch.float32, device=device)
-                # Use "step_*" prefix to clarify this is per-step aggregation, not per-episode
-                status_mean["step_reward_mean"] = rewards_tensor.mean().item()
-                status_mean["step_reward_std"] = rewards_tensor.std().item()
-                status_mean["step_reward_max"] = rewards_tensor.max().item()
-                status_mean["step_reward_min"] = rewards_tensor.min().item()
-                status_mean["step_reward_zero_ratio"] = (rewards_tensor == 0).float().mean().item()
-                status_mean["step_reward_one_ratio"] = (rewards_tensor == 1).float().mean().item()
-
-            for metric_name, values in reward_metric_values.items():
-                if not values:
-                    continue
-                if isinstance(values[0], torch.Tensor):
-                    metric_tensor = torch.cat([t.to(device).float() for t in values])
-                else:
-                    metric_tensor = torch.tensor(values, dtype=torch.float32, device=device)
-                if metric_tensor.numel() == 0:
-                    continue
-                if metric_name in {"model_reward", "rule_reward"} and metric_tensor.abs().sum() == 0:
-                    continue
-                status_mean[f"{metric_name}_mean"] = metric_tensor.mean().item()
-                status_mean[f"{metric_name}_std"] = metric_tensor.std().item()
-
-            # For advantages, returns, and lengths, they are already lists of tensors,
-            # so torch.cat() is the correct function to use.
-            if all_advantages:
-                advantages_tensor = torch.cat(all_advantages)
-                status_mean["advantages_mean"] = advantages_tensor.mean().item()
-                status_mean["advantages_std"] = advantages_tensor.std().item()
-                status_mean["advantages_max"] = advantages_tensor.max().item()
-                status_mean["advantages_min"] = advantages_tensor.min().item()
-
-            if all_returns:
-                returns_tensor = torch.cat(all_returns)
-                status_mean["returns_mean"] = returns_tensor.mean().item()
-                status_mean["returns_std"] = returns_tensor.std().item()
-
-            if all_response_lengths:
-                # [TENSOR-FIX] Handle both tensor lists and scalar lists
-                if isinstance(all_response_lengths[0], torch.Tensor):
-                    lengths_tensor = torch.cat([t.to(device).float() for t in all_response_lengths])
-                else:
-                    lengths_tensor = torch.tensor(all_response_lengths, dtype=torch.float32, device=device)
-                status_mean["response_length_mean"] = lengths_tensor.float().mean().item()
-                status_mean["response_length_std"] = lengths_tensor.float().std().item()
-                status_mean["response_length_zero_ratio"] = (lengths_tensor <= 1).float().mean().item()
-                generate_max_len = getattr(self.args, "generate_max_len", None)
-                if generate_max_len:
-                    status_mean["response_hit_max_ratio"] = (
-                        lengths_tensor >= float(generate_max_len - 1)
-                    ).float().mean().item()
-
-            if all_total_lengths:
-                if isinstance(all_total_lengths[0], torch.Tensor):
-                    total_lengths_tensor = torch.cat([t.to(device).float() for t in all_total_lengths])
-                else:
-                    total_lengths_tensor = torch.tensor(all_total_lengths, dtype=torch.float32, device=device)
-                status_mean["total_length_mean"] = total_lengths_tensor.float().mean().item()
-                status_mean["total_length_std"] = total_lengths_tensor.float().std().item()
-
-            # Print detailed reward breakdown (only on rank 0)
-            if self.print_replay_buffer_stats and self.strategy.is_rank_0():
-                self.strategy.print("\n" + "=" * 60)
-                self.strategy.print("📊 Detailed Step Statistics")
-                self.strategy.print("=" * 60)
+                for item in self.replay_buffer.items:
+                    if hasattr(item, 'info') and item.info is not None and 'reward' in item.info:
+                        all_rewards.append(item.info['reward'])
+                    if hasattr(item, 'info') and item.info is not None and 'reward_metrics' in item.info:
+                        reward_metrics = item.info['reward_metrics']
+                        if reward_metrics is not None:
+                            for key, value in reward_metrics.items():
+                                reward_metric_values[key].append(value)
+                    if hasattr(item, 'advantages') and item.advantages is not None:
+                        all_advantages.append(item.advantages)
+                    if hasattr(item, 'returns') and item.returns is not None:
+                        all_returns.append(item.returns)
+                    if hasattr(item, 'info') and item.info is not None and 'response_length' in item.info:
+                        all_response_lengths.append(item.info['response_length'])
+                    if hasattr(item, 'info') and item.info is not None and 'total_length' in item.info:
+                        all_total_lengths.append(item.info['total_length'])
 
                 if all_rewards:
-                    self.strategy.print(
-                        f"🎁 Total Reward:     {status_mean['step_reward_mean']:.4f} ± {status_mean['step_reward_std']:.4f} "  # noqa
-                        f"(min={status_mean['step_reward_min']:.4f}, max={status_mean['step_reward_max']:.4f})"
-                    )
-                    self.strategy.print(
-                        f"   Reward Ratios:    zero={status_mean['step_reward_zero_ratio']:.4f}, "
-                        f"one={status_mean['step_reward_one_ratio']:.4f}"
-                    )
+                    if isinstance(all_rewards[0], torch.Tensor):
+                        rewards_tensor = torch.cat([t.to(device).float() for t in all_rewards])
+                    else:
+                        rewards_tensor = torch.tensor(all_rewards, dtype=torch.float32, device=device)
+                    status_mean["step_reward_mean"] = rewards_tensor.mean().item()
+                    status_mean["step_reward_std"] = rewards_tensor.std().item()
+                    status_mean["step_reward_max"] = rewards_tensor.max().item()
+                    status_mean["step_reward_min"] = rewards_tensor.min().item()
+                    status_mean["step_reward_zero_ratio"] = (rewards_tensor == 0).float().mean().item()
+                    status_mean["step_reward_one_ratio"] = (rewards_tensor == 1).float().mean().item()
 
-                reward_metric_print_order = [
-                    ("format_reward", "📝 Format Reward"),
-                    ("accuracy_reward", "✅ Accuracy Reward"),
-                    ("outcome_correct", "🎯 Outcome Correct"),
-                    ("model_reward", "🤖 Model Reward"),
-                    ("final_reward", "🏁 Final Reward"),
-                    ("rule_reward", "⚖️  Rule Reward"),
-                    ("max_relative_drop", "📉 Max Relative Drop"),
-                    ("has_drop_moment", "🪂 Drop Moment"),
-                    ("step_score_min", "🔬 Step Score Min"),
-                    ("step_score_mean", "🔬 Step Score Mean"),
-                    ("step_score_last", "🔬 Step Score Last"),
-                    ("step_count", "🧮 Step Count"),
-                ]
-                for metric_name, title in reward_metric_print_order:
-                    mean_key = f"{metric_name}_mean"
-                    std_key = f"{metric_name}_std"
-                    if mean_key in status_mean:
-                        self.strategy.print(
-                            f"{title:<20} {status_mean[mean_key]:.4f} ± {status_mean[std_key]:.4f}"
-                        )
+                for metric_name, values in reward_metric_values.items():
+                    if not values:
+                        continue
+                    if isinstance(values[0], torch.Tensor):
+                        metric_tensor = torch.cat([t.to(device).float() for t in values])
+                    else:
+                        metric_tensor = torch.tensor(values, dtype=torch.float32, device=device)
+                    if metric_tensor.numel() == 0:
+                        continue
+                    if metric_name in {"model_reward", "rule_reward"} and metric_tensor.abs().sum() == 0:
+                        continue
+                    status_mean[f"{metric_name}_mean"] = metric_tensor.mean().item()
+                    status_mean[f"{metric_name}_std"] = metric_tensor.std().item()
 
                 if all_advantages:
-                    self.strategy.print(
-                        f"📈 Advantages:       {status_mean['advantages_mean']:.4f} ± {status_mean['advantages_std']:.4f} "  # noqa
-                        f"(min={status_mean['advantages_min']:.4f}, max={status_mean['advantages_max']:.4f})"
-                    )
+                    advantages_tensor = torch.cat(all_advantages)
+                    status_mean["advantages_mean"] = advantages_tensor.mean().item()
+                    status_mean["advantages_std"] = advantages_tensor.std().item()
+                    status_mean["advantages_max"] = advantages_tensor.max().item()
+                    status_mean["advantages_min"] = advantages_tensor.min().item()
 
                 if all_returns:
-                    self.strategy.print(
-                        f"💰 Returns:          {status_mean['returns_mean']:.4f} ± {status_mean['returns_std']:.4f}"
-                    )
+                    returns_tensor = torch.cat(all_returns)
+                    status_mean["returns_mean"] = returns_tensor.mean().item()
+                    status_mean["returns_std"] = returns_tensor.std().item()
 
                 if all_response_lengths:
-                    self.strategy.print(
-                        f"📏 Response Length:  {status_mean['response_length_mean']:.1f} ± {status_mean['response_length_std']:.1f} tokens"  # noqa
-                    )
-                    self.strategy.print(
-                        f"   Length Ratios:    empty={status_mean['response_length_zero_ratio']:.4f}, "
-                        f"hit_max={status_mean.get('response_hit_max_ratio', 0.0):.4f}"
-                    )
+                    if isinstance(all_response_lengths[0], torch.Tensor):
+                        lengths_tensor = torch.cat([t.to(device).float() for t in all_response_lengths])
+                    else:
+                        lengths_tensor = torch.tensor(all_response_lengths, dtype=torch.float32, device=device)
+                    status_mean["response_length_mean"] = lengths_tensor.float().mean().item()
+                    status_mean["response_length_std"] = lengths_tensor.float().std().item()
+                    status_mean["response_length_zero_ratio"] = (lengths_tensor <= 1).float().mean().item()
+                    generate_max_len = getattr(self.args, "generate_max_len", None)
+                    if generate_max_len:
+                        status_mean["response_hit_max_ratio"] = (
+                            lengths_tensor >= float(generate_max_len - 1)
+                        ).float().mean().item()
 
                 if all_total_lengths:
-                    self.strategy.print(
-                        f"📦 Total Length:     {status_mean['total_length_mean']:.1f} ± {status_mean['total_length_std']:.1f} tokens"  # noqa
-                    )
+                    if isinstance(all_total_lengths[0], torch.Tensor):
+                        total_lengths_tensor = torch.cat([t.to(device).float() for t in all_total_lengths])
+                    else:
+                        total_lengths_tensor = torch.tensor(all_total_lengths, dtype=torch.float32, device=device)
+                    status_mean["total_length_mean"] = total_lengths_tensor.float().mean().item()
+                    status_mean["total_length_std"] = total_lengths_tensor.float().std().item()
 
-                self.strategy.print("=" * 60 + "\n")
+                if self.print_replay_buffer_stats and self.strategy.is_rank_0():
+                    self.strategy.print("\n" + "=" * 60)
+                    self.strategy.print("📊 Detailed Step Statistics")
+                    self.strategy.print("=" * 60)
 
-        torch.cuda.empty_cache()
+                    if all_rewards:
+                        self.strategy.print(
+                            f"🎁 Total Reward:     {status_mean['step_reward_mean']:.4f} ± {status_mean['step_reward_std']:.4f} "  # noqa
+                            f"(min={status_mean['step_reward_min']:.4f}, max={status_mean['step_reward_max']:.4f})"
+                        )
+                        self.strategy.print(
+                            f"   Reward Ratios:    zero={status_mean['step_reward_zero_ratio']:.4f}, "
+                            f"one={status_mean['step_reward_one_ratio']:.4f}"
+                        )
 
-        self.strategy.maybe_offload_optimizer(self.actor_optim)
-        torch.cuda.synchronize()
-        torch.cuda.empty_cache()
-        self.strategy.print(f"PPO Train TIMECOST {time.time() - train_begin}")
-        self.strategy.report_memory("after train, opt offloaded, before update weights")
-        self.strategy.print(torch.cuda.memory_summary())
-        self.strategy.update_engine_weights(self.actor)
+                    reward_metric_print_order = [
+                        ("format_reward", "📝 Format Reward"),
+                        ("accuracy_reward", "✅ Accuracy Reward"),
+                        ("outcome_correct", "🎯 Outcome Correct"),
+                        ("model_reward", "🤖 Model Reward"),
+                        ("final_reward", "🏁 Final Reward"),
+                        ("rule_reward", "⚖️  Rule Reward"),
+                        ("max_relative_drop", "📉 Max Relative Drop"),
+                        ("has_drop_moment", "🪂 Drop Moment"),
+                        ("step_score_min", "🔬 Step Score Min"),
+                        ("step_score_mean", "🔬 Step Score Mean"),
+                        ("step_score_last", "🔬 Step Score Last"),
+                        ("step_count", "🧮 Step Count"),
+                    ]
+                    for metric_name, title in reward_metric_print_order:
+                        mean_key = f"{metric_name}_mean"
+                        std_key = f"{metric_name}_std"
+                        if mean_key in status_mean:
+                            self.strategy.print(
+                                f"{title:<20} {status_mean[mean_key]:.4f} ± {status_mean[std_key]:.4f}"
+                            )
 
-        # Save trajectories at the end of ppo_train, BEFORE replay buffer is cleared
-        # This ensures we have data to save when trajectory saving is enabled
-        if global_steps % self.args.save_steps == 0:
-            self.save_trajectories(global_steps)
+                    if all_advantages:
+                        self.strategy.print(
+                            f"📈 Advantages:       {status_mean['advantages_mean']:.4f} ± {status_mean['advantages_std']:.4f} "  # noqa
+                            f"(min={status_mean['advantages_min']:.4f}, max={status_mean['advantages_max']:.4f})"
+                        )
+
+                    if all_returns:
+                        self.strategy.print(
+                            f"💰 Returns:          {status_mean['returns_mean']:.4f} ± {status_mean['returns_std']:.4f}"
+                        )
+
+                    if all_response_lengths:
+                        self.strategy.print(
+                            f"📏 Response Length:  {status_mean['response_length_mean']:.1f} ± {status_mean['response_length_std']:.1f} tokens"  # noqa
+                        )
+                        self.strategy.print(
+                            f"   Length Ratios:    empty={status_mean['response_length_zero_ratio']:.4f}, "
+                            f"hit_max={status_mean.get('response_hit_max_ratio', 0.0):.4f}"
+                        )
+
+                    if all_total_lengths:
+                        self.strategy.print(
+                            f"📦 Total Length:     {status_mean['total_length_mean']:.1f} ± {status_mean['total_length_std']:.1f} tokens"  # noqa
+                        )
+
+                    self.strategy.print("=" * 60 + "\n")
+
+            torch.cuda.empty_cache()
+            self.strategy.maybe_offload_optimizer(self.actor_optim)
+            torch.cuda.synchronize()
+            torch.cuda.empty_cache()
+            self.strategy.print(f"PPO Train TIMECOST {time.time() - train_begin}")
+            self.strategy.report_memory("after train, opt offloaded, before update weights")
+            self.strategy.print(torch.cuda.memory_summary())
+            with self.profiler.section("learn/update_engine_weights"):
+                self.strategy.update_engine_weights(self.actor)
+
+            if global_steps % self.args.save_steps == 0:
+                with self.profiler.section("learn/save_trajectories"):
+                    self.save_trajectories(global_steps)
 
         return status_mean
 

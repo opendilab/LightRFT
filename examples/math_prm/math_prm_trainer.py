@@ -1,5 +1,5 @@
 from contextlib import contextmanager
-from typing import Dict
+from typing import Dict, Optional
 
 import torch
 
@@ -56,6 +56,8 @@ class MathPRMSPMDPPOTrainerVL(SPMDPPOTrainerVL):
             self._wandb.define_metric("train/*", step_metric=None, step_sync=False, overwrite=True)
             self._wandb.define_metric("eval/train_step")
             self._wandb.define_metric("eval/*", step_metric="eval/train_step", step_sync=True, overwrite=True)
+            self._wandb.define_metric("profile/train_step")
+            self._wandb.define_metric("profile/*", step_metric="profile/train_step", step_sync=True, overwrite=True)
 
     def _build_eval_generate_kwargs(self) -> Dict:
         eval_generate_kwargs = dict(self._train_generate_kwargs)
@@ -196,7 +198,9 @@ class MathPRMSPMDPPOTrainerVL(SPMDPPOTrainerVL):
                     self._tensorboard.add_scalar(f"train/{key}", value, global_step)
 
         if global_step % args.eval_steps == 0 and self.eval_dataloader is not None:
-            raw_eval_metrics = self.evaluate(self.eval_dataloader, global_step)
+            with self.profiler.phase("eval"):
+                with self.profiler.section("total"):
+                    raw_eval_metrics = self.evaluate(self.eval_dataloader, global_step)
 
             if raw_eval_metrics and self.strategy.is_rank_0():
                 self.eval_step_counter += 1
@@ -218,8 +222,33 @@ class MathPRMSPMDPPOTrainerVL(SPMDPPOTrainerVL):
                         self._tensorboard.add_scalar(f"eval/{key}", value, global_step)
 
         if global_step % args.save_steps == 0:
-            tag = f"global_step{global_step}"
-            self._save_checkpoint(args, tag, client_states)
+            with self.profiler.phase("checkpoint"):
+                with self.profiler.section("total"):
+                    tag = f"global_step{global_step}"
+                    self._save_checkpoint(args, tag, client_states)
+
+    def log_profile_metrics(self, global_step: int, episode: int, profile_snapshot: Optional[Dict]) -> None:
+        if not profile_snapshot or not self.strategy.is_rank_0():
+            return
+
+        summary = profile_snapshot.get("summary")
+        if summary:
+            self.strategy.print(summary)
+
+        if self._wandb is not None:
+            wandb_logs = dict(profile_snapshot.get("wandb_logs", {}))
+            if wandb_logs:
+                wandb_logs["profile/episode"] = episode
+                self.wandb_log_counter += 1
+                self._wandb.log(wandb_logs, step=self.wandb_log_counter, commit=True)
+                self._update_wandb_summary(wandb_logs)
+
+        elif self._tensorboard is not None:
+            record = profile_snapshot.get("record", {})
+            for key, value in record.get("sections_max_s", {}).items():
+                self._tensorboard.add_scalar(f"profile/{key}_s", value, global_step)
+            for key, value in record.get("sections_max_ratio", {}).items():
+                self._tensorboard.add_scalar(f"profile/{key}_ratio", value, global_step)
 
     def save_trajectories(self, global_step: int):
         if self.trajectory_saver is not None and self.replay_buffer.items:

@@ -103,6 +103,8 @@ MICRO_ROLLOUT_BATCH_SIZE="${MICRO_ROLLOUT_BATCH_SIZE:-4}"
 
 # --- Optimisation ---
 KL="${KL:-0.001}"                     # URSA-MATH repo: KL coefficient.
+KL_TARGET="${KL_TARGET:-}"            # If set, enables AdaptiveKLController with this target.
+KL_HORIZON="${KL_HORIZON:-10000}"     # Horizon for adaptive KL annealing.
 LR="${LR:-1e-6}"                      # URSA-MATH repo: actor learning rate.
 PROMPT_MAX_LEN="${PROMPT_MAX_LEN:-1024}"   # URSA-MATH repo: prompt length.
 GENERATE_MAX_LEN="${GENERATE_MAX_LEN:-3072}" # URSA-MATH repo: generation length.
@@ -168,6 +170,7 @@ EVAL_NO_REPEAT_NGRAM_SIZE="${EVAL_NO_REPEAT_NGRAM_SIZE:-0}"
 USE_URSA_ENGINE_WRAPPER="${USE_URSA_ENGINE_WRAPPER:-1}"
 URSA_ENGINE_CHECKPOINT_DIR="${URSA_ENGINE_CHECKPOINT_DIR:-/data/LightRFT/tmp/ursa_stage3/URSA-8B-engine-ready}"
 SYSTEM_PROMPT="${SYSTEM_PROMPT:-A conversation between the User and Assistant. The User asks a question that may require mathematical or visual reasoning, and the Assistant solves it step by step. Each step MUST begin with \"Step N:\" (e.g. \"Step 1:\", \"Step 2:\") on its own line. After all steps, output exactly one final answer line prefixed with \"†Answer:\" (e.g. \"†Answer: 42\"). Stop immediately after the \"†Answer:\" line and do not output any extra text, repeated answer markers, or additional steps.}"
+ENABLE_PROFILE="${ENABLE_PROFILE:-0}"
 
 
 ################################################################################
@@ -323,6 +326,11 @@ PY
 # use_engine for math_prm/math_psgrpo and loads via HF directly.
 REWARD_PRETRAIN_PATHS="{\"math_prm\":\"${PATH_TO_URSA_RM}\"}"
 
+KL_TARGET_ARGS=()
+if [[ -n "${KL_TARGET}" ]]; then
+    KL_TARGET_ARGS=(--kl_target "${KL_TARGET}")
+fi
+
 WANDB_ARGS=()
 WANDB_ENABLE_REASON="disabled"
 WANDB_USE_WANDB_ARG=""
@@ -365,6 +373,14 @@ if [[ "${ENGINE_TYPE}" == "hf" && "${HF_SEPARATE_ROLLOUT_ACTOR}" == "1" ]]; then
         )
     fi
     echo "[run_grpo_math_prm_ursa_8b.sh] Separate local HF rollout actor enabled."
+fi
+
+PROFILE_ARGS=()
+if [[ "${ENABLE_PROFILE}" == "1" ]]; then
+    PROFILE_ARGS=(
+        --enable_profile
+    )
+    echo "[run_grpo_math_prm_ursa_8b.sh] Step profiling enabled."
 fi
 
 EVAL_ARGS=()
@@ -424,7 +440,7 @@ set -x
 #                         Part 5: Main Training Command                        #
 ################################################################################
 
-torchrun \
+python -m torch.distributed.run \
     --nnodes $NNODES \
     --nproc-per-node $GPUS_PER_NODE \
     --node_rank $NODE_RANK \
@@ -463,6 +479,7 @@ torchrun \
     --use_kl_loss \
     --init_kl_coef $KL \
     --kl_estimator "k3" \
+    "${KL_TARGET_ARGS[@]}" \
     --prompt_data "${PATH_TO_YOUR_MATH_DATASET}" \
     --max_samples ${MAX_SAMPLES} \
     --input_key "prompt" \
@@ -486,6 +503,7 @@ torchrun \
     --adam_offload \
     --limit_mm_image_per_prompt $limit_mm_image_per_prompt \
     "${EVAL_ARGS[@]}" \
+    "${PROFILE_ARGS[@]}" \
     "${WANDB_ARGS[@]}" \
     2>&1 | tee "rft_logs/${EXPERIMENT_NAME}/node${NODE_RANK}_${current_time}.log"
 
@@ -539,8 +557,9 @@ torchrun \
 #                                                                              #
 # Step 5: Run training                                                         #
 #   bash examples/math_prm/run_grpo_math_prm_ursa_8b.sh                       #
-#   - For the Phase 3 baseline, override EXPECTED_REWARD_LABEL and point       #
-#     PATH_TO_YOUR_MATH_DATASET at a manifest whose label is math_prm.         #
+#   - For the Phase 3 baseline smoke path, use                                #
+#       bash examples/math_prm/tools/run_phase3_smoke.sh                       #
+#     which exports a math_prm-labeled manifest and time-boxed settings.      #
 #   - For data/resource smoke checks before RL training, you can reuse:        #
 #       python /home/ubuntu/URSA-MATH/examples/run_dataset_loading_example.py  #
 #       python /home/ubuntu/URSA-MATH/examples/validate_dataset_entrypoints.py \

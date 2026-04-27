@@ -589,6 +589,13 @@ def train(args):
             f"reshard_after_forward disabled, and {residency_note}."
         )
 
+        from rollout_eos_patch import install_math_prm_rollout_eos_patch
+        install_math_prm_rollout_eos_patch(rollout_actor, tokenizer, tokenizer.eos_token_id)
+        strategy.print(
+            "Installed math_prm rollout EOS patch on rollout_actor.model.generate "
+            "(injects StructuredAnswerStoppingCriteria on every generate call)."
+        )
+
     strategy.print(reward_models)
 
     if ema_model:
@@ -718,6 +725,7 @@ if __name__ == "__main__":
     )
     parser.add_argument("--num_trajectories_to_save", type=int, default=10, help="Number of trajectories to save per checkpoint")
     parser.add_argument("--print_replay_buffer_stats", action="store_true", default=False, help="Print detailed replay buffer statistics during training")
+    parser.add_argument("--enable_profile", action="store_true", default=False, help="Enable persistent step profiling with local files and W&B metrics")
     parser.add_argument("--logging_steps", type=int, default=1)
     parser.add_argument("--eval_steps", type=int, default=-1)
     parser.add_argument("--ckpt_path", type=str, default="./ckpt/checkpoints_ppo")

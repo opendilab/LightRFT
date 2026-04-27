@@ -25,6 +25,7 @@ import os
 import time
 import pathlib
 import warnings
+from contextlib import contextmanager
 from typing import Callable, Dict, List, Tuple, Union, Optional
 from dataclasses import dataclass
 from copy import deepcopy
@@ -53,10 +54,6 @@ from lightrft.trainer.experience_maker_vl import (
 
 from lightrft.utils.remote_rm_utils import remote_rm_fn
 from lightrft.utils import Timer, get_current_device
-from lightrft.utils.math_prm_output import (
-    is_math_prm_structured_label,
-    sanitize_math_prm_response_text,
-)
 from .utils import RunningMoments, compute_clip_fraction, get_cpgd_advantages_returns, fire_sampling, vllm_ge_0130
 from .advantage_calculator import get_advantage_calculator, normalize_advantages_cross_batch
 from .image_utils import normalize_images, get_images_num
@@ -144,6 +141,12 @@ class _RewardBatchResult:
 
     scores: torch.Tensor
     metrics: Optional[Dict[str, torch.Tensor]] = None
+
+
+class _NullProfiler:
+    @contextmanager
+    def section(self, _name: str):
+        yield
 
 
 # ============================================================================
@@ -943,7 +946,7 @@ class FastExperienceMaker(NaiveExperienceMaker):
         processor: Multimodal processor for vision-language models
         *args, **kwargs: Arguments passed to parent NaiveExperienceMaker
     """
-    def __init__(self, *args, packing_samples: bool = False, processor=None, **kwargs):
+    def __init__(self, *args, packing_samples: bool = False, processor=None, profiler=None, **kwargs):
         """
         Initialize FastExperienceMaker.
 
@@ -963,6 +966,7 @@ class FastExperienceMaker(NaiveExperienceMaker):
         self.backend = self.strategy.args.engine_type
         self.packing_samples = packing_samples
         self.processor = processor
+        self.profiler = profiler if profiler is not None else _NullProfiler()
 
         # Initialize tokenizer (extract from processor if needed)
         if self.processor is not None:
@@ -1042,79 +1046,73 @@ class FastExperienceMaker(NaiveExperienceMaker):
         """
         config = self.strategy.config
 
-        # Normalize images if provided
-        if all_images is not None:
-            if self.multimodal_processor is None:
-                raise ValueError(
-                    "Multimodal data (images) provided but processor was not initialized. "
-                    "Please provide a processor when initializing FastExperienceMaker for VLM support."
+        with self.profiler.section("collect/total"):
+            if all_images is not None:
+                if self.multimodal_processor is None:
+                    raise ValueError(
+                        "Multimodal data (images) provided but processor was not initialized. "
+                        "Please provide a processor when initializing FastExperienceMaker for VLM support."
+                    )
+                all_images = normalize_images(all_images)
+
+            if all_videos is not None:
+                if self.multimodal_processor is None:
+                    raise ValueError(
+                        "Multimodal data (videos) provided but processor was not initialized. "
+                        "Please provide a processor when initializing FastExperienceMaker for VLM support."
+                    )
+                all_videos = normalize_videos(all_videos)
+
+            images_num = (get_images_num(all_images) if self.multimodal_processor and all_images is not None else None)
+            videos_num = (get_videos_num(all_videos) if self.multimodal_processor and all_videos is not None else None)
+
+            Timer.start('  generate_samples')
+            with self.profiler.section("collect/generate"):
+                samples_list = self.generate_samples(
+                    all_prompts,
+                    all_images=all_images,
+                    images_num=images_num,
+                    all_videos=all_videos,
+                    videos_num=videos_num,
+                    all_references=all_references,
+                    all_labels=all_labels,
+                    **generate_kwargs,
                 )
-            all_images = normalize_images(all_images)
+            Timer.stop('  generate_samples')
 
-        # Normalize videos if provided
-        if all_videos is not None:
-            if self.multimodal_processor is None:
-                raise ValueError(
-                    "Multimodal data (videos) provided but processor was not initialized. "
-                    "Please provide a processor when initializing FastExperienceMaker for VLM support."
+            torch.distributed.barrier()
+            torch.cuda.synchronize()
+
+            with self.profiler.section("collect/sp_preprocess"):
+                all_samples = self.strategy.sp_data_processor.preprocess(samples_list)
+
+            Timer.start('  make_experience')
+            with self.profiler.section("collect/model_total"):
+                experiences = self._make_experience_list_by_model(all_samples)
+            Timer.stop('  make_experience')
+
+            with self.profiler.section("collect/sp_postprocess"):
+                experiences = self.strategy.sp_data_processor.postprocess(experiences)
+
+            with self.profiler.section("collect/process_rewards"):
+                experiences, rewards = self._process_experiences(
+                    experiences, generate_kwargs.get("max_new_tokens", 1024)
                 )
-            all_videos = normalize_videos(all_videos)
 
-        # Get image counts
-        images_num = (get_images_num(all_images) if self.multimodal_processor and all_images is not None else None)
+            if (images_num is not None and not all(num == 1 for num in images_num)) or \
+               (videos_num is not None and not all(num == 1 for num in videos_num)):
+                expanded_images_num = sum([[num] * config.n_samples_per_prompt
+                                           for num in images_num], []) if images_num is not None else None
 
-        # Get video counts
-        videos_num = (get_videos_num(all_videos) if self.multimodal_processor and all_videos is not None else None)
+                expanded_videos_num = sum([[num] * config.n_samples_per_prompt
+                                           for num in videos_num], []) if videos_num is not None else None
 
-        # ========== Stage 1: Sample Generation ==========
-        Timer.start('  generate_samples')
-        samples_list = self.generate_samples(
-            all_prompts,
-            all_images=all_images,
-            images_num=images_num,
-            all_videos=all_videos,
-            videos_num=videos_num,
-            all_references=all_references,
-            all_labels=all_labels,
-            **generate_kwargs,
-        )
-        Timer.stop('  generate_samples')
+                self._process_multi_image_video_thws(experiences, expanded_images_num, expanded_videos_num)
 
-        torch.distributed.barrier()
-        torch.cuda.synchronize()
+            with self.profiler.section("collect/advantages"):
+                experiences = self._compute_advantages_and_returns(experiences, rewards, generate_kwargs)
 
-        # ========== Stage 2: Shard-Parallel Preprocessing ==========
-        all_samples = self.strategy.sp_data_processor.preprocess(samples_list)
-
-        # ========== Stage 3: Model Inference ==========
-        Timer.start('  make_experience')
-        experiences = self._make_experience_list_by_model(all_samples)
-        Timer.stop('  make_experience')
-
-        # ========== Stage 4: Shard-Parallel Postprocessing ==========
-        experiences = self.strategy.sp_data_processor.postprocess(experiences)
-
-        # ========== Stage 5: Reward Processing ==========
-        experiences, rewards = self._process_experiences(  # GRPO's -mean / std operation is performed in this method
-            experiences, generate_kwargs.get("max_new_tokens", 1024)
-        )
-
-        # ========== Stage 6: Multi-Image/Video Handling ==========
-        if (images_num is not None and not all(num == 1 for num in images_num)) or \
-           (videos_num is not None and not all(num == 1 for num in videos_num)):
-            # Expand image_num by n_samples_per_prompt
-            expanded_images_num = sum([[num] * config.n_samples_per_prompt
-                                       for num in images_num], []) if images_num is not None else None
-
-            expanded_videos_num = sum([[num] * config.n_samples_per_prompt
-                                       for num in videos_num], []) if videos_num is not None else None
-
-            self._process_multi_image_video_thws(experiences, expanded_images_num, expanded_videos_num)
-
-        # ========== Stage 7: Advantage Computation ==========
-        experiences = self._compute_advantages_and_returns(experiences, rewards, generate_kwargs)
-
-        return experiences
+            return experiences
 
     @torch.no_grad()
     def generate_samples(
@@ -1165,7 +1163,6 @@ class FastExperienceMaker(NaiveExperienceMaker):
         is_multimodal = all_images is not None or all_videos is not None
         n_samples = config.n_samples_per_prompt
 
-        # Initialize multimodal-specific variables to None
         all_images_num = None
         all_videos_num = None
         all_images_pixel_values = None
@@ -1173,143 +1170,122 @@ class FastExperienceMaker(NaiveExperienceMaker):
         all_images_grid_thw = None
         all_videos_grid_thw = None
 
-        # ========== Configure Sampling Parameters ==========
-        if config.engine_type == "vllm":
-            # vLLM-specific sampling configuration
-            # Note: vLLM is an optional dependency. Install with: pip install "LightRFT[vllm]"
-            # This import is conditional and only executed when engine_type is "vllm"
-            from vllm import SamplingParams
+        with self.profiler.section("collect/generate_prepare"):
+            if config.engine_type == "vllm":
+                from vllm import SamplingParams
 
-            # For vllm>=0.13.0, truncate_prompt_tokens must not exceed max_model_len
-            # For older versions, we can use 8192 directly without validation
-            if vllm_ge_0130():
-                max_model_len = self.strategy.inference_engine.llm_engine.model_config.max_model_len
-                truncate_tokens = min(8192, max_model_len)
-            else:
-                truncate_tokens = 8192
+                if vllm_ge_0130():
+                    max_model_len = self.strategy.inference_engine.llm_engine.model_config.max_model_len
+                    truncate_tokens = min(8192, max_model_len)
+                else:
+                    truncate_tokens = 8192
 
-            sampling_params = SamplingParams(
-                temperature=generate_kwargs.get("temperature", 1.0),
-                top_p=generate_kwargs.get("top_p", 1.0),
-                top_k=generate_kwargs.get("top_k", -1),
-                repetition_penalty=generate_kwargs.get("repetition_penalty", 1.0),
-                max_tokens=generate_kwargs.get("max_new_tokens", 1024),
-                min_tokens=generate_kwargs.get("min_new_tokens", 1),
-                skip_special_tokens=generate_kwargs.get("skip_special_tokens", False),
-                include_stop_str_in_output=True,
-                ignore_eos=os.environ.get("IGNORE_EOS", "0") == "1",
-                truncate_prompt_tokens=truncate_tokens,
-            )
-        elif config.engine_type == "sglang":
-            # SGLang-specific sampling configuration (default backend)
-            sampling_params = dict(
-                n=1,
-                temperature=generate_kwargs.get("temperature", 1.0),
-                top_p=generate_kwargs.get("top_p", 1.0),
-                top_k=generate_kwargs.get("top_k", -1),
-                max_new_tokens=generate_kwargs.get("max_new_tokens", 1024),
-                presence_penalty=0.0,
-                frequency_penalty=0.0,
-                repetition_penalty=generate_kwargs.get("repetition_penalty", 1.0),
-                skip_special_tokens=generate_kwargs.get("skip_special_tokens", False),
-                spaces_between_special_tokens=True,
-                ignore_eos=os.environ.get("IGNORE_EOS", "0") == "1",
-            )
-        elif config.engine_type == "hf":
-            max_new_tokens = generate_kwargs.get("max_new_tokens", 1024)
-            local_hf_max_new_tokens = int(getattr(config, "local_hf_max_new_tokens", 0) or 0)
-            if local_hf_max_new_tokens > 0:
-                max_new_tokens = min(max_new_tokens, local_hf_max_new_tokens)
-            sampling_params = dict(
-                temperature=generate_kwargs.get("temperature", 1.0),
-                top_p=generate_kwargs.get("top_p", 1.0),
-                top_k=generate_kwargs.get("top_k", -1),
-                max_new_tokens=max_new_tokens,
-                min_new_tokens=generate_kwargs.get("min_new_tokens", 1),
-                do_sample=generate_kwargs.get("do_sample", True),
-                repetition_penalty=generate_kwargs.get("repetition_penalty", 1.0),
-                no_repeat_ngram_size=generate_kwargs.get("no_repeat_ngram_size", 0),
-                skip_special_tokens=generate_kwargs.get("skip_special_tokens", False),
-                ignore_eos=os.environ.get("IGNORE_EOS", "0") == "1",
-            )
-        else:
-            raise ValueError(f"Unsupported engine type: {config.engine_type}")
-
-        # ========== Expand Labels ==========
-        if all_labels is not None:
-            all_labels = sum([[label] * n_samples for label in all_labels], [])
-        structured_answer_stop = bool(all_labels) and all(is_math_prm_structured_label(label) for label in all_labels)
-        if config.engine_type == "hf":
-            sampling_params["structured_answer_stop"] = structured_answer_stop
-
-        # ========== Process Multimodal Data ==========
-        if is_multimodal:
-            processed_data = self.multimodal_processor.process_multimodal_batch(
-                all_prompts=all_prompts,
-                all_images=all_images,
-                all_references=all_references,
-                images_num=images_num,
-                n_samples_per_prompt=n_samples,
-                all_videos=all_videos,
-                videos_num=videos_num,
-            )
-            all_prompt_token_ids = processed_data["all_prompt_token_ids"]
-            all_prompts = processed_data["all_prompts"]
-            all_images = processed_data["all_images"]
-            all_videos = processed_data["all_videos"]
-            all_images_num = processed_data["all_images_num"]
-            all_videos_num = processed_data["all_videos_num"]
-            all_images_grid_thw = processed_data["all_images_grid_thw"]
-            all_videos_grid_thw = processed_data["all_videos_grid_thw"]
-            all_images_pixel_values = processed_data["all_images_pixel_values"]
-            all_videos_pixel_values = processed_data["all_videos_pixel_values"]
-            all_references = processed_data.get("all_references", None)
-        else:
-            # Text-only processing
-            tokenized = self.tokenize_fn(all_prompts, self.prompt_max_len, padding=False)
-            all_prompt_token_ids = sum([[token_ids] * n_samples for token_ids in tokenized["input_ids"]], [])
-
-        # ========== Generate via Inference Engine ==========
-        # Call fire_sampling function or direct generation
-        try:
-            if hasattr(self.strategy.args, 'use_fire') and self.strategy.args.use_fire:
-                # Use FIRE sampling (Flaming-hot Initiation with Regular Execution)
-                # According to the paper (https://arxiv.org/abs/2410.21236), FIRE only changes
-                # the temperature for the first token. All other sampling parameters (top_k, top_p, etc.)
-                # are kept the same between first token and remaining tokens.
-                all_outputs = fire_sampling(
-                    all_prompt_token_ids=all_prompt_token_ids,
-                    generate_fn=generate_fn,  # noqa: TODO
-                    engine_type=config.engine_type,
-                    first_token_temperature=generate_kwargs.get("first_token_temperature", 10.0),
+                sampling_params = SamplingParams(
                     temperature=generate_kwargs.get("temperature", 1.0),
-                    # Note: first_token_top_k and first_token_top_p are deprecated and ignored
-                    # The function will use top_k and top_p from sampling_params for both stages
-                    is_multimodal=is_multimodal,
+                    top_p=generate_kwargs.get("top_p", 1.0),
+                    top_k=generate_kwargs.get("top_k", -1),
+                    repetition_penalty=generate_kwargs.get("repetition_penalty", 1.0),
+                    max_tokens=generate_kwargs.get("max_new_tokens", 1024),
+                    min_tokens=generate_kwargs.get("min_new_tokens", 1),
+                    skip_special_tokens=generate_kwargs.get("skip_special_tokens", False),
+                    include_stop_str_in_output=True,
+                    ignore_eos=os.environ.get("IGNORE_EOS", "0") == "1",
+                    truncate_prompt_tokens=truncate_tokens,
+                )
+            elif config.engine_type == "sglang":
+                sampling_params = dict(
+                    n=1,
+                    temperature=generate_kwargs.get("temperature", 1.0),
+                    top_p=generate_kwargs.get("top_p", 1.0),
+                    top_k=generate_kwargs.get("top_k", -1),
+                    max_new_tokens=generate_kwargs.get("max_new_tokens", 1024),
+                    presence_penalty=0.0,
+                    frequency_penalty=0.0,
+                    repetition_penalty=generate_kwargs.get("repetition_penalty", 1.0),
+                    skip_special_tokens=generate_kwargs.get("skip_special_tokens", False),
+                    spaces_between_special_tokens=True,
+                    ignore_eos=os.environ.get("IGNORE_EOS", "0") == "1",
+                )
+            elif config.engine_type == "hf":
+                max_new_tokens = generate_kwargs.get("max_new_tokens", 1024)
+                local_hf_max_new_tokens = int(getattr(config, "local_hf_max_new_tokens", 0) or 0)
+                if local_hf_max_new_tokens > 0:
+                    max_new_tokens = min(max_new_tokens, local_hf_max_new_tokens)
+                sampling_params = dict(
+                    temperature=generate_kwargs.get("temperature", 1.0),
+                    top_p=generate_kwargs.get("top_p", 1.0),
+                    top_k=generate_kwargs.get("top_k", -1),
+                    max_new_tokens=max_new_tokens,
+                    min_new_tokens=generate_kwargs.get("min_new_tokens", 1),
+                    do_sample=generate_kwargs.get("do_sample", True),
+                    repetition_penalty=generate_kwargs.get("repetition_penalty", 1.0),
+                    no_repeat_ngram_size=generate_kwargs.get("no_repeat_ngram_size", 0),
+                    skip_special_tokens=generate_kwargs.get("skip_special_tokens", False),
+                    ignore_eos=os.environ.get("IGNORE_EOS", "0") == "1",
+                )
+            else:
+                raise ValueError(f"Unsupported engine type: {config.engine_type}")
+
+            if all_labels is not None:
+                all_labels = sum([[label] * n_samples for label in all_labels], [])
+
+            if is_multimodal:
+                processed_data = self.multimodal_processor.process_multimodal_batch(
                     all_prompts=all_prompts,
                     all_images=all_images,
+                    all_references=all_references,
+                    images_num=images_num,
+                    n_samples_per_prompt=n_samples,
                     all_videos=all_videos,
-                    all_images_num=all_images_num,
-                    all_videos_num=all_videos_num,
-                    sampling_params=sampling_params,
+                    videos_num=videos_num,
                 )
+                all_prompt_token_ids = processed_data["all_prompt_token_ids"]
+                all_prompts = processed_data["all_prompts"]
+                all_images = processed_data["all_images"]
+                all_videos = processed_data["all_videos"]
+                all_images_num = processed_data["all_images_num"]
+                all_videos_num = processed_data["all_videos_num"]
+                all_images_grid_thw = processed_data["all_images_grid_thw"]
+                all_videos_grid_thw = processed_data["all_videos_grid_thw"]
+                all_images_pixel_values = processed_data["all_images_pixel_values"]
+                all_videos_pixel_values = processed_data["all_videos_pixel_values"]
+                all_references = processed_data.get("all_references", None)
             else:
-                # maybe this can be called in if and else respectively? or like this?
-                # Use original single-shot generation
-                all_outputs = self.strategy.gather_and_generate(
-                    sampling_params=sampling_params,
-                    all_prompt_token_ids=all_prompt_token_ids,
-                    all_prompts=all_prompts if is_multimodal else None,
-                    sleep_engine=self.strategy.args.enable_engine_sleep,
-                    all_images=all_images if is_multimodal else None,
-                    all_videos=all_videos if is_multimodal else None,
-                    images_num=all_images_num if is_multimodal else None,
-                    videos_num=all_videos_num if is_multimodal else None,
-                    all_images_pixel_values=all_images_pixel_values if is_multimodal else None,
-                    all_videos_pixel_values=all_videos_pixel_values if is_multimodal else None,
-                    all_images_grid_thw=all_images_grid_thw if is_multimodal else None,
-                    all_videos_grid_thw=all_videos_grid_thw if is_multimodal else None,
-                )
+                tokenized = self.tokenize_fn(all_prompts, self.prompt_max_len, padding=False)
+                all_prompt_token_ids = sum([[token_ids] * n_samples for token_ids in tokenized["input_ids"]], [])
+
+        try:
+            with self.profiler.section("collect/generate_engine"):
+                if hasattr(self.strategy.args, 'use_fire') and self.strategy.args.use_fire:
+                    all_outputs = fire_sampling(
+                        all_prompt_token_ids=all_prompt_token_ids,
+                        generate_fn=generate_fn,  # noqa: TODO
+                        engine_type=config.engine_type,
+                        first_token_temperature=generate_kwargs.get("first_token_temperature", 10.0),
+                        temperature=generate_kwargs.get("temperature", 1.0),
+                        is_multimodal=is_multimodal,
+                        all_prompts=all_prompts,
+                        all_images=all_images,
+                        all_videos=all_videos,
+                        all_images_num=all_images_num,
+                        all_videos_num=all_videos_num,
+                        sampling_params=sampling_params,
+                    )
+                else:
+                    all_outputs = self.strategy.gather_and_generate(
+                        sampling_params=sampling_params,
+                        all_prompt_token_ids=all_prompt_token_ids,
+                        all_prompts=all_prompts if is_multimodal else None,
+                        sleep_engine=self.strategy.args.enable_engine_sleep,
+                        all_images=all_images if is_multimodal else None,
+                        all_videos=all_videos if is_multimodal else None,
+                        images_num=all_images_num if is_multimodal else None,
+                        videos_num=all_videos_num if is_multimodal else None,
+                        all_images_pixel_values=all_images_pixel_values if is_multimodal else None,
+                        all_videos_pixel_values=all_videos_pixel_values if is_multimodal else None,
+                        all_images_grid_thw=all_images_grid_thw if is_multimodal else None,
+                        all_videos_grid_thw=all_videos_grid_thw if is_multimodal else None,
+                    )
         except ValueError as e:
             if "prompt" in str(e) and "too long" in str(e):
                 self.strategy.print(f"[Skip] {e}")
@@ -1317,70 +1293,64 @@ class FastExperienceMaker(NaiveExperienceMaker):
             else:
                 raise
 
-        all_outputs = self._sanitize_structured_math_prm_outputs(all_outputs, all_labels)
+        with self.profiler.section("collect/generate_build_samples"):
+            samples_list = []
+            image_patch_idx = 0
+            video_patch_idx = 0
+            image_start_idx = 0
+            video_start_idx = 0
 
-        # ========== Process Outputs into Samples ==========
-        samples_list = []
-        image_patch_idx = 0
-        video_patch_idx = 0
-        image_start_idx = 0
-        video_start_idx = 0
+            for i in range(0, len(all_outputs), config.micro_rollout_batch_size):
+                micro_batch_outputs = all_outputs[i:i + config.micro_rollout_batch_size]
+                micro_batch_prompts = all_prompts[i:i + config.micro_rollout_batch_size]
 
-        for i in range(0, len(all_outputs), config.micro_rollout_batch_size):
-            micro_batch_outputs = all_outputs[i:i + config.micro_rollout_batch_size]
-            micro_batch_prompts = all_prompts[i:i + config.micro_rollout_batch_size]
+                micro_batch_grid_thw = None
+                micro_batch_video_grid_thw = None
+                micro_batch_raw_images = None
 
-            # Extract micro-batch data
-            micro_batch_grid_thw = None
-            micro_batch_video_grid_thw = None
-            micro_batch_raw_images = None
+                if is_multimodal:
+                    rollout_image_count = sum(all_images_num[i:i + config.micro_rollout_batch_size])
+                    micro_batch_grid_thw = all_images_grid_thw[image_start_idx:image_start_idx + rollout_image_count]
+                    micro_batch_raw_images = all_images[i:i + config.micro_rollout_batch_size]
+                    image_start_idx += rollout_image_count
 
-            if is_multimodal:
-                rollout_image_count = sum(all_images_num[i:i + config.micro_rollout_batch_size])
-                micro_batch_grid_thw = all_images_grid_thw[image_start_idx:image_start_idx + rollout_image_count]
-                micro_batch_raw_images = all_images[i:i + config.micro_rollout_batch_size]
-                image_start_idx += rollout_image_count
+                    rollout_video_count = sum(all_videos_num[i:i + config.micro_rollout_batch_size])
+                    micro_batch_video_grid_thw = all_videos_grid_thw[video_start_idx:video_start_idx + rollout_video_count]
+                    video_start_idx += rollout_video_count
 
-                rollout_video_count = sum(all_videos_num[i:i + config.micro_rollout_batch_size])
-                micro_batch_video_grid_thw = all_videos_grid_thw[video_start_idx:video_start_idx + rollout_video_count]
-                video_start_idx += rollout_video_count
+                micro_batch_references = (all_references[i:i + config.micro_rollout_batch_size] if all_references else None)
+                micro_batch_labels = (all_labels[i:i + config.micro_rollout_batch_size] if all_labels else None)
 
-            micro_batch_references = (all_references[i:i + config.micro_rollout_batch_size] if all_references else None)
-            micro_batch_labels = (all_labels[i:i + config.micro_rollout_batch_size] if all_labels else None)
-
-            # Build samples
-            if not self.packing_samples:
-                sample, updated_patch_idx, updated_video_patch_idx = self._build_unpacked_sample(
-                    outputs=micro_batch_outputs,
-                    prompts=micro_batch_prompts,
-                    labels=micro_batch_labels,
-                    references=micro_batch_references,
-                    is_multimodal=is_multimodal,
-                    grid_thw=micro_batch_grid_thw,
-                    video_grid_thw=micro_batch_video_grid_thw,
-                    raw_images=micro_batch_raw_images,
-                    pixel_values=all_images_pixel_values if is_multimodal else None,
-                    pixel_values_videos=all_videos_pixel_values if is_multimodal else None,
-                    images_num=all_images_num[i:i + config.micro_rollout_batch_size] if is_multimodal else None,
-                    videos_num=all_videos_num[i:i + config.micro_rollout_batch_size] if is_multimodal else None,
-                    image_patch_idx=image_patch_idx,
-                    video_patch_idx=video_patch_idx,
-                )
-                # Update patch indices from the returned values
-                if updated_patch_idx is not None:
-                    image_patch_idx = updated_patch_idx
-                if updated_video_patch_idx is not None:
-                    video_patch_idx = updated_video_patch_idx
-                samples_list.append(sample)
-            else:
-                # Packed samples
-                sample = self._build_packed_sample(
-                    outputs=micro_batch_outputs,
-                    prompts=micro_batch_prompts,
-                    labels=micro_batch_labels,
-                    references=micro_batch_references,
-                )
-                samples_list.append(sample)
+                if not self.packing_samples:
+                    sample, updated_patch_idx, updated_video_patch_idx = self._build_unpacked_sample(
+                        outputs=micro_batch_outputs,
+                        prompts=micro_batch_prompts,
+                        labels=micro_batch_labels,
+                        references=micro_batch_references,
+                        is_multimodal=is_multimodal,
+                        grid_thw=micro_batch_grid_thw,
+                        video_grid_thw=micro_batch_video_grid_thw,
+                        raw_images=micro_batch_raw_images,
+                        pixel_values=all_images_pixel_values if is_multimodal else None,
+                        pixel_values_videos=all_videos_pixel_values if is_multimodal else None,
+                        images_num=all_images_num[i:i + config.micro_rollout_batch_size] if is_multimodal else None,
+                        videos_num=all_videos_num[i:i + config.micro_rollout_batch_size] if is_multimodal else None,
+                        image_patch_idx=image_patch_idx,
+                        video_patch_idx=video_patch_idx,
+                    )
+                    if updated_patch_idx is not None:
+                        image_patch_idx = updated_patch_idx
+                    if updated_video_patch_idx is not None:
+                        video_patch_idx = updated_video_patch_idx
+                    samples_list.append(sample)
+                else:
+                    sample = self._build_packed_sample(
+                        outputs=micro_batch_outputs,
+                        prompts=micro_batch_prompts,
+                        labels=micro_batch_labels,
+                        references=micro_batch_references,
+                    )
+                    samples_list.append(sample)
 
         # Report timing
         torch.cuda.synchronize()
@@ -1390,49 +1360,6 @@ class FastExperienceMaker(NaiveExperienceMaker):
         self.strategy.report_memory("after rollout engine generation")
 
         return samples_list
-
-    def _sanitize_structured_math_prm_outputs(self, outputs: List, labels: Optional[List]) -> List:
-        if not outputs or not labels:
-            return outputs
-        if not hasattr(self.tokenizer, "decode") or not hasattr(self.tokenizer, "encode"):
-            return outputs
-
-        sanitized = 0
-        trimmed_token_counts = []
-
-        for idx, label in enumerate(labels[: len(outputs)]):
-            if not is_math_prm_structured_label(label):
-                continue
-
-            original_ids = list(outputs[idx].output_token_ids)
-            if not original_ids:
-                continue
-
-            original_text = self.tokenizer.decode(original_ids, skip_special_tokens=False)
-            cleaned_text = sanitize_math_prm_response_text(original_text)
-            if cleaned_text == original_text:
-                continue
-
-            cleaned_ids = self.tokenizer.encode(cleaned_text, add_special_tokens=False)
-            if not cleaned_ids:
-                continue
-            if cleaned_ids == original_ids:
-                continue
-
-            outputs[idx].output_token_ids = cleaned_ids
-            sanitized += 1
-            trimmed_token_counts.append(len(original_ids) - len(cleaned_ids))
-
-        if sanitized:
-            mean_trim = float(np.mean(trimmed_token_counts))
-            max_trim = int(max(trimmed_token_counts))
-            self.strategy.print(
-                "[math_prm_postprocess] sanitized "
-                f"{sanitized}/{len(outputs)} outputs after first answer line; "
-                f"mean_trim_tokens={mean_trim:.1f}, max_trim_tokens={max_trim}"
-            )
-
-        return outputs
 
     def get_advantages_and_returns(
         self,
@@ -1697,64 +1624,59 @@ class FastExperienceMaker(NaiveExperienceMaker):
         device = get_current_device()
         vlm_mode = isinstance(all_samples[0], SamplesVL)
 
-        # ========== Stage 0: Preprocessing ==========
         outputs = [self._preprocess_sample(sample, vlm_mode, device) for sample in all_samples]
 
-        # ========== Stage 1: Actor Forward ==========
         Timer.start('    actor_logprob')
-        # Check if we need to compute entropy for high-entropy token filtering
-        need_entropy = hasattr(self.actor, 'high_entropy_token_ratio') and self.actor.high_entropy_token_ratio > 0.0
-        for output in outputs:
-            if need_entropy:
-                # Request full output to get action_entropy
-                action_log_probs, model_output = self.actor(
-                    output.sequences,
-                    output.num_actions,
-                    output.attention_mask,
-                    packed_seq_lens=output.packed_seq_lens,
-                    return_output=True,
-                    **output.inputs_extra_kwargs
-                )
-                output.action_log_probs = action_log_probs
-                # Extract action_entropy if available
-                if "action_entropy" in model_output:
-                    output.action_entropy = model_output["action_entropy"]
-            else:
-                output.action_log_probs = self.actor(
-                    output.sequences,
-                    output.num_actions,
-                    output.attention_mask,
-                    packed_seq_lens=output.packed_seq_lens,
-                    **output.inputs_extra_kwargs
-                )
+        with self.profiler.section("collect/model/actor_logprob"):
+            need_entropy = hasattr(self.actor, 'high_entropy_token_ratio') and self.actor.high_entropy_token_ratio > 0.0
+            for output in outputs:
+                if need_entropy:
+                    action_log_probs, model_output = self.actor(
+                        output.sequences,
+                        output.num_actions,
+                        output.attention_mask,
+                        packed_seq_lens=output.packed_seq_lens,
+                        return_output=True,
+                        **output.inputs_extra_kwargs
+                    )
+                    output.action_log_probs = action_log_probs
+                    if "action_entropy" in model_output:
+                        output.action_entropy = model_output["action_entropy"]
+                else:
+                    output.action_log_probs = self.actor(
+                        output.sequences,
+                        output.num_actions,
+                        output.attention_mask,
+                        packed_seq_lens=output.packed_seq_lens,
+                        **output.inputs_extra_kwargs
+                    )
         Timer.stop('    actor_logprob')
 
-        # ========== Stage 2: Initial Model ==========
         if self.initial_model is not None:
-            self.strategy.reload_model(self.initial_model)
-            for output in outputs:
-                output.base_action_log_probs = self.initial_model(
-                    output.sequences,
-                    output.num_actions,
-                    output.attention_mask,
-                    packed_seq_lens=output.packed_seq_lens,
-                    **output.inputs_extra_kwargs
-                )
-            self.strategy.offload_model(self.initial_model)
+            with self.profiler.section("collect/model/reference_logprob"):
+                self.strategy.reload_model(self.initial_model)
+                for output in outputs:
+                    output.base_action_log_probs = self.initial_model(
+                        output.sequences,
+                        output.num_actions,
+                        output.attention_mask,
+                        packed_seq_lens=output.packed_seq_lens,
+                        **output.inputs_extra_kwargs
+                    )
+                self.strategy.offload_model(self.initial_model)
 
-        # ========== Stage 3: Critic ==========
         if self.critic is not None:
-            self.strategy.reload_model(self.critic)
-            for output in outputs:
-                output.value = self.critic(
-                    output.sequences, output.num_actions, output.attention_mask, **output.inputs_extra_kwargs
-                )
-            self.strategy.offload_model(self.critic)
+            with self.profiler.section("collect/model/critic_forward"):
+                self.strategy.reload_model(self.critic)
+                for output in outputs:
+                    output.value = self.critic(
+                        output.sequences, output.num_actions, output.attention_mask, **output.inputs_extra_kwargs
+                    )
+                self.strategy.offload_model(self.critic)
 
-        # ========== Stage 4: Reward Models ==========
-        self.reward_engine.compute_rewards(outputs, vlm_mode, device)
+        with self.profiler.section("collect/model/reward_forward"):
+            self.reward_engine.compute_rewards(outputs, vlm_mode, device)
 
-        # ========== Stage 5: Assemble Experiences ==========
         return [self._pack_experience(output, vlm_mode) for output in outputs]
 
     def _preprocess_sample(

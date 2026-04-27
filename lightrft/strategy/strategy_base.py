@@ -27,7 +27,6 @@ from torch import nn, optim
 from torch.distributed.device_mesh import init_device_mesh
 from torch.optim import Optimizer
 from torch.utils.data import DataLoader
-from transformers.generation.logits_process import LogitsProcessor, LogitsProcessorList
 from transformers.trainer import get_scheduler
 
 from lightrft.strategy.utils.distributed_util import gather_inputs_object_for_inference, create_sub_group
@@ -40,7 +39,6 @@ from lightrft.strategy.utils.parallel_utils import (
 )
 from lightrft.strategy.utils.statistic import GenLenAnalyser
 from lightrft.strategy.config import StrategyConfig
-from lightrft.utils.math_prm_output import MATH_PRM_ANSWER_MARKER, should_stop_math_prm_response_text
 from .sglang_utils import get_sglang_engine_for_rollout
 
 ModelOptimPair = Tuple[nn.Module, Optimizer]
@@ -57,122 +55,6 @@ class EngineStatus(Enum):
 
     SLEEPED = 0
     WAKEUP = 1
-
-
-class _StructuredAnswerEosLogitsProcessor(LogitsProcessor):
-    def __init__(self, tokenizer, prompt_length: int, eos_token_id: int):
-        self.tokenizer = tokenizer
-        self.prompt_length = int(prompt_length)
-        self.eos_token_id = int(eos_token_id)
-        self.check_interval = 4
-        self.marker_scan_max_tokens = 192
-        self.answer_tail_max_tokens = 128
-        self.answer_marker_token_ids = tuple(
-            int(token_id) for token_id in tokenizer.encode(MATH_PRM_ANSWER_MARKER, add_special_tokens=False)
-        )
-        self._marker_seen = None
-        self._stats = defaultdict(float)
-
-    def _ensure_state(self, batch_size: int) -> None:
-        if self._marker_seen is None or len(self._marker_seen) != batch_size:
-            self._marker_seen = [False] * batch_size
-
-    def _scan_row_for_answer_marker(self, row_token_ids: torch.Tensor) -> bool:
-        marker_token_ids = self.answer_marker_token_ids
-        if not marker_token_ids:
-            return MATH_PRM_ANSWER_MARKER in self.tokenizer.decode(row_token_ids, skip_special_tokens=False)
-
-        token_ids = row_token_ids.tolist()
-        marker_len = len(marker_token_ids)
-        if len(token_ids) < marker_len:
-            return False
-
-        search_start = max(0, len(token_ids) - self.marker_scan_max_tokens)
-        token_ids = token_ids[search_start:]
-        last_start = len(token_ids) - marker_len + 1
-        for start_idx in range(max(last_start, 0)):
-            if tuple(token_ids[start_idx:start_idx + marker_len]) == marker_token_ids:
-                return True
-        return False
-
-    def _decode_rows(self, row_token_ids: torch.Tensor) -> List[str]:
-        decode_t0 = time.time()
-        texts = self.tokenizer.batch_decode(row_token_ids, skip_special_tokens=False)
-        self._stats["decode_time_s"] += time.time() - decode_t0
-        self._stats["decoded_rows"] += len(texts)
-        return texts
-
-    def get_debug_stats(self) -> Optional[Dict[str, Union[int, float]]]:
-        if self._stats["calls"] <= 0:
-            return None
-        return {
-            "calls": int(self._stats["calls"]),
-            "gated_checks": int(self._stats["gated_checks"]),
-            "marker_scan_rows": int(self._stats["marker_scan_rows"]),
-            "marker_hits": int(self._stats["marker_hits"]),
-            "answer_tail_rows": int(self._stats["answer_tail_rows"]),
-            "decoded_rows": int(self._stats["decoded_rows"]),
-            "forced_eos_rows": int(self._stats["forced_eos_rows"]),
-            "decode_time_s": round(float(self._stats["decode_time_s"]), 4),
-        }
-
-    def __call__(self, input_ids: torch.LongTensor, scores: torch.FloatTensor) -> torch.FloatTensor:
-        self._stats["calls"] += 1
-        if input_ids.size(1) <= self.prompt_length:
-            return scores
-
-        generated_length = input_ids.size(1) - self.prompt_length
-        if generated_length % self.check_interval != 0:
-            return scores
-        self._stats["gated_checks"] += 1
-
-        batch_size = input_ids.size(0)
-        self._ensure_state(batch_size)
-
-        stop_mask = torch.zeros(batch_size, device=scores.device, dtype=torch.bool)
-
-        unresolved_rows = [idx for idx, marker_seen in enumerate(self._marker_seen) if not marker_seen]
-        if unresolved_rows:
-            scan_start = max(self.prompt_length, input_ids.size(1) - self.marker_scan_max_tokens)
-            scan_ids = input_ids[unresolved_rows, scan_start:].detach().cpu()
-            self._stats["marker_scan_rows"] += len(unresolved_rows)
-            matched_row_indices = []
-            matched_scan_ids = []
-            for row_idx, row_token_ids in zip(unresolved_rows, scan_ids):
-                if self._scan_row_for_answer_marker(row_token_ids):
-                    self._marker_seen[row_idx] = True
-                    matched_row_indices.append(row_idx)
-                    matched_scan_ids.append(row_token_ids)
-
-            if matched_row_indices:
-                self._stats["marker_hits"] += len(matched_row_indices)
-                matched_scan_ids = torch.stack(matched_scan_ids)
-                scan_texts = self._decode_rows(matched_scan_ids)
-                for row_idx, text in zip(matched_row_indices, scan_texts):
-                    if should_stop_math_prm_response_text(text):
-                        stop_mask[row_idx] = True
-
-        marker_rows = [
-            idx for idx, marker_seen in enumerate(self._marker_seen) if marker_seen and not bool(stop_mask[idx].item())
-        ]
-        if marker_rows:
-            tail_start = max(self.prompt_length, input_ids.size(1) - self.answer_tail_max_tokens)
-            tail_ids = input_ids[marker_rows, tail_start:].detach().cpu()
-            self._stats["answer_tail_rows"] += len(marker_rows)
-            tail_texts = self._decode_rows(tail_ids)
-            for row_idx, text in zip(marker_rows, tail_texts):
-                if should_stop_math_prm_response_text(text):
-                    stop_mask[row_idx] = True
-
-        if not torch.any(stop_mask):
-            return scores
-
-        self._stats["forced_eos_rows"] += int(stop_mask.sum().item())
-
-        forced_scores = scores.clone()
-        forced_scores[stop_mask] = torch.finfo(forced_scores.dtype).min
-        forced_scores[stop_mask, self.eos_token_id] = 0
-        return forced_scores
 
 
 class StrategyBase(ABC):
@@ -1235,7 +1117,6 @@ class StrategyBase(ABC):
                 top_k = None
             temperature = sampling_params.get("temperature", 1.0)
             do_sample = sampling_params.get("do_sample", temperature is None or temperature > 0)
-            structured_answer_stop = sampling_params.get("structured_answer_stop", False)
 
             def _run_local_hf_batch(
                 batch_prompt_token_ids,
@@ -1249,18 +1130,6 @@ class StrategyBase(ABC):
                 attention_mask = padded_input_ids.ne(pad_token_id).long()
                 prompt_lengths = attention_mask.sum(dim=1).detach().cpu()
 
-                logits_processor = None
-                if structured_answer_stop:
-                    logits_processor = LogitsProcessorList(
-                        [
-                            _StructuredAnswerEosLogitsProcessor(
-                                self.inference_tokenizer,
-                                padded_input_ids.size(1),
-                                eos_token_id,
-                            )
-                        ]
-                    )
-
                 generate_t0 = time.time()
                 with torch.no_grad():
                     sequences, attention_mask_out, _ = self.inference_engine.generate(
@@ -1270,7 +1139,6 @@ class StrategyBase(ABC):
                         image_grid_thw=_prepare_tensor(batch_image_grid_thw),
                         pixel_values_videos=_prepare_tensor(batch_pixel_values_videos),
                         video_grid_thw=_prepare_tensor(batch_video_grid_thw),
-                        logits_processor=logits_processor,
                         top_k=top_k,
                         top_p=sampling_params.get("top_p", 1.0),
                         temperature=temperature,
@@ -1282,12 +1150,6 @@ class StrategyBase(ABC):
                         eos_token_id=eos_token_id,
                         pad_token_id=pad_token_id,
                     )
-                structured_stop_stats = None
-                if logits_processor is not None:
-                    for processor in logits_processor:
-                        if isinstance(processor, _StructuredAnswerEosLogitsProcessor):
-                            structured_stop_stats = processor.get_debug_stats()
-                            break
                 elapsed_s = round(time.time() - generate_t0, 4)
                 self.print(
                     "Local HF model.generate finished:",
@@ -1295,7 +1157,6 @@ class StrategyBase(ABC):
                         "batch_size": len(batch_prompt_token_ids),
                         "prompt_tokens": [len(token_ids) for token_ids in batch_prompt_token_ids],
                         "elapsed_s": elapsed_s,
-                        "structured_stop_stats": structured_stop_stats,
                     }
                 )
 

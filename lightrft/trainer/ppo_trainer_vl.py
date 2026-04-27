@@ -3,6 +3,7 @@ import sys
 import os.path
 from collections import defaultdict
 from abc import ABC
+from contextlib import contextmanager
 from typing import Any, Callable, Dict, List, Optional
 
 import torch
@@ -17,6 +18,25 @@ from lightrft.models.actor_modality import ActorModality, get_supported_paramete
 from lightrft.models.utils import masked_mean, unpacking_samples, compute_approx_kl
 from lightrft.utils.distributed_sampler import DistributedSampler
 from lightrft.trainer import AdaptiveKLController, ExperienceVL, FixedKLController, NaiveExperienceMakerVL, NaiveReplayBufferVL  # noqa
+
+
+class _NullStepProfiler:
+    @contextmanager
+    def section(self, _name: str):
+        yield
+
+    @contextmanager
+    def phase(self, _name: str):
+        yield
+
+    def start_step(self, *_args, **_kwargs):
+        return None
+
+    def finish_step(self, *_args, **_kwargs):
+        return None
+
+    def close(self):
+        return None
 
 
 class PPOTrainerVL(ABC):
@@ -216,6 +236,7 @@ class PPOTrainerVL(ABC):
         self._tensorboard = None
         self.eval_step_counter = 0  # Independent counter for eval X-axis
         self.wandb_log_counter = 0  # Global counter for unique wandb system steps
+        self.profiler = getattr(self, "profiler", _NullStepProfiler())
 
         if self.strategy.args.use_wandb and self.strategy.is_rank_0():
             import wandb
@@ -380,6 +401,8 @@ class PPOTrainerVL(ABC):
             )
 
             for batch in self.prompts_dataloader:
+                if hasattr(self, "profiler") and self.profiler is not None:
+                    self.profiler.start_step(steps, episode)
                 # Compatible with both image-only (4 args) and video (5 args) dataloaders
                 if len(batch) == 5:
                     rand_prompts, rand_images, rand_videos, rand_references, rand_labels = batch
@@ -514,9 +537,16 @@ class PPOTrainerVL(ABC):
 
                 self.save_logs_and_checkpoints(args, steps, pbar, logs_dict_combined, client_states, episode=episode)
 
+                if hasattr(self, "profiler") and self.profiler is not None:
+                    profile_snapshot = self.profiler.finish_step()
+                    if hasattr(self, "log_profile_metrics"):
+                        self.log_profile_metrics(steps, episode, profile_snapshot)
+
                 pbar.update()
                 steps = steps + 1
 
+        if hasattr(self, "profiler") and self.profiler is not None:
+            self.profiler.close()
         if self._wandb is not None and self.strategy.is_rank_0():
             self._wandb.finish()
         if self._tensorboard is not None and self.strategy.is_rank_0():
@@ -732,122 +762,118 @@ class PPOTrainerVL(ABC):
             )
             return {}  # Emergency fallback - should not normally execute
 
-        # Actor loss
-        # Build kwargs based on actor's modality - only include supported parameters
-        candidate_params = {
-            "pixel_values": pixel_values,
-            "image_grid_thw": image_grid_thws,
-            "pixel_values_videos": pixel_values_videos,
-            "video_grid_thw": video_grid_thws,
-        }
+        with self.profiler.section("learn/actor/total"):
+            candidate_params = {
+                "pixel_values": pixel_values,
+                "image_grid_thw": image_grid_thws,
+                "pixel_values_videos": pixel_values_videos,
+                "video_grid_thw": video_grid_thws,
+            }
 
-        actor_kwargs = {key: value for key, value in candidate_params.items() if key in self._actor_supported_params}
+            actor_kwargs = {
+                key: value for key, value in candidate_params.items() if key in self._actor_supported_params
+            }
 
-        action_log_probs, output = self.actor(
-            sequences,
-            num_actions,
-            attention_mask=attention_mask,
-            return_output=True,
-            packed_seq_lens=packed_seq_lens,
-            **actor_kwargs
-        )
+            with self.profiler.section("learn/actor/forward"):
+                action_log_probs, output = self.actor(
+                    sequences,
+                    num_actions,
+                    attention_mask=attention_mask,
+                    return_output=True,
+                    packed_seq_lens=packed_seq_lens,
+                    **actor_kwargs
+                )
 
         # NOTE: Explicit masking in log-space is incorrect - removed
         # if experience.action_mask is not None:
         #     # Setting masked positions to 0 to match old_action_log_probs is WRONG in log-space
         #     action_log_probs = action_log_probs * experience.action_mask
 
-        # Loss function
-        actor_loss = self.actor_loss_fn(
-            action_log_probs,
-            old_action_log_probs,
-            advantages,
-            action_mask=experience.action_mask,
-            entropy_mask=entropy_mask,
-        )
-
-        if self.args.use_kl_loss:
-            if self.initial_model is not None:
-                # TODO(pu): Text-only action mask for KL calculation
-
-                kl = compute_approx_kl(
+            with self.profiler.section("learn/actor/loss"):
+                actor_loss = self.actor_loss_fn(
                     action_log_probs,
-                    base_action_log_probs,
-                    experience.action_mask,
-                    kl_estimator=self.args.kl_estimator,
+                    old_action_log_probs,
+                    advantages,
+                    action_mask=experience.action_mask,
+                    entropy_mask=entropy_mask,
                 )
 
-                # [Protection measure 2] Per-token KL Clamping
-                # NOTE: Adding this causes svkng training to not converge
-                # kl = torch.clamp(kl, min=0.0, max=20.0)
+            if self.args.use_kl_loss:
+                if self.initial_model is not None:
+                    kl = compute_approx_kl(
+                        action_log_probs,
+                        base_action_log_probs,
+                        experience.action_mask,
+                        kl_estimator=self.args.kl_estimator,
+                    )
+                else:
+                    kl = torch.zeros_like(
+                        action_log_probs,
+                        dtype=action_log_probs.dtype,
+                        device=action_log_probs.device,
+                    )
 
+                if not self.args.packing_samples:
+                    kl_mean = masked_mean(kl, experience.action_mask, dim=-1)
+                else:
+                    kl = unpacking_samples(kl, num_actions)
+                    kl_mean = torch.tensor([each_kl.mean() for each_kl in kl], device=action_log_probs.device)
+
+                kl_loss = kl_mean.mean()
+                experience.info["kl"] = kl_loss.item()
             else:
-                kl = torch.zeros_like(action_log_probs, dtype=action_log_probs.dtype, device=action_log_probs.device)
+                kl_loss = 0
 
-            if not self.args.packing_samples:
-                kl_mean = masked_mean(kl, experience.action_mask, dim=-1)
-            # Not supported for packed samples
-            else:
-                # Convert tensor into list of tensors for easier manipulation within dataset
-                kl = unpacking_samples(kl, num_actions)
-                kl_mean = torch.tensor([each_kl.mean() for each_kl in kl], device=action_log_probs.device)
-
-            kl_loss = kl_mean.mean()
-            experience.info["kl"] = kl_loss.item()
-        else:
-            kl_loss = 0
-
-        # Mixtral auxiliary loss
-        if self.aux_loss:
-            aux_loss = output.aux_loss
-        else:
-            aux_loss = 0
-
-        loss = actor_loss + aux_loss * self.args.aux_loss_coef + kl_loss * self.kl_ctl.value
-
-        if torch.isnan(loss) or torch.isinf(loss):
-            self.strategy.print("[CRITICAL ERROR] Actor loss is NaN or Inf at step. Skipping update.")
-            self.strategy.print(f"  Actor Loss: {actor_loss.item()}")
-            self.strategy.print(f"  KL Loss: {kl_loss.item() if isinstance(kl_loss, torch.Tensor) else kl_loss}")
-
-        self.strategy.backward(loss, self.actor, self.actor_optim)
-
-        # PTX loss for supervised fine-tuning
-        if self.pretrain_dataloader is not None:
-            data = next(self.pretrain_dataloader)
-            inputs = data[1].squeeze(1).to(torch.cuda.current_device())
-            attention_mask = data[2].squeeze(1).to(torch.cuda.current_device())
-            label = torch.where(
-                attention_mask.bool(),
-                inputs,
-                self.ptx_loss_fn.IGNORE_INDEX,
-            )
-            pixel_values = data[3].to(torch.cuda.current_device())
-            image_grid_thws = data[4].to(torch.cuda.current_device())
-
-            output = self.actor(
-                inputs,
-                attention_mask=attention_mask,
-                pixel_values=pixel_values,
-                image_grid_thw=image_grid_thws,
-                return_output=True
-            )
-            ptx_log_probs = output["logits"]
-
-            # Loss function
-            ptx_loss = self.ptx_loss_fn(ptx_log_probs, label)
-            # Mixtral auxiliary loss
             if self.aux_loss:
                 aux_loss = output.aux_loss
             else:
                 aux_loss = 0
-            loss = ptx_loss + aux_loss * self.args.aux_loss_coef
-            self.strategy.backward(self.ptx_coef * loss, self.actor, self.actor_optim)
 
-        self.strategy.optimizer_step(self.actor_optim, self.actor, self.actor_scheduler, name="actor")
+            loss = actor_loss + aux_loss * self.args.aux_loss_coef + kl_loss * self.kl_ctl.value
 
-        if self.ema_model:
-            self.strategy.moving_average(self.actor, self.ema_model, self.ema_beta, "cuda")
+            if torch.isnan(loss) or torch.isinf(loss):
+                self.strategy.print("[CRITICAL ERROR] Actor loss is NaN or Inf at step. Skipping update.")
+                self.strategy.print(f"  Actor Loss: {actor_loss.item()}")
+                self.strategy.print(f"  KL Loss: {kl_loss.item() if isinstance(kl_loss, torch.Tensor) else kl_loss}")
+
+            with self.profiler.section("learn/actor/backward"):
+                self.strategy.backward(loss, self.actor, self.actor_optim)
+
+            if self.pretrain_dataloader is not None:
+                with self.profiler.section("learn/actor/ptx"):
+                    data = next(self.pretrain_dataloader)
+                    inputs = data[1].squeeze(1).to(torch.cuda.current_device())
+                    attention_mask = data[2].squeeze(1).to(torch.cuda.current_device())
+                    label = torch.where(
+                        attention_mask.bool(),
+                        inputs,
+                        self.ptx_loss_fn.IGNORE_INDEX,
+                    )
+                    pixel_values = data[3].to(torch.cuda.current_device())
+                    image_grid_thws = data[4].to(torch.cuda.current_device())
+
+                    output = self.actor(
+                        inputs,
+                        attention_mask=attention_mask,
+                        pixel_values=pixel_values,
+                        image_grid_thw=image_grid_thws,
+                        return_output=True
+                    )
+                    ptx_log_probs = output["logits"]
+                    ptx_loss = self.ptx_loss_fn(ptx_log_probs, label)
+                    if self.aux_loss:
+                        aux_loss = output.aux_loss
+                    else:
+                        aux_loss = 0
+                    loss = ptx_loss + aux_loss * self.args.aux_loss_coef
+                    self.strategy.backward(self.ptx_coef * loss, self.actor, self.actor_optim)
+
+            with self.profiler.section("learn/actor/optimizer_step"):
+                self.strategy.optimizer_step(self.actor_optim, self.actor, self.actor_scheduler, name="actor")
+
+            if self.ema_model:
+                with self.profiler.section("learn/actor/ema"):
+                    self.strategy.moving_average(self.actor, self.ema_model, self.ema_beta, "cuda")
 
         # Status
         status = {"policy_loss": actor_loss.item(), "actor_lr": self.actor_scheduler.get_last_lr()[0]}
@@ -975,33 +1001,35 @@ class PPOTrainerVL(ABC):
         sequences = ensure_device_and_contiguous(sequences, "sequences")
         attention_mask = ensure_device_and_contiguous(attention_mask, "attention_mask")
 
-        # Critic loss
-        values, output = self.critic(
-            sequences,
-            num_actions=num_actions,
-            attention_mask=attention_mask,
-            pixel_values=pixel_values,
-            image_grid_thw=image_grid_thws,
-            pixel_values_videos=pixel_values_videos,
-            video_grid_thw=video_grid_thws,
-            return_output=True,
-            packed_seq_lens=packed_seq_lens,
-        )
-        # Loss function
-        critic_loss = self.critic_loss_fn(
-            values,
-            old_values,
-            returns,
-            action_mask=experience.action_mask,
-        )
-        # Mixtral auxiliary loss
-        if self.aux_loss:
-            aux_loss = output.aux_loss
-        else:
-            aux_loss = 0
-        loss = critic_loss + aux_loss * self.args.aux_loss_coef
-        self.strategy.backward(loss, self.critic, self.critic_optim)
-        self.strategy.optimizer_step(self.critic_optim, self.critic, self.critic_scheduler, name="critic")
+        with self.profiler.section("learn/critic/total"):
+            with self.profiler.section("learn/critic/forward"):
+                values, output = self.critic(
+                    sequences,
+                    num_actions=num_actions,
+                    attention_mask=attention_mask,
+                    pixel_values=pixel_values,
+                    image_grid_thw=image_grid_thws,
+                    pixel_values_videos=pixel_values_videos,
+                    video_grid_thw=video_grid_thws,
+                    return_output=True,
+                    packed_seq_lens=packed_seq_lens,
+                )
+            with self.profiler.section("learn/critic/loss"):
+                critic_loss = self.critic_loss_fn(
+                    values,
+                    old_values,
+                    returns,
+                    action_mask=experience.action_mask,
+                )
+                if self.aux_loss:
+                    aux_loss = output.aux_loss
+                else:
+                    aux_loss = 0
+                loss = critic_loss + aux_loss * self.args.aux_loss_coef
+            with self.profiler.section("learn/critic/backward"):
+                self.strategy.backward(loss, self.critic, self.critic_optim)
+            with self.profiler.section("learn/critic/optimizer_step"):
+                self.strategy.optimizer_step(self.critic_optim, self.critic, self.critic_scheduler, name="critic")
 
         # Status
         status = {
