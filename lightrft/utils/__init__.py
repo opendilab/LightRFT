@@ -5,6 +5,7 @@ This package contains various utility functions and classes used throughout the 
 """
 
 from .logging_utils import init_logger
+from .profile_recorder import StepProfileRecorder
 from .remote_rm_utils import remote_rm_fn
 from .trajectory_saver import TrajectorySaver, create_trajectory_saver
 from .distributed_sampler import DistributedSampler
@@ -21,6 +22,7 @@ from .timer import Timer
 __all__ = [
     # logging and trajectory
     "init_logger",
+    "StepProfileRecorder",
     "remote_rm_fn",
     'TrajectorySaver',
     'create_trajectory_saver',
