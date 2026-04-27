@@ -223,7 +223,6 @@ def prepare_ursa_runtime_for_inference_engines(strategy=None):
     pythonpath_parts = pythonpath.split(os.pathsep) if pythonpath else []
     if current_dir not in pythonpath_parts:
         os.environ["PYTHONPATH"] = os.pathsep.join([current_dir, *pythonpath_parts]) if pythonpath_parts else current_dir
-    os.environ["LIGHTRFT_REGISTER_URSA_AUTO_CLASSES"] = "1"
 
     from ursa_model import (
         UrsaConfig,

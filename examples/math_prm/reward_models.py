@@ -48,15 +48,12 @@ class MathPRMReward(nn.Module):
         "You need to check the correctness of each step.\nQuestion:"
     )
     _IMAGE_PAD = 575
+    # PS-GRPO step-score drop hyperparameters (URSA-MATH paper):
+    #   _DROP_THRESHOLD - relative drop fraction that counts as a "drop moment"
+    #   _DROP_GAMMA     - reward penalty when a drop moment is observed for a
+    #                     correct answer; final_reward = 1 - _DROP_GAMMA = 0.5
     _DROP_THRESHOLD = 0.3
     _DROP_GAMMA = 0.5
-    _REFERENCE_TYPE_TO_ID = {
-        "missing": 0.0,
-        "multiple_choice": 1.0,
-        "numeric": 2.0,
-        "formula": 3.0,
-        "text": 4.0,
-    }
 
     def __init__(self, base_model: nn.Module, processor, aggregation: str = "min") -> None:
         super().__init__()
@@ -364,7 +361,6 @@ class MathPRMReward(nn.Module):
 
         return {
             "outcome_correct": outcome_correct,
-            "accuracy_reward": outcome_correct,
             "max_relative_drop": max_relative_drop,
             "has_drop_moment": float(has_drop_moment),
             "final_reward": final_reward,
@@ -373,7 +369,6 @@ class MathPRMReward(nn.Module):
             "used_answer_fallback": float(answer_eval["used_answer_fallback"]),
             "reference_supported": float(answer_eval["reference_supported"]),
             "used_mathruler": float(answer_eval["comparison_method"] == "mathruler"),
-            "reference_type_id": cls._REFERENCE_TYPE_TO_ID[answer_eval["reference_type"]],
         }
 
     @torch.no_grad()
@@ -397,13 +392,40 @@ class MathPRMReward(nn.Module):
         return_dict = bool(kwargs.get("return_dict", False))
 
         batch_rewards = []
+        # Per-sample reward metrics emitted alongside the scalar reward.
+        # They are grouped into three buckets:
+        #
+        # 1. PRM step-score statistics (continuous, distribution shape):
+        #      model_reward     - aggregated step score (min/avg/last per agg setting)
+        #      step_score_min   - lowest step score in the response
+        #      step_score_mean  - mean step score
+        #      step_score_last  - score of the final step
+        #      step_count       - number of "Step N:" blocks scored
+        #
+        # 2. Outcome / correctness signals (mostly binary):
+        #      outcome_correct    - 1 if extracted answer matches ground truth, else 0
+        #      has_drop_moment    - 1 if any consecutive step pair dropped > _DROP_THRESHOLD
+        #      max_relative_drop  - magnitude of the largest relative drop
+        #      final_reward       - PS-GRPO reward {0, 1-_DROP_GAMMA, 1} fed into GRPO
+        #
+        # 3. Diagnostics on answer extraction / grading path (low-volume but useful
+        #    when debugging dataset / format / mathruler issues):
+        #      answer_tag_present       - 1 if the "†Answer:" marker appeared
+        #      answer_extraction_failed - 1 if no answer string could be extracted
+        #      used_answer_fallback     - 1 if the heuristic last-line fallback fired
+        #      reference_supported      - 1 if the ground-truth schema is recognized
+        #      used_mathruler           - 1 if mathruler grading was the deciding step
+        #
+        # NOTE: ``accuracy_reward`` used to live here, but for math_psgrpo it is
+        # exactly equal to ``outcome_correct`` (see _compute_psgrpo_metrics).
+        # It now lives only in reward_models_utils.mix_rewards where it is set
+        # by the rule branch for the math_rule / math_prm_combined recipes.
         batch_metrics: Dict[str, list[float]] = {
             "model_reward": [],
             "step_score_min": [],
             "step_score_mean": [],
             "step_score_last": [],
             "step_count": [],
-            "accuracy_reward": [],
             "outcome_correct": [],
             "max_relative_drop": [],
             "has_drop_moment": [],
@@ -413,7 +435,6 @@ class MathPRMReward(nn.Module):
             "used_answer_fallback": [],
             "reference_supported": [],
             "used_mathruler": [],
-            "reference_type_id": [],
         }
         image_inputs = raw_images or [None] * len(prompt_and_output)
         ref_inputs = references or [None] * len(prompt_and_output)
@@ -467,7 +488,6 @@ class MathPRMReward(nn.Module):
             batch_metrics["step_score_last"].append(float(step_scores[-1].item()) if step_scores.numel() else 0.0)
             batch_metrics["step_count"].append(float(step_scores.numel()))
             for key in (
-                "accuracy_reward",
                 "outcome_correct",
                 "max_relative_drop",
                 "has_drop_moment",
@@ -477,7 +497,6 @@ class MathPRMReward(nn.Module):
                 "used_answer_fallback",
                 "reference_supported",
                 "used_mathruler",
-                "reference_type_id",
             ):
                 batch_metrics[key].append(psgrpo_metrics[key] if label == "math_psgrpo" else 0.0)
 

@@ -1,283 +1,171 @@
-<div align="center">
+# Math PRM:基于 Process Reward Model 的 GRPO 训练
 
-# LightRFT 中的 Math PRM 训练
+本示例使用 GRPO 算法训练 [URSA-8B](https://huggingface.co/URSA-MATH/URSA-8B)(一个多模态数学 VLM),将 [URSA-8B-RM](https://huggingface.co/URSA-MATH/URSA-RM-8B)作为过程奖励模型(PRM),奖励信号采用 [URSA 论文(NeurIPS 2025)](https://arxiv.org/abs/2501.04686) 中提出的 **PS-GRPO** 形式。
 
-面向 URSA-MATH Stage 3 复现的 LightRFT 工作目录。
+与 `examples/gsm8k_geo3k/` 下的纯规则奖励示例不同,本目录的奖励来自一个对**每个推理步骤**打分的神经奖励模型,trajectory 级别的最终奖励由 step score 在整段回答里的演化方式决定,而不仅仅取决于最终答案是否正确。
 
-</div>
+## 概览
 
-## 范围说明
+| 项目 | Math PRM |
+|------|----------|
+| 任务 | 多模态数学推理(图文混合题) |
+| 模态 | Multi-modal(文本 + 图像) |
+| 策略模型 | URSA-8B(SAM-B + SigLIP-L 混合视觉塔 + Qwen2.5-Math-Instruct) |
+| 奖励模型 | URSA-8B-RM(过程奖励模型,逐步打分) |
+| 奖励公式 | PS-GRPO:`r ∈ {0, 0.5, 1}`(正确性 × 步骤稳定性) |
+| 算法 | GRPO(`group_norm` advantage estimator) |
+| Rollout 引擎 | 本地 HuggingFace(URSA 的 vLLM/SGLang 适配是后续工作) |
 
-这个目录已经不再是通用的多模态 reward 示例，而是只保留和 URSA-MATH Stage 3 迁移与复现仍然相关的内容。
-
-当前目标：
-
-- actor: `URSA-8B`
-- reward model: `URSA-RM-8B`
-- reward label: `math_prm`、`math_psgrpo`、`math_prm_combined`、`math_rule`
-- 训练主线：LightRFT PPO/GRPO + 本地 `hf` rollout
-- 原始数据：`MMathCoT-1M`
-
-## 运行时基线
-
-运行时基线由 `/data/LightRFT/Dockerfile` 冻结。
-
-- 不要把升级/降级依赖包当作日常调试手段。
-- 优先修代码、数据转换、prompt 格式、rollout 配置和 reward wiring。
-- `vllm` / `sglang` 对 URSA 的适配问题单独在迁移文档里记录；当前 Stage 3 主线是本地 `hf` rollout`。
-
-## 目录结构
+PS-GRPO 奖励在 `MathPRMReward`([reward_models.py](reward_models.py))中计算,公式与 URSA 论文一致:
 
 ```text
-examples/math_prm/
-├── README.md                    # 当前 URSA-MATH Stage 3 布局说明（英文）
-├── README_zh.md                 # 当前目录说明（中文）
-├── URSA_MIGRATION.md            # 来自原始 URSA-MATH repo 的迁移记录，属于临时文档
-├── train_colocate.py            # 主训练入口
-├── run_grpo_math_prm_ursa_8b.sh # 主 Stage 3 启动脚本
-├── ursa_actor.py                # URSA 专用 actor wrapper
-├── reward_models.py             # 仅保留 math-only 的 URSA-RM reward 实现
-├── reward_models_utils.py       # 仅保留 math-only 的 reward loader / recipe / reward_fn
-├── sitecustomize.py             # 当前示例栈的本地运行时兼容钩子
-├── tools/                       # 辅助脚本、回归测试、smoke/observation/profiling 工具
-│   ├── __init__.py
-│   ├── prepare_ursa_stage3_manifest.py
-│   ├── prepare_ursa_engine_checkpoint.py
-│   ├── prm_infer_score.py
-│   ├── check_phase2_alignment.py
-│   ├── check_hf_rollout.py
-│   ├── check_phase6_script_alignment.py
-│   ├── test_phase2_alignment.py
-│   ├── run_phase3_smoke.sh
-│   ├── run_phase7_observation.sh
-│   ├── analyze_phase7_observation.py
-│   └── probe_rollout_speed_candidates.py
-└── ursa_model/                  # 自包含的 URSA 模型代码
+r =  0                          if outcome_correct == 0
+r =  1                          if outcome_correct == 1 且 没有 step-score drop
+r =  0.5  ( = 1 - DROP_GAMMA)   if outcome_correct == 1 但出现了 step-score drop
 ```
 
-## 顶层文件职责
+**Step-score drop** 的判定:相邻两个 step 的 score 出现相对下降 ≥ `_DROP_THRESHOLD = 0.3` 时触发。
 
-### 核心训练主线
+---
 
-- `run_grpo_math_prm_ursa_8b.sh`
-  - 当前 Stage 3 复现的主启动脚本。
-  - 负责串 actor 路径、reward 路径、数据集路径、FSDP、rollout 参数和可选 W&B。
-- `train_colocate.py`
-  - 真实的 `torchrun` 入口。
-  - 构建 actor、reference model、reward model、dataset、trainer 和 rollout engine。
-- `ursa_actor.py`
-  - URSA 专用 actor wrapper。
-  - 让 LightRFT 按 `UrsaForConditionalGeneration` 加载 actor。
+## 1. 数据预处理
 
-### Reward 路径
-
-- `reward_models.py`
-  - 现在只保留 `MathPRMReward` 这一条活跃主线。
-  - 旧的 Qwen/SafeWork reward class 已经从这里清掉。
-- `reward_models_utils.py`
-  - 现在只保留 math-only 的 reward loader / recipe / reward 聚合逻辑。
-  - 负责 `math_prm`、`math_psgrpo`、`math_prm_combined`、`math_rule`。
-- `sitecustomize.py`
-  - 在冻结环境下维持这个示例栈可运行的本地兼容层。
-
-### 自包含 URSA runtime
-
-- `ursa_model/`
-  - 本地拷贝的 URSA config、processor、image processor、projector、vision tower 和模型定义。
-  - 这使得当前 Stage 3 主线不再需要直接从外部 URSA-MATH repo 动态导入运行时代码。
-
-## `tools/` 里放的是什么
-
-`tools/` 下的东西都不是主训练入口，而是辅助基础设施。
-
-### 数据和兼容性工具
-
-- `tools/prepare_ursa_stage3_manifest.py`
-  - 把原始 `MMathCoT-1M` Stage 3 jsonl 转成 LightRFT manifest。
-- `tools/prepare_ursa_engine_checkpoint.py`
-  - 给 `vllm` / `sglang` 兼容性实验生成 wrapper checkpoint。
-- `tools/prm_infer_score.py`
-  - 从 URSA-MATH 参考逻辑镜像过来的独立 PRM 辅助脚本。
-
-### 回归和验证工具
-
-- `tools/check_phase2_alignment.py`
-  - 检查 LightRFT scorer 是否和 URSA 参考路径对齐。
-- `tools/check_hf_rollout.py`
-  - 最小化本地 `hf` rollout 校验。
-- `tools/check_phase6_script_alignment.py`
-  - 当前主启动脚本默认配置的静态检查器。
-- `tools/test_phase2_alignment.py`
-  - 当前 URSA-MATH Stage 3 路径的回归测试。
-
-### Smoke / observation / profiling
-
-- `tools/run_phase3_smoke.sh`
-  - 早期阶段的限时 smoke 脚本。
-- `tools/run_phase7_observation.sh`
-  - bounded full-data observation 启动脚本。
-- `tools/analyze_phase7_observation.py`
-  - 离线分析 observation 日志和 trajectory。
-- `tools/probe_rollout_speed_candidates.py`
-  - 不改 `lightrft/` 主库代码时，用来对比 rollout-like decode 速度的最小探针。
-
-## 当前主入口
-
-如果你只关心当前 Stage 3 复现主线，通常只需要看这些文件：
-
-- `run_grpo_math_prm_ursa_8b.sh`
-- `train_colocate.py`
-- `reward_models.py`
-- `reward_models_utils.py`
-- `tools/prepare_ursa_stage3_manifest.py`
-- `tools/check_hf_rollout.py`
-- `tools/test_phase2_alignment.py`
-
-## 临时工作文档
-
-下面两类文档目前都只是为了支撑迁移/排障过程而保留，等整个工作闭环后应当删除：
-
-- `examples/math_prm/URSA_MIGRATION.md`
-  - 从原始 URSA-MATH repo 迁入 LightRFT 过程中的迁移说明。
-- `/data/LightRFT/plan/*`
-  - 迁移阶段产生的 phase 记录、失败分析、profiling 结论和工作笔记。
-
-这些内容不属于长期稳定训练接口。等迁移彻底完成、关键信息被吸收到正式文档或代码注释里之后，应当把它们清掉。
-
-## 本机资源路径
-
-当前机器上的资源布局：
+训练数据为 `MMathCoT-1M`(Stage 3 切片),需要先转换成 LightRFT 的 manifest 格式。
 
 ```bash
-URSA actor:      /home/ubuntu/URSA-MATH/checkpoints/URSA-8B
-URSA reward:     /home/ubuntu/URSA-MATH/checkpoints/URSA-RM-8B
-MMathCoT-1M raw: /home/ubuntu/URSA-MATH/datasets/URSA-MATH/MMathCoT-1M/train.jsonl
-Image root:      /home/ubuntu/URSA-MATH/datasets/URSA-MATH/images
+python examples/math_prm/tools/prepare_ursa_stage3_manifest.py \
+    --output-path /path/to/output/math_psgrpo.jsonl
 ```
 
-当前转换后的 manifest：
-
-```bash
-/data/LightRFT/tmp/ursa_stage3/mmathcot_stage3_math_psgrpo.jsonl
-```
-
-当前 manifest summary：
-
-```bash
-/data/LightRFT/tmp/ursa_stage3/mmathcot_stage3_math_psgrpo.summary.json
-```
-
-## 数据准备
-
-原始 Stage 3 数据不能直接喂给 `PromptDatasetVL`。
-
-原始 schema：
+转换后每行的 schema:
 
 ```json
 {
-  "image_url": "...",
-  "instruction": "...",
-  "output": "..."
-}
-```
-
-转换后的 LightRFT schema：
-
-```json
-{
-  "prompt": "...",
+  "prompt": "数学题文本",
   "images": ["/abs/path/to/image.png"],
-  "reference": "...",
+  "reference": "标准答案",
   "label": "math_psgrpo"
 }
 ```
 
-小规模 smoke 转换：
+`label` 决定走哪条奖励路径:
+
+| Label | 奖励信号 |
+|---|---|
+| `math_psgrpo` | PS-GRPO:`{0, 0.5, 1}`(本示例默认) |
+| `math_prm` | 纯 PRM 聚合 step score(连续值,`[0, 1]`) |
+| `math_prm_combined` | PRM 聚合分 + 0.5 × 规则正确性 |
+| `math_rule` | 纯规则基线 `{0, 1}`,只看答案是否对 |
+
+要做小规模 smoke 转换(32 条),传 `--max-samples 32`。
+
+---
+
+## 2. 模型 checkpoint
+
+需要同时准备 URSA-8B 策略模型和 URSA-8B-RM 奖励模型:
 
 ```bash
-python examples/math_prm/tools/prepare_ursa_stage3_manifest.py \
-  --max-samples 32 \
-  --output-path /data/LightRFT/tmp/ursa_stage3/smoke_manifest.jsonl \
-  --summary-path /data/LightRFT/tmp/ursa_stage3/smoke_manifest.summary.json
+# Hugging Face 模型 ID
+URSA-MATH/URSA-8B       # 策略模型
+URSA-MATH/URSA-RM-8B    # 奖励模型
 ```
 
-默认全量转换：
+下载到本地目录后,在 `run_grpo_math_prm_ursa_8b.sh` 里设置路径。
+
+---
+
+## 3. 配置并启动训练
+
+编辑 [run_grpo_math_prm_ursa_8b.sh](run_grpo_math_prm_ursa_8b.sh) 顶部的 `Part 1: User Configuration`:
 
 ```bash
-python examples/math_prm/tools/prepare_ursa_stage3_manifest.py
+PATH_TO_YOUR_BASE_MODEL="/path/to/URSA-8B"
+PATH_TO_URSA_RM="/path/to/URSA-RM-8B"
+PATH_TO_YOUR_MATH_DATASET="/path/to/math_psgrpo.jsonl"
+EXPERIMENT_NAME="lightrft-ursa8b-math-prm"
+export WANDB_API_KEY="YOUR_WANDB_API_KEY"   # 留空表示禁用 W&B
 ```
 
-## 训练
-
-当前机器上，`examples/math_prm/run_grpo_math_prm_ursa_8b.sh` 里的关键默认值应当是：
-
-```bash
-PATH_TO_YOUR_BASE_MODEL="/home/ubuntu/URSA-MATH/checkpoints/URSA-8B"
-PATH_TO_URSA_RM="/home/ubuntu/URSA-MATH/checkpoints/URSA-RM-8B"
-PATH_TO_YOUR_MATH_DATASET="/data/LightRFT/tmp/ursa_stage3/mmathcot_stage3_math_psgrpo.jsonl"
-EXPECTED_REWARD_LABEL="math_psgrpo"
-```
-
-启动训练：
+然后运行:
 
 ```bash
 bash examples/math_prm/run_grpo_math_prm_ursa_8b.sh
 ```
 
-当前 launcher 默认值已经尽量切到本地 `URSA-MATH` 仓库里明确写出的 Stage 3 配置：
+默认机器配置是 `1 node × 8 A100 GPU`。多机或不同 GPU 数,通过标准环境变量覆盖:
 
 ```bash
-EPISODE=10
-N_SAMPLES=8
-RBS=128
-TBS=128
-MICRO_TRAIN_BATCH_SIZE=4
-MICRO_ROLLOUT_BATCH_SIZE=4
-LR=1e-6
-KL=0.001
-PROMPT_MAX_LEN=1024
-GENERATE_MAX_LEN=3072
-MAX_SAMPLES=15360
+NNODES=2 GPUS_PER_NODE=8 NODE_RANK=0 \
+MASTER_ADDR=10.0.0.1 MASTER_PORT=20092 \
+bash examples/math_prm/run_grpo_math_prm_ursa_8b.sh
 ```
 
-说明：
+---
 
-- 论文里的 Stage 3 数据是先从 `20K` 候选做一次静态筛选后得到约 `15K+`。本地目前没有这份精确筛选子集，所以 launcher 继续读取转换后的全量 manifest，但默认用 `MAX_SAMPLES=15360` 近似这个训练规模。
-- 论文默认硬件规模是 `32 x H100`，当前机器默认仍然是 `1 节点 x 8 张 A100`。
+## 4. 关键超参
 
-## Reward Label 语义
+启动器默认值与 URSA-MATH 论文 Stage 3 一致:
 
-- `math_prm`
-  - 纯 PRM reward，直接使用 `min(step_scores)`。
-- `math_psgrpo`
-  - 在 `MathPRMReward` 内部计算的 PS-GRPO reward。
-- `math_prm_combined`
-  - PRM + 显式 rule baseline。
-- `math_rule`
-  - 纯 rule-only ablation。
+| 参数 | 默认值 | 说明 |
+|---|---|---|
+| `N_SAMPLES` | 8 | 每个 prompt 的 GRPO 采样数 |
+| `EPISODE` | 10 | 训练总轮数 |
+| `RBS` / `TBS` | 128 / 128 | rollout / 训练 batch size |
+| `KL` | 0.001 | 初始 KL 系数 |
+| `KL_TARGET` | (默认关) | 设了之后切换到 AdaptiveKLController |
+| `LR` | 1e-6 | actor 学习率 |
+| `PROMPT_MAX_LEN` | 1024 | |
+| `GENERATE_MAX_LEN` | 3072 | |
+| `MAX_SAMPLES` | 15360 | 训练子集上限(论文规模代理) |
+| `EVAL_HOLDOUT_SIZE` | 500 | 从 `prompt_data` 中确定性切出来的 in-domain 验证集大小 |
 
-## 常用排查命令
+如果观察到 KL 漂移,推荐打开自适应 KL 控制器:`KL_TARGET=0.5`(或更小)。
 
-- 重建 manifest：
+---
 
-```bash
-python examples/math_prm/tools/prepare_ursa_stage3_manifest.py
+## 5. WandB 指标
+
+WandB 面板分三个 namespace:
+
+- `rollout/*` — 每步 rollout 统计:`reward`、`outcome_correct`、`model_reward`、`has_drop_moment`、`response_length`。
+- `train/*` — 每步训练统计:`policy_loss`、`kl`、`actor_lr`、`advantages`、`return`。
+- `eval/*` — 验证集评测:`reward`、`outcome_correct`、`response_length`、`answer_extraction_failed`。
+
+`MathPRMReward` 输出的全套 per-sample 奖励 metric,见 [reward_models.py](reward_models.py) 中 `forward()` 顶部的注释。
+
+---
+
+## 6. 目录文件说明
+
+```text
+examples/math_prm/
+├── README.md / README_zh.md      - 本指南
+├── train_colocate.py             - torchrun 入口
+├── run_grpo_math_prm_ursa_8b.sh  - 启动脚本
+├── reward_models.py              - MathPRMReward 实现(PS-GRPO)
+├── reward_models_utils.py        - 按 label 选择奖励配方的逻辑
+├── ursa_actor.py                 - URSA 专用 actor wrapper
+├── math_prm_trainer.py           - MathPRMSPMDPPOTrainerVL(精简的 wandb 指标映射)
+├── math_prm_output.py            - "†Answer:" marker / 结构化停止辅助函数
+├── rollout_eos_patch.py          - 在 FSDP 下注入 StoppingCriteria 保证可靠 EOS
+├── ursa_model/                   - URSA 模型代码(config / processor / model)
+└── tools/
+    ├── prepare_ursa_stage3_manifest.py     - 数据集转换脚本
+    └── prepare_ursa_engine_checkpoint.py   - engine 模式 checkpoint 包装工具
 ```
 
-- 校验本地 `hf` rollout：
+---
 
-```bash
-python examples/math_prm/tools/check_hf_rollout.py
-```
+## 7. 引用
 
-- 跑回归测试：
+如果使用了本示例,请引用 URSA 论文:
 
-```bash
-python -m unittest -q examples.math_prm.tools.test_phase2_alignment
-```
-
-- 跑 Phase 3 smoke：
-
-```bash
-bash examples/math_prm/tools/run_phase3_smoke.sh
+```bibtex
+@article{luo2025ursa,
+  title={URSA: Understanding and Verifying Chain-of-Thought Reasoning in Multimodal Mathematics},
+  author={Luo, Ruilin and Zheng, Zhuofan and Wang, Yifan and Yu, Yiyao and Ni, Xinzhe and Lin, Zicheng and Zeng, Jin and Yang, Yujiu},
+  journal={NeurIPS},
+  year={2025}
+}
 ```
