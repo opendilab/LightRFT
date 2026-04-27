@@ -85,6 +85,7 @@ For detailed algorithm descriptions, implementation details, and usage guide, se
 | **REINFORCE++** | Advantage Estimation | Improved baseline estimation | [arXiv:2501.03262](https://arxiv.org/abs/2501.03262) |
 | **CPGD** | Advantage Estimation | KL-based drift constraint | [arXiv:2505.12504](https://arxiv.org/abs/2505.12504) |
 | **FIRE Sampling** | Sampling Strategy | High-temperature first token sampling for improved diversity | [arXiv:2410.21236](https://arxiv.org/abs/2410.21236) |
+| **OPD** | Knowledge Distillation | On-policy teacher-student token-level distillation | [Blog](https://thinkingmachines.ai/blog/on-policy-distillation/) |
 
 ---
 
@@ -141,14 +142,14 @@ If you need to customize the environment or build from a specific branch, you ca
 
 #### Standard Installation
 
-LightRFT uses **SGLang** as the default inference backend with **Flash-Attention** for optimized performance.
+LightRFT installs **SGLang** by default, so the GSM8K/Geo3K demos can run out of the box with the default backend.
 
 ```bash
 # Clone the repository
 git clone https://github.com/opendilab/LightRFT.git
 cd LightRFT
 
-# Install LightRFT with all core dependencies
+# Install LightRFT with the default SGLang backend
 pip install -e .
 ```
 
@@ -156,14 +157,18 @@ pip install -e .
 
 #### Optional: Install vLLM Backend
 
-If you want to use vLLM instead of (or alongside) SGLang:
+If you want to run the same demos with vLLM instead of the default SGLang backend:
 
 ```bash
-# Install vLLM backend
-pip install ".[vllm]"
+# Install vLLM backend on top of the default installation
+pip install -e ".[vllm]"
+```
 
-# Or install vLLM directly
-pip install vllm>=0.13.3
+You can also install vLLM directly:
+
+```bash
+# Install vLLM directly
+pip install "vllm>=0.18.1"
 ```
 
 #### Troubleshooting Flash-Attention Installation
@@ -192,12 +197,17 @@ docker pull opendilab/lightrft:v0.1.0
 # Single node, 8 GPU training example
 cd LightRFT
 
-# Run GRPO training (GSM8K math reasoning task)
-bash examples/gsm8k_geo3k/run_grpo_gsm8k_qwen2.5_0.5b.sh
+# Run GRPO training (GSM8K math reasoning task) with SGLang
+ENGINE_TYPE=sglang bash examples/gsm8k_geo3k/run_grpo_gsm8k_qwen2.5_0.5b.sh
 
-# Or run Geo3K geometry problem training (VLM multimodal)
-bash examples/gsm8k_geo3k/run_grpo_geo3k_qwen2.5_vl_7b.sh
+# Or switch the same demo to vLLM
+ENGINE_TYPE=vllm bash examples/gsm8k_geo3k/run_grpo_gsm8k_qwen2.5_0.5b.sh
+
+# Geo3K geometry problem training (VLM multimodal)
+ENGINE_TYPE=sglang bash examples/gsm8k_geo3k/run_grpo_geo3k_qwen2.5_vl_7b.sh
 ```
+
+For a complete walkthrough including dataset preprocessing, hyperparameter tuning, reward mechanism details, and W&B monitoring, see the [GRPO Training Tutorial (GSM8K & Geo3K)](docs/source/quick_start/grpo_gsm8k_geo3k_tutorial.md).
 
 ---
 
@@ -207,6 +217,10 @@ bash examples/gsm8k_geo3k/run_grpo_geo3k_qwen2.5_vl_7b.sh
 LightRFT/
 ├── lightrft/                      # Core library
 │   ├── strategy/                  # Training & inference strategies
+│   │   ├── config.py              # Strategy configuration
+│   │   ├── strategy_base.py       # Strategy base class
+│   │   ├── strategy.py            # Strategy implementation
+│   │   ├── fake_strategy.py       # Fake strategy for testing
 │   │   ├── fsdp/                  # FSDP implementation
 │   │   ├── deepspeed/             # DeepSpeed implementation
 │   │   ├── vllm_utils/            # vLLM utilities
@@ -215,7 +229,10 @@ LightRFT/
 │   ├── models/                    # Model definitions
 │   │   ├── actor_al.py            # Audio-language model actor
 │   │   ├── actor_language.py      # Language model actor
+│   │   ├── actor_modality.py      # Modality-agnostic model actor
 │   │   ├── actor_vl.py            # Vision-language model actor
+│   │   ├── critic_language.py     # Language model critic
+│   │   ├── critic_vl.py           # Vision-language model critic
 │   │   ├── grm_vl.py              # Generative reward model (Vision-Language)
 │   │   ├── srm_al.py              # Scalar reward model (Audio-Language)
 │   │   ├── srm_vl.py              # Scalar reward model (Vision-Language)
@@ -233,6 +250,7 @@ LightRFT/
 │   │   ├── fast_exp_maker.py      # Fast experience generator (**Core**)
 │   │   ├── experience_maker.py    # Base experience generator
 │   │   ├── experience_maker_vl.py # Base experience generator for VLM
+│   │   ├── advantage_calculator.py # Advantage calculation utilities
 │   │   ├── replay_buffer.py       # Replay buffer
 │   │   ├── replay_buffer_vl.py    # VLM replay buffer
 │   │   ├── replay_buffer_utils.py # Replay buffer utilities
@@ -247,6 +265,7 @@ LightRFT/
 │   │   ├── hpdv3.py               # Data Handler for HPDv3 reward model dataset
 │   │   ├── image_reward_db.py     # Data Handler for ImageRewardDB dataset
 │   │   ├── imagegen_cot_reward.py # Data Handler for ImageGen-CoT-Reward dataset
+│   │   ├── math_reasoning_benchmarks.py # Math reasoning benchmark datasets
 │   │   ├── omnirewardbench.py     # Data Handler for OmniRewardBench dataset
 │   │   ├── process_reward_dataset.py # Reward dataset processing
 │   │   ├── prompts_dataset.py     # LLM Prompts dataset
@@ -275,9 +294,17 @@ LightRFT/
 │   ├── grm_training/              # Generative reward model training examples
 │   ├── grm_vl_rl/                 # Reinforcement fine-tuning for generative reward model training examples
 │   ├── srm_training/              # Scalar reward model training examples
-│   ├── chat/                      # Model dialogue examples
+│   ├── r1_aqa/                    # Audio question answering (R1-AQA) training examples
+│   ├── math_benchmarks/           # Math reasoning benchmark evaluation tools
+│   ├── entropy_viz/               # Entropy visualization tools
+│   ├── on_policy_distillation/    # On-policy distillation examples
+│   └── chat/                      # Model dialogue examples
 │
-├── docs/                          # 📚 Sphinx documentation
+├── tools/                         # Project tools & scripts
+│   ├── docker_volumes.py          # Docker volume management
+│   └── show_version.py            # Version display utility
+│
+├── docs/                          # Sphinx documentation
 │   ├── Makefile                   # Documentation build Makefile
 │   ├── make.bat                   # Documentation build batch file
 │   └── source/                    # Documentation source
@@ -290,15 +317,20 @@ LightRFT/
 ├── assets/                        # Assets
 │   └── logo.png                   # Project logo
 │
-├── CHANGELOG.md                   # Changelog
-├── LICENSE                        # License file
+├── .github/                       # GitHub configuration (CI/CD, etc.)
+├── Dockerfile                     # Docker build file
 ├── Makefile                       # Project Makefile
-├── README.md                      # Project documentation (English)
-├── README_zh.md                   # Project documentation (Chinese)
+├── MANIFEST.in                    # Package manifest
+├── pyproject.toml                 # Python project configuration
+├── setup.py                       # Package setup script
+├── .style.yapf                    # YAPF code style configuration
 ├── requirements.txt               # Python dependencies
 ├── requirements-dev.txt           # Development dependencies
 ├── requirements-doc.txt           # Documentation dependencies
-└── setup.py                       # Package setup script
+├── CHANGELOG.md                   # Changelog
+├── LICENSE                        # License file
+├── README.md                      # Project documentation (English)
+└── README_zh.md                   # Project documentation (Chinese)
 ```
 
 ### 🔑 Key Directory Descriptions
@@ -309,7 +341,12 @@ LightRFT/
   - `grm_training/`: Generative reward model training examples
   - `grm_vl_rl/`: Reinforcement fine-tuning generative reward model training examples
   - `srm_training/`: Scalar reward model training examples
+  - `r1_aqa/`: Audio question answering (R1-AQA) training examples
+  - `math_benchmarks/`: Math reasoning benchmark evaluation tools
+  - `entropy_viz/`: Entropy visualization tools
+  - `on_policy_distillation/`: On-policy distillation examples
   - `chat/`: Model dialogue examples
+- **`tools/`**: Project tools and scripts (version display, Docker volume management)
 - **`docs/`**: Sphinx documentation with complete user guides and API documentation
 
 ---
@@ -464,8 +501,8 @@ If you use this codebase in your research or applications, please cite it as fol
 
 ```bibtex
 @misc{lightrft,
-  title={LightRFT},
-  author={Niu, Yazhe and Pu, Yuan and Shi, Dongxing and Lu, Yudong and Xiong, Yingtong and Ge, Ruijun and Sun, Jiaxuan and Wan, Zunian and Zhang, Shaoang and others},
+  title={LightRFT: Light, Efficient, Omni-modal & Reward-model Driven Reinforcement Fine-Tuning Framework},
+  author={Niu, Yazhe and Pu, Yuan and Shi, Dongxing and Lu, Yudong and Xiong, Yingtong and Ge, Ruijun and Sun, Jiaxuan and Wan, Zunian and Zhang, Shaoang},
   publisher={GitHub},
   howpublished={\url{https://github.com/opendilab/LightRFT}},
   year={2025},

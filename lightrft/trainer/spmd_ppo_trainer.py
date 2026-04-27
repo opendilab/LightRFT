@@ -293,6 +293,7 @@ class SPMDPPOTrainerBase:
                 all_returns = []
                 all_response_lengths = []
                 all_total_lengths = []
+                all_opd_reverse_kl = []
 
                 for item in self.replay_buffer.items:
                     if hasattr(item, 'info') and item.info is not None and 'reward' in item.info:
@@ -310,6 +311,8 @@ class SPMDPPOTrainerBase:
                         all_response_lengths.append(item.info['response_length'])
                     if hasattr(item, 'info') and item.info is not None and 'total_length' in item.info:
                         all_total_lengths.append(item.info['total_length'])
+                    if hasattr(item, 'info') and item.info is not None and 'opd_reverse_kl' in item.info:
+                        all_opd_reverse_kl.append(item.info['opd_reverse_kl'])
 
                 if all_rewards:
                     if isinstance(all_rewards[0], torch.Tensor):
@@ -370,6 +373,19 @@ class SPMDPPOTrainerBase:
                         total_lengths_tensor = torch.tensor(all_total_lengths, dtype=torch.float32, device=device)
                     status_mean["total_length_mean"] = total_lengths_tensor.float().mean().item()
                     status_mean["total_length_std"] = total_lengths_tensor.float().std().item()
+
+                if all_opd_reverse_kl:
+                    if isinstance(all_opd_reverse_kl[0], torch.Tensor):
+                        opd_kl_tensor = torch.cat([t.to(device).float() for t in all_opd_reverse_kl])
+                    else:
+                        opd_kl_tensor = torch.tensor(all_opd_reverse_kl, dtype=torch.float32, device=device)
+                    non_zero_mask = opd_kl_tensor != 0
+                    if non_zero_mask.any():
+                        masked_kl = opd_kl_tensor[non_zero_mask]
+                        status_mean["opd_reverse_kl_mean"] = masked_kl.mean().item()
+                        status_mean["opd_reverse_kl_std"] = masked_kl.std().item()
+                        status_mean["opd_reverse_kl_max"] = masked_kl.max().item()
+                        status_mean["opd_reverse_kl_min"] = masked_kl.min().item()
 
                 if self.print_replay_buffer_stats and self.strategy.is_rank_0():
                     self.strategy.print("\n" + "=" * 60)

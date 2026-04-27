@@ -62,8 +62,8 @@ def get_vllm_engine_for_rollout(args: Any):
         raise ImportError(
             "vLLM is not installed but engine_type is set to 'vllm'. "
             "To use vLLM backend, install it with: pip install 'LightRFT[vllm]' "
-            "or pip install vllm>=0.13.3. "
-            "Alternatively, use engine_type='sglang' (default) which doesn't require vLLM."
+            "or pip install 'vllm>=0.18.1'. "
+            "Alternatively, use engine_type='sglang' with: pip install 'LightRFT[sglang]'."
         ) from e
 
     kwargs = {}
@@ -148,8 +148,8 @@ def get_vllm_engine(
         raise ImportError(
             "vLLM is not installed but engine_type is set to 'vllm'. "
             "To use vLLM backend, install it with: pip install 'LightRFT[vllm]' "
-            "or pip install vllm>=0.13.3. "
-            "Alternatively, use engine_type='sglang' (default) which doesn't require vLLM."
+            "or pip install 'vllm>=0.18.1'. "
+            "Alternatively, use engine_type='sglang' with: pip install 'LightRFT[sglang]'."
         ) from e
 
     vllm_engine = LLM(

@@ -58,6 +58,11 @@ from .utils import RunningMoments, compute_clip_fraction, get_cpgd_advantages_re
 from .advantage_calculator import get_advantage_calculator, normalize_advantages_cross_batch
 from .image_utils import normalize_images, get_images_num
 from .video_utils import normalize_videos, get_videos_num
+from lightrft.trainer.opd_utils import (
+    get_teacher_logprobs_for_experiences,
+    get_teacher_logprobs_by_ids,
+)
+import asyncio
 
 # ============================================================================
 # Data Structures
@@ -1109,6 +1114,9 @@ class FastExperienceMaker(NaiveExperienceMaker):
 
                 self._process_multi_image_video_thws(experiences, expanded_images_num, expanded_videos_num)
 
+            if config.advantage_estimator == "on_policy_distillation":
+                self._fetch_teacher_logprobs(experiences)
+
             with self.profiler.section("collect/advantages"):
                 experiences = self._compute_advantages_and_returns(experiences, rewards, generate_kwargs)
 
@@ -1475,6 +1483,77 @@ class FastExperienceMaker(NaiveExperienceMaker):
                     experience.video_grid_thws = video_grid_thw_list
                 else:
                     experience.video_grid_thws = [None] * len(micro_videos_num)
+
+    def _fetch_teacher_logprobs(
+        self,
+        experiences: List[ExperienceVL],
+    ) -> None:
+        """
+        Fetch teacher log probabilities for on-policy distillation.
+
+        Uses input_ids (not text) to query teacher model, ensuring token-level
+        alignment between teacher and student log probabilities.
+
+        Teacher log probs are aligned to the same shape as action_log_probs
+        [batch_size, seq_len], with zeros for prompt positions.
+
+        :param experiences: List of experiences to add teacher log probs to
+        :type experiences: List[Union[Experience, ExperienceVL]]
+        """
+
+        teacher_url = self.teacher_model_url
+        if isinstance(teacher_url, list):
+            teacher_url = teacher_url[0] if teacher_url else None
+        if teacher_url is None:
+            raise ValueError(
+                "Teacher model URL not specified. "
+                "Please set --teacher_model_url to the teacher model server URL."
+            )
+
+        Timer.start('  fetch_teacher_logprobs')
+
+        for exp in experiences:
+            sequences = exp.sequences
+            attention_mask = exp.attention_mask
+            action_mask = exp.action_mask
+
+            response_lengths = action_mask.sum(dim=-1).int().tolist()
+            num_tokens = action_mask.shape[1]
+
+            input_ids_list = []
+            for j in range(sequences.shape[0]):
+                valid_len = int(attention_mask[j].sum().item())
+                input_ids_list.append(sequences[j, :valid_len].cpu().tolist())
+
+            try:
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+                try:
+                    teacher_lp_list = loop.run_until_complete(
+                        get_teacher_logprobs_by_ids(
+                            url=teacher_url,
+                            input_ids_list=input_ids_list,
+                            response_lengths=response_lengths,
+                        )
+                    )
+                finally:
+                    loop.close()
+
+                batch_size = sequences.shape[0]
+                aligned_teacher_lp = torch.zeros(batch_size, num_tokens, dtype=torch.float32)
+                for i, (tlp, resp_len) in enumerate(zip(teacher_lp_list, response_lengths)):
+                    if resp_len == 0:
+                        continue
+                    valid_indices = torch.where(action_mask[i] == 1)[0]
+                    actual_len = min(len(tlp), len(valid_indices))
+                    aligned_teacher_lp[i, valid_indices[:actual_len]] = tlp[:actual_len]
+
+                exp.info["teacher_log_probs"] = aligned_teacher_lp
+
+            except Exception as e:
+                raise RuntimeError(f"Failed to fetch teacher log probs from {teacher_url}: {e}") from e
+
+        Timer.stop('  fetch_teacher_logprobs')
 
     def _process_experiences(
         self,

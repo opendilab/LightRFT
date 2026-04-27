@@ -27,6 +27,7 @@ from copy import deepcopy
 from typing import Dict, List, Optional, Tuple, Union
 
 import torch
+import torch.distributed as dist
 import warnings
 
 from .utils import RunningMoments, compute_clip_fraction
@@ -717,6 +718,91 @@ class GroupNormCalculator(BaseREINFORCECalculator):
         return advantages, returns, info_dict
 
 
+def _apply_opd_kl_penalty(
+    student_log_probs: torch.Tensor,
+    teacher_log_probs: torch.Tensor,
+    action_mask: Optional[torch.Tensor],
+    opd_kl_coef: float,
+) -> Tuple[torch.Tensor, Dict]:
+    """
+    Compute OPD reverse KL penalty: -opd_kl_coef * (student_logp - teacher_logp).
+
+    Shared helper for both pure and hybrid OPD modes.
+
+    :return: Tuple of (opd_advantages, info_dict with opd_reverse_kl metric)
+    """
+    reverse_kl = student_log_probs - teacher_log_probs
+
+    # Clamp per-token reverse KL to prevent extreme values from teacher-student
+    # capability gap (e.g. 7B teacher vs 0.5B student)
+    reverse_kl = torch.clamp(reverse_kl, min=-20.0, max=20.0)
+
+    opd_adv = -opd_kl_coef * reverse_kl
+
+    # Rely solely on action_mask for padding filtering.
+    # Previous code also masked teacher_log_probs == 0.0, but log_prob=0 is a
+    # legitimate value (P=1). With the padding-strip fix in _fetch_teacher_logprobs,
+    # teacher logprobs are now correctly aligned and action_mask is sufficient.
+    if action_mask is not None:
+        opd_adv *= action_mask
+
+    info_dict = {}
+    if action_mask is not None:
+        masked_rkl = reverse_kl * action_mask
+        info_dict["opd_reverse_kl"] = masked_rkl.sum(-1) / action_mask.sum(-1).clamp(min=1)
+
+    return opd_adv, info_dict
+
+
+class OnPolicyDistillationCalculator(AdvantageCalculator):
+    """
+    On-Policy Distillation calculator.
+
+    When USE_TASK_REWARD=true: advantages = GRPO_base(task_rewards) + OPD_KL_penalty
+    When USE_TASK_REWARD=false: task rewards are all zeros, so advantages = OPD_KL_penalty only
+
+    This unified calculator handles both cases automatically.
+    Whitening is done cross-batch in normalize_advantages_cross_batch.
+
+    Use --advantage_estimator on_policy_distillation
+    """
+    def __init__(self, config):
+        super().__init__(config)
+        self.opd_kl_coef = getattr(config, 'opd_kl_coef', 1.0)
+        self.base_calculator = GroupNormCalculator(config)
+
+    def preprocess_rewards(self, rewards, experiences, max_new_tokens):
+        """Delegate to GRPO for task reward normalization."""
+        return self.base_calculator.preprocess_rewards(rewards, experiences, max_new_tokens)
+
+    def compute(self, experience, final_reward, gamma, generate_kwargs):
+        """advantages = GRPO_base + OPD_KL_penalty."""
+        # Step 1: GRPO base advantages from task rewards (zeros if no_task_reward)
+        base_advantages, returns, info_dict = self.base_calculator.compute(
+            experience, final_reward, gamma, generate_kwargs
+        )
+
+        # Step 2: OPD KL penalty
+        if "teacher_log_probs" not in experience.info:
+            raise ValueError("teacher_log_probs not found in experience.info.")
+
+        teacher_lp = experience.info["teacher_log_probs"].to(base_advantages.device)
+        student_lp = experience.action_log_probs
+
+        opd_adv, opd_info = _apply_opd_kl_penalty(student_lp, teacher_lp, experience.action_mask, self.opd_kl_coef)
+        info_dict.update(opd_info)
+
+        # Step 3: Combine
+        advantages = base_advantages + opd_adv
+
+        if self.config.advantage_clip > 0:
+            clip_val = self.config.advantage_clip
+            info_dict["advantage_clip_frac"] = compute_clip_fraction(advantages, clip_val, -clip_val)
+            advantages = torch.clamp(advantages, -clip_val, clip_val)
+
+        return advantages, returns, info_dict
+
+
 # ============================================================================
 # Factory Function
 # ============================================================================
@@ -726,9 +812,10 @@ def get_advantage_calculator(estimator_name: str, config) -> AdvantageCalculator
     """
     Factory function to create an advantage calculator instance.
 
-    :param estimator_name: Name of the advantage estimation method
+    :param estimator_name: Name of the advantage estimation method.
                           Options: "gae", "cpgd", "reinforce", "rloo",
-                                   "reinforce_baseline", "group_norm", "grpo"
+                                   "reinforce_baseline", "group_norm", "grpo",
+                                   "on_policy_distillation"
     :type estimator_name: str
     :param config: Configuration object containing training parameters
     :type config: object
@@ -744,6 +831,7 @@ def get_advantage_calculator(estimator_name: str, config) -> AdvantageCalculator
         "reinforce_baseline": REINFORCEBaselineCalculator,
         "cpgd": CPGDCalculator,
         "grpo": GroupNormCalculator,  # Alias for group_norm
+        "on_policy_distillation": OnPolicyDistillationCalculator,
     }
 
     calculator_class = calculator_map.get(estimator_name)
@@ -764,11 +852,10 @@ def get_advantage_calculator(estimator_name: str, config) -> AdvantageCalculator
 @torch.no_grad()
 def normalize_advantages_cross_batch(experiences: List, advantage_estimator: str, args) -> List:
     """
-    Apply cross-batch advantage normalization for GAE, REINFORCE, and REINFORCE-baseline.
+    Apply cross-batch advantage normalization across all data-parallel ranks.
 
-    This method normalizes advantages across all experiences in a batch using their action masks.
-    Reference: https://github.com/OpenRLHF/OpenRLHF/blob/main/openrlhf/trainer/ppo_utils/
-    experience_maker.py#L794-L816
+    Matches Slime's distributed_masked_whiten: computes global mean/variance
+    via all_reduce across all ranks, then whitens locally.
 
     :param experiences: List of Experience objects.
     :type experiences: List
@@ -779,7 +866,12 @@ def normalize_advantages_cross_batch(experiences: List, advantage_estimator: str
     :return: List of Experience objects with normalized advantages.
     :rtype: List
     """
-    if advantage_estimator not in ["gae", "reinforce", "reinforce_baseline"]:
+    if advantage_estimator not in [
+        "gae",
+        "reinforce",
+        "reinforce_baseline",
+        "on_policy_distillation",
+    ]:
         return experiences
 
     # Collect all advantages and action masks
@@ -790,22 +882,41 @@ def normalize_advantages_cross_batch(experiences: List, advantage_estimator: str
         all_action_masks.append(exp.action_mask.flatten())
 
     # Concatenate into vectors
-    advantages_vector = torch.cat(all_advantages, dim=0).float()
-    action_masks_vector = torch.cat(all_action_masks, dim=0)
-    num_actions = action_masks_vector.sum()
+    advantages = torch.cat(all_advantages, dim=0).float()
+    action_masks = torch.cat(all_action_masks, dim=0).float()
 
-    # Compute mean
-    mean = (advantages_vector * action_masks_vector).sum() / num_actions
+    # Compute local intermediate statistics
+    local_sum = (advantages * action_masks).sum()
+    local_sum_sq = ((advantages ** 2) * action_masks).sum()
+    local_count = action_masks.sum()
+
+    # Aggregate across all data-parallel ranks via all_reduce
+    # (matching Slime's distributed_masked_whiten)
+    stats = torch.stack([local_sum, local_sum_sq, local_count]).to(device=advantages.device, dtype=torch.float32)
+    if dist.is_initialized():
+        dist.all_reduce(stats, op=dist.ReduceOp.SUM)
+
+    global_sum, global_sum_sq, global_count = stats
+
+    if global_count.item() == 0:
+        return experiences
+
+    global_mean = global_sum / global_count
+    global_var = global_sum_sq / global_count - global_mean ** 2
+
+    # Bessel's correction for unbiased variance estimate (matching Slime)
+    if global_count.item() >= 2:
+        bessel_correction = global_count / (global_count - 1)
+        global_var = global_var * bessel_correction
 
     # Compute std (if not disabled)
     if not getattr(args, "no_advantage_std_norm", False):
-        var = ((advantages_vector - mean).pow(2) * action_masks_vector).sum() / num_actions
-        rstd = var.clamp(min=1e-8).rsqrt()
+        rstd = global_var.clamp(min=1e-8).rsqrt()
     else:
         rstd = 1
 
     # Apply normalization to each experience
     for exp in experiences:
-        exp.advantages = (exp.advantages - mean) * rstd
+        exp.advantages = (exp.advantages - global_mean) * rstd
 
     return experiences

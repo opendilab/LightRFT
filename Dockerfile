@@ -34,7 +34,7 @@ RUN pip install --no-cache-dir ninja
 RUN pip install deepspeed==0.18.3 --no-binary deepspeed --no-cache-dir --force-reinstall
 
 # Install vLLM - CRITICAL: Order sensitive
-RUN pip install vllm==0.13.0 --no-cache-dir --force-reinstall
+RUN pip install vllm==0.18.1 --no-cache-dir --force-reinstall
 
 # Copy application code
 COPY . .
@@ -63,4 +63,3 @@ RUN pip install --no-cache-dir sglang==0.5.6.post2
 
 # Default command
 CMD ["/bin/bash"]
-

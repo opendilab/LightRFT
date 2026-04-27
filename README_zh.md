@@ -85,6 +85,7 @@
 | **DAPO** | Policy Optimization | 解耦剪裁和动态采样策略优化 | [arXiv:2503.14476](https://arxiv.org/abs/2503.14476) |
 | **CPGD** | Advantage Estimation | KL漂移约束 | [arXiv:2505.12504](https://arxiv.org/abs/2505.12504) |
 | **FIRE Sampling** | Sampling Strategy | 高温度首token采样提升多样性 | [arXiv:2410.21236](https://arxiv.org/abs/2410.21236) |
+| **OPD** | Knowledge Distillation | 在线策略教师-学生 token 级蒸馏 | [Blog](https://thinkingmachines.ai/blog/on-policy-distillation/) |
 
 ---
 
@@ -141,14 +142,14 @@ docker run --gpus all -it --rm \
 
 #### 标准安装
 
-LightRFT 默认使用 **SGLang** 作为推理后端，并包含 **Flash-Attention** 以优化性能。
+LightRFT 默认安装 **SGLang**，因此 GSM8K/Geo3K demo 在默认后端下开箱即可运行。
 
 ```bash
 # 克隆仓库
 git clone https://github.com/opendilab/LightRFT.git
 cd LightRFT
 
-# 安装 LightRFT 及所有核心依赖
+# 安装 LightRFT，并默认带上 SGLang 后端
 pip install -e .
 ```
 
@@ -156,14 +157,18 @@ pip install -e .
 
 #### 可选：安装 vLLM 后端
 
-如果您想使用 vLLM 替代（或配合）SGLang：
+如果您想把同一套 demo 切换到 vLLM，而不是默认的 SGLang：
 
 ```bash
-# 安装 vLLM 后端
-pip install ".[vllm]"
+# 在默认安装基础上额外安装 vLLM 后端（当前适配并测试到 vLLM 0.18.1）
+pip install -e ".[vllm]"
+```
 
-# 或直接安装 vLLM
-pip install vllm>=0.13.3
+也可以直接安装 vLLM：
+
+```bash
+# 直接安装 vLLM
+pip install "vllm>=0.18.1"
 ```
 
 #### Flash-Attention 安装问题排查
@@ -194,12 +199,17 @@ docker pull opendilab/lightrft:v0.1.0
 # 单节点 8 GPU 训练示例
 cd LightRFT
 
-# 运行 GRPO 训练 (GSM8K 数学推理任务)
-bash examples/gsm8k_geo3k/run_grpo_gsm8k_qwen2.5_0.5b.sh
+# 用 SGLang 跑 GSM8K GRPO 训练
+ENGINE_TYPE=sglang bash examples/gsm8k_geo3k/run_grpo_gsm8k_qwen2.5_0.5b.sh
 
-# 或者运行 Geo3K 几何问题训练 (VLM 多模态)
-bash examples/gsm8k_geo3k/run_grpo_geo3k_qwen2.5_vl_7b.sh
+# 同一个 demo 切换到 vLLM
+ENGINE_TYPE=vllm bash examples/gsm8k_geo3k/run_grpo_gsm8k_qwen2.5_0.5b.sh
+
+# 运行 Geo3K 几何问题训练 (VLM 多模态)
+ENGINE_TYPE=sglang bash examples/gsm8k_geo3k/run_grpo_geo3k_qwen2.5_vl_7b.sh
 ```
+
+完整的使用教程（包括数据集预处理、超参数调优、奖励机制详解和 W&B 监控）请参阅 [GRPO 训练教程（GSM8K 与 Geo3K）](docs/source/quick_start/grpo_gsm8k_geo3k_tutorial_zh.md)。
 
 ---
 
@@ -209,6 +219,10 @@ bash examples/gsm8k_geo3k/run_grpo_geo3k_qwen2.5_vl_7b.sh
 LightRFT/
 ├── lightrft/                         # 核心库
 │   ├── strategy/                     # 训练&推理策略
+│   │   ├── config.py                 # 策略配置
+│   │   ├── strategy_base.py          # 策略基类
+│   │   ├── strategy.py               # 策略实现
+│   │   ├── fake_strategy.py          # 测试用假策略
 │   │   ├── fsdp/                     # FSDP 实现
 │   │   ├── deepspeed/                # DeepSpeed 实现
 │   │   ├── vllm_utils/               # vLLM 工具
@@ -217,7 +231,10 @@ LightRFT/
 │   ├── models/                       # 模型定义
 │   │   ├── actor_al.py               # 音频-语言模型 Actor
 │   │   ├── actor_language.py         # 语言模型 Actor
+│   │   ├── actor_modality.py         # 模态无关模型 Actor
 │   │   ├── actor_vl.py               # 视觉-语言模型 Actor
+│   │   ├── critic_language.py        # 语言模型 Critic
+│   │   ├── critic_vl.py              # 视觉-语言模型 Critic
 │   │   ├── grm_vl.py                 # 生成式奖励模型（视觉-语言）
 │   │   ├── srm_al.py                 # 标量奖励模型（音频-语言）
 │   │   ├── srm_vl.py                 # 标量奖励模型（视觉-语言）
@@ -235,6 +252,7 @@ LightRFT/
 │   │   ├── fast_exp_maker.py         # 快速经验生成器（**核心**）
 │   │   ├── experience_maker.py       # 基础经验生成器
 │   │   ├── experience_maker_vl.py    # VLM 基础经验生成器
+│   │   ├── advantage_calculator.py   # 优势计算工具
 │   │   ├── replay_buffer.py          # 经验回放缓冲区
 │   │   ├── replay_buffer_vl.py       # VLM 经验回放缓冲区
 │   │   ├── replay_buffer_utils.py    # 经验回放缓冲区工具函数
@@ -249,6 +267,7 @@ LightRFT/
 │   │   ├── hpdv3.py                  # HPDv3 奖励模型数据集的 Data Handler
 │   │   ├── image_reward_db.py        # ImageRewardDB 数据集的 Data Handler
 │   │   ├── imagegen_cot_reward.py    # ImageGen-CoT-Reward 数据集的 Data Handler
+│   │   ├── math_reasoning_benchmarks.py # 数学推理基准数据集
 │   │   ├── omnirewardbench.py        # OmniRewardBench 数据集的 Data Handler
 │   │   ├── process_reward_dataset.py # 奖励数据集处理
 │   │   ├── prompts_dataset.py        # LLM 提示词数据集
@@ -277,9 +296,17 @@ LightRFT/
 │   ├── grm_training/                 # 生成式奖励模型训练示例
 │   ├── grm_vl_rl/                    # 强化微调生成式奖励模型训练示例
 │   ├── srm_training/                 # 标量奖励模型训练示例
-│   ├── chat/                         # 模型对话示例
+│   ├── r1_aqa/                       # 音频问答 (R1-AQA) 训练示例
+│   ├── math_benchmarks/              # 数学推理基准评测工具
+│   ├── entropy_viz/                  # 熵可视化工具
+│   ├── on_policy_distillation/       # On-policy 蒸馏示例
+│   └── chat/                         # 模型对话示例
 │
-├── docs/                             # 📚 Sphinx 文档
+├── tools/                            # 项目工具 & 脚本
+│   ├── docker_volumes.py             # Docker 卷管理
+│   └── show_version.py               # 版本显示工具
+│
+├── docs/                             # Sphinx 文档
 │   ├── Makefile                      # 文档构建 Makefile
 │   ├── make.bat                      # 文档构建批处理文件
 │   └── source/                       # 文档源码
@@ -292,15 +319,20 @@ LightRFT/
 ├── assets/                           # 资源文件
 │   └── logo.png                      # 项目 Logo
 │
-├── CHANGELOG.md                      # 更新日志
-├── LICENSE                           # 许可证文件
+├── .github/                          # GitHub 配置（CI/CD 等）
+├── Dockerfile                        # Docker 构建文件
 ├── Makefile                          # 项目 Makefile
-├── README.md                         # 项目文档（英文）
-├── README_zh.md                      # 项目文档（中文）
+├── MANIFEST.in                       # 包清单文件
+├── pyproject.toml                    # Python 项目配置
+├── setup.py                          # 包安装脚本
+├── .style.yapf                       # YAPF 代码风格配置
 ├── requirements.txt                  # Python 依赖
 ├── requirements-dev.txt              # 开发依赖
 ├── requirements-doc.txt              # 文档依赖
-└── setup.py                          # 包安装脚本
+├── CHANGELOG.md                      # 更新日志
+├── LICENSE                           # 许可证文件
+├── README.md                         # 项目文档（英文）
+└── README_zh.md                      # 项目文档（中文）
 ```
 
 ### 🔑 关键目录说明
@@ -311,7 +343,12 @@ LightRFT/
   - `grm_training/`: 生成式奖励模型训练示例
   - `grm_vl_rl/`: 强化微调生成式奖励模型训练示例
   - `srm_training/`: 标量奖励模型训练示例
+  - `r1_aqa/`: 音频问答 (R1-AQA) 训练示例
+  - `math_benchmarks/`: 数学推理基准评测工具
+  - `entropy_viz/`: 熵可视化工具
+  - `on_policy_distillation/`: On-policy 蒸馏示例
   - `chat/`: 模型对话示例
+- **`tools/`**: 项目工具和脚本（版本显示、Docker 卷管理）
 - **`docs/`**: Sphinx文档，包含完整的使用指南和API文档
 
 ---
@@ -464,8 +501,8 @@ make fcheck
 
 ```bibtex
 @misc{lightrft,
-  title={LightRFT},
-  author={Niu, Yazhe and Pu, Yuan and Shi, Dongxing and Lu, Yudong and Xiong, Yingtong and Ge, Ruijun and Sun, Jiaxuan and Wan, Zunian and Zhang, Shaoang and others},
+  title={LightRFT: Light, Efficient, Omni-modal & Reward-model Driven Reinforcement Fine-Tuning Framework},
+  author={Niu, Yazhe and Pu, Yuan and Shi, Dongxing and Lu, Yudong and Xiong, Yingtong and Ge, Ruijun and Sun, Jiaxuan and Wan, Zunian and Zhang, Shaoang},
   publisher={GitHub},
   howpublished={\url{https://github.com/opendilab/LightRFT}},
   year={2025},

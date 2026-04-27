@@ -295,6 +295,7 @@ def mix_rewards(
     label_map: Dict[str, int],
     solution_strs: Sequence[str],
     refs: Sequence[str],
+    use_task_reward: bool = True,
 ) -> Tuple[torch.Tensor, Dict[str, torch.Tensor]]:
     """
     Mix rewards from multiple sources according to recipe configuration.
@@ -383,6 +384,10 @@ def mix_rewards(
 
         final_reward[i] = r
 
+    # When use_task_reward=False, zero out final rewards but keep metrics for logging
+    if not use_task_reward:
+        final_reward.zero_()
+
     return final_reward, metrics_dict
 
 
@@ -392,6 +397,7 @@ def reward_fn(
     queries: Sequence[str],
     refs: Sequence[str],
     label_map: Dict[str, int],
+    use_task_reward: bool = True,
 ) -> Tuple[torch.Tensor, Dict[str, torch.Tensor]]:
     """
     External unified interface for computing final rewards.
@@ -429,4 +435,4 @@ def reward_fn(
         model_scores = torch.zeros(0, B, dtype=torch.float32, device="cuda")
 
     # Call mix_rewards to compute final rewards
-    return mix_rewards(labels, model_scores, label_map, queries, refs)
+    return mix_rewards(labels, model_scores, label_map, queries, refs, use_task_reward=use_task_reward)

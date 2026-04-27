@@ -65,36 +65,44 @@ class BroadcastManager:
         :param name: Original weight name from training model
         :return: Mapped weight name for SGLang
         """
-        # Step 0: Handle PEFT/LoRA and other potential wrapping prefixes
+        # Step 0: Handle PEFT/LoRA wrapping prefixes
         # PEFT models have weights like base_model.model.<original_name>
-        # We recursively strip "base_model.model." or "model." prefixes until we find
-        # core components like "visual" or "language_model"
-        while name.startswith("base_model.model.") or name.startswith("model."):
-            if name.startswith("base_model.model."):
-                name = name[len("base_model.model."):]
-            elif name.startswith("model."):
-                # We strip "model." and let the following steps handle it.
-                # If "language_model" follows, it will be added back as "model."
-                # for SGLang's expectation.
-                name = name[len("model."):]
+        # Strip "base_model.model." prefix (possibly nested) to get the original name.
+        while name.startswith("base_model.model."):
+            name = name[len("base_model.model."):]
 
         # PEFT models also rename original weights to include ".base_layer."
         # we need to strip this to match standard weight names
         name = name.replace(".base_layer.", ".")
 
-        # Step 2: Handle language_model prefix mapping
-        if name.startswith("language_model."):
-            # Remove "language_model." prefix
-            name = name[15:]  # Remove "language_model."
+        # Step 1: Handle VLM models wrapped by ActorVL
+        # ActorVL wraps the HF model as self.model, so parameter names get an extra "model." prefix:
+        #   Training (ActorVL):  model.visual.xxx,       model.model.layers.xxx, model.lm_head.xxx
+        #   SGLang expects:      visual.xxx,             model.layers.xxx,       lm_head.xxx
+        # Also handle the "model.language_model." pattern (some VLM architectures):
+        #   Training:            model.language_model.model.layers.xxx
+        #   SGLang expects:      model.layers.xxx
+        if name.startswith("model.language_model."):
+            inner = name[len("model.language_model."):]
+            if inner.startswith("lm_head"):
+                return inner
+            return f"model.{inner}"
 
-            # For lm_head, keep as is (no "model." prefix)
-            if name.startswith("lm_head"):
-                return name
+        if name.startswith("model.visual."):
+            return name[len("model."):]
 
-            # For other components (embed_tokens, layers, norm), add "model." prefix
-            return f"model.{name}"
+        if name.startswith("model.lm_head"):
+            return name[len("model."):]
 
-        # Step 3: Return as is for other cases (e.g., visual.xxx)
+        # Handle VLM's double "model.model." prefix (ActorVL.model -> HF model.layers)
+        # model.model.layers.xxx -> model.layers.xxx
+        # model.model.embed_tokens.xxx -> model.embed_tokens.xxx
+        if name.startswith("model.model."):
+            return name[len("model."):]
+
+        # Step 2: For text-only models (e.g., Qwen2.5-0.5B-Instruct), parameter names
+        # are already in SGLang's expected format: model.layers.xxx, model.embed_tokens.xxx,
+        # model.norm.xxx, lm_head.xxx. Return as-is without stripping "model." prefix.
         return name
 
     def _deepspeed_broadcast(self):

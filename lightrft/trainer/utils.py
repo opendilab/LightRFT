@@ -15,8 +15,10 @@ normalization are important for training stability and monitoring.
 
 import copy
 import torch
+from collections import Counter
 from copy import deepcopy
-from typing import Callable, List, Tuple, Union, Optional
+from packaging.version import InvalidVersion, Version
+from typing import Callable, List, Tuple, Union, Optional, Any
 
 # Conditional import: vLLM is optional and only needed when using vLLM backend
 # The default backend is SGLang, which doesn't require vLLM
@@ -42,6 +44,7 @@ def fire_sampling(
     all_videos: Optional[List] = None,
     all_videos_num: Optional[List[int]] = None,
     sampling_params: Optional[Union[dict, object]] = None,
+    tokenizer: Optional[Any] = None,
 ) -> List:
     """
     FIRE sampling (Flaming-hot Initiation with Regular Execution)
@@ -85,6 +88,10 @@ def fire_sampling(
     :type all_videos_num: Optional[List[int]]
     :param sampling_params: Original sampling parameters
     :type sampling_params: Optional[Union[dict, object]]
+    :param tokenizer: Tokenizer for decoding first token to text (required when is_multimodal=True).
+                      For multimodal, Step 2 needs to append the first token to prompts so we decode
+                      the token IDs to text for the continuation.
+    :type tokenizer: Optional[Any]
 
     :return: List of generation outputs
     :rtype: List
@@ -114,13 +121,50 @@ def fire_sampling(
         videos_num=all_videos_num if is_multimodal else None,
     )
 
-    # Concatenate the first token to the prompt
+    # Log first-token top-k frequency distribution
+    if tokenizer is not None:
+        first_token_ids = [list(out.output_token_ids)[0] for out in first_token_outputs]
+        token_counter = Counter(first_token_ids)
+        top_k_display = 20
+        most_common = token_counter.most_common(top_k_display)
+        decoded_tokens = tokenizer.batch_decode([[tid] for tid, _ in most_common], skip_special_tokens=False)
+        stats_lines = [f"[FIRE] First-token top-{top_k_display} distribution (total={len(first_token_ids)}):"]
+        for (tid, count), decoded in zip(most_common, decoded_tokens):
+            freq = count / len(first_token_ids)
+            stats_lines.append(f"  token_id={tid:>6d} | count={count:>4d} | freq={freq:.4f} | text={repr(decoded)}")
+        print("\n".join(stats_lines))
+
+    # Concatenate the first token to the prompt (for Step 2 input).
+    # Step 1 = above: generate only the first token at high temperature.
+    # Step 2 = below: generate the *rest* (remaining) tokens at normal temperature.
     new_prompt_token_ids = []
     for orig_ids, out in zip(all_prompt_token_ids, first_token_outputs):
         first_tok = list(out.output_token_ids)  # [token_id]
         new_prompt_token_ids.append(orig_ids + first_tok)
 
-    # Step 2: Generate remaining tokens with normal temperature
+    # Build the prompt input for Step 2. Naming: all_prompts_rest = prompts used for the "rest" (remaining) generation.
+    # - Text-only: gather_and_generate uses all_prompt_token_ids, so we pass new_prompt_token_ids; all_prompts_rest
+    #   is only used as a passthrough (all_prompts_rest = all_prompts) and may be ignored.
+    # - Multimodal: gather_and_generate uses all_prompts (text) + images, NOT all_prompt_token_ids. We must decode
+    #   the first token to text and append to each prompt so Step 2 continues from the correct context.
+    if is_multimodal:
+        if tokenizer is None:
+            raise ValueError(
+                "fire_sampling: tokenizer is required when is_multimodal=True. "
+                "For multimodal, the first token must be decoded and appended to prompts for Step 2."
+            )
+        if all_prompts is None:
+            raise ValueError("fire_sampling: all_prompts is required when is_multimodal=True.")
+        decoded_first_tokens = tokenizer.batch_decode(
+            [list(out.output_token_ids) for out in first_token_outputs],
+            skip_special_tokens=False,
+        )
+        # "rest" = prompt for the rest of generation (Step 2): original prompt + first token as text
+        all_prompts_rest = [prompt + decoded for prompt, decoded in zip(all_prompts, decoded_first_tokens)]
+    else:
+        all_prompts_rest = all_prompts
+
+    # Step 2: Generate the remaining tokens with normal temperature (the "rest" after the first token)
     if engine_type == "vllm":
         sampling_params_rest = copy.deepcopy(sampling_params)
         sampling_params_rest.temperature = temperature
@@ -131,10 +175,12 @@ def fire_sampling(
         sampling_params_rest["max_new_tokens"] = sampling_params["max_new_tokens"] - 1
 
     # Generate remaining tokens
+    # For multimodal: use all_prompts_rest (prompt + decoded first token) so gather_and_generate
+    # builds inputs with the correct continuation context.
     rest_outputs = generate_fn(
         sampling_params=sampling_params_rest,
         all_prompt_token_ids=new_prompt_token_ids,
-        all_prompts=all_prompts if is_multimodal else None,
+        all_prompts=all_prompts_rest if is_multimodal else None,
         all_images=all_images,
         all_videos=all_videos,
         images_num=all_images_num if is_multimodal else None,
@@ -393,8 +439,7 @@ def vllm_ge_0130():
         return True
 
     try:
-        version_digits = int("".join(list(filter(str.isdigit, vllm.__version__))))
-        return version_digits >= 130
-    except (AttributeError, ValueError):
+        return Version(vllm.__version__) >= Version("0.13.0")
+    except (AttributeError, InvalidVersion):
         # If version cannot be determined, assume newer version for safety
         return True

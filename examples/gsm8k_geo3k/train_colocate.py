@@ -56,6 +56,7 @@ from lightrft.utils import blending_datasets, get_tokenizer_processor_vl
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from reward_models_utils import RECIPE, load_reward_models, reward_fn
 
+import functools
 import torch.multiprocessing
 
 # Fix "multiprocessing.context.AuthenticationError: digest received was wrong" error
@@ -407,10 +408,12 @@ def train(args):
         max_length=args.max_len,
         temperature=args.temperature,
         top_p=args.top_p,
+        first_token_temperature=args.first_token_temperature,
         pad_token_id=tokenizer.pad_token_id,
         eos_token_id=tokenizer.eos_token_id,
-        # reward model
-        reward_fn=reward_fn,
+        # reward model / teacher model URL (used for OPD)
+        remote_rm_url=args.remote_rm_url,
+        reward_fn=functools.partial(reward_fn, use_task_reward=args.use_task_reward),
         reward_fn_label_map=label_map,
         reward_recipe=RECIPE,
         reward_tokenizers=reward_tokenizers,
@@ -445,7 +448,13 @@ def train(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--engine_type", type=str, default="vllm", help="Choose inference engine type: vllm, sglang")
+    parser.add_argument(
+        "--engine_type",
+        type=str,
+        choices=["vllm", "sglang"],
+        default="sglang",
+        help="Choose inference engine type: vllm or sglang. Defaults to sglang",
+    )
     parser.add_argument("--text_only", action="store_true", default=False)
 
     # Checkpoint
@@ -560,12 +569,15 @@ if __name__ == "__main__":
     parser.add_argument(
         "--advantage_estimator",
         type=str,
-        choices=["gae", "reinforce", "rloo", "reinforce_baseline", "group_norm", "cpgd", "reinforce++"],
+        choices=["gae", "reinforce", "rloo", "reinforce_baseline", "group_norm", "cpgd", "reinforce++", "on_policy_distillation"],
         default="gae",
         help="Choose advantage estimation method: gae, reinforce, rloo, reinforce_baseline, group_norm, reinforce++",
     )
 
     parser.add_argument("--use_kl_loss", action="store_true", default=False, help="whether to use KL loss from GRPO")
+    parser.add_argument("--opd_kl_coef", type=float, default=1.0, help="KL coefficient for on-policy distillation penalty")
+    parser.add_argument("--use_task_reward", action="store_true", dest="use_task_reward", default=True, help="Use task reward in final reward (default)")
+    parser.add_argument("--no_task_reward", action="store_false", dest="use_task_reward", help="Zero out task reward (metrics still logged)")
 
     # LoRA
     parser.add_argument("--load_in_4bit", action="store_true", default=False)
@@ -578,6 +590,7 @@ if __name__ == "__main__":
     parser.add_argument("--pretrain", type=str, default=None, help="HF model name or path")
     parser.add_argument("--reward_pretrain", type=str, default=None, help="HF model name or path")
     parser.add_argument("--remote_rm_url", type=str, default=None, help="remote RM API")
+    parser.add_argument("--teacher_model_url", type=str, default=None, help="Teacher model URL for OPD (overrides --remote_rm_url for teacher)")
     parser.add_argument("--critic_pretrain", type=str, default=None, help="HF model name or path")
     parser.add_argument("--value_head_prefix", type=str, default="score")
 
@@ -652,7 +665,7 @@ if __name__ == "__main__":
     elif args.critic_pretrain is None:
         args.critic_pretrain = args.pretrain
 
-    if args.advantage_estimator in ["rloo", "reinforce_baseline", "group_norm"]:
+    if args.advantage_estimator in ["rloo", "reinforce_baseline", "group_norm", "on_policy_distillation"]:
         assert args.n_samples_per_prompt > 1, f"{args.advantage_estimator} requires n_samples_per_prompt > 1"
 
     if args.use_kl_loss:
