@@ -405,6 +405,7 @@ class PPOTrainerVL(ABC):
                     all_rewards = []
                     all_format_rewards = []
                     all_accuracy_rewards = []
+                    all_general_model_rewards = []
                     all_response_lengths = []
 
                     for item in self.replay_buffer.items:
@@ -428,6 +429,11 @@ class PPOTrainerVL(ABC):
                                 all_format_rewards.append(reward_metrics['format_reward'])
                             if 'accuracy_reward' in reward_metrics:
                                 all_accuracy_rewards.append(reward_metrics['accuracy_reward'])
+                            general_model_reward = reward_metrics.get("general_model_reward")
+                            if general_model_reward is None:
+                                general_model_reward = reward_metrics.get("model_reward")
+                            if general_model_reward is not None:
+                                all_general_model_rewards.append(general_model_reward)
 
                         # Collect response lengths from rollout
                         if hasattr(item, 'info') and item.info is not None and 'response_length' in item.info:
@@ -469,6 +475,18 @@ class PPOTrainerVL(ABC):
 
                         mean_accuracy_reward = accuracy_tensor.mean().item()
                         rollout_status["rollout_accuracy_reward"] = mean_accuracy_reward
+
+                    if all_general_model_rewards:
+                        if isinstance(all_general_model_rewards[0], torch.Tensor):
+                            general_model_tensor = torch.cat([t.to(device).float() for t in all_general_model_rewards])
+                        else:
+                            general_model_tensor = torch.tensor(
+                                all_general_model_rewards, dtype=torch.float32, device=device
+                            )
+
+                        mean_general_model_reward = general_model_tensor.mean().item()
+                        if abs(mean_general_model_reward) > 1e-6:
+                            rollout_status["rollout_general_model_reward"] = mean_general_model_reward
 
                     if all_response_lengths:
                         # [TENSOR-FIX] Handle both tensor lists and scalar lists
@@ -1194,6 +1212,7 @@ class PPOTrainerVL(ABC):
         all_rewards = []
         all_format_rewards = []
         all_accuracy_rewards = []
+        all_general_model_rewards = []
         all_response_lengths = []
         num_eval_batches = 0
 
@@ -1243,6 +1262,11 @@ class PPOTrainerVL(ABC):
                                 all_format_rewards.extend(extract_values(rm['format_reward']))
                             if 'accuracy_reward' in rm:
                                 all_accuracy_rewards.extend(extract_values(rm['accuracy_reward']))
+                            general_model_reward = rm.get("general_model_reward")
+                            if general_model_reward is None:
+                                general_model_reward = rm.get("model_reward")
+                            if general_model_reward is not None:
+                                all_general_model_rewards.extend(extract_values(general_model_reward))
 
                 num_eval_batches += 1
                 if num_eval_batches >= len(eval_dataloader):
@@ -1265,6 +1289,7 @@ class PPOTrainerVL(ABC):
         compute_stats("reward", all_rewards)
         compute_stats("format_reward", all_format_rewards)
         compute_stats("accuracy_reward", all_accuracy_rewards)
+        compute_stats("general_model_reward", all_general_model_rewards)
         compute_stats("response_length", all_response_lengths)
 
         metrics["num_samples"] = len(all_rewards)

@@ -535,10 +535,13 @@ class StrategyBase(ABC):
             if critic is not None:
                 critic = self.prepare_model(critic, is_training=True)
             if not self.config.remote_rm_url:
+                reward_model_shard_size = self.world_size
                 if isinstance(reward_models, (tuple, list)):
-                    reward_models = [self.prepare_model(model, shard_size=8) for model in reward_models]
+                    reward_models = [
+                        self.prepare_model(model, shard_size=reward_model_shard_size) for model in reward_models
+                    ]
                 else:
-                    reward_models = self.prepare_model(reward_models, shard_size=8)
+                    reward_models = self.prepare_model(reward_models, shard_size=reward_model_shard_size)
 
         # Configure optimizers
         actor_optim = self.create_optimizer(

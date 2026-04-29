@@ -316,7 +316,7 @@ class SPMDPPOTrainerBase:
             all_rewards = []
             all_format_rewards = []
             all_accuracy_rewards = []
-            all_model_rewards = []
+            all_general_model_rewards = []
             all_rule_rewards = []
             all_advantages = []
             all_returns = []
@@ -335,8 +335,11 @@ class SPMDPPOTrainerBase:
                         all_format_rewards.append(reward_metrics['format_reward'])
                     if 'accuracy_reward' in reward_metrics:
                         all_accuracy_rewards.append(reward_metrics['accuracy_reward'])
-                    if 'model_reward' in reward_metrics:
-                        all_model_rewards.append(reward_metrics['model_reward'])
+                    general_model_reward = reward_metrics.get("general_model_reward")
+                    if general_model_reward is None:
+                        general_model_reward = reward_metrics.get("model_reward")
+                    if general_model_reward is not None:
+                        all_general_model_rewards.append(general_model_reward)
                     if 'rule_reward' in reward_metrics:
                         all_rule_rewards.append(reward_metrics['rule_reward'])
 
@@ -384,15 +387,15 @@ class SPMDPPOTrainerBase:
                 status_mean["accuracy_reward_mean"] = accuracy_tensor.mean().item()
                 status_mean["accuracy_reward_std"] = accuracy_tensor.std().item()
 
-            if all_model_rewards:
+            if all_general_model_rewards:
                 # [TENSOR-FIX] Handle both tensor lists and scalar lists
-                if isinstance(all_model_rewards[0], torch.Tensor):
-                    model_tensor = torch.cat([t.to(device).float() for t in all_model_rewards])
+                if isinstance(all_general_model_rewards[0], torch.Tensor):
+                    model_tensor = torch.cat([t.to(device).float() for t in all_general_model_rewards])
                 else:
-                    model_tensor = torch.tensor(all_model_rewards, dtype=torch.float32, device=device)
+                    model_tensor = torch.tensor(all_general_model_rewards, dtype=torch.float32, device=device)
                 if model_tensor.abs().sum() > 0:  # Only log if model rewards are non-zero
-                    status_mean["model_reward_mean"] = model_tensor.mean().item()
-                    self.strategy.print(f" model_reward_mean: {status_mean['model_reward_mean']}")
+                    status_mean["general_model_reward_mean"] = model_tensor.mean().item()
+                    self.strategy.print(f" general_model_reward_mean: {status_mean['general_model_reward_mean']}")
 
             if all_rule_rewards:
                 # [TENSOR-FIX] Handle both tensor lists and scalar lists
@@ -463,6 +466,9 @@ class SPMDPPOTrainerBase:
                     self.strategy.print(
                         f"✅ Accuracy Reward:  {status_mean['accuracy_reward_mean']:.4f} ± {status_mean['accuracy_reward_std']:.4f}"  # noqa
                     )
+
+                if all_general_model_rewards and "general_model_reward_mean" in status_mean:
+                    self.strategy.print(f"🧠 General RM Reward:{status_mean['general_model_reward_mean']:.4f}")
 
                 if all_advantages:
                     self.strategy.print(

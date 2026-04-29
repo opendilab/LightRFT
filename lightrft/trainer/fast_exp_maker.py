@@ -805,6 +805,7 @@ class RewardComputationEngine:
             rm_output = rm(
                 sequences,
                 output.attention_mask,
+                references=output.references,
                 prompt_and_output=output.prompt_and_output,
                 raw_images=output.raw_images,
                 img_num=output.image_num,
