@@ -12,7 +12,7 @@ This demo shows the full pipeline of using an ORM to score trajectories for RL t
 - dataset: Geo3K
 - actor: Qwen2.5-VL 7B model
 - reward: one general outcome reward model combined with rule-based accuracy reward and format reward, all contributing to the GRPO loss
-- training engine: FSDP, inference engine: reward engine
+- training engine: FSDP, inference engine: SGLang
 
 The actor generates Geo3K trajectories, the general ORM scores them, and the scores are combined with a rule-based accuracy reward (`accuracy_reward`) and a format reward (`format_reward`) to compute the final GRPO loss. To avoid rewriting the Geo3K dataset files, the demo overrides the dataset label to `geo3k_general` at runtime so the original dataset path can be reused while routing through the general ORM reward mix.
 
@@ -40,7 +40,7 @@ export REWARD_PRETRAIN_PATHS='{"general":"/path/to/general-reward-model"}'
 bash examples/orm_rl_demo/run_general_fsdp_qwenvl.sh
 ```
 
-The script is a template with no hardcoded cluster-specific or personal paths. Set the dataset and model paths via the environment variables above before running.
+Set the dataset and model paths via the environment variables above before running.
 
 ## Results
 

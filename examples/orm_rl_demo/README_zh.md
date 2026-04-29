@@ -12,7 +12,7 @@
 - 数据集：Geo3K
 - actor：Qwen2.5-VL 7B 模型
 - reward：单个 general outcome reward model，与规则正确性奖励和格式奖励组合后共同计算 GRPO loss
-- 训练引擎：FSDP，推理引擎：reward engine
+- 训练引擎：FSDP，推理引擎：SGLang
 
 训练时，actor 在 Geo3K 上生成轨迹，general ORM 对轨迹打分，与规则正确性奖励（`accuracy_reward`）和格式奖励（`format_reward`）三路混合后，共同计算 GRPO loss。为了不直接改写 Geo3K 数据集文件，本 demo 在运行时将数据标签覆盖为 `geo3k_general`，沿用原始数据路径的同时走 general ORM reward 融合逻辑。
 
@@ -40,7 +40,7 @@ export REWARD_PRETRAIN_PATHS='{"general":"/path/to/general-reward-model"}'
 bash examples/orm_rl_demo/run_general_fsdp_qwenvl.sh
 ```
 
-脚本是模板形式，不内置任何集群或个人路径，运行前通过上述环境变量指定数据和模型路径。
+运行前通过上述环境变量指定数据和模型路径。
 
 ## 实验结果
 

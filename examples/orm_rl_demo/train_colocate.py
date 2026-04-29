@@ -82,10 +82,6 @@ def train(args):
     ds_eval_cfg = strategy.get_ds_eval_config(offload=False)  if not args.fsdp else None
 
     # configure model
-    # ==================== Model Initialization ====================
-    # Initialize all models within init_model_context for memory efficiency.
-    # When meta_init=True, models are created on "meta" device as empty shells,
-    # fundamentally resolving CPU OOM issues.
     with strategy.init_model_context(meta_init=args.meta_init):
         strategy.print(f"Initializing models with meta_init={args.meta_init}")
 
