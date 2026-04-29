@@ -311,6 +311,8 @@
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">vllm</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">packaging.version</span><span class="w"> </span><span class="kn">import</span> <span class="n">Version</span>
 <span class="c1"># vLLM version compatibility notes:</span>
 <span class="c1"># --------------------------------</span>
 <span class="c1"># In older versions of vLLM (&lt; 0.13.0), the Worker class is located under:</span>
@@ -320,11 +322,22 @@
 <span class="c1">#     vllm.v1.worker.gpu_worker.Worker</span>
 <span class="c1">#</span>
 <span class="c1"># To maintain compatibility across different vLLM versions, we try importing Worker</span>
-<span class="c1"># from the new v1 path first (for vllm&gt;=0.13.0). If the import fails (ModuleNotFoundError),</span>
-<span class="c1"># we fall back to importing from the old path (for vllm&lt;0.13.0).</span>
-<span class="k">try</span><span class="p">:</span>
-    <span class="kn">from</span><span class="w"> </span><span class="nn">vllm.v1.worker.gpu_worker</span><span class="w"> </span><span class="kn">import</span> <span class="n">Worker</span>
-<span class="k">except</span> <span class="p">(</span><span class="ne">ModuleNotFoundError</span><span class="p">,</span> <span class="ne">ImportError</span><span class="p">):</span>
+<span class="c1"># from the new v1 path only for vllm&gt;=0.13.0. Older releases like v0.7.x may</span>
+<span class="c1"># already expose a v1 module tree, but their uniproc executor still expects the</span>
+<span class="c1"># legacy Worker implementation with methods such as determine_num_available_blocks.</span>
+<span class="k">if</span> <span class="n">Version</span><span class="p">(</span><span class="n">vllm</span><span class="o">.</span><span class="n">__version__</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">Version</span><span class="p">(</span><span class="s2">&quot;0.13.0&quot;</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">vllm.v1.worker.gpu_worker</span><span class="w"> </span><span class="kn">import</span> <span class="n">Worker</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">ModuleNotFoundError</span><span class="p">,</span> <span class="ne">ImportError</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">vllm.worker.worker</span><span class="w"> </span><span class="kn">import</span> <span class="n">Worker</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">ModuleNotFoundError</span><span class="p">,</span> <span class="ne">ImportError</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
+                <span class="s2">&quot;Could not import Worker from vllm. &quot;</span>
+                <span class="s2">&quot;Please ensure you have a compatible version of vllm installed. &quot;</span>
+                <span class="s2">&quot;Supported versions: vllm&gt;=0.6.3 or vllm&gt;=0.13.0&quot;</span>
+            <span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">vllm.worker.worker</span><span class="w"> </span><span class="kn">import</span> <span class="n">Worker</span>
     <span class="k">except</span> <span class="p">(</span><span class="ne">ModuleNotFoundError</span><span class="p">,</span> <span class="ne">ImportError</span><span class="p">):</span>
