@@ -328,9 +328,12 @@ def train(args):
         setattr(actor, "is_actor", True)
         actor = strategy.prepare_model(actor, is_training=True)
 
-    # Optionally freeze parameters (e.g., vision encoder)
+    # Optionally freeze parameters (e.g., vision encoder).
+    # Qwen2-VL etc. expose vision under "visual.*"; URSA uses "vision_model.*"
+    # plus an "aligner.*" projector. Match all of them so --freeze_prefix
+    # actually fires for the URSA stack.
     if args.freeze_prefix:
-        freeze_prefix = ["visual"]
+        freeze_prefix = ["visual", "vision_model", "aligner"]
         frozen_params_count = 0
         total_params_count = 0
         for name, param in actor.model.named_parameters():

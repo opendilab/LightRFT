@@ -50,7 +50,13 @@ RBS=128                  # Rollout Batch Size.
 TBS=128                  # Training Batch Size.
 
 # --- Learning and model settings ---
-KL=0.001                 # Initial KL divergence coefficient.
+# K1 estimator (`log p_actor - log p_ref`) is roughly 5-7x smaller than K3 in
+# practice, and stays bounded by the actual log-prob distance. We pair it with
+# a 10x larger init_kl_coef so the absolute KL-loss term keeps roughly the
+# same regularization budget as the historical K3+0.001 setup, while making
+# train/kl values directly interpretable as "per-token nat distance".
+KL_ESTIMATOR=k1          # Use Schulman K1 (= log_ratio mean). See PR #53 analysis.
+KL=0.01                  # Initial KL divergence coefficient (10x bumped from 0.001 for K1).
 KL_TARGET=""             # If set (e.g. "0.5"), enables AdaptiveKLController.
 LR=1e-6                  # Actor learning rate.
 PROMPT_MAX_LEN=1024      # Max length of the input prompt.
@@ -166,7 +172,7 @@ torchrun \
     --actor_learning_rate $LR \
     --use_kl_loss \
     --init_kl_coef $KL \
-    --kl_estimator "k3" \
+    --kl_estimator "${KL_ESTIMATOR}" \
     "${KL_TARGET_ARGS[@]}" \
     --engine_type "hf" \
     --engine_mem_util 0.6 \
