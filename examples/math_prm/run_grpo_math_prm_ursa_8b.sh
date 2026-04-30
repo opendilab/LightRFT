@@ -19,18 +19,16 @@
 ################################################################################
 
 # --- Model and Dataset Paths ---
-# Path to the URSA-8B actor model (a multimodal math VLM).
-PATH_TO_YOUR_BASE_MODEL="/path/to/your/URSA-8B"
-
-# Path to the URSA-8B-RM process reward model.
-PATH_TO_URSA_RM="/path/to/your/URSA-RM-8B"
-
-# Path to the preprocessed math PRM dataset (JSONL).
-# See "Usage Instructions" at the end of the script for preprocessing steps.
-PATH_TO_YOUR_MATH_DATASET="/path/to/your/preprocessed/math_psgrpo.jsonl"
+# Each value can be overridden by exporting the env var with the same name
+# before invoking this script (e.g. for CI or per-machine paths). The strings
+# below are placeholders to make the script self-documenting; a real run must
+# either edit them or override via env.
+PATH_TO_YOUR_BASE_MODEL="${PATH_TO_YOUR_BASE_MODEL:-/path/to/your/URSA-8B}"
+PATH_TO_URSA_RM="${PATH_TO_URSA_RM:-/path/to/your/URSA-RM-8B}"
+PATH_TO_YOUR_MATH_DATASET="${PATH_TO_YOUR_MATH_DATASET:-/path/to/your/preprocessed/math_psgrpo.jsonl}"
 
 # --- Experiment and Logging ---
-EXPERIMENT_NAME="lightrft-ursa8b-math-prm"
+EXPERIMENT_NAME="${EXPERIMENT_NAME:-lightrft-ursa8b-math-prm}"
 
 # W&B configuration. Leave WANDB_API_KEY empty to disable W&B.
 export WANDB_API_KEY="${WANDB_API_KEY:-YOUR_WANDB_API_KEY}"
@@ -50,13 +48,14 @@ RBS=128                  # Rollout Batch Size.
 TBS=128                  # Training Batch Size.
 
 # --- Learning and model settings ---
-# K1 estimator (`log p_actor - log p_ref`) is roughly 5-7x smaller than K3 in
-# practice, and stays bounded by the actual log-prob distance. We pair it with
-# a 10x larger init_kl_coef so the absolute KL-loss term keeps roughly the
-# same regularization budget as the historical K3+0.001 setup, while making
-# train/kl values directly interpretable as "per-token nat distance".
-KL_ESTIMATOR=k1          # Use Schulman K1 (= log_ratio mean). See PR #53 analysis.
-KL=0.01                  # Initial KL divergence coefficient (10x bumped from 0.001 for K1).
+# K3 estimator (Schulman) at the historical default 0.001. The earlier proposal
+# to switch to K2 + 0.005 was justified by KL ~ 11 nats observed on the broken
+# run; once the silent log-prob misalignment was fixed (see PR #53), the real
+# K3 sits at ~0.04 and the K2/K3/K1 ratios collapse to numerically equivalent
+# small values, so the estimator + coefficient change has no remaining
+# justification. Keep historical values to minimize the PR's behavior diff.
+KL_ESTIMATOR=k3          # Schulman K3 = exp(-r) - 1 + r. Historical default.
+KL=0.001                 # Historical default. K3 * 0.001 ~= 4e-5 budget on real KL.
 KL_TARGET=""             # If set (e.g. "0.5"), enables AdaptiveKLController.
 LR=1e-6                  # Actor learning rate.
 PROMPT_MAX_LEN=1024      # Max length of the input prompt.
@@ -126,7 +125,12 @@ set -x
 #                         Part 5: Main Training Command                        #
 ################################################################################
 
-torchrun \
+# Use the conda env's torchrun explicitly: under bash -c, `conda activate` does
+# not propagate to subprocesses, so a plain `torchrun` may resolve to a system
+# python that lacks transformers/flash_attn etc. Override with TORCHRUN= if you
+# launch from a different env.
+TORCHRUN="${TORCHRUN:-torchrun}"
+"${TORCHRUN}" \
     --nnodes $NNODES \
     --nproc-per-node $GPUS_PER_NODE \
     --node_rank $NODE_RANK \

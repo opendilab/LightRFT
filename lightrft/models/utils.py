@@ -224,6 +224,24 @@ def log_probs_from_logits(
         >>> log_probs.shape
         torch.Size([2, 3])
     """
+    # PyTorch's torch.gather(dim=-1, index=...) does NOT require non-dim
+    # axes to match: when ``logits`` has more rows than ``labels``, gather
+    # silently truncates to ``len(labels)`` instead of raising. That made it
+    # impossible to spot a VLM-specific alignment bug where ``output["logits"]``
+    # is longer than ``sequences`` (image placeholder gets expanded into N
+    # vision-patch tokens during the LM forward) — see PR #53. Reject the
+    # mismatch up-front so any future caller using this helper crashes loudly
+    # and is forced to align logits to labels at the call site.
+    if logits.shape[:-1] != labels.shape:
+        raise ValueError(
+            "log_probs_from_logits: logits and labels must have matching "
+            f"non-vocab shapes. Got logits.shape={tuple(logits.shape)}, "
+            f"labels.shape={tuple(labels.shape)}. For VLMs, output['logits'] "
+            "may be longer than the input sequences because vision tokens "
+            "expand placeholders during the forward pass — slice the logits "
+            "to the action range before calling this helper."
+        )
+
     if logits.dtype in [torch.float32, torch.float64]:
         batch_dim = logits.shape[:-1]
         last_dim = logits.shape[-1]

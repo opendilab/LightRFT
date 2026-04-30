@@ -14,7 +14,8 @@ import sys
 import os
 import torch
 import torch.nn as nn
-from typing import Optional
+import torch.nn.functional as F
+from typing import Optional, Union
 from transformers.integrations.deepspeed import HfDeepSpeedConfig
 
 # Add current directory to path for ursa_model imports
@@ -24,7 +25,7 @@ if current_dir not in sys.path:
 
 from ursa_model import UrsaForConditionalGeneration
 from lightrft.models.actor_vl import ActorVL
-from lightrft.models.utils import apply_lora_configuration
+from lightrft.models.utils import apply_lora_configuration, reset_position_ids, entropy_from_logits
 
 
 class UrsaActor(ActorVL):
@@ -139,6 +140,109 @@ class UrsaActor(ActorVL):
             self.pretrain_or_model = "ursa"
 
         print(f"[UrsaActor] Model type: {self.pretrain_or_model}")
+
+    def forward(
+        self,
+        sequences: torch.LongTensor,
+        num_actions=None,
+        attention_mask: Optional[torch.Tensor] = None,
+        pixel_values: Optional[torch.Tensor] = None,
+        image_grid_thw: Optional[torch.Tensor] = None,
+        pixel_values_videos: Optional[torch.Tensor] = None,
+        video_grid_thw: Optional[torch.Tensor] = None,
+        return_output: bool = False,
+        packed_seq_lens: Optional[list] = None,
+    ) -> torch.Tensor:
+        """
+        VLM-aligned forward.
+
+        URSA's vision tower expands every <|image|> placeholder into 576 vision
+        tokens during the LM forward, so ``output["logits"]`` is longer than the
+        input ``sequences`` along the seq dim. The default ``ActorVL.forward``
+        feeds ``output["logits"][:, :-1, :]`` (length E-1) and ``sequences[:, 1:]``
+        (length T-1) into ``log_probs_from_logits``, which then hits PyTorch's
+        ``gather(dim=-1, index=...)`` — that op silently TRUNCATES the rows of
+        ``logits`` to ``len(labels)`` instead of erroring. The result: log-probs
+        are read from the wrong (vision-token / early-prompt) positions, never
+        from the actual generation positions. KL/PPO/ratio all become noise.
+
+        We sidestep the bug entirely by slicing the logits to the action range
+        on the seq dim first (where alignment is unambiguous because generation
+        always lives at the tail of the expanded sequence), then using a single
+        ``F.log_softmax + gather`` over the action labels. fp32 throughout so
+        the precision matches the rest of the PPO loss path.
+        """
+        if self.packing_samples:
+            position_ids = reset_position_ids(attention_mask)
+            attention_mask_for_model = None
+        else:
+            position_ids = attention_mask.long().cumsum(-1) - 1
+            position_ids.masked_fill_(attention_mask == 0, 1)
+            attention_mask_for_model = attention_mask
+
+        forward_kwargs = dict(
+            attention_mask=attention_mask_for_model,
+            position_ids=position_ids,
+            pixel_values=self._cast_multimodal_tensor(pixel_values),
+            image_grid_thw=image_grid_thw,
+            pixel_values_videos=self._cast_multimodal_tensor(pixel_values_videos),
+            video_grid_thw=video_grid_thw,
+        )
+        for k in ("pixel_values", "image_grid_thw", "pixel_values_videos", "video_grid_thw"):
+            if not self._supports_model_kwarg(k):
+                forward_kwargs.pop(k, None)
+
+        output = self.model(sequences, **forward_kwargs)
+
+        if num_actions is None:
+            assert return_output
+            return output
+
+        logits = output["logits"]
+        seq_T = sequences.size(1)
+        logit_T = logits.size(1)
+        if self.packing_samples:
+            raise NotImplementedError(
+                "UrsaActor.forward does not yet support packed_seq_lens. The "
+                "default ActorVL packing path is silently miscomputed for VLMs "
+                "that expand image placeholders; we don't want to bake the same "
+                "bug in here. Add explicit packed-aware alignment when needed."
+            )
+
+        # Generation tokens always sit at the tail of the expanded sequence,
+        # so logits at expanded positions [E - num_actions - 1 .. E - 2]
+        # predict tokens at expanded positions [E - num_actions .. E - 1] —
+        # which are the same generation tokens as ``sequences[:, -num_actions:]``
+        # in the unexpanded view (the unexpanded vs expanded offset only affects
+        # positions BEFORE the image placeholders, all in the prompt).
+        action_logits = logits[:, -(num_actions + 1):-1, :]
+        action_labels = sequences[:, -num_actions:]
+        if action_logits.size(1) != action_labels.size(1):
+            raise RuntimeError(
+                f"action_logits seq len {action_logits.size(1)} does not match "
+                f"action_labels seq len {action_labels.size(1)} "
+                f"(num_actions={num_actions}, seq_T={seq_T}, logit_T={logit_T})"
+            )
+
+        action_logp_full = F.log_softmax(action_logits.float(), dim=-1)
+        action_log_probs = action_logp_full.gather(
+            -1, action_labels.unsqueeze(-1)
+        ).squeeze(-1)
+
+        if self.high_entropy_token_ratio > 0.0:
+            # Entropy of the action-position distribution, in the same fp32 used above.
+            probs = action_logp_full.exp()
+            action_entropy = -(probs * action_logp_full).sum(dim=-1)
+        else:
+            action_entropy = None
+
+        if return_output:
+            if action_entropy is not None:
+                output_dict = dict(output)
+                output_dict["action_entropy"] = action_entropy
+                return (action_log_probs, output_dict)
+            return (action_log_probs, output)
+        return action_log_probs
 
 
 def create_ursa_actor(args, ds_config=None):
