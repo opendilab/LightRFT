@@ -459,6 +459,25 @@ class MathPRMReward(nn.Module):
                 return_tensors="pt",
             ).to(device, torch.bfloat16)
 
+            # Sanity check: response (RL-generated) is not vision-cleaned, so it can
+            # contain literal `<|image|>` / `<image>` strings that the tokenizer maps
+            # to image_token_index. The PRM only ever receives one image, so any
+            # extras would crash _merge_input_ids_with_image_features. Keep the first
+            # image token (intended placeholder) and replace the rest with a benign
+            # text token so PRM scoring continues instead of aborting the rollout.
+            image_token_id = getattr(self.model.config, "image_token_index", None)
+            if image_token_id is not None:
+                input_ids_view = inputs["input_ids"]
+                image_mask_flat = (input_ids_view == image_token_id).view(-1)
+                extras = torch.nonzero(image_mask_flat, as_tuple=False).squeeze(-1)
+                if extras.numel() > 1:
+                    replacement = self.tokenizer.pad_token_id
+                    if replacement is None:
+                        replacement = self.tokenizer.eos_token_id
+                    flat = input_ids_view.view(-1)
+                    flat[extras[1:]] = replacement
+                    inputs["input_ids"] = flat.view(input_ids_view.shape)
+
             reward = self.model(**inputs).logits
             input_ids = inputs["input_ids"].view(-1)
             padding = torch.full((self._IMAGE_PAD,), -1, device=device)

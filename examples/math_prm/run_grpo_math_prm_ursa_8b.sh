@@ -91,9 +91,11 @@ export MASTER_PORT="${MASTER_PORT:-20092}"
 ################################################################################
 
 # --- Generate dynamic names and paths ---
+# SAVE_MODEL_NAME / WANDB_RUN_NAME are env-overridable so a resumed run can target
+# the existing ckpt directory instead of creating a fresh timestamped one.
 current_time=$(date +"%Y%m%d_%H%M%S")
-SAVE_MODEL_NAME="${EXPERIMENT_NAME}-ep${EPISODE}-kl${KL}-lr${LR}-${current_time}"
-WANDB_RUN_NAME="${EXPERIMENT_NAME}-${current_time}"
+SAVE_MODEL_NAME="${SAVE_MODEL_NAME:-${EXPERIMENT_NAME}-ep${EPISODE}-kl${KL}-lr${LR}-${current_time}}"
+WANDB_RUN_NAME="${WANDB_RUN_NAME:-${EXPERIMENT_NAME}-${current_time}}"
 
 mkdir -p "results/${EXPERIMENT_NAME}/${SAVE_MODEL_NAME}"
 mkdir -p "rft_logs/${EXPERIMENT_NAME}"
@@ -110,6 +112,13 @@ fi
 KL_TARGET_ARGS=()
 if [[ -n "${KL_TARGET}" ]]; then
     KL_TARGET_ARGS=(--kl_target "${KL_TARGET}")
+fi
+
+# Optional resume-from-checkpoint flag. Set LOAD_CHECKPOINT=1 in the environment
+# to continue training from ${ckpt_path}/_actor (and _critic if applicable).
+RESUME_ARGS=()
+if [[ "${LOAD_CHECKPOINT:-0}" == "1" ]]; then
+    RESUME_ARGS=(--load_checkpoint)
 fi
 
 # Math PRM uses a single URSA-RM checkpoint registered under the math_prm label.
@@ -178,6 +187,7 @@ TORCHRUN="${TORCHRUN:-torchrun}"
     --init_kl_coef $KL \
     --kl_estimator "${KL_ESTIMATOR}" \
     "${KL_TARGET_ARGS[@]}" \
+    "${RESUME_ARGS[@]}" \
     --engine_type "hf" \
     --engine_mem_util 0.6 \
     --local_hf_generate_max_batch_size 4 \
