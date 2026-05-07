@@ -591,12 +591,24 @@ def train(args):
             f"reshard_after_forward disabled, and {residency_note}."
         )
 
-        from rollout_eos_patch import install_math_prm_rollout_eos_patch
-        install_math_prm_rollout_eos_patch(rollout_actor, tokenizer, tokenizer.eos_token_id)
-        strategy.print(
-            "Installed math_prm rollout EOS patch on rollout_actor.model.generate "
-            "(injects StructuredAnswerStoppingCriteria on every generate call)."
-        )
+        # rollout_eos_patch is OPT-IN as of the eval-fix PR. With it OFF (default),
+        # rollout/eval generation falls back to HF default stopping (EosTokenCriteria +
+        # MaxLengthCriteria) which is token-equivalent to a bare model.generate call.
+        # See PR #53 issuecomment-4394197141 for why the patch was harmful by default.
+        if getattr(args, "enable_rollout_eos_patch", False):
+            from rollout_eos_patch import install_math_prm_rollout_eos_patch
+            install_math_prm_rollout_eos_patch(rollout_actor, tokenizer, tokenizer.eos_token_id)
+            strategy.print(
+                "Installed math_prm rollout EOS patch on rollout_actor.model.generate "
+                "(legacy --enable_rollout_eos_patch flag set; this BIASES rollout reward "
+                "and eval outcome — only enable to reproduce historical broken behavior)."
+            )
+        else:
+            strategy.print(
+                "rollout_eos_patch NOT installed (default). Generation uses HF default "
+                "stopping criteria (EosTokenCriteria + MaxLengthCriteria), token-equivalent "
+                "to bare model.generate. Use --enable_rollout_eos_patch to restore legacy."
+            )
 
     strategy.print(reward_models)
 
@@ -689,6 +701,20 @@ def train(args):
         overlong_buffer_penalty_factor=args.overlong_buffer_penalty_factor,
         print_replay_buffer_stats=args.print_replay_buffer_stats,
     )
+
+    # ---- Optional initial evaluate-only at step 0 (no PPO update) ----
+    # Useful for diagnosing model state at step 0 vs step 1; e.g. to attribute the
+    # outcome gap between standalone bs=1 eval and the 8-rank FSDP bs=4 eval pipeline.
+    # Triggered by --initial_eval (default False, no-op).
+    if getattr(args, "initial_eval", False) and eval_dataloader is not None:
+        strategy.print(f"\n{'=' * 60}\n[initial_eval] Running evaluate at step 0 (NO PPO update)\n{'=' * 60}")
+        trainer.eval_dataloader = eval_dataloader  # ensure trainer has handle
+        raw = trainer.evaluate(eval_dataloader, global_step=0)
+        if strategy.is_rank_0() and raw:
+            strategy.print(f"[initial_eval] step 0 outcome: {raw}")
+        if getattr(args, "initial_eval_only", False):
+            strategy.print("[initial_eval] --initial_eval_only set, exiting before training.")
+            return
 
     trainer.fit(args, prompts_dataloader=prompts_dataloader, pretrain_dataloader=pretrain_dataloader, eval_dataloader=eval_dataloader, consumed_samples=0, num_update_steps_per_episodes=num_update_steps_per_episodes)
 
@@ -948,6 +974,33 @@ if __name__ == "__main__":
 
     # CPGD
     parser.add_argument("--use_cpg_loss", action="store_true", default=False, help="whether to use the clipped policy gradient loss from CPGD")
+
+    # initial-eval (eval at step 0, before any PPO update)
+    parser.add_argument(
+        "--initial_eval", action="store_true", default=False,
+        help="Run evaluate(global_step=0) before fit(). Useful for measuring base "
+             "model outcome under the actual training eval pipeline (8-rank FSDP + "
+             "bs=4 etc.) without any PPO drift.",
+    )
+    parser.add_argument(
+        "--initial_eval_only", action="store_true", default=False,
+        help="With --initial_eval, exit immediately after initial eval (skip training).",
+    )
+
+    # math_prm rollout EOS patch
+    parser.add_argument(
+        "--enable_rollout_eos_patch", action="store_true", default=False,
+        help=(
+            "Install StructuredAnswerStoppingCriteria on rollout_actor.model.generate "
+            "(legacy behavior). DEFAULT OFF. The patch makes generation stop right after "
+            "'†Answer:' marker, but historical experiments (PR #53 issuecomment-4394197141) "
+            "showed it (a) lowers eval outcome by ~9.8pp due to truncated tokens, and "
+            "(b) biases rollout reward signal towards short responses (Goodhart's law) "
+            "causing length collapse during RL. With patch off, generation falls back to "
+            "HF default stopping (EosTokenCriteria + MaxLengthCriteria), which is what we "
+            "want for both rollout reward fidelity and eval accuracy alignment."
+        ),
+    )
 
     add_arguments(parser)
 

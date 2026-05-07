@@ -6,6 +6,43 @@ import torch
 from lightrft.trainer.spmd_ppo_trainer import SPMDPPOTrainerVL
 
 
+def _detach_rollout_eos_patch(rollout_actor):
+    """Detach rollout_eos_patch.StructuredAnswerStoppingCriteria wrap from a rollout actor.
+
+    Returns the unwrapped (original) generate function so the caller can restore
+    the patch later. Returns None if no patch is installed.
+
+    The patch wraps ``model.generate`` with ``functools.wraps``, so the original
+    function is reachable via ``__wrapped__``. We rely on the patch's idempotency
+    flag ``_math_prm_rollout_eos_patch_installed`` to detect installation.
+    """
+    if rollout_actor is None:
+        return None
+    model = getattr(rollout_actor, "model", None)
+    if model is None:
+        return None
+    if not getattr(model, "_math_prm_rollout_eos_patch_installed", False):
+        return None
+    patched = model.generate
+    original = getattr(patched, "__wrapped__", None)
+    if original is None:
+        return None
+    model.generate = original
+    model._math_prm_rollout_eos_patch_installed = False
+    return patched
+
+
+def _reattach_rollout_eos_patch(rollout_actor, patched_generate):
+    """Reinstall a previously detached patched generate function."""
+    if rollout_actor is None or patched_generate is None:
+        return
+    model = getattr(rollout_actor, "model", None)
+    if model is None:
+        return
+    model.generate = patched_generate
+    model._math_prm_rollout_eos_patch_installed = True
+
+
 class MathPRMSPMDPPOTrainerVL(SPMDPPOTrainerVL):
     _ROLLOUT_KEY_SOURCES = {
         "reward": ("rollout_reward", "step_reward_mean", "reward"),
@@ -93,6 +130,17 @@ class MathPRMSPMDPPOTrainerVL(SPMDPPOTrainerVL):
         if original_config_advantage_estimator is not None:
             self.strategy.config.advantage_estimator = "reinforce"
 
+        # Detach rollout_eos_patch on the inference engine for the duration of eval.
+        # The patch is meant to save GPU during training rollouts (early-stops at
+        # the first ``†Answer:`` line) but truncates response tokens that the
+        # reward extractor needs in eval; ablation showed it lowers eval
+        # outcome_correct by ~8pp at bs=4 and is catastrophic at bs=1
+        # (extraction-failure 44%). See PR #53 issuecomment-4394071500.
+        rollout_actor = getattr(self.strategy, "inference_engine", None)
+        detached_patch = _detach_rollout_eos_patch(rollout_actor)
+        if detached_patch is not None and self.strategy.is_rank_0():
+            self.strategy.print("[eval] rollout_eos_patch detached for the eval pass")
+
         try:
             yield
         finally:
@@ -103,6 +151,10 @@ class MathPRMSPMDPPOTrainerVL(SPMDPPOTrainerVL):
                 self.strategy.config.n_samples_per_prompt = original_config_n_samples
             if original_config_advantage_estimator is not None:
                 self.strategy.config.advantage_estimator = original_config_advantage_estimator
+            if detached_patch is not None:
+                _reattach_rollout_eos_patch(rollout_actor, detached_patch)
+                if self.strategy.is_rank_0():
+                    self.strategy.print("[eval] rollout_eos_patch reattached after eval")
 
     def _build_rollout_metrics(self, logs_dict: Dict[str, float]) -> Dict[str, float]:
         rollout_metrics = {}
