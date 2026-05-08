@@ -51,6 +51,11 @@ class MathPRMSPMDPPOTrainerVL(SPMDPPOTrainerVL):
         "has_drop_moment": ("rollout_has_drop_moment", "has_drop_moment_mean", "reward_metrics/has_drop_moment"),
         "model_reward": ("rollout_model_reward", "model_reward_mean", "reward_metrics/model_reward"),
         "response_length": ("rollout_response_length", "response_length_mean", "response_length"),
+        # Variant 2 (per-step PRM) diagnostics — populated only when
+        # the dataset row label is "math_per_step_prm". For "math_psgrpo"
+        # rows these stay 0 (no alignment was attempted).
+        "alignment_failed": ("rollout_alignment_failed", "alignment_failed_mean", "reward_metrics/alignment_failed"),
+        "n_aligned_steps": ("rollout_n_aligned_steps", "n_aligned_steps_mean", "reward_metrics/n_aligned_steps"),
     }
     _TRAIN_KEY_SOURCES = {
         "policy_loss": ("policy_loss",),
@@ -82,6 +87,10 @@ class MathPRMSPMDPPOTrainerVL(SPMDPPOTrainerVL):
         "model_reward": ("model_reward", "model_reward_mean"),
         "response_length": ("response_length", "response_length_mean"),
         "answer_extraction_failed": ("answer_extraction_failed", "answer_extraction_failed_mean"),
+        # Variant 2 diagnostics in eval (eval also runs the PRM forward
+        # if the dataset label is "math_per_step_prm")
+        "alignment_failed": ("alignment_failed", "alignment_failed_mean"),
+        "n_aligned_steps": ("n_aligned_steps", "n_aligned_steps_mean"),
     }
 
     def __init__(self, *args, **kwargs):

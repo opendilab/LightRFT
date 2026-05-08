@@ -39,6 +39,54 @@ def _clean_vision_token(text: str) -> str:
     return text
 
 
+# Pattern matching "Step N:" or "†Answer:" markers in the actor's generated
+# response text. PRM emits N step_scores corresponding to the N "Step N:"
+# lines (NOT the †Answer line). For the k-th step (0-indexed, k=0..N-1),
+# the boundary token = the LAST token of that step's content, i.e. the token
+# RIGHT BEFORE the next pattern (next "Step k+1:" OR "†Answer:") starts.
+_STEP_OR_ANSWER_PATTERN = re.compile(r"(Step \d+\s*:|†Answer\s*:)")
+
+
+def find_step_boundaries_in_response_tokens(response_text: str, tokenizer):
+    """Locate per-step boundary token indices in the response token sequence.
+
+    The response token sequence here is what one would get by re-tokenizing
+    the response string with the same tokenizer that the actor uses (URSA's
+    base tokenizer, shared between actor + PRM in URSA family). Returned
+    indices are relative to the response start (0 = first response token).
+
+    The caller (compute_reward via fast_exp_maker._compute_advantages) then
+    uses these indices directly against the action_mask/response axis of
+    final_reward (which is also relative to response start).
+
+    Returns
+    -------
+    boundaries : list[int]
+        Token indices (relative to response start) of step boundaries. The
+        length matches the number of "Step N:" markers found.
+    matched_patterns : list[str]
+        The N+1 markers actually located (N "Step N:" + optional "†Answer:").
+        Useful for debugging when alignment fails.
+    """
+    enc = tokenizer(response_text, return_offsets_mapping=True, add_special_tokens=False)
+    offsets = enc["offset_mapping"]
+
+    matches = list(_STEP_OR_ANSWER_PATTERN.finditer(response_text))
+    char_starts = [m.start() for m in matches]
+    matched_patterns = [m.group() for m in matches]
+
+    boundaries: list[int] = []
+    n_steps = max(len(char_starts) - 1, 0)
+    for k in range(n_steps):
+        cutoff = char_starts[k + 1]
+        last_idx = -1
+        for tok_idx, (cs, ce) in enumerate(offsets):
+            if ce <= cutoff and ce > 0:
+                last_idx = tok_idx
+        boundaries.append(last_idx)
+    return boundaries, matched_patterns
+
+
 class MathPRMReward(nn.Module):
     """Wrap URSA-RM with the original URSA-MATH step-level scoring protocol."""
 
@@ -435,7 +483,19 @@ class MathPRMReward(nn.Module):
             "used_answer_fallback": [],
             "reference_supported": [],
             "used_mathruler": [],
+            # math_per_step_prm diagnostics
+            "alignment_failed": [],
+            "n_aligned_steps": [],
         }
+        # Per-step PRM data (variant 2). Lists of per-trajectory tensors,
+        # only populated for label == "math_per_step_prm" trajectories.
+        # When all trajectories in a batch have label == "math_psgrpo" the
+        # collected lists stay empty and the dict keys are dropped at the end
+        # so legacy callers that don't know about per-step rewards see no
+        # change.
+        batch_step_rewards: list[torch.Tensor] = []
+        batch_step_token_indices: list[torch.Tensor] = []
+
         image_inputs = raw_images or [None] * len(prompt_and_output)
         ref_inputs = references or [None] * len(prompt_and_output)
         label_inputs = labels or ["math_prm"] * len(prompt_and_output)
@@ -499,13 +559,79 @@ class MathPRMReward(nn.Module):
             else:
                 raise ValueError(f"Unknown aggregation: {self.aggregation!r}")
 
-            sequence_reward = psgrpo_metrics["final_reward"] if label == "math_psgrpo" else aggregated_score
+            # ---- variant 2 (per-step PRM reward) alignment -------------------
+            # For label == "math_per_step_prm" we additionally locate the
+            # boundary token of each "Step N:" inside the response so the
+            # step_scores tensor can be scattered to per-token positions
+            # downstream (instead of being collapsed to one scalar).
+            #
+            # Alignment is *self-contained*: we re-tokenize ``response`` with
+            # the actor's (== PRM's, in URSA family) tokenizer and use the
+            # offset mapping to reverse-find token indices for each "Step N:"
+            # / "†Answer:" pattern. Indices are relative to the response
+            # start so they line up with the action_mask axis of final_reward
+            # in compute_reward.
+            #
+            # If the alignment fails (n_steps_prm != n_boundaries) we
+            # *bypass* per-step mode for that trajectory: emit empty tensors
+            # so compute_reward falls back to the trajectory-scalar path,
+            # and bump the alignment_failed metric for monitoring.
+            if label == "math_per_step_prm" and step_scores.numel() > 0:
+                boundaries, matched_patterns = find_step_boundaries_in_response_tokens(
+                    response, self.tokenizer
+                )
+                aligned = (len(boundaries) == int(step_scores.numel()))
+                if aligned:
+                    traj_step_rewards = step_scores.detach().to(torch.float32).cpu()
+                    traj_step_tokens = torch.tensor(boundaries, dtype=torch.long)
+                    n_aligned = len(boundaries)
+                else:
+                    # Alignment failed: emit empties; downstream falls back to
+                    # trajectory-scalar mode for this row.
+                    traj_step_rewards = torch.empty(0, dtype=torch.float32)
+                    traj_step_tokens = torch.empty(0, dtype=torch.long)
+                    n_aligned = 0
+                batch_step_rewards.append(traj_step_rewards)
+                batch_step_token_indices.append(traj_step_tokens)
+                batch_metrics["alignment_failed"].append(0.0 if aligned else 1.0)
+                batch_metrics["n_aligned_steps"].append(float(n_aligned))
+            else:
+                # No per-step request for this row; emit empty placeholders to
+                # keep the per-traj list aligned with batch_rewards.
+                batch_step_rewards.append(torch.empty(0, dtype=torch.float32))
+                batch_step_token_indices.append(torch.empty(0, dtype=torch.long))
+                batch_metrics["alignment_failed"].append(0.0)
+                batch_metrics["n_aligned_steps"].append(0.0)
+
+            # ---- trajectory-scalar reward (PSGRPO / aggregate path) ----------
+            if label == "math_psgrpo":
+                sequence_reward = psgrpo_metrics["final_reward"]
+            elif label == "math_per_step_prm":
+                # In per-step mode the trajectory-scalar field is still used
+                # by GroupNorm baseline — use outcome (clean signal) instead
+                # of aggregated_score (which would double-count step rewards).
+                sequence_reward = float(psgrpo_metrics["outcome_correct"])
+            else:
+                sequence_reward = aggregated_score
             batch_rewards.append(sequence_reward)
             batch_metrics["model_reward"].append(aggregated_score)
             batch_metrics["step_score_min"].append(float(torch.min(step_scores).item()) if step_scores.numel() else 0.0)
             batch_metrics["step_score_mean"].append(float(torch.mean(step_scores).item()) if step_scores.numel() else 0.0)
             batch_metrics["step_score_last"].append(float(step_scores[-1].item()) if step_scores.numel() else 0.0)
             batch_metrics["step_count"].append(float(step_scores.numel()))
+            # Diagnostics: outcome_correct and answer-extraction signals are
+            # always meaningful (they're computed by _evaluate_answer_alignment
+            # which is independent of PSGRPO drop-moment); only the
+            # drop-moment-specific fields (max_relative_drop, has_drop_moment,
+            # final_reward) zero out for non-PSGRPO labels.
+            _UNIVERSAL_METRICS = {
+                "outcome_correct",
+                "answer_tag_present",
+                "answer_extraction_failed",
+                "used_answer_fallback",
+                "reference_supported",
+                "used_mathruler",
+            }
             for key in (
                 "outcome_correct",
                 "max_relative_drop",
@@ -517,7 +643,14 @@ class MathPRMReward(nn.Module):
                 "reference_supported",
                 "used_mathruler",
             ):
-                batch_metrics[key].append(psgrpo_metrics[key] if label == "math_psgrpo" else 0.0)
+                if label == "math_psgrpo" or key in _UNIVERSAL_METRICS:
+                    batch_metrics[key].append(psgrpo_metrics[key])
+                else:
+                    # PSGRPO-specific (max_relative_drop, has_drop_moment,
+                    # final_reward) — only meaningful when label is
+                    # "math_psgrpo"; zero out for other labels to preserve
+                    # historical metric tensor shape & semantics.
+                    batch_metrics[key].append(0.0)
 
         score_tensor = torch.tensor(batch_rewards, dtype=torch.float32, device=device)
         if references is None and labels is None and not return_dict:
@@ -527,4 +660,14 @@ class MathPRMReward(nn.Module):
             key: torch.tensor(values, dtype=torch.float32, device=device)
             for key, values in batch_metrics.items()
         }
-        return {"score": score_tensor, **metrics_tensor}
+        out = {"score": score_tensor, **metrics_tensor}
+
+        # Only attach per-step fields if any trajectory had non-empty step data.
+        # Stored as Python lists of CPU tensors (variable length per traj) to
+        # avoid forcing every caller to handle padded tensors.
+        any_per_step = any(t.numel() > 0 for t in batch_step_rewards)
+        if any_per_step:
+            out["step_rewards"] = batch_step_rewards
+            out["step_token_indices"] = batch_step_token_indices
+
+        return out

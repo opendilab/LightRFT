@@ -221,6 +221,7 @@ def rule_reward_fn(sol: str, gt: str) -> float:
 RECIPE: Dict[str, List[Tuple[str, Optional[str], float]]] = {
     "math_prm": [("model", "math_prm", 1.0)],
     "math_psgrpo": [("model", "math_prm", 1.0)],
+    "math_per_step_prm": [("model", "math_prm", 1.0)],
     "math_prm_combined": [("model", "math_prm", 1.0), ("rule", None, 0.5)],
     "math_rule": [("rule", None, 1.0)],
 }
@@ -229,6 +230,7 @@ RECIPE: Dict[str, List[Tuple[str, Optional[str], float]]] = {
 NO_GLOBAL_FORMAT_REWARD_LABELS = {
     "math_prm",
     "math_psgrpo",
+    "math_per_step_prm",
     "math_prm_combined",
     "math_rule",
 }

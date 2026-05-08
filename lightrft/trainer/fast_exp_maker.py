@@ -139,6 +139,18 @@ class _SamplesOutput:
     inputs_extra_kwargs: Optional[dict] = None
     prompt_and_output: Optional[List[str]] = None
 
+    # Per-step PRM rewards (variant 2). When the reward model returns
+    # ``step_rewards`` / ``step_token_indices`` arrays alongside the
+    # trajectory-scalar score, they're stored here so that downstream
+    # advantage computation can scatter per-step credit to specific token
+    # positions (instead of only the EOS token). Both fields are
+    # micro-batch-sized lists; index i holds the per-step data for the i-th
+    # trajectory in the micro-batch as 1-D CPU tensors of equal length.
+    # Empty tensors mean "this trajectory uses trajectory-scalar rewards"
+    # and the legacy EOS-scatter path is taken in compute_reward.
+    step_rewards: Optional[List[torch.Tensor]] = None
+    step_token_indices: Optional[List[torch.Tensor]] = None
+
 
 @dataclass
 class _RewardBatchResult:
@@ -146,6 +158,12 @@ class _RewardBatchResult:
 
     scores: torch.Tensor
     metrics: Optional[Dict[str, torch.Tensor]] = None
+    # Variant 2 (per-step PRM): when present, list[i] is a 1-D CPU tensor of
+    # step rewards / step boundary token indices for trajectory i in the
+    # micro-batch. When None or all-empty, the trajectory-scalar (EOS-scatter)
+    # path is used downstream.
+    step_rewards: Optional[List[torch.Tensor]] = None
+    step_token_indices: Optional[List[torch.Tensor]] = None
 
 
 class _NullProfiler:
@@ -866,10 +884,24 @@ class RewardComputationEngine:
             if isinstance(rm_output, dict):
                 score = torch.as_tensor(rm_output["score"], dtype=torch.float32, device=device)
                 metrics = self._normalize_reward_metrics(rm_output, score.numel(), device)
+                # Variant 2 (per-step PRM reward): the reward model may emit
+                # per-trajectory step_rewards / step_token_indices lists. They
+                # come back as Python lists of CPU tensors (variable length per
+                # trajectory) — pass them through unchanged so compute_reward
+                # downstream can scatter per-step credit.
+                step_rewards = rm_output.get("step_rewards")
+                step_token_indices = rm_output.get("step_token_indices")
             else:
                 score = torch.as_tensor(rm_output, dtype=torch.float32, device=device)
                 metrics = None
-            micro_batch_rewards.append(_RewardBatchResult(scores=score, metrics=metrics))
+                step_rewards = None
+                step_token_indices = None
+            micro_batch_rewards.append(_RewardBatchResult(
+                scores=score,
+                metrics=metrics,
+                step_rewards=step_rewards,
+                step_token_indices=step_token_indices,
+            ))
 
         return micro_batch_rewards
 
@@ -919,6 +951,15 @@ class RewardComputationEngine:
                 # Single RM, use score directly
                 outputs[mb_idx].rewards = same_batch_results[0].scores
                 outputs[mb_idx].reward_metrics = same_batch_results[0].metrics
+                # Variant 2 (per-step PRM): forward step_rewards / token
+                # indices from the single reward model into outputs so
+                # _process_experiences / compute_reward can see them. Multi-RM
+                # mode is intentionally NOT supported here — per-step credit
+                # assignment with multiple reward models would require a
+                # bespoke aggregator (open question for follow-up); we keep
+                # the multi-RM path on trajectory-scalar rewards only.
+                outputs[mb_idx].step_rewards = same_batch_results[0].step_rewards
+                outputs[mb_idx].step_token_indices = same_batch_results[0].step_token_indices
 
 
 # ============================================================================
@@ -1642,12 +1683,41 @@ class FastExperienceMaker(NaiveExperienceMaker):
                 processed_reward = torch.clamp(processed_reward, -config.reward_clip, config.reward_clip)
 
             # ========== Final Reward (with KL penalty) ==========
+            # Variant 2 (per-step PRM): if experience carries
+            # step_rewards/step_token_indices (placed by _pack_experience
+            # when the reward model emitted them), build a padded
+            # (batch, max_steps) tensor for compute_reward to scatter into
+            # per-step boundary tokens. Trajectories with empty step lists
+            # get all-(-1) indices => compute_reward filters them out and
+            # falls back to the trajectory-scalar (EOS) path for that row.
+            step_rewards_padded = None
+            step_indices_padded = None
+            step_rewards_list = experience.info.get("step_rewards")
+            step_indices_list = experience.info.get("step_token_indices")
+            if (
+                step_rewards_list is not None
+                and step_indices_list is not None
+                and any(t.numel() > 0 for t in step_rewards_list)
+            ):
+                max_steps = max(t.numel() for t in step_rewards_list)
+                if max_steps > 0:
+                    B = len(step_rewards_list)
+                    step_rewards_padded = torch.zeros(B, max_steps, dtype=torch.float32, device="cuda")
+                    step_indices_padded = torch.full((B, max_steps), -1, dtype=torch.long, device="cuda")
+                    for i, (sr, sti) in enumerate(zip(step_rewards_list, step_indices_list)):
+                        n = sr.numel()
+                        if n > 0:
+                            step_rewards_padded[i, :n] = sr.to(step_rewards_padded.device, dtype=step_rewards_padded.dtype)
+                            step_indices_padded[i, :n] = sti.to(step_indices_padded.device, dtype=step_indices_padded.dtype)
+
             final_reward = compute_reward(
                 processed_reward,
                 self.kl_ctl.value,
                 experience.kl,
                 action_mask=experience.action_mask,
                 num_actions=experience.info["num_actions"],
+                step_rewards=step_rewards_padded,
+                step_token_indices=step_indices_padded,
             )
 
             # ========== Advantage Estimation ==========
@@ -1936,6 +2006,17 @@ class FastExperienceMaker(NaiveExperienceMaker):
         # Add reward_metrics if available
         if output.reward_metrics is not None:
             info['reward_metrics'] = output.reward_metrics
+
+        # Variant 2 (per-step PRM rewards): forward to experience.info so
+        # downstream advantage computation can build per-token reward signals.
+        # Stored as Python lists of CPU tensors (variable length per traj).
+        # _process_experiences chunks experiences along micro_batch_size,
+        # so we keep the *micro-batch local* indexing here — i.e. info
+        # carries the lists scoped to this single _SamplesOutput.
+        if output.step_rewards is not None:
+            info['step_rewards'] = output.step_rewards
+        if output.step_token_indices is not None:
+            info['step_token_indices'] = output.step_token_indices
 
         # Create Experience object
         if vlm:
