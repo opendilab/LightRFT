@@ -20,6 +20,10 @@
 if [ -f "$(dirname "$0")/../../.env" ]; then
     set -a; . "$(dirname "$0")/../../.env"; set +a
 fi
+# Alias project-specific WANDB key names to the canonical WANDB_API_KEY so
+# the rest of the script (and wandb itself) can use the canonical name.
+: "${WANDB_API_KEY:=${LIGHTRFT_WANDB_API_KEY:-${WANDB_TOKEN:-${WANDB_KEY:-}}}}"
+export WANDB_API_KEY
 
 ################################################################################
 #                           Part 1: User Configuration                         #
