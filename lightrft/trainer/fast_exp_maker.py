@@ -1639,6 +1639,89 @@ class FastExperienceMaker(NaiveExperienceMaker):
         # Use calculator's preprocess_rewards method
         return self.advantage_calculator.preprocess_rewards(rewards, experiences, max_new_tokens)
 
+    def _apply_step_reward_group_norm(self, experiences: List) -> None:
+        """Variant 2 (per-step PRM) GRPO-style step-level baseline subtraction.
+
+        Active only when ``self.strategy.config.per_step_reward_mode == "group_norm"``.
+        For each step k, computes mean/std across the K trajectories that share
+        the same prompt (group), then replaces step_rewards with
+        ``(s - mean) / std`` so that scattered token-level rewards are zero-mean
+        signed advantages — analogous to GRPO trajectory-level baseline but at
+        step granularity.
+
+        This is the difference between paper variant 2's two interpretations:
+          - "raw":        scatter raw sigmoid step_score (paper Figure ablation)
+          - "group_norm": scatter group-normalized step_score (GRPO convention)
+
+        Padding (step_token_indices < 0) is masked so it doesn't pollute mean/std.
+        Operates in-place on ``experience.info["step_rewards"]``.
+        """
+        config = self.strategy.config
+        K = config.n_samples_per_prompt
+        if K is None or K < 2:
+            return  # need >= 2 samples per group for std
+
+        all_sr: List[torch.Tensor] = []
+        all_sti: List[torch.Tensor] = []
+        for exp in experiences:
+            sr_list = exp.info.get("step_rewards")
+            sti_list = exp.info.get("step_token_indices")
+            if sr_list is None or sti_list is None:
+                return  # no per-step data present
+            all_sr.extend(sr_list)
+            all_sti.extend(sti_list)
+
+        if not all_sr:
+            return
+        B = len(all_sr)
+        if B % K != 0:
+            warnings.warn(
+                f"per_step_reward_mode=group_norm: trajectory count {B} not divisible "
+                f"by n_samples_per_prompt {K}; skipping step-level group norm."
+            )
+            return
+
+        max_steps = max((t.numel() for t in all_sr), default=0)
+        if max_steps == 0:
+            return
+
+        sr_padded = torch.zeros(B, max_steps, dtype=torch.float32)
+        valid = torch.zeros(B, max_steps, dtype=torch.bool)
+        for i, (sr, sti) in enumerate(zip(all_sr, all_sti)):
+            n = sr.numel()
+            if n > 0:
+                sr_padded[i, :n] = sr.float()
+                valid[i, :n] = (sti >= 0)
+
+        G = B // K
+        sr_g = sr_padded.reshape(G, K, max_steps)
+        valid_g = valid.reshape(G, K, max_steps).float()
+
+        n_valid = valid_g.sum(dim=1, keepdim=True).clamp(min=1.0)
+        sr_masked = sr_g * valid_g
+        mean = sr_masked.sum(dim=1, keepdim=True) / n_valid
+        sq = ((sr_g - mean) * valid_g) ** 2
+        var = sq.sum(dim=1, keepdim=True) / n_valid
+        std = (var + 1e-9).sqrt()
+        sr_normed = (sr_g - mean) / std
+        # Zero out invalid entries so they don't show up if accidentally scattered.
+        sr_normed = sr_normed * valid_g
+        sr_normed_flat = sr_normed.reshape(B, max_steps)
+
+        # Write back, preserving each trajectory's actual step count (n).
+        idx = 0
+        for exp in experiences:
+            sr_list = exp.info["step_rewards"]
+            new_sr_list: List[torch.Tensor] = []
+            for sr in sr_list:
+                n = sr.numel()
+                if n > 0:
+                    new_sr_list.append(sr_normed_flat[idx, :n].cpu().to(sr.dtype))
+                else:
+                    new_sr_list.append(sr)
+                idx += 1
+            exp.info["step_rewards"] = new_sr_list
+
     def _compute_advantages_and_returns(
         self,
         experiences: List[ExperienceVL],
@@ -1661,6 +1744,12 @@ class FastExperienceMaker(NaiveExperienceMaker):
         :rtype: List[Union[Experience, ExperienceVL]]
         """
         config = self.strategy.config
+
+        # Variant 2 step-level baseline subtraction (cross-experience, group-aware).
+        # Only active when label produced step_rewards AND user set
+        # --per_step_reward_mode=group_norm.
+        if getattr(config, "per_step_reward_mode", "raw") == "group_norm":
+            self._apply_step_reward_group_norm(experiences)
 
         for experience, reward in zip(experiences, rewards):
             reward = reward.to("cuda")

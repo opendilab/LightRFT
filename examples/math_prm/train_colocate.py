@@ -858,6 +858,23 @@ if __name__ == "__main__":
 
     parser.add_argument("--use_kl_loss", action="store_true", default=False, help="whether to use KL loss from GRPO")
 
+    parser.add_argument(
+        "--per_step_reward_mode",
+        type=str,
+        choices=["raw", "group_norm"],
+        default="raw",
+        help=(
+            "How to integrate per-step PRM rewards (variant 2) before scattering "
+            "to token positions. 'raw': scatter raw sigmoid step_score directly "
+            "(matches URSA paper Figure ablation; gives weak PG signal because "
+            "all step_scores are positive). 'group_norm': for each step k, "
+            "subtract group mean and divide by group std across the K trajectories "
+            "in the same prompt group BEFORE scattering (matches GRPO baseline-"
+            "subtraction convention; produces zero-mean signed advantages). Only "
+            "active when label is 'math_per_step_prm'."
+        ),
+    )
+
     # LoRA
     parser.add_argument("--load_in_4bit", action="store_true", default=False)
     parser.add_argument("--lora_rank", type=int, default=0)
