@@ -13,6 +13,14 @@
 # - Algorithm: GRPO with PS-GRPO reward via the math_psgrpo label
 #
 
+# Auto-load credentials/paths from .env if present (no-op when missing).
+# Useful keys: WANDB_API_KEY, WANDB_PROJECT, HF_TOKEN, PATH_TO_YOUR_BASE_MODEL,
+# PATH_TO_URSA_RM, PATH_TO_YOUR_MATH_DATASET (any var here is overridable via
+# the outer environment).
+if [ -f "$(dirname "$0")/../../.env" ]; then
+    set -a; . "$(dirname "$0")/../../.env"; set +a
+fi
+
 ################################################################################
 #                           Part 1: User Configuration                         #
 # Please update the following paths and settings to match your environment.    #
@@ -57,6 +65,12 @@ TBS=128                  # Training Batch Size.
 KL_ESTIMATOR=k3          # Schulman K3 = exp(-r) - 1 + r. Historical default.
 KL=0.001                 # Historical default. K3 * 0.001 ~= 4e-5 budget on real KL.
 KL_TARGET=""             # If set (e.g. "0.5"), enables AdaptiveKLController.
+# Variant 2 per-step PRM reward mode. Only meaningful when prompts have label
+# "math_per_step_prm" (see fast_exp_maker._apply_step_reward_group_norm). Values:
+#   raw         : scatter raw sigmoid step_score (paper Figure ablation; default)
+#   group_norm  : per-step group-relative baseline (GRPO convention)
+PER_STEP_REWARD_MODE="${PER_STEP_REWARD_MODE:-raw}"
+
 LR=1e-6                  # Actor learning rate.
 PROMPT_MAX_LEN=1024      # Max length of the input prompt.
 GENERATE_MAX_LEN=3072    # Max length of the generated response.
@@ -186,6 +200,7 @@ TORCHRUN="${TORCHRUN:-torchrun}"
     --use_kl_loss \
     --init_kl_coef $KL \
     --kl_estimator "${KL_ESTIMATOR}" \
+    --per_step_reward_mode "${PER_STEP_REWARD_MODE}" \
     "${KL_TARGET_ARGS[@]}" \
     "${RESUME_ARGS[@]}" \
     --engine_type "hf" \
