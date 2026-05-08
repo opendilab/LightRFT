@@ -39,49 +39,91 @@ def _clean_vision_token(text: str) -> str:
     return text
 
 
-# Pattern matching "Step N:" or "†Answer:" markers in the actor's generated
-# response text. PRM emits N step_scores corresponding to the N "Step N:"
-# lines (NOT the †Answer line). For the k-th step (0-indexed, k=0..N-1),
-# the boundary token = the LAST token of that step's content, i.e. the token
-# RIGHT BEFORE the next pattern (next "Step k+1:" OR "†Answer:") starts.
+# Pattern matching "Step N:" / "†Answer:" markers — kept only for diagnostic
+# `matched_patterns` output during alignment. The actual alignment uses the
+# URSA-native path (PRM's own ``replace_specific_plus_minus_with_ki`` + PRM's
+# tokenizer offset_mapping) instead of re-implementing char-level simulation.
 _STEP_OR_ANSWER_PATTERN = re.compile(r"(Step \d+\s*:|†Answer\s*:)")
 
 
-def find_step_boundaries_in_response_tokens(response_text: str, tokenizer):
-    """Locate per-step boundary token indices in the response token sequence.
+def find_step_boundaries_in_response_tokens(prm_module, response_text: str, question_text: str = ""):
+    """URSA-native step-boundary alignment.
 
-    The response token sequence here is what one would get by re-tokenizing
-    the response string with the same tokenizer that the actor uses (URSA's
-    base tokenizer, shared between actor + PRM in URSA family). Returned
-    indices are relative to the response start (0 = first response token).
+    Algorithm (no analytic re-implementation — every step uses PRM's own
+    code):
+      1. Build prefix exactly like ``MathPRMReward._prepare_prm_input``:
+           prefix = _PRM_PROMPT + question + "\\n"   (or _PRM_PROMPT + "\\n")
+      2. Form the same string PRM scores on:
+           prm_input_str = prm_module.replace_specific_plus_minus_with_ki(
+               prefix + response_text)
+      3. Tokenize with prm_module.tokenizer (the EXACT tokenizer PRM uses) and
+         locate every ` и` token (id == prm_module.tag_id).
+      4. Each ` и` token's offset_mapping char_start lies inside prm_input_str.
+         Subtract len(prefix) and ``2 * k_tag`` (each prior ` и` adds 2 chars)
+         to recover the position in the ORIGINAL ``response_text`` where the
+         step-end occurs.
+      5. Re-tokenize ``response_text`` (without ` и`) and find the response
+         token whose char_end <= that position. That is the per-step
+         boundary token index.
 
-    The caller (compute_reward via fast_exp_maker._compute_advantages) then
-    uses these indices directly against the action_mask/response axis of
-    final_reward (which is also relative to response start).
+    Returned indices are relative to response start (0 = first response
+    token). Caller (compute_reward via fast_exp_maker._compute_advantages)
+    scatters per-step rewards onto these indices.
+
+    Why native? It avoids any divergence between an analytic char-level
+    model of ` и` insertion and PRM's actual tokenizer behavior. If the
+    tokenizer ever merges ` и` with adjacent chars, this path stays correct
+    because we read offsets from the actual tokenization PRM uses.
+
+    Parameters
+    ----------
+    prm_module : MathPRMReward
+        Provides ``_PRM_PROMPT``, ``tokenizer``, ``tag_id``, and
+        ``replace_specific_plus_minus_with_ki``.
+    response_text : str
+        The actor-generated response (assistant content only, no chat tags).
+    question_text : str, optional
+        Prompt question — passed through ``_prepare_prm_input`` so the prefix
+        length matches the PRM-side string exactly.
 
     Returns
     -------
     boundaries : list[int]
-        Token indices (relative to response start) of step boundaries. The
-        length matches the number of "Step N:" markers found.
+        Per-step boundary token indices in the response token sequence.
+        ``len(boundaries) == number of step_scores PRM emits``.
     matched_patterns : list[str]
-        The N+1 markers actually located (N "Step N:" + optional "†Answer:").
-        Useful for debugging when alignment fails.
+        ``Step N:`` / ``†Answer:`` patterns found in the response (debug aid).
     """
-    enc = tokenizer(response_text, return_offsets_mapping=True, add_special_tokens=False)
-    offsets = enc["offset_mapping"]
+    matched_patterns = [m.group() for m in _STEP_OR_ANSWER_PATTERN.finditer(response_text)]
 
-    matches = list(_STEP_OR_ANSWER_PATTERN.finditer(response_text))
-    char_starts = [m.start() for m in matches]
-    matched_patterns = [m.group() for m in matches]
+    if question_text and not isinstance(question_text, float):
+        prefix_str = prm_module._PRM_PROMPT + question_text + "\n"
+    else:
+        prefix_str = prm_module._PRM_PROMPT + "\n"
+    prefix_len = len(prefix_str)
+    prm_input_str = prm_module.replace_specific_plus_minus_with_ki(prefix_str + response_text)
+
+    tok = prm_module.tokenizer
+    enc_prm = tok(prm_input_str, return_offsets_mapping=True, add_special_tokens=False)
+    prm_offsets = enc_prm["offset_mapping"]
+    prm_ids = enc_prm["input_ids"]
+    tag_id = prm_module.tag_id
+
+    char_in_response: list[int] = []
+    k_tag = 0
+    for tid, off in zip(prm_ids, prm_offsets):
+        if tid == tag_id:
+            char_in_response.append(off[0] - prefix_len - 2 * k_tag)
+            k_tag += 1
+
+    enc_resp = tok(response_text, return_offsets_mapping=True, add_special_tokens=False)
+    resp_offsets = enc_resp["offset_mapping"]
 
     boundaries: list[int] = []
-    n_steps = max(len(char_starts) - 1, 0)
-    for k in range(n_steps):
-        cutoff = char_starts[k + 1]
+    for cp in char_in_response:
         last_idx = -1
-        for tok_idx, (cs, ce) in enumerate(offsets):
-            if ce <= cutoff and ce > 0:
+        for tok_idx, (_, ce) in enumerate(resp_offsets):
+            if 0 < ce <= cp:
                 last_idx = tok_idx
         boundaries.append(last_idx)
     return boundaries, matched_patterns
@@ -578,7 +620,7 @@ class MathPRMReward(nn.Module):
             # and bump the alignment_failed metric for monitoring.
             if label == "math_per_step_prm" and step_scores.numel() > 0:
                 boundaries, matched_patterns = find_step_boundaries_in_response_tokens(
-                    response, self.tokenizer
+                    self, response, question_text=question
                 )
                 aligned = (len(boundaries) == int(step_scores.numel()))
                 if aligned:
