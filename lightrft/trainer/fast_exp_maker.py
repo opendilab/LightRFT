@@ -809,6 +809,7 @@ class RewardComputationEngine:
                 prompt_and_output=output.prompt_and_output,
                 raw_images=output.raw_images,
                 img_num=output.image_num,
+                references=output.references,
                 **output.inputs_extra_kwargs,
             )
 
