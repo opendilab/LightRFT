@@ -61,6 +61,7 @@ class SPMDPPOTrainerBase:
         *args,
         loss_agg_mode: str = "seq-mean-token-mean",
         use_gspo: bool = False,
+        use_gmpo: bool = False,
         VLM: bool = False,
         **kwargs,
     ):
@@ -77,6 +78,8 @@ class SPMDPPOTrainerBase:
         :type loss_agg_mode: str
         :param use_gspo: Whether to enable GSPO (Group Sequence Policy Optimization) mode
         :type use_gspo: bool
+        :param use_gmpo: Whether to enable GMPO (Geometric Mean Policy Optimization) mode
+        :type use_gmpo: bool
         :param VLM: Whether to use Vision-Language Model mode (True) or Language Model mode (False)
         :type VLM: bool
         :param kwargs: Keyword arguments for configuration including packing_samples, processor, and other parameters.
@@ -136,15 +139,23 @@ class SPMDPPOTrainerBase:
         # Extract high_entropy_token_ratio for entropy-based token filtering
         self.high_entropy_token_ratio = kwargs.pop("high_entropy_token_ratio", 0.0)
 
-        # Initialize loss function based on mode
-        policy_loss_kwargs = {"loss_agg_mode": loss_agg_mode, "use_gspo": use_gspo}
-        if use_gspo:
-            policy_loss_kwargs.update({
-                "normalize_advantages": kwargs.get("normalize_advantages", True),
-                "use_sequence_rewards": kwargs.get("use_sequence_rewards", True)
-            })
-
         self.use_gspo = use_gspo
+        self.use_gmpo = use_gmpo
+
+        # Override actor_loss_fn when GSPO or GMPO is enabled.
+        # The parent class (PPOTrainer/PPOTrainerVL) initializes a default PolicyLoss;
+        # here we replace it with the algorithm-specific configuration.
+        if use_gspo or use_gmpo:
+            from lightrft.models.loss import PolicyLoss
+            clip_ratio_low = kwargs.pop("clip_ratio_low", None)
+            clip_ratio_high = kwargs.pop("clip_ratio_high", None)
+            self.actor_loss_fn = PolicyLoss(
+                clip_eps=self.args.eps_clip,
+                use_gspo=use_gspo,
+                use_gmpo=use_gmpo,
+                clip_ratio_low=clip_ratio_low,
+                clip_ratio_high=clip_ratio_high,
+            )
 
         # Initialize trajectory saver if enabled
         self.trajectory_saver = create_trajectory_saver(self.args, self.tokenizer)
