@@ -180,6 +180,26 @@ class UrsaActor(ActorVL):
             position_ids.masked_fill_(attention_mask == 0, 1)
             attention_mask_for_model = attention_mask
 
+        # Sanitize actor-leaked image tokens before forward. During GRPO rollout
+        # an actor can generate literal `<|image|>` / `<image>` strings inside
+        # its response (rare but observed; freq goes up when KL spikes hard
+        # late in training). The tokenizer then maps those to image_token_index,
+        # so the sequence ends up with MORE image-token slots than the prompt
+        # actually had images. URSA's vision merge requires
+        # image_token_count == n_image_features and aborts with
+        #   "The input provided to the model are wrong.
+        #    The number of image tokens is N while the number of image given is M.
+        #    This prevents correct indexing and breaks batch generation."
+        # which crashes the whole PPO step. cce5ae5 already fixed this on the
+        # PRM forward path; the actor forward needs the same protection because
+        # the same actor-generated sequences are replayed here every PPO inner
+        # epoch. Align both directions:
+        #   * token_count > image_count : extras are leaked, replace with pad.
+        #   * token_count < image_count : truncate pixel_values/image_grid_thw.
+        sequences, pixel_values, image_grid_thw = self._align_image_tokens_to_images(
+            sequences, pixel_values, image_grid_thw
+        )
+
         forward_kwargs = dict(
             attention_mask=attention_mask_for_model,
             position_ids=position_ids,
@@ -243,6 +263,103 @@ class UrsaActor(ActorVL):
                 return (action_log_probs, output_dict)
             return (action_log_probs, output)
         return action_log_probs
+
+    def _align_image_tokens_to_images(self, sequences, pixel_values, image_grid_thw):
+        """Make ``sequences``'s image-token count match the actual image count.
+
+        URSA's vision merge crashes with::
+
+            ValueError: The input provided to the model are wrong.
+            The number of image tokens is N while the number of image given is M.
+            This prevents correct indexing and breaks batch generation.
+
+        whenever the count of ``image_token_index`` markers inside the input
+        sequence is unequal to the number of image features supplied via
+        ``pixel_values`` (one row of ``image_grid_thw`` per image). During GRPO
+        rollout this can happen because the actor occasionally generates a
+        literal ``<|image|>`` / ``<image>`` token inside its response — usually
+        rare, but observed to fire when KL drifts very high mid-training and
+        the actor's output distribution gets unstable.
+
+        Strategy (no-op fast path when counts already agree):
+
+          * count_tok > count_img : leaked extras — replace the trailing
+            (count_tok - count_img) image-token slots in each row with a benign
+            text token (pad / eos). Keep the first count_img in their original
+            positions so the vision features still merge into the prompt.
+
+          * count_tok < count_img : sequence is missing some image-token slots
+            relative to the image features. Truncate ``image_grid_thw`` and the
+            corresponding rows of ``pixel_values`` to the first count_tok
+            images. (Information loss is unavoidable, but the PPO step still
+            makes progress on the other tokens.)
+
+        Returns the (possibly sanitized) ``(sequences, pixel_values, image_grid_thw)``.
+        Original tensors are returned unchanged when no mismatch exists.
+        """
+        if sequences is None:
+            return sequences, pixel_values, image_grid_thw
+        image_token_id = getattr(self.model.config, "image_token_index", None)
+        if image_token_id is None:
+            return sequences, pixel_values, image_grid_thw
+        if pixel_values is None and image_grid_thw is None:
+            # Pure text micro-batch — nothing to align; also strip any leaked
+            # image tokens so the LM head doesn't see them as content.
+            n_tok = int((sequences == image_token_id).sum().item())
+            if n_tok == 0:
+                return sequences, pixel_values, image_grid_thw
+
+        # Per-row image-token positions (flat indices).
+        # We sanitize in-place on a clone to avoid mutating shared rollout buffers.
+        seq = sequences.clone()
+        flat = seq.view(-1)
+        tok_positions = torch.nonzero(flat == image_token_id, as_tuple=False).squeeze(-1)
+        n_tok = int(tok_positions.numel())
+
+        # Number of images supplied. image_grid_thw has one row per image and
+        # is the more reliable source than pixel_values (which may be packed).
+        if image_grid_thw is not None:
+            n_img = int(image_grid_thw.size(0))
+        elif pixel_values is not None:
+            # Fallback: assume one image per row of pixel_values.
+            n_img = int(pixel_values.size(0)) if pixel_values.dim() >= 1 else 0
+        else:
+            n_img = 0
+
+        if n_tok == n_img:
+            return sequences, pixel_values, image_grid_thw
+
+        replacement = None
+        tokenizer = getattr(self, "tokenizer", None)
+        if tokenizer is not None:
+            replacement = tokenizer.pad_token_id
+            if replacement is None:
+                replacement = tokenizer.eos_token_id
+        if replacement is None:
+            # Last-resort: pick a known safe id (eos is usually safe across HF tokenizers).
+            replacement = int(getattr(self.model.config, "eos_token_id", 0) or 0)
+
+        if n_tok > n_img:
+            # Leaked extras — replace tail extras with pad/eos so token_count == n_img.
+            extras = tok_positions[n_img:]
+            flat[extras] = replacement
+            seq = flat.view_as(sequences)
+            return seq, pixel_values, image_grid_thw
+
+        # n_tok < n_img: truncate image features to match token slots.
+        new_grid = image_grid_thw[:n_tok] if image_grid_thw is not None else None
+        new_pixel = pixel_values
+        if pixel_values is not None and image_grid_thw is not None and n_tok > 0:
+            # pixel_values is the concat of per-image patches; the per-image
+            # row counts come from image_grid_thw[i, 0] * thw[i, 1] * thw[i, 2].
+            # Keep the first n_tok image's patches.
+            patch_counts = (image_grid_thw[:, 0] * image_grid_thw[:, 1] * image_grid_thw[:, 2]).long()
+            keep = int(patch_counts[:n_tok].sum().item())
+            new_pixel = pixel_values[:keep]
+        elif pixel_values is not None and n_tok == 0:
+            new_pixel = None
+            new_grid = None
+        return sequences, new_pixel, new_grid
 
 
 def create_ursa_actor(args, ds_config=None):
