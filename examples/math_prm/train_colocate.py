@@ -473,15 +473,25 @@ def train(args):
                 eval_data = eval_data.select(range(min(args.max_eval_samples, len(eval_data))))
 
                 eval_dataset = PromptDatasetVL(eval_data, tokenizer, processor, args.prompt_max_len, strategy, input_template=args.input_template)
+                # Cap eval DataLoader batch_size by local_hf_generate_max_batch_size to
+                # avoid the padding-leak bug. See heldout branch below for full rationale.
+                eval_dp_batch_size = args.rollout_batch_size // strategy.world_size
+                if args.engine_type == "hf":
+                    mb_cap = int(getattr(args, "local_hf_generate_max_batch_size", 0) or 0)
+                    if mb_cap > 0:
+                        eval_dp_batch_size = min(eval_dp_batch_size, mb_cap)
                 eval_dataloader = strategy.setup_dataloader(
                     eval_dataset,
-                    args.rollout_batch_size // strategy.world_size,
+                    eval_dp_batch_size,
                     False,
                     False,
                     collate_fn=eval_dataset.collate_fn,
                     drop_last=False,
                 )
-                strategy.print(f"Evaluation dataset loaded: {len(eval_dataset)} samples")
+                strategy.print(
+                    f"Evaluation dataset loaded: {len(eval_dataset)} samples "
+                    f"(eval DataLoader batch_size={eval_dp_batch_size})"
+                )
         else:
             strategy.print("Warning: eval_split specified but no data path available for evaluation.")
     elif heldout_eval_data is not None:
@@ -489,15 +499,33 @@ def train(args):
         eval_dataset = PromptDatasetVL(
             eval_data, tokenizer, processor, args.prompt_max_len, strategy, input_template=args.input_template
         )
+        # Match DataLoader batch_size to local_hf_generate_max_batch_size for engine_type=hf.
+        # fast_exp_maker.process_multimodal_batch calls processor(padding=True) on the full
+        # DataLoader batch, then strategy_base chunks the already-padded tensor into
+        # micro-batches of local_hf_generate_max_batch_size. Without this alignment, each
+        # micro-batch keeps the max-of-DL-batch padded length (e.g. 16-wide pad in a 4-wide
+        # chunk), and the extra left-pad tokens — even with attention_mask masking — degrade
+        # URSA's greedy decode by ~8pp via RoPE / vision-path interaction. Setting DL-batch
+        # = micro-batch eliminates the leak so eval matches `tmp/ckpt_eval_aligned.py --bs N`
+        # exactly. See PR53 issuecomment-... for the 11.9pp breakdown.
+        eval_dp_batch_size = args.rollout_batch_size // strategy.world_size
+        if args.engine_type == "hf":
+            mb_cap = int(getattr(args, "local_hf_generate_max_batch_size", 0) or 0)
+            if mb_cap > 0:
+                eval_dp_batch_size = min(eval_dp_batch_size, mb_cap)
         eval_dataloader = strategy.setup_dataloader(
             eval_dataset,
-            args.rollout_batch_size // strategy.world_size,
+            eval_dp_batch_size,
             False,
             False,
             collate_fn=eval_dataset.collate_fn,
             drop_last=False,
         )
-        strategy.print(f"Held-out runtime evaluation dataset loaded: {len(eval_dataset)} samples")
+        strategy.print(
+            f"Held-out runtime evaluation dataset loaded: {len(eval_dataset)} samples "
+            f"(eval DataLoader batch_size={eval_dp_batch_size}, aligned with "
+            f"local_hf_generate_max_batch_size={getattr(args, 'local_hf_generate_max_batch_size', 'n/a')})"
+        )
 
     # Prepare pretrain dataset
     pretrain_dataloader = None
