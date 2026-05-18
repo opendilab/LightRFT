@@ -15,8 +15,7 @@
 
 # Auto-load credentials/paths from .env if present (no-op when missing).
 # Useful keys: WANDB_API_KEY, WANDB_PROJECT, HF_TOKEN, PATH_TO_YOUR_BASE_MODEL,
-# PATH_TO_URSA_RM, PATH_TO_YOUR_MATH_DATASET (any var here is overridable via
-# the outer environment).
+# PATH_TO_URSA_RM, PATH_TO_YOUR_MATH_DATASET, LIGHTRFT_OUTPUT_ROOT.
 if [ -f "$(dirname "$0")/../../.env" ]; then
     set -a; . "$(dirname "$0")/../../.env"; set +a
 fi
@@ -41,6 +40,7 @@ PATH_TO_YOUR_MATH_DATASET="${PATH_TO_YOUR_MATH_DATASET:-/path/to/your/preprocess
 
 # --- Experiment and Logging ---
 EXPERIMENT_NAME="${EXPERIMENT_NAME:-lightrft-ursa8b-math-prm}"
+LIGHTRFT_OUTPUT_ROOT="${LIGHTRFT_OUTPUT_ROOT:-.}"
 
 # W&B configuration. Leave WANDB_API_KEY empty to disable W&B.
 export WANDB_API_KEY="${WANDB_API_KEY:-YOUR_WANDB_API_KEY}"
@@ -114,9 +114,11 @@ export MASTER_PORT="${MASTER_PORT:-20092}"
 current_time=$(date +"%Y%m%d_%H%M%S")
 SAVE_MODEL_NAME="${SAVE_MODEL_NAME:-${EXPERIMENT_NAME}-ep${EPISODE}-kl${KL}-lr${LR}-${current_time}}"
 WANDB_RUN_NAME="${WANDB_RUN_NAME:-${EXPERIMENT_NAME}-${current_time}}"
+SAVE_DIR="${LIGHTRFT_OUTPUT_ROOT}/results/${EXPERIMENT_NAME}/${SAVE_MODEL_NAME}"
+LOG_DIR="${LIGHTRFT_OUTPUT_ROOT}/rft_logs/${EXPERIMENT_NAME}"
 
-mkdir -p "results/${EXPERIMENT_NAME}/${SAVE_MODEL_NAME}"
-mkdir -p "rft_logs/${EXPERIMENT_NAME}"
+mkdir -p "${SAVE_DIR}"
+mkdir -p "${LOG_DIR}"
 
 export TORCH_NCCL_AVOID_RECORD_STREAMS=1
 export NCCL_DEBUG="WARN"
@@ -173,8 +175,8 @@ TORCHRUN="${TORCHRUN:-torchrun}"
     --label_key "label" \
     --apply_chat_template \
     --system_prompt "${SYSTEM_PROMPT}" \
-    --save_path "results/${EXPERIMENT_NAME}/${SAVE_MODEL_NAME}" \
-    --ckpt_path "results/${EXPERIMENT_NAME}/${SAVE_MODEL_NAME}" \
+    --save_path "${SAVE_DIR}" \
+    --ckpt_path "${SAVE_DIR}" \
     --save_steps 20 \
     --max_ckpt_num 2 \
     --save_trajectories \
@@ -220,7 +222,7 @@ TORCHRUN="${TORCHRUN:-torchrun}"
     --use_wandb "${WANDB_API_KEY}" \
     --wandb_project "${WANDB_PROJECT}" \
     --wandb_run_name "${WANDB_RUN_NAME}" \
-    2>&1 | tee "rft_logs/${EXPERIMENT_NAME}/node${NODE_RANK}_${current_time}.log"
+    2>&1 | tee "${LOG_DIR}/node${NODE_RANK}_${current_time}.log"
 
 
 ################################################################################
