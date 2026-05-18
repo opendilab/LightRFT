@@ -207,8 +207,9 @@ class UrsaActor(ActorVL):
             image_grid_thw=image_grid_thw,
             pixel_values_videos=self._cast_multimodal_tensor(pixel_values_videos),
             video_grid_thw=video_grid_thw,
+            use_cache=False,
         )
-        for k in ("pixel_values", "image_grid_thw", "pixel_values_videos", "video_grid_thw"):
+        for k in ("pixel_values", "image_grid_thw", "pixel_values_videos", "video_grid_thw", "use_cache"):
             if not self._supports_model_kwarg(k):
                 forward_kwargs.pop(k, None)
 

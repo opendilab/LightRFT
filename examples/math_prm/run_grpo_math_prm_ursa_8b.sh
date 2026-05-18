@@ -19,6 +19,9 @@
 if [ -f "$(dirname "$0")/../../.env" ]; then
     set -a; . "$(dirname "$0")/../../.env"; set +a
 fi
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+export PYTHONPATH="${REPO_ROOT}:${PYTHONPATH:-}"
 # Alias project-specific WANDB key names to the canonical WANDB_API_KEY so
 # the rest of the script (and wandb itself) can use the canonical name.
 : "${WANDB_API_KEY:=${LIGHTRFT_WANDB_API_KEY:-${WANDB_TOKEN:-${WANDB_KEY:-}}}}"
@@ -44,6 +47,7 @@ LIGHTRFT_OUTPUT_ROOT="${LIGHTRFT_OUTPUT_ROOT:-.}"
 
 # W&B configuration. Leave WANDB_API_KEY empty to disable W&B.
 export WANDB_API_KEY="${WANDB_API_KEY:-YOUR_WANDB_API_KEY}"
+WANDB_ORG="${WANDB_ORG:-${WANDB_ENTITY:-}}"
 export WANDB_PROJECT="${WANDB_PROJECT:-LightRFT-URSA8B-MathPRM}"
 
 
@@ -116,9 +120,12 @@ SAVE_MODEL_NAME="${SAVE_MODEL_NAME:-${EXPERIMENT_NAME}-ep${EPISODE}-kl${KL}-lr${
 WANDB_RUN_NAME="${WANDB_RUN_NAME:-${EXPERIMENT_NAME}-${current_time}}"
 SAVE_DIR="${LIGHTRFT_OUTPUT_ROOT}/results/${EXPERIMENT_NAME}/${SAVE_MODEL_NAME}"
 LOG_DIR="${LIGHTRFT_OUTPUT_ROOT}/rft_logs/${EXPERIMENT_NAME}"
+export WANDB_DIR="${WANDB_DIR:-${LIGHTRFT_OUTPUT_ROOT}/wandb}"
 
 mkdir -p "${SAVE_DIR}"
 mkdir -p "${LOG_DIR}"
+mkdir -p "${WANDB_DIR}"
+TRAIN_LOG="${LOG_DIR}/node${NODE_RANK}_${current_time}.log"
 
 export TORCH_NCCL_AVOID_RECORD_STREAMS=1
 export NCCL_DEBUG="WARN"
@@ -141,13 +148,16 @@ if [[ "${LOAD_CHECKPOINT:-0}" == "1" ]]; then
     RESUME_ARGS=(--load_checkpoint)
 fi
 
+WANDB_ORG_ARGS=()
+if [[ -n "${WANDB_ORG}" ]]; then
+    WANDB_ORG_ARGS=(--wandb_org "${WANDB_ORG}")
+fi
+
 # Math PRM uses a single URSA-RM checkpoint registered under the math_prm label.
 REWARD_PRETRAIN_PATHS="{\"math_prm\":\"${PATH_TO_URSA_RM}\"}"
 
 # URSA enforces a fixed structured response format for the PRM scorer.
 SYSTEM_PROMPT='A conversation between the User and Assistant. The User asks a question that may require mathematical or visual reasoning, and the Assistant solves it step by step. Each step MUST begin with "Step N:" (e.g. "Step 1:", "Step 2:") on its own line. After all steps, output exactly one final answer line prefixed with "†Answer:" (e.g. "†Answer: 42"). Stop immediately after the "†Answer:" line and do not output any extra text, repeated answer markers, or additional steps.'
-
-set -x
 
 
 ################################################################################
@@ -219,10 +229,11 @@ TORCHRUN="${TORCHRUN:-torchrun}"
     --eval_steps ${EVAL_STEPS} \
     --eval_holdout_size ${EVAL_HOLDOUT_SIZE} \
     --max_eval_samples ${MAX_EVAL_SAMPLES} \
-    --use_wandb "${WANDB_API_KEY}" \
+    --use_wandb "true" \
+    "${WANDB_ORG_ARGS[@]}" \
     --wandb_project "${WANDB_PROJECT}" \
     --wandb_run_name "${WANDB_RUN_NAME}" \
-    2>&1 | tee "${LOG_DIR}/node${NODE_RANK}_${current_time}.log"
+    > "${TRAIN_LOG}" 2>&1
 
 
 ################################################################################
