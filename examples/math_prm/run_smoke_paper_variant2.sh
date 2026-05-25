@@ -40,21 +40,22 @@ EPISODE=1
 WARMUP=0.0
 # 8 GPU × default micro_train_batch_size=4 → TBS must be a multiple of 32.
 # Pick 32 (smallest that satisfies the constraint).
-RBS=32
+RBS=16
 TBS=32
 KL_ESTIMATOR=k3
 KL=0.001
 LR=1e-6
 PROMPT_MAX_LEN=1024
 GENERATE_MAX_LEN=512
-# 80 prompts × 4 samples = 320 trajectories total; with TBS=16 that's 20
-# train steps if we ran the whole episode through. We cut short via
-# --max_samples to ~5 train batches' worth of prompts.
-MAX_SAMPLES=80
+# Need ≥5 outer train_step iterations to satisfy AC7. RBS=16 prompts × K=4
+# = 64 trajectories per iteration; iteration = 1 train_step. We want 6
+# train_steps → MAX_SAMPLES = 6 × 16 = 96.
+MAX_SAMPLES=96
 
-EVAL_STEPS=5
+# eval_steps=2 → eval fires at train_step 2, 4, 6  → AC7 needs ≥1 eval.
+EVAL_STEPS=2
 EVAL_HOLDOUT_SIZE=64
-MAX_EVAL_SAMPLES=64
+MAX_EVAL_SAMPLES=32
 
 # Build a one-shot "math_per_step_prm" copy of the dataset (just relabels
 # the rows; PRM extracts step boundaries from the response itself).

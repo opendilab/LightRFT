@@ -187,6 +187,58 @@ class UrsaVariant2Calculator(AdvantageCalculator):
         step_rewards_list = info.get("step_rewards") or []
         step_indices_list = info.get("step_token_indices") or []
 
+        # One-shot diagnostic on first invocation (rank0 only). Two purposes:
+        #   (1) verifies step_rewards / step_token_indices actually reached
+        #       compute() — easy to miss otherwise if something upstream
+        #       drops the lists (cf. the multi-RM aggregator drop fix).
+        #   (2) dumps the full paper Eq.9 chain on a real trajectory so the
+        #       smoke log carries acceptance evidence for AC1+AC8 directly.
+        if not getattr(UrsaVariant2Calculator, "_dumped_first_call", False):
+            try:
+                import torch.distributed as dist
+                rank = dist.get_rank() if dist.is_initialized() else 0
+            except Exception:
+                rank = 0
+            if rank == 0:
+                step_rewards_keys = bool(info.get("step_rewards"))
+                step_indices_keys = bool(info.get("step_token_indices"))
+                sr_lens = ([t.numel() for t in (info.get("step_rewards") or [])][:8])
+                sti_lens = ([t.numel() for t in (info.get("step_token_indices") or [])][:8])
+                print(f"[ursa_v2:compute] first call rank=0  B={B} T={T}  "
+                      f"has_step_rewards={step_rewards_keys}  "
+                      f"has_step_token_indices={step_indices_keys}  "
+                      f"sr_lens(first8)={sr_lens}  sti_lens(first8)={sti_lens}  "
+                      f"info keys={sorted([k for k in info.keys() if not k.startswith('_')])}",
+                      flush=True)
+                # Full Eq.9 chain dump — every intermediate value so a
+                # reviewer can verify the implementation matches the paper
+                # formula on real PRM output.
+                if info.get("step_rewards"):
+                    sr_lst = info["step_rewards"]
+                    sti_lst = info["step_token_indices"]
+                    outcome = info["reward"].float()
+                    K = self.config.n_samples_per_prompt
+                    print(f"[ursa_v2:chain] === paper Eq.9 chain on real PRM output (K={K}) ===", flush=True)
+                    print(f"[ursa_v2:chain] outcome (r_o per traj) = {outcome.tolist()}", flush=True)
+                    r_bar = torch.stack([t.float().mean() if t.numel() > 0
+                                          else torch.tensor(0.0) for t in sr_lst])
+                    print(f"[ursa_v2:chain] r_bar_s (mean step PRM)= {r_bar.tolist()}", flush=True)
+                    print(f"[ursa_v2:chain] msp_normed (post GN)   = {msp_normed.tolist()}", flush=True)
+                    print(f"[ursa_v2:chain] oc_normed  (post GN)   = {oc_normed.tolist()}", flush=True)
+                    for i in range(min(B, K)):
+                        sr_i = sr_lst[i].float().tolist()
+                        si_i = sti_lst[i].long().tolist()
+                        a_steps = [float(r) * float(msp_normed[i]) + float(oc_normed[i])
+                                   for r in sr_i]
+                        print(f"[ursa_v2:chain] traj {i}: r_o={float(outcome[i]):+.2f}  "
+                              f"r_bar={float(r_bar[i]):.4f}  msp_normed={float(msp_normed[i]):+.4f}  "
+                              f"oc_normed={float(oc_normed[i]):+.4f}", flush=True)
+                        for k, (r, idx, a) in enumerate(zip(sr_i, si_i, a_steps)):
+                            print(f"[ursa_v2:chain]   step {k+1}: r_s={r:.4f}  "
+                                  f"end_token={idx:4d}  A_step={r:.4f}·{float(msp_normed[i]):+.4f} + "
+                                  f"{float(oc_normed[i]):+.4f} = {a:+.4f}", flush=True)
+            UrsaVariant2Calculator._dumped_first_call = True
+
         advantages = torch.zeros(B, T, device=device, dtype=torch.float32)
         per_traj_step_count = []
         for i in range(B):
@@ -245,9 +297,13 @@ class UrsaVariant2Calculator(AdvantageCalculator):
         # under `train/`-style keys via the existing info_dict pipeline).
         n_valid = action_mask.sum().clamp(min=1).to(torch.float32)
         info_dict: Dict[str, float] = {
-            "ursa_v2_adv_pos_frac": (advantages > 0).to(torch.float32).sum().item() / n_valid.item(),
-            "ursa_v2_adv_neg_frac": (advantages < 0).to(torch.float32).sum().item() / n_valid.item(),
-            "ursa_v2_adv_zero_frac": (advantages == 0).to(torch.float32).sum().item() / n_valid.item(),
+            # Restrict the *_frac counters to valid (un-masked) tokens so they
+            # don't include padding-induced zeros in the denominator's response
+            # area. n_valid is action_mask.sum(); we mask both numerator and
+            # event-set to (action_mask == 1).
+            "ursa_v2_adv_pos_frac": ((advantages > 0) & action_mask.bool()).to(torch.float32).sum().item() / n_valid.item(),
+            "ursa_v2_adv_neg_frac": ((advantages < 0) & action_mask.bool()).to(torch.float32).sum().item() / n_valid.item(),
+            "ursa_v2_adv_zero_frac": ((advantages == 0) & action_mask.bool()).to(torch.float32).sum().item() / n_valid.item(),
             "ursa_v2_adv_abs_mean": advantages.abs().sum().item() / n_valid.item(),
             "ursa_v2_oc_normed_std": oc_normed.std(unbiased=False).item() if oc_normed.numel() > 1 else 0.0,
             "ursa_v2_msp_normed_std": msp_normed.std(unbiased=False).item() if msp_normed.numel() > 1 else 0.0,
@@ -265,6 +321,65 @@ class UrsaVariant2Calculator(AdvantageCalculator):
             advantages = torch.clamp(advantages, -clip_val, clip_val)
 
         return advantages, returns, info_dict
+
+
+def _install_aggregate_rewards_patch() -> None:
+    """Forward step_rewards / step_token_indices through the multi-RM aggregator.
+
+    Background: ``examples/math_prm/reward_models_utils.load_reward_models``
+    returns reward_models as a List[nn.Module] even when there is only one
+    RM. That makes ``fast_exp_maker._aggregate_rewards`` take the
+    ``is_multi_rm=True`` branch, which writes ``outputs[i].rewards`` and
+    ``outputs[i].reward_metrics`` but — by design — drops the per-step
+    variable-length fields. That's correct for true multi-RM aggregation
+    (where combining variable-length step tensors across RMs is ill-
+    defined), but it silently breaks the single-list-of-one-RM case that
+    this example uses.
+
+    Patch: after the original ``_aggregate_rewards`` runs, scan for the
+    "single underlying RM but exposed as a 1-list" pattern and lift the
+    step_rewards / step_token_indices from that one RM's batch result
+    into ``outputs[i]``. No behaviour change for true multi-RM setups.
+    """
+    from lightrft.trainer import fast_exp_maker as _fem
+
+    # _aggregate_rewards lives on RewardComputationEngine (separate class
+    # from FastExperienceMaker; reachable via fast_exp_maker.RewardComputationEngine
+    # or self.reward_engine on the maker).
+    _RewardEngine = getattr(_fem, "RewardComputationEngine", None)
+    if _RewardEngine is None or not hasattr(_RewardEngine, "_aggregate_rewards"):
+        return
+    if getattr(_RewardEngine, "_ursa_v2_aggregator_patched", False):
+        return
+
+    _original = _RewardEngine._aggregate_rewards
+
+    def _aggregate_rewards_patched(self, outputs, all_rewards_list, is_multi_rm):
+        _original(self, outputs, all_rewards_list, is_multi_rm)
+        if not is_multi_rm:
+            return
+        # If multiple RMs actually produced step_rewards we don't know how to
+        # merge them — bail (keep lightrft's safe default).
+        rms_with_steps = [
+            rm_idx for rm_idx in range(len(all_rewards_list))
+            if any(getattr(r, "step_rewards", None) is not None
+                   for r in all_rewards_list[rm_idx])
+        ]
+        if len(rms_with_steps) != 1:
+            return
+        rm_idx = rms_with_steps[0]
+        for mb_idx in range(len(outputs)):
+            res = all_rewards_list[rm_idx][mb_idx]
+            sr = getattr(res, "step_rewards", None)
+            sti = getattr(res, "step_token_indices", None)
+            if sr is not None and getattr(outputs[mb_idx], "step_rewards", None) is None:
+                outputs[mb_idx].step_rewards = sr
+            if sti is not None and getattr(outputs[mb_idx], "step_token_indices", None) is None:
+                outputs[mb_idx].step_token_indices = sti
+
+    _aggregate_rewards_patched._ursa_v2_patched = True
+    _RewardEngine._aggregate_rewards = _aggregate_rewards_patched
+    _RewardEngine._ursa_v2_aggregator_patched = True
 
 
 def _install_get_advantage_calculator_patch() -> None:
@@ -308,5 +423,7 @@ def _install_get_advantage_calculator_patch() -> None:
 
 # Install on import. Both ``examples/math_prm/math_prm_trainer.py`` and
 # ``examples/math_prm/train_colocate.py`` import this module at top level so
-# the patch is in place before fast_exp_maker constructs its calculator.
+# the patches are in place before fast_exp_maker constructs its calculator
+# and before any rollout invokes _aggregate_rewards.
 _install_get_advantage_calculator_patch()
+_install_aggregate_rewards_patch()
