@@ -879,9 +879,15 @@ if __name__ == "__main__":
     parser.add_argument(
         "--advantage_estimator",
         type=str,
-        choices=["gae", "reinforce", "rloo", "reinforce_baseline", "group_norm", "cpgd", "reinforce++"],
+        choices=["gae", "reinforce", "rloo", "reinforce_baseline", "group_norm", "cpgd", "reinforce++",
+                 "ursa_variant2"],
         default="gae",
-        help="Choose advantage estimation method: gae, reinforce, rloo, reinforce_baseline, group_norm, reinforce++",
+        help=(
+            "Choose advantage estimation method: gae, reinforce, rloo, reinforce_baseline, group_norm, "
+            "reinforce++. 'ursa_variant2' (URSA paper Eq.9 strict alignment) is provided by "
+            "examples/math_prm/ursa_variant2.py and only meaningful with label='math_per_step_prm' + "
+            "n_samples_per_prompt >= 2."
+        ),
     )
 
     parser.add_argument("--use_kl_loss", action="store_true", default=False, help="whether to use KL loss from GRPO")

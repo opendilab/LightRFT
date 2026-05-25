@@ -274,6 +274,11 @@ def _install_get_advantage_calculator_patch() -> None:
     estimator strictly contained in this example. The patch wraps the
     original factory; unknown names still raise the original ValueError
     listing the *original* supported set + this estimator.
+
+    Important: we patch every module that has already done
+    ``from .advantage_calculator import get_advantage_calculator`` because
+    those imports bind the original function object into the consumer
+    module's namespace — patching just the source module would miss them.
     """
     from lightrft.trainer import advantage_calculator as _ac
 
@@ -289,6 +294,16 @@ def _install_get_advantage_calculator_patch() -> None:
 
     get_advantage_calculator_patched._ursa_v2_patched = True
     _ac.get_advantage_calculator = get_advantage_calculator_patched
+
+    # Also patch known consumers that did ``from .advantage_calculator import
+    # get_advantage_calculator`` (binding the original ref into their own
+    # namespace). Currently fast_exp_maker is the only such consumer; if more
+    # appear later, list them here.
+    import sys
+    for mod_name in ("lightrft.trainer.fast_exp_maker",):
+        mod = sys.modules.get(mod_name)
+        if mod is not None and hasattr(mod, "get_advantage_calculator"):
+            mod.get_advantage_calculator = get_advantage_calculator_patched
 
 
 # Install on import. Both ``examples/math_prm/math_prm_trainer.py`` and

@@ -38,8 +38,10 @@ export WANDB_PROJECT="${WANDB_PROJECT:-LightRFT-URSA8B-MathPRM-Smoke}"
 N_SAMPLES=4
 EPISODE=1
 WARMUP=0.0
-RBS=16
-TBS=16
+# 8 GPU × default micro_train_batch_size=4 → TBS must be a multiple of 32.
+# Pick 32 (smallest that satisfies the constraint).
+RBS=32
+TBS=32
 KL_ESTIMATOR=k3
 KL=0.001
 LR=1e-6
@@ -77,8 +79,20 @@ WANDB_RUN_NAME="${EXPERIMENT_NAME}-${current_time}"
 mkdir -p "${LIGHTRFT_OUTPUT_ROOT}/results/${EXPERIMENT_NAME}/${SAVE_MODEL_NAME}"
 mkdir -p "${LIGHTRFT_OUTPUT_ROOT}/rft_logs/${EXPERIMENT_NAME}"
 
+# repo root has /wandb owned by root on this box; redirect wandb to a writable
+# location alongside the training output. This must come BEFORE wandb.init.
+export WANDB_DIR="${LIGHTRFT_OUTPUT_ROOT}/wandb"
+mkdir -p "${WANDB_DIR}"
+
 export TORCH_NCCL_AVOID_RECORD_STREAMS=1
 export NCCL_DEBUG="WARN"
+
+# CRITICAL: pip has lightrft editable-installed pointing at the puyuan code
+# refactor copy, which (a) lacks the paper-Eq.9 estimator wiring this script
+# depends on, and (b) eagerly imports sglang.srt at strategy_base import time
+# which is broken on this box's sgl_kernel install. Force PYTHONPATH to our
+# in-repo lightrft so torchrun-spawned workers pick it up.
+export PYTHONPATH="$(cd "$(dirname "$0")/../.." && pwd):${PYTHONPATH:-}"
 
 # Source .env (WANDB_API_KEY etc.) if available
 if [ -f .env ]; then

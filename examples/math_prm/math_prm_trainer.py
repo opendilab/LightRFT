@@ -108,6 +108,16 @@ class MathPRMSPMDPPOTrainerVL(SPMDPPOTrainerVL):
         "advantages": ("advantages_mean",),
         "advantages_std": ("advantages_std",),
         "ptx_loss": ("ptx_loss",),
+        # URSA paper Eq.9 variant 2 advantage-calculator diagnostics. Populated
+        # only when --advantage_estimator ursa_variant2 is active; otherwise
+        # absent from experience.info and silently skipped by _build_train_metrics.
+        "ursa_v2_adv_pos_frac": ("ursa_v2_adv_pos_frac",),
+        "ursa_v2_adv_neg_frac": ("ursa_v2_adv_neg_frac",),
+        "ursa_v2_adv_zero_frac": ("ursa_v2_adv_zero_frac",),
+        "ursa_v2_adv_abs_mean": ("ursa_v2_adv_abs_mean",),
+        "ursa_v2_oc_normed_std": ("ursa_v2_oc_normed_std",),
+        "ursa_v2_msp_normed_std": ("ursa_v2_msp_normed_std",),
+        "ursa_v2_traj_step_count_mean": ("ursa_v2_traj_step_count_mean",),
     }
     _EVAL_KEY_SOURCES = {
         "reward": ("reward", "reward_mean"),
