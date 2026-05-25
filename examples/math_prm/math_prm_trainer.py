@@ -5,6 +5,13 @@ import torch
 
 from lightrft.trainer.spmd_ppo_trainer import SPMDPPOTrainerVL
 
+# Importing ursa_variant2 installs the get_advantage_calculator monkey-patch
+# that makes ``--advantage_estimator ursa_variant2`` resolve to the paper
+# Eq.9 strict-alignment calculator. Side-effect import — keep the line so
+# linters don't strip it. train_colocate.py runs with cwd=examples/math_prm,
+# so a top-level (non-package) import is used here.
+import ursa_variant2 as _ursa_variant2_register  # noqa: F401
+
 
 def _detach_rollout_eos_patch(rollout_actor):
     """Detach rollout_eos_patch.StructuredAnswerStoppingCriteria wrap from a rollout actor.
@@ -51,6 +58,28 @@ class MathPRMSPMDPPOTrainerVL(SPMDPPOTrainerVL):
         "has_drop_moment": ("rollout_has_drop_moment", "has_drop_moment_mean", "reward_metrics/has_drop_moment"),
         "model_reward": ("rollout_model_reward", "model_reward_mean", "reward_metrics/model_reward"),
         "response_length": ("rollout_response_length", "response_length_mean", "response_length"),
+        # PRM step-score distribution (computed by MathPRMReward.forward but
+        # previously not surfaced to wandb; useful for monitoring PRM behaviour
+        # at scale, not just min-aggregation).
+        "step_score_min": ("rollout_step_score_min", "step_score_min_mean", "reward_metrics/step_score_min"),
+        "step_score_mean": ("rollout_step_score_mean", "step_score_mean_mean", "reward_metrics/step_score_mean"),
+        "step_score_last": ("rollout_step_score_last", "step_score_last_mean", "reward_metrics/step_score_last"),
+        "step_count": ("rollout_step_count", "step_count_mean", "reward_metrics/step_count"),
+        # PS-GRPO + answer-extraction diagnostics (already computed, were missing
+        # from wandb mapping — required for reward-hacking forensics).
+        "final_reward": ("rollout_final_reward", "final_reward_mean", "reward_metrics/final_reward"),
+        "max_relative_drop": ("rollout_max_relative_drop", "max_relative_drop_mean",
+                              "reward_metrics/max_relative_drop"),
+        "answer_tag_present": ("rollout_answer_tag_present", "answer_tag_present_mean",
+                               "reward_metrics/answer_tag_present"),
+        "answer_extraction_failed": ("rollout_answer_extraction_failed", "answer_extraction_failed_mean",
+                                     "reward_metrics/answer_extraction_failed"),
+        "used_answer_fallback": ("rollout_used_answer_fallback", "used_answer_fallback_mean",
+                                 "reward_metrics/used_answer_fallback"),
+        "used_mathruler": ("rollout_used_mathruler", "used_mathruler_mean",
+                           "reward_metrics/used_mathruler"),
+        "reference_supported": ("rollout_reference_supported", "reference_supported_mean",
+                                "reward_metrics/reference_supported"),
         # Variant 2 (per-step PRM) diagnostics — populated only when
         # the dataset row label is "math_per_step_prm". For "math_psgrpo"
         # rows these stay 0 (no alignment was attempted).
@@ -87,6 +116,18 @@ class MathPRMSPMDPPOTrainerVL(SPMDPPOTrainerVL):
         "model_reward": ("model_reward", "model_reward_mean"),
         "response_length": ("response_length", "response_length_mean"),
         "answer_extraction_failed": ("answer_extraction_failed", "answer_extraction_failed_mean"),
+        # PRM step-score distribution + PS-GRPO diagnostics in eval (parity with
+        # the expanded rollout-side mapping above).
+        "step_score_min": ("step_score_min", "step_score_min_mean"),
+        "step_score_mean": ("step_score_mean", "step_score_mean_mean"),
+        "step_score_last": ("step_score_last", "step_score_last_mean"),
+        "step_count": ("step_count", "step_count_mean"),
+        "final_reward": ("final_reward", "final_reward_mean"),
+        "max_relative_drop": ("max_relative_drop", "max_relative_drop_mean"),
+        "answer_tag_present": ("answer_tag_present", "answer_tag_present_mean"),
+        "used_answer_fallback": ("used_answer_fallback", "used_answer_fallback_mean"),
+        "used_mathruler": ("used_mathruler", "used_mathruler_mean"),
+        "reference_supported": ("reference_supported", "reference_supported_mean"),
         # Variant 2 diagnostics in eval (eval also runs the PRM forward
         # if the dataset label is "math_per_step_prm")
         "alignment_failed": ("alignment_failed", "alignment_failed_mean"),

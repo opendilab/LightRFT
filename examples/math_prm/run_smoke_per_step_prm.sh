@@ -131,6 +131,7 @@ set -x
     --limit_mm_image_per_prompt 10 \
     --loss_agg_mode "seq-mean-token-mean" \
     --advantage_estimator "group_norm" \
+    --per_step_reward_mode raw \
     --max_epochs 1 \
     --num_episodes ${EPISODE} \
     --lr_warmup_ratio ${WARMUP} \

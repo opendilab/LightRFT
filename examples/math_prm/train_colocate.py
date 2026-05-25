@@ -890,16 +890,23 @@ if __name__ == "__main__":
         "--per_step_reward_mode",
         type=str,
         choices=["raw", "group_norm"],
-        default="raw",
+        default="group_norm",
         help=(
-            "How to integrate per-step PRM rewards (variant 2) before scattering "
-            "to token positions. 'raw': scatter raw sigmoid step_score directly "
-            "(matches URSA paper Figure ablation; gives weak PG signal because "
-            "all step_scores are positive). 'group_norm': for each step k, "
-            "subtract group mean and divide by group std across the K trajectories "
-            "in the same prompt group BEFORE scattering (matches GRPO baseline-"
-            "subtraction convention; produces zero-mean signed advantages). Only "
-            "active when label is 'math_per_step_prm'."
+            "How to integrate per-step PRM rewards (Math-Shepherd-style "
+            "per-token reward path, distinct from the strict paper Eq.9 path "
+            "selected via --advantage_estimator ursa_variant2). "
+            "'group_norm' (default): for each step k, subtract group mean and "
+            "divide by group std across the K trajectories in the same prompt "
+            "group BEFORE scattering to step-boundary tokens. Produces "
+            "zero-mean signed advantages (GRPO baseline convention). "
+            "'raw': scatter raw sigmoid step_score directly. WARNING — raw "
+            "is unsafe: sigmoid scores are always positive, so every "
+            "post-cumsum token advantage is non-negative and PG pushes "
+            "every probability up. Kept only for paper Figure ablation. "
+            "Only active when label is 'math_per_step_prm' AND "
+            "--advantage_estimator is the cumsum path (group_norm/grpo). "
+            "For the strict paper Eq.9 path use --advantage_estimator "
+            "ursa_variant2 (handles its own group normalization)."
         ),
     )
 
