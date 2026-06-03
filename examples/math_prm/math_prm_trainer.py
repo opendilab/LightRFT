@@ -5,12 +5,14 @@ import torch
 
 from lightrft.trainer.spmd_ppo_trainer import SPMDPPOTrainerVL
 
-# Importing ursa_variant2 installs the get_advantage_calculator monkey-patch
-# that makes ``--advantage_estimator ursa_variant2`` resolve to the paper
-# Eq.9 strict-alignment calculator. Side-effect import — keep the line so
-# linters don't strip it. train_colocate.py runs with cwd=examples/math_prm,
-# so a top-level (non-package) import is used here.
-import ursa_variant2 as _ursa_variant2_register  # noqa: F401
+# Explicitly register the ursa_variant2 monkey-patches so
+# ``--advantage_estimator ursa_variant2`` resolves to the paper Eq.9
+# strict-alignment calculator. train_colocate.py runs with
+# cwd=examples/math_prm, so a top-level (non-package) import is used here.
+# (register_ursa_variant2() is idempotent.)
+from ursa_variant2 import register_ursa_variant2
+
+register_ursa_variant2()
 
 
 def _detach_rollout_eos_patch(rollout_actor):

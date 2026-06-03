@@ -1,20 +1,20 @@
 """Strict-alignment tests for the URSA paper Eq.9 advantage estimator.
 
-Tests cover the four acceptance criteria AC1–AC4 from the PR plan:
+Tests cover the five acceptance criteria AC1–AC5 from the PR plan:
 
   AC1  numerical equivalence with hand-computed paper Eq.9 (max|Δ|<1e-5)
   AC2  outcome reward is NOT bypassed (changing r_o changes advantages)
   AC3  group normalization is correct over K=n_samples_per_prompt
   AC4  per-step advantage broadcast to the *full* step span (not just the
        boundary token); advantage jumps at step boundaries
-
-Plus a regression test for the legacy ``per_step_reward_mode=raw`` failure
-mode (advantages all-positive) which the new path must NOT exhibit.
+  AC5  with realistic mixed-sign inputs, advantages contain both signs
+       (regression against the legacy ``per_step_reward_mode=raw`` failure
+       mode where every advantage was positive)
 
 Run from repo root:
-    PYTHONPATH=examples/math_prm python3 -m pytest examples/math_prm/tests/ -v
+    python3 -m unittest examples.math_prm.test_ursa_variant2 -v
 Or directly:
-    python3 examples/math_prm/tests/test_ursa_variant2.py
+    python3 examples/math_prm/test_ursa_variant2.py
 """
 
 from __future__ import annotations

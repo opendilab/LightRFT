@@ -421,9 +421,21 @@ def _install_get_advantage_calculator_patch() -> None:
             mod.get_advantage_calculator = get_advantage_calculator_patched
 
 
-# Install on import. Both ``examples/math_prm/math_prm_trainer.py`` and
-# ``examples/math_prm/train_colocate.py`` import this module at top level so
-# the patches are in place before fast_exp_maker constructs its calculator
-# and before any rollout invokes _aggregate_rewards.
-_install_get_advantage_calculator_patch()
-_install_aggregate_rewards_patch()
+def register_ursa_variant2() -> None:
+    """Install both monkey-patches so ``--advantage_estimator ursa_variant2``
+    becomes a valid option and the multi-RM aggregator forwards step_rewards.
+
+    Idempotent. The two underlying ``_install_*_patch`` helpers each guard
+    themselves with a sentinel attribute, so calling this multiple times
+    (e.g. from both ``math_prm_trainer`` and a future user-side import) is
+    safe.
+    """
+    _install_get_advantage_calculator_patch()
+    _install_aggregate_rewards_patch()
+
+
+# Also install on import so existing call-sites that rely on the side-effect
+# behaviour (``import ursa_variant2`` near the top of ``math_prm_trainer``)
+# still work. New code should prefer the explicit ``register_ursa_variant2()``
+# entry point.
+register_ursa_variant2()

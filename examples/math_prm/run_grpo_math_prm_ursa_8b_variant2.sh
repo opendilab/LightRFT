@@ -20,7 +20,8 @@ set -eo pipefail
 # - Actor:    URSA-8B    (hybrid SAM-B + SigLIP-L vision tower + Qwen2.5-Math)
 # - Reward:   URSA-8B-RM (process reward model for step-level scoring)
 # - Engine:   local HF rollout (vLLM/SGLang URSA support is future work)
-# - Algorithm: GRPO with PS-GRPO reward via the math_psgrpo label
+# - Algorithm: GRPO with strict URSA paper Eq.9 advantage via the
+#              math_per_step_prm label (see examples/math_prm/ursa_variant2.py)
 #
 
 # Auto-load credentials/paths from .env if present (no-op when missing).
@@ -51,9 +52,12 @@ PATH_TO_YOUR_BASE_MODEL="${PATH_TO_YOUR_BASE_MODEL:-/path/to/your/URSA-8B}"
 PATH_TO_URSA_RM="${PATH_TO_URSA_RM:-/path/to/your/URSA-RM-8B}"
 # variant 2 NEEDS rows labeled "math_per_step_prm". The PS-GRPO dataset has
 # label="math_psgrpo" everywhere — running variant 2 on it would silently
-# emit zero step_rewards. .env on this box still points
-# PATH_TO_YOUR_MATH_DATASET at the psgrpo .jsonl (legacy default), so we
-# auto-swap to its sed-relabeled sibling (built once by the smoke script).
+# emit zero step_rewards. If the caller still points PATH_TO_YOUR_MATH_DATASET
+# at a psgrpo .jsonl (legacy default), we auto-swap to its sed-relabeled
+# sibling. Build that sibling once with the one-liner documented in
+# README.md §6 "Strict Paper Eq.9 — variant 2 path":
+#   sed 's/"label":[ ]*"math_psgrpo"/"label": "math_per_step_prm"/g' \
+#       /path/to/math_psgrpo.jsonl > /path/to/math_per_step_prm.jsonl
 # If the caller wants a custom path, set PATH_TO_YOUR_MATH_DATASET_VARIANT2.
 if [ -n "${PATH_TO_YOUR_MATH_DATASET_VARIANT2:-}" ]; then
     PATH_TO_YOUR_MATH_DATASET="${PATH_TO_YOUR_MATH_DATASET_VARIANT2}"
@@ -277,16 +281,22 @@ TORCHRUN="${TORCHRUN:-torchrun}"
 #   Both are public on Hugging Face under the URSA-MATH project. Set           #
 #   PATH_TO_YOUR_BASE_MODEL and PATH_TO_URSA_RM to the local directories.      #
 #                                                                              #
-# Step 2: Preprocess the math PRM dataset.                                     #
-#   `python examples/math_prm/tools/prepare_ursa_stage3_manifest.py`           #
-#   produces a JSONL manifest with fields {prompt, images, reference, label}   #
-#   where label="math_psgrpo" enables the PS-GRPO reward path.                 #
+# Step 2: Preprocess the math PRM dataset and relabel it for variant 2.        #
+#   First produce the standard PS-GRPO manifest:                               #
+#     python examples/math_prm/tools/prepare_ursa_stage3_manifest.py \         #
+#         --input-path /your/data/MMathCoT-1M/train.jsonl \                    #
+#         --image-root /your/data/URSA-MATH/images \                           #
+#         --output-path /your/output/math_psgrpo.jsonl                         #
+#   Then sed-relabel into a math_per_step_prm sibling (variant 2 requires it): #
+#     sed 's/"label":[ ]*"math_psgrpo"/"label": "math_per_step_prm"/g' \       #
+#         /your/output/math_psgrpo.jsonl                                       #
+#         > /your/output/math_per_step_prm.jsonl                               #
 #                                                                              #
 # Step 3: Configure the script.                                                #
 #   Edit "Part 1: User Configuration" at the top of this file. Set the paths   #
 #   to your URSA-8B actor, URSA-8B-RM reward model, and preprocessed manifest. #
 #                                                                              #
 # Step 4: Run the training script.                                             #
-#   `bash examples/math_prm/run_grpo_math_prm_ursa_8b.sh`                      #
+#   `bash examples/math_prm/run_grpo_math_prm_ursa_8b_variant2.sh`             #
 #                                                                              #
 ################################################################################
