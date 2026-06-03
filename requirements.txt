@@ -27,8 +27,6 @@ sympy
 matplotlib
 # URSA-MATH dependencies
 attrdict
-fire
-jsonlines
 numpy
 pandas
 Pillow

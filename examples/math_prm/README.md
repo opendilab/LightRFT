@@ -192,16 +192,16 @@ A 9-day full production run on 8× H100 with the PS-GRPO recipe is summarized be
 
 | Metric | Baseline (Step 20) | Peak | Final | Δ vs baseline |
 |---|---|---|---|---|
-| `eval/outcome_correct` | 0.5952 | **0.6508** (Step 220) | 0.6290 | **+3.4 pp** |
-| `eval/answer_extraction_failed` | 0.028 | 0.018 (Step 160) | 0.034 | -0.6 pp ↓ |
+| `eval/outcome_correct` | 0.5952 | **0.6508** (Step 231) | 0.6290 (Step 1008) | **+3.4 pp** |
+| `eval/answer_extraction_failed` | 0.028 | 0.018 (~Step 160) | 0.034 | -0.6 pp ↓ |
 | `eval/has_drop_moment` | 0.0 | — | 0.0 | (PRM never triggered) |
-| `eval/response_length` | 400 | 337 (Step 240) | 377 | -23 ↓ |
+| `eval/response_length` | 400 | 337 (~Step 240) | 377 | -23 ↓ |
 | `rollout/alignment_failed` | 0 | — | 0 | 100% step-boundary alignment |
 | W&B run | [`kdwjt4eo`](https://wandb.ai/hansbug/LightRFT-URSA8B-Stage3/runs/kdwjt4eo) |
 
 #### Eval trajectory
 
-`eval/outcome_correct` peaks at Step 220 (+5.6pp), dips at Step 300 (reward-hacking signature) but **self-heals**, and stabilizes in 0.60–0.65 range for the remaining 7 days:
+`eval/outcome_correct` peaks at Step 231 (+5.6pp), shows a transient dip near Step 300 (reward-hacking signature) but **self-heals**, and stabilizes in the 0.60–0.65 range for the remaining 7 days:
 
 ![eval trajectory](assets/exp_20260603/eval_outcome.png)
 

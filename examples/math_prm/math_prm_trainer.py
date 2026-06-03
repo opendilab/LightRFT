@@ -53,6 +53,24 @@ def _reattach_rollout_eos_patch(rollout_actor, patched_generate):
 
 
 class MathPRMSPMDPPOTrainerVL(SPMDPPOTrainerVL):
+    """SPMD PPO trainer specialized for URSA-MATH process-reward training.
+
+    Differs from the base ``SPMDPPOTrainerVL`` in two ways:
+
+    1. **W&B namespace mapping** — rollout/train/eval metric streams are
+       projected into the ``rollout/``, ``train/``, ``eval/`` namespaces via
+       ``_ROLLOUT_KEY_SOURCES`` / ``_TRAIN_KEY_SOURCES`` / ``_EVAL_KEY_SOURCES``
+       so the dashboards stay aligned with the URSA paper's reporting
+       conventions even as upstream metric names drift.
+    2. **URSA-specific eval** — :meth:`evaluate` runs under a runtime context
+       that prevents the actor from generating ``<|image|>`` sentinel tokens
+       and aggregates per-dataset metrics into a single weighted-average
+       view (see :meth:`_aggregate_eval_metrics`).
+
+    All checkpoint, logging, profile, and trajectory-saving wiring is unchanged
+    from the base class apart from the namespace mapping.
+    """
+
     _ROLLOUT_KEY_SOURCES = {
         "reward": ("rollout_reward", "step_reward_mean", "reward"),
         "reward_std": ("rollout_reward_std", "step_reward_std"),
@@ -70,18 +88,23 @@ class MathPRMSPMDPPOTrainerVL(SPMDPPOTrainerVL):
         # PS-GRPO + answer-extraction diagnostics (already computed, were missing
         # from wandb mapping — required for reward-hacking forensics).
         "final_reward": ("rollout_final_reward", "final_reward_mean", "reward_metrics/final_reward"),
-        "max_relative_drop": ("rollout_max_relative_drop", "max_relative_drop_mean",
-                              "reward_metrics/max_relative_drop"),
-        "answer_tag_present": ("rollout_answer_tag_present", "answer_tag_present_mean",
-                               "reward_metrics/answer_tag_present"),
-        "answer_extraction_failed": ("rollout_answer_extraction_failed", "answer_extraction_failed_mean",
-                                     "reward_metrics/answer_extraction_failed"),
-        "used_answer_fallback": ("rollout_used_answer_fallback", "used_answer_fallback_mean",
-                                 "reward_metrics/used_answer_fallback"),
-        "used_mathruler": ("rollout_used_mathruler", "used_mathruler_mean",
-                           "reward_metrics/used_mathruler"),
-        "reference_supported": ("rollout_reference_supported", "reference_supported_mean",
-                                "reward_metrics/reference_supported"),
+        "max_relative_drop": (
+            "rollout_max_relative_drop", "max_relative_drop_mean", "reward_metrics/max_relative_drop"
+        ),
+        "answer_tag_present": (
+            "rollout_answer_tag_present", "answer_tag_present_mean", "reward_metrics/answer_tag_present"
+        ),
+        "answer_extraction_failed": (
+            "rollout_answer_extraction_failed", "answer_extraction_failed_mean",
+            "reward_metrics/answer_extraction_failed"
+        ),
+        "used_answer_fallback": (
+            "rollout_used_answer_fallback", "used_answer_fallback_mean", "reward_metrics/used_answer_fallback"
+        ),
+        "used_mathruler": ("rollout_used_mathruler", "used_mathruler_mean", "reward_metrics/used_mathruler"),
+        "reference_supported": (
+            "rollout_reference_supported", "reference_supported_mean", "reward_metrics/reference_supported"
+        ),
         # Variant 2 (per-step PRM) diagnostics — populated only when
         # the dataset row label is "math_per_step_prm". For "math_psgrpo"
         # rows these stay 0 (no alignment was attempted).
@@ -89,37 +112,37 @@ class MathPRMSPMDPPOTrainerVL(SPMDPPOTrainerVL):
         "n_aligned_steps": ("rollout_n_aligned_steps", "n_aligned_steps_mean", "reward_metrics/n_aligned_steps"),
     }
     _TRAIN_KEY_SOURCES = {
-        "policy_loss": ("policy_loss",),
-        "kl": ("kl",),
-        "actor_lr": ("actor_lr",),
-        "critic_loss": ("critic_loss",),
-        "critic_lr": ("critic_lr",),
-        "values": ("values",),
-        "values_std": ("values_std",),
-        "reward": ("reward",),
-        "reward_std": ("step_reward_std",),
-        "return": ("return",),
-        "return_std": ("returns_std",),
-        "response_length": ("response_length",),
-        "total_length": ("total_length",),
-        "num_actions": ("num_actions",),
-        "approx_kl": ("approx_kl",),
-        "clipfrac": ("clipfrac",),
-        "ratio_mean": ("ratio_mean",),
-        "ratio_max": ("ratio_max",),
-        "advantages": ("advantages_mean",),
-        "advantages_std": ("advantages_std",),
-        "ptx_loss": ("ptx_loss",),
+        "policy_loss": ("policy_loss", ),
+        "kl": ("kl", ),
+        "actor_lr": ("actor_lr", ),
+        "critic_loss": ("critic_loss", ),
+        "critic_lr": ("critic_lr", ),
+        "values": ("values", ),
+        "values_std": ("values_std", ),
+        "reward": ("reward", ),
+        "reward_std": ("step_reward_std", ),
+        "return": ("return", ),
+        "return_std": ("returns_std", ),
+        "response_length": ("response_length", ),
+        "total_length": ("total_length", ),
+        "num_actions": ("num_actions", ),
+        "approx_kl": ("approx_kl", ),
+        "clipfrac": ("clipfrac", ),
+        "ratio_mean": ("ratio_mean", ),
+        "ratio_max": ("ratio_max", ),
+        "advantages": ("advantages_mean", ),
+        "advantages_std": ("advantages_std", ),
+        "ptx_loss": ("ptx_loss", ),
         # URSA paper Eq.9 variant 2 advantage-calculator diagnostics. Populated
         # only when --advantage_estimator ursa_variant2 is active; otherwise
         # absent from experience.info and silently skipped by _build_train_metrics.
-        "ursa_v2_adv_pos_frac": ("ursa_v2_adv_pos_frac",),
-        "ursa_v2_adv_neg_frac": ("ursa_v2_adv_neg_frac",),
-        "ursa_v2_adv_zero_frac": ("ursa_v2_adv_zero_frac",),
-        "ursa_v2_adv_abs_mean": ("ursa_v2_adv_abs_mean",),
-        "ursa_v2_oc_normed_std": ("ursa_v2_oc_normed_std",),
-        "ursa_v2_msp_normed_std": ("ursa_v2_msp_normed_std",),
-        "ursa_v2_traj_step_count_mean": ("ursa_v2_traj_step_count_mean",),
+        "ursa_v2_adv_pos_frac": ("ursa_v2_adv_pos_frac", ),
+        "ursa_v2_adv_neg_frac": ("ursa_v2_adv_neg_frac", ),
+        "ursa_v2_adv_zero_frac": ("ursa_v2_adv_zero_frac", ),
+        "ursa_v2_adv_abs_mean": ("ursa_v2_adv_abs_mean", ),
+        "ursa_v2_oc_normed_std": ("ursa_v2_oc_normed_std", ),
+        "ursa_v2_msp_normed_std": ("ursa_v2_msp_normed_std", ),
+        "ursa_v2_traj_step_count_mean": ("ursa_v2_traj_step_count_mean", ),
     }
     _EVAL_KEY_SOURCES = {
         "reward": ("reward", "reward_mean"),
@@ -162,8 +185,8 @@ class MathPRMSPMDPPOTrainerVL(SPMDPPOTrainerVL):
         eval_generate_kwargs = dict(self._train_generate_kwargs)
         eval_generate_kwargs["do_sample"] = bool(getattr(self.strategy.args, "eval_do_sample", False))
         eval_generate_kwargs["max_new_tokens"] = (
-            getattr(self.strategy.args, "eval_generate_max_len", None) or
-            self._train_generate_kwargs.get("max_new_tokens")
+            getattr(self.strategy.args, "eval_generate_max_len", None)
+            or self._train_generate_kwargs.get("max_new_tokens")
         )
         eval_generate_kwargs["temperature"] = getattr(self.strategy.args, "eval_temperature", 0.0)
         eval_generate_kwargs["top_p"] = getattr(self.strategy.args, "eval_top_p", 1.0)
@@ -185,7 +208,9 @@ class MathPRMSPMDPPOTrainerVL(SPMDPPOTrainerVL):
         original_config_advantage_estimator = getattr(self.strategy.config, "advantage_estimator", None)
 
         self.generate_kwargs = dict(self._eval_generate_kwargs)
-        self.strategy.args.n_samples_per_prompt = max(1, int(getattr(self.strategy.args, "eval_n_samples_per_prompt", 1)))
+        self.strategy.args.n_samples_per_prompt = max(
+            1, int(getattr(self.strategy.args, "eval_n_samples_per_prompt", 1))
+        )
         self.strategy.args.advantage_estimator = "reinforce"
         if original_config_n_samples is not None:
             self.strategy.config.n_samples_per_prompt = self.strategy.args.n_samples_per_prompt
@@ -257,13 +282,7 @@ class MathPRMSPMDPPOTrainerVL(SPMDPPOTrainerVL):
             return {}
 
         aggregated_metrics = {"num_samples": total_samples}
-        mean_keys = {
-            key
-            for metrics in gathered_metrics
-            if metrics
-            for key in metrics.keys()
-            if key.endswith("_mean")
-        }
+        mean_keys = {key for metrics in gathered_metrics if metrics for key in metrics.keys() if key.endswith("_mean")}
         for key in mean_keys:
             weighted_sum = 0.0
             for metrics in gathered_metrics:
@@ -274,6 +293,20 @@ class MathPRMSPMDPPOTrainerVL(SPMDPPOTrainerVL):
         return aggregated_metrics
 
     def evaluate(self, eval_dataloader, global_step):
+        """Run URSA-flavored evaluation and return aggregated metrics.
+
+        Wraps the base trainer's :meth:`evaluate` in :meth:`_runtime_eval_context`
+        so the actor cannot emit reserved sentinel tokens (e.g. ``<|image|>``)
+        during eval rollouts, then folds per-dataset metrics into a single
+        sample-weighted average via :meth:`_aggregate_eval_metrics`.
+
+        :param eval_dataloader: Iterable over eval batches.
+        :param global_step: Current training step, used by the base evaluator
+            and logged alongside aggregated metrics on rank 0.
+        :returns: Dict of metric_name -> float ready to be uploaded under the
+            ``eval/`` namespace. Empty dict if the base evaluator produced no
+            metrics this step.
+        """
         with self._runtime_eval_context():
             raw_eval_metrics = super().evaluate(eval_dataloader, global_step)
         aggregated_eval_metrics = self._aggregate_eval_metrics(raw_eval_metrics)
@@ -285,6 +318,30 @@ class MathPRMSPMDPPOTrainerVL(SPMDPPOTrainerVL):
         return eval_metrics
 
     def save_logs_and_checkpoints(self, args, global_step, step_bar, logs_dict={}, client_states={}, episode=0):
+        """Drive periodic W&B/TensorBoard logging, eval, and checkpoint saves.
+
+        Called once per training step. Three gating cadences from ``args``:
+        ``logging_steps`` (rollout + train metrics), ``eval_steps`` (runs
+        :meth:`evaluate` and uploads under ``eval/``), and ``save_steps``
+        (writes a ``global_step{N}`` checkpoint).
+
+        Differences from the base trainer's same-named method:
+        - Rollout / train metric streams are routed through
+          :meth:`_build_rollout_metrics` / :meth:`_build_train_metrics` so
+          they pick up URSA-specific keys (PRM diagnostics, ursa_v2_* fields).
+        - W&B logs use a monotonic ``wandb_log_counter`` instead of
+          ``global_step`` to keep the eval and train series on a single
+          increasing x-axis when eval and train ticks interleave.
+
+        :param args: argparse-parsed runtime args (uses ``logging_steps``,
+            ``eval_steps``, ``save_steps``).
+        :param global_step: Current training step.
+        :param step_bar: tqdm progress bar (kept for base-class signature
+            compatibility; not used directly here).
+        :param logs_dict: Per-step metric dict produced by the base trainer.
+        :param client_states: Extra state forwarded to the checkpoint saver.
+        :param episode: Current episode counter logged alongside other metrics.
+        """
         if global_step % args.logging_steps == 0:
             rollout_metrics = self._build_rollout_metrics(logs_dict)
             train_metrics = self._build_train_metrics(logs_dict)
@@ -342,6 +399,20 @@ class MathPRMSPMDPPOTrainerVL(SPMDPPOTrainerVL):
                     self._save_checkpoint(args, tag, client_states)
 
     def log_profile_metrics(self, global_step: int, episode: int, profile_snapshot: Optional[Dict]) -> None:
+        """Forward step-profiler snapshots into W&B/TensorBoard on rank 0 only.
+
+        Profile snapshots come from :class:`StepProfileRecorder` and contain
+        a human-readable ``summary`` plus prebuilt ``wandb_logs`` dict. On
+        W&B we upload the prebuilt dict as-is under the ``profile/`` namespace;
+        on TensorBoard we fall back to writing ``sections_max_s`` and
+        ``sections_max_ratio`` scalars individually.
+
+        :param global_step: Current training step (used only by the TB path).
+        :param episode: Current episode counter, embedded into the W&B record.
+        :param profile_snapshot: Snapshot dict from the profiler, or None
+            if profiling was disabled or this step yielded no data. None is a
+            no-op.
+        """
         if not profile_snapshot or not self.strategy.is_rank_0():
             return
 
@@ -365,6 +436,15 @@ class MathPRMSPMDPPOTrainerVL(SPMDPPOTrainerVL):
                 self._tensorboard.add_scalar(f"profile/{key}_ratio", value, global_step)
 
     def save_trajectories(self, global_step: int):
+        """Persist the current replay buffer contents to disk when configured.
+
+        No-op when either a :class:`TrajectorySaver` has not been wired up
+        or the replay buffer is empty. The saver itself handles rank gating
+        and on-disk layout.
+
+        :param global_step: Step value embedded in the saved trajectory's
+            file name / metadata so downstream analysis can correlate runs.
+        """
         if self.trajectory_saver is not None and self.replay_buffer.items:
             self.trajectory_saver.save_trajectories(
                 experiences=self.replay_buffer.items,

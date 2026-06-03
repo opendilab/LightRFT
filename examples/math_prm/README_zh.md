@@ -192,16 +192,16 @@ python3 -m unittest examples.math_prm.test_ursa_variant2 -v
 
 | 指标 | baseline (Step 20) | peak | final | Δ vs baseline |
 |---|---|---|---|---|
-| `eval/outcome_correct` | 0.5952 | **0.6508** (Step 220) | 0.6290 | **+3.4 pp** |
-| `eval/answer_extraction_failed` | 0.028 | 0.018 (Step 160) | 0.034 | -0.6 pp ↓ |
+| `eval/outcome_correct` | 0.5952 | **0.6508** (Step 231) | 0.6290 (Step 1008) | **+3.4 pp** |
+| `eval/answer_extraction_failed` | 0.028 | 0.018 (~Step 160) | 0.034 | -0.6 pp ↓ |
 | `eval/has_drop_moment` | 0.0 | — | 0.0 | (PRM 全程未触发) |
-| `eval/response_length` | 400 | 337 (Step 240) | 377 | -23 ↓ |
+| `eval/response_length` | 400 | 337 (~Step 240) | 377 | -23 ↓ |
 | `rollout/alignment_failed` | 0 | — | 0 | 100% step 边界对齐 |
 | W&B run | [`kdwjt4eo`](https://wandb.ai/hansbug/LightRFT-URSA8B-Stage3/runs/kdwjt4eo) |
 
 #### eval 轨迹
 
-`eval/outcome_correct` 在 Step 220 见峰 +5.6pp，Step 300 出现一次 dip（reward hacking signature）但**自愈**，剩 7 天稳定在 0.60–0.65 区间：
+`eval/outcome_correct` 在 Step 231 见峰 +5.6pp，约 Step 300 出现一次 dip（reward hacking signature）但**自愈**，剩 7 天稳定在 0.60–0.65 区间：
 
 ![eval trajectory](assets/exp_20260603/eval_outcome.png)
 
