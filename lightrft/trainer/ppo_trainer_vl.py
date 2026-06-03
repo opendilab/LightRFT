@@ -783,7 +783,9 @@ class PPOTrainerVL(ABC):
             }
 
             actor_kwargs = {
-                key: value for key, value in candidate_params.items() if key in self._actor_supported_params
+                key: value
+                for key, value in candidate_params.items()
+                if key in self._actor_supported_params
             }
 
             with self.profiler.section("learn/actor/forward"):

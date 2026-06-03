@@ -679,10 +679,8 @@ class StrategyBase(ABC):
 
     def _uses_separate_hf_rollout_actor(self) -> bool:
         return (
-            self.inference_engine_type == "hf"
-            and self.use_separate_hf_rollout_actor
-            and self.rollout_train_actor is not None
-            and self.inference_engine is not None
+            self.inference_engine_type == "hf" and self.use_separate_hf_rollout_actor
+            and self.rollout_train_actor is not None and self.inference_engine is not None
             and self.inference_engine is not self.rollout_train_actor
         )
 
@@ -1204,8 +1202,7 @@ class StrategyBase(ABC):
                     )
                 elapsed_s = round(time.time() - generate_t0, 4)
                 self.print(
-                    "Local HF model.generate finished:",
-                    {
+                    "Local HF model.generate finished:", {
                         "batch_size": len(batch_prompt_token_ids),
                         "prompt_tokens": [len(token_ids) for token_ids in batch_prompt_token_ids],
                         "elapsed_s": elapsed_s,

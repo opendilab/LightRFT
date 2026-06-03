@@ -247,8 +247,10 @@ class StepProfileRecorder:
                 for name, value in aggregated["max_s"].items()
             }
             mean_ratios = {
-                name: (value / aggregated["mean_s"].get("step/total", step_total_s)
-                       if aggregated["mean_s"].get("step/total", step_total_s) > 0 else 0.0)
+                name: (
+                    value / aggregated["mean_s"].get("step/total", step_total_s)
+                    if aggregated["mean_s"].get("step/total", step_total_s) > 0 else 0.0
+                )
                 for name, value in aggregated["mean_s"].items()
             }
             record = {
@@ -364,9 +366,8 @@ class StepProfileRecorder:
             active_section_elapsed_s = None
             if self.active_section_name is not None and self.active_section_start_wall is not None:
                 active_section_elapsed_s = max(time.perf_counter() - self.active_section_start_wall, 0.0)
-                sections_local_s[self.active_section_name] = (
-                    sections_local_s.get(self.active_section_name, 0.0) + active_section_elapsed_s
-                )
+                sections_local_s[self.active_section_name
+                                 ] = (sections_local_s.get(self.active_section_name, 0.0) + active_section_elapsed_s)
             current_ratios = {
                 name: (value / current_elapsed_s if current_elapsed_s > 0 else 0.0)
                 for name, value in sections_local_s.items()
@@ -432,7 +433,9 @@ class StepProfileRecorder:
             name: (value / mean_elapsed if mean_elapsed > 0 else 0.0)
             for name, value in aggregated["mean_s"].items()
         }
-        started_at_candidates = [snapshot.get("started_at") for snapshot in snapshots if snapshot.get("started_at") is not None]
+        started_at_candidates = [
+            snapshot.get("started_at") for snapshot in snapshots if snapshot.get("started_at") is not None
+        ]
 
         global_snapshot = {
             "train_step": current_step,

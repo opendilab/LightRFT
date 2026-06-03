@@ -734,8 +734,7 @@ class RewardComputationEngine:
                 _RewardBatchResult(
                     scores=torch.zeros(len(output.labels), dtype=torch.float32, device=device),
                     metrics=None,
-                )
-                for output in outputs
+                ) for output in outputs
             ]
 
         # Run single forward pass on filtered samples
@@ -896,12 +895,14 @@ class RewardComputationEngine:
                 metrics = None
                 step_rewards = None
                 step_token_indices = None
-            micro_batch_rewards.append(_RewardBatchResult(
-                scores=score,
-                metrics=metrics,
-                step_rewards=step_rewards,
-                step_token_indices=step_token_indices,
-            ))
+            micro_batch_rewards.append(
+                _RewardBatchResult(
+                    scores=score,
+                    metrics=metrics,
+                    step_rewards=step_rewards,
+                    step_token_indices=step_token_indices,
+                )
+            )
 
         return micro_batch_rewards
 
@@ -1364,10 +1365,13 @@ class FastExperienceMaker(NaiveExperienceMaker):
                     image_start_idx += rollout_image_count
 
                     rollout_video_count = sum(all_videos_num[i:i + config.micro_rollout_batch_size])
-                    micro_batch_video_grid_thw = all_videos_grid_thw[video_start_idx:video_start_idx + rollout_video_count]
+                    micro_batch_video_grid_thw = all_videos_grid_thw[video_start_idx:video_start_idx +
+                                                                     rollout_video_count]
                     video_start_idx += rollout_video_count
 
-                micro_batch_references = (all_references[i:i + config.micro_rollout_batch_size] if all_references else None)
+                micro_batch_references = (
+                    all_references[i:i + config.micro_rollout_batch_size] if all_references else None
+                )
                 micro_batch_labels = (all_labels[i:i + config.micro_rollout_batch_size] if all_labels else None)
 
                 if not self.packing_samples:
@@ -1784,8 +1788,7 @@ class FastExperienceMaker(NaiveExperienceMaker):
             step_rewards_list = experience.info.get("step_rewards")
             step_indices_list = experience.info.get("step_token_indices")
             if (
-                step_rewards_list is not None
-                and step_indices_list is not None
+                step_rewards_list is not None and step_indices_list is not None
                 and any(t.numel() > 0 for t in step_rewards_list)
             ):
                 max_steps = max(t.numel() for t in step_rewards_list)
@@ -1796,8 +1799,10 @@ class FastExperienceMaker(NaiveExperienceMaker):
                     for i, (sr, sti) in enumerate(zip(step_rewards_list, step_indices_list)):
                         n = sr.numel()
                         if n > 0:
-                            step_rewards_padded[i, :n] = sr.to(step_rewards_padded.device, dtype=step_rewards_padded.dtype)
-                            step_indices_padded[i, :n] = sti.to(step_indices_padded.device, dtype=step_indices_padded.dtype)
+                            step_rewards_padded[
+                                i, :n] = sr.to(step_rewards_padded.device, dtype=step_rewards_padded.dtype)
+                            step_indices_padded[
+                                i, :n] = sti.to(step_indices_padded.device, dtype=step_indices_padded.dtype)
 
             final_reward = compute_reward(
                 processed_reward,

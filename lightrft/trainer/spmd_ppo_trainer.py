@@ -237,7 +237,9 @@ class SPMDPPOTrainerBase:
                     torch.distributed.all_reduce(skip_flag, op=torch.distributed.ReduceOp.MAX)
                     if skip_flag.item() > 0:
                         if self.strategy.is_rank_0():
-                            pbar.set_description(f"Train epoch [{epoch + 1}/{self.max_epochs}] (skipping invalid batch)")
+                            pbar.set_description(
+                                f"Train epoch [{epoch + 1}/{self.max_epochs}] (skipping invalid batch)"
+                            )
                         continue
 
                     entropy_mask = None
@@ -365,9 +367,8 @@ class SPMDPPOTrainerBase:
                     status_mean["response_length_zero_ratio"] = (lengths_tensor <= 1).float().mean().item()
                     generate_max_len = getattr(self.args, "generate_max_len", None)
                     if generate_max_len:
-                        status_mean["response_hit_max_ratio"] = (
-                            lengths_tensor >= float(generate_max_len - 1)
-                        ).float().mean().item()
+                        status_mean["response_hit_max_ratio"] = (lengths_tensor
+                                                                 >= float(generate_max_len - 1)).float().mean().item()
 
                 if all_total_lengths:
                     if isinstance(all_total_lengths[0], torch.Tensor):
@@ -423,9 +424,7 @@ class SPMDPPOTrainerBase:
                         mean_key = f"{metric_name}_mean"
                         std_key = f"{metric_name}_std"
                         if mean_key in status_mean:
-                            self.strategy.print(
-                                f"{title:<20} {status_mean[mean_key]:.4f} ± {status_mean[std_key]:.4f}"
-                            )
+                            self.strategy.print(f"{title:<20} {status_mean[mean_key]:.4f} ± {status_mean[std_key]:.4f}")
 
                     if all_advantages:
                         self.strategy.print(

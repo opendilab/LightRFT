@@ -281,8 +281,11 @@ class PolicyLoss(nn.Module):
             lr_valid = log_ratio[m]
             if r_valid.numel() == 0:
                 self._last_stats = {
-                    "ratio_mean": 0.0, "ratio_max": 0.0, "ratio_min": 0.0,
-                    "clipfrac": 0.0, "approx_kl": 0.0,
+                    "ratio_mean": 0.0,
+                    "ratio_max": 0.0,
+                    "ratio_min": 0.0,
+                    "clipfrac": 0.0,
+                    "approx_kl": 0.0,
                 }
             else:
                 # `clipfrac` counts the tokens whose UNCLIPPED ratio is outside

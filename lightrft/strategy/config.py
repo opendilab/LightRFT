@@ -246,8 +246,7 @@ class StrategyConfig:
         print("\nEngine and Inference Parameters:")
         for attr in [
             'engine_type', 'engine_tp_size', 'local_hf_generate_max_batch_size', 'hf_separate_rollout_actor',
-            'enable_engine_sleep',
-            'local_rank', 'sp_size'
+            'enable_engine_sleep', 'local_rank', 'sp_size'
         ]:
             current = getattr(self, attr)
             default = getattr(default_config, attr)
