@@ -111,11 +111,13 @@ TBS=128                  # Training Batch Size.
 KL_ESTIMATOR=k3          # Schulman K3 = exp(-r) - 1 + r. Historical default.
 KL=0.001                 # Historical default. K3 * 0.001 ~= 4e-5 budget on real KL.
 KL_TARGET=""             # If set (e.g. "0.5"), enables AdaptiveKLController.
-# Variant 2 per-step PRM reward mode. Only meaningful when prompts have label
-# "math_per_step_prm" (see fast_exp_maker._apply_step_reward_group_norm). Values:
-#   raw         : scatter raw sigmoid step_score (paper Figure ablation; default)
-#   group_norm  : per-step group-relative baseline (GRPO convention)
-PER_STEP_REWARD_MODE="${PER_STEP_REWARD_MODE:-raw}"
+# NOTE: --per_step_reward_mode is intentionally NOT passed to train_colocate.py
+# in this launcher. It only affects the legacy Math-Shepherd-style per-token
+# reward path (fast_exp_maker._apply_step_reward_group_norm); the
+# ursa_variant2 advantage estimator does its own GroupNorm inside
+# UrsaVariant2Calculator.preprocess_rewards (see examples/math_prm/ursa_variant2.py),
+# so passing the flag here is inert and only adds cognitive load. The
+# PS-GRPO launcher (run_grpo_math_prm_ursa_8b.sh) still exposes it.
 
 LR=1e-6                  # Actor learning rate.
 PROMPT_MAX_LEN=1024      # Max length of the input prompt.
@@ -254,7 +256,6 @@ TORCHRUN="${TORCHRUN:-torchrun}"
     --use_kl_loss \
     --init_kl_coef $KL \
     --kl_estimator "${KL_ESTIMATOR}" \
-    --per_step_reward_mode "${PER_STEP_REWARD_MODE}" \
     "${KL_TARGET_ARGS[@]}" \
     "${RESUME_ARGS[@]}" \
     --engine_type "hf" \
