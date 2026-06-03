@@ -1307,9 +1307,31 @@ class FastExperienceMaker(NaiveExperienceMaker):
         try:
             with self.profiler.section("collect/generate_engine"):
                 if hasattr(self.strategy.args, 'use_fire') and self.strategy.args.use_fire:
+                    sleep_engine = getattr(self.strategy.args, 'enable_engine_sleep', False)
+
+                    def generate_fn(
+                        sampling_params,
+                        all_prompt_token_ids,
+                        all_prompts=None,
+                        all_images=None,
+                        all_videos=None,
+                        images_num=None,
+                        videos_num=None,
+                    ):
+                        return self.strategy.gather_and_generate(
+                            sampling_params=sampling_params,
+                            all_prompt_token_ids=all_prompt_token_ids,
+                            all_prompts=all_prompts,
+                            all_images=all_images,
+                            all_videos=all_videos,
+                            images_num=images_num,
+                            videos_num=videos_num,
+                            sleep_engine=sleep_engine,
+                        )
+
                     all_outputs = fire_sampling(
                         all_prompt_token_ids=all_prompt_token_ids,
-                        generate_fn=generate_fn,  # noqa: TODO
+                        generate_fn=generate_fn,
                         engine_type=config.engine_type,
                         first_token_temperature=generate_kwargs.get("first_token_temperature", 10.0),
                         temperature=generate_kwargs.get("temperature", 1.0),

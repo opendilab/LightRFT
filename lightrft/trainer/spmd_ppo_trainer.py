@@ -337,7 +337,8 @@ class SPMDPPOTrainerBase:
                         metric_tensor = torch.tensor(values, dtype=torch.float32, device=device)
                     if metric_tensor.numel() == 0:
                         continue
-                    if metric_name in {"model_reward", "rule_reward"} and metric_tensor.abs().sum() == 0:
+                    if metric_name in {"model_reward", "rule_reward", "general_model_reward"} \
+                            and metric_tensor.abs().sum() == 0:
                         continue
                     status_mean[f"{metric_name}_mean"] = metric_tensor.mean().item()
                     status_mean[f"{metric_name}_std"] = metric_tensor.std().item()
