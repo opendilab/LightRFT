@@ -342,7 +342,7 @@ class SPMDPPOTrainerBase:
                     status_mean[f"{metric_name}_mean"] = metric_tensor.mean().item()
                     status_mean[f"{metric_name}_std"] = metric_tensor.std().item()
 
-                if all_general_model_rewards and "general_model_reward_mean" in status_mean:
+                if "general_model_reward_mean" in status_mean:
                     self.strategy.print(f"🧠 General RM Reward:{status_mean['general_model_reward_mean']:.4f}")
 
                 if all_advantages:

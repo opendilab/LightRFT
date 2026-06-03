@@ -276,7 +276,6 @@ class PolicyLoss(nn.Module):
                 m = torch.ones_like(ratio, dtype=torch.bool)
             else:
                 m = final_mask.bool()
-            denom = m.sum().clamp(min=1)
             r_valid = ratio[m]
             lr_valid = log_ratio[m]
             if r_valid.numel() == 0:
