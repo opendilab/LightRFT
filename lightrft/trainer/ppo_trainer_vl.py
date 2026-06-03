@@ -501,6 +501,18 @@ class PPOTrainerVL(ABC):
                         if abs(mean_metric) > 1e-6:
                             rollout_status[f"rollout_{metric_name}"] = mean_metric
 
+                    if all_general_model_rewards:
+                        if isinstance(all_general_model_rewards[0], torch.Tensor):
+                            general_model_tensor = torch.cat([t.to(device).float() for t in all_general_model_rewards])
+                        else:
+                            general_model_tensor = torch.tensor(
+                                all_general_model_rewards, dtype=torch.float32, device=device
+                            )
+
+                        mean_general_model_reward = general_model_tensor.mean().item()
+                        if abs(mean_general_model_reward) > 1e-6:
+                            rollout_status["rollout_general_model_reward"] = mean_general_model_reward
+
                     if all_response_lengths:
                         # [TENSOR-FIX] Handle both tensor lists and scalar lists
                         if isinstance(all_response_lengths[0], torch.Tensor):
