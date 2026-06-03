@@ -25,7 +25,7 @@ Training Pipeline:
     4. Run PPO/GRPO training loop via SPMDPPOTrainerVL
 
 Usage:
-    python train_grpo_rm_colocate.py --pretrain <model_path> --reward_pretrain <rm_config> ...
+    python examples/math_prm/train_colocate.py --pretrain <model_path> --reward_pretrain <rm_config> ...
 
 For more details on arguments, see the argument parser at the bottom of this file.
 """

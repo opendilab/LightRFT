@@ -1,11 +1,21 @@
 #!/bin/bash
+# Fail fast: a crashed torchrun must propagate its exit code through the
+# `2>&1 | tee` pipeline below so multi-node orchestrators / CI see the error.
+set -eo pipefail
 #
-# LightRFT GRPO Training Script - URSA-8B with URSA-8B-RM (Math PRM).
+# LightRFT GRPO Training Script — URSA-8B with URSA-8B-RM, strict URSA-paper
+# Eq.9 (variant 2) advantage.
 #
-# This script trains URSA-8B (a multimodal math VLM built on Qwen2.5-Math) with
-# URSA-8B-RM as a Process Reward Model. The reward signal is PS-GRPO over the
-# PRM step scores: r in {0, 0.5, 1} based on outcome correctness and whether
-# any step-score drop event was observed in the response.
+# Differs from run_grpo_math_prm_ursa_8b.sh ONLY in --advantage_estimator:
+#   ursa_variant2  — strict paper Eq.9 form, computed in
+#                    examples/math_prm/ursa_variant2.py:
+#                    A_t^i = r_{s,t}^i · GroupNorm_G(r̄_s^i)
+#                          +              GroupNorm_G(r_o^i)
+#                    A_t broadcast to every token in step t's span.
+#                    No cumulative return. Outcome term retained.
+#
+# Auto-swaps PATH_TO_YOUR_MATH_DATASET to the .per_step_prm.jsonl sibling
+# (label="math_per_step_prm") because variant 2 needs per-step labels.
 #
 # - Actor:    URSA-8B    (hybrid SAM-B + SigLIP-L vision tower + Qwen2.5-Math)
 # - Reward:   URSA-8B-RM (process reward model for step-level scoring)

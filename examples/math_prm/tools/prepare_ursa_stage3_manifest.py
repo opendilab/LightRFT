@@ -40,8 +40,9 @@ if str(REPO_ROOT) not in sys.path:
 from lightrft.datasets.prompts_dataset_vl import PromptDatasetVL
 
 
-DEFAULT_INPUT_PATH = "/home/ubuntu/URSA-MATH/datasets/URSA-MATH/MMathCoT-1M/train.jsonl"
-DEFAULT_IMAGE_ROOT = "/home/ubuntu/URSA-MATH/datasets/URSA-MATH/images"
+# --input-path and --image-root are intentionally required (no path default):
+# the data lives outside the repo and varies per environment. The output paths
+# resolve under REPO_ROOT/tmp/ so they always succeed locally.
 DEFAULT_OUTPUT_PATH = str(REPO_ROOT / "tmp" / "ursa_stage3" / "mmathcot_stage3_math_psgrpo.jsonl")
 DEFAULT_SUMMARY_PATH = str(REPO_ROOT / "tmp" / "ursa_stage3" / "mmathcot_stage3_math_psgrpo.summary.json")
 
@@ -56,14 +57,14 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--input-path",
         type=str,
-        default=DEFAULT_INPUT_PATH,
-        help="Path to MMathCoT-1M raw train.jsonl.",
+        required=True,
+        help="Path to MMathCoT-1M raw train.jsonl (e.g. /data/URSA-MATH/MMathCoT-1M/train.jsonl).",
     )
     parser.add_argument(
         "--image-root",
         type=str,
-        default=DEFAULT_IMAGE_ROOT,
-        help="Root directory for URSA-MATH image assets.",
+        required=True,
+        help="Root directory for URSA-MATH image assets (e.g. /data/URSA-MATH/images).",
     )
     parser.add_argument(
         "--output-path",

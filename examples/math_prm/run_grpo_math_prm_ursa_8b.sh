@@ -1,4 +1,7 @@
 #!/bin/bash
+# Fail fast: a crashed torchrun must propagate its exit code through the
+# `2>&1 | tee` pipeline below so multi-node orchestrators / CI see the error.
+set -eo pipefail
 #
 # LightRFT GRPO Training Script - URSA-8B with URSA-8B-RM (Math PRM).
 #
@@ -233,7 +236,7 @@ TORCHRUN="${TORCHRUN:-torchrun}"
     "${WANDB_ORG_ARGS[@]}" \
     --wandb_project "${WANDB_PROJECT}" \
     --wandb_run_name "${WANDB_RUN_NAME}" \
-    > "${TRAIN_LOG}" 2>&1
+    2>&1 | tee "${TRAIN_LOG}"
 
 
 ################################################################################

@@ -27,11 +27,10 @@ from types import SimpleNamespace
 from typing import List
 
 # Allow `import ursa_variant2` whether run from repo root (CI) or from
-# examples/math_prm (developer convenience).
+# examples/math_prm/ (developer convenience).
 _THIS_DIR = os.path.dirname(os.path.abspath(__file__))
-_EXAMPLES_DIR = os.path.dirname(_THIS_DIR)
-if _EXAMPLES_DIR not in sys.path:
-    sys.path.insert(0, _EXAMPLES_DIR)
+if _THIS_DIR not in sys.path:
+    sys.path.insert(0, _THIS_DIR)
 
 import torch
 
