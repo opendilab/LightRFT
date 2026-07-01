@@ -17,6 +17,7 @@ from lightrft.models import ActorVL, GPTLMLoss, PolicyLoss, ValueLoss
 from lightrft.models.actor_modality import ActorModality, get_supported_parameters
 from lightrft.models.utils import masked_mean, unpacking_samples, compute_approx_kl
 from lightrft.utils.distributed_sampler import DistributedSampler
+from lightrft.utils import rotate_ckpt_dirs
 from lightrft.trainer import AdaptiveKLController, ExperienceVL, FixedKLController, NaiveExperienceMakerVL, NaiveReplayBufferVL  # noqa
 
 
@@ -160,6 +161,7 @@ class PPOTrainerVL(ABC):
         self.strategy = strategy
         self.args = strategy.args
         self.save_hf_ckpt = save_hf_ckpt
+        self.is_lora = getattr(self.args, "lora_rank", 0) > 0
 
         current_filename = os.path.basename(__file__)
         current_lineno = sys._getframe().f_lineno
@@ -488,6 +490,37 @@ class PPOTrainerVL(ABC):
                         rollout_status["rollout_reward"] = rewards_tensor.mean().item()
                         rollout_status["rollout_reward_std"] = rewards_tensor.std().item()
 
+                    # Preserve the original dashboard keys for existing examples while
+                    # also supporting arbitrary reward_metrics from newer reward models.
+                    if "format_reward" in reward_metric_values:
+                        values = reward_metric_values["format_reward"]
+                        format_tensor = (
+                            torch.cat([t.to(device).float() for t in values])
+                            if isinstance(values[0], torch.Tensor)
+                            else torch.tensor(values, dtype=torch.float32, device=device)
+                        )
+                        rollout_status["rollout_format_reward"] = format_tensor.mean().item()
+                    if "accuracy_reward" in reward_metric_values:
+                        values = reward_metric_values["accuracy_reward"]
+                        accuracy_tensor = (
+                            torch.cat([t.to(device).float() for t in values])
+                            if isinstance(values[0], torch.Tensor)
+                            else torch.tensor(values, dtype=torch.float32, device=device)
+                        )
+                        rollout_status["rollout_accuracy_reward"] = accuracy_tensor.mean().item()
+                    general_values = reward_metric_values.get("general_model_reward")
+                    if general_values is None:
+                        general_values = reward_metric_values.get("model_reward")
+                    if general_values:
+                        general_model_tensor = (
+                            torch.cat([t.to(device).float() for t in general_values])
+                            if isinstance(general_values[0], torch.Tensor)
+                            else torch.tensor(general_values, dtype=torch.float32, device=device)
+                        )
+                        mean_general_model_reward = general_model_tensor.mean().item()
+                        if abs(mean_general_model_reward) > 1e-6:
+                            rollout_status["rollout_general_model_reward"] = mean_general_model_reward
+
                     for metric_name, values in reward_metric_values.items():
                         if not values:
                             continue
@@ -769,6 +802,9 @@ class PPOTrainerVL(ABC):
                 "pixel_values_videos": pixel_values_videos,
                 "video_grid_thw": video_grid_thws,
             }
+            # Audio-language actors expect audio_values; pipeline stores them in pixel_values slot.
+            if "audio_values" in self._actor_supported_params:
+                candidate_params["audio_values"] = candidate_params.get("pixel_values")
 
             actor_kwargs = {
                 key: value
@@ -1169,10 +1205,11 @@ class PPOTrainerVL(ABC):
         :param client_states: Client state for checkpoint recovery.
         :type client_states: dict
         """
-        if not self.disable_ds_ckpt:
+        ckpt_path = args.ckpt_path
+        if not self.disable_ds_ckpt and not self.is_lora:
             self.strategy.save_ckpt(
                 self.actor.model,
-                os.path.join(args.ckpt_path, "_actor"),
+                os.path.join(ckpt_path, "_actor"),
                 tag,
                 args.max_ckpt_num,
                 args.max_ckpt_mem,
@@ -1180,11 +1217,26 @@ class PPOTrainerVL(ABC):
             )
             if self.critic is not None:
                 self.strategy.save_ckpt(
-                    self.critic, os.path.join(args.ckpt_path, "_critic"), tag, args.max_ckpt_num, args.max_ckpt_mem
+                    self.critic, os.path.join(ckpt_path, "_critic"), tag, args.max_ckpt_num, args.max_ckpt_mem
                 )
 
-        if self.save_hf_ckpt:
-            save_path = os.path.join(args.ckpt_path, f"{tag}_hf")
+        # For LoRA, always save the HF adapter because it is much smaller and
+        # is the checkpoint users need when --disable_ds_ckpt is set.
+        if self.save_hf_ckpt or self.is_lora:
+            if self.strategy.is_rank_0():
+                os.makedirs(ckpt_path, exist_ok=True)
+                max_num = getattr(args, "max_ckpt_num", 3)
+                if self.is_lora:
+                    rotate_ckpt_dirs(
+                        ckpt_path,
+                        max_num,
+                        suffix="_lora",
+                        strategy=self.strategy,
+                        label="HF ckpt",
+                    )
+
+            save_suffix = "_lora" if self.is_lora else "_hf"
+            save_path = os.path.join(ckpt_path, f"{tag}{save_suffix}")
             self.strategy.save_model(self.actor, self.tokenizer, save_path)
 
     def evaluate(self, eval_dataloader, global_step):

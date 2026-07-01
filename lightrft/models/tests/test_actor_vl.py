@@ -17,6 +17,49 @@ import torch
 from lightrft.models import ActorVL
 
 
+class PixelOnlyGenerateModel(torch.nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.config = Mock(model_type="pixel_only", is_encoder_decoder=False)
+        self.generate_kwargs = None
+
+    def prepare_inputs_for_generation(self, input_ids, pixel_values=None, attention_mask=None, **kwargs):
+        return {}
+
+    def forward(self, input_ids, pixel_values=None, attention_mask=None):
+        return {"logits": torch.randn(input_ids.size(0), input_ids.size(1), 16)}
+
+    def generate(self, **kwargs):
+        self.generate_kwargs = kwargs
+        input_ids = kwargs["input_ids"]
+        return torch.cat([input_ids, torch.full((input_ids.size(0), 2), 2, dtype=input_ids.dtype)], dim=1)
+
+
+class ImageGridGenerateModel(torch.nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.config = Mock(model_type="image_grid", is_encoder_decoder=False)
+        self.generate_kwargs = None
+
+    def prepare_inputs_for_generation(
+        self,
+        input_ids,
+        pixel_values=None,
+        image_grid_thw=None,
+        attention_mask=None,
+        **kwargs,
+    ):
+        return {}
+
+    def forward(self, input_ids, pixel_values=None, image_grid_thw=None, attention_mask=None, **kwargs):
+        return {"logits": torch.randn(input_ids.size(0), input_ids.size(1), 16)}
+
+    def generate(self, **kwargs):
+        self.generate_kwargs = kwargs
+        input_ids = kwargs["input_ids"]
+        return torch.cat([input_ids, torch.full((input_ids.size(0), 2), 2, dtype=input_ids.dtype)], dim=1)
+
+
 class TestActorVL:
     """Test cases for ActorVL class."""
     @pytest.fixture
@@ -144,6 +187,42 @@ class TestActorVL:
         assert attention_mask.shape[0] == batch_size
         assert action_mask.shape[0] == batch_size
         assert sequences.shape[1] == attention_mask.shape[1]
+
+    def test_generate_filters_unsupported_grid_kwargs(self):
+        model = PixelOnlyGenerateModel()
+        actor = ActorVL(pretrain_or_model=model, packing_samples=False)
+
+        input_ids = torch.randint(0, 10, (1, 4))
+        image_grid_thw = torch.tensor([[1, 24, 24]])
+
+        actor.generate(
+            input_ids=input_ids,
+            pixel_values=torch.randn(1, 3, 8, 8),
+            image_grid_thw=image_grid_thw,
+            eos_token_id=2,
+            pad_token_id=0,
+        )
+
+        assert "pixel_values" in model.generate_kwargs
+        assert "image_grid_thw" not in model.generate_kwargs
+
+    def test_generate_keeps_supported_grid_kwargs(self):
+        model = ImageGridGenerateModel()
+        actor = ActorVL(pretrain_or_model=model, packing_samples=False)
+
+        input_ids = torch.randint(0, 10, (1, 4))
+        image_grid_thw = torch.tensor([[1, 24, 24]])
+
+        actor.generate(
+            input_ids=input_ids,
+            pixel_values=torch.randn(1, 3, 8, 8),
+            image_grid_thw=image_grid_thw,
+            eos_token_id=2,
+            pad_token_id=0,
+        )
+
+        assert "pixel_values" in model.generate_kwargs
+        assert model.generate_kwargs["image_grid_thw"] is image_grid_thw
 
     def test_gradient_checkpointing(self, mock_model):
         """Test gradient checkpointing enable/disable."""

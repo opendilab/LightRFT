@@ -479,7 +479,7 @@ def compute_reward(
       C. no action_mask: per-row variable-length list mode (legacy).
 
     :param r: Base reward tensor of shape (B,) or scalar. In per-step mode,
-        used as a fallback only if step_rewards is None for any row.
+        rows without valid step_token_indices fall back to EOS-scattered r[i].
     :type r: Union[torch.Tensor, float]
     :param kl_coef: KL penalty coefficient (<=0 disables penalty)
     :type kl_coef: float
@@ -493,8 +493,8 @@ def compute_reward(
     :type reward_clip_range: Tuple[float, float]
     :param step_rewards: PER-STEP rewards of shape (B, max_steps) padded with
         any value (only positions in `step_token_indices` are read). When
-        provided together with ``step_token_indices``, mode (B) is enabled
-        and the scalar ``r`` EOS-scatter is bypassed.
+        provided together with ``step_token_indices``, mode (B) is enabled.
+        Rows with no valid step token indices still use scalar EOS fallback.
     :type step_rewards: Optional[torch.Tensor]
     :param step_token_indices: Token indices in the action / response space
         of shape (B, max_steps). Positions with value < 0 are treated as
@@ -558,9 +558,14 @@ def compute_reward(
                 flat_vals = step_rewards[valid].to(kl.dtype)
                 # accumulate (multiple steps could land on same token; rare but safe)
                 base.index_put_((flat_rows, flat_cols), flat_vals, accumulate=True)
+            row_has_step = valid.any(dim=1)
+            if r is not None and (~row_has_step).any():
+                eos_indices = action_mask.size(1) - 1 - action_mask.long().fliplr().argmax(dim=1, keepdim=True)
+                fallback_rows = torch.where(~row_has_step)[0]
+                base[fallback_rows, eos_indices[fallback_rows, 0]] = r[fallback_rows].to(kl.dtype)
             last_reward = base
         else:
-            # Mode A: legacy — scatter scalar r[i] to EOS index of row i.
+            # Mode A: legacy - scatter scalar r[i] to EOS index of row i.
             #
             # The following code is equivalent to:
             #

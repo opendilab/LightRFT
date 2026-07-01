@@ -7,7 +7,7 @@ Unlike the rule-based examples under `examples/gsm8k_geo3k/`, the reward here co
 The example ships **two algorithm paths** side by side:
 
 1. **PS-GRPO** (`run_grpo_math_prm_ursa_8b.sh`) — the paper's recommended reward `r ∈ {0, 0.5, 1}`, used as a single per-trajectory scalar by standard GRPO. This is the production recipe.
-2. **Strict paper Eq.9 variant 2** (`run_grpo_math_prm_ursa_8b_variant2.sh`) — the per-step PRM advantage `A_t^i = r_{s,t}^i · GroupNorm_G(r̄_s^i) + GroupNorm_G(r_o^i)` (paper Appendix B.1). The paper itself rejects this in favour of PS-GRPO; it ships here as an ablation comparator. The advantage estimator lives entirely in [`ursa_variant2.py`](ursa_variant2.py) (zero edits to `lightrft/`).
+2. **Eq.9 ablation with step-level advantage** (`run_grpo_math_prm_ursa_8b_variant2.sh`) — the per-step PRM advantage `A_t^i = r_{s,t}^i · GroupNorm_G(r̄_s^i) + GroupNorm_G(r_o^i)` (paper Appendix B.1). The paper itself rejects this in favour of PS-GRPO; it ships here as an ablation comparator. The advantage estimator lives entirely in [`ursa_variant2.py`](ursa_variant2.py) (zero edits to `lightrft/`).
 
 ## Overview
 
@@ -125,7 +125,7 @@ The launcher uses the URSA-MATH paper's Stage 3 defaults:
 | `LR` | 1e-6 | Actor learning rate |
 | `PROMPT_MAX_LEN` | 1024 | |
 | `GENERATE_MAX_LEN` | 3072 | |
-| `MAX_SAMPLES` | 15360 | Cap on training subset (paper proxy) |
+| `MAX_SAMPLES` | 15360 | Cap on the training subset; approximates the paper's filtered ~15.3K Stage 3 scale, but this launcher does not run the paper data-filtering pipeline |
 | `EVAL_HOLDOUT_SIZE` | 500 | A deterministic held-out subset is reserved from `prompt_data` for in-domain eval |
 
 To enable the adaptive KL controller (recommended if you observe the KL drifting), set `KL_TARGET` to a small positive value, e.g. `KL_TARGET=0.5`.
@@ -254,7 +254,7 @@ examples/math_prm/
 
 ## 9. Citation
 
-If you use this example, please cite the URSA paper:
+If you use this example, please cite the URSA paper and LightRFT:
 
 ```bibtex
 @article{luo2025ursa,
@@ -262,6 +262,13 @@ If you use this example, please cite the URSA paper:
   author={Luo, Ruilin and Zheng, Zhuofan and Wang, Yifan and Yu, Yiyao and Ni, Xinzhe and Lin, Zicheng and Zeng, Jin and Yang, Yujiu},
   journal={NeurIPS},
   year={2025}
+}
+
+@misc{lightrft2025,
+  title={LightRFT: Light, Efficient, Omni-modal and Reward-model Driven Reinforcement Fine-Tuning Framework},
+  author={OpenDILab Contributors},
+  year={2025},
+  howpublished={\url{https://github.com/opendilab/LightRFT}}
 }
 ```
 

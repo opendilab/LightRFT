@@ -7,7 +7,7 @@
 本 example 同时附带**两条算法路径**用于对比：
 
 1. **PS-GRPO**（`run_grpo_math_prm_ursa_8b.sh`）—— 论文最终采纳的 `r ∈ {0, 0.5, 1}` 单标量奖励，由标准 GRPO 处理。**生产推荐配方**。
-2. **Paper Eq.9 严格 variant 2**（`run_grpo_math_prm_ursa_8b_variant2.sh`）—— 论文附录 B.1 的逐 step PRM advantage：`A_t^i = r_{s,t}^i · GroupNorm_G(r̄_s^i) + GroupNorm_G(r_o^i)`。论文自身否决了它，本 example 保留只为做 ablation 对照。完整实现位于 [`ursa_variant2.py`](ursa_variant2.py)（不修改 `lightrft/`）。
+2. **按 step 粒度计算 advantage 的 Eq.9 ablation**（`run_grpo_math_prm_ursa_8b_variant2.sh`）—— 论文附录 B.1 的逐 step PRM advantage：`A_t^i = r_{s,t}^i · GroupNorm_G(r̄_s^i) + GroupNorm_G(r_o^i)`。论文自身否决了它，本 example 保留只为做 ablation 对照。完整实现位于 [`ursa_variant2.py`](ursa_variant2.py)（不修改 `lightrft/`）。
 
 ## 总览
 
@@ -125,7 +125,7 @@ bash examples/math_prm/run_grpo_math_prm_ursa_8b.sh
 | `LR` | 1e-6 | Actor 学习率 |
 | `PROMPT_MAX_LEN` | 1024 | |
 | `GENERATE_MAX_LEN` | 3072 | |
-| `MAX_SAMPLES` | 15360 | 训练子集上限（论文 proxy） |
+| `MAX_SAMPLES` | 15360 | 训练子集上限；近似论文过滤后约 15.3K 的 Stage 3 规模，但当前脚本不内置论文的数据过滤流程 |
 | `EVAL_HOLDOUT_SIZE` | 500 | 从 `prompt_data` 中保留的确定性 held-out 子集 |
 
 观察到 KL 飘移时建议开 adaptive KL 控制器：`KL_TARGET=0.5`。
@@ -254,7 +254,7 @@ examples/math_prm/
 
 ## 9. 引用
 
-使用本 example 请引用 URSA 论文：
+使用本 example 请引用 URSA 论文和 LightRFT：
 
 ```bibtex
 @article{luo2025ursa,
@@ -262,6 +262,13 @@ examples/math_prm/
   author={Luo, Ruilin and Zheng, Zhuofan and Wang, Yifan and Yu, Yiyao and Ni, Xinzhe and Lin, Zicheng and Zeng, Jin and Yang, Yujiu},
   journal={NeurIPS},
   year={2025}
+}
+
+@misc{lightrft2025,
+  title={LightRFT: Light, Efficient, Omni-modal and Reward-model Driven Reinforcement Fine-Tuning Framework},
+  author={OpenDILab Contributors},
+  year={2025},
+  howpublished={\url{https://github.com/opendilab/LightRFT}}
 }
 ```
 

@@ -25,6 +25,7 @@ import os
 import time
 import pathlib
 import warnings
+import inspect
 from contextlib import contextmanager
 from typing import Callable, Dict, List, Tuple, Union, Optional
 from dataclasses import dataclass
@@ -170,6 +171,21 @@ class _NullProfiler:
     @contextmanager
     def section(self, _name: str):
         yield
+
+
+def _call_reward_fn_compat(reward_fn, *, include_metrics: bool, **kwargs):
+    """Call reward_fn while remaining compatible with older example signatures."""
+    if include_metrics:
+        try:
+            parameters = inspect.signature(reward_fn).parameters
+        except (TypeError, ValueError):
+            parameters = {}
+        accepts_kwargs = any(param.kind == inspect.Parameter.VAR_KEYWORD for param in parameters.values())
+        if accepts_kwargs or "model_reward_metrics_list" in parameters:
+            return reward_fn(**kwargs)
+
+    kwargs.pop("model_reward_metrics_list", None)
+    return reward_fn(**kwargs)
 
 
 # ============================================================================
@@ -938,7 +954,9 @@ class RewardComputationEngine:
                 )
                 queries = self.tokenizer.batch_decode(sequences, skip_special_tokens=False)
 
-                rewards, reward_metrics = self.reward_fn(
+                rewards, reward_metrics = _call_reward_fn_compat(
+                    self.reward_fn,
+                    include_metrics=True,
                     model_reward_list=same_batch_rewards,
                     model_reward_metrics_list=[result.metrics for result in same_batch_results],
                     labels=outputs[mb_idx].labels,
@@ -1039,9 +1057,30 @@ class FastExperienceMaker(NaiveExperienceMaker):
         else:
             self.multimodal_processor = None
 
+        # For On-Policy Distillation (OPD), prefer dedicated teacher_model_url.
+        # Fall back to remote_rm_url with deprecation warning for backwards compatibility.
+        if advantage_estimator == "on_policy_distillation":
+            teacher_url = getattr(self.strategy.args, 'teacher_model_url', None)
+            if teacher_url is not None:
+                self.teacher_model_url = teacher_url
+            elif self.remote_rm_url is not None:
+                warnings.warn(
+                    "Using --remote_rm_url as teacher URL is deprecated. "
+                    "Use --teacher_model_url instead.",
+                    DeprecationWarning,
+                    stacklevel=2,
+                )
+                self.teacher_model_url = self.remote_rm_url
+            else:
+                self.teacher_model_url = None
+            rm_url_for_reward_engine = None  # Don't use remote_rm_url for rewards in OPD mode
+        else:
+            self.teacher_model_url = None
+            rm_url_for_reward_engine = self.remote_rm_url
+
         self.reward_engine = RewardComputationEngine(
             reward_model=self.reward_model,
-            remote_rm_url=self.remote_rm_url,
+            remote_rm_url=rm_url_for_reward_engine,
             custom_reward_func=getattr(self, "custom_reward_func", None),
             reward_fn=self.reward_fn,
             reward_fn_label_map=getattr(self, "reward_fn_label_map", None),
@@ -1568,6 +1607,7 @@ class FastExperienceMaker(NaiveExperienceMaker):
         :type experiences: List[Union[Experience, ExperienceVL]]
         """
 
+        # Get teacher URL from config
         teacher_url = self.teacher_model_url
         if isinstance(teacher_url, list):
             teacher_url = teacher_url[0] if teacher_url else None
@@ -1580,13 +1620,18 @@ class FastExperienceMaker(NaiveExperienceMaker):
         Timer.start('  fetch_teacher_logprobs')
 
         for exp in experiences:
-            sequences = exp.sequences
-            attention_mask = exp.attention_mask
-            action_mask = exp.action_mask
+            sequences = exp.sequences  # [batch_size, seq_len]
+            attention_mask = exp.attention_mask  # [batch_size, seq_len]
+            action_mask = exp.action_mask  # [batch_size, num_tokens]
 
+            # response_lengths must be int for slicing
             response_lengths = action_mask.sum(dim=-1).int().tolist()
             num_tokens = action_mask.shape[1]
 
+            # Strip padding tokens before sending to SGLang.
+            # sequences is [prompt, response, eos, pad, pad, ...]; the padding
+            # tokens would cause SGLang to return logprobs for pad positions,
+            # making the [-resp_len:] slice grab wrong tokens.
             input_ids_list = []
             for j in range(sequences.shape[0]):
                 valid_len = int(attention_mask[j].sum().item())
@@ -1606,6 +1651,14 @@ class FastExperienceMaker(NaiveExperienceMaker):
                 finally:
                     loop.close()
 
+                # Align teacher log probs to action_log_probs shape [batch_size, num_tokens].
+                # Use action_mask indices directly; works regardless of left/right padding.
+                #
+                # Correctness: teacher_lp_list[i] contains teacher logprobs for response
+                # tokens in first-to-last order (from teacher_lp[-resp_len:]).
+                # valid_indices = ascending positions where action_mask==1 (real response tokens).
+                # So aligned_teacher_lp[i, valid_indices[k]] = tlp[k] correctly maps the k-th
+                # teacher logprob to the k-th response token position, regardless of padding direction.
                 batch_size = sequences.shape[0]
                 aligned_teacher_lp = torch.zeros(batch_size, num_tokens, dtype=torch.float32)
                 for i, (tlp, resp_len) in enumerate(zip(teacher_lp_list, response_lengths)):
@@ -1802,9 +1855,9 @@ class FastExperienceMaker(NaiveExperienceMaker):
             # step_rewards/step_token_indices (placed by _pack_experience
             # when the reward model emitted them), build a padded
             # (batch, max_steps) tensor for compute_reward to scatter into
-            # per-step boundary tokens. Trajectories with empty step lists
-            # get all-(-1) indices => compute_reward filters them out and
-            # falls back to the trajectory-scalar (EOS) path for that row.
+            # per-step boundary tokens. Trajectories with empty step lists get
+            # all-(-1) indices; compute_reward falls back to scalar EOS reward
+            # for those rows only, so mixed step/scalar batches retain signal.
             step_rewards_padded = None
             step_indices_padded = None
             step_rewards_list = experience.info.get("step_rewards")
@@ -2047,12 +2100,20 @@ class FastExperienceMaker(NaiveExperienceMaker):
         if image_token_id is None:
             return
         num_tokens = (sequences == image_token_id).sum()
-        # Qwen2-VL style processors usually flatten patches (dim < 4), while some
-        # VLMs such as URSA keep one image tensor per item (dim == 4). Handle both.
-        if sample.pixel_values.dim() >= 4:
+        vision_config = getattr(config, "vision_config", None)
+        spatial_merge_size = getattr(vision_config, "spatial_merge_size", 2)
+        merge_length = spatial_merge_size ** 2
+
+        # Qwen2-VL style processors flatten visual patches and provide real
+        # image_grid_thw metadata. URSA keeps one 4-D image tensor per image and
+        # does not use Qwen grid metadata, so its image-token count is per image.
+        has_real_grid = sample.image_grid_thws is not None and sample.image_grid_thws.numel() > 0
+        if sample.pixel_values.dim() >= 4 and not has_real_grid:
             num_patches = sample.pixel_values.shape[0]
+        elif has_real_grid:
+            num_patches = int(torch.prod(sample.image_grid_thws, dim=-1).sum().item() // merge_length)
         else:
-            num_patches = sample.pixel_values.shape[0] // 4
+            num_patches = sample.pixel_values.shape[0] // merge_length
 
         if num_tokens != num_patches:
             self.strategy.print(
