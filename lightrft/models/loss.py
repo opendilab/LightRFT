@@ -176,6 +176,22 @@ class PolicyLoss(nn.Module):
         self.use_dapo = use_dapo
         self.use_cpg_loss = use_cpg_loss
         self.high_entropy_token_ratio = high_entropy_token_ratio
+        # Per-forward diagnostic stats for ratio behavior. Populated each time
+        # forward() runs in PPO mode and read by the trainer via get_last_stats().
+        # CPGD mode has no ratio so these stay empty.
+        self._last_stats: dict = {}
+
+    def get_last_stats(self) -> dict:
+        """Return per-token ratio diagnostics from the most recent PPO forward.
+
+        Keys: ``ratio_mean``, ``ratio_max``, ``ratio_min``, ``clipfrac``,
+        ``approx_kl``. ``clipfrac`` is the fraction of valid action tokens
+        whose unclipped ratio fell outside ``[1 - clip_eps, 1 + clip_eps]``.
+        ``approx_kl`` is the K2 estimator ``0.5 * mean((log p - log p_old)^2)``
+        which is a low-variance proxy for the per-step "old vs new" KL
+        (different from the actor-vs-reference KL controller signal).
+        """
+        return dict(self._last_stats)
 
     def forward(
         self,
@@ -246,11 +262,43 @@ class PolicyLoss(nn.Module):
             return loss
 
         # PPO loss
-        ratio = (log_probs - old_log_probs).exp()
+        log_ratio = log_probs - old_log_probs
+        ratio = log_ratio.exp()
         surr1 = ratio * advantages
         surr2 = ratio.clamp(1 - self.clip_eps, 1 + self.clip_eps) * advantages
         loss = -torch.min(surr1, surr2)
         loss = masked_mean(loss, final_mask, dim=-1).mean()
+
+        # Diagnostic stats over valid action tokens only.
+        # Detached so they don't accidentally enter the autograd graph.
+        with torch.no_grad():
+            if final_mask is None:
+                m = torch.ones_like(ratio, dtype=torch.bool)
+            else:
+                m = final_mask.bool()
+            r_valid = ratio[m]
+            lr_valid = log_ratio[m]
+            if r_valid.numel() == 0:
+                self._last_stats = {
+                    "ratio_mean": 0.0,
+                    "ratio_max": 0.0,
+                    "ratio_min": 0.0,
+                    "clipfrac": 0.0,
+                    "approx_kl": 0.0,
+                }
+            else:
+                # `clipfrac` counts the tokens whose UNCLIPPED ratio is outside
+                # [1-eps, 1+eps]. High clipfrac means PPO is suppressing many
+                # gradient updates this step, which is a signal that the new
+                # policy has moved noticeably from the rollout policy.
+                clipped = (r_valid > 1 + self.clip_eps) | (r_valid < 1 - self.clip_eps)
+                self._last_stats = {
+                    "ratio_mean": r_valid.float().mean().item(),
+                    "ratio_max": r_valid.float().max().item(),
+                    "ratio_min": r_valid.float().min().item(),
+                    "clipfrac": clipped.float().mean().item(),
+                    "approx_kl": 0.5 * lr_valid.float().pow(2).mean().item(),
+                }
 
         return loss
 

@@ -81,7 +81,7 @@ response = "The image shows a cute brown dog playing in the park."
 
 # 1. 标量奖励模型 (SRM)
 srm_score = srm(image=image, system_prompt=system_prompt, query=query, response=response)
-print(srm_score) 
+print(srm_score)
 # 输出: tensor([0.88]) -> 得出一个直接的浮点标量分数值
 
 # 2. 生成式奖励模型 (GRM)

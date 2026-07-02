@@ -2,8 +2,8 @@
 """
 LoRA Evaluation Script for Geo3K Dataset
 
-This script evaluates a LoRA-fine-tuned vision-language model (e.g. Qwen2.5-VL) 
-on mathematical reasoning benchmarks (e.g. Geo3K). It automatically merges the LoRA adapter 
+This script evaluates a LoRA-fine-tuned vision-language model (e.g. Qwen2.5-VL)
+on mathematical reasoning benchmarks (e.g. Geo3K). It automatically merges the LoRA adapter
 into the base weights and runs high-throughput inference using vLLM engine.
 
 Key Features:
@@ -64,11 +64,11 @@ class MockStrategy:
 class MockArgs:
     """
     Mock arguments class to simulate training arguments for data blending.
-    
+
     This guarantees compatibility with LightRFT's dataset loading utilities
     which expect a parsed arguments object containing specific configuration keys.
     """
-    
+
     def __init__(self, seed: int = 42, **kwargs):
         self.seed = seed
         self.input_key = "prompt"
@@ -84,7 +84,7 @@ class MockArgs:
 def parse_args() -> argparse.Namespace:
     """
     Parse command-line arguments for evaluation.
-    
+
     :return: Parsed arguments
     :rtype: argparse.Namespace
     """
@@ -117,11 +117,11 @@ def parse_args() -> argparse.Namespace:
 def merge_lora_weights(base_model_path: str, lora_path: str, save_dir: str) -> str:
     """
     Merge LoRA weights into the base model and save to disk.
-    
+
     This function loads the base model and LoRA adapter, merges them, and saves
     the resulting full weights along with the tokenizer and processor. This ensures
     that vLLM can load a unified model directly for high-throughput inference.
-    
+
     :param base_model_path: Path to the underlying base model
     :type base_model_path: str
     :param lora_path: Path to the LoRA adapter weights
@@ -137,20 +137,20 @@ def merge_lora_weights(base_model_path: str, lora_path: str, save_dir: str) -> s
         torch_dtype=torch.bfloat16,
         device_map="auto"
     )
-    
+
     print(f"Loading LoRA from {lora_path}...")
     model = PeftModel.from_pretrained(model, lora_path)
-    
+
     print("Merging adapter...")
     model = model.merge_and_unload()
-    
+
     print(f"Saving merged model to {save_dir}...")
     model.save_pretrained(save_dir, safe_serialization=True)
-    
+
     tokenizer, processor = get_tokenizer_processor_vl(base_model_path, model, "left", use_fast=True)
     tokenizer.save_pretrained(save_dir)
     processor.save_pretrained(save_dir)
-    
+
     print("Merged model saved successfully.")
     return save_dir
 
@@ -158,11 +158,11 @@ def merge_lora_weights(base_model_path: str, lora_path: str, save_dir: str) -> s
 def evaluate_model(model_path: str, args: argparse.Namespace) -> None:
     """
     Evaluate the merged model using vLLM on the specified dataset.
-    
+
     Loads configuration and data identically to the training pipeline,
-    generates responses using vLLM, and calculates accuracy and format rewards 
+    generates responses using vLLM, and calculates accuracy and format rewards
     using the predefined reward functions.
-    
+
     :param model_path: Path to the merged model weights
     :type model_path: str
     :param args: Parsed command-line arguments with evaluation settings
@@ -172,7 +172,7 @@ def evaluate_model(model_path: str, args: argparse.Namespace) -> None:
     mock_args = MockArgs(seed=args.seed, system_prompt=args.system_prompt)
     # create a dynamic object that PromptDatasetVL expects for strategy.args
     mock_strategy = type('MockStrategyParams', (), {'args': mock_args, 'print': print, 'is_rank_0': lambda self: True})()
-    
+
     tokenizer, processor = get_tokenizer_processor_vl(model_path, None, "left", use_fast=True)
 
     print(f"Loading evaluation data from {args.eval_data}, split='{args.eval_split}'...")
@@ -180,7 +180,7 @@ def evaluate_model(model_path: str, args: argparse.Namespace) -> None:
         args.eval_data, "1.0", mock_strategy, args.seed, return_eval=False,
         train_split=args.eval_split
     )
-    
+
     if args.max_samples:
         eval_data = eval_data.select(range(min(args.max_samples, len(eval_data))))
 
@@ -192,9 +192,9 @@ def evaluate_model(model_path: str, args: argparse.Namespace) -> None:
         strategy=mock_strategy,
         input_template=None
     )
-    
+
     print(f"Evaluation dataset loaded: {len(eval_dataset)} samples")
-    
+
     print("Initializing vLLM engine...")
     engine = LLM(
         model=model_path,
@@ -203,12 +203,12 @@ def evaluate_model(model_path: str, args: argparse.Namespace) -> None:
         max_model_len=4096,
         limit_mm_per_prompt={"image": 10}
     )
-    
+
     im_end_id = tokenizer.convert_tokens_to_ids("<|im_end|>")
     stop_token_ids = [tokenizer.eos_token_id]
     if im_end_id is not None:
         stop_token_ids.append(im_end_id)
-        
+
     sampling_params = SamplingParams(
         temperature=args.temperature,
         top_p=args.top_p,
@@ -218,38 +218,38 @@ def evaluate_model(model_path: str, args: argparse.Namespace) -> None:
 
     vllm_inputs = []
     refs = []
-    
+
     for i in range(len(eval_dataset)):
         prompt, images, reference, label = eval_dataset[i]
-        
+
         inp = {"prompt": prompt}
         if images and len(images) > 0:
             inp["multi_modal_data"] = {"image": images}
-            
+
         vllm_inputs.append(inp)
-        
+
         refs.append(reference)
 
     print("Running vLLM inference generation...")
     outputs = engine.generate(vllm_inputs, sampling_params)
-    
+
     results = []
     total_acc = 0
     total_fmt = 0
-    
+
     for i, output in enumerate(outputs):
         generated_text = output.outputs[0].text
         gt = refs[i]
-        
+
         if isinstance(gt, list) and len(gt) > 0:
             gt = gt[0]
-            
+
         acc_reward = geo3k_accuracy_reward_fn(generated_text, str(gt))
         fmt_reward = geo3k_format_reward_fn(generated_text)
-        
+
         total_acc += acc_reward
         total_fmt += fmt_reward
-        
+
         results.append({
             "prompt": vllm_inputs[i]["prompt"],
             "generated": generated_text,
@@ -257,17 +257,17 @@ def evaluate_model(model_path: str, args: argparse.Namespace) -> None:
             "accuracy": acc_reward,
             "format": fmt_reward,
         })
-        
+
     avg_acc = total_acc / len(outputs) if len(outputs) > 0 else 0
     avg_fmt = total_fmt / len(outputs) if len(outputs) > 0 else 0
-    
+
     print(f"\n{'='*40}")
     print(f"--- Final Evaluation Results ---")
     print(f"Total Evaluated Samples: {len(outputs)}")
     print(f"Average Accuracy Reward: {avg_acc:.4f} ({(avg_acc*100):.2f}%)")
     print(f"Average Format Correctness: {avg_fmt:.4f} ({(avg_fmt*100):.2f}%)")
     print(f"{'='*40}\n")
-    
+
     output_json_path = os.path.join(args.output_dir, "eval_results.json")
     with open(output_json_path, "w", encoding="utf-8") as f:
         json.dump(results, f, indent=4, ensure_ascii=False)
@@ -280,14 +280,14 @@ def evaluate_model(model_path: str, args: argparse.Namespace) -> None:
 
 if __name__ == "__main__":
     args = parse_args()
-    
+
     os.makedirs(args.output_dir, exist_ok=True)
     merged_model_dir = os.path.join(args.output_dir, "merged_model")
-    
+
     if not os.path.exists(merged_model_dir):
         print(f"Starting LoRA merge process...")
         merge_lora_weights(args.base_model, args.lora_path, merged_model_dir)
     else:
         print(f"Merged model path '{merged_model_dir}' already exists. Skipping merging step...")
-        
+
     evaluate_model(merged_model_dir, args)

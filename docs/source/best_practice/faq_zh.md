@@ -17,7 +17,7 @@
 - 更好的显存优化（推理引擎休眠、优化器卸载）
 - 改进的推理引擎（vLLM, SGLang）
 - 为了提高效率，支持奖励模型 (RM) 的同机部署 (Co-location)
-- 更灵活的分布式训练策略，支持 FSDP 和 DeepSpeed ZeRO 
+- 更灵活的分布式训练策略，支持 FSDP 和 DeepSpeed ZeRO
 
 ### Q: 支持哪些模型？
 

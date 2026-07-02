@@ -469,7 +469,7 @@ def load_reward_models(
         with strategy.init_model_context() as _:
             # All reward types now support shared base models
             rm, tok = _BUILDERS[cfg.rtype](cfg, strategy, base=shared_bases.get((cfg.path, cfg.use_engine)))
-        
+
         rms.append(rm)
         toks.append(tok)
         strategy.print(f"Loaded {cfg.rtype}")

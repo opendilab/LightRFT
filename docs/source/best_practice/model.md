@@ -81,7 +81,7 @@ response = "The image shows a cute brown dog playing in the park."
 
 # 1. Scalar Reward Model
 srm_score = srm(image=image, system_prompt=system_prompt, query=query, response=response)
-print(srm_score) 
+print(srm_score)
 # Output: tensor([0.88]) -> Yields a direct scalar float value
 
 # 2. Generative Reward Model

@@ -214,7 +214,7 @@ def train(args):
     prompts_data = _apply_label_override(
         prompts_data, args.label_key, args.label_override, strategy, "prompt dataset"
     )
-    
+
     prompts_data = prompts_data.select(range(min(args.max_samples, len(prompts_data))))
     prompts_dataset = PromptDatasetVL(prompts_data, tokenizer, processor, args.prompt_max_len, strategy, input_template=args.input_template)
     strategy.print(f"Loaded {len(prompts_dataset)} samples for prompts.")
@@ -237,7 +237,7 @@ def train(args):
                  strategy.print(f"Warning: Evaluation dataset at {eval_data_path} with split '{args.eval_split}' is empty. Skipping evaluation.")
             else:
                 eval_data = eval_data.select(range(min(args.max_eval_samples, len(eval_data))))
-                
+
                 eval_dataset = PromptDatasetVL(eval_data, tokenizer, processor, args.prompt_max_len, strategy, input_template=args.input_template)
                 eval_dataloader = strategy.setup_dataloader(
                     eval_dataset, args.rollout_batch_size // strategy.world_size, False, False, collate_fn=eval_dataset.collate_fn
@@ -262,7 +262,7 @@ def train(args):
             # Calculate total samples needed for pretraining
             total_pretrain_samples = args.max_epochs * len(prompts_dataset) * args.n_samples_per_prompt
             pretrain_data_subset = pretrain_data.select(range(min(len(pretrain_data), total_pretrain_samples)))
-            
+
             pretrain_dataset = SFTDatasetVL(
                 pretrain_data_subset, tokenizer, pretrain_max_len, strategy, pretrain_mode=True,
             )
@@ -491,7 +491,7 @@ if __name__ == "__main__":
         ),
     )
     parser.add_argument("--adam_betas", type=float, nargs=2, default=(0.9, 0.95), help="Betas for Adam optimizer")
-    
+
     # Reward/Advantage Norm/Clip Arguments
     parser.add_argument("--reward_running_norm", action="store_true", default=False, help="Enable running normalization for rewards.")
     parser.add_argument("--reward_running_norm_minus_mean", action="store_true", default=False, help="When using reward normalization, subtract the mean; otherwise, only scale by the std.")
@@ -560,7 +560,7 @@ if __name__ == "__main__":
     parser.add_argument("--eval_data", type=str, default=None, help="HF evaluation dataset name or path (default: use prompt_data)")
     parser.add_argument("--eval_split", type=str, default="test", help="Evaluation data split (default: test)")
     parser.add_argument("--max_eval_samples", type=int, default=500, help="Maximum number of samples to evaluate (default: 500)")
-    
+
     parser.add_argument("--pretrain_data", type=str, default=None, help="HF dataset name or path")
     parser.add_argument(
         "--pretrain_data_probs",

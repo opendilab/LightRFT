@@ -224,6 +224,24 @@ def log_probs_from_logits(
         >>> log_probs.shape
         torch.Size([2, 3])
     """
+    # PyTorch's torch.gather(dim=-1, index=...) does NOT require non-dim
+    # axes to match: when ``logits`` has more rows than ``labels``, gather
+    # silently truncates to ``len(labels)`` instead of raising. That made it
+    # impossible to spot a VLM-specific alignment bug where ``output["logits"]``
+    # is longer than ``sequences`` (image placeholder gets expanded into N
+    # vision-patch tokens during the LM forward) — see PR #53. Reject the
+    # mismatch up-front so any future caller using this helper crashes loudly
+    # and is forced to align logits to labels at the call site.
+    if logits.shape[:-1] != labels.shape:
+        raise ValueError(
+            "log_probs_from_logits: logits and labels must have matching "
+            f"non-vocab shapes. Got logits.shape={tuple(logits.shape)}, "
+            f"labels.shape={tuple(labels.shape)}. For VLMs, output['logits'] "
+            "may be longer than the input sequences because vision tokens "
+            "expand placeholders during the forward pass — slice the logits "
+            "to the action range before calling this helper."
+        )
+
     if logits.dtype in [torch.float32, torch.float64]:
         batch_dim = logits.shape[:-1]
         last_dim = logits.shape[-1]
@@ -444,14 +462,24 @@ def compute_reward(
     action_mask: Optional[torch.Tensor] = None,
     num_actions: Optional[Union[int, list[int]]] = None,
     reward_clip_range: Tuple[float, float] = None,
+    step_rewards: Optional[torch.Tensor] = None,
+    step_token_indices: Optional[torch.Tensor] = None,
 ) -> Union[torch.Tensor, list[torch.Tensor]]:
     """
     Compute final reward by combining base reward with KL penalty.
 
     Combines base reward with KL divergence penalty to encourage policy stability.
-    Supports two modes: with action mask (efficient) and without (individual processing).
+    Supports three modes:
+      A. trajectory-scalar (default, legacy behavior): scatters scalar `r[i]`
+         to the EOS position of each row. Used by ORM-style RL.
+      B. per-step (NEW, opt-in): scatters multiple step rewards to step
+         boundary token positions for true per-step credit assignment. Used
+         by PRM-RL methods like Math-Shepherd / variant 2 of URSA paper.
+         Activated when `step_rewards` is not None.
+      C. no action_mask: per-row variable-length list mode (legacy).
 
-    :param r: Base reward tensor or scalar
+    :param r: Base reward tensor of shape (B,) or scalar. In per-step mode,
+        rows without valid step_token_indices fall back to EOS-scattered r[i].
     :type r: Union[torch.Tensor, float]
     :param kl_coef: KL penalty coefficient (<=0 disables penalty)
     :type kl_coef: float
@@ -463,11 +491,23 @@ def compute_reward(
     :type num_actions: Optional[Union[int, list[int]]]
     :param reward_clip_range: (min, max) to clip base reward
     :type reward_clip_range: Tuple[float, float]
+    :param step_rewards: PER-STEP rewards of shape (B, max_steps) padded with
+        any value (only positions in `step_token_indices` are read). When
+        provided together with ``step_token_indices``, mode (B) is enabled.
+        Rows with no valid step token indices still use scalar EOS fallback.
+    :type step_rewards: Optional[torch.Tensor]
+    :param step_token_indices: Token indices in the action / response space
+        of shape (B, max_steps). Positions with value < 0 are treated as
+        padding and skipped. ``step_token_indices[i, k]`` = boundary token
+        index in sequence i for step k; ``step_rewards[i, k]`` is scattered
+        to that position (NOT the EOS) so cumulative-returns can propagate
+        per-step credit.
+    :type step_token_indices: Optional[torch.Tensor]
 
-    :return: Final reward tensor or list
+    :return: Final reward tensor or list, shape (B, response_size).
     :rtype: Union[torch.Tensor, list[torch.Tensor]]
 
-    Example::
+    Example (mode A, legacy)::
         >>> r = torch.tensor([1.0, 2.0])
         >>> kl_coef = 0.1
         >>> kl = torch.tensor([[0.1, 0.2, 0.3], [0.2, 0.1, 0.4]])
@@ -475,29 +515,75 @@ def compute_reward(
         >>> reward = compute_reward(r, kl_coef, kl, action_mask)
         >>> reward.shape
         torch.Size([2, 3])
+
+    Example (mode B, per-step)::
+        >>> step_rewards = torch.tensor([[0.2, 0.8, 0.7],
+        ...                              [0.5, 0.6, -1.]])  # last col padded
+        >>> step_token_indices = torch.tensor([[1, 3, 4],
+        ...                                    [0, 2, -1]])
+        >>> reward = compute_reward(
+        ...     r=None, kl_coef=0.0, kl=torch.zeros(2, 5),
+        ...     action_mask=torch.ones(2, 5),
+        ...     step_rewards=step_rewards,
+        ...     step_token_indices=step_token_indices,
+        ... )
+        >>> reward
+        tensor([[0.0000, 0.2000, 0.0000, 0.8000, 0.7000],
+                [0.5000, 0.0000, 0.6000, 0.0000, 0.0000]])
     """
     if kl_coef <= 0.0:
         kl_coef = 0.0
 
-    if reward_clip_range:
+    use_per_step = step_rewards is not None and step_token_indices is not None
+
+    if not use_per_step and reward_clip_range:
         r = r.clamp(min=reward_clip_range[0], max=reward_clip_range[1])
 
     if action_mask is not None:
         kl_reward = -kl_coef * kl
-        # The following code is equivalent to:
-        #
-        # last_reward = torch.zeros_like(kl)
-        # for i in range(last_reward.size(0)):
-        #     for t in reversed(range(last_reward.size(1))):
-        #         if action_mask[i][t] > 0.5:
-        #             last_reward[i][t] = r[i]
-        #             break
-        #
-        eos_indices = action_mask.size(1) - 1 - action_mask.long().fliplr().argmax(dim=1, keepdim=True)
-        last_reward = torch.zeros_like(kl).scatter_(dim=1, index=eos_indices, src=r.unsqueeze(1).to(kl.dtype))
+
+        if use_per_step:
+            # Mode B: scatter each step's reward to its boundary token index.
+            # step_rewards: (B, S), step_token_indices: (B, S). Padding = idx < 0.
+            base = torch.zeros_like(kl)
+            valid = step_token_indices >= 0
+            if valid.any():
+                # Gather flat row/col indices, scatter via index_put_
+                row_idx = torch.arange(step_token_indices.size(0), device=kl.device)
+                row_idx = row_idx.unsqueeze(1).expand_as(step_token_indices)
+                flat_rows = row_idx[valid]
+                flat_cols = step_token_indices[valid].long()
+                # Clamp cols into valid range to avoid OOB; padded cols are filtered by `valid`
+                flat_cols = flat_cols.clamp(min=0, max=base.size(1) - 1)
+                flat_vals = step_rewards[valid].to(kl.dtype)
+                # accumulate (multiple steps could land on same token; rare but safe)
+                base.index_put_((flat_rows, flat_cols), flat_vals, accumulate=True)
+            row_has_step = valid.any(dim=1)
+            if r is not None and (~row_has_step).any():
+                eos_indices = action_mask.size(1) - 1 - action_mask.long().fliplr().argmax(dim=1, keepdim=True)
+                fallback_rows = torch.where(~row_has_step)[0]
+                base[fallback_rows, eos_indices[fallback_rows, 0]] = r[fallback_rows].to(kl.dtype)
+            last_reward = base
+        else:
+            # Mode A: legacy - scatter scalar r[i] to EOS index of row i.
+            #
+            # The following code is equivalent to:
+            #
+            # last_reward = torch.zeros_like(kl)
+            # for i in range(last_reward.size(0)):
+            #     for t in reversed(range(last_reward.size(1))):
+            #         if action_mask[i][t] > 0.5:
+            #             last_reward[i][t] = r[i]
+            #             break
+            #
+            eos_indices = action_mask.size(1) - 1 - action_mask.long().fliplr().argmax(dim=1, keepdim=True)
+            last_reward = torch.zeros_like(kl).scatter_(dim=1, index=eos_indices, src=r.unsqueeze(1).to(kl.dtype))
 
         reward = last_reward + kl_reward
     else:
+        # Mode C: per-row variable-length (legacy). Per-step mode is only
+        # supported with action_mask; fall back to scalar EOS even if
+        # use_per_step is set, to keep this branch backward-compat.
         # TODO: write a more efficient version
         reward = []
         for i, (kl_seg, action_len) in enumerate(zip(kl, num_actions)):

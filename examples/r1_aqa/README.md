@@ -169,4 +169,3 @@ Qwen2-Audio uses `Qwen2AudioForConditionalGeneration` (not `AutoModelForVision2S
 
 ### 4. Chat Template
 R1-AQA embeds audio URLs in the chat message content as `{"type": "audio", "audio_url": path}`. We preserve this format and use the Qwen2-Audio processor's `apply_chat_template` to convert it to the correct token format with audio placeholders.
-

@@ -1,7 +1,9 @@
 import os
 import sys
 import os.path
+from collections import defaultdict
 from abc import ABC
+from contextlib import contextmanager
 from typing import Any, Callable, Dict, List, Optional
 
 import torch
@@ -17,6 +19,25 @@ from lightrft.models.utils import masked_mean, unpacking_samples, compute_approx
 from lightrft.utils.distributed_sampler import DistributedSampler
 from lightrft.utils import rotate_ckpt_dirs
 from lightrft.trainer import AdaptiveKLController, ExperienceVL, FixedKLController, NaiveExperienceMakerVL, NaiveReplayBufferVL  # noqa
+
+
+class _NullStepProfiler:
+    @contextmanager
+    def section(self, _name: str):
+        yield
+
+    @contextmanager
+    def phase(self, _name: str):
+        yield
+
+    def start_step(self, *_args, **_kwargs):
+        return None
+
+    def finish_step(self, *_args, **_kwargs):
+        return None
+
+    def close(self):
+        return None
 
 
 class PPOTrainerVL(ABC):
@@ -140,6 +161,7 @@ class PPOTrainerVL(ABC):
         self.strategy = strategy
         self.args = strategy.args
         self.save_hf_ckpt = save_hf_ckpt
+        self.is_lora = getattr(self.args, "lora_rank", 0) > 0
 
         current_filename = os.path.basename(__file__)
         current_lineno = sys._getframe().f_lineno
@@ -162,7 +184,6 @@ class PPOTrainerVL(ABC):
         self.reward_fn = reward_fn
         self.reward_fn_label_map = reward_fn_label_map
         self.reward_recipe = reward_recipe
-        self.is_lora = getattr(self.args, "lora_rank", 0) > 0
 
         self.actor = actor
         self.critic = critic
@@ -217,6 +238,7 @@ class PPOTrainerVL(ABC):
         self._tensorboard = None
         self.eval_step_counter = 0  # Independent counter for eval X-axis
         self.wandb_log_counter = 0  # Global counter for unique wandb system steps
+        self.profiler = getattr(self, "profiler", _NullStepProfiler())
 
         if self.strategy.args.use_wandb and self.strategy.is_rank_0():
             import wandb
@@ -253,6 +275,28 @@ class PPOTrainerVL(ABC):
             os.makedirs(self.strategy.args.use_tensorboard, exist_ok=True)
             log_dir = os.path.join(self.strategy.args.use_tensorboard, strategy.args.wandb_run_name)
             self._tensorboard = SummaryWriter(log_dir=log_dir)
+
+    def _update_wandb_summary(self, logs: Dict[str, Any]) -> None:
+        if self._wandb is None or not self.strategy.is_rank_0() or not logs:
+            return
+
+        summary_logs = {}
+        for key, value in logs.items():
+            if isinstance(value, torch.Tensor):
+                if value.numel() != 1:
+                    continue
+                value = value.item()
+            elif hasattr(value, "item") and not isinstance(value, (str, bytes)):
+                try:
+                    value = value.item()
+                except (TypeError, ValueError):
+                    pass
+
+            if isinstance(value, (int, float, bool, str)):
+                summary_logs[key] = value
+
+        if summary_logs and self._wandb.run is not None:
+            self._wandb.run.summary.update(summary_logs)
 
     def fit(
         self,
@@ -359,6 +403,8 @@ class PPOTrainerVL(ABC):
             )
 
             for batch in self.prompts_dataloader:
+                if hasattr(self, "profiler") and self.profiler is not None:
+                    self.profiler.start_step(steps, episode)
                 # Compatible with both image-only (4 args) and video (5 args) dataloaders
                 if len(batch) == 5:
                     rand_prompts, rand_images, rand_videos, rand_references, rand_labels = batch
@@ -366,9 +412,14 @@ class PPOTrainerVL(ABC):
                     rand_prompts, rand_images, rand_references, rand_labels = batch
                     rand_videos = None
 
-                # TODO: Remove debug print
+                batch_preview = min(2, len(rand_prompts))
                 self.strategy.print(
-                    f"rand_prompts:\n {rand_prompts}\n , rand_images:{rand_images}\n , rand_references:{rand_references}\n, rand_labels:{rand_labels}\n "  # noqa
+                    "collect phase batch summary: "
+                    f"batch_size={len(rand_prompts)}, "
+                    f"preview_prompts={rand_prompts[:batch_preview]}, "
+                    f"preview_images={rand_images[:batch_preview]}, "
+                    f"preview_references={rand_references[:batch_preview]}, "
+                    f"preview_labels={rand_labels[:batch_preview]}"
                 )
 
                 for i, experience in enumerate(
@@ -403,9 +454,7 @@ class PPOTrainerVL(ABC):
                 rollout_status = {}
                 if self.replay_buffer.items:
                     all_rewards = []
-                    all_format_rewards = []
-                    all_accuracy_rewards = []
-                    all_general_model_rewards = []
+                    reward_metric_values = defaultdict(list)
                     all_response_lengths = []
 
                     for item in self.replay_buffer.items:
@@ -421,19 +470,9 @@ class PPOTrainerVL(ABC):
                             hasattr(item, 'info') and item.info is not None and 'reward_metrics' in item.info
                             and item.info['reward_metrics'] is not None
                         ):
-
                             reward_metrics = item.info['reward_metrics']
-
-                            # Safely extract sub-metrics
-                            if 'format_reward' in reward_metrics:
-                                all_format_rewards.append(reward_metrics['format_reward'])
-                            if 'accuracy_reward' in reward_metrics:
-                                all_accuracy_rewards.append(reward_metrics['accuracy_reward'])
-                            general_model_reward = reward_metrics.get("general_model_reward")
-                            if general_model_reward is None:
-                                general_model_reward = reward_metrics.get("model_reward")
-                            if general_model_reward is not None:
-                                all_general_model_rewards.append(general_model_reward)
+                            for key, value in reward_metrics.items():
+                                reward_metric_values[key].append(value)
 
                         # Collect response lengths from rollout
                         if hasattr(item, 'info') and item.info is not None and 'response_length' in item.info:
@@ -451,42 +490,47 @@ class PPOTrainerVL(ABC):
                         rollout_status["rollout_reward"] = rewards_tensor.mean().item()
                         rollout_status["rollout_reward_std"] = rewards_tensor.std().item()
 
-                    if all_format_rewards:
-                        # [TENSOR-FIX] Handle both tensor lists and scalar lists
-                        # Issue: all_format_rewards may contain tensors (from reward_metrics),
-                        # but torch.tensor() cannot convert a list of tensors directly.
-                        # Solution: Use torch.cat() for tensor lists, torch.tensor() for scalar lists
-                        if isinstance(all_format_rewards[0], torch.Tensor):
-                            # List of tensors: concatenate them
-                            format_tensor = torch.cat([t.to(device).float() for t in all_format_rewards])
-                        else:
-                            # List of scalars: convert to tensor
-                            format_tensor = torch.tensor(all_format_rewards, dtype=torch.float32, device=device)
-
-                        mean_format_reward = format_tensor.mean().item()
-                        rollout_status["rollout_format_reward"] = mean_format_reward
-
-                    if all_accuracy_rewards:
-                        # [TENSOR-FIX] Handle both tensor lists and scalar lists
-                        if isinstance(all_accuracy_rewards[0], torch.Tensor):
-                            accuracy_tensor = torch.cat([t.to(device).float() for t in all_accuracy_rewards])
-                        else:
-                            accuracy_tensor = torch.tensor(all_accuracy_rewards, dtype=torch.float32, device=device)
-
-                        mean_accuracy_reward = accuracy_tensor.mean().item()
-                        rollout_status["rollout_accuracy_reward"] = mean_accuracy_reward
-
-                    if all_general_model_rewards:
-                        if isinstance(all_general_model_rewards[0], torch.Tensor):
-                            general_model_tensor = torch.cat([t.to(device).float() for t in all_general_model_rewards])
-                        else:
-                            general_model_tensor = torch.tensor(
-                                all_general_model_rewards, dtype=torch.float32, device=device
-                            )
-
+                    # Preserve the original dashboard keys for existing examples while
+                    # also supporting arbitrary reward_metrics from newer reward models.
+                    if "format_reward" in reward_metric_values:
+                        values = reward_metric_values["format_reward"]
+                        format_tensor = (
+                            torch.cat([t.to(device).float() for t in values]) if isinstance(values[0], torch.Tensor)
+                            else torch.tensor(values, dtype=torch.float32, device=device)
+                        )
+                        rollout_status["rollout_format_reward"] = format_tensor.mean().item()
+                    if "accuracy_reward" in reward_metric_values:
+                        values = reward_metric_values["accuracy_reward"]
+                        accuracy_tensor = (
+                            torch.cat([t.to(device).float() for t in values]) if isinstance(values[0], torch.Tensor)
+                            else torch.tensor(values, dtype=torch.float32, device=device)
+                        )
+                        rollout_status["rollout_accuracy_reward"] = accuracy_tensor.mean().item()
+                    general_values = reward_metric_values.get("general_model_reward")
+                    if general_values is None:
+                        general_values = reward_metric_values.get("model_reward")
+                    if general_values:
+                        general_model_tensor = (
+                            torch.cat([t.to(device).float()
+                                       for t in general_values]) if isinstance(general_values[0], torch.Tensor) else
+                            torch.tensor(general_values, dtype=torch.float32, device=device)
+                        )
                         mean_general_model_reward = general_model_tensor.mean().item()
                         if abs(mean_general_model_reward) > 1e-6:
                             rollout_status["rollout_general_model_reward"] = mean_general_model_reward
+
+                    for metric_name, values in reward_metric_values.items():
+                        if not values:
+                            continue
+                        if isinstance(values[0], torch.Tensor):
+                            metric_tensor = torch.cat([t.to(device).float() for t in values])
+                        else:
+                            metric_tensor = torch.tensor(values, dtype=torch.float32, device=device)
+                        if metric_tensor.numel() == 0:
+                            continue
+                        mean_metric = metric_tensor.mean().item()
+                        if abs(mean_metric) > 1e-6:
+                            rollout_status[f"rollout_{metric_name}"] = mean_metric
 
                     if all_response_lengths:
                         # [TENSOR-FIX] Handle both tensor lists and scalar lists
@@ -524,9 +568,16 @@ class PPOTrainerVL(ABC):
 
                 self.save_logs_and_checkpoints(args, steps, pbar, logs_dict_combined, client_states, episode=episode)
 
+                if hasattr(self, "profiler") and self.profiler is not None:
+                    profile_snapshot = self.profiler.finish_step()
+                    if hasattr(self, "log_profile_metrics"):
+                        self.log_profile_metrics(steps, episode, profile_snapshot)
+
                 pbar.update()
                 steps = steps + 1
 
+        if hasattr(self, "profiler") and self.profiler is not None:
+            self.profiler.close()
         if self._wandb is not None and self.strategy.is_rank_0():
             self._wandb.finish()
         if self._tensorboard is not None and self.strategy.is_rank_0():
@@ -742,125 +793,123 @@ class PPOTrainerVL(ABC):
             )
             return {}  # Emergency fallback - should not normally execute
 
-        # Actor loss
-        # Build kwargs based on actor's modality - only include supported parameters
-        candidate_params = {
-            "pixel_values": pixel_values,
-            "image_grid_thw": image_grid_thws,
-            "pixel_values_videos": pixel_values_videos,
-            "video_grid_thw": video_grid_thws,
-        }
-        # Audio-language actors expect audio_values; pipeline stores them in pixel_values slot
-        if "audio_values" in self._actor_supported_params:
-            candidate_params["audio_values"] = candidate_params.get("pixel_values")
+        with self.profiler.section("learn/actor/total"):
+            candidate_params = {
+                "pixel_values": pixel_values,
+                "image_grid_thw": image_grid_thws,
+                "pixel_values_videos": pixel_values_videos,
+                "video_grid_thw": video_grid_thws,
+            }
+            # Audio-language actors expect audio_values; pipeline stores them in pixel_values slot.
+            if "audio_values" in self._actor_supported_params:
+                candidate_params["audio_values"] = candidate_params.get("pixel_values")
 
-        actor_kwargs = {key: value for key, value in candidate_params.items() if key in self._actor_supported_params}
+            actor_kwargs = {
+                key: value
+                for key, value in candidate_params.items()
+                if key in self._actor_supported_params
+            }
 
-        action_log_probs, output = self.actor(
-            sequences,
-            num_actions,
-            attention_mask=attention_mask,
-            return_output=True,
-            packed_seq_lens=packed_seq_lens,
-            **actor_kwargs
-        )
+            with self.profiler.section("learn/actor/forward"):
+                action_log_probs, output = self.actor(
+                    sequences,
+                    num_actions,
+                    attention_mask=attention_mask,
+                    return_output=True,
+                    packed_seq_lens=packed_seq_lens,
+                    **actor_kwargs
+                )
 
         # NOTE: Explicit masking in log-space is incorrect - removed
         # if experience.action_mask is not None:
         #     # Setting masked positions to 0 to match old_action_log_probs is WRONG in log-space
         #     action_log_probs = action_log_probs * experience.action_mask
 
-        # Loss function
-        actor_loss = self.actor_loss_fn(
-            action_log_probs,
-            old_action_log_probs,
-            advantages,
-            action_mask=experience.action_mask,
-            entropy_mask=entropy_mask,
-        )
-
-        if self.args.use_kl_loss:
-            if self.initial_model is not None:
-                # TODO(pu): Text-only action mask for KL calculation
-
-                kl = compute_approx_kl(
+            with self.profiler.section("learn/actor/loss"):
+                actor_loss = self.actor_loss_fn(
                     action_log_probs,
-                    base_action_log_probs,
-                    experience.action_mask,
-                    kl_estimator=self.args.kl_estimator,
+                    old_action_log_probs,
+                    advantages,
+                    action_mask=experience.action_mask,
+                    entropy_mask=entropy_mask,
                 )
 
-                # [Protection measure 2] Per-token KL Clamping
-                # NOTE: Adding this causes svkng training to not converge
-                # kl = torch.clamp(kl, min=0.0, max=20.0)
+            if self.args.use_kl_loss:
+                if self.initial_model is not None:
+                    kl = compute_approx_kl(
+                        action_log_probs,
+                        base_action_log_probs,
+                        experience.action_mask,
+                        kl_estimator=self.args.kl_estimator,
+                    )
+                else:
+                    kl = torch.zeros_like(
+                        action_log_probs,
+                        dtype=action_log_probs.dtype,
+                        device=action_log_probs.device,
+                    )
 
+                if not self.args.packing_samples:
+                    kl_mean = masked_mean(kl, experience.action_mask, dim=-1)
+                else:
+                    kl = unpacking_samples(kl, num_actions)
+                    kl_mean = torch.tensor([each_kl.mean() for each_kl in kl], device=action_log_probs.device)
+
+                kl_loss = kl_mean.mean()
+                experience.info["kl"] = kl_loss.item()
             else:
-                kl = torch.zeros_like(action_log_probs, dtype=action_log_probs.dtype, device=action_log_probs.device)
+                kl_loss = 0
 
-            if not self.args.packing_samples:
-                kl_mean = masked_mean(kl, experience.action_mask, dim=-1)
-            # Not supported for packed samples
-            else:
-                # Convert tensor into list of tensors for easier manipulation within dataset
-                kl = unpacking_samples(kl, num_actions)
-                kl_mean = torch.tensor([each_kl.mean() for each_kl in kl], device=action_log_probs.device)
-
-            kl_loss = kl_mean.mean()
-            experience.info["kl"] = kl_loss.item()
-        else:
-            kl_loss = 0
-
-        # Mixtral auxiliary loss
-        if self.aux_loss:
-            aux_loss = output.aux_loss
-        else:
-            aux_loss = 0
-
-        loss = actor_loss + aux_loss * self.args.aux_loss_coef + kl_loss * self.kl_ctl.value
-
-        if torch.isnan(loss) or torch.isinf(loss):
-            self.strategy.print("[CRITICAL ERROR] Actor loss is NaN or Inf at step. Skipping update.")
-            self.strategy.print(f"  Actor Loss: {actor_loss.item()}")
-            self.strategy.print(f"  KL Loss: {kl_loss.item() if isinstance(kl_loss, torch.Tensor) else kl_loss}")
-
-        self.strategy.backward(loss, self.actor, self.actor_optim)
-
-        # PTX loss for supervised fine-tuning
-        if self.pretrain_dataloader is not None:
-            data = next(self.pretrain_dataloader)
-            inputs = data[1].squeeze(1).to(torch.cuda.current_device())
-            attention_mask = data[2].squeeze(1).to(torch.cuda.current_device())
-            label = torch.where(
-                attention_mask.bool(),
-                inputs,
-                self.ptx_loss_fn.IGNORE_INDEX,
-            )
-            pixel_values = data[3].to(torch.cuda.current_device())
-            image_grid_thws = data[4].to(torch.cuda.current_device())
-
-            output = self.actor(
-                inputs,
-                attention_mask=attention_mask,
-                pixel_values=pixel_values,
-                image_grid_thw=image_grid_thws,
-                return_output=True
-            )
-            ptx_log_probs = output["logits"]
-
-            # Loss function
-            ptx_loss = self.ptx_loss_fn(ptx_log_probs, label)
-            # Mixtral auxiliary loss
             if self.aux_loss:
                 aux_loss = output.aux_loss
             else:
                 aux_loss = 0
-            loss = ptx_loss + aux_loss * self.args.aux_loss_coef
-            self.strategy.backward(self.ptx_coef * loss, self.actor, self.actor_optim)
 
-        self.strategy.optimizer_step(self.actor_optim, self.actor, self.actor_scheduler, name="actor")
+            loss = actor_loss + aux_loss * self.args.aux_loss_coef + kl_loss * self.kl_ctl.value
 
-        if self.ema_model:
-            self.strategy.moving_average(self.actor, self.ema_model, self.ema_beta, "cuda")
+            if torch.isnan(loss) or torch.isinf(loss):
+                self.strategy.print("[CRITICAL ERROR] Actor loss is NaN or Inf at step. Skipping update.")
+                self.strategy.print(f"  Actor Loss: {actor_loss.item()}")
+                self.strategy.print(f"  KL Loss: {kl_loss.item() if isinstance(kl_loss, torch.Tensor) else kl_loss}")
+
+            with self.profiler.section("learn/actor/backward"):
+                self.strategy.backward(loss, self.actor, self.actor_optim)
+
+            if self.pretrain_dataloader is not None:
+                with self.profiler.section("learn/actor/ptx"):
+                    data = next(self.pretrain_dataloader)
+                    inputs = data[1].squeeze(1).to(torch.cuda.current_device())
+                    attention_mask = data[2].squeeze(1).to(torch.cuda.current_device())
+                    label = torch.where(
+                        attention_mask.bool(),
+                        inputs,
+                        self.ptx_loss_fn.IGNORE_INDEX,
+                    )
+                    pixel_values = data[3].to(torch.cuda.current_device())
+                    image_grid_thws = data[4].to(torch.cuda.current_device())
+
+                    output = self.actor(
+                        inputs,
+                        attention_mask=attention_mask,
+                        pixel_values=pixel_values,
+                        image_grid_thw=image_grid_thws,
+                        return_output=True
+                    )
+                    ptx_log_probs = output["logits"]
+                    ptx_loss = self.ptx_loss_fn(ptx_log_probs, label)
+                    if self.aux_loss:
+                        aux_loss = output.aux_loss
+                    else:
+                        aux_loss = 0
+                    loss = ptx_loss + aux_loss * self.args.aux_loss_coef
+                    self.strategy.backward(self.ptx_coef * loss, self.actor, self.actor_optim)
+
+            with self.profiler.section("learn/actor/optimizer_step"):
+                self.strategy.optimizer_step(self.actor_optim, self.actor, self.actor_scheduler, name="actor")
+
+            if self.ema_model:
+                with self.profiler.section("learn/actor/ema"):
+                    self.strategy.moving_average(self.actor, self.ema_model, self.ema_beta, "cuda")
 
         # Status
         status = {"policy_loss": actor_loss.item(), "actor_lr": self.actor_scheduler.get_last_lr()[0]}
@@ -988,33 +1037,35 @@ class PPOTrainerVL(ABC):
         sequences = ensure_device_and_contiguous(sequences, "sequences")
         attention_mask = ensure_device_and_contiguous(attention_mask, "attention_mask")
 
-        # Critic loss
-        values, output = self.critic(
-            sequences,
-            num_actions=num_actions,
-            attention_mask=attention_mask,
-            pixel_values=pixel_values,
-            image_grid_thw=image_grid_thws,
-            pixel_values_videos=pixel_values_videos,
-            video_grid_thw=video_grid_thws,
-            return_output=True,
-            packed_seq_lens=packed_seq_lens,
-        )
-        # Loss function
-        critic_loss = self.critic_loss_fn(
-            values,
-            old_values,
-            returns,
-            action_mask=experience.action_mask,
-        )
-        # Mixtral auxiliary loss
-        if self.aux_loss:
-            aux_loss = output.aux_loss
-        else:
-            aux_loss = 0
-        loss = critic_loss + aux_loss * self.args.aux_loss_coef
-        self.strategy.backward(loss, self.critic, self.critic_optim)
-        self.strategy.optimizer_step(self.critic_optim, self.critic, self.critic_scheduler, name="critic")
+        with self.profiler.section("learn/critic/total"):
+            with self.profiler.section("learn/critic/forward"):
+                values, output = self.critic(
+                    sequences,
+                    num_actions=num_actions,
+                    attention_mask=attention_mask,
+                    pixel_values=pixel_values,
+                    image_grid_thw=image_grid_thws,
+                    pixel_values_videos=pixel_values_videos,
+                    video_grid_thw=video_grid_thws,
+                    return_output=True,
+                    packed_seq_lens=packed_seq_lens,
+                )
+            with self.profiler.section("learn/critic/loss"):
+                critic_loss = self.critic_loss_fn(
+                    values,
+                    old_values,
+                    returns,
+                    action_mask=experience.action_mask,
+                )
+                if self.aux_loss:
+                    aux_loss = output.aux_loss
+                else:
+                    aux_loss = 0
+                loss = critic_loss + aux_loss * self.args.aux_loss_coef
+            with self.profiler.section("learn/critic/backward"):
+                self.strategy.backward(loss, self.critic, self.critic_optim)
+            with self.profiler.section("learn/critic/optimizer_step"):
+                self.strategy.optimizer_step(self.critic_optim, self.critic, self.critic_scheduler, name="critic")
 
         # Status
         status = {
@@ -1090,10 +1141,10 @@ class PPOTrainerVL(ABC):
                     for k, v in self.experience_maker.perf_stats.items():
                         all_wandb_logs[f"perf/experience_maker/{k}"] = v
 
-                # Commit Train/Rollout logs with unique system step
                 if all_wandb_logs:
                     self.wandb_log_counter += 1
                     self._wandb.log(all_wandb_logs, step=self.wandb_log_counter, commit=True)
+                    self._update_wandb_summary(all_wandb_logs)
 
             # TensorBoard Logging
             elif self._tensorboard is not None and self.strategy.is_rank_0():
@@ -1125,12 +1176,9 @@ class PPOTrainerVL(ABC):
                     eval_logs["eval/train_step"] = global_step
                     eval_logs["eval/episode"] = episode
 
-                    # IMPORTANT:
-                    # Use wandb_log_counter to ensure eval has a unique system step
-                    # This prevents eval metrics from being overwritten by train metrics
-                    # The plots will still use eval/global_step as X-axis due to define_metric
                     self.wandb_log_counter += 1
                     self._wandb.log(eval_logs, step=self.wandb_log_counter, commit=True)
+                    self._update_wandb_summary(eval_logs)
 
                 # TensorBoard Logging for Eval
                 elif self._tensorboard is not None:
@@ -1170,21 +1218,23 @@ class PPOTrainerVL(ABC):
                     self.critic, os.path.join(ckpt_path, "_critic"), tag, args.max_ckpt_num, args.max_ckpt_mem
                 )
 
-        # For LoRA, we ALWAYS save the HF adapter as it is much smaller and more convenient for deployment.
+        # For LoRA, always save the HF adapter because it is much smaller and
+        # is the checkpoint users need when --disable_ds_ckpt is set.
         if self.save_hf_ckpt or self.is_lora:
-            # Rotate HF checkpoints
             if self.strategy.is_rank_0():
                 os.makedirs(ckpt_path, exist_ok=True)
                 max_num = getattr(args, "max_ckpt_num", 3)
-                rotate_ckpt_dirs(
-                    ckpt_path,
-                    max_num,
-                    suffix="_lora",
-                    strategy=self.strategy,
-                    label="HF ckpt",
-                )
+                if self.is_lora:
+                    rotate_ckpt_dirs(
+                        ckpt_path,
+                        max_num,
+                        suffix="_lora",
+                        strategy=self.strategy,
+                        label="HF ckpt",
+                    )
 
-            save_path = os.path.join(ckpt_path, f"{tag}_lora")
+            save_suffix = "_lora" if self.is_lora else "_hf"
+            save_path = os.path.join(ckpt_path, f"{tag}{save_suffix}")
             self.strategy.save_model(self.actor, self.tokenizer, save_path)
 
     def evaluate(self, eval_dataloader, global_step):
@@ -1210,9 +1260,7 @@ class PPOTrainerVL(ABC):
             self.critic.eval()
 
         all_rewards = []
-        all_format_rewards = []
-        all_accuracy_rewards = []
-        all_general_model_rewards = []
+        reward_metric_values = defaultdict(list)
         all_response_lengths = []
         num_eval_batches = 0
 
@@ -1258,15 +1306,8 @@ class PPOTrainerVL(ABC):
 
                         if 'reward_metrics' in info:
                             rm = info['reward_metrics']
-                            if 'format_reward' in rm:
-                                all_format_rewards.extend(extract_values(rm['format_reward']))
-                            if 'accuracy_reward' in rm:
-                                all_accuracy_rewards.extend(extract_values(rm['accuracy_reward']))
-                            general_model_reward = rm.get("general_model_reward")
-                            if general_model_reward is None:
-                                general_model_reward = rm.get("model_reward")
-                            if general_model_reward is not None:
-                                all_general_model_rewards.extend(extract_values(general_model_reward))
+                            for key, value in rm.items():
+                                reward_metric_values[key].extend(extract_values(value))
 
                 num_eval_batches += 1
                 if num_eval_batches >= len(eval_dataloader):
@@ -1287,9 +1328,8 @@ class PPOTrainerVL(ABC):
             # metrics[f"{name}_std"] = t.std().item() # Optional
 
         compute_stats("reward", all_rewards)
-        compute_stats("format_reward", all_format_rewards)
-        compute_stats("accuracy_reward", all_accuracy_rewards)
-        compute_stats("general_model_reward", all_general_model_rewards)
+        for metric_name, values in reward_metric_values.items():
+            compute_stats(metric_name, values)
         compute_stats("response_length", all_response_lengths)
 
         metrics["num_samples"] = len(all_rewards)

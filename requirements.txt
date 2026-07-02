@@ -25,3 +25,11 @@ librosa
 qwen-vl-utils
 sympy
 matplotlib
+# URSA-MATH dependencies
+attrdict
+numpy
+pandas
+Pillow
+regex
+timm
+torchvision

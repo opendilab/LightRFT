@@ -19,6 +19,7 @@ Key Features:
 - MoE (Mixture of Experts) model support
 """
 
+import inspect
 from typing import Optional, Tuple, Union
 
 import torch
@@ -85,6 +86,73 @@ class ActorVL(nn.Module):
     # Model modality declaration - defines what types of inputs this model accepts
     modality = ActorModality.VISION_LANGUAGE
 
+    def _get_model_dtype(self) -> Optional[torch.dtype]:
+        model_dtype = getattr(self.model, "dtype", None)
+        if isinstance(model_dtype, torch.dtype):
+            return model_dtype
+        try:
+            parameters = self.model.parameters()
+        except (AttributeError, TypeError):
+            return None
+        try:
+            for parameter in parameters:
+                if torch.is_floating_point(parameter):
+                    return parameter.dtype
+        except TypeError:
+            return None
+        return None
+
+    def _cast_multimodal_tensor(self, value: Optional[torch.Tensor]) -> Optional[torch.Tensor]:
+        if value is None or not torch.is_tensor(value) or not torch.is_floating_point(value):
+            return value
+        model_dtype = self._get_model_dtype()
+        if model_dtype is None or value.dtype == model_dtype:
+            return value
+        return value.to(dtype=model_dtype)
+
+    def _signature_parameters(self, target):
+        if target is None:
+            return None
+        try:
+            return inspect.signature(target).parameters
+        except (TypeError, ValueError):
+            return None
+
+    def _supports_forward_kwarg(self, kwarg_name: str) -> bool:
+        parameters = self._signature_parameters(getattr(self.model, "forward", None))
+        if parameters is None:
+            return True
+        if kwarg_name in parameters:
+            return True
+        return any(param.kind == inspect.Parameter.VAR_KEYWORD for param in parameters.values())
+
+    def _supports_generation_kwarg(self, kwarg_name: str) -> bool:
+        prepare_parameters = self._signature_parameters(getattr(self.model, "prepare_inputs_for_generation", None))
+        if prepare_parameters is None:
+            return self._supports_forward_kwarg(kwarg_name)
+        if kwarg_name in prepare_parameters:
+            return True
+
+        # Transformers validates generate kwargs against prepare_inputs_for_generation,
+        # and only expands that allow-list with exact forward() parameter names
+        # when prepare has **kwargs/model_kwargs. A forward **kwargs parameter does
+        # not make arbitrary model_kwargs valid during generate().
+        prepare_accepts_kwargs = any(
+            param.kind == inspect.Parameter.VAR_KEYWORD or name == "model_kwargs"
+            for name, param in prepare_parameters.items()
+        )
+        if not prepare_accepts_kwargs:
+            return False
+        forward_parameters = self._signature_parameters(getattr(self.model, "forward", None))
+        if forward_parameters is None:
+            return True
+        return kwarg_name in forward_parameters
+
+    def _supports_model_kwarg(self, kwarg_name: str, *, generation: bool = False) -> bool:
+        if generation:
+            return self._supports_generation_kwarg(kwarg_name)
+        return self._supports_forward_kwarg(kwarg_name)
+
     def __init__(
         self,
         pretrain_or_model,
@@ -102,6 +170,7 @@ class ActorVL(nn.Module):
     ) -> None:
         super().__init__()
         self.high_entropy_token_ratio = high_entropy_token_ratio
+        self.packing_samples = packing_samples
 
         if isinstance(pretrain_or_model, str):
             self.pretrain_or_model = pretrain_or_model
@@ -151,8 +220,6 @@ class ActorVL(nn.Module):
             # Use `model.generate(use_cache=True)` instead.`
             self.model.config.use_cache = False
 
-            # packing samples using Flash Attention 2
-            self.packing_samples = packing_samples
         else:
             self.model = pretrain_or_model
             self.pretrain_or_model = pretrain_or_model.config.model_type
@@ -206,9 +273,9 @@ class ActorVL(nn.Module):
         """
         generate_args = {
             "input_ids": input_ids,
-            "pixel_values": pixel_values,
+            "pixel_values": self._cast_multimodal_tensor(pixel_values),
             "image_grid_thw": image_grid_thw,
-            "pixel_values_videos": pixel_values_videos,
+            "pixel_values_videos": self._cast_multimodal_tensor(pixel_values_videos),
             "video_grid_thw": video_grid_thw,
             "top_k": kwargs.get("top_k", None),
             "top_p": kwargs.get("top_p", None),
@@ -218,15 +285,25 @@ class ActorVL(nn.Module):
             "use_cache": True,
             "num_beams": kwargs.get("num_beams", 1),
             "attention_mask": kwargs.get("attention_mask"),
+            "logits_processor": kwargs.get("logits_processor"),
             "eos_token_id": kwargs.get("eos_token_id"),
             "pad_token_id": kwargs.get("pad_token_id"),
             "min_new_tokens": kwargs.get("min_new_tokens", 1),
+            "repetition_penalty": kwargs.get("repetition_penalty", 1.0),
         }
+        if kwargs.get("no_repeat_ngram_size", 0) > 0:
+            generate_args["no_repeat_ngram_size"] = kwargs["no_repeat_ngram_size"]
 
         if kwargs.get("max_new_tokens", None):
             generate_args["max_new_tokens"] = kwargs.get("max_new_tokens")
         if kwargs.get("max_length", None):
             generate_args["max_length"] = kwargs.get("max_length")
+
+        for model_kwarg in ("pixel_values", "image_grid_thw", "pixel_values_videos", "video_grid_thw"):
+            if model_kwarg in generate_args and generate_args[model_kwarg] is None:
+                generate_args.pop(model_kwarg)
+            elif model_kwarg in generate_args and not self._supports_model_kwarg(model_kwarg, generation=True):
+                generate_args.pop(model_kwarg)
 
         # Call generate
         sequences = self.model.generate(**generate_args)
@@ -306,14 +383,21 @@ class ActorVL(nn.Module):
             # explicitly ignore attention_mask for packing_samples
             attention_mask = None
 
+        forward_kwargs = {
+            "attention_mask": attention_mask,
+            "position_ids": position_ids,
+            "pixel_values": self._cast_multimodal_tensor(pixel_values),
+            "image_grid_thw": image_grid_thw,
+            "pixel_values_videos": self._cast_multimodal_tensor(pixel_values_videos),
+            "video_grid_thw": video_grid_thw,
+        }
+        for model_kwarg in ("pixel_values", "image_grid_thw", "pixel_values_videos", "video_grid_thw"):
+            if not self._supports_model_kwarg(model_kwarg):
+                forward_kwargs.pop(model_kwarg, None)
+
         output = self.model(
             sequences,
-            attention_mask=attention_mask,
-            position_ids=position_ids,
-            pixel_values=pixel_values,
-            image_grid_thw=image_grid_thw,
-            pixel_values_videos=pixel_values_videos,
-            video_grid_thw=video_grid_thw,
+            **forward_kwargs,
         )
 
         if num_actions is None:  # defult

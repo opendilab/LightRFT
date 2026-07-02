@@ -593,6 +593,3 @@ def patch_experience_maker_for_audio(exp_maker, processor, tokenizer, prompt_max
 
     print("[PATCH] FastExperienceMaker patched for audio")
     return exp_maker
-
-
-
