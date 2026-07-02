@@ -8,7 +8,7 @@ results in the format expected by each benchmark's official evaluation script.
   Output key: model_prediction
   Run: python /path/to/mmau/evaluation.py --input <out_file>
 
-- MMAR: https://github.com/ddlBoJack/MMAR 
+- MMAR: https://github.com/ddlBoJack/MMAR
   Output key: answer_prediction
   Run: python /path/to/mmar/code/evaluation.py --input <out_file>
 

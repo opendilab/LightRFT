@@ -495,16 +495,14 @@ class PPOTrainerVL(ABC):
                     if "format_reward" in reward_metric_values:
                         values = reward_metric_values["format_reward"]
                         format_tensor = (
-                            torch.cat([t.to(device).float() for t in values])
-                            if isinstance(values[0], torch.Tensor)
+                            torch.cat([t.to(device).float() for t in values]) if isinstance(values[0], torch.Tensor)
                             else torch.tensor(values, dtype=torch.float32, device=device)
                         )
                         rollout_status["rollout_format_reward"] = format_tensor.mean().item()
                     if "accuracy_reward" in reward_metric_values:
                         values = reward_metric_values["accuracy_reward"]
                         accuracy_tensor = (
-                            torch.cat([t.to(device).float() for t in values])
-                            if isinstance(values[0], torch.Tensor)
+                            torch.cat([t.to(device).float() for t in values]) if isinstance(values[0], torch.Tensor)
                             else torch.tensor(values, dtype=torch.float32, device=device)
                         )
                         rollout_status["rollout_accuracy_reward"] = accuracy_tensor.mean().item()
@@ -513,9 +511,9 @@ class PPOTrainerVL(ABC):
                         general_values = reward_metric_values.get("model_reward")
                     if general_values:
                         general_model_tensor = (
-                            torch.cat([t.to(device).float() for t in general_values])
-                            if isinstance(general_values[0], torch.Tensor)
-                            else torch.tensor(general_values, dtype=torch.float32, device=device)
+                            torch.cat([t.to(device).float()
+                                       for t in general_values]) if isinstance(general_values[0], torch.Tensor) else
+                            torch.tensor(general_values, dtype=torch.float32, device=device)
                         )
                         mean_general_model_reward = general_model_tensor.mean().item()
                         if abs(mean_general_model_reward) > 1e-6:

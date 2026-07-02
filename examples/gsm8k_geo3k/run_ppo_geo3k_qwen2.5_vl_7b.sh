@@ -9,7 +9,7 @@
 # - Answer Accuracy (90%): Correctness of the final answer.
 #
 # PPO vs GRPO Note:
-# Unlike GRPO, this PPO setup uses GAE (Generalized Advantage Estimation), requires a 
+# Unlike GRPO, this PPO setup uses GAE (Generalized Advantage Estimation), requires a
 # Critic model, and treats KL divergence as a reward penalty rather than a loss term.
 #
 
