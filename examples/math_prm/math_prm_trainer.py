@@ -105,6 +105,33 @@ class MathPRMSPMDPPOTrainerVL(SPMDPPOTrainerVL):
         "reference_supported": (
             "rollout_reference_supported", "reference_supported_mean", "reward_metrics/reference_supported"
         ),
+        "answer_content_correct": (
+            "rollout_answer_content_correct", "answer_content_correct_mean",
+            "reward_metrics/answer_content_correct"
+        ),
+        "answer_marker_count": (
+            "rollout_answer_marker_count", "answer_marker_count_mean", "reward_metrics/answer_marker_count"
+        ),
+        "extra_answer_marker_count": (
+            "rollout_extra_answer_marker_count", "extra_answer_marker_count_mean",
+            "reward_metrics/extra_answer_marker_count"
+        ),
+        "post_answer_continuation": (
+            "rollout_post_answer_continuation", "post_answer_continuation_mean",
+            "reward_metrics/post_answer_continuation"
+        ),
+        "post_answer_step_present": (
+            "rollout_post_answer_step_present", "post_answer_step_present_mean",
+            "reward_metrics/post_answer_step_present"
+        ),
+        "answer_tail_cutoff_present": (
+            "rollout_answer_tail_cutoff_present", "answer_tail_cutoff_present_mean",
+            "reward_metrics/answer_tail_cutoff_present"
+        ),
+        "clean_answer_protocol": (
+            "rollout_clean_answer_protocol", "clean_answer_protocol_mean",
+            "reward_metrics/clean_answer_protocol"
+        ),
         # Variant 2 (per-step PRM) diagnostics — populated only when
         # the dataset row label is "math_per_step_prm". For "math_psgrpo"
         # rows these stay 0 (no alignment was attempted).
@@ -163,6 +190,13 @@ class MathPRMSPMDPPOTrainerVL(SPMDPPOTrainerVL):
         "used_answer_fallback": ("used_answer_fallback", "used_answer_fallback_mean"),
         "used_mathruler": ("used_mathruler", "used_mathruler_mean"),
         "reference_supported": ("reference_supported", "reference_supported_mean"),
+        "answer_content_correct": ("answer_content_correct", "answer_content_correct_mean"),
+        "answer_marker_count": ("answer_marker_count", "answer_marker_count_mean"),
+        "extra_answer_marker_count": ("extra_answer_marker_count", "extra_answer_marker_count_mean"),
+        "post_answer_continuation": ("post_answer_continuation", "post_answer_continuation_mean"),
+        "post_answer_step_present": ("post_answer_step_present", "post_answer_step_present_mean"),
+        "answer_tail_cutoff_present": ("answer_tail_cutoff_present", "answer_tail_cutoff_present_mean"),
+        "clean_answer_protocol": ("clean_answer_protocol", "clean_answer_protocol_mean"),
         # Variant 2 diagnostics in eval (eval also runs the PRM forward
         # if the dataset label is "math_per_step_prm")
         "alignment_failed": ("alignment_failed", "alignment_failed_mean"),

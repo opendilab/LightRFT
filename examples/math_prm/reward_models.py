@@ -9,6 +9,11 @@ from typing import Any, Dict
 import torch
 import torch.nn as nn
 
+try:
+    from math_prm_output import MATH_PRM_ANSWER_MARKER, find_math_prm_tail_cutoff
+except ImportError:
+    from .math_prm_output import MATH_PRM_ANSWER_MARKER, find_math_prm_tail_cutoff
+
 from lightrft.evaluation.math_eval_utils import (
     compare_answers,
     extract_answer,
@@ -325,16 +330,50 @@ class MathPRMReward(nn.Module):
             "answer_extraction_failed": True,
             "used_answer_fallback": False,
             "extraction_source": "missing",
+            "answer_marker_count": 0,
+            "extra_answer_marker_count": 0,
+            "post_answer_continuation_present": False,
+            "post_answer_step_present": False,
+            "answer_tail_cutoff_present": False,
+            "clean_answer_protocol": False,
         }
         if not response:
             return details
 
-        if "†Answer:" in response:
+        if MATH_PRM_ANSWER_MARKER in response:
             details["answer_tag_present"] = True
-            answer_block = response.split("†Answer:", 1)[-1]
-            answer_block = re.split(r"\n\s*Step\s+\d+\s*:", answer_block, maxsplit=1)[0]
-            candidate_lines = [line.strip() for line in answer_block.splitlines() if line.strip()]
-            candidate = candidate_lines[0] if candidate_lines else answer_block.strip()
+            details["answer_marker_count"] = response.count(MATH_PRM_ANSWER_MARKER)
+            details["extra_answer_marker_count"] = max(0, details["answer_marker_count"] - 1)
+
+            answer_block = response.split(MATH_PRM_ANSWER_MARKER, 1)[-1]
+            answer_lines = answer_block.splitlines()
+            candidate = answer_block.strip()
+            candidate_line_index = None
+            for line_index, line in enumerate(answer_lines):
+                stripped_line = line.strip()
+                if stripped_line:
+                    candidate = stripped_line
+                    candidate_line_index = line_index
+                    break
+
+            trailing_text = ""
+            if candidate_line_index is not None:
+                trailing_text = "\n".join(answer_lines[candidate_line_index + 1:]).strip()
+            tail_cutoff = find_math_prm_tail_cutoff(candidate)
+            if tail_cutoff is not None:
+                details["answer_tail_cutoff_present"] = True
+                candidate = candidate[:tail_cutoff]
+
+            details["post_answer_step_present"] = bool(
+                re.search(r"(?m)^\s*Step\s+\d+\s*:", trailing_text)
+            )
+            details["post_answer_continuation_present"] = bool(
+                trailing_text
+                or details["extra_answer_marker_count"] > 0
+                or details["post_answer_step_present"]
+                or details["answer_tail_cutoff_present"]
+            )
+            details["clean_answer_protocol"] = not details["post_answer_continuation_present"]
             predicted_answer = cls._extract_answer_from_candidate(candidate, reference_type)
             details["predicted_answer"] = predicted_answer
             details["answer_extraction_failed"] = predicted_answer == ""
@@ -407,17 +446,19 @@ class MathPRMReward(nn.Module):
     def _evaluate_answer_alignment(cls, response: str, reference: Any) -> Dict[str, Any]:
         reference_type, reference_supported = cls._infer_reference_type(reference)
         extraction = cls._extract_final_answer_details(response, reference_type)
-        outcome_correct, comparison_method = cls._compare_final_answer(
+        answer_content_correct, comparison_method = cls._compare_final_answer(
             extraction["predicted_answer"],
             reference,
             reference_type,
             reference_supported,
         )
+        outcome_correct = answer_content_correct and not extraction["post_answer_continuation_present"]
         return {
             "reference_type": reference_type,
             "reference_supported": reference_supported,
             "comparison_method": comparison_method,
             **extraction,
+            "answer_content_correct": answer_content_correct,
             "outcome_correct": outcome_correct,
         }
 
@@ -459,6 +500,13 @@ class MathPRMReward(nn.Module):
             "used_answer_fallback": float(answer_eval["used_answer_fallback"]),
             "reference_supported": float(answer_eval["reference_supported"]),
             "used_mathruler": float(answer_eval["comparison_method"] == "mathruler"),
+            "answer_content_correct": float(answer_eval["answer_content_correct"]),
+            "answer_marker_count": float(answer_eval["answer_marker_count"]),
+            "extra_answer_marker_count": float(answer_eval["extra_answer_marker_count"]),
+            "post_answer_continuation": float(answer_eval["post_answer_continuation_present"]),
+            "post_answer_step_present": float(answer_eval["post_answer_step_present"]),
+            "answer_tail_cutoff_present": float(answer_eval["answer_tail_cutoff_present"]),
+            "clean_answer_protocol": float(answer_eval["clean_answer_protocol"]),
         }
 
     @torch.no_grad()
@@ -505,6 +553,10 @@ class MathPRMReward(nn.Module):
         #      used_answer_fallback     - 1 if the heuristic last-line fallback fired
         #      reference_supported      - 1 if the ground-truth schema is recognized
         #      used_mathruler           - 1 if mathruler grading was the deciding step
+        #      answer_content_correct   - 1 if the first extracted answer matches
+        #      clean_answer_protocol    - 1 if there is no output after the answer line
+        #      post_answer_continuation - 1 if the model continued after the answer line
+        #      extra_answer_marker_count - number of extra "†Answer:" markers
         #
         # NOTE: ``accuracy_reward`` used to live here, but for math_psgrpo it is
         # exactly equal to ``outcome_correct`` (see _compute_psgrpo_metrics).
@@ -525,6 +577,13 @@ class MathPRMReward(nn.Module):
             "used_answer_fallback": [],
             "reference_supported": [],
             "used_mathruler": [],
+            "answer_content_correct": [],
+            "answer_marker_count": [],
+            "extra_answer_marker_count": [],
+            "post_answer_continuation": [],
+            "post_answer_step_present": [],
+            "answer_tail_cutoff_present": [],
+            "clean_answer_protocol": [],
             # math_per_step_prm diagnostics
             "alignment_failed": [],
             "n_aligned_steps": [],
@@ -673,6 +732,13 @@ class MathPRMReward(nn.Module):
                 "used_answer_fallback",
                 "reference_supported",
                 "used_mathruler",
+                "answer_content_correct",
+                "answer_marker_count",
+                "extra_answer_marker_count",
+                "post_answer_continuation",
+                "post_answer_step_present",
+                "answer_tail_cutoff_present",
+                "clean_answer_protocol",
             }
             for key in (
                 "outcome_correct",
@@ -684,6 +750,13 @@ class MathPRMReward(nn.Module):
                 "used_answer_fallback",
                 "reference_supported",
                 "used_mathruler",
+                "answer_content_correct",
+                "answer_marker_count",
+                "extra_answer_marker_count",
+                "post_answer_continuation",
+                "post_answer_step_present",
+                "answer_tail_cutoff_present",
+                "clean_answer_protocol",
             ):
                 if label == "math_psgrpo" or key in _UNIVERSAL_METRICS:
                     batch_metrics[key].append(psgrpo_metrics[key])
