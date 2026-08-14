@@ -104,8 +104,8 @@ The Trainer module implements the reinforcement learning algorithms and training
 
 Key components:
 
-- Policy optimization algorithms: PPO, GRPO, GSPO, GMPO, Dr.GRPO, DAPO
-- Advantage estimation and return computation: REINFORCE++, CPGD
+- Policy optimization: PPO/GRPO, CPGD, DAPO components, and high-entropy token filtering; GSPO, GMPO, and Dr.GRPO remain incomplete interfaces
+- Advantage estimation and return computation: GAE, REINFORCE, RLOO, REINFORCE with baseline, group normalization, and CPGD; REINFORCE++ is not yet connected to the calculator factory
 - Experience generation and sampling strategies: FIRE Sampling
 - Reward processing and stability enhancement: Reward Norm/Clip, High Entropy Token Selection
 - Policy and value function updates

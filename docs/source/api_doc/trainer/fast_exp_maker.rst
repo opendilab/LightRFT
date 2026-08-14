@@ -10,5 +10,4 @@ FastExperienceMaker
 ----------------------------------------------------------
 
 .. autoclass:: FastExperienceMaker
-    :members: __init__, process_multi_image_thws, process_multimodal_data, make_experience_list, generate_samples, make_experience
-
+    :members: __init__,make_experience_list,generate_samples,get_advantages_and_returns

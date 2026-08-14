@@ -786,16 +786,10 @@ class StrategyBase(ABC):
         :param sampling_params: Parameters used for controlling the generation process (e.g., temperature, top_k).
         :param prompt_token_ids: List of text token IDs.
         :param multi_modal_inputs: A list of dictionaries representing multimodal inputs.
-                                   Each dictionary should contain a raw text under the "prompt" key,
-                                   and additional modalities (such as images) under the "multi_modal_data" key.
-                                   Example:
-                                   multi_modal_inputs = [{
-                                       "prompt": [...],
-                                       "multi_modal_data": {
-                                           "image": [...],
-                                           "video": [...]
-                                       }
-                                   }]
+            Each dictionary contains raw text under ``prompt`` and optional
+            media under ``multi_modal_data``. For example:
+
+            ``[{"prompt": "...", "multi_modal_data": {"image": [...]}}]``
         :return: A list of generated outputs in EasyDict format, produced by the selected inference engine.
         :raises ValueError: If both prompt_token_ids and multi_modal_inputs are None.
         :raises ValueError: If both prompt_token_ids and multi_modal_inputs are not None.

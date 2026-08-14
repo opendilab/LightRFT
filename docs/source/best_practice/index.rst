@@ -18,6 +18,7 @@ This section provides comprehensive guides, best practices, and resources for us
    :caption: Design Philosophy
 
    strategy_design_philosophy
+   runtime_architecture
 
 .. toctree::
    :maxdepth: 1

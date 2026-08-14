@@ -28,9 +28,9 @@ English | [简体中文](README_zh.md)
   - FP8 inference optimization for significantly reduced latency and memory usage
   - Flexible engine sleep/wake mechanisms for optimal resource utilization
 
-- 🧠 **Rich Algorithm Ecosystem** 
-  - **Policy Optimization**: GRPO, GSPO, GMPO, Dr.GRPO
-  - **Advantage Estimation**: REINFORCE++, CPGD
+- 🧠 **Rich Algorithm Ecosystem**
+  - **Policy Optimization**: GRPO, CPGD, DAPO components, high-entropy token filtering
+  - **Experimental interfaces**: GSPO and REINFORCE++ are exposed by the CLI but are not fully wired end to end; GMPO and Dr.GRPO remain work in progress
   - **Reward Processing**: Reward Norm/Clip
   - **Sampling Strategy**: FIRE Sampling, Token-Level Policy
   - **Stability Enhancement**: DAPO, select_high_entropy_tokens
@@ -43,7 +43,7 @@ English | [简体中文](README_zh.md)
 
 - 🎯 **Innovative Resource Collaboration**
   - **Colocate Anything**: Co-locate reward models with training models to maximize GPU utilization
-    - Support multiple reward models for parallel inference on the same device
+    - Support multiple reward models on the same device; local PyTorch reward models are evaluated sequentially
     - Dynamic memory management with automatic training/inference phase switching
     - Reduced cross-device communication overhead for improved end-to-end training efficiency
   - **Balance Anything** 🚧 (Under Development): Intelligent load balancing system
@@ -78,11 +78,11 @@ For detailed algorithm descriptions, implementation details, and usage guide, se
 | Algorithm | Type | Key Improvement | Paper |
 |-----------|------|-----------------|-------|
 | **GRPO** | Policy Optimization | Group normalized advantage estimation |  [arXiv:2402.03300](https://arxiv.org/pdf/2402.03300)  |
-| **GSPO** | Policy Optimization | Group sequence policy optimization | [arXiv:2507.18071](https://arxiv.org/abs/2507.18071) |
+| **GSPO (WIP)** | Policy Optimization | Group sequence policy optimization; current CLI path is not fully connected to the policy loss | [arXiv:2507.18071](https://arxiv.org/abs/2507.18071) |
 | **GMPO (WIP)** | Policy Optimization | Geometric-mean policy optimization | [arXiv:2507.20673](https://arxiv.org/abs/2507.20673) |
-| **Dr.GRPO** | Policy Optimization | Length bias mitigation | [arXiv:2503.20783](https://arxiv.org/abs/2503.20783) |
+| **Dr.GRPO (WIP)** | Policy Optimization | Length bias mitigation | [arXiv:2503.20783](https://arxiv.org/abs/2503.20783) |
 | **DAPO** | Policy Optimization | Decoupled clip and dynamic sampling policy optimization | [arXiv:2503.14476](https://arxiv.org/abs/2503.14476) |
-| **REINFORCE++** | Advantage Estimation | Improved baseline estimation | [arXiv:2501.03262](https://arxiv.org/abs/2501.03262) |
+| **REINFORCE++ (WIP)** | Advantage Estimation | Accepted by the CLI, but the calculator factory is not yet connected | [arXiv:2501.03262](https://arxiv.org/abs/2501.03262) |
 | **CPGD** | Advantage Estimation | KL-based drift constraint | [arXiv:2505.12504](https://arxiv.org/abs/2505.12504) |
 | **FIRE Sampling** | Sampling Strategy | High-temperature first token sampling for improved diversity | [arXiv:2410.21236](https://arxiv.org/abs/2410.21236) |
 | **OPD** | Knowledge Distillation | On-policy teacher-student token-level distillation | [Blog](https://thinkingmachines.ai/blog/on-policy-distillation/) |
@@ -424,12 +424,14 @@ See training scripts for detailed parameter validation logic.
 ### 📚 Complete Documentation Guide
 
 **Quick Start:**
+- [Project Introduction Blog (Chinese)](blog.md) - Architecture, mechanisms, and examples
 - [Installation Guide](docs/source/installation/index.rst) - Docker images, installation methods, and troubleshooting
 - [Supported Algorithms](docs/source/quick_start/algorithms.md) - Comprehensive algorithm guide with implementation details
 - [Configuration Reference](docs/source/quick_start/configuration.md) - Complete parameter documentation
 
 **Best Practices:**
-- [Training Strategy Usage](docs/source/best_practice/strategy_usage.rst) - FSDP, DeepSpeed, and inference engine configuration
+- [Training Strategy Usage](docs/source/best_practice/strategy.rst) - FSDP, DeepSpeed, and inference engine configuration
+- [Runtime Architecture](docs/source/best_practice/runtime_architecture.md) - torchrun/SPMD, model roles, and resource reuse
 - [FAQ](docs/source/best_practice/faq.md) - Frequently asked questions and solutions
 - [Troubleshooting Guide](docs/source/best_practice/troubleshooting.md) - Common issues and debugging
 - [Contributing Guide](docs/source/best_practice/contributing.md) - How to contribute to LightRFT
@@ -444,7 +446,7 @@ pip install -r requirements-doc.txt
 Generate HTML documentation:
 ```bash
 make docs
-# Open docs/build/index.html to view documentation
+# Open docs/build/html/index.html to view documentation
 ```
 
 Live documentation preview:

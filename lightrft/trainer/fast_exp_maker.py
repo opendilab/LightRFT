@@ -870,28 +870,16 @@ class RewardComputationEngine:
 
 class FastExperienceMaker(NaiveExperienceMaker):
     """
-    Optimized experience maker with VLLM/SGLang support and advanced RL features.
+    Experience maker backed by vLLM or SGLang rollout.
 
-    This class extends NaiveExperienceMaker to provide:
-        - High-performance inference via VLLM or SGLang backends
-        - Multimodal (vision-language) data processing
-        - Multiple advantage estimation algorithms (GAE, RLOO, REINFORCE, Group Norm)
-        - Flexible reward model composition with custom aggregation
-        - Sample packing for improved training efficiency
-        - Running reward normalization and advantage whitening/clipping
+    The class coordinates rollout, shard-local preprocessing, Actor/Reference/Critic
+    inference, reward aggregation, and advantage computation. It supports text and
+    visual-language batches, optional sample packing, and runtime reward statistics.
 
-    The experience generation pipeline:
-        1. Sample Generation: Use inference engine to generate responses
-        2. Shard-Parallel Preprocessing: Distribute samples across shards
-        3. Model Inference: Batch forward through actor, critic, initial, and reward models
-        4. Shard-Parallel Postprocessing: Gather results back
-        5. Reward Processing: Apply transformations (normalization, shaping, filtering)
-        6. Advantage Estimation: Compute advantages and returns
-
-    Args:
-        packing_samples: Whether to pack multiple sequences into single batch
-        processor: Multimodal processor for vision-language models
-        *args, **kwargs: Arguments passed to parent NaiveExperienceMaker
+    :param args: Positional arguments forwarded to ``NaiveExperienceMaker``.
+    :param packing_samples: Whether to pack multiple sequences into one batch.
+    :param processor: Optional multimodal processor.
+    :param kwargs: Keyword arguments forwarded to ``NaiveExperienceMaker``.
     """
     def __init__(self, *args, packing_samples: bool = False, processor=None, **kwargs):
         """

@@ -48,13 +48,29 @@ autodoc_mock_imports = [
     'torchvision',
     'sentencepiece',
     'tokenizers',
+    'numpy',
+    'pandas',
+    'pyarrow',
+    'easydict',
+    'orjson',
+    'decord',
+    'einops',
+    'loralib',
+    'mathruler',
+    'pylatexenc',
+    'nltk',
+    'bitsandbytes',
+    'sympy',
+    'matplotlib',
+    'qwen_vl_utils',
+    'aiohttp',
 ]
 
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = 'LightRFT'
-copyright = '2025, OpenDILab'
+copyright = '2025-2026, OpenDILab'
 author = 'OpenDILab'
 release = 'v0.1.1'
 
@@ -70,10 +86,8 @@ extensions = [
     'sphinx.ext.githubpages',
     'sphinx.ext.todo',
     'sphinx.ext.graphviz',
-    'enum_tools.autoenum',
-    'nbsphinx',
-    'sphinx_toolbox.collapse',
     'myst_parser',  # Support for Markdown files
+    'sphinx_copybutton',
 ]
 
 # Support for both RST and Markdown files
@@ -84,12 +98,13 @@ source_suffix = {
 
 # MyST parser configuration
 myst_enable_extensions = [
-    "colon_fence",      # ::: style code fences
-    "deflist",          # Definition lists
-    "tasklist",         # Task lists with [ ] and [x]
-    "substitution",     # Substitutions
-    "linkify",          # Auto-detect URLs
+    "colon_fence",  # ::: style code fences
+    "deflist",  # Definition lists
+    "tasklist",  # Task lists with [ ] and [x]
+    "substitution",  # Substitutions
+    "linkify",  # Auto-detect URLs
 ]
+myst_heading_anchors = 6
 
 templates_path = ['_templates']
 exclude_patterns = []
@@ -120,13 +135,10 @@ html_theme = 'pytorch_sphinx_theme'
 html_theme_path = [pytorch_sphinx_theme.get_html_theme_path()]
 html_static_path = ['_static']
 html_css_files = ['css/readthedocs.css']
-html_js_files = ['js/language_switch.js']
 rtd_lang = 'en'
 
 html_theme_options = {
-    'logo': 'logo.png',
-    'logo_url':
-    'https://di-engine-docs.readthedocs.io/{}/latest/'.format(rtd_lang),
+    'logo_url': 'https://github.com/opendilab/LightRFT',
     'menu': [
         {
             'name': 'GitHub',
@@ -138,14 +150,13 @@ html_theme_options = {
     # of the menu, you can specify menu_lang to choose the language of
     # shared contents. Available options are 'en' and 'cn'. Any other
     # strings will fall back to 'en'.
-    'menu_lang':
-        'en',
+    'menu_lang': 'en',
 }
 
 # -- Sidebar configuration -----------------------------------------
 # Control which sidebar components are shown on each page
 # Format: {document_pattern: [sidebar_templates]}
-# 
+#
 # Common sidebar templates:
 #   - 'globaltoc.html': Global table of contents (navigation tree)
 #   - 'localtoc.html': Local table of contents (current page headings)
@@ -161,9 +172,9 @@ html_sidebars = {
     # Default sidebar for all pages
     '**': [
         'globaltoc.html',  # Main navigation tree (controlled by toctree maxdepth)
-        'localtoc.html',   # Current page's table of contents
+        'localtoc.html',  # Current page's table of contents
         'relations.html',  # Previous/Next navigation
-        'sourcelink.html', # Source code link
+        'sourcelink.html',  # Source code link
         'searchbox.html',  # Search box
     ],
     # Customize sidebar for specific pages if needed

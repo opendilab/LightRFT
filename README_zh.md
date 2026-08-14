@@ -29,8 +29,8 @@
   - 灵活的引擎睡眠/唤醒机制优化资源利用
 
 - 🧠 **丰富的算法生态**
-  - **Policy Optimization**: GRPO, GSPO, GMPO, Dr.GRPO
-  - **Advantage Estimation**: REINFORCE++, CPGD
+  - **Policy Optimization**：GRPO、CPGD、DAPO 组件与高熵 token 筛选
+  - **实验性接口**：GSPO 和 REINFORCE++ 已暴露命令行参数，但尚未完整接通端到端训练；GMPO 与 Dr.GRPO 仍处于开发阶段
   - **Reward Processing**: Reward Norm/Clip
   - **Sampling Strategy**: FIRE Sampling, Token-Level Policy
   - **Stability Enhancement**: DAPO, select_high_entropy_tokens
@@ -43,7 +43,7 @@
 
 - 🎯 **创新的资源协同机制**
   - **Colocate Anything**: 奖励模型与训练模型协同定位，最大化 GPU 利用率
-    - 支持多个奖励模型在同一设备上并行推理
+    - 支持多个奖励模型在同一设备上运行；本地 PyTorch 奖励模型按顺序计算
     - 动态显存管理，训练/推理阶段自动切换
     - 减少跨设备通信开销，提升端到端训练效率
   - **Balance Anything** 🚧 (开发中): 智能负载均衡系统
@@ -78,10 +78,10 @@
 | 算法 | 类型 | 主要改进 | 论文链接 |
 |------|------|----------|---------|
 | **GRPO** | Policy Optimization | 组归一化优势估计 |  [arXiv:2402.03300](https://arxiv.org/pdf/2402.03300)  |
-| **GSPO** | Policy Optimization | 组序列策略优化 | [arXiv:2507.18071](https://arxiv.org/abs/2507.18071) |
+| **GSPO（WIP）** | Policy Optimization | 组序列策略优化；当前命令行路径尚未完整接入策略损失 | [arXiv:2507.18071](https://arxiv.org/abs/2507.18071) |
 | **GMPO (WIP)** | Policy Optimization | 几何平均策略优化 | [arXiv:2507.20673](https://arxiv.org/abs/2507.20673) |
-| **Dr.GRPO** | Policy Optimization | 缓解长度偏差 | [arXiv:2503.20783](https://arxiv.org/abs/2503.20783) |
-| **REINFORCE++** | Advantage Estimation | 改进基线估计 | [arXiv:2501.03262](https://arxiv.org/abs/2501.03262) |
+| **Dr.GRPO（WIP）** | Policy Optimization | 缓解长度偏差 | [arXiv:2503.20783](https://arxiv.org/abs/2503.20783) |
+| **REINFORCE++（WIP）** | Advantage Estimation | 命令行可接受该选项，但优势计算器工厂尚未接通 | [arXiv:2501.03262](https://arxiv.org/abs/2501.03262) |
 | **DAPO** | Policy Optimization | 解耦剪裁和动态采样策略优化 | [arXiv:2503.14476](https://arxiv.org/abs/2503.14476) |
 | **CPGD** | Advantage Estimation | KL漂移约束 | [arXiv:2505.12504](https://arxiv.org/abs/2505.12504) |
 | **FIRE Sampling** | Sampling Strategy | 高温度首token采样提升多样性 | [arXiv:2410.21236](https://arxiv.org/abs/2410.21236) |
@@ -423,15 +423,17 @@ micro_rollout_batch_size=2        # Rollout 微批次大小
 ### 📚 完整文档指南
 
 **快速开始：**
+- [项目介绍博客](blog.md) - 架构、实现机制与使用示例
 - [安装指南](docs/source/installation/index_zh.rst) - Docker 镜像、安装方法和问题排查
 - [支持的算法](docs/source/quick_start/algorithms_zh.md) - 详细算法指南及实现细节
 - [配置参数参考](docs/source/quick_start/configuration_zh.md) - 完整参数文档
 
 **最佳实践：**
-- [训练策略使用](docs/source/best_practice/strategy_usage_zh.md) - FSDP、DeepSpeed 和推理引擎配置
-- [常见问题](docs/source/best_practice/faq.md) - 常见问题与解决方案
-- [问题排查指南](docs/source/best_practice/troubleshooting.md) - 常见问题和调试方法
-- [贡献指南](docs/source/best_practice/contributing.md) - 如何为 LightRFT 做贡献
+- [训练策略使用](docs/source/best_practice/strategy_zh.md) - FSDP、DeepSpeed 和推理引擎配置
+- [运行时架构](docs/source/best_practice/runtime_architecture_zh.md) - torchrun/SPMD、模型角色与资源复用
+- [常见问题](docs/source/best_practice/faq_zh.md) - 常见问题与解决方案
+- [问题排查指南](docs/source/best_practice/troubleshooting_zh.md) - 常见问题和调试方法
+- [贡献指南](docs/source/best_practice/contributing_zh.md) - 如何为 LightRFT 做贡献
 
 ### 本地构建文档
 
@@ -443,7 +445,7 @@ pip install -r requirements-doc.txt
 生成 HTML 文档：
 ```bash
 make docs
-# 打开 docs/build/index.html 查看文档
+# 打开 docs/build/html/index.html 查看文档
 ```
 
 实时预览文档：

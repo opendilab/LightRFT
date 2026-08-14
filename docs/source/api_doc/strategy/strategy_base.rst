@@ -9,7 +9,7 @@ lightrft.strategy.strategy_base
 EngineStatus
 ----------------------------------------------------------
 
-.. autoenum:: EngineStatus
+.. autoclass:: EngineStatus
     :members: SLEEPED,WAKEUP
 
 
@@ -26,5 +26,4 @@ is_actor
 ----------------------------------------------------------
 
 .. autofunction:: is_actor
-
 

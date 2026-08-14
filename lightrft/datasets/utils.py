@@ -260,18 +260,11 @@ class BaseDataHandler(ABC):
         :param config: A dict of additional configuration options (e.g. prompt templates, max_pixels).
         :type config: Dict[str, Any]
 
-        :return: A tuple containing message lists and a metadata dictionary.
-                 - For point-wise scoring data (e.g., Scalar Reward Model training/evaluation):
-                   Return (messages_chosen, messages_rejected, other)
-                 - For pair-wise ranking data (e.g., Generative Reward Model training/evaluation):
-                   Return (messages, other)
-
-                 The `other` dictionary contains metadata, and can optionally include:
-                 - "preference": (str) Indicates the ground truth preferred choice ("A", "B", or "C").
-                 - "task_type": (str) The type of task (e.g., "text-to-video").
-                 - "reward_rule_label": (str) A label used in RL to identify which reward
-                   function or reward model to apply to this specific sample when performing
-                   reinforcement fine-tuning.
+        :return: For scalar-reward ranking data, a tuple of
+            ``(messages_chosen, messages_rejected, other)``. For generative-reward
+            data, a tuple of ``(messages, other)``. The ``other`` dictionary may
+            contain ``preference``, ``task_type``, and ``reward_rule_label``
+            metadata.
         :rtype: Union[Tuple[List[Dict], List[Dict], Dict], Tuple[List[Dict], Dict]]
         """
         raise NotImplementedError

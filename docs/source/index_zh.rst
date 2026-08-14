@@ -23,8 +23,8 @@
    * 灵活的引擎休眠/唤醒机制，实现最佳资源利用
 
 🧠 **丰富的算法生态**
-   * 策略优化 (Policy Optimization): GRPO, GSPO, GMPO, Dr.GRPO
-   * 优势估计 (Advantage Estimation): REINFORCE++, CPGD
+   * 策略优化 (Policy Optimization)：GRPO、CPGD、DAPO 组件与高熵 token 筛选
+   * 实验性接口：GSPO 和 REINFORCE++ 尚未完整接通端到端训练；GMPO 与 Dr.GRPO 仍处于开发阶段
    * 奖励处理 (Reward Processing): Reward Norm/Clip
    * 采样策略 (Sampling Strategy): FIRE Sampling, Token-Level Policy
    * 稳定性增强 (Stability Enhancement): Clip Higher, select_high_entropy_tokens
