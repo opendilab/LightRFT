@@ -171,7 +171,7 @@ make dbuild
 make dbuild IMAGE_NAME=your-custom-tag:latest
 ```
 
-当前 `Dockerfile` 以 `nvcr.io/nvidia/pytorch:25.01-py3` 为基础镜像，并显式安装 PyTorch 2.9.0（CUDA 12.8 wheel）、DeepSpeed 0.18.3、vLLM 0.18.1、FlashAttention 2.8.3 和 SGLang 0.5.6.post2。其中 PyTorch 版本低于源码包声明的 `>=2.9.1`，该环境与元数据不一致问题已记录在 `docs/TODO.md`。在将 Dockerfile 作为发布环境依据前，应先确认预期版本组合。
+当前 `Dockerfile` 以 `nvcr.io/nvidia/pytorch:25.01-py3` 为基础镜像，并显式安装 PyTorch 2.9.0（CUDA 12.8 wheel）、DeepSpeed 0.18.3、vLLM 0.18.1、FlashAttention 2.8.3 和 SGLang 0.5.6.post2。其中 PyTorch 版本低于源码包声明的 `>=2.9.1`。在将 Dockerfile 作为发布环境依据前，应先确认预期版本组合。
 
 ### FlashAttention 安装问题
 
@@ -291,7 +291,6 @@ LightRFT/
 ├── examples/                     # 训练、蒸馏、评测与分析示例
 ├── docs/                         # Sphinx 文档
 ├── tools/                        # 版本与 Docker 辅助工具
-├── blog.md                       # 中文项目介绍
 ├── README.md
 └── README_zh.md
 ```
@@ -300,7 +299,6 @@ LightRFT/
 
 ### 文档索引
 
-- [项目介绍博客](blog.md)
 - [安装指南](docs/source/installation/index_zh.rst)
 - [GSM8K/Geo3K 快速教程](docs/source/quick_start/grpo_gsm8k_geo3k_tutorial_zh.md)
 - [算法说明](docs/source/quick_start/algorithms_zh.md)

@@ -170,7 +170,7 @@ make dbuild
 make dbuild IMAGE_NAME=your-custom-tag:latest
 ```
 
-The current Dockerfile starts from `nvcr.io/nvidia/pytorch:25.01-py3` and explicitly installs a PyTorch 2.9.0 CUDA 12.8 wheel, DeepSpeed 0.18.3, vLLM 0.18.1, FlashAttention 2.8.3, and SGLang 0.5.6.post2. Its PyTorch version is lower than the `>=2.9.1` source-package declaration; this known environment-metadata inconsistency is recorded in `docs/TODO.md`. Verify the intended version set before treating the Dockerfile as a release reference.
+The current Dockerfile starts from `nvcr.io/nvidia/pytorch:25.01-py3` and explicitly installs a PyTorch 2.9.0 CUDA 12.8 wheel, DeepSpeed 0.18.3, vLLM 0.18.1, FlashAttention 2.8.3, and SGLang 0.5.6.post2. Its PyTorch version is lower than the `>=2.9.1` source-package declaration. Verify the intended version set before treating the Dockerfile as a release reference.
 
 ### FlashAttention installation
 
@@ -293,7 +293,6 @@ LightRFT/
 ├── examples/                     # Training, distillation, evaluation, and analysis examples
 ├── docs/                         # Sphinx documentation
 ├── tools/                        # Version and Docker helper tools
-├── blog.md                       # Chinese project introduction
 ├── README.md
 └── README_zh.md
 ```
@@ -302,7 +301,6 @@ LightRFT/
 
 ### Documentation index
 
-- [Project introduction (Chinese)](blog.md)
 - [Installation](docs/source/installation/index.rst)
 - [GSM8K/Geo3K tutorial](docs/source/quick_start/grpo_gsm8k_geo3k_tutorial.md)
 - [Algorithms](docs/source/quick_start/algorithms.md)

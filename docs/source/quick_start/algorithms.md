@@ -2,7 +2,7 @@
 
 LightRFT supports a rich ecosystem of reinforcement learning algorithms for fine-tuning large language models. This comprehensive guide provides algorithm details and implementation references.
 
-> **Implementation status:** GRPO, CPGD, FIRE sampling, DAPO components, and high-entropy token filtering have concrete execution paths in the current source tree. GSPO is not yet connected to the instantiated policy loss, REINFORCE++ is not mapped by the advantage-calculator factory, and GMPO/Dr.GRPO are not complete end-to-end options. Their subsections below are retained as design notes; the example commands in those subsections are not runnable interfaces for version 0.1.1. See `docs/TODO.md` for the audited gaps.
+> **Implementation status:** GRPO, CPGD, FIRE sampling, DAPO components, and high-entropy token filtering have concrete execution paths in the current source tree. GSPO is not yet connected to the instantiated policy loss, REINFORCE++ is not mapped by the advantage-calculator factory, and GMPO/Dr.GRPO are not complete end-to-end options. Their subsections below are retained as design notes; the example commands in those subsections are not runnable interfaces for version 0.1.1.
 
 ## Purpose of This Guide
 
