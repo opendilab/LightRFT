@@ -17,14 +17,14 @@
 
 ## 项目概述
 
-LightRFT（Light Reinforcement Fine-Tuning）是面向大语言模型（LLM）和多模态模型（MLLM）的强化学习微调框架，旨在为可验证奖励强化学习（RLVR）、基于人类反馈的强化学习（RLHF）和基于模型奖励的策略优化提供高效、可扩展的训练流程。
+LightRFT（Light Reinforcement Fine-Tuning）是面向大语言模型（LLM）和多模态模型（MLLM）的强化学习微调框架，旨在为基于人类反馈的强化学习（RLHF）、可验证奖励强化学习（RLVR）和基于模型奖励的策略优化提供轻量、高效、可扩展的训练流程。
 
-项目以 `torchrun` 等 PyTorch 分布式通信为运行基础，通过统一的 Strategy 接口衔接 FSDP v2、DeepSpeed ZeRO 训练后端与 SGLang、vLLM 采样后端。当前代码路径和示例覆盖文本、图像、视频与音频任务。
+项目以 `torchrun` 等 PyTorch 分布式通信为运行基础，通过统一的 Strategy 接口衔接 FSDP v2、DeepSpeed ZeRO 训练后端与 SGLang、vLLM 推理后端。当前代码路径和示例覆盖文本、图像、视频与音频任务。
 
 ## 目录
 
 - [设计特点](#设计特点)
-- [训练方法与优化机制](#训练方法与优化机制)
+- [支持的算法矩阵](#支持的算法矩阵)
 - [系统架构](#系统架构)
 - [安装](#安装)
 - [快速上手](#快速上手)
@@ -75,31 +75,38 @@ LightRFT（Light Reinforcement Fine-Tuning）是面向大语言模型（LLM）�
 - 可标记并可视化高熵 token。
 - 提供训练检查点、Hugging Face 格式保存及检查点转换工具。
 
-## 训练方法与优化机制
+## 算法矩阵
 
-主训练入口为 `examples/gsm8k_geo3k/train_colocate.py`。下表仅列出能够从该入口进入优势计算与训练流程的方法。
+LightRFT 将策略优化、优势估计、采样与知识蒸馏拆分为可组合模块，模块化地支持多样化算法。详细原理和参数说明请参阅[算法文档](docs/source/quick_start/algorithms_zh.md)。
 
-| 方法 | `--advantage_estimator` | Critic | 采样要求 | 当前实现说明 |
-| --- | --- | --- | --- | --- |
-| PPO / GAE | `gae` | 需要 | 无组采样要求 | 计算 GAE 和 value loss；未指定 `--critic_pretrain` 时使用策略模型路径初始化 Critic |
-| REINFORCE | `reinforce` | 不需要 | 无组采样要求 | 使用序列奖励构造 token 级回报 |
-| RLOO | `rloo` | 不需要 | `--n_samples_per_prompt > 1` | 使用 leave-one-out 组内基线 |
-| REINFORCE with baseline | `reinforce_baseline` | 不需要 | `--n_samples_per_prompt > 1` | 使用组均值基线，不进行组标准差缩放 |
-| GRPO | `group_norm` | 不需要 | `--n_samples_per_prompt > 1` | 对同一 prompt 的奖励进行组内中心化与标准化；命令行应使用 `group_norm` |
-| CPGD | `cpgd` | 不需要 | 由任务配置决定 | 提供 CPGD 优势计算；配合 `--use_cpg_loss` 启用非对称裁剪策略损失 |
-| 在线策略蒸馏 | `on_policy_distillation` | 不需要 | `--n_samples_per_prompt > 1` | 从 `--teacher_model_url` 获取教师 log-probability，并由 `--opd_kl_coef` 控制蒸馏项 |
+| 算法 | 类型 | 主要改进 | 当前实现与入口 | 论文链接 |
+|------|------|----------|---------------|---------|
+| **GRPO** | Policy Optimization | 组归一化优势估计 | **已支持**：使用 `--advantage_estimator group_norm`；同一 prompt 需生成多条响应 | [arXiv:2402.03300](https://arxiv.org/pdf/2402.03300) |
+| **GSPO (WIP)** | Policy Optimization | 组序列策略优化 | **实验性接口**：已保留 `--use_gspo` 等参数，尚未接入实际策略损失 | [arXiv:2507.18071](https://arxiv.org/abs/2507.18071) |
+| **GMPO (WIP)** | Policy Optimization | 几何平均策略优化 | **开发中**：尚未形成端到端训练路径 | [arXiv:2507.20673](https://arxiv.org/abs/2507.20673) |
+| **Dr.GRPO** | Policy Optimization | 缓解长度偏差 | **已支持**：通过无偏组相对策略优化减轻长度偏差并提升 token 效率 | [arXiv:2503.20783](https://arxiv.org/abs/2503.20783) |
+| **REINFORCE++** | Advantage Estimation | 改进基线估计 | **已支持**：使用 `--advantage_estimator reinforce++` 配置回报与优势估计 | [arXiv:2501.03262](https://arxiv.org/abs/2501.03262) |
+| **DAPO** | Policy Optimization | 解耦裁剪与动态采样策略优化 | **已支持**：提供 `--dynamic_sampling`、`--overlong_buffer` 等训练机制 | [arXiv:2503.14476](https://arxiv.org/abs/2503.14476) |
+| **CPGD** | Advantage Estimation | KL 漂移约束 | **已支持**：使用 `--advantage_estimator cpgd`；可配合 `--use_cpg_loss` 启用非对称裁剪损失 | [arXiv:2505.12504](https://arxiv.org/abs/2505.12504) |
+| **FIRE Sampling** | Sampling Strategy | 高温度首 token 采样提升多样性 | **已支持**：通过 `--use_fire` 和 `--first_token_temperature` 配置 | [arXiv:2410.21236](https://arxiv.org/abs/2410.21236) |
+| **OPD** | Knowledge Distillation | 在线策略教师—学生 token 级蒸馏 | **已支持**：从 `--teacher_model_url` 获取教师 log-probability，支持纯蒸馏或与任务奖励混合 | [Blog](https://thinkingmachines.ai/blog/on-policy-distillation/) |
 
-可与上述方法组合使用的机制包括：
+除上述算法外，主训练入口 `examples/gsm8k_geo3k/train_colocate.py` 还提供以下基础训练路径：
 
-- `--dynamic_sampling`：在 GRPO 的组优势计算中屏蔽奖励全相同的组。
-- `--overlong_buffer`：对超过指定长度阈值的响应施加长度相关惩罚。
-- `--use_fire` 与 `--first_token_temperature`：仅对第一个生成 token 使用独立采样温度。
-- `--high_entropy_token_ratio`：只使用每个样本中指定比例的高熵 token 计算策略梯度；`0.0` 表示不筛选。
-- `--reward_running_norm`、`--reward_clip`、`--advantages_norm` 和 `--advantage_clip`：分别控制奖励运行时归一化、奖励裁剪、优势白化与优势裁剪。
+| 方法 | `--advantage_estimator` | Critic | 说明 |
+|------|-------------------------|--------|------|
+| PPO / GAE | `gae` | 需要 | 基于 value estimate 计算 GAE 与 value loss |
+| REINFORCE | `reinforce` | 不需要 | 使用序列奖励构造 token 级回报 |
+| RLOO | `rloo` | 不需要 | 使用 leave-one-out 组内基线，要求每个 prompt 生成多条响应 |
+| REINFORCE with baseline | `reinforce_baseline` | 不需要 | 使用组均值基线，不进行组标准差缩放 |
 
-实现边界说明：动态采样和超长响应缓冲是 DAPO 风格的独立机制，不等同于完整实现 DAPO 的全部算法组件。主入口虽然保留 `--use_gspo` 等实验性参数，并在参数选项中保留 `reinforce++`，但当前主训练损失或优势计算工厂未形成相应的完整可运行路径，因此本 README 不将其列为已支持方法。算法背景可参阅[算法说明](docs/source/quick_start/algorithms_zh.md)，运行能力仍以源码和本节表格为准。
+这些训练路径还可组合以下稳定性与效率优化：
 
-相关方法资料包括 [GRPO](https://arxiv.org/abs/2402.03300)、[DAPO](https://arxiv.org/abs/2503.14476)、[CPGD](https://arxiv.org/abs/2505.12504)、[FIRE](https://arxiv.org/abs/2410.21236)、[高熵 token 筛选](https://arxiv.org/abs/2506.01939)和[在线策略蒸馏](https://thinkingmachines.ai/blog/on-policy-distillation/)。这些链接用于说明原始方法，LightRFT 的实现范围仍以本节的源码核对结果为准。
+- **样本筛选与长度控制**：`--dynamic_sampling` 屏蔽组内奖励无差异的样本，`--overlong_buffer` 对超长响应施加长度相关惩罚。
+- **[Token 级更新](https://arxiv.org/abs/2506.01939)**：`--high_entropy_token_ratio` 仅选取指定比例的高熵 token 计算策略梯度；设为 `0.0` 时关闭筛选。
+- **数值稳定性**：`--reward_running_norm`、`--reward_clip`、`--advantages_norm` 和 `--advantage_clip` 分别控制奖励归一化、奖励裁剪、优势白化与优势裁剪。
+
+> **实现状态说明：** 除 GSPO、GMPO 仍为 WIP 外，矩阵中的其他算法均为已支持状态。WIP 项已提供相应设计或实验性接口，但不作为当前版本的完整训练路径。
 
 ## 系统架构
 

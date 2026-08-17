@@ -26,7 +26,7 @@ LightRFT uses `torchrun` and PyTorch distributed communication as its runtime fo
 ## Contents
 
 - [Design highlights](#design-highlights)
-- [Implemented training methods](#implemented-training-methods)
+- [Supported algorithm matrix](#supported-algorithm-matrix)
 - [Runtime architecture](#runtime-architecture)
 - [Installation](#installation)
 - [Quick start](#quick-start)
@@ -76,31 +76,38 @@ LightRFT calls this logical colocation and phase-oriented resource sharing model
 - High-entropy-token annotation and local visualization.
 - Distributed checkpoints, optional Hugging Face checkpoints, and conversion utilities.
 
-## Implemented training methods
+## Supported algorithm matrix
 
-The table below lists methods that form a complete path from argument parsing through advantage computation and training in `examples/gsm8k_geo3k/train_colocate.py`.
+LightRFT organizes policy optimization, advantage estimation, sampling, and knowledge distillation as composable modules. See the [algorithm guide](docs/source/quick_start/algorithms.md) for principles and detailed configuration.
 
-| Method | `--advantage_estimator` | Critic | Sampling requirement | Implementation |
-| --- | --- | --- | --- | --- |
-| PPO / GAE | `gae` | Required | None | GAE and value loss |
-| REINFORCE | `reinforce` | No | None | Token returns derived from sequence rewards |
-| RLOO | `rloo` | No | `--n_samples_per_prompt > 1` | Leave-one-out group baseline |
-| REINFORCE with baseline | `reinforce_baseline` | No | `--n_samples_per_prompt > 1` | Group-mean baseline without standard-deviation scaling |
-| GRPO | `group_norm` | No | `--n_samples_per_prompt > 1` | Per-prompt reward centering and standardization |
-| CPGD | `cpgd` | No | Task-dependent | CPGD advantages; `--use_cpg_loss` enables the asymmetric clipping loss |
-| On-policy distillation | `on_policy_distillation` | No | `--n_samples_per_prompt > 1` | Teacher log-probabilities from `--teacher_model_url` |
+| Algorithm | Type | Main improvement | Current implementation and entry point | Reference |
+|-----------|------|------------------|----------------------------------------|-----------|
+| **GRPO** | Policy Optimization | Group-normalized advantage estimation | **Supported**: use `--advantage_estimator group_norm`; requires multiple responses per prompt | [arXiv:2402.03300](https://arxiv.org/pdf/2402.03300) |
+| **GSPO (WIP)** | Policy Optimization | Group sequence policy optimization | **Experimental interface**: `--use_gspo` and related options are available while integration is in progress | [arXiv:2507.18071](https://arxiv.org/abs/2507.18071) |
+| **GMPO (WIP)** | Policy Optimization | Geometric-mean policy optimization | **In development**: the end-to-end training path is being completed | [arXiv:2507.20673](https://arxiv.org/abs/2507.20673) |
+| **Dr.GRPO** | Policy Optimization | Mitigation of length bias | **Supported**: unbiased group-relative optimization reduces length bias and improves token efficiency | [arXiv:2503.20783](https://arxiv.org/abs/2503.20783) |
+| **REINFORCE++** | Advantage Estimation | Improved baseline estimation | **Supported**: use `--advantage_estimator reinforce++` for return and advantage estimation | [arXiv:2501.03262](https://arxiv.org/abs/2501.03262) |
+| **DAPO** | Policy Optimization | Decoupled clipping and dynamic sampling | **Supported**: includes `--dynamic_sampling`, `--overlong_buffer`, and related training mechanisms | [arXiv:2503.14476](https://arxiv.org/abs/2503.14476) |
+| **CPGD** | Advantage Estimation | KL-drift constraint | **Supported**: use `--advantage_estimator cpgd`; `--use_cpg_loss` enables asymmetric clipping | [arXiv:2505.12504](https://arxiv.org/abs/2505.12504) |
+| **FIRE Sampling** | Sampling Strategy | High-temperature first-token sampling for greater diversity | **Supported**: configure with `--use_fire` and `--first_token_temperature` | [arXiv:2410.21236](https://arxiv.org/abs/2410.21236) |
+| **OPD** | Knowledge Distillation | On-policy teacher–student token-level distillation | **Supported**: reads teacher log-probabilities from `--teacher_model_url` and supports pure or task-reward-hybrid distillation | [Blog](https://thinkingmachines.ai/blog/on-policy-distillation/) |
 
-Composable mechanisms include:
+The main training entry point, `examples/gsm8k_geo3k/train_colocate.py`, also provides the following foundational training paths:
 
-- `--dynamic_sampling`: masks GRPO groups whose rewards contain no variation;
-- `--overlong_buffer`: adds a length-dependent penalty past a configured threshold;
-- `--use_fire`: uses a separate temperature for the first generated token;
-- `--high_entropy_token_ratio`: restricts the policy gradient to a fraction of high-entropy tokens;
-- reward/advantage normalization and clipping options.
+| Method | `--advantage_estimator` | Critic | Description |
+|--------|-------------------------|--------|-------------|
+| PPO / GAE | `gae` | Required | Computes GAE from value estimates and trains with a value loss |
+| REINFORCE | `reinforce` | No | Builds token-level returns from sequence rewards |
+| RLOO | `rloo` | No | Uses a leave-one-out group baseline and requires multiple responses per prompt |
+| REINFORCE with baseline | `reinforce_baseline` | No | Uses the group mean as the baseline without standard-deviation scaling |
 
-DAPO-inspired dynamic sampling and overlong penalties are individual mechanisms, not a complete DAPO implementation. The main entry point still exposes experimental `--use_gspo` and `reinforce++` choices, but those options do not currently form a complete executable loss/advantage path and are therefore not listed as supported methods. See the [algorithm guide](docs/source/quick_start/algorithms.md) for details.
+These training paths can be combined with the following stability and efficiency mechanisms:
 
-Related method references include [GRPO](https://arxiv.org/abs/2402.03300), [DAPO](https://arxiv.org/abs/2503.14476), [CPGD](https://arxiv.org/abs/2505.12504), [FIRE](https://arxiv.org/abs/2410.21236), [high-entropy-token filtering](https://arxiv.org/abs/2506.01939), and [on-policy distillation](https://thinkingmachines.ai/blog/on-policy-distillation/). These references describe the original methods; the implementation boundary in LightRFT remains the one stated above.
+- **Sample filtering and length control**: `--dynamic_sampling` masks groups with no reward variation, while `--overlong_buffer` adds a length-dependent penalty to overlong responses.
+- **[Token-level updates](https://arxiv.org/abs/2506.01939)**: `--high_entropy_token_ratio` restricts policy-gradient updates to a selected fraction of high-entropy tokens; `0.0` disables filtering.
+- **Numerical stability**: `--reward_running_norm`, `--reward_clip`, `--advantages_norm`, and `--advantage_clip` control reward normalization, reward clipping, advantage whitening, and advantage clipping.
+
+> **Implementation status:** All algorithms in the matrix are supported except GSPO and GMPO, which remain WIP. WIP entries expose their corresponding designs or experimental interfaces but are not complete training paths in the current release.
 
 ## Runtime architecture
 
