@@ -11,8 +11,8 @@ The LightRFT strategy module provides a unified interface for distributed traini
 **Principle**: Provide a unified interface that abstracts away the complexities of different distributed training frameworks.
 
 **Implementation**:
-- All strategies inherit from [`StrategyBase`](lightrft/strategy/strategy_base.py:63)
-- Common methods like [`backward()`](lightrft/strategy/strategy_base.py:257), [`optimizer_step()`](lightrft/strategy/strategy_base.py:272), and [`save_ckpt()`](lightrft/strategy/strategy_base.py:340) have consistent signatures
+- All strategies inherit from [`StrategyBase`](../../../lightrft/strategy/strategy_base.py)
+- Common methods like [`backward()`](../../../lightrft/strategy/strategy_base.py), [`optimizer_step()`](../../../lightrft/strategy/strategy_base.py), and [`save_ckpt()`](../../../lightrft/strategy/strategy_base.py) have consistent signatures
 - Strategy-specific implementations are encapsulated within concrete strategy classes
 
 ### 2. Configuration-Driven Design
@@ -20,7 +20,7 @@ The LightRFT strategy module provides a unified interface for distributed traini
 **Principle**: Use typed configuration objects instead of dynamic attribute access for better type safety and code clarity.
 
 **Implementation**:
-- [`StrategyConfig`](lightrft/strategy/config.py:16) dataclass provides typed access to all configuration parameters
+- [`StrategyConfig`](../../../lightrft/strategy/config.py) dataclass provides typed access to all configuration parameters
 - Eliminates the need for `getattr(args, "parameter", default)` pattern
 - Enables IDE autocompletion and static type checking
 
@@ -29,16 +29,16 @@ The LightRFT strategy module provides a unified interface for distributed traini
 **Principle**: Maintain compatibility with existing code while introducing improvements.
 
 **Implementation**:
-- [`StrategyConfig.from_args()`](lightrft/strategy/config.py:67) method extracts parameters from legacy argument objects
+- [`StrategyConfig.from_args()`](../../../lightrft/strategy/config.py) method extracts parameters from legacy argument objects
 - Original `args` object is preserved for compatibility
-- [`get_extra_arg()`](lightrft/strategy/config.py:130) method provides access to non-standard parameters
+- [`get_extra_arg()`](../../../lightrft/strategy/config.py) method provides access to non-standard parameters
 
 ### 4. Testability
 
 **Principle**: Enable comprehensive testing without requiring distributed environments.
 
 **Implementation**:
-- [`FakeStrategy`](lightrft/strategy/fake_strategy.py:14) provides a drop-in replacement for testing
+- [`FakeStrategy`](../../../lightrft/strategy/fake_strategy.py) provides a drop-in replacement for testing
 - All strategy methods have mock implementations for single-process testing
 - Unit tests verify both functionality and API consistency
 
@@ -57,7 +57,7 @@ StrategyBase (ABC)
 
 #### 1. Strategy Factory
 
-The [`get_strategy()`](lightrft/strategy/strategy.py:20) function serves as the entry point, automatically selecting the appropriate strategy based on configuration:
+The [`get_strategy()`](../../../lightrft/strategy/strategy.py) function serves as the entry point, automatically selecting the appropriate strategy based on configuration:
 
 ```python
 from lightrft.strategy import get_strategy
@@ -68,7 +68,7 @@ strategy = get_strategy(args)
 
 #### 2. Configuration Management
 
-The [`StrategyConfig`](lightrft/strategy/config.py:16) class centralizes all configuration parameters:
+The [`StrategyConfig`](../../../lightrft/strategy/config.py) class centralizes all configuration parameters:
 
 ```python
 from lightrft.strategy.config import StrategyConfig
@@ -168,19 +168,19 @@ max_norm = config.max_norm  # Type: float
 
 ### 2. Better Code Organization
 
-- Configuration parameters are explicitly defined in [`StrategyConfig`](lightrft/strategy/config.py:16)
+- Configuration parameters are explicitly defined in [`StrategyConfig`](../../../lightrft/strategy/config.py)
 - Strategy-specific logic is encapsulated in concrete strategy classes
-- Common functionality is implemented in [`StrategyBase`](lightrft/strategy/strategy_base.py:63)
+- Common functionality is implemented in [`StrategyBase`](../../../lightrft/strategy/strategy_base.py)
 
 ### 3. Enhanced Testability
 
-- [`FakeStrategy`](lightrft/strategy/fake_strategy.py:14) enables testing without distributed setup
+- [`FakeStrategy`](../../../lightrft/strategy/fake_strategy.py) enables testing without distributed setup
 - Unit tests can verify all strategy functionality
 - Mock implementations ensure consistent behavior
 
 ### 4. Future Extensibility
 
-- New strategies can be added by implementing the [`StrategyBase`](lightrft/strategy/strategy_base.py:63) interface
+- New strategies can be added by implementing the [`StrategyBase`](../../../lightrft/strategy/strategy_base.py) interface
 - Configuration can be extended without breaking existing code
 - The factory pattern makes it easy to add new strategy types
 
@@ -188,25 +188,25 @@ max_norm = config.max_norm  # Type: float
 
 ### 1. Configuration Management
 
-- Use [`StrategyConfig`](lightrft/strategy/config.py:16) for all parameter access
+- Use [`StrategyConfig`](../../../lightrft/strategy/config.py) for all parameter access
 - Avoid direct `getattr` calls on argument objects
-- Use [`get_extra_arg()`](lightrft/strategy/config.py:130) for non-standard parameters
+- Use [`get_extra_arg()`](../../../lightrft/strategy/config.py) for non-standard parameters
 
 ### 2. Strategy Selection
 
-- Use [`get_strategy()`](lightrft/strategy/strategy.py:20) factory function for strategy creation
+- Use [`get_strategy()`](../../../lightrft/strategy/strategy.py) factory function for strategy creation
 - Let the factory determine the appropriate strategy based on configuration
-- Use [`FakeStrategy`](lightrft/strategy/fake_strategy.py:14) for testing and development
+- Use [`FakeStrategy`](../../../lightrft/strategy/fake_strategy.py) for testing and development
 
 ### 3. Error Handling
 
 - Strategies should provide clear error messages for unsupported operations
-- Use the strategy's [`print()`](lightrft/strategy/strategy_base.py:450) method for logging
+- Use the strategy's [`print()`](../../../lightrft/strategy/strategy_base.py) method for logging
 - Implement proper cleanup in context managers
 
 ### 4. Testing
 
-- Use [`FakeStrategy`](lightrft/strategy/fake_strategy.py:14) for unit tests
+- Use [`FakeStrategy`](../../../lightrft/strategy/fake_strategy.py) for unit tests
 - Test both strategy-specific and common functionality
 - Verify that all strategies implement the required interface
 
@@ -217,13 +217,13 @@ The LightRFT Strategy module optimizes the abstract design of distributed traini
 ### Core Design
 
 *   **Unified Interface Architecture**: Encapsulates distributed backends like DeepSpeed and FSDP, providing a consistent API. Developers can switch underlying strategies without modifying business code.
-*   **Type-Safe Configuration**: Converts dynamic configuration into strongly typed objects via [`StrategyConfig`](../../lightrft/strategy/config.py), reducing runtime errors and supporting IDE autocompletion.
-*   **Factory Pattern Selection**: [`get_strategy()`](../../lightrft/strategy/strategy.py) automatically instantiates strategies based on configuration parameters, simplifying calls while retaining control over backends.
+*   **Type-Safe Configuration**: Converts dynamic configuration into strongly typed objects via [`StrategyConfig`](../../../lightrft/strategy/config.py), reducing runtime errors and supporting IDE autocompletion.
+*   **Factory Pattern Selection**: [`get_strategy()`](../../../lightrft/strategy/strategy.py) automatically instantiates strategies based on configuration parameters, simplifying calls while retaining control over backends.
 
 ### Feature Highlights
 
 *   **Inference Engine Integration**: Supports plain text and multimodal generation through a unified interface, compatible with vLLM and SGLang backends.
-*   **Convenient Testing Support**: Provides [`FakeStrategy`](../../lightrft/strategy/fake_strategy.py), allowing testing of training workflows without a distributed environment, reducing debugging costs.
+*   **Convenient Testing Support**: Provides [`FakeStrategy`](../../../lightrft/strategy/fake_strategy.py), allowing testing of training workflows without a distributed environment, reducing debugging costs.
 *   **Resource Efficiency Optimization**: Supports advanced features like inference engine sleep/wake, gradient accumulation, and memory-aware checkpointing to optimize resource usage during large-scale training.
 
 ### Summary

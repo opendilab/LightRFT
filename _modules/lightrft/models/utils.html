@@ -32,6 +32,7 @@
   <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/css/readthedocs.css" type="text/css" />
   <link rel="index" title="Index" href="../../../genindex.html" />
   <link rel="search" title="Search" href="../../../search.html" />
@@ -84,7 +85,7 @@
 <div class="container-fluid header-holder tutorials-header" id="header-holder">
   <div class="container">
     <div class="header-container">
-      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+      <a class="header-logo" href="https://github.com/opendilab/LightRFT"
         aria-label="OpenMMLab"></a>
 
       <div class="main-menu">
@@ -234,6 +235,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../api_doc/strategy/index.html">lightrft.strategy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api_doc/trainer/index.html">lightrft.trainer</a></li>
 </ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../index_zh.html">欢迎来到 LightRFT 文档!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../index_zh.html#id4">索引与表格</a></li>
+</ul>
 
         
         
@@ -300,7 +305,7 @@
               <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
                 
   <h1>Source code for lightrft.models.utils</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""</span>
 <span class="sd">Utility functions for computing log probabilities from logits in PyTorch.</span>
 
 <span class="sd">This module provides functions to efficiently calculate log probabilities</span>
@@ -313,7 +318,7 @@
 <span class="sd">- Computing log probabilities from model logits with memory-efficient approaches</span>
 <span class="sd">- Finding LoRA-injectable linear modules in various model architectures</span>
 <span class="sd">- Handling position IDs in packed sequence scenarios for transformer models</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
@@ -331,8 +336,8 @@
 <span class="n">logger</span> <span class="o">=</span> <span class="n">init_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">find_all_linear_modules</span><span class="p">(</span><span class="n">model</span><span class="p">:</span> <span class="s2">&quot;nn.Module&quot;</span><span class="p">,</span> <span class="n">freeze_vision_tower</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">find_all_linear_modules</span><span class="p">(</span><span class="n">model</span><span class="p">:</span> <span class="s2">"nn.Module"</span><span class="p">,</span> <span class="n">freeze_vision_tower</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Find all linear modules that can be injected with LoRA (Low-Rank Adaptation).</span>
 
 <span class="sd">    This function scans through a neural network model to identify all linear layers</span>
@@ -353,41 +358,41 @@
 <span class="sd">        &gt;&gt;&gt; import torch.nn as nn</span>
 <span class="sd">        &gt;&gt;&gt; model = nn.Sequential(nn.Linear(10, 5), nn.ReLU(), nn.Linear(5, 1))</span>
 <span class="sd">        &gt;&gt;&gt; linear_modules = find_all_linear_modules(model, freeze_vision_tower=False)</span>
-<span class="sd">        &gt;&gt;&gt; print(linear_modules)  # [&#39;Linear&#39;]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">model_type</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="p">,</span> <span class="s2">&quot;model_type&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-    <span class="n">forbidden</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;lm_head&quot;</span><span class="p">}</span>
-    <span class="k">if</span> <span class="n">model_type</span> <span class="o">==</span> <span class="s2">&quot;chatglm&quot;</span><span class="p">:</span>
-        <span class="n">forbidden</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&quot;output_layer&quot;</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="n">model_type</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;llava&quot;</span><span class="p">,</span> <span class="s2">&quot;llava_next&quot;</span><span class="p">,</span> <span class="s2">&quot;llava_next_video&quot;</span><span class="p">,</span> <span class="s2">&quot;mllama&quot;</span><span class="p">,</span> <span class="s2">&quot;paligemma&quot;</span><span class="p">,</span> <span class="s2">&quot;video_llava&quot;</span><span class="p">]:</span>
-        <span class="n">forbidden</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&quot;multi_modal_projector&quot;</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="n">model_type</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;qwen2_vl&quot;</span><span class="p">,</span> <span class="s2">&quot;qwen2_5_vl&quot;</span><span class="p">]:</span>
-        <span class="n">forbidden</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&quot;merger&quot;</span><span class="p">)</span>
+<span class="sd">        &gt;&gt;&gt; print(linear_modules)  # ['Linear']</span>
+<span class="sd">    """</span>
+    <span class="n">model_type</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="p">,</span> <span class="s2">"model_type"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">forbidden</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"lm_head"</span><span class="p">}</span>
+    <span class="k">if</span> <span class="n">model_type</span> <span class="o">==</span> <span class="s2">"chatglm"</span><span class="p">:</span>
+        <span class="n">forbidden</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">"output_layer"</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">model_type</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">"llava"</span><span class="p">,</span> <span class="s2">"llava_next"</span><span class="p">,</span> <span class="s2">"llava_next_video"</span><span class="p">,</span> <span class="s2">"mllama"</span><span class="p">,</span> <span class="s2">"paligemma"</span><span class="p">,</span> <span class="s2">"video_llava"</span><span class="p">]:</span>
+        <span class="n">forbidden</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">"multi_modal_projector"</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">model_type</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">"qwen2_vl"</span><span class="p">,</span> <span class="s2">"qwen2_5_vl"</span><span class="p">]:</span>
+        <span class="n">forbidden</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">"merger"</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">freeze_vision_tower</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">model_type</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;mllama&quot;</span><span class="p">]:</span>
-            <span class="n">forbidden</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&quot;vision_model&quot;</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="n">model_type</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;qwen2_vl&quot;</span><span class="p">,</span> <span class="s2">&quot;qwen2_5_vl&quot;</span><span class="p">]:</span>
-            <span class="n">forbidden</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&quot;visual&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">model_type</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">"mllama"</span><span class="p">]:</span>
+            <span class="n">forbidden</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">"vision_model"</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">model_type</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">"qwen2_vl"</span><span class="p">,</span> <span class="s2">"qwen2_5_vl"</span><span class="p">]:</span>
+            <span class="n">forbidden</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">"visual"</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">forbidden</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&quot;vision_tower&quot;</span><span class="p">)</span>
+            <span class="n">forbidden</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">"vision_tower"</span><span class="p">)</span>
 
     <span class="n">module_names</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
     <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">module</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">named_modules</span><span class="p">():</span>
         <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">fm</span> <span class="ow">in</span> <span class="n">name</span> <span class="k">for</span> <span class="n">fm</span> <span class="ow">in</span> <span class="n">forbidden</span><span class="p">):</span>
             <span class="k">continue</span>
-        <span class="k">if</span> <span class="s2">&quot;Linear&quot;</span> <span class="ow">in</span> <span class="n">module</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span> <span class="ow">and</span> <span class="s2">&quot;Embedding&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">module</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">:</span>
-            <span class="n">module_names</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">if</span> <span class="s2">"Linear"</span> <span class="ow">in</span> <span class="n">module</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span> <span class="ow">and</span> <span class="s2">"Embedding"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">module</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">:</span>
+            <span class="n">module_names</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"."</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
     <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">module_names</span><span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">entropy_from_logits</span><span class="p">(</span><span class="n">logits</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute entropy from logits using Categorical distribution for efficient calculation.</span>
 
 <span class="sd">    This function calculates the entropy of the probability distribution over the vocabulary</span>
 <span class="sd">    for each token position. Higher entropy indicates more uncertainty in token prediction,</span>
-<span class="sd">    which corresponds to &quot;forking tokens&quot; that determine reasoning directions.</span>
+<span class="sd">    which corresponds to "forking tokens" that determine reasoning directions.</span>
 
 <span class="sd">    :param logits: Logits tensor of shape (batch_size, sequence_length, vocab_size)</span>
 <span class="sd">                  or (batch_size, vocab_size)</span>
@@ -402,7 +407,7 @@
 <span class="sd">        &gt;&gt;&gt; entropy = entropy_from_logits(logits)</span>
 <span class="sd">        &gt;&gt;&gt; entropy.shape</span>
 <span class="sd">        torch.Size([2, 10])</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># Use Categorical distribution for efficient entropy calculation</span>
     <span class="n">categorical</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">Categorical</span><span class="p">(</span><span class="n">logits</span><span class="o">=</span><span class="n">logits</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">categorical</span><span class="o">.</span><span class="n">entropy</span><span class="p">()</span>
@@ -413,13 +418,13 @@
     <span class="n">action_mask</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span>
     <span class="n">high_entropy_ratio</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.2</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Create a binary mask for high-entropy tokens based on the specified ratio.</span>
 
 <span class="sd">    This function identifies the top-k highest entropy tokens (forking tokens) within each sequence</span>
 <span class="sd">    and creates a binary mask. Only tokens with high entropy will be used for gradient updates,</span>
-<span class="sd">    following the approach in &quot;Beyond the 80/20 Rule: High-Entropy Minority Tokens Drive Effective</span>
-<span class="sd">    Reinforcement Learning for LLM Reasoning&quot; (https://arxiv.org/abs/2506.01939).</span>
+<span class="sd">    following the approach in "Beyond the 80/20 Rule: High-Entropy Minority Tokens Drive Effective</span>
+<span class="sd">    Reinforcement Learning for LLM Reasoning" (https://arxiv.org/abs/2506.01939).</span>
 
 <span class="sd">    The paper shows that utilizing only 20% of high-entropy tokens can maintain performance comparable</span>
 <span class="sd">    to full-gradient updates, with common value of 0.2 (top 20% highest entropy tokens).</span>
@@ -441,7 +446,7 @@
 <span class="sd">        &gt;&gt;&gt; mask = create_high_entropy_mask(entropy, action_mask, high_entropy_ratio=0.4)</span>
 <span class="sd">        &gt;&gt;&gt; mask</span>
 <span class="sd">        tensor([[0, 1, 0, 1, 0], [0, 1, 0, 1, 0]])  # Top 40% (2 out of 5 valid tokens)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">high_entropy_ratio</span> <span class="o">&lt;=</span> <span class="mf">0.0</span> <span class="ow">or</span> <span class="n">high_entropy_ratio</span> <span class="o">&gt;=</span> <span class="mf">1.0</span><span class="p">:</span>
         <span class="c1"># Return all-ones mask if ratio is invalid</span>
         <span class="k">if</span> <span class="n">action_mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -450,15 +455,15 @@
 
     <span class="c1"># Validate shapes</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">entropy</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;entropy must be 2D tensor (batch_size, seq_len), got shape </span><span class="si">{</span><span class="n">entropy</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"entropy must be 2D tensor (batch_size, seq_len), got shape </span><span class="si">{</span><span class="n">entropy</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
     <span class="n">batch_size</span><span class="p">,</span> <span class="n">seq_len</span> <span class="o">=</span> <span class="n">entropy</span><span class="o">.</span><span class="n">shape</span>
 
     <span class="k">if</span> <span class="n">action_mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">action_mask</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;action_mask must be 2D tensor (batch_size, seq_len), got shape </span><span class="si">{</span><span class="n">action_mask</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"action_mask must be 2D tensor (batch_size, seq_len), got shape </span><span class="si">{</span><span class="n">action_mask</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">action_mask</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="n">entropy</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;action_mask shape </span><span class="si">{</span><span class="n">action_mask</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2"> must match entropy shape </span><span class="si">{</span><span class="n">entropy</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"action_mask shape </span><span class="si">{</span><span class="n">action_mask</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2"> must match entropy shape </span><span class="si">{</span><span class="n">entropy</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
     <span class="n">high_entropy_mask</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">entropy</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
 
@@ -496,13 +501,13 @@
 <div class="viewcode-block" id="log_probs_from_logits"><a class="viewcode-back" href="../../../api_doc/models/utils.html#lightrft.models.utils.log_probs_from_logits">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">log_probs_from_logits</span><span class="p">(</span>
     <span class="n">logits</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">labels</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">disable_logprobs_flashattn</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute log probabilities for the given labels from logits.</span>
 
 <span class="sd">    This function calculates log probabilities efficiently, using different approaches</span>
 <span class="sd">    based on the input data type to optimize memory usage. For float32/float64 tensors,</span>
 <span class="sd">    it uses a direct computation approach, while for other data types (e.g. float16 and bfloat16)</span>
-<span class="sd">    it uses PyTorch&#39;s log_softmax function with row-by-row processing to reduce peak memory consumption.</span>
+<span class="sd">    it uses PyTorch's log_softmax function with row-by-row processing to reduce peak memory consumption.</span>
 
 <span class="sd">    :param logits: Logits tensor of shape (batch_size, sequence_length, vocab_size)</span>
 <span class="sd">                  or (batch_size, vocab_size)</span>
@@ -525,7 +530,7 @@
 <span class="sd">        &gt;&gt;&gt; log_probs = log_probs_from_logits(logits, labels)</span>
 <span class="sd">        &gt;&gt;&gt; log_probs.shape</span>
 <span class="sd">        torch.Size([2, 3])</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">logits</span><span class="o">.</span><span class="n">dtype</span> <span class="ow">in</span> <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
         <span class="n">batch_dim</span> <span class="o">=</span> <span class="n">logits</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
         <span class="n">last_dim</span> <span class="o">=</span> <span class="n">logits</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
@@ -537,7 +542,7 @@
 
                 <span class="n">flashattn_available</span> <span class="o">=</span> <span class="kc">True</span>
             <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Failed to import cross_entropy_loss from flash_attn&quot;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">"Failed to import cross_entropy_loss from flash_attn"</span><span class="p">)</span>
                 <span class="n">flashattn_available</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="k">if</span> <span class="n">flashattn_available</span><span class="p">:</span>
             <span class="c1"># use cross_entropy_loss from flash_attn to reduce peak mem consumption</span>
@@ -560,7 +565,7 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">reset_position_ids</span><span class="p">(</span><span class="n">attention_mask</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Generate position IDs for packed sequences based on an attention mask.</span>
 
 <span class="sd">    In a packed sequence, multiple independent sequences are concatenated into a</span>
@@ -583,7 +588,7 @@
 <span class="sd">        &gt;&gt;&gt; attention_mask = torch.tensor([[1, 1, 1, 2, 2, 2, 3, 3, 0]])</span>
 <span class="sd">        &gt;&gt;&gt; reset_position_ids(attention_mask)</span>
 <span class="sd">        tensor([[0, 1, 2, 0, 1, 2, 0, 1, 0]])</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># Initialize position_ids with zeros, same shape and device as the input mask.</span>
     <span class="n">position_ids</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">attention_mask</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">long</span><span class="p">)</span>
 
@@ -613,14 +618,14 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">apply_lora_configuration</span><span class="p">(</span>
-    <span class="n">model</span><span class="p">:</span> <span class="s2">&quot;nn.Module&quot;</span><span class="p">,</span>
+    <span class="n">model</span><span class="p">:</span> <span class="s2">"nn.Module"</span><span class="p">,</span>
     <span class="n">lora_rank</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">lora_alpha</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">lora_dropout</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
     <span class="n">target_modules</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">freeze_vision_tower</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;nn.Module&quot;</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"nn.Module"</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Apply LoRA (Low-Rank Adaptation) configuration to a model.</span>
 
 <span class="sd">    This function configures and applies LoRA adaptation to the specified model,</span>
@@ -643,22 +648,22 @@
 <span class="sd">    :rtype: nn.Module</span>
 
 <span class="sd">    Example::</span>
-<span class="sd">        &gt;&gt;&gt; model = AutoModelForCausalLM.from_pretrained(&quot;microsoft/DialoGPT-medium&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; model = AutoModelForCausalLM.from_pretrained("microsoft/DialoGPT-medium")</span>
 <span class="sd">        &gt;&gt;&gt; model = apply_lora_configuration(</span>
 <span class="sd">        ...     model=model,</span>
 <span class="sd">        ...     lora_rank=16,</span>
 <span class="sd">        ...     lora_alpha=32,</span>
 <span class="sd">        ...     lora_dropout=0.1</span>
 <span class="sd">        ... )</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># Enable input require gradients for LoRA</span>
     <span class="n">model</span><span class="o">.</span><span class="n">enable_input_require_grads</span><span class="p">()</span>
 
     <span class="c1"># Auto-detect target modules if not provided</span>
-    <span class="k">if</span> <span class="n">target_modules</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="s2">&quot;all-linear&quot;</span> <span class="ow">in</span> <span class="n">target_modules</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">target_modules</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="s2">"all-linear"</span> <span class="ow">in</span> <span class="n">target_modules</span><span class="p">:</span>
         <span class="n">target_modules</span> <span class="o">=</span> <span class="n">find_all_linear_modules</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">freeze_vision_tower</span><span class="p">)</span>
 
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;target_modules: &quot;</span><span class="p">,</span> <span class="n">target_modules</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"target_modules: "</span><span class="p">,</span> <span class="n">target_modules</span><span class="p">)</span>
 
     <span class="c1"># Configure LoRA</span>
     <span class="n">lora_config</span> <span class="o">=</span> <span class="n">LoraConfig</span><span class="p">(</span>
@@ -667,7 +672,7 @@
         <span class="n">lora_alpha</span><span class="o">=</span><span class="n">lora_alpha</span><span class="p">,</span>
         <span class="n">target_modules</span><span class="o">=</span><span class="n">target_modules</span><span class="p">,</span>
         <span class="n">lora_dropout</span><span class="o">=</span><span class="n">lora_dropout</span><span class="p">,</span>
-        <span class="n">bias</span><span class="o">=</span><span class="s2">&quot;none&quot;</span><span class="p">,</span>
+        <span class="n">bias</span><span class="o">=</span><span class="s2">"none"</span><span class="p">,</span>
     <span class="p">)</span>
 
     <span class="c1"># Apply LoRA to the model</span>
@@ -680,13 +685,13 @@
     <span class="n">log_probs</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">log_probs_base</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">action_mask</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">kl_estimator</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;k1&quot;</span><span class="p">,</span>
+    <span class="n">kl_estimator</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"k1"</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute approximate KL divergence between two probability distributions.</span>
 
 <span class="sd">    This function implements three different estimators for KL divergence approximation</span>
-<span class="sd">    as described in Schulman&#39;s blog: http://joschu.net/blog/kl-approx.html</span>
+<span class="sd">    as described in Schulman's blog: http://joschu.net/blog/kl-approx.html</span>
 
 <span class="sd">    :param log_probs: Log probabilities of the new distribution</span>
 <span class="sd">    :type log_probs: torch.Tensor</span>
@@ -694,7 +699,7 @@
 <span class="sd">    :type log_probs_base: torch.Tensor</span>
 <span class="sd">    :param action_mask: Binary mask indicating valid action positions (1 for valid, 0 for padding)</span>
 <span class="sd">    :type action_mask: Optional[torch.Tensor]</span>
-<span class="sd">    :param kl_estimator: Type of KL estimator to use (&quot;k1&quot;, &quot;k2&quot;, or &quot;k3&quot;)</span>
+<span class="sd">    :param kl_estimator: Type of KL estimator to use ("k1", "k2", or "k3")</span>
 <span class="sd">    :type kl_estimator: str</span>
 
 <span class="sd">    :return: Approximate KL divergence values</span>
@@ -704,14 +709,14 @@
 <span class="sd">        &gt;&gt;&gt; log_probs = torch.tensor([[0.1, -0.2, 0.3], [-0.1, 0.2, 0.1]])</span>
 <span class="sd">        &gt;&gt;&gt; log_probs_base = torch.tensor([[0.2, -0.1, 0.2], [-0.2, 0.1, 0.2]])</span>
 <span class="sd">        &gt;&gt;&gt; action_mask = torch.tensor([[1, 1, 0], [1, 1, 1]])</span>
-<span class="sd">        &gt;&gt;&gt; kl = compute_approx_kl(log_probs, log_probs_base, action_mask, &quot;k1&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; kl = compute_approx_kl(log_probs, log_probs_base, action_mask, "k1")</span>
 <span class="sd">        &gt;&gt;&gt; kl.shape</span>
 <span class="sd">        torch.Size([2, 3])</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
-    <span class="k">assert</span> <span class="n">kl_estimator</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;k1&quot;</span><span class="p">,</span> <span class="s2">&quot;k2&quot;</span><span class="p">,</span> <span class="s2">&quot;k3&quot;</span><span class="p">],</span> <span class="sa">f</span><span class="s2">&quot;Invalid kl_estimator: </span><span class="si">{</span><span class="n">kl_estimator</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="k">assert</span> <span class="n">kl_estimator</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">"k1"</span><span class="p">,</span> <span class="s2">"k2"</span><span class="p">,</span> <span class="s2">"k3"</span><span class="p">],</span> <span class="sa">f</span><span class="s2">"Invalid kl_estimator: </span><span class="si">{</span><span class="n">kl_estimator</span><span class="si">}</span><span class="s2">"</span>
 
-    <span class="k">if</span> <span class="n">kl_estimator</span> <span class="o">==</span> <span class="s2">&quot;k1&quot;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">kl_estimator</span> <span class="o">==</span> <span class="s2">"k1"</span><span class="p">:</span>
         <span class="n">log_ratio</span> <span class="o">=</span> <span class="n">log_probs</span><span class="o">.</span><span class="n">float</span><span class="p">()</span> <span class="o">-</span> <span class="n">log_probs_base</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">action_mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">log_ratio</span> <span class="o">=</span> <span class="n">log_ratio</span> <span class="o">*</span> <span class="n">action_mask</span>
@@ -721,7 +726,7 @@
     <span class="c1"># The k2_loss is approximately equivalent to the</span>
     <span class="c1"># one-step KL divergence penalty with the k1 estimator</span>
     <span class="c1"># used in https://arxiv.org/pdf/2310.10505.</span>
-    <span class="k">elif</span> <span class="n">kl_estimator</span> <span class="o">==</span> <span class="s2">&quot;k2&quot;</span><span class="p">:</span>
+    <span class="k">elif</span> <span class="n">kl_estimator</span> <span class="o">==</span> <span class="s2">"k2"</span><span class="p">:</span>
         <span class="n">log_ratio</span> <span class="o">=</span> <span class="n">log_probs</span><span class="o">.</span><span class="n">float</span><span class="p">()</span> <span class="o">-</span> <span class="n">log_probs_base</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">action_mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">log_ratio</span> <span class="o">=</span> <span class="n">log_ratio</span> <span class="o">*</span> <span class="n">action_mask</span>
@@ -729,7 +734,7 @@
 
     <span class="c1"># The k3 estimator is the non negative kl approximation in</span>
     <span class="c1"># http://joschu.net/blog/kl-approx.html</span>
-    <span class="k">elif</span> <span class="n">kl_estimator</span> <span class="o">==</span> <span class="s2">&quot;k3&quot;</span><span class="p">:</span>
+    <span class="k">elif</span> <span class="n">kl_estimator</span> <span class="o">==</span> <span class="s2">"k3"</span><span class="p">:</span>
         <span class="n">log_ratio</span> <span class="o">=</span> <span class="n">log_probs</span><span class="o">.</span><span class="n">float</span><span class="p">()</span> <span class="o">-</span> <span class="n">log_probs_base</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">action_mask</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">log_ratio</span> <span class="o">=</span> <span class="n">log_ratio</span> <span class="o">*</span> <span class="n">action_mask</span>
@@ -747,7 +752,7 @@
     <span class="n">num_actions</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">reward_clip_range</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute final reward by combining base reward with KL penalty.</span>
 
 <span class="sd">    Combines base reward with KL divergence penalty to encourage policy stability.</span>
@@ -777,7 +782,7 @@
 <span class="sd">        &gt;&gt;&gt; reward = compute_reward(r, kl_coef, kl, action_mask)</span>
 <span class="sd">        &gt;&gt;&gt; reward.shape</span>
 <span class="sd">        torch.Size([2, 3])</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">kl_coef</span> <span class="o">&lt;=</span> <span class="mf">0.0</span><span class="p">:</span>
         <span class="n">kl_coef</span> <span class="o">=</span> <span class="mf">0.0</span>
 
@@ -811,7 +816,7 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">masked_mean</span><span class="p">(</span><span class="n">tensor</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">mask</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span> <span class="n">dim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Compute mean of tensor excluding masked (padded) values.</span>
 
 <span class="sd">    Calculates mean along specified dimensions, ignoring positions where mask is zero.</span>
@@ -834,14 +839,14 @@
 <span class="sd">        tensor(2.6667)</span>
 <span class="sd">        &gt;&gt;&gt; masked_mean(tensor, mask, dim=1)</span>
 <span class="sd">        tensor([1.5000, 4.0000])</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">mask</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">tensor</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="n">dim</span><span class="p">)</span>
     <span class="k">return</span> <span class="p">(</span><span class="n">tensor</span> <span class="o">*</span> <span class="n">mask</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="n">dim</span><span class="p">)</span> <span class="o">/</span> <span class="n">mask</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="n">dim</span><span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">unpacking_samples</span><span class="p">(</span><span class="n">values</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">packed_seqlens</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Unpack concatenated sequences into individual sequences.</span>
 
 <span class="sd">    Splits packed tensor into multiple sequences based on original lengths.</span>
@@ -861,7 +866,7 @@
 <span class="sd">        &gt;&gt;&gt; unpacked = unpacking_samples(values, packed_seqlens)</span>
 <span class="sd">        &gt;&gt;&gt; [t.tolist() for t in unpacked]</span>
 <span class="sd">        [[1, 2, 3], [4, 5], [6, 7, 8]]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">values</span> <span class="o">=</span> <span class="n">values</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
     <span class="n">unpacked_values</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">offset</span> <span class="o">=</span> <span class="mi">0</span>
@@ -872,7 +877,7 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">pad_to_length</span><span class="p">(</span><span class="n">tensor</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">length</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">pad_value</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="n">dim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Left-pad a tensor to a target length along a given dimension.</span>
 
 <span class="sd">    :param tensor: Input tensor to be padded.</span>
@@ -888,7 +893,7 @@
 <span class="sd">    :returns: Tensor padded on the left along ``dim`` to size</span>
 <span class="sd">        ``length`` if needed; otherwise the original tensor.</span>
 <span class="sd">    :rtype: torch.Tensor</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">tensor</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">dim</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">length</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">tensor</span>
     <span class="k">else</span><span class="p">:</span>
@@ -905,7 +910,7 @@
     <span class="n">input0_video_pixels</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span> <span class="n">input0_video_grid_thws</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span>
     <span class="n">input1_video_pixels</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span> <span class="n">input1_video_grid_thws</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span> <span class="n">pad_token_id</span><span class="p">:</span> <span class="nb">int</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Concatenates paired candidate inputs and runs a forward pass for vision-language models.</span>
 
 <span class="sd">    This utility is used in preference/reward modeling scenarios where two candidates</span>
@@ -947,7 +952,7 @@
 <span class="sd">             for each candidate.</span>
 <span class="sd">    :rtype: Tuple[Union[torch.Tensor, Dict[str, torch.Tensor]], Union[torch.Tensor, Dict[str, torch.Tensor]]]</span>
 
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># Compute shared maximum lengths across the pair for text ids and masks.</span>
     <span class="n">max_length_ids</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">input0_ids</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">input1_ids</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
     <span class="n">max_length_mask</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">input0_mask</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">input1_mask</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
@@ -998,7 +1003,7 @@
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">AttentionPooling</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Attention pooling over the sequence dimension of VLM hidden states.</span>
 
 <span class="sd">    This module compresses a sequence of hidden states into a single fixed-size</span>
@@ -1022,10 +1027,10 @@
 <span class="sd">    Example::</span>
 
 <span class="sd">        pool = AttentionPooling(hidden_size=1024, num_heads=8).to(torch.bfloat16).cuda()</span>
-<span class="sd">        x = torch.randn(2, 128, 1024, dtype=torch.bfloat16, device=&#39;cuda&#39;)  # (B=2, S=128, C=1024)</span>
+<span class="sd">        x = torch.randn(2, 128, 1024, dtype=torch.bfloat16, device='cuda')  # (B=2, S=128, C=1024)</span>
 <span class="sd">        y = pool(x)</span>
 <span class="sd">        assert y.shape == (2, 1024)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">hidden_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
@@ -1047,14 +1052,14 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">query</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">hidden_size</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.02</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hidden_states</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Apply attention pooling over the sequence of hidden states.</span>
 
 <span class="sd">        :param hidden_states: Hidden states to pool, of shape ``(B, S, C)``.</span>
 <span class="sd">        :type hidden_states: torch.Tensor</span>
 <span class="sd">        :returns: Pooled hidden states of shape ``(B, C)``.</span>
 <span class="sd">        :rtype: torch.Tensor</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">B</span><span class="p">,</span> <span class="n">S</span><span class="p">,</span> <span class="n">C</span> <span class="o">=</span> <span class="n">hidden_states</span><span class="o">.</span><span class="n">shape</span>
 
         <span class="c1"># Multi-head projection for key and value</span>
@@ -1092,7 +1097,7 @@
 
   <div role="contentinfo">
     <p>
-      &copy; Copyright 2025, OpenDILab.
+      &copy; Copyright 2025-2026, OpenDILab.
 
     </p>
   </div>
@@ -1129,8 +1134,8 @@
   <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
   <script src="../../../_static/doctools.js"></script>
   <script src="../../../_static/sphinx_highlight.js"></script>
-  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-  <script src="../../../_static/js/language_switch.js"></script>
+  <script src="../../../_static/clipboard.min.js"></script>
+  <script src="../../../_static/copybutton.js"></script>
   
 
   
@@ -1159,7 +1164,7 @@
     <div class="container-fluid">
       <div class="container">
         <div class="mobile-main-menu-header-container">
-          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="header-logo" href="https://github.com/opendilab/LightRFT" aria-label="OpenMMLab"></a>
           <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
         </div>
       </div>

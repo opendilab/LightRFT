@@ -33,9 +33,12 @@
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
   <link rel="stylesheet" href="../_static/css/readthedocs.css" type="text/css" />
   <link rel="index" title="Index" href="../genindex.html" />
   <link rel="search" title="Search" href="../search.html" />
+  <link rel="next" title="故障排除指南" href="troubleshooting_zh.html" />
+  <link rel="prev" title="模型测试指南" href="model_testing_zh.html" />
   <!-- Google Analytics -->
   <script type="text/javascript">
     var collapsedSections = [];
@@ -85,7 +88,7 @@
 <div class="container-fluid header-holder tutorials-header" id="header-holder">
   <div class="container">
     <div class="header-container">
-      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+      <a class="header-logo" href="https://github.com/opendilab/LightRFT"
         aria-label="OpenMMLab"></a>
 
       <div class="main-menu">
@@ -235,6 +238,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../api_doc/strategy/index.html">lightrft.strategy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api_doc/trainer/index.html">lightrft.trainer</a></li>
 </ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../index_zh.html">欢迎来到 LightRFT 文档!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index_zh.html#id4">索引与表格</a></li>
+</ul>
 
         
         
@@ -271,6 +278,10 @@
         </a> &gt;
       </li>
 
+        
+          <li><a href="../index_zh.html">欢迎来到 LightRFT 文档!</a> &gt;</li>
+        
+          <li><a href="index_zh.html">最佳实践</a> &gt;</li>
         
       <li>常见问题解答 (FAQ)</li>
     
@@ -475,7 +486,7 @@ pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </s
 <h2>调试问题<a class="headerlink" href="#id13" title="Permalink to this heading">¶</a></h2>
 <section id="q-oom">
 <h3>Q: 训练因显存溢出 (OOM) 崩溃<a class="headerlink" href="#q-oom" title="Permalink to this heading">¶</a></h3>
-<p><strong>A</strong>: 请参阅 <a class="reference internal" href="troubleshooting_zh.html#显存问题"><span class="std std-ref">故障排除指南</span></a></p>
+<p><strong>A</strong>: 请参阅 <a class="reference internal" href="troubleshooting_zh.html#id5"><span class="std std-ref">故障排除指南</span></a></p>
 </section>
 <section id="q-num-rollouts-per-episodes-0">
 <h3>Q: 报错 <code class="docutils literal notranslate"><span class="pre">num_rollouts_per_episodes</span> <span class="pre">=</span> <span class="pre">0</span></code><a class="headerlink" href="#q-num-rollouts-per-episodes-0" title="Permalink to this heading">¶</a></h3>
@@ -532,7 +543,7 @@ pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </s
 <p><strong>A</strong>: 可以，使用轨迹保存器：</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">lightrft.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">TrajectorySaver</span>
 
-<span class="n">saver</span> <span class="o">=</span> <span class="n">TrajectorySaver</span><span class="p">(</span><span class="n">output_dir</span><span class="o">=</span><span class="s2">&quot;./trajectories&quot;</span><span class="p">)</span>
+<span class="n">saver</span> <span class="o">=</span> <span class="n">TrajectorySaver</span><span class="p">(</span><span class="n">output_dir</span><span class="o">=</span><span class="s2">"./trajectories"</span><span class="p">)</span>
 <span class="c1"># 自动保存 Prompts, Responses, Rewards</span>
 </pre></div>
 </div>
@@ -662,12 +673,24 @@ pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </s
             </div>
             <footer>
   
+  <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+    
+    <a href="troubleshooting_zh.html" class="btn btn-neutral float-right" title="故障排除指南" accesskey="n"
+      rel="next">Next <img src="../_static/images/chevron-right-blue.svg"
+        class="next-page"></a>
+    
+    
+    <a href="model_testing_zh.html" class="btn btn-neutral" title="模型测试指南" accesskey="p"
+      rel="prev"><img src="../_static/images/chevron-right-blue.svg" class="previous-page"> Previous</a>
+    
+  </div>
+  
 
   <hr>
 
   <div role="contentinfo">
     <p>
-      &copy; Copyright 2025, OpenDILab.
+      &copy; Copyright 2025-2026, OpenDILab.
 
     </p>
   </div>
@@ -766,8 +789,8 @@ pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </s
   <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
   <script src="../_static/doctools.js"></script>
   <script src="../_static/sphinx_highlight.js"></script>
-  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-  <script src="../_static/js/language_switch.js"></script>
+  <script src="../_static/clipboard.min.js"></script>
+  <script src="../_static/copybutton.js"></script>
   
 
   
@@ -796,7 +819,7 @@ pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </s
     <div class="container-fluid">
       <div class="container">
         <div class="mobile-main-menu-header-container">
-          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="header-logo" href="https://github.com/opendilab/LightRFT" aria-label="OpenMMLab"></a>
           <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
         </div>
       </div>

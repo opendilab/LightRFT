@@ -33,10 +33,11 @@
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
   <link rel="stylesheet" href="../_static/css/readthedocs.css" type="text/css" />
   <link rel="index" title="Index" href="../genindex.html" />
   <link rel="search" title="Search" href="../search.html" />
-  <link rel="next" title="Model Testing Guide" href="model_testing.html" />
+  <link rel="next" title="Runtime Architecture and Resource Reuse" href="runtime_architecture.html" />
   <link rel="prev" title="Strategy Usage Guide" href="strategy.html" />
   <!-- Google Analytics -->
   <script type="text/javascript">
@@ -87,7 +88,7 @@
 <div class="container-fluid header-holder tutorials-header" id="header-holder">
   <div class="container">
     <div class="header-container">
-      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+      <a class="header-logo" href="https://github.com/opendilab/LightRFT"
         aria-label="OpenMMLab"></a>
 
       <div class="main-menu">
@@ -237,6 +238,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../api_doc/strategy/index.html">lightrft.strategy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api_doc/trainer/index.html">lightrft.trainer</a></li>
 </ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../index_zh.html">欢迎来到 LightRFT 文档!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index_zh.html#id4">索引与表格</a></li>
+</ul>
 
         
         
@@ -319,8 +324,8 @@
 <p><strong>Principle</strong>: Provide a unified interface that abstracts away the complexities of different distributed training frameworks.</p>
 <p><strong>Implementation</strong>:</p>
 <ul class="simple">
-<li><p>All strategies inherit from <a class="reference internal" href="#lightrft/strategy/strategy_base.py:63"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">StrategyBase</span></code></span></a></p></li>
-<li><p>Common methods like <a class="reference internal" href="#lightrft/strategy/strategy_base.py:257"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">backward()</span></code></span></a>, <a class="reference internal" href="#lightrft/strategy/strategy_base.py:272"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">optimizer_step()</span></code></span></a>, and <a class="reference internal" href="#lightrft/strategy/strategy_base.py:340"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">save_ckpt()</span></code></span></a> have consistent signatures</p></li>
+<li><p>All strategies inherit from <a class="reference download internal" download="" href="../_downloads/0ab7c2ee07c7c5fb09bbe07058664c3d/strategy_base.py"><span class="xref download myst"><code class="docutils literal notranslate"><span class="pre">StrategyBase</span></code></span></a></p></li>
+<li><p>Common methods like <a class="reference download internal" download="" href="../_downloads/0ab7c2ee07c7c5fb09bbe07058664c3d/strategy_base.py"><span class="xref download myst"><code class="docutils literal notranslate"><span class="pre">backward()</span></code></span></a>, <a class="reference download internal" download="" href="../_downloads/0ab7c2ee07c7c5fb09bbe07058664c3d/strategy_base.py"><span class="xref download myst"><code class="docutils literal notranslate"><span class="pre">optimizer_step()</span></code></span></a>, and <a class="reference download internal" download="" href="../_downloads/0ab7c2ee07c7c5fb09bbe07058664c3d/strategy_base.py"><span class="xref download myst"><code class="docutils literal notranslate"><span class="pre">save_ckpt()</span></code></span></a> have consistent signatures</p></li>
 <li><p>Strategy-specific implementations are encapsulated within concrete strategy classes</p></li>
 </ul>
 </section>
@@ -329,7 +334,7 @@
 <p><strong>Principle</strong>: Use typed configuration objects instead of dynamic attribute access for better type safety and code clarity.</p>
 <p><strong>Implementation</strong>:</p>
 <ul class="simple">
-<li><p><a class="reference internal" href="#lightrft/strategy/config.py:16"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">StrategyConfig</span></code></span></a> dataclass provides typed access to all configuration parameters</p></li>
+<li><p><a class="reference download internal" download="" href="../_downloads/3e5677a2b3e79bbbc543b3f76b0e2e91/config.py"><span class="xref download myst"><code class="docutils literal notranslate"><span class="pre">StrategyConfig</span></code></span></a> dataclass provides typed access to all configuration parameters</p></li>
 <li><p>Eliminates the need for <code class="docutils literal notranslate"><span class="pre">getattr(args,</span> <span class="pre">&quot;parameter&quot;,</span> <span class="pre">default)</span></code> pattern</p></li>
 <li><p>Enables IDE autocompletion and static type checking</p></li>
 </ul>
@@ -339,9 +344,9 @@
 <p><strong>Principle</strong>: Maintain compatibility with existing code while introducing improvements.</p>
 <p><strong>Implementation</strong>:</p>
 <ul class="simple">
-<li><p><a class="reference internal" href="#lightrft/strategy/config.py:67"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">StrategyConfig.from_args()</span></code></span></a> method extracts parameters from legacy argument objects</p></li>
+<li><p><a class="reference download internal" download="" href="../_downloads/3e5677a2b3e79bbbc543b3f76b0e2e91/config.py"><span class="xref download myst"><code class="docutils literal notranslate"><span class="pre">StrategyConfig.from_args()</span></code></span></a> method extracts parameters from legacy argument objects</p></li>
 <li><p>Original <code class="docutils literal notranslate"><span class="pre">args</span></code> object is preserved for compatibility</p></li>
-<li><p><a class="reference internal" href="#lightrft/strategy/config.py:130"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">get_extra_arg()</span></code></span></a> method provides access to non-standard parameters</p></li>
+<li><p><a class="reference download internal" download="" href="../_downloads/3e5677a2b3e79bbbc543b3f76b0e2e91/config.py"><span class="xref download myst"><code class="docutils literal notranslate"><span class="pre">get_extra_arg()</span></code></span></a> method provides access to non-standard parameters</p></li>
 </ul>
 </section>
 <section id="testability">
@@ -349,7 +354,7 @@
 <p><strong>Principle</strong>: Enable comprehensive testing without requiring distributed environments.</p>
 <p><strong>Implementation</strong>:</p>
 <ul class="simple">
-<li><p><a class="reference internal" href="#lightrft/strategy/fake_strategy.py:14"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">FakeStrategy</span></code></span></a> provides a drop-in replacement for testing</p></li>
+<li><p><a class="reference download internal" download="" href="../_downloads/f2cabbe456e446bd14e02decead07786/fake_strategy.py"><span class="xref download myst"><code class="docutils literal notranslate"><span class="pre">FakeStrategy</span></code></span></a> provides a drop-in replacement for testing</p></li>
 <li><p>All strategy methods have mock implementations for single-process testing</p></li>
 <li><p>Unit tests verify both functionality and API consistency</p></li>
 </ul>
@@ -370,7 +375,7 @@
 <h3>Key Components<a class="headerlink" href="#key-components" title="Permalink to this heading">¶</a></h3>
 <section id="strategy-factory">
 <h4>1. Strategy Factory<a class="headerlink" href="#strategy-factory" title="Permalink to this heading">¶</a></h4>
-<p>The <a class="reference internal" href="#lightrft/strategy/strategy.py:20"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">get_strategy()</span></code></span></a> function serves as the entry point, automatically selecting the appropriate strategy based on configuration:</p>
+<p>The <a class="reference download internal" download="" href="../_downloads/461d19e9d6eaa69d06306e9f6c5f1849/strategy.py"><span class="xref download myst"><code class="docutils literal notranslate"><span class="pre">get_strategy()</span></code></span></a> function serves as the entry point, automatically selecting the appropriate strategy based on configuration:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">lightrft.strategy</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_strategy</span>
 
 <span class="c1"># Automatically selects DeepSpeed or FSDP based on args.fsdp</span>
@@ -380,7 +385,7 @@
 </section>
 <section id="configuration-management">
 <h4>2. Configuration Management<a class="headerlink" href="#configuration-management" title="Permalink to this heading">¶</a></h4>
-<p>The <a class="reference internal" href="#lightrft/strategy/config.py:16"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">StrategyConfig</span></code></span></a> class centralizes all configuration parameters:</p>
+<p>The <a class="reference download internal" download="" href="../_downloads/3e5677a2b3e79bbbc543b3f76b0e2e91/config.py"><span class="xref download myst"><code class="docutils literal notranslate"><span class="pre">StrategyConfig</span></code></span></a> class centralizes all configuration parameters:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">lightrft.strategy.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">StrategyConfig</span>
 
 <span class="n">config</span> <span class="o">=</span> <span class="n">StrategyConfig</span><span class="o">.</span><span class="n">from_args</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
@@ -457,7 +462,7 @@
 <span class="c1"># All operations work without distributed environment</span>
 <span class="n">strategy</span><span class="o">.</span><span class="n">setup_distributed</span><span class="p">()</span>
 <span class="n">strategy</span><span class="o">.</span><span class="n">backward</span><span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">)</span>
-<span class="n">strategy</span><span class="o">.</span><span class="n">save_ckpt</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="s2">&quot;checkpoints&quot;</span><span class="p">)</span>
+<span class="n">strategy</span><span class="o">.</span><span class="n">save_ckpt</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="s2">"checkpoints"</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -467,8 +472,8 @@
 <section id="improved-type-safety">
 <h3>1. Improved Type Safety<a class="headerlink" href="#improved-type-safety" title="Permalink to this heading">¶</a></h3>
 <p><strong>Before</strong> (using getattr):</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">seed</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="s2">&quot;seed&quot;</span><span class="p">,</span> <span class="mi">42</span><span class="p">)</span>  <span class="c1"># Type: Any</span>
-<span class="n">max_norm</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="s2">&quot;max_norm&quot;</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>  <span class="c1"># Type: Any</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">seed</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="s2">"seed"</span><span class="p">,</span> <span class="mi">42</span><span class="p">)</span>  <span class="c1"># Type: Any</span>
+<span class="n">max_norm</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="s2">"max_norm"</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>  <span class="c1"># Type: Any</span>
 </pre></div>
 </div>
 <p><strong>After</strong> (using StrategyConfig):</p>
@@ -481,15 +486,15 @@
 <section id="better-code-organization">
 <h3>2. Better Code Organization<a class="headerlink" href="#better-code-organization" title="Permalink to this heading">¶</a></h3>
 <ul class="simple">
-<li><p>Configuration parameters are explicitly defined in <a class="reference internal" href="#lightrft/strategy/config.py:16"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">StrategyConfig</span></code></span></a></p></li>
+<li><p>Configuration parameters are explicitly defined in <a class="reference download internal" download="" href="../_downloads/3e5677a2b3e79bbbc543b3f76b0e2e91/config.py"><span class="xref download myst"><code class="docutils literal notranslate"><span class="pre">StrategyConfig</span></code></span></a></p></li>
 <li><p>Strategy-specific logic is encapsulated in concrete strategy classes</p></li>
-<li><p>Common functionality is implemented in <a class="reference internal" href="#lightrft/strategy/strategy_base.py:63"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">StrategyBase</span></code></span></a></p></li>
+<li><p>Common functionality is implemented in <a class="reference download internal" download="" href="../_downloads/0ab7c2ee07c7c5fb09bbe07058664c3d/strategy_base.py"><span class="xref download myst"><code class="docutils literal notranslate"><span class="pre">StrategyBase</span></code></span></a></p></li>
 </ul>
 </section>
 <section id="enhanced-testability">
 <h3>3. Enhanced Testability<a class="headerlink" href="#enhanced-testability" title="Permalink to this heading">¶</a></h3>
 <ul class="simple">
-<li><p><a class="reference internal" href="#lightrft/strategy/fake_strategy.py:14"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">FakeStrategy</span></code></span></a> enables testing without distributed setup</p></li>
+<li><p><a class="reference download internal" download="" href="../_downloads/f2cabbe456e446bd14e02decead07786/fake_strategy.py"><span class="xref download myst"><code class="docutils literal notranslate"><span class="pre">FakeStrategy</span></code></span></a> enables testing without distributed setup</p></li>
 <li><p>Unit tests can verify all strategy functionality</p></li>
 <li><p>Mock implementations ensure consistent behavior</p></li>
 </ul>
@@ -497,7 +502,7 @@
 <section id="future-extensibility">
 <h3>4. Future Extensibility<a class="headerlink" href="#future-extensibility" title="Permalink to this heading">¶</a></h3>
 <ul class="simple">
-<li><p>New strategies can be added by implementing the <a class="reference internal" href="#lightrft/strategy/strategy_base.py:63"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">StrategyBase</span></code></span></a> interface</p></li>
+<li><p>New strategies can be added by implementing the <a class="reference download internal" download="" href="../_downloads/0ab7c2ee07c7c5fb09bbe07058664c3d/strategy_base.py"><span class="xref download myst"><code class="docutils literal notranslate"><span class="pre">StrategyBase</span></code></span></a> interface</p></li>
 <li><p>Configuration can be extended without breaking existing code</p></li>
 <li><p>The factory pattern makes it easy to add new strategy types</p></li>
 </ul>
@@ -508,31 +513,31 @@
 <section id="id1">
 <h3>1. Configuration Management<a class="headerlink" href="#id1" title="Permalink to this heading">¶</a></h3>
 <ul class="simple">
-<li><p>Use <a class="reference internal" href="#lightrft/strategy/config.py:16"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">StrategyConfig</span></code></span></a> for all parameter access</p></li>
+<li><p>Use <a class="reference download internal" download="" href="../_downloads/3e5677a2b3e79bbbc543b3f76b0e2e91/config.py"><span class="xref download myst"><code class="docutils literal notranslate"><span class="pre">StrategyConfig</span></code></span></a> for all parameter access</p></li>
 <li><p>Avoid direct <code class="docutils literal notranslate"><span class="pre">getattr</span></code> calls on argument objects</p></li>
-<li><p>Use <a class="reference internal" href="#lightrft/strategy/config.py:130"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">get_extra_arg()</span></code></span></a> for non-standard parameters</p></li>
+<li><p>Use <a class="reference download internal" download="" href="../_downloads/3e5677a2b3e79bbbc543b3f76b0e2e91/config.py"><span class="xref download myst"><code class="docutils literal notranslate"><span class="pre">get_extra_arg()</span></code></span></a> for non-standard parameters</p></li>
 </ul>
 </section>
 <section id="strategy-selection">
 <h3>2. Strategy Selection<a class="headerlink" href="#strategy-selection" title="Permalink to this heading">¶</a></h3>
 <ul class="simple">
-<li><p>Use <a class="reference internal" href="#lightrft/strategy/strategy.py:20"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">get_strategy()</span></code></span></a> factory function for strategy creation</p></li>
+<li><p>Use <a class="reference download internal" download="" href="../_downloads/461d19e9d6eaa69d06306e9f6c5f1849/strategy.py"><span class="xref download myst"><code class="docutils literal notranslate"><span class="pre">get_strategy()</span></code></span></a> factory function for strategy creation</p></li>
 <li><p>Let the factory determine the appropriate strategy based on configuration</p></li>
-<li><p>Use <a class="reference internal" href="#lightrft/strategy/fake_strategy.py:14"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">FakeStrategy</span></code></span></a> for testing and development</p></li>
+<li><p>Use <a class="reference download internal" download="" href="../_downloads/f2cabbe456e446bd14e02decead07786/fake_strategy.py"><span class="xref download myst"><code class="docutils literal notranslate"><span class="pre">FakeStrategy</span></code></span></a> for testing and development</p></li>
 </ul>
 </section>
 <section id="error-handling">
 <h3>3. Error Handling<a class="headerlink" href="#error-handling" title="Permalink to this heading">¶</a></h3>
 <ul class="simple">
 <li><p>Strategies should provide clear error messages for unsupported operations</p></li>
-<li><p>Use the strategy’s <a class="reference internal" href="#lightrft/strategy/strategy_base.py:450"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">print()</span></code></span></a> method for logging</p></li>
+<li><p>Use the strategy’s <a class="reference download internal" download="" href="../_downloads/0ab7c2ee07c7c5fb09bbe07058664c3d/strategy_base.py"><span class="xref download myst"><code class="docutils literal notranslate"><span class="pre">print()</span></code></span></a> method for logging</p></li>
 <li><p>Implement proper cleanup in context managers</p></li>
 </ul>
 </section>
 <section id="testing">
 <h3>4. Testing<a class="headerlink" href="#testing" title="Permalink to this heading">¶</a></h3>
 <ul class="simple">
-<li><p>Use <a class="reference internal" href="#lightrft/strategy/fake_strategy.py:14"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">FakeStrategy</span></code></span></a> for unit tests</p></li>
+<li><p>Use <a class="reference download internal" download="" href="../_downloads/f2cabbe456e446bd14e02decead07786/fake_strategy.py"><span class="xref download myst"><code class="docutils literal notranslate"><span class="pre">FakeStrategy</span></code></span></a> for unit tests</p></li>
 <li><p>Test both strategy-specific and common functionality</p></li>
 <li><p>Verify that all strategies implement the required interface</p></li>
 </ul>
@@ -545,15 +550,15 @@
 <h3>Core Design<a class="headerlink" href="#core-design" title="Permalink to this heading">¶</a></h3>
 <ul class="simple">
 <li><p><strong>Unified Interface Architecture</strong>: Encapsulates distributed backends like DeepSpeed and FSDP, providing a consistent API. Developers can switch underlying strategies without modifying business code.</p></li>
-<li><p><strong>Type-Safe Configuration</strong>: Converts dynamic configuration into strongly typed objects via <a class="reference internal" href="#../../lightrft/strategy/config.py"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">StrategyConfig</span></code></span></a>, reducing runtime errors and supporting IDE autocompletion.</p></li>
-<li><p><strong>Factory Pattern Selection</strong>: <a class="reference internal" href="#../../lightrft/strategy/strategy.py"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">get_strategy()</span></code></span></a> automatically instantiates strategies based on configuration parameters, simplifying calls while retaining control over backends.</p></li>
+<li><p><strong>Type-Safe Configuration</strong>: Converts dynamic configuration into strongly typed objects via <a class="reference download internal" download="" href="../_downloads/3e5677a2b3e79bbbc543b3f76b0e2e91/config.py"><span class="xref download myst"><code class="docutils literal notranslate"><span class="pre">StrategyConfig</span></code></span></a>, reducing runtime errors and supporting IDE autocompletion.</p></li>
+<li><p><strong>Factory Pattern Selection</strong>: <a class="reference download internal" download="" href="../_downloads/461d19e9d6eaa69d06306e9f6c5f1849/strategy.py"><span class="xref download myst"><code class="docutils literal notranslate"><span class="pre">get_strategy()</span></code></span></a> automatically instantiates strategies based on configuration parameters, simplifying calls while retaining control over backends.</p></li>
 </ul>
 </section>
 <section id="feature-highlights">
 <h3>Feature Highlights<a class="headerlink" href="#feature-highlights" title="Permalink to this heading">¶</a></h3>
 <ul class="simple">
 <li><p><strong>Inference Engine Integration</strong>: Supports plain text and multimodal generation through a unified interface, compatible with vLLM and SGLang backends.</p></li>
-<li><p><strong>Convenient Testing Support</strong>: Provides <a class="reference internal" href="#../../lightrft/strategy/fake_strategy.py"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">FakeStrategy</span></code></span></a>, allowing testing of training workflows without a distributed environment, reducing debugging costs.</p></li>
+<li><p><strong>Convenient Testing Support</strong>: Provides <a class="reference download internal" download="" href="../_downloads/f2cabbe456e446bd14e02decead07786/fake_strategy.py"><span class="xref download myst"><code class="docutils literal notranslate"><span class="pre">FakeStrategy</span></code></span></a>, allowing testing of training workflows without a distributed environment, reducing debugging costs.</p></li>
 <li><p><strong>Resource Efficiency Optimization</strong>: Supports advanced features like inference engine sleep/wake, gradient accumulation, and memory-aware checkpointing to optimize resource usage during large-scale training.</p></li>
 </ul>
 </section>
@@ -572,7 +577,7 @@
   
   <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
     
-    <a href="model_testing.html" class="btn btn-neutral float-right" title="Model Testing Guide" accesskey="n"
+    <a href="runtime_architecture.html" class="btn btn-neutral float-right" title="Runtime Architecture and Resource Reuse" accesskey="n"
       rel="next">Next <img src="../_static/images/chevron-right-blue.svg"
         class="next-page"></a>
     
@@ -587,7 +592,7 @@
 
   <div role="contentinfo">
     <p>
-      &copy; Copyright 2025, OpenDILab.
+      &copy; Copyright 2025-2026, OpenDILab.
 
     </p>
   </div>
@@ -673,8 +678,8 @@
   <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
   <script src="../_static/doctools.js"></script>
   <script src="../_static/sphinx_highlight.js"></script>
-  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-  <script src="../_static/js/language_switch.js"></script>
+  <script src="../_static/clipboard.min.js"></script>
+  <script src="../_static/copybutton.js"></script>
   
 
   
@@ -703,7 +708,7 @@
     <div class="container-fluid">
       <div class="container">
         <div class="mobile-main-menu-header-container">
-          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="header-logo" href="https://github.com/opendilab/LightRFT" aria-label="OpenMMLab"></a>
           <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
         </div>
       </div>

@@ -32,6 +32,7 @@
   <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../../../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/copybutton.css" type="text/css" />
   <link rel="stylesheet" href="../../../../_static/css/readthedocs.css" type="text/css" />
   <link rel="index" title="Index" href="../../../../genindex.html" />
   <link rel="search" title="Search" href="../../../../search.html" />
@@ -84,7 +85,7 @@
 <div class="container-fluid header-holder tutorials-header" id="header-holder">
   <div class="container">
     <div class="header-container">
-      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+      <a class="header-logo" href="https://github.com/opendilab/LightRFT"
         aria-label="OpenMMLab"></a>
 
       <div class="main-menu">
@@ -234,6 +235,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../api_doc/strategy/index.html">lightrft.strategy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../api_doc/trainer/index.html">lightrft.trainer</a></li>
 </ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../index_zh.html">欢迎来到 LightRFT 文档!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../index_zh.html#id4">索引与表格</a></li>
+</ul>
 
         
         
@@ -329,7 +334,7 @@
     <span class="n">group_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">pg_options</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Initialize the distributed process group for multi-process training.</span>
 
 <span class="sd">    This function is a custom wrapper around torch.distributed.init_process_group that</span>
@@ -361,10 +366,10 @@
 <span class="sd">    For more details, see PyTorch distributed documentation:</span>
 <span class="sd">    https://pytorch.org/docs/stable/distributed.html</span>
 
-<span class="sd">    :param backend: Backend to use (e.g., &#39;nccl&#39;, &#39;gloo&#39;, &#39;mpi&#39;).</span>
+<span class="sd">    :param backend: Backend to use (e.g., 'nccl', 'gloo', 'mpi').</span>
 <span class="sd">    :type backend: Union[str, Backend], optional</span>
 <span class="sd">    :param init_method: URL specifying how to initialize the process group.</span>
-<span class="sd">        Defaults to &#39;env://&#39; if not specified.</span>
+<span class="sd">        Defaults to 'env://' if not specified.</span>
 <span class="sd">    :type init_method: Optional[str]</span>
 <span class="sd">    :param timeout: Timeout for operations executed against the process group.</span>
 <span class="sd">        Defaults to 30 minutes if not specified.</span>
@@ -388,19 +393,19 @@
 <span class="sd">    :rtype: dist.ProcessGroup</span>
 <span class="sd">    :raises AssertionError: If both init_method and store are specified, or if</span>
 <span class="sd">        world_size/rank are invalid when using store.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">assert</span> <span class="p">(</span><span class="n">store</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">init_method</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">),</span> <span class="s2">&quot;Cannot specify both init_method and store.&quot;</span>
+<span class="sd">    """</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="n">store</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">init_method</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">),</span> <span class="s2">"Cannot specify both init_method and store."</span>
 
     <span class="k">if</span> <span class="n">store</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">assert</span> <span class="n">world_size</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;world_size must be positive if using store&quot;</span>
-        <span class="k">assert</span> <span class="n">rank</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;rank must be non-negative if using store&quot;</span>
+        <span class="k">assert</span> <span class="n">world_size</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">"world_size must be positive if using store"</span>
+        <span class="k">assert</span> <span class="n">rank</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">"rank must be non-negative if using store"</span>
     <span class="k">elif</span> <span class="n">init_method</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">init_method</span> <span class="o">=</span> <span class="s2">&quot;env://&quot;</span>
+        <span class="n">init_method</span> <span class="o">=</span> <span class="s2">"env://"</span>
 
     <span class="k">if</span> <span class="n">backend</span><span class="p">:</span>
         <span class="n">backend</span> <span class="o">=</span> <span class="n">Backend</span><span class="p">(</span><span class="n">backend</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">backend</span> <span class="o">=</span> <span class="n">Backend</span><span class="p">(</span><span class="s2">&quot;undefined&quot;</span><span class="p">)</span>
+        <span class="n">backend</span> <span class="o">=</span> <span class="n">Backend</span><span class="p">(</span><span class="s2">"undefined"</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">timeout</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">timeout</span> <span class="o">=</span> <span class="n">default_pg_timeout</span>
@@ -418,7 +423,7 @@
     <span class="c1"># NOTE: The pg_options parameter was renamed into backend_options in PyTorch 2.6.0</span>
     <span class="c1"># https://github.com/pytorch/pytorch/commit/a0c7029a75628cd5fa8df83c0de0ea98ee7fd844</span>
     <span class="c1"># We need to determine the appropriate parameter name based on PyTorch version</span>
-    <span class="n">pg_options_param_name</span> <span class="o">=</span> <span class="s2">&quot;backend_options&quot;</span> <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">__version__</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="s2">&quot;2.6&quot;</span> <span class="k">else</span> <span class="s2">&quot;pg_options&quot;</span>
+    <span class="n">pg_options_param_name</span> <span class="o">=</span> <span class="s2">"backend_options"</span> <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">__version__</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="s2">"2.6"</span> <span class="k">else</span> <span class="s2">"pg_options"</span>
     <span class="n">pg</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">_new_process_group_helper</span><span class="p">(</span>
         <span class="n">world_size</span><span class="p">,</span>
         <span class="n">rank</span><span class="p">,</span>
@@ -435,8 +440,8 @@
     <span class="k">return</span> <span class="n">pg</span></div>
 
 
-<div class="viewcode-block" id="create_sub_group"><a class="viewcode-back" href="../../../../api_doc/strategy/utils/distributed_util.html#lightrft.strategy.utils.distributed_util.create_sub_group">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">create_sub_group</span><span class="p">(</span><span class="n">group_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">backend</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;nccl&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">dist</span><span class="o">.</span><span class="n">ProcessGroup</span><span class="p">,</span> <span class="n">dist</span><span class="o">.</span><span class="n">ProcessGroup</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="create_sub_group"><a class="viewcode-back" href="../../../../api_doc/strategy/utils/distributed_util.html#lightrft.strategy.utils.distributed_util.create_sub_group">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">create_sub_group</span><span class="p">(</span><span class="n">group_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">backend</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"nccl"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">dist</span><span class="o">.</span><span class="n">ProcessGroup</span><span class="p">,</span> <span class="n">dist</span><span class="o">.</span><span class="n">ProcessGroup</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Create process subgroups for distributed computing with validation and communication testing.</span>
 
 <span class="sd">    This function creates two types of process groups for distributed computing:</span>
@@ -447,7 +452,7 @@
 
 <span class="sd">    :param group_size: Size of each process subgroup. Must be a divisor of world_size.</span>
 <span class="sd">    :type group_size: int</span>
-<span class="sd">    :param backend: Backend for distributed communication (&quot;nccl&quot; for GPU, other options for CPU).</span>
+<span class="sd">    :param backend: Backend for distributed communication ("nccl" for GPU, other options for CPU).</span>
 <span class="sd">    :type backend: str</span>
 
 <span class="sd">    :return: Tuple of (regular process group, orthogonal process group).</span>
@@ -457,14 +462,14 @@
 <span class="sd">    Example::</span>
 
 <span class="sd">        &gt;&gt;&gt; # Create subgroups with size 4 using NCCL backend</span>
-<span class="sd">        &gt;&gt;&gt; regular_group, orthogonal_group = create_sub_group(4, &quot;nccl&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; regular_group, orthogonal_group = create_sub_group(4, "nccl")</span>
 <span class="sd">        &gt;&gt;&gt; # With world_size=8, this creates:</span>
 <span class="sd">        &gt;&gt;&gt; # Regular groups: [0,1,2,3] and [4,5,6,7]</span>
 <span class="sd">        &gt;&gt;&gt; # Orthogonal groups: [0,4], [1,5], [2,6], [3,7]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">world_size</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">get_world_size</span><span class="p">()</span>
     <span class="k">if</span> <span class="n">world_size</span> <span class="o">%</span> <span class="n">group_size</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;world_size (</span><span class="si">{</span><span class="n">world_size</span><span class="si">}</span><span class="s2">) % group_size (</span><span class="si">{</span><span class="n">group_size</span><span class="si">}</span><span class="s2">) != 0 &quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"world_size (</span><span class="si">{</span><span class="n">world_size</span><span class="si">}</span><span class="s2">) % group_size (</span><span class="si">{</span><span class="n">group_size</span><span class="si">}</span><span class="s2">) != 0 "</span><span class="p">)</span>
 
     <span class="n">num_groups</span> <span class="o">=</span> <span class="n">world_size</span> <span class="o">//</span> <span class="n">group_size</span>
 
@@ -484,24 +489,24 @@
 
     <span class="k">if</span> <span class="n">dist</span><span class="o">.</span><span class="n">get_rank</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Finished create TP/PP group, with groupsize=</span><span class="si">{</span><span class="n">torch</span><span class="o">.</span><span class="n">distributed</span><span class="o">.</span><span class="n">get_world_size</span><span class="p">(</span><span class="n">group</span><span class="p">)</span><span class="si">}</span><span class="s2">,&quot;</span>
-            <span class="s2">&quot; start testing comm...&quot;</span><span class="p">,</span>
+            <span class="sa">f</span><span class="s2">"Finished create TP/PP group, with groupsize=</span><span class="si">{</span><span class="n">torch</span><span class="o">.</span><span class="n">distributed</span><span class="o">.</span><span class="n">get_world_size</span><span class="p">(</span><span class="n">group</span><span class="p">)</span><span class="si">}</span><span class="s2">,"</span>
+            <span class="s2">" start testing comm..."</span><span class="p">,</span>
             <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
         <span class="p">)</span>
     <span class="n">dist</span><span class="o">.</span><span class="n">barrier</span><span class="p">()</span>
-    <span class="n">device</span> <span class="o">=</span> <span class="s2">&quot;cuda&quot;</span> <span class="k">if</span> <span class="n">backend</span> <span class="o">==</span> <span class="s2">&quot;nccl&quot;</span> <span class="k">else</span> <span class="s2">&quot;cpu&quot;</span>
+    <span class="n">device</span> <span class="o">=</span> <span class="s2">"cuda"</span> <span class="k">if</span> <span class="n">backend</span> <span class="o">==</span> <span class="s2">"nccl"</span> <span class="k">else</span> <span class="s2">"cpu"</span>
     <span class="n">tmp</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="mf">1.1</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
     <span class="n">dist</span><span class="o">.</span><span class="n">all_reduce</span><span class="p">(</span><span class="n">tmp</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">group</span><span class="p">,</span> <span class="n">op</span><span class="o">=</span><span class="n">dist</span><span class="o">.</span><span class="n">ReduceOp</span><span class="o">.</span><span class="n">SUM</span><span class="p">)</span>
     <span class="n">dist</span><span class="o">.</span><span class="n">barrier</span><span class="p">()</span>
     <span class="k">assert</span> <span class="nb">abs</span><span class="p">(</span><span class="n">tmp</span><span class="o">.</span><span class="n">item</span><span class="p">()</span> <span class="o">/</span> <span class="n">dist</span><span class="o">.</span><span class="n">get_world_size</span><span class="p">(</span><span class="n">group</span><span class="o">=</span><span class="n">group</span><span class="p">)</span> <span class="o">-</span> <span class="mf">1.1</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">1e-4</span>
     <span class="k">if</span> <span class="n">dist</span><span class="o">.</span><span class="n">get_rank</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Finished testing comm!&quot;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"Finished testing comm!"</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">group</span><span class="p">,</span> <span class="n">orthogonal_group</span></div>
 
 
 <div class="viewcode-block" id="all_gather_all_prompt_token_ids"><a class="viewcode-back" href="../../../../api_doc/strategy/utils/distributed_util.html#lightrft.strategy.utils.distributed_util.all_gather_all_prompt_token_ids">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">all_gather_all_prompt_token_ids</span><span class="p">(</span><span class="n">all_prompt_token_ids</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]],</span> <span class="n">group</span><span class="p">:</span> <span class="n">dist</span><span class="o">.</span><span class="n">ProcessGroup</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Collect prompt token_ids across processes with different lengths, handle padding and alignment.</span>
 
 <span class="sd">    This function gathers prompt token lists from all processes in the distributed group.</span>
@@ -525,14 +530,14 @@
 <span class="sd">        &gt;&gt;&gt; tokens = [[1, 2, 3], [4, 5]]  # Current process tokens</span>
 <span class="sd">        &gt;&gt;&gt; gathered_tokens = all_gather_all_prompt_token_ids(tokens, process_group)</span>
 <span class="sd">        &gt;&gt;&gt; # Result contains tokens from all processes in the group</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># Ensure distributed environment is initialized</span>
-    <span class="k">assert</span> <span class="n">dist</span><span class="o">.</span><span class="n">is_initialized</span><span class="p">(),</span> <span class="s2">&quot;Distributed environment not initialized&quot;</span>
+    <span class="k">assert</span> <span class="n">dist</span><span class="o">.</span><span class="n">is_initialized</span><span class="p">(),</span> <span class="s2">"Distributed environment not initialized"</span>
 
     <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">distributed</span><span class="o">.</span><span class="n">get_world_size</span><span class="p">(</span><span class="n">group</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">all_prompt_token_ids</span>
     <span class="c1"># Get device info</span>
-    <span class="n">device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">&quot;cuda&quot;</span> <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="k">else</span> <span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
+    <span class="n">device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">"cuda"</span> <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="k">else</span> <span class="s2">"cpu"</span><span class="p">)</span>
 
     <span class="c1"># 1. Calculate max length in current process</span>
     <span class="n">max_len_local</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">tokens</span><span class="p">)</span> <span class="k">for</span> <span class="n">tokens</span> <span class="ow">in</span> <span class="n">all_prompt_token_ids</span><span class="p">)</span>
@@ -571,13 +576,13 @@
 
 
 <div class="viewcode-block" id="gather_inputs_object_for_inference"><a class="viewcode-back" href="../../../../api_doc/strategy/utils/distributed_util.html#lightrft.strategy.utils.distributed_util.gather_inputs_object_for_inference">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">gather_inputs_object_for_inference</span><span class="p">(</span><span class="n">input_data</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">],</span> <span class="n">group</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">distributed</span><span class="o">.</span><span class="n">ProcessGroup</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    All-gather data between inference engine tensor parallel group.</span>
 
 <span class="sd">    This function collects data from all processes in the specified process group</span>
-<span class="sd">    and returns a combined list of all items. It&#39;s useful for aggregating distributed</span>
+<span class="sd">    and returns a combined list of all items. It's useful for aggregating distributed</span>
 <span class="sd">    inputs before processing in a tensor-parallel inference setup. The function</span>
-<span class="sd">    handles arbitrary Python objects using PyTorch&#39;s object gathering mechanism.</span>
+<span class="sd">    handles arbitrary Python objects using PyTorch's object gathering mechanism.</span>
 
 <span class="sd">    :param input_data: List of objects to be gathered from the current process.</span>
 <span class="sd">                      Can contain any serializable Python objects.</span>
@@ -593,10 +598,10 @@
 <span class="sd">    Example::</span>
 
 <span class="sd">        &gt;&gt;&gt; # Gather inference inputs across tensor parallel processes</span>
-<span class="sd">        &gt;&gt;&gt; local_inputs = [{&quot;prompt&quot;: &quot;Hello&quot;}, {&quot;prompt&quot;: &quot;World&quot;}]</span>
+<span class="sd">        &gt;&gt;&gt; local_inputs = [{"prompt": "Hello"}, {"prompt": "World"}]</span>
 <span class="sd">        &gt;&gt;&gt; all_inputs = gather_inputs_object_for_inference(local_inputs, tp_group)</span>
 <span class="sd">        &gt;&gt;&gt; # Result contains inputs from all processes in the tensor parallel group</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">distributed</span><span class="o">.</span><span class="n">get_world_size</span><span class="p">(</span><span class="n">group</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">input_data</span>
     <span class="n">gathered_data</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">get_world_size</span><span class="p">(</span><span class="n">group</span><span class="p">))]</span>
@@ -617,7 +622,7 @@
 
   <div role="contentinfo">
     <p>
-      &copy; Copyright 2025, OpenDILab.
+      &copy; Copyright 2025-2026, OpenDILab.
 
     </p>
   </div>
@@ -654,8 +659,8 @@
   <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
   <script src="../../../../_static/doctools.js"></script>
   <script src="../../../../_static/sphinx_highlight.js"></script>
-  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-  <script src="../../../../_static/js/language_switch.js"></script>
+  <script src="../../../../_static/clipboard.min.js"></script>
+  <script src="../../../../_static/copybutton.js"></script>
   
 
   
@@ -684,7 +689,7 @@
     <div class="container-fluid">
       <div class="container">
         <div class="mobile-main-menu-header-container">
-          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="header-logo" href="https://github.com/opendilab/LightRFT" aria-label="OpenMMLab"></a>
           <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
         </div>
       </div>

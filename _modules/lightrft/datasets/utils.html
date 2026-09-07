@@ -32,6 +32,7 @@
   <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/css/readthedocs.css" type="text/css" />
   <link rel="index" title="Index" href="../../../genindex.html" />
   <link rel="search" title="Search" href="../../../search.html" />
@@ -84,7 +85,7 @@
 <div class="container-fluid header-holder tutorials-header" id="header-holder">
   <div class="container">
     <div class="header-container">
-      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+      <a class="header-logo" href="https://github.com/opendilab/LightRFT"
         aria-label="OpenMMLab"></a>
 
       <div class="main-menu">
@@ -234,6 +235,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../api_doc/strategy/index.html">lightrft.strategy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api_doc/trainer/index.html">lightrft.trainer</a></li>
 </ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../index_zh.html">欢迎来到 LightRFT 文档!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../index_zh.html#id4">索引与表格</a></li>
+</ul>
 
         
         
@@ -300,12 +305,12 @@
               <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
                 
   <h1>Source code for lightrft.datasets.utils</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""</span>
 <span class="sd">Utility functions for dataset processing.</span>
 
 <span class="sd">Parts of this file are adapted from Open-Reasoner-Zero:</span>
 <span class="sd">https://github.com/Open-Reasoner-Zero/Open-Reasoner-Zero</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">abc</span><span class="w"> </span><span class="kn">import</span> <span class="n">ABC</span><span class="p">,</span> <span class="n">abstractmethod</span>
 
@@ -319,7 +324,7 @@
 
 
 <div class="viewcode-block" id="find_subsequence"><a class="viewcode-back" href="../../../api_doc/datasets/utils.html#lightrft.datasets.utils.find_subsequence">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">find_subsequence</span><span class="p">(</span><span class="n">lst</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">sub</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Find first index where ``sub`` appears in ``lst``.</span>
+<span class="w">    </span><span class="sd">"""Find first index where ``sub`` appears in ``lst``.</span>
 <span class="sd">    This function is used to finda marker token sequence (e.g. assistant-start)</span>
 <span class="sd">    in the token id list so prompt and response can be separated for label masking.</span>
 
@@ -332,7 +337,7 @@
 
 <span class="sd">    :returns: Index of first occurrence or -1 if not found.</span>
 <span class="sd">    :rtype: int</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">sub</span><span class="p">:</span>
         <span class="k">return</span> <span class="mi">0</span>  <span class="c1"># empty pattern matches at 0</span>
     <span class="n">n</span><span class="p">,</span> <span class="n">m</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">lst</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">sub</span><span class="p">)</span>
@@ -372,7 +377,7 @@
 
 
 <div class="viewcode-block" id="extract_answer"><a class="viewcode-back" href="../../../api_doc/datasets/utils.html#lightrft.datasets.utils.extract_answer">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">extract_answer</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Extract the content inside &lt;answer&gt;...&lt;/answer&gt; from a given text.</span>
 
 <span class="sd">    :param text: The input text containing the &lt;answer&gt; tags.</span>
@@ -382,25 +387,25 @@
 <span class="sd">    :rtype: Union[str, None]</span>
 
 <span class="sd">    Example::</span>
-<span class="sd">        &gt;&gt;&gt; text = &quot;The result is &lt;answer&gt;Image 1 is better&lt;/answer&gt; based on the evaluation.&quot;</span>
+<span class="sd">        &gt;&gt;&gt; text = "The result is &lt;answer&gt;Image 1 is better&lt;/answer&gt; based on the evaluation."</span>
 <span class="sd">        &gt;&gt;&gt; answer = extract_answer(text)</span>
 <span class="sd">        &gt;&gt;&gt; print(answer)  # Output: Image 1 is better</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">pattern</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;&lt;answer&gt;(.*?)&lt;/answer&gt;&quot;</span>
+<span class="sd">    """</span>
+    <span class="n">pattern</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">"&lt;answer&gt;(.*?)&lt;/answer&gt;"</span>
     <span class="n">match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="n">text</span><span class="p">,</span> <span class="n">flags</span><span class="o">=</span><span class="n">re</span><span class="o">.</span><span class="n">DOTALL</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">match</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
     <span class="k">return</span> <span class="kc">None</span></div>
 
 
-<div class="viewcode-block" id="zero_pad_sequences"><a class="viewcode-back" href="../../../api_doc/datasets/utils.html#lightrft.datasets.utils.zero_pad_sequences">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">zero_pad_sequences</span><span class="p">(</span><span class="n">sequences</span><span class="p">,</span> <span class="n">side</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;left&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="zero_pad_sequences"><a class="viewcode-back" href="../../../api_doc/datasets/utils.html#lightrft.datasets.utils.zero_pad_sequences">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">zero_pad_sequences</span><span class="p">(</span><span class="n">sequences</span><span class="p">,</span> <span class="n">side</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"left"</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Pad a list of 1D/2D tensors on the last dimension and stack them.</span>
 
-<span class="sd">    :param sequences: Iterable of torch.Tensor objects. Each tensor&#39;s last dimension</span>
+<span class="sd">    :param sequences: Iterable of torch.Tensor objects. Each tensor's last dimension</span>
 <span class="sd">                      is treated as the sequence length to be padded.</span>
 <span class="sd">    :type sequences: Iterable[torch.Tensor]</span>
-<span class="sd">    :param side: Side to apply padding, either &quot;left&quot; or &quot;right&quot;</span>
+<span class="sd">    :param side: Side to apply padding, either "left" or "right"</span>
 <span class="sd">    :type side: str</span>
 <span class="sd">    :param value: Padding value</span>
 <span class="sd">    :type value: int | float</span>
@@ -411,16 +416,16 @@
 <span class="sd">    Example::</span>
 
 <span class="sd">        &gt;&gt;&gt; seqs = [torch.tensor([1,2,3]), torch.tensor([4,5])]</span>
-<span class="sd">        &gt;&gt;&gt; zero_pad_sequences(seqs, side=&quot;left&quot;, value=0)</span>
+<span class="sd">        &gt;&gt;&gt; zero_pad_sequences(seqs, side="left", value=0)</span>
 <span class="sd">        tensor([[1, 2, 3],</span>
 <span class="sd">                [0, 4, 5]])</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">sequences</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">sequences</span><span class="p">)</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sequences</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;sequences must contain at least one tensor&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"sequences must contain at least one tensor"</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">side</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;left&quot;</span><span class="p">,</span> <span class="s2">&quot;right&quot;</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;side must be either &#39;left&#39; or &#39;right&#39;&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">side</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"left"</span><span class="p">,</span> <span class="s2">"right"</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"side must be either 'left' or 'right'"</span><span class="p">)</span>
 
     <span class="c1"># Determine target length from last dimension</span>
     <span class="n">max_len</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">seq</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">seq</span> <span class="ow">in</span> <span class="n">sequences</span><span class="p">)</span>
@@ -433,13 +438,13 @@
         <span class="k">if</span> <span class="n">pad_len</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">padded</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">seq</span><span class="p">)</span>
             <span class="k">continue</span>
-        <span class="n">padding</span> <span class="o">=</span> <span class="p">(</span><span class="n">pad_len</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="k">if</span> <span class="n">side</span> <span class="o">==</span> <span class="s2">&quot;left&quot;</span> <span class="k">else</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">pad_len</span><span class="p">)</span>
+        <span class="n">padding</span> <span class="o">=</span> <span class="p">(</span><span class="n">pad_len</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="k">if</span> <span class="n">side</span> <span class="o">==</span> <span class="s2">"left"</span> <span class="k">else</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">pad_len</span><span class="p">)</span>
         <span class="n">padded</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">F</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">seq</span><span class="p">,</span> <span class="n">padding</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="n">value</span><span class="p">))</span>
     <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span><span class="n">padded</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="exist_and_not_none"><a class="viewcode-back" href="../../../api_doc/datasets/utils.html#lightrft.datasets.utils.exist_and_not_none">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">exist_and_not_none</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Check if a key exists in dictionary and its value is not None.</span>
 
 <span class="sd">    :param d: Dictionary to check.</span>
@@ -448,24 +453,24 @@
 <span class="sd">    :type key: Any</span>
 <span class="sd">    :return: True if key exists and value is not None.</span>
 <span class="sd">    :rtype: bool</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">d</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">d</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span></div>
 
 
 <div class="viewcode-block" id="load_multimodal_content"><a class="viewcode-back" href="../../../api_doc/datasets/utils.html#lightrft.datasets.utils.load_multimodal_content">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">load_multimodal_content</span><span class="p">(</span><span class="n">media_info</span><span class="p">:</span> <span class="n">Dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Load multimodal content (images, videos, audios, etc.) specified by `media_info`.</span>
 
 <span class="sd">    Keys in each entry can include:</span>
-<span class="sd">      - &#39;image_local_path&#39; | &#39;image_bytes&#39;</span>
-<span class="sd">      - &#39;video_local_path&#39;</span>
-<span class="sd">      - &#39;audio_local_path&#39;</span>
+<span class="sd">      - 'image_local_path' | 'image_bytes'</span>
+<span class="sd">      - 'video_local_path'</span>
+<span class="sd">      - 'audio_local_path'</span>
 
 <span class="sd">    Returns a dict mapping names to loaded objects or paths.</span>
 
-<span class="sd">    :param media_info: Example: {&#39;init_image&#39;: {&#39;image_local_path&#39;: &#39;/path/img.jpg&#39;},</span>
-<span class="sd">                                 &#39;video&#39;: {&#39;video_local_path&#39;: &#39;/path/vid.mp4&#39;},</span>
-<span class="sd">                                 &#39;audio&#39;: {&#39;audio_local_path&#39;: &#39;/path/audio.wav&#39;}}</span>
+<span class="sd">    :param media_info: Example: {'init_image': {'image_local_path': '/path/img.jpg'},</span>
+<span class="sd">                                 'video': {'video_local_path': '/path/vid.mp4'},</span>
+<span class="sd">                                 'audio': {'audio_local_path': '/path/audio.wav'}}</span>
 <span class="sd">    :type media_info: Dict[str, Dict[str, Any]]</span>
 
 <span class="sd">    :return: A dict mapping the same keys to loaded objects, for example:</span>
@@ -474,52 +479,52 @@
 <span class="sd">             - audios are returned as the original local path (str)</span>
 <span class="sd">             If a key cannot be loaded it will be omitted from the result.</span>
 <span class="sd">    :rtype: Dict[str, Any]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">loaded_content</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">info</span> <span class="ow">in</span> <span class="n">media_info</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-        <span class="k">if</span> <span class="s2">&quot;image_local_path&quot;</span> <span class="ow">in</span> <span class="n">info</span><span class="p">:</span>
-            <span class="n">loaded_content</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;image_local_path&quot;</span><span class="p">])</span>
-        <span class="k">elif</span> <span class="s2">&quot;image_bytes&quot;</span> <span class="ow">in</span> <span class="n">info</span><span class="p">:</span>
-            <span class="n">loaded_content</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;image_bytes&quot;</span><span class="p">]))</span>
-        <span class="k">elif</span> <span class="s2">&quot;video_local_path&quot;</span> <span class="ow">in</span> <span class="n">info</span><span class="p">:</span>
-            <span class="n">loaded_content</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s2">&quot;video_local_path&quot;</span><span class="p">]</span>  <span class="c1"># return the local path directly</span>
-        <span class="k">elif</span> <span class="s2">&quot;audio_local_path&quot;</span> <span class="ow">in</span> <span class="n">info</span><span class="p">:</span>
-            <span class="n">loaded_content</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s2">&quot;audio_local_path&quot;</span><span class="p">]</span>
-        <span class="k">elif</span> <span class="s2">&quot;audio_bytes&quot;</span> <span class="ow">in</span> <span class="n">info</span><span class="p">:</span>
-            <span class="n">loaded_content</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;audio_bytes&quot;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="s2">"image_local_path"</span> <span class="ow">in</span> <span class="n">info</span><span class="p">:</span>
+            <span class="n">loaded_content</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">info</span><span class="p">[</span><span class="s2">"image_local_path"</span><span class="p">])</span>
+        <span class="k">elif</span> <span class="s2">"image_bytes"</span> <span class="ow">in</span> <span class="n">info</span><span class="p">:</span>
+            <span class="n">loaded_content</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">info</span><span class="p">[</span><span class="s2">"image_bytes"</span><span class="p">]))</span>
+        <span class="k">elif</span> <span class="s2">"video_local_path"</span> <span class="ow">in</span> <span class="n">info</span><span class="p">:</span>
+            <span class="n">loaded_content</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s2">"video_local_path"</span><span class="p">]</span>  <span class="c1"># return the local path directly</span>
+        <span class="k">elif</span> <span class="s2">"audio_local_path"</span> <span class="ow">in</span> <span class="n">info</span><span class="p">:</span>
+            <span class="n">loaded_content</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s2">"audio_local_path"</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="s2">"audio_bytes"</span> <span class="ow">in</span> <span class="n">info</span><span class="p">:</span>
+            <span class="n">loaded_content</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">info</span><span class="p">[</span><span class="s2">"audio_bytes"</span><span class="p">])</span>
     <span class="k">return</span> <span class="n">loaded_content</span></div>
 
 
 <div class="viewcode-block" id="get_task_instructions"><a class="viewcode-back" href="../../../api_doc/datasets/utils.html#lightrft.datasets.utils.get_task_instructions">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">get_task_instructions</span><span class="p">(</span><span class="n">handler</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Select task instruction based on task type from handler and config.</span>
 
 <span class="sd">    :param handler: Data handler instance.</span>
-<span class="sd">    :param config: Configuration dictionary which contains &#39;task_instruction&#39;.</span>
+<span class="sd">    :param config: Configuration dictionary which contains 'task_instruction'.</span>
 <span class="sd">    :return: The selected task instruction.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">task_instruction_raw</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;task_instruction&quot;</span><span class="p">)</span>
+<span class="sd">    """</span>
+    <span class="n">task_instruction_raw</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"task_instruction"</span><span class="p">)</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">task_instruction_raw</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
-        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">handler</span><span class="p">,</span> <span class="s2">&quot;task_type&quot;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">handler</span><span class="p">,</span> <span class="s2">"task_type"</span><span class="p">):</span>
             <span class="n">prompt</span> <span class="o">=</span> <span class="n">task_instruction_raw</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">handler</span><span class="o">.</span><span class="n">task_type</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">prompt</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Task instruction for </span><span class="si">{</span><span class="n">handler</span><span class="o">.</span><span class="n">task_type</span><span class="si">}</span><span class="s2"> not found.&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Task instruction for </span><span class="si">{</span><span class="n">handler</span><span class="o">.</span><span class="n">task_type</span><span class="si">}</span><span class="s2"> not found."</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Handler </span><span class="si">{</span><span class="n">handler</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> does not specify a task_type.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Handler </span><span class="si">{</span><span class="n">handler</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> does not specify a task_type."</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">prompt</span>
     <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">task_instruction_raw</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">task_instruction_raw</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;task_instruction in config must be either a dict or a str.&quot;</span><span class="p">)</span></div>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"task_instruction in config must be either a dict or a str."</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="BaseDataHandler"><a class="viewcode-back" href="../../../api_doc/datasets/utils.html#lightrft.datasets.utils.BaseDataHandler">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">BaseDataHandler</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Base class for data handlers.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 <div class="viewcode-block" id="BaseDataHandler.load_data"><a class="viewcode-back" href="../../../api_doc/datasets/utils.html#lightrft.datasets.utils.BaseDataHandler.load_data">[docs]</a>    <span class="nd">@abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">load_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Load all data items from a data config file, e.g. a json file, or a parquet file.</span>
 
 <span class="sd">        :param path: The path to load data from.</span>
@@ -527,32 +532,32 @@
 
 <span class="sd">        :return: A list of raw data items.</span>
 <span class="sd">        :rtype: List[Dict[str, Any]]</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 
 <div class="viewcode-block" id="BaseDataHandler.get_media_info"><a class="viewcode-back" href="../../../api_doc/datasets/utils.html#lightrft.datasets.utils.BaseDataHandler.get_media_info">[docs]</a>    <span class="nd">@abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_media_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Extract path info for all media info from the raw item.</span>
 
 <span class="sd">        :param item: The raw data item.</span>
 <span class="sd">        :type item: Dict[str, Any]</span>
 
-<span class="sd">        :return: A dict where keys are logical names (e.g. &#39;init_image&#39;) and values are path dicts.</span>
+<span class="sd">        :return: A dict where keys are logical names (e.g. 'init_image') and values are path dicts.</span>
 <span class="sd">        :rtype: Dict[str, Dict[str, str]]</span>
 
 <span class="sd">        Example::</span>
-<span class="sd">            &gt;&gt;&gt; item = {&#39;init_image_path&#39;: &#39;/path/img.jpg&#39;, &#39;video_path&#39;: &#39;/path/vid.mp4&#39;}</span>
+<span class="sd">            &gt;&gt;&gt; item = {'init_image_path': '/path/img.jpg', 'video_path': '/path/vid.mp4'}</span>
 <span class="sd">            &gt;&gt;&gt; visual_info = get_media_info(item)</span>
 <span class="sd">            &gt;&gt;&gt; print(visual_info)</span>
-<span class="sd">            {&#39;init_image&#39;: {&#39;image_local_path&#39;: &#39;/path/img.jpg&#39;}, &#39;video&#39;: {&#39;video_local_path&#39;: &#39;/path/vid.mp4&#39;}}</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">            {'init_image': {'image_local_path': '/path/img.jpg'}, 'video': {'video_local_path': '/path/vid.mp4'}}</span>
+<span class="sd">        """</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div>
 
 <div class="viewcode-block" id="BaseDataHandler.parse_item"><a class="viewcode-back" href="../../../api_doc/datasets/utils.html#lightrft.datasets.utils.BaseDataHandler.parse_item">[docs]</a>    <span class="nd">@abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">parse_item</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">media_content</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
                    <span class="n">config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">],</span> <span class="n">Dict</span><span class="p">],</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">],</span> <span class="n">Dict</span><span class="p">]]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Parse the raw item and the loaded media_content into the standard format.</span>
 
 <span class="sd">        :param item: The raw data item.</span>
@@ -562,20 +567,13 @@
 <span class="sd">        :param config: A dict of additional configuration options (e.g. prompt templates, max_pixels).</span>
 <span class="sd">        :type config: Dict[str, Any]</span>
 
-<span class="sd">        :return: A tuple containing message lists and a metadata dictionary.</span>
-<span class="sd">                 - For point-wise scoring data (e.g., Scalar Reward Model training/evaluation):</span>
-<span class="sd">                   Return (messages_chosen, messages_rejected, other)</span>
-<span class="sd">                 - For pair-wise ranking data (e.g., Generative Reward Model training/evaluation):</span>
-<span class="sd">                   Return (messages, other)</span>
-
-<span class="sd">                 The `other` dictionary contains metadata, and can optionally include:</span>
-<span class="sd">                 - &quot;preference&quot;: (str) Indicates the ground truth preferred choice (&quot;A&quot;, &quot;B&quot;, or &quot;C&quot;).</span>
-<span class="sd">                 - &quot;task_type&quot;: (str) The type of task (e.g., &quot;text-to-video&quot;).</span>
-<span class="sd">                 - &quot;reward_rule_label&quot;: (str) A label used in RL to identify which reward</span>
-<span class="sd">                   function or reward model to apply to this specific sample when performing</span>
-<span class="sd">                   reinforcement fine-tuning.</span>
+<span class="sd">        :return: For scalar-reward ranking data, a tuple of</span>
+<span class="sd">            ``(messages_chosen, messages_rejected, other)``. For generative-reward</span>
+<span class="sd">            data, a tuple of ``(messages, other)``. The ``other`` dictionary may</span>
+<span class="sd">            contain ``preference``, ``task_type``, and ``reward_rule_label``</span>
+<span class="sd">            metadata.</span>
 <span class="sd">        :rtype: Union[Tuple[List[Dict], List[Dict], Dict], Tuple[List[Dict], Dict]]</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">raise</span> <span class="ne">NotImplementedError</span></div></div>
 </pre></div>
 
@@ -589,7 +587,7 @@
 
   <div role="contentinfo">
     <p>
-      &copy; Copyright 2025, OpenDILab.
+      &copy; Copyright 2025-2026, OpenDILab.
 
     </p>
   </div>
@@ -626,8 +624,8 @@
   <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
   <script src="../../../_static/doctools.js"></script>
   <script src="../../../_static/sphinx_highlight.js"></script>
-  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-  <script src="../../../_static/js/language_switch.js"></script>
+  <script src="../../../_static/clipboard.min.js"></script>
+  <script src="../../../_static/copybutton.js"></script>
   
 
   
@@ -656,7 +654,7 @@
     <div class="container-fluid">
       <div class="container">
         <div class="mobile-main-menu-header-container">
-          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="header-logo" href="https://github.com/opendilab/LightRFT" aria-label="OpenMMLab"></a>
           <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
         </div>
       </div>

@@ -33,6 +33,7 @@
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
   <link rel="stylesheet" href="../_static/css/readthedocs.css" type="text/css" />
   <link rel="index" title="Index" href="../genindex.html" />
   <link rel="search" title="Search" href="../search.html" />
@@ -87,7 +88,7 @@
 <div class="container-fluid header-holder tutorials-header" id="header-holder">
   <div class="container">
     <div class="header-container">
-      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+      <a class="header-logo" href="https://github.com/opendilab/LightRFT"
         aria-label="OpenMMLab"></a>
 
       <div class="main-menu">
@@ -237,6 +238,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../api_doc/strategy/index.html">lightrft.strategy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api_doc/trainer/index.html">lightrft.trainer</a></li>
 </ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../index_zh.html">欢迎来到 LightRFT 文档!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index_zh.html#id4">索引与表格</a></li>
+</ul>
 
         
         
@@ -309,6 +314,9 @@
   <section id="supported-algorithms">
 <h1>Supported Algorithms<a class="headerlink" href="#supported-algorithms" title="Permalink to this heading">¶</a></h1>
 <p>LightRFT supports a rich ecosystem of reinforcement learning algorithms for fine-tuning large language models. This comprehensive guide provides algorithm details and implementation references.</p>
+<blockquote>
+<div><p><strong>Implementation status:</strong> GRPO, CPGD, FIRE sampling, DAPO components, and high-entropy token filtering have concrete execution paths in the current source tree. GSPO is not yet connected to the instantiated policy loss, REINFORCE++ is not mapped by the advantage-calculator factory, and GMPO/Dr.GRPO are not complete end-to-end options. Their subsections below are retained as design notes; the example commands in those subsections are not runnable interfaces for version 0.1.1.</p>
+</div></blockquote>
 <section id="purpose-of-this-guide">
 <h2>Purpose of This Guide<a class="headerlink" href="#purpose-of-this-guide" title="Permalink to this heading">¶</a></h2>
 <p>With the rapid development in the RFT field and emerging algorithmic innovations, this guide helps you:</p>
@@ -336,28 +344,28 @@
 <td><p>Policy Optimization</p></td>
 <td><p>Advantage Estimation</p></td>
 <td><p>Uses group-based normalization for advantage estimation without requiring a separate value network</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">FastExperienceMaker._get_return_advs()</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">FastExperienceMaker._compute_advantages_and_returns()</span></code></p></td>
 <td><p><a class="reference external" href="https://arxiv.org/pdf/2402.03300">arXiv:2402.03300</a></p></td>
 </tr>
-<tr class="row-odd"><td><p><strong>GSPO</strong></p></td>
+<tr class="row-odd"><td><p><strong>GSPO (WIP)</strong></p></td>
 <td><p>Policy Optimization</p></td>
 <td><p>Policy Loss</p></td>
 <td><p>Group sequence policy optimization</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">PolicyLoss.forward()</span></code></p></td>
+<td><p>CLI/loss integration incomplete</p></td>
 <td><p><a class="reference external" href="https://arxiv.org/abs/2507.18071">arXiv:2507.18071</a></p></td>
 </tr>
-<tr class="row-even"><td><p><strong>REINFORCE++</strong></p></td>
+<tr class="row-even"><td><p><strong>REINFORCE++ (WIP)</strong></p></td>
 <td><p>Advantage Estimation</p></td>
 <td><p>Advantage Estimation</p></td>
 <td><p>Modifies return and advantage calculation with improved baseline estimation</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">FastExperienceMaker._get_return_advs()</span></code></p></td>
+<td><p>Calculator mapping incomplete</p></td>
 <td><p><a class="reference external" href="https://arxiv.org/abs/2501.03262">arXiv:2501.03262</a></p></td>
 </tr>
 <tr class="row-odd"><td><p><strong>CPGD</strong></p></td>
 <td><p>Advantage Estimation</p></td>
 <td><p>Advantage Estimation</p></td>
 <td><p>Adds KL-based drift constraint and clipped log-ratio for stable return/advantage computation</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">FastExperienceMaker._get_return_advs()</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">CPGDCalculator</span></code></p></td>
 <td><p><a class="reference external" href="https://arxiv.org/abs/2505.12504">arXiv:2505.12504</a></p></td>
 </tr>
 <tr class="row-even"><td><p><strong>FIRE Sampling</strong></p></td>
@@ -367,18 +375,18 @@
 <td><p><code class="docutils literal notranslate"><span class="pre">FastExperienceMaker.generate_samples()</span></code></p></td>
 <td><p><a class="reference external" href="https://arxiv.org/abs/2410.21236">arXiv:2410.21236</a></p></td>
 </tr>
-<tr class="row-odd"><td><p><strong>GMPO</strong></p></td>
+<tr class="row-odd"><td><p><strong>GMPO (WIP)</strong></p></td>
 <td><p>Policy Optimization</p></td>
 <td><p>Policy Loss</p></td>
 <td><p>Geometric-Mean Policy Optimization</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">PolicyLoss.forward()</span></code></p></td>
+<td><p>Not implemented end to end</p></td>
 <td><p><a class="reference external" href="https://arxiv.org/abs/2507.20673">arXiv:2507.20673</a></p></td>
 </tr>
-<tr class="row-even"><td><p><strong>Dr.GRPO</strong></p></td>
+<tr class="row-even"><td><p><strong>Dr.GRPO (WIP)</strong></p></td>
 <td><p>Policy Optimization</p></td>
 <td><p>Policy Loss</p></td>
 <td><p>Introduces an unbiased policy optimization to mitigate length bias and improve token efficiency</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">PolicyLoss.forward()</span></code></p></td>
+<td><p>Not implemented end to end</p></td>
 <td><p><a class="reference external" href="https://arxiv.org/abs/2503.20783">arXiv:2503.20783</a></p></td>
 </tr>
 <tr class="row-odd"><td><p><strong>DAPO</strong></p></td>
@@ -399,7 +407,7 @@
 <td><p>Reward Processing</p></td>
 <td><p>Reward Processing</p></td>
 <td><p>Applies reward normalization and clipping to stabilize advantage computation</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">FastExperienceMaker._get_return_advs()</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">FastExperienceMaker._compute_advantages_and_returns()</span></code></p></td>
 <td><p><a class="reference external" href="https://github.com/alibaba/ROLL">GitHub</a></p></td>
 </tr>
 <tr class="row-even"><td><p><strong>select_high_entropy_tokens</strong></p></td>
@@ -417,8 +425,8 @@
 <section id="core-training-components">
 <h3>Core Training Components<a class="headerlink" href="#core-training-components" title="Permalink to this heading">¶</a></h3>
 <p>LightRFT’s algorithm implementations are organized around three main modules:</p>
-<section id="policy-loss-computation-lightrft-trainer-ppo-loss-py">
-<h4>1. Policy Loss Computation (<code class="docutils literal notranslate"><span class="pre">lightrft/trainer/ppo_loss.py</span></code>)<a class="headerlink" href="#policy-loss-computation-lightrft-trainer-ppo-loss-py" title="Permalink to this heading">¶</a></h4>
+<section id="policy-loss-computation-lightrft-models-loss-py">
+<h4>1. Policy Loss Computation (<code class="docutils literal notranslate"><span class="pre">lightrft/models/loss.py</span></code>)<a class="headerlink" href="#policy-loss-computation-lightrft-models-loss-py" title="Permalink to this heading">¶</a></h4>
 <ul class="simple">
 <li><p><strong>Purpose</strong>: Implements PPO policy loss with multiple surrogate objectives</p></li>
 <li><p><strong>Key Method</strong>: <code class="docutils literal notranslate"><span class="pre">forward(log_probs,</span> <span class="pre">old_log_probs,</span> <span class="pre">advantages,</span> <span class="pre">action_mask)</span></code></p></li>
@@ -433,7 +441,7 @@
 <li><p><strong>Key Methods</strong>:</p>
 <ul>
 <li><p><code class="docutils literal notranslate"><span class="pre">generate_samples()</span></code>: Sample generation with various strategies</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">_get_return_advs()</span></code>: Returns and advantages calculation</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">_compute_advantages_and_returns()</span></code>: Dispatches return and advantage calculation</p></li>
 </ul>
 </li>
 <li><p><strong>Affected by</strong>: FIRE Sampling</p></li>
@@ -444,7 +452,7 @@
 <h4>3. Advantage &amp; Reward Processing (<code class="docutils literal notranslate"><span class="pre">lightrft/trainer/fast_exp_maker.py</span></code>)<a class="headerlink" href="#advantage-reward-processing-lightrft-trainer-fast-exp-maker-py" title="Permalink to this heading">¶</a></h4>
 <ul class="simple">
 <li><p><strong>Purpose</strong>: Processes rewards and computes advantages for policy updates</p></li>
-<li><p><strong>Key Method</strong>: <code class="docutils literal notranslate"><span class="pre">_get_return_advs()</span></code>: Advantage estimation with various baselines</p></li>
+<li><p><strong>Key Method</strong>: <code class="docutils literal notranslate"><span class="pre">_compute_advantages_and_returns()</span></code>: Advantage-estimator dispatch</p></li>
 <li><p><strong>Affected by</strong>: GRPO, REINFORCE++, CPGD, Reward Norm/Clip</p></li>
 <li><p><strong>Modification Type</strong>: Advantage estimation methods and reward shaping</p></li>
 </ul>
@@ -473,7 +481,7 @@
 <section id="grpo-group-relative-policy-optimization">
 <h3>GRPO (Group Relative Policy Optimization)<a class="headerlink" href="#grpo-group-relative-policy-optimization" title="Permalink to this heading">¶</a></h3>
 <p><strong>Overview</strong>: GRPO uses group-based normalization for advantage estimation, providing stable training without requiring a separate value network.</p>
-<p><strong>Implementation</strong>: <code class="docutils literal notranslate"><span class="pre">FastExperienceMaker._get_return_advs()</span></code> - Advantage Estimation module
+<p><strong>Implementation</strong>: <code class="docutils literal notranslate"><span class="pre">FastExperienceMaker._compute_advantages_and_returns()</span></code> - Advantage Estimation module
 <strong>Modification Type</strong>: Advantage Estimation</p>
 <p><strong>Key Features</strong>:</p>
 <ul class="simple">
@@ -618,7 +626,7 @@
 <section id="reinforce">
 <h3>REINFORCE++<a class="headerlink" href="#reinforce" title="Permalink to this heading">¶</a></h3>
 <p><strong>Overview</strong>: An improved baseline estimation method that uses control variates to reduce variance in policy gradient estimates.</p>
-<p><strong>Implementation</strong>: <code class="docutils literal notranslate"><span class="pre">FastExperienceMaker._get_return_advs()</span></code> - Advantage Estimation module
+<p><strong>Implementation</strong>: <code class="docutils literal notranslate"><span class="pre">FastExperienceMaker._compute_advantages_and_returns()</span></code> - Advantage Estimation module
 <strong>Modification Type</strong>: Advantage Estimation</p>
 <p><strong>Key Features</strong>:</p>
 <ul class="simple">
@@ -643,7 +651,7 @@
 <section id="cpgd-clipped-policy-gradient-optimization-with-policy-drift">
 <h3>CPGD (Clipped Policy Gradient Optimization with Policy Drift)<a class="headerlink" href="#cpgd-clipped-policy-gradient-optimization-with-policy-drift" title="Permalink to this heading">¶</a></h3>
 <p><strong>Overview</strong>: CPGD constrains policy updates using KL-divergence to prevent catastrophic forgetting and maintain stable training.</p>
-<p><strong>Implementation</strong>: <code class="docutils literal notranslate"><span class="pre">FastExperienceMaker._get_return_advs()</span></code> - Advantage Estimation module
+<p><strong>Implementation</strong>: <code class="docutils literal notranslate"><span class="pre">FastExperienceMaker._compute_advantages_and_returns()</span></code> - Advantage Estimation module
 <strong>Modification Type</strong>: Advantage Estimation (KL-constrained)</p>
 <p><strong>Key Features</strong>:</p>
 <ul class="simple">
@@ -671,7 +679,7 @@
 <section id="reward-normalization-and-clipping">
 <h3>Reward Normalization and Clipping<a class="headerlink" href="#reward-normalization-and-clipping" title="Permalink to this heading">¶</a></h3>
 <p><strong>Overview</strong>: Standard reward preprocessing techniques to stabilize training.</p>
-<p><strong>Implementation</strong>: <code class="docutils literal notranslate"><span class="pre">FastExperienceMaker._get_return_advs()</span></code> - Reward Processing module
+<p><strong>Implementation</strong>: <code class="docutils literal notranslate"><span class="pre">FastExperienceMaker._compute_advantages_and_returns()</span></code> - Reward Processing module
 <strong>Modification Type</strong>: Reward Shaping (normalization/clipping)</p>
 <p><strong>Key Features</strong>:</p>
 <ul class="simple">
@@ -738,9 +746,9 @@ According to the paper, FIRE sampling works by:</p>
 <h2>Implementation Notes<a class="headerlink" href="#implementation-notes" title="Permalink to this heading">¶</a></h2>
 <ul class="simple">
 <li><p>All policy loss algorithms modify the <strong>PolicyLoss</strong> module’s <code class="docutils literal notranslate"><span class="pre">forward()</span></code> method</p></li>
-<li><p>Advantage estimation algorithms modify <strong>FastExperienceMaker</strong>’s <code class="docutils literal notranslate"><span class="pre">_get_return_advs()</span></code> method</p></li>
+<li><p>Advantage estimation algorithms modify <strong>FastExperienceMaker</strong>’s <code class="docutils literal notranslate"><span class="pre">_compute_advantages_and_returns()</span></code> method</p></li>
 <li><p>Sampling strategies modify <strong>FastExperienceMaker</strong>’s <code class="docutils literal notranslate"><span class="pre">generate_samples()</span></code> method</p></li>
-<li><p>Reward processing algorithms primarily work within <code class="docutils literal notranslate"><span class="pre">_get_return_advs()</span></code> method</p></li>
+<li><p>Reward processing algorithms primarily work within <code class="docutils literal notranslate"><span class="pre">_compute_advantages_and_returns()</span></code> method</p></li>
 <li><p>Most modifications are in core training loop components rather than peripheral utilities</p></li>
 </ul>
 </section>
@@ -778,7 +786,7 @@ According to the paper, FIRE sampling works by:</p>
 
   <div role="contentinfo">
     <p>
-      &copy; Copyright 2025, OpenDILab.
+      &copy; Copyright 2025-2026, OpenDILab.
 
     </p>
   </div>
@@ -803,7 +811,7 @@ According to the paper, FIRE sampling works by:</p>
 <li><a class="reference internal" href="#algorithm-overview-with-implementation">Algorithm Overview with Implementation</a></li>
 <li><a class="reference internal" href="#algorithm-architecture">Algorithm Architecture</a><ul>
 <li><a class="reference internal" href="#core-training-components">Core Training Components</a><ul>
-<li><a class="reference internal" href="#policy-loss-computation-lightrft-trainer-ppo-loss-py">1. Policy Loss Computation (<code class="docutils literal notranslate"><span class="pre">lightrft/trainer/ppo_loss.py</span></code>)</a></li>
+<li><a class="reference internal" href="#policy-loss-computation-lightrft-models-loss-py">1. Policy Loss Computation (<code class="docutils literal notranslate"><span class="pre">lightrft/models/loss.py</span></code>)</a></li>
 <li><a class="reference internal" href="#experience-generation-lightrft-trainer-fast-exp-maker-py">2. Experience Generation (<code class="docutils literal notranslate"><span class="pre">lightrft/trainer/fast_exp_maker.py</span></code>)</a></li>
 <li><a class="reference internal" href="#advantage-reward-processing-lightrft-trainer-fast-exp-maker-py">3. Advantage &amp; Reward Processing (<code class="docutils literal notranslate"><span class="pre">lightrft/trainer/fast_exp_maker.py</span></code>)</a></li>
 </ul>
@@ -856,8 +864,8 @@ According to the paper, FIRE sampling works by:</p>
   <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
   <script src="../_static/doctools.js"></script>
   <script src="../_static/sphinx_highlight.js"></script>
-  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-  <script src="../_static/js/language_switch.js"></script>
+  <script src="../_static/clipboard.min.js"></script>
+  <script src="../_static/copybutton.js"></script>
   
 
   
@@ -886,7 +894,7 @@ According to the paper, FIRE sampling works by:</p>
     <div class="container-fluid">
       <div class="container">
         <div class="mobile-main-menu-header-container">
-          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="header-logo" href="https://github.com/opendilab/LightRFT" aria-label="OpenMMLab"></a>
           <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
         </div>
       </div>

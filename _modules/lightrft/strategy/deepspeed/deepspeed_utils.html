@@ -32,6 +32,7 @@
   <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../../../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/copybutton.css" type="text/css" />
   <link rel="stylesheet" href="../../../../_static/css/readthedocs.css" type="text/css" />
   <link rel="index" title="Index" href="../../../../genindex.html" />
   <link rel="search" title="Search" href="../../../../search.html" />
@@ -84,7 +85,7 @@
 <div class="container-fluid header-holder tutorials-header" id="header-holder">
   <div class="container">
     <div class="header-container">
-      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+      <a class="header-logo" href="https://github.com/opendilab/LightRFT"
         aria-label="OpenMMLab"></a>
 
       <div class="main-menu">
@@ -234,6 +235,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../api_doc/strategy/index.html">lightrft.strategy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../api_doc/trainer/index.html">lightrft.trainer</a></li>
 </ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../index_zh.html">欢迎来到 LightRFT 文档!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../index_zh.html#id4">索引与表格</a></li>
+</ul>
 
         
         
@@ -300,7 +305,7 @@
               <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
                 
   <h1>Source code for lightrft.strategy.deepspeed.deepspeed_utils</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""</span>
 <span class="sd">DeepSpeed Configuration and Optimization Utilities Module.</span>
 
 <span class="sd">This module provides utility functions for configuring DeepSpeed for training and evaluation,</span>
@@ -308,7 +313,7 @@
 <span class="sd">functions for creating DeepSpeed configurations with various optimization options,</span>
 <span class="sd">organizing model parameters for optimizers with weight decay control, and</span>
 <span class="sd">offloading/reloading DeepSpeed states to manage memory efficiently.</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">deepspeed.runtime.zero.partition_parameters</span><span class="w"> </span><span class="kn">import</span> <span class="n">ZeroParamStatus</span>
 
@@ -323,7 +328,7 @@
     <span class="n">grad_accum_dtype</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">overlap_comm</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
 <span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Generate a DeepSpeed configuration dictionary for training.</span>
 
 <span class="sd">    :param offload: Whether to offload parameters to CPU.</span>
@@ -345,43 +350,43 @@
 
 <span class="sd">    :return: DeepSpeed configuration dictionary for training.</span>
 <span class="sd">    :rtype: dict</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">device</span> <span class="o">=</span> <span class="s2">&quot;cpu&quot;</span> <span class="k">if</span> <span class="n">offload</span> <span class="k">else</span> <span class="s2">&quot;none&quot;</span>
+<span class="sd">    """</span>
+    <span class="n">device</span> <span class="o">=</span> <span class="s2">"cpu"</span> <span class="k">if</span> <span class="n">offload</span> <span class="k">else</span> <span class="s2">"none"</span>
     <span class="n">zero_opt_dict</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">&quot;stage&quot;</span><span class="p">:</span> <span class="n">stage</span><span class="p">,</span>
-        <span class="s2">&quot;offload_param&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;device&quot;</span><span class="p">:</span> <span class="n">device</span>
+        <span class="s2">"stage"</span><span class="p">:</span> <span class="n">stage</span><span class="p">,</span>
+        <span class="s2">"offload_param"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"device"</span><span class="p">:</span> <span class="n">device</span>
         <span class="p">},</span>
-        <span class="s2">&quot;offload_optimizer&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;device&quot;</span><span class="p">:</span> <span class="s2">&quot;cpu&quot;</span> <span class="k">if</span> <span class="n">adam_offload</span> <span class="k">else</span> <span class="s2">&quot;none&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;pin_memory&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="s2">"offload_optimizer"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"device"</span><span class="p">:</span> <span class="s2">"cpu"</span> <span class="k">if</span> <span class="n">adam_offload</span> <span class="k">else</span> <span class="s2">"none"</span><span class="p">,</span>
+            <span class="s2">"pin_memory"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
         <span class="p">},</span>
-        <span class="s2">&quot;sub_group_size&quot;</span><span class="p">:</span> <span class="s2">&quot;auto&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;stage3_max_live_parameters&quot;</span><span class="p">:</span> <span class="s2">&quot;auto&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;stage3_max_reuse_distance&quot;</span><span class="p">:</span> <span class="s2">&quot;auto&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;stage3_param_persistence_threshold&quot;</span><span class="p">:</span> <span class="s2">&quot;auto&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;stage3_prefetch_bucket_size&quot;</span><span class="p">:</span> <span class="s2">&quot;auto&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;reduce_bucket_size&quot;</span><span class="p">:</span> <span class="s2">&quot;auto&quot;</span><span class="p">,</span>
+        <span class="s2">"sub_group_size"</span><span class="p">:</span> <span class="s2">"auto"</span><span class="p">,</span>
+        <span class="s2">"stage3_max_live_parameters"</span><span class="p">:</span> <span class="s2">"auto"</span><span class="p">,</span>
+        <span class="s2">"stage3_max_reuse_distance"</span><span class="p">:</span> <span class="s2">"auto"</span><span class="p">,</span>
+        <span class="s2">"stage3_param_persistence_threshold"</span><span class="p">:</span> <span class="s2">"auto"</span><span class="p">,</span>
+        <span class="s2">"stage3_prefetch_bucket_size"</span><span class="p">:</span> <span class="s2">"auto"</span><span class="p">,</span>
+        <span class="s2">"reduce_bucket_size"</span><span class="p">:</span> <span class="s2">"auto"</span><span class="p">,</span>
         <span class="c1"># ZeRO++</span>
-        <span class="s2">&quot;zero_hpz_partition_size&quot;</span><span class="p">:</span> <span class="n">zpg</span><span class="p">,</span>
-        <span class="s2">&quot;zero_quantized_weights&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
-        <span class="s2">&quot;zero_quantized_gradients&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="s2">"zero_hpz_partition_size"</span><span class="p">:</span> <span class="n">zpg</span><span class="p">,</span>
+        <span class="s2">"zero_quantized_weights"</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="s2">"zero_quantized_gradients"</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">}</span>
     <span class="k">if</span> <span class="n">overlap_comm</span><span class="p">:</span>
-        <span class="n">zero_opt_dict</span><span class="p">[</span><span class="s2">&quot;overlap_comm&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
-        <span class="n">zero_opt_dict</span><span class="p">[</span><span class="s2">&quot;contiguous_gradients&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">zero_opt_dict</span><span class="p">[</span><span class="s2">"overlap_comm"</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">zero_opt_dict</span><span class="p">[</span><span class="s2">"contiguous_gradients"</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
 
     <span class="k">return</span> <span class="p">{</span>
-        <span class="s2">&quot;steps_per_print&quot;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
-        <span class="s2">&quot;zero_optimization&quot;</span><span class="p">:</span> <span class="n">zero_opt_dict</span><span class="p">,</span>
-        <span class="s2">&quot;bf16&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;enabled&quot;</span><span class="p">:</span> <span class="n">bf16</span><span class="p">,</span>
+        <span class="s2">"steps_per_print"</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
+        <span class="s2">"zero_optimization"</span><span class="p">:</span> <span class="n">zero_opt_dict</span><span class="p">,</span>
+        <span class="s2">"bf16"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"enabled"</span><span class="p">:</span> <span class="n">bf16</span><span class="p">,</span>
         <span class="p">},</span>
-        <span class="s2">&quot;gradient_clipping&quot;</span><span class="p">:</span> <span class="n">max_norm</span><span class="p">,</span>
-        <span class="s2">&quot;prescale_gradients&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
-        <span class="s2">&quot;wall_clock_breakdown&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
-        <span class="s2">&quot;data_types&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;grad_accum_dtype&quot;</span><span class="p">:</span> <span class="n">grad_accum_dtype</span>
+        <span class="s2">"gradient_clipping"</span><span class="p">:</span> <span class="n">max_norm</span><span class="p">,</span>
+        <span class="s2">"prescale_gradients"</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="s2">"wall_clock_breakdown"</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="s2">"data_types"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"grad_accum_dtype"</span><span class="p">:</span> <span class="n">grad_accum_dtype</span>
         <span class="p">},</span>
     <span class="p">}</span></div>
 
@@ -391,7 +396,7 @@
     <span class="n">stage</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
     <span class="n">bf16</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
 <span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Generate a DeepSpeed configuration dictionary for evaluation.</span>
 
 <span class="sd">    :param offload: Whether to offload parameters to CPU.</span>
@@ -403,29 +408,29 @@
 
 <span class="sd">    :return: DeepSpeed configuration dictionary for evaluation.</span>
 <span class="sd">    :rtype: dict</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">zero_opt_dict</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">&quot;stage&quot;</span><span class="p">:</span> <span class="n">stage</span><span class="p">,</span>
-        <span class="s2">&quot;stage3_param_persistence_threshold&quot;</span><span class="p">:</span> <span class="s2">&quot;auto&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;offload_param&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;device&quot;</span><span class="p">:</span> <span class="s2">&quot;cpu&quot;</span> <span class="k">if</span> <span class="n">offload</span> <span class="k">else</span> <span class="s2">&quot;none&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;pin_memory&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="s2">"stage"</span><span class="p">:</span> <span class="n">stage</span><span class="p">,</span>
+        <span class="s2">"stage3_param_persistence_threshold"</span><span class="p">:</span> <span class="s2">"auto"</span><span class="p">,</span>
+        <span class="s2">"offload_param"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"device"</span><span class="p">:</span> <span class="s2">"cpu"</span> <span class="k">if</span> <span class="n">offload</span> <span class="k">else</span> <span class="s2">"none"</span><span class="p">,</span>
+            <span class="s2">"pin_memory"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
         <span class="p">},</span>
     <span class="p">}</span>
     <span class="k">return</span> <span class="p">{</span>
-        <span class="s2">&quot;steps_per_print&quot;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
-        <span class="s2">&quot;zero_optimization&quot;</span><span class="p">:</span> <span class="n">zero_opt_dict</span><span class="p">,</span>
-        <span class="s2">&quot;bf16&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;enabled&quot;</span><span class="p">:</span> <span class="n">bf16</span><span class="p">,</span>
+        <span class="s2">"steps_per_print"</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
+        <span class="s2">"zero_optimization"</span><span class="p">:</span> <span class="n">zero_opt_dict</span><span class="p">,</span>
+        <span class="s2">"bf16"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"enabled"</span><span class="p">:</span> <span class="n">bf16</span><span class="p">,</span>
         <span class="p">},</span>
-        <span class="s2">&quot;gradient_clipping&quot;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span>
-        <span class="s2">&quot;prescale_gradients&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
-        <span class="s2">&quot;wall_clock_breakdown&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="s2">"gradient_clipping"</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span>
+        <span class="s2">"prescale_gradients"</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="s2">"wall_clock_breakdown"</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
     <span class="p">}</span></div>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_z3_params_to_fetch</span><span class="p">(</span><span class="n">param_list</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Filter parameters that need to be fetched in ZeRO stage 3.</span>
 
 <span class="sd">    :param param_list: List of parameters to check.</span>
@@ -433,12 +438,12 @@
 
 <span class="sd">    :return: List of parameters that are not available and need to be fetched.</span>
 <span class="sd">    :rtype: list</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="p">[</span><span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">param_list</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="s2">&quot;ds_id&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">p</span><span class="o">.</span><span class="n">ds_status</span> <span class="o">==</span> <span class="n">ZeroParamStatus</span><span class="o">.</span><span class="n">NOT_AVAILABLE</span><span class="p">]</span>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">param_list</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="s2">"ds_id"</span><span class="p">)</span> <span class="ow">and</span> <span class="n">p</span><span class="o">.</span><span class="n">ds_status</span> <span class="o">==</span> <span class="n">ZeroParamStatus</span><span class="o">.</span><span class="n">NOT_AVAILABLE</span><span class="p">]</span>
 
 
 <div class="viewcode-block" id="offload_deepspeed_states"><a class="viewcode-back" href="../../../../api_doc/strategy/deepspeed/deepspeed_utils.html#lightrft.strategy.deepspeed.deepspeed_utils.offload_deepspeed_states">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">offload_deepspeed_states</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">pin_memory</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">non_blocking</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Offload DeepSpeed optimizer states to CPU to save GPU memory.</span>
 
 <span class="sd">    This function is particularly useful for ZeRO stage 3 when not using Adam optimizer offloading.</span>
@@ -452,16 +457,16 @@
 <span class="sd">    :type non_blocking: bool</span>
 
 <span class="sd">    :raises NotImplementedError: If ZeRO stage is not 3.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">zero_stage</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">zero_optimization_stage</span><span class="p">()</span>  <span class="c1"># config[&#39;zero_optimization&#39;][&#39;stage&#39;]</span>
-    <span class="n">adam_offload</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;zero_optimization&quot;</span><span class="p">][</span><span class="s2">&quot;offload_optimizer&quot;</span><span class="p">][</span><span class="s2">&quot;device&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;cpu&quot;</span>
+<span class="sd">    """</span>
+    <span class="n">zero_stage</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">zero_optimization_stage</span><span class="p">()</span>  <span class="c1"># config['zero_optimization']['stage']</span>
+    <span class="n">adam_offload</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">"zero_optimization"</span><span class="p">][</span><span class="s2">"offload_optimizer"</span><span class="p">][</span><span class="s2">"device"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"cpu"</span>
 
     <span class="c1"># state offloading not required when using Adam optimizer offloading</span>
     <span class="k">if</span> <span class="n">adam_offload</span><span class="p">:</span>
         <span class="k">return</span>
 
     <span class="k">if</span> <span class="n">zero_stage</span> <span class="o">!=</span> <span class="mi">3</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Only Zero stage 3 is currently supported&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">"Only Zero stage 3 is currently supported"</span><span class="p">)</span>
 
     <span class="c1"># if zero_stage == 3 and not adam_offload:</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
@@ -490,7 +495,7 @@
 
 
 <div class="viewcode-block" id="reload_deepspeed_states"><a class="viewcode-back" href="../../../../api_doc/strategy/deepspeed/deepspeed_utils.html#lightrft.strategy.deepspeed.deepspeed_utils.reload_deepspeed_states">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">reload_deepspeed_states</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">non_blocking</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Reload DeepSpeed optimizer states from CPU back to GPU.</span>
 
 <span class="sd">    This function is used to restore states previously offloaded with offload_deepspeed_states().</span>
@@ -501,16 +506,16 @@
 <span class="sd">    :type non_blocking: bool</span>
 
 <span class="sd">    :raises NotImplementedError: If ZeRO stage is not 3.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">zero_stage</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">zero_optimization_stage</span><span class="p">()</span>  <span class="c1"># config[&#39;zero_optimization&#39;][&#39;stage&#39;]</span>
-    <span class="n">adam_offload</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;zero_optimization&quot;</span><span class="p">][</span><span class="s2">&quot;offload_optimizer&quot;</span><span class="p">][</span><span class="s2">&quot;device&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;cpu&quot;</span>
+<span class="sd">    """</span>
+    <span class="n">zero_stage</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">zero_optimization_stage</span><span class="p">()</span>  <span class="c1"># config['zero_optimization']['stage']</span>
+    <span class="n">adam_offload</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">"zero_optimization"</span><span class="p">][</span><span class="s2">"offload_optimizer"</span><span class="p">][</span><span class="s2">"device"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"cpu"</span>
 
     <span class="c1"># state offloading not required when using Adam optimizer offloading</span>
     <span class="k">if</span> <span class="n">adam_offload</span><span class="p">:</span>
         <span class="k">return</span>
 
     <span class="k">if</span> <span class="n">zero_stage</span> <span class="o">!=</span> <span class="mi">3</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Only Zero stage 3 is currently supported&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">"Only Zero stage 3 is currently supported"</span><span class="p">)</span>
 
     <span class="c1"># if zero_stage == 3 and not adam_offload:</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
@@ -531,7 +536,7 @@
 
   <div role="contentinfo">
     <p>
-      &copy; Copyright 2025, OpenDILab.
+      &copy; Copyright 2025-2026, OpenDILab.
 
     </p>
   </div>
@@ -568,8 +573,8 @@
   <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
   <script src="../../../../_static/doctools.js"></script>
   <script src="../../../../_static/sphinx_highlight.js"></script>
-  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-  <script src="../../../../_static/js/language_switch.js"></script>
+  <script src="../../../../_static/clipboard.min.js"></script>
+  <script src="../../../../_static/copybutton.js"></script>
   
 
   
@@ -598,7 +603,7 @@
     <div class="container-fluid">
       <div class="container">
         <div class="mobile-main-menu-header-container">
-          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="header-logo" href="https://github.com/opendilab/LightRFT" aria-label="OpenMMLab"></a>
           <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
         </div>
       </div>

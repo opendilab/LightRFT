@@ -33,6 +33,7 @@
   <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
   <link rel="stylesheet" href="../../_static/css/readthedocs.css" type="text/css" />
   <link rel="index" title="Index" href="../../genindex.html" />
   <link rel="search" title="Search" href="../../search.html" />
@@ -87,7 +88,7 @@
 <div class="container-fluid header-holder tutorials-header" id="header-holder">
   <div class="container">
     <div class="header-container">
-      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+      <a class="header-logo" href="https://github.com/opendilab/LightRFT"
         aria-label="OpenMMLab"></a>
 
       <div class="main-menu">
@@ -237,6 +238,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../strategy/index.html">lightrft.strategy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../trainer/index.html">lightrft.trainer</a></li>
 </ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../../index_zh.html">欢迎来到 LightRFT 文档!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../index_zh.html#id4">索引与表格</a></li>
+</ul>
 
         
         
@@ -306,8 +311,121 @@
             <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
               <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
                 
-  <section id="lightrft-datasets-srm-dataset">
-<h1>lightrft.datasets.srm_dataset<a class="headerlink" href="#lightrft-datasets-srm-dataset" title="Permalink to this heading">¶</a></h1>
+  <section id="module-lightrft.datasets.srm_dataset">
+<span id="lightrft-datasets-srm-dataset"></span><h1>lightrft.datasets.srm_dataset<a class="headerlink" href="#module-lightrft.datasets.srm_dataset" title="Permalink to this heading">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="lightrft.datasets.srm_dataset.RankDatasetAL">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">lightrft.datasets.srm_dataset.</span></span><span class="sig-name descname"><span class="pre">RankDatasetAL</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/datasets/srm_dataset.html#RankDatasetAL"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.datasets.srm_dataset.RankDatasetAL" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Dataset</span></code></p>
+<p>Preference ranking dataset used for audio-language scalar reward model (RM) training.</p>
+<p>RMRankDatasetAL dataset supports multiple audio-language data sources through pluggable
+Data Handlers and support training reward model for text-to-audio task.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dataset_paths</strong> (<em>List</em><em>[</em><em>str</em><em>]</em>) – List of dataset file paths or directories, in the format <code class="docutils literal notranslate"><span class="pre">source:path</span></code> where
+the handler is determined by the source keyword such as audio-alpaca or omnirewardbench-t2a.</p></li>
+<li><p><strong>processor</strong> (<em>transformers.AutoProcessor</em>) – Multimodal processor used for tokenization and audio
+processing.</p></li>
+<li><p><strong>tokenizer</strong> (<em>transformers.AutoTokenizer</em>) – Tokenizer used for text tokenization.</p></li>
+<li><p><strong>strategy</strong> (<em>Any</em>) – Optional data loading strategy.</p></li>
+<li><p><strong>max_length</strong> (<em>int</em>) – Maximum sequence length for tokenization/truncation.</p></li>
+<li><p><strong>config</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – Additional configuration options. Supported keys include
+<code class="docutils literal notranslate"><span class="pre">task_instruction</span></code> for the evaluation instruction and
+<code class="docutils literal notranslate"><span class="pre">system_prompt_template</span></code> for a template containing a <code class="docutils literal notranslate"><span class="pre">{prompt}</span></code>
+placeholder.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Example<span class="colon">:</span></dt>
+<dd class="field-even"><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">dataset</span> <span class="o">=</span> <span class="n">RankDatasetAL</span><span class="p">([</span>
+    <span class="s1">'audio-alpaca:/path/to/file.parquet'</span>
+<span class="p">],</span> <span class="n">processor</span><span class="o">=</span><span class="n">proc</span><span class="p">,</span> <span class="n">tokenizer</span><span class="o">=</span><span class="n">tok</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">4096</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.datasets.srm_dataset.RankDatasetAL.collate_fn">
+<span class="sig-name descname"><span class="pre">collate_fn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/lightrft/datasets/srm_dataset.html#RankDatasetAL.collate_fn"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.datasets.srm_dataset.RankDatasetAL.collate_fn" title="Permalink to this definition">¶</a></dt>
+<dd><p>Collate a batch of items into a single batch for model processing.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>batch</strong> (<em>List</em><em>[</em><em>Tuple</em><em>]</em>) – A list of items returned by __getitem__</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A tuple containing batched inputs for both samples in the pair and extras.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Optional[Tuple]</p>
+</dd>
+</dl>
+<p><strong>Example:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">batch</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">collate_fn</span><span class="p">([</span><span class="n">dataset</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">)])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="lightrft.datasets.srm_dataset.RankDatasetVL">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">lightrft.datasets.srm_dataset.</span></span><span class="sig-name descname"><span class="pre">RankDatasetVL</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/datasets/srm_dataset.html#RankDatasetVL"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.datasets.srm_dataset.RankDatasetVL" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Dataset</span></code></p>
+<p>Preference ranking dataset used for vision-language scalar reward model (RM) training.</p>
+<p>RMRankDatasetVL dataset supports multiple data sources through pluggable
+Data Handlers and covers both understanding tasks (image-to-text, video-to-text)
+and generation tasks (text-to-image, text-to-video).</p>
+<p>Each example contains two inputs to be compared. Labels use “A”, “B”,
+and “C” to indicate which input is better or if they tie. For example,
+label “A” means input0 is preferred over input1; “C” means a tie.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dataset_paths</strong> (<em>List</em><em>[</em><em>str</em><em>]</em>) – List of dataset file paths or directories, in the format <code class="docutils literal notranslate"><span class="pre">source:path</span></code> where
+the handler is determined by the source keyword such as hpdv3, rapidata, or omnirewardbench.</p></li>
+<li><p><strong>processor</strong> (<em>transformers.AutoProcessor</em>) – Multimodal processor used for tokenization and visual
+processing.</p></li>
+<li><p><strong>tokenizer</strong> (<em>transformers.AutoTokenizer</em>) – Tokenizer used for text tokenization.</p></li>
+<li><p><strong>strategy</strong> (<em>Any</em>) – Optional data loading strategy.</p></li>
+<li><p><strong>max_length</strong> (<em>int</em>) – Maximum sequence length for tokenization/truncation.</p></li>
+<li><p><strong>config</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – Additional configuration options. Supported keys include
+<code class="docutils literal notranslate"><span class="pre">task_instruction</span></code> for the evaluation instruction and
+<code class="docutils literal notranslate"><span class="pre">system_prompt_template</span></code> for a template containing a <code class="docutils literal notranslate"><span class="pre">{prompt}</span></code>
+placeholder.</p></li>
+</ul>
+</dd>
+</dl>
+<p><strong>Example:</strong></p>
+<blockquote>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">dataset</span> <span class="o">=</span> <span class="n">RankDatasetVL</span><span class="p">([</span>
+    <span class="s1">'hpdv3:/data/hpdv3/train.json'</span>
+<span class="p">],</span> <span class="n">processor</span><span class="o">=</span><span class="n">proc</span><span class="p">,</span> <span class="n">tokenizer</span><span class="o">=</span><span class="n">tok</span><span class="p">,</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">4096</span><span class="p">)</span>
+</pre></div>
+</div>
+</div></blockquote>
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.datasets.srm_dataset.RankDatasetVL.collate_fn">
+<span class="sig-name descname"><span class="pre">collate_fn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/lightrft/datasets/srm_dataset.html#RankDatasetVL.collate_fn"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.datasets.srm_dataset.RankDatasetVL.collate_fn" title="Permalink to this definition">¶</a></dt>
+<dd><p>Collate a batch of items into a single batch for model processing.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>batch</strong> (<em>List</em><em>[</em><em>Tuple</em><em>]</em>) – A list of items returned by __getitem__</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A tuple containing batched inputs for both samples in the pair and extras.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Optional[Tuple]</p>
+</dd>
+</dl>
+<p><strong>Example:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">batch</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">collate_fn</span><span class="p">([</span><span class="n">dataset</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">)])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 
 
@@ -333,7 +451,7 @@
 
   <div role="contentinfo">
     <p>
-      &copy; Copyright 2025, OpenDILab.
+      &copy; Copyright 2025-2026, OpenDILab.
 
     </p>
   </div>
@@ -353,7 +471,17 @@
           <div class="pytorch-right-menu" id="pytorch-right-menu">
             <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
               <ul>
-<li><a class="reference internal" href="#">lightrft.datasets.srm_dataset</a></li>
+<li><a class="reference internal" href="#">lightrft.datasets.srm_dataset</a><ul>
+<li><a class="reference internal" href="#lightrft.datasets.srm_dataset.RankDatasetAL"><code class="docutils literal notranslate"><span class="pre">RankDatasetAL</span></code></a><ul>
+<li><a class="reference internal" href="#lightrft.datasets.srm_dataset.RankDatasetAL.collate_fn"><code class="docutils literal notranslate"><span class="pre">RankDatasetAL.collate_fn()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#lightrft.datasets.srm_dataset.RankDatasetVL"><code class="docutils literal notranslate"><span class="pre">RankDatasetVL</span></code></a><ul>
+<li><a class="reference internal" href="#lightrft.datasets.srm_dataset.RankDatasetVL.collate_fn"><code class="docutils literal notranslate"><span class="pre">RankDatasetVL.collate_fn()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 
             </div>
@@ -373,8 +501,8 @@
   <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
   <script src="../../_static/doctools.js"></script>
   <script src="../../_static/sphinx_highlight.js"></script>
-  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-  <script src="../../_static/js/language_switch.js"></script>
+  <script src="../../_static/clipboard.min.js"></script>
+  <script src="../../_static/copybutton.js"></script>
   
 
   
@@ -403,7 +531,7 @@
     <div class="container-fluid">
       <div class="container">
         <div class="mobile-main-menu-header-container">
-          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="header-logo" href="https://github.com/opendilab/LightRFT" aria-label="OpenMMLab"></a>
           <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
         </div>
       </div>

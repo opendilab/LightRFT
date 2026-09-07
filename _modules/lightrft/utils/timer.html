@@ -32,6 +32,7 @@
   <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/css/readthedocs.css" type="text/css" />
   <link rel="index" title="Index" href="../../../genindex.html" />
   <link rel="search" title="Search" href="../../../search.html" />
@@ -84,7 +85,7 @@
 <div class="container-fluid header-holder tutorials-header" id="header-holder">
   <div class="container">
     <div class="header-container">
-      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+      <a class="header-logo" href="https://github.com/opendilab/LightRFT"
         aria-label="OpenMMLab"></a>
 
       <div class="main-menu">
@@ -234,6 +235,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../api_doc/strategy/index.html">lightrft.strategy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api_doc/trainer/index.html">lightrft.trainer</a></li>
 </ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../index_zh.html">欢迎来到 LightRFT 文档!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../index_zh.html#id4">索引与表格</a></li>
+</ul>
 
         
         
@@ -300,11 +305,11 @@
               <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
                 
   <h1>Source code for lightrft.utils.timer</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""</span>
 <span class="sd">Timer Module for Performance Measurement</span>
 
 <span class="sd">This module provides a comprehensive timing utility for measuring execution time of different</span>
-<span class="sd">code sections. It&#39;s particularly useful for profiling machine learning training loops,</span>
+<span class="sd">code sections. It's particularly useful for profiling machine learning training loops,</span>
 <span class="sd">evaluation processes, and any code that requires performance monitoring.</span>
 
 <span class="sd">The module includes a Timer class that can be used both as a context manager and through</span>
@@ -315,18 +320,18 @@
 <span class="sd">Example::</span>
 
 <span class="sd">    # Using as context manager</span>
-<span class="sd">    with Timer(&quot;data_loading&quot;):</span>
+<span class="sd">    with Timer("data_loading"):</span>
 <span class="sd">        # Your data loading code here</span>
 <span class="sd">        pass</span>
 
 <span class="sd">    # Using class methods</span>
-<span class="sd">    Timer.start(&quot;forward_pass&quot;)</span>
+<span class="sd">    Timer.start("forward_pass")</span>
 <span class="sd">    # Your forward pass code</span>
-<span class="sd">    Timer.stop(&quot;forward_pass&quot;)</span>
+<span class="sd">    Timer.stop("forward_pass")</span>
 
 <span class="sd">    # Print statistics and reset</span>
 <span class="sd">    Timer.step()</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">defaultdict</span>
@@ -335,7 +340,7 @@
 
 
 <div class="viewcode-block" id="Timer"><a class="viewcode-back" href="../../../api_doc/utils/timer.html#lightrft.utils.timer.Timer">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">Timer</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    A simple timer class for measuring the execution time of different code sections.</span>
 
 <span class="sd">    This class provides functionality to start, stop, and record the elapsed time for</span>
@@ -359,17 +364,17 @@
 <span class="sd">    Example::</span>
 
 <span class="sd">        # Method 1: Using as context manager</span>
-<span class="sd">        with Timer(&quot;data_processing&quot;):</span>
+<span class="sd">        with Timer("data_processing"):</span>
 <span class="sd">            process_data()</span>
 
 <span class="sd">        # Method 2: Using start/stop methods</span>
-<span class="sd">        Timer.start(&quot;model_forward&quot;)</span>
+<span class="sd">        Timer.start("model_forward")</span>
 <span class="sd">        output = model(input)</span>
-<span class="sd">        Timer.stop(&quot;model_forward&quot;)</span>
+<span class="sd">        Timer.stop("model_forward")</span>
 
 <span class="sd">        # Print statistics for current step</span>
 <span class="sd">        Timer.step()</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">_timers</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
     <span class="n">_counts</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
@@ -377,7 +382,7 @@
     <span class="n">_current_step</span> <span class="o">=</span> <span class="mi">0</span>
 
 <div class="viewcode-block" id="Timer.__init__"><a class="viewcode-back" href="../../../api_doc/utils/timer.html#lightrft.utils.timer.Timer.__init__">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Initializes a Timer instance.</span>
 
 <span class="sd">        :param name: The name of this specific timer instance. This name will be</span>
@@ -386,29 +391,29 @@
 
 <span class="sd">        Example::</span>
 
-<span class="sd">            timer = Timer(&quot;my_operation&quot;)</span>
+<span class="sd">            timer = Timer("my_operation")</span>
 <span class="sd">            with timer:</span>
 <span class="sd">                # Code to time</span>
 <span class="sd">                pass</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span></div>
         <span class="c1"># __enter__ and __exit__ will use self.name</span>
 
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_cuda_sync_if_available</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Synchronizes CUDA devices if available.</span>
 
 <span class="sd">        This ensures accurate timing on GPUs by waiting for all CUDA operations to complete.</span>
 <span class="sd">        Without synchronization, GPU operations may be asynchronous and timing measurements</span>
 <span class="sd">        could be inaccurate.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">():</span>
             <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">synchronize</span><span class="p">()</span>
 
 <div class="viewcode-block" id="Timer.start"><a class="viewcode-back" href="../../../api_doc/utils/timer.html#lightrft.utils.timer.Timer.start">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">start</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Starts a timer with the given name.</span>
 
 <span class="sd">        If a timer with the same name is already running, its start time will be overwritten.</span>
@@ -420,16 +425,16 @@
 
 <span class="sd">        Example::</span>
 
-<span class="sd">            Timer.start(&quot;data_loading&quot;)</span>
+<span class="sd">            Timer.start("data_loading")</span>
 <span class="sd">            # Your code here</span>
-<span class="sd">            Timer.stop(&quot;data_loading&quot;)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">            Timer.stop("data_loading")</span>
+<span class="sd">        """</span>
         <span class="bp">cls</span><span class="o">.</span><span class="n">_cuda_sync_if_available</span><span class="p">()</span>
         <span class="bp">cls</span><span class="o">.</span><span class="n">_current_times</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="Timer.stop"><a class="viewcode-back" href="../../../api_doc/utils/timer.html#lightrft.utils.timer.Timer.stop">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">stop</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Stops a timer with the given name and records the elapsed time.</span>
 
 <span class="sd">        The elapsed time is added to the total time for this timer, and the call count is incremented.</span>
@@ -440,10 +445,10 @@
 
 <span class="sd">        Example::</span>
 
-<span class="sd">            Timer.start(&quot;computation&quot;)</span>
+<span class="sd">            Timer.start("computation")</span>
 <span class="sd">            result = heavy_computation()</span>
-<span class="sd">            Timer.stop(&quot;computation&quot;)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">            Timer.stop("computation")</span>
+<span class="sd">        """</span>
         <span class="bp">cls</span><span class="o">.</span><span class="n">_cuda_sync_if_available</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_current_times</span><span class="p">:</span>
             <span class="n">elapsed</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_current_times</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
@@ -451,11 +456,11 @@
             <span class="bp">cls</span><span class="o">.</span><span class="n">_counts</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
             <span class="k">del</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_current_times</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Warning: Timer &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39; was stopped without being started.&quot;</span><span class="p">)</span></div>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Warning: Timer '</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">' was stopped without being started."</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Timer.step"><a class="viewcode-back" href="../../../api_doc/utils/timer.html#lightrft.utils.timer.Timer.step">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">step</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Prints the timing statistics for the current step and resets the timers.</span>
 
 <span class="sd">        If distributed training is used, it only prints the statistics on the main process (rank 0).</span>
@@ -469,38 +474,38 @@
 <span class="sd">        Example::</span>
 
 <span class="sd">            for epoch in range(num_epochs):</span>
-<span class="sd">                with Timer(&quot;epoch&quot;):</span>
+<span class="sd">                with Timer("epoch"):</span>
 <span class="sd">                    for batch in dataloader:</span>
-<span class="sd">                        with Timer(&quot;forward&quot;):</span>
+<span class="sd">                        with Timer("forward"):</span>
 <span class="sd">                            output = model(batch)</span>
-<span class="sd">                        with Timer(&quot;backward&quot;):</span>
+<span class="sd">                        with Timer("backward"):</span>
 <span class="sd">                            loss.backward()</span>
 <span class="sd">                Timer.step()  # Print and reset timers for this epoch</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">cls</span><span class="o">.</span><span class="n">_current_step</span> <span class="o">+=</span> <span class="mi">1</span>
         <span class="n">is_main_process</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">distributed</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="ow">and</span> <span class="n">torch</span><span class="o">.</span><span class="n">distributed</span><span class="o">.</span><span class="n">is_initialized</span><span class="p">():</span>
             <span class="n">is_main_process</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">distributed</span><span class="o">.</span><span class="n">get_rank</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span>
 
         <span class="k">if</span> <span class="n">is_main_process</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">--- Step </span><span class="si">{</span><span class="bp">cls</span><span class="o">.</span><span class="n">_current_step</span><span class="si">}</span><span class="s2"> Timing Statistics ---&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="se">\n</span><span class="s2">--- Step </span><span class="si">{</span><span class="bp">cls</span><span class="o">.</span><span class="n">_current_step</span><span class="si">}</span><span class="s2"> Timing Statistics ---"</span><span class="p">)</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_timers</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  No timers recorded for this step.&quot;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">"  No timers recorded for this step."</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">_timers</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
                     <span class="n">total_time</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_timers</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
                     <span class="n">count</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_counts</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
                     <span class="n">avg_time</span> <span class="o">=</span> <span class="n">total_time</span> <span class="o">/</span> <span class="n">count</span> <span class="k">if</span> <span class="n">count</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mi">0</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">: total=</span><span class="si">{</span><span class="n">total_time</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">s, avg=</span><span class="si">{</span><span class="n">avg_time</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">s, calls=</span><span class="si">{</span><span class="n">count</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">: total=</span><span class="si">{</span><span class="n">total_time</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">s, avg=</span><span class="si">{</span><span class="n">avg_time</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">s, calls=</span><span class="si">{</span><span class="n">count</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="bp">cls</span><span class="o">.</span><span class="n">_timers</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
         <span class="bp">cls</span><span class="o">.</span><span class="n">_counts</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
         <span class="bp">cls</span><span class="o">.</span><span class="n">_current_times</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="Timer.__enter__"><a class="viewcode-back" href="../../../api_doc/utils/timer.html#lightrft.utils.timer.Timer.__enter__">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Starts the timer when entering the context.</span>
 
-<span class="sd">        This method is called when using the Timer as a context manager with the &#39;with&#39; statement.</span>
+<span class="sd">        This method is called when using the Timer as a context manager with the 'with' statement.</span>
 <span class="sd">        It starts timing for the timer name specified during initialization.</span>
 
 <span class="sd">        :return: The Timer instance itself.</span>
@@ -508,15 +513,15 @@
 
 <span class="sd">        Example::</span>
 
-<span class="sd">            with Timer(&quot;my_operation&quot;) as timer:</span>
+<span class="sd">            with Timer("my_operation") as timer:</span>
 <span class="sd">                # Code to time</span>
 <span class="sd">                pass</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span></div>
 
 <div class="viewcode-block" id="Timer.__exit__"><a class="viewcode-back" href="../../../api_doc/utils/timer.html#lightrft.utils.timer.Timer.__exit__">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exc_type</span><span class="p">,</span> <span class="n">exc_val</span><span class="p">,</span> <span class="n">exc_tb</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Stops the timer when exiting the context.</span>
 
 <span class="sd">        This method is called when exiting the context manager, regardless of whether</span>
@@ -527,7 +532,7 @@
 <span class="sd">        :param exc_tb: The exception traceback if an exception was raised, None otherwise.</span>
 <span class="sd">        :return: False to indicate that exceptions should not be suppressed.</span>
 <span class="sd">        :rtype: bool</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="n">stop</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
         <span class="k">return</span> <span class="kc">False</span></div></div>
 </pre></div>
@@ -542,7 +547,7 @@
 
   <div role="contentinfo">
     <p>
-      &copy; Copyright 2025, OpenDILab.
+      &copy; Copyright 2025-2026, OpenDILab.
 
     </p>
   </div>
@@ -579,8 +584,8 @@
   <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
   <script src="../../../_static/doctools.js"></script>
   <script src="../../../_static/sphinx_highlight.js"></script>
-  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-  <script src="../../../_static/js/language_switch.js"></script>
+  <script src="../../../_static/clipboard.min.js"></script>
+  <script src="../../../_static/copybutton.js"></script>
   
 
   
@@ -609,7 +614,7 @@
     <div class="container-fluid">
       <div class="container">
         <div class="mobile-main-menu-header-container">
-          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="header-logo" href="https://github.com/opendilab/LightRFT" aria-label="OpenMMLab"></a>
           <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
         </div>
       </div>

@@ -32,6 +32,7 @@
   <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/css/readthedocs.css" type="text/css" />
   <link rel="index" title="Index" href="../../../genindex.html" />
   <link rel="search" title="Search" href="../../../search.html" />
@@ -84,7 +85,7 @@
 <div class="container-fluid header-holder tutorials-header" id="header-holder">
   <div class="container">
     <div class="header-container">
-      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+      <a class="header-logo" href="https://github.com/opendilab/LightRFT"
         aria-label="OpenMMLab"></a>
 
       <div class="main-menu">
@@ -234,6 +235,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../api_doc/strategy/index.html">lightrft.strategy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api_doc/trainer/index.html">lightrft.trainer</a></li>
 </ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../index_zh.html">欢迎来到 LightRFT 文档!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../index_zh.html#id4">索引与表格</a></li>
+</ul>
 
         
         
@@ -309,23 +314,23 @@
 
 
 <div class="viewcode-block" id="OmniRewardBenchT2IHandler"><a class="viewcode-back" href="../../../api_doc/datasets/omnirewardbench.html#lightrft.datasets.omnirewardbench.OmniRewardBenchT2IHandler">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">OmniRewardBenchT2IHandler</span><span class="p">(</span><span class="n">BaseDataHandler</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Data Handler for OmniRewardBench text-to-image human preferences benchmark.</span>
 <span class="sd">    Process for scalar reward model training of pairwise-ranking task.</span>
 
 <span class="sd">    Paper: https://huggingface.co/papers/2510.23451</span>
 <span class="sd">    Dataset Repo: https://huggingface.co/datasets/HongbangYuan/OmniRewardBench</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">task_type</span> <span class="o">=</span> <span class="s2">&quot;text-to-image&quot;</span>
+<span class="sd">    """</span>
+    <span class="n">task_type</span> <span class="o">=</span> <span class="s2">"text-to-image"</span>
 
 <div class="viewcode-block" id="OmniRewardBenchT2IHandler.load_data"><a class="viewcode-back" href="../../../api_doc/datasets/omnirewardbench.html#lightrft.datasets.omnirewardbench.OmniRewardBenchT2IHandler.load_data">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">load_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Loads data from parquet file.</span>
 
 <span class="sd">        :param path: Path to the parquet file</span>
 <span class="sd">        :type path: str</span>
 
-<span class="sd">        :return: List of samples with &#39;data_root&#39; attached</span>
+<span class="sd">        :return: List of samples with 'data_root' attached</span>
 <span class="sd">        :rtype: List[Dict[str, Any]]</span>
 
 <span class="sd">        **Example:**</span>
@@ -333,8 +338,8 @@
 <span class="sd">        .. code-block:: python</span>
 
 <span class="sd">            handler = OmniRewardBenchT2IHandler()</span>
-<span class="sd">            data = handler.load_data(&quot;path/to/OmniRewardBench/data.parquet&quot;)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">            data = handler.load_data("path/to/OmniRewardBench/data.parquet")</span>
+<span class="sd">        """</span>
         <span class="n">raw_data</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="kn">import</span><span class="w"> </span><span class="nn">pyarrow.parquet</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pq</span>
         <span class="n">data_table</span> <span class="o">=</span> <span class="n">pq</span><span class="o">.</span><span class="n">read_table</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
@@ -346,19 +351,19 @@
 
         <span class="n">data_root</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">path</span><span class="p">))</span>
         <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">raw_data</span><span class="p">:</span>
-            <span class="n">item</span><span class="p">[</span><span class="s1">&#39;data_root&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data_root</span>
+            <span class="n">item</span><span class="p">[</span><span class="s1">'data_root'</span><span class="p">]</span> <span class="o">=</span> <span class="n">data_root</span>
 
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Loaded </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">raw_data</span><span class="p">)</span><span class="si">}</span><span class="s2"> samples from </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Loaded </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">raw_data</span><span class="p">)</span><span class="si">}</span><span class="s2"> samples from </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">raw_data</span></div>
 
 <div class="viewcode-block" id="OmniRewardBenchT2IHandler.get_media_info"><a class="viewcode-back" href="../../../api_doc/datasets/omnirewardbench.html#lightrft.datasets.omnirewardbench.OmniRewardBenchT2IHandler.get_media_info">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_media_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Extract media info (paths) for the two images.</span>
 
 <span class="sd">        :param item: A data item from load_data</span>
 <span class="sd">        :type item: Dict[str, Any]</span>
 
-<span class="sd">        :return: Dict containing local paths for &#39;image1&#39; and &#39;image2&#39;</span>
+<span class="sd">        :return: Dict containing local paths for 'image1' and 'image2'</span>
 <span class="sd">        :rtype: Dict[str, Dict[str, str]]</span>
 
 <span class="sd">        **Example:**</span>
@@ -366,35 +371,35 @@
 <span class="sd">        .. code-block:: python</span>
 
 <span class="sd">            info = handler.get_media_info(item)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">data_root</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;data_root&#39;</span><span class="p">]</span>
+<span class="sd">        """</span>
+        <span class="n">data_root</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s1">'data_root'</span><span class="p">]</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">data_root</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Missing &#39;data_root&#39; in item. Cannot resolve video paths.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Missing 'data_root' in item. Cannot resolve video paths."</span><span class="p">)</span>
 
-        <span class="n">full_path1</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data_root</span><span class="p">,</span> <span class="s2">&quot;media_data&quot;</span><span class="p">,</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;response1_path&#39;</span><span class="p">])</span>
-        <span class="n">full_path2</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data_root</span><span class="p">,</span> <span class="s2">&quot;media_data&quot;</span><span class="p">,</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;response2_path&#39;</span><span class="p">])</span>
+        <span class="n">full_path1</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data_root</span><span class="p">,</span> <span class="s2">"media_data"</span><span class="p">,</span> <span class="n">item</span><span class="p">[</span><span class="s1">'response1_path'</span><span class="p">])</span>
+        <span class="n">full_path2</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data_root</span><span class="p">,</span> <span class="s2">"media_data"</span><span class="p">,</span> <span class="n">item</span><span class="p">[</span><span class="s1">'response2_path'</span><span class="p">])</span>
 
-        <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;image1&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;image_local_path&#39;</span><span class="p">:</span> <span class="n">full_path1</span><span class="p">},</span> <span class="s1">&#39;image2&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;image_local_path&#39;</span><span class="p">:</span> <span class="n">full_path2</span><span class="p">}}</span></div>
+        <span class="k">return</span> <span class="p">{</span><span class="s1">'image1'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'image_local_path'</span><span class="p">:</span> <span class="n">full_path1</span><span class="p">},</span> <span class="s1">'image2'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'image_local_path'</span><span class="p">:</span> <span class="n">full_path2</span><span class="p">}}</span></div>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_get_label</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">choice</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Helper to determine preference label.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">choice</span> <span class="o">==</span> <span class="s2">&quot;response1&quot;</span><span class="p">:</span>
-            <span class="k">return</span> <span class="s2">&quot;A&quot;</span>
-        <span class="k">elif</span> <span class="n">choice</span> <span class="o">==</span> <span class="s2">&quot;response2&quot;</span><span class="p">:</span>
-            <span class="k">return</span> <span class="s2">&quot;B&quot;</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="n">choice</span> <span class="o">==</span> <span class="s2">"response1"</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">"A"</span>
+        <span class="k">elif</span> <span class="n">choice</span> <span class="o">==</span> <span class="s2">"response2"</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s2">"B"</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="s2">&quot;C&quot;</span>  <span class="c1"># TIE</span>
+            <span class="k">return</span> <span class="s2">"C"</span>  <span class="c1"># TIE</span>
 
 <div class="viewcode-block" id="OmniRewardBenchT2IHandler.parse_item"><a class="viewcode-back" href="../../../api_doc/datasets/omnirewardbench.html#lightrft.datasets.omnirewardbench.OmniRewardBenchT2IHandler.parse_item">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">parse_item</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">media_content</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
                    <span class="n">config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">],</span> <span class="n">Dict</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Parse a data item from OmniRewardBench-T2I into messages and metadata.</span>
 
 <span class="sd">        :param item: The raw data item</span>
 <span class="sd">        :type item: Dict[str, Any]</span>
-<span class="sd">        :param media_content: Loaded media content with &#39;image1&#39; and &#39;image2&#39; keys.</span>
+<span class="sd">        :param media_content: Loaded media content with 'image1' and 'image2' keys.</span>
 <span class="sd">        :type media_content: Dict[str, Any]</span>
 <span class="sd">        :param config: Configuration for task instructions and max_pixels</span>
 <span class="sd">        :type config: Dict[str, Any]</span>
@@ -407,94 +412,94 @@
 <span class="sd">        .. code-block:: python</span>
 
 <span class="sd">            msg0, msg1, other = handler.parse_item(item, media_content, config)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">image1</span> <span class="o">=</span> <span class="n">media_content</span><span class="p">[</span><span class="s1">&#39;image1&#39;</span><span class="p">]</span>
-        <span class="n">image2</span> <span class="o">=</span> <span class="n">media_content</span><span class="p">[</span><span class="s1">&#39;image2&#39;</span><span class="p">]</span>
+<span class="sd">        """</span>
+        <span class="n">image1</span> <span class="o">=</span> <span class="n">media_content</span><span class="p">[</span><span class="s1">'image1'</span><span class="p">]</span>
+        <span class="n">image2</span> <span class="o">=</span> <span class="n">media_content</span><span class="p">[</span><span class="s1">'image2'</span><span class="p">]</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">([</span><span class="n">image1</span><span class="p">,</span> <span class="n">image2</span><span class="p">]):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Missing visual content for &#39;image1&#39; or &#39;image2&#39;.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Missing visual content for 'image1' or 'image2'."</span><span class="p">)</span>
 
         <span class="c1"># Get generation prompt from data item</span>
-        <span class="n">gen_prompt</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;prompt&quot;</span><span class="p">]</span>
+        <span class="n">gen_prompt</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s2">"prompt"</span><span class="p">]</span>
 
         <span class="c1"># Get system prompts from config</span>
-        <span class="n">task_instruction_template</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;task_instruction&quot;</span><span class="p">]</span>
+        <span class="n">task_instruction_template</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">"task_instruction"</span><span class="p">]</span>
         <span class="n">task_instruction</span> <span class="o">=</span> <span class="n">task_instruction_template</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">prompt</span><span class="o">=</span><span class="n">gen_prompt</span><span class="p">)</span>
-        <span class="c1"># criteria = item[&quot;criteria&quot;]</span>
+        <span class="c1"># criteria = item["criteria"]</span>
 
         <span class="c1"># Get max_pixels from config</span>
-        <span class="n">max_pixels</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;max_pixels&quot;</span><span class="p">]</span>
+        <span class="n">max_pixels</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">"max_pixels"</span><span class="p">]</span>
 
         <span class="c1"># Build messages</span>
         <span class="n">messages0</span> <span class="o">=</span> <span class="p">[</span>
             <span class="p">{</span>
-                <span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;system&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">task_instruction</span><span class="p">)</span>
+                <span class="s2">"role"</span><span class="p">:</span> <span class="s2">"system"</span><span class="p">,</span>
+                <span class="s2">"content"</span><span class="p">:</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">task_instruction</span><span class="p">)</span>
             <span class="p">},</span>
-            <span class="c1"># {&quot;role&quot;: &quot;system&quot;, &quot;content&quot;: f&quot;Please give your evaluation considering the following criteria: {criteria}.&quot;},  # noqa: E501</span>
+            <span class="c1"># {"role": "system", "content": f"Please give your evaluation considering the following criteria: {criteria}."},  # noqa: E501</span>
             <span class="p">{</span>
-                <span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="p">[{</span>
-                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;image&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;image&quot;</span><span class="p">:</span> <span class="n">image1</span><span class="p">,</span>
-                    <span class="s2">&quot;max_pixels&quot;</span><span class="p">:</span> <span class="n">max_pixels</span>
+                <span class="s2">"role"</span><span class="p">:</span> <span class="s2">"user"</span><span class="p">,</span>
+                <span class="s2">"content"</span><span class="p">:</span> <span class="p">[{</span>
+                    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"image"</span><span class="p">,</span>
+                    <span class="s2">"image"</span><span class="p">:</span> <span class="n">image1</span><span class="p">,</span>
+                    <span class="s2">"max_pixels"</span><span class="p">:</span> <span class="n">max_pixels</span>
                 <span class="p">}]</span>
             <span class="p">}</span>
         <span class="p">]</span>
 
         <span class="n">messages1</span> <span class="o">=</span> <span class="p">[</span>
             <span class="p">{</span>
-                <span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;system&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">task_instruction</span><span class="p">)</span>
+                <span class="s2">"role"</span><span class="p">:</span> <span class="s2">"system"</span><span class="p">,</span>
+                <span class="s2">"content"</span><span class="p">:</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">task_instruction</span><span class="p">)</span>
             <span class="p">},</span>
-            <span class="c1"># {&quot;role&quot;: &quot;system&quot;, &quot;content&quot;: f&quot;Please give your evaluation considering the following criteria: {criteria}.&quot;},  # noqa: E501</span>
+            <span class="c1"># {"role": "system", "content": f"Please give your evaluation considering the following criteria: {criteria}."},  # noqa: E501</span>
             <span class="p">{</span>
-                <span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="p">[{</span>
-                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;image&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;image&quot;</span><span class="p">:</span> <span class="n">image2</span><span class="p">,</span>
-                    <span class="s2">&quot;max_pixels&quot;</span><span class="p">:</span> <span class="n">max_pixels</span>
+                <span class="s2">"role"</span><span class="p">:</span> <span class="s2">"user"</span><span class="p">,</span>
+                <span class="s2">"content"</span><span class="p">:</span> <span class="p">[{</span>
+                    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"image"</span><span class="p">,</span>
+                    <span class="s2">"image"</span><span class="p">:</span> <span class="n">image2</span><span class="p">,</span>
+                    <span class="s2">"max_pixels"</span><span class="p">:</span> <span class="n">max_pixels</span>
                 <span class="p">}]</span>
             <span class="p">}</span>
         <span class="p">]</span>
 
         <span class="c1"># Get human preference labels based on weighted scores</span>
-        <span class="n">pref_label</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_label</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="s2">&quot;criteria_preference&quot;</span><span class="p">])</span>
+        <span class="n">pref_label</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_label</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="s2">"criteria_preference"</span><span class="p">])</span>
 
         <span class="n">other</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">&quot;preference&quot;</span><span class="p">:</span> <span class="n">pref_label</span><span class="p">,</span>
-            <span class="s2">&quot;task_type&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_type</span><span class="p">,</span>
-            <span class="s2">&quot;criteria&quot;</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;criteria&quot;</span><span class="p">],</span>
-            <span class="s2">&quot;criteria_preference&quot;</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;criteria_preference&quot;</span><span class="p">],</span>
-            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">],</span>
-            <span class="s2">&quot;prompt&quot;</span><span class="p">:</span> <span class="n">gen_prompt</span><span class="p">,</span>
-            <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">],</span>
-            <span class="s2">&quot;image1_path&quot;</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;response1_path&#39;</span><span class="p">],</span>
-            <span class="s2">&quot;image2_path&quot;</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;response2_path&#39;</span><span class="p">],</span>
-            <span class="s2">&quot;model1&quot;</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;model1&#39;</span><span class="p">],</span>
-            <span class="s2">&quot;model2&quot;</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;model2&#39;</span><span class="p">],</span>
+            <span class="s2">"preference"</span><span class="p">:</span> <span class="n">pref_label</span><span class="p">,</span>
+            <span class="s2">"task_type"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_type</span><span class="p">,</span>
+            <span class="s2">"criteria"</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s2">"criteria"</span><span class="p">],</span>
+            <span class="s2">"criteria_preference"</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s2">"criteria_preference"</span><span class="p">],</span>
+            <span class="s2">"id"</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s2">"id"</span><span class="p">],</span>
+            <span class="s2">"prompt"</span><span class="p">:</span> <span class="n">gen_prompt</span><span class="p">,</span>
+            <span class="s2">"source"</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s1">'source'</span><span class="p">],</span>
+            <span class="s2">"image1_path"</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s1">'response1_path'</span><span class="p">],</span>
+            <span class="s2">"image2_path"</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s1">'response2_path'</span><span class="p">],</span>
+            <span class="s2">"model1"</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s1">'model1'</span><span class="p">],</span>
+            <span class="s2">"model2"</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s1">'model2'</span><span class="p">],</span>
         <span class="p">}</span>
         <span class="k">return</span> <span class="n">messages0</span><span class="p">,</span> <span class="n">messages1</span><span class="p">,</span> <span class="n">other</span></div></div>
 
 
 <div class="viewcode-block" id="OmniRewardBenchT2VHandler"><a class="viewcode-back" href="../../../api_doc/datasets/omnirewardbench.html#lightrft.datasets.omnirewardbench.OmniRewardBenchT2VHandler">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">OmniRewardBenchT2VHandler</span><span class="p">(</span><span class="n">OmniRewardBenchT2IHandler</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Data Handler for OmniRewardBench text-to-video human preferences benchmark.</span>
 <span class="sd">    Process for scalar reward model training of pairwise-ranking task.</span>
 
 <span class="sd">    Paper: https://huggingface.co/papers/2510.23451</span>
 <span class="sd">    Dataset Repo: https://huggingface.co/datasets/HongbangYuan/OmniRewardBench</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">task_type</span> <span class="o">=</span> <span class="s2">&quot;text-to-video&quot;</span>
+<span class="sd">    """</span>
+    <span class="n">task_type</span> <span class="o">=</span> <span class="s2">"text-to-video"</span>
 
 <div class="viewcode-block" id="OmniRewardBenchT2VHandler.get_media_info"><a class="viewcode-back" href="../../../api_doc/datasets/omnirewardbench.html#lightrft.datasets.omnirewardbench.OmniRewardBenchT2VHandler.get_media_info">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_media_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Extract media info (paths) for the two videos.</span>
 
 <span class="sd">        :param item: A data item from load_data</span>
 <span class="sd">        :type item: Dict[str, Any]</span>
 
-<span class="sd">        :return: Dict containing local paths for &#39;video1&#39; and &#39;video2&#39;</span>
+<span class="sd">        :return: Dict containing local paths for 'video1' and 'video2'</span>
 <span class="sd">        :rtype: Dict[str, Dict[str, str]]</span>
 
 <span class="sd">        **Example:**</span>
@@ -502,19 +507,19 @@
 <span class="sd">        .. code-block:: python</span>
 
 <span class="sd">            info = handler.get_media_info(item)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">data_root</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;data_root&#39;</span><span class="p">]</span>
+<span class="sd">        """</span>
+        <span class="n">data_root</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s1">'data_root'</span><span class="p">]</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">data_root</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Missing &#39;data_root&#39; in item. Cannot resolve video paths.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Missing 'data_root' in item. Cannot resolve video paths."</span><span class="p">)</span>
 
-        <span class="n">full_path1</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data_root</span><span class="p">,</span> <span class="s2">&quot;media_data&quot;</span><span class="p">,</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;response1&#39;</span><span class="p">])</span>
-        <span class="n">full_path2</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data_root</span><span class="p">,</span> <span class="s2">&quot;media_data&quot;</span><span class="p">,</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;response2&#39;</span><span class="p">])</span>
+        <span class="n">full_path1</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data_root</span><span class="p">,</span> <span class="s2">"media_data"</span><span class="p">,</span> <span class="n">item</span><span class="p">[</span><span class="s1">'response1'</span><span class="p">])</span>
+        <span class="n">full_path2</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data_root</span><span class="p">,</span> <span class="s2">"media_data"</span><span class="p">,</span> <span class="n">item</span><span class="p">[</span><span class="s1">'response2'</span><span class="p">])</span>
 
-        <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;video1&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;video_local_path&#39;</span><span class="p">:</span> <span class="n">full_path1</span><span class="p">},</span> <span class="s1">&#39;video2&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;video_local_path&#39;</span><span class="p">:</span> <span class="n">full_path2</span><span class="p">}}</span></div>
+        <span class="k">return</span> <span class="p">{</span><span class="s1">'video1'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'video_local_path'</span><span class="p">:</span> <span class="n">full_path1</span><span class="p">},</span> <span class="s1">'video2'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'video_local_path'</span><span class="p">:</span> <span class="n">full_path2</span><span class="p">}}</span></div>
 
 <div class="viewcode-block" id="OmniRewardBenchT2VHandler.parse_item"><a class="viewcode-back" href="../../../api_doc/datasets/omnirewardbench.html#lightrft.datasets.omnirewardbench.OmniRewardBenchT2VHandler.parse_item">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">parse_item</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">media_content</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
                    <span class="n">config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">],</span> <span class="n">Dict</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Parse a data item from OmniRewardBench-T2V into messages and metadata.</span>
 
 <span class="sd">        :param item: The raw data item</span>
@@ -532,96 +537,96 @@
 <span class="sd">        .. code-block:: python</span>
 
 <span class="sd">            msg0, msg1, other = handler.parse_item(item, media_content, config)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">video1</span> <span class="o">=</span> <span class="n">media_content</span><span class="p">[</span><span class="s1">&#39;video1&#39;</span><span class="p">]</span>
-        <span class="n">video2</span> <span class="o">=</span> <span class="n">media_content</span><span class="p">[</span><span class="s1">&#39;video2&#39;</span><span class="p">]</span>
+<span class="sd">        """</span>
+        <span class="n">video1</span> <span class="o">=</span> <span class="n">media_content</span><span class="p">[</span><span class="s1">'video1'</span><span class="p">]</span>
+        <span class="n">video2</span> <span class="o">=</span> <span class="n">media_content</span><span class="p">[</span><span class="s1">'video2'</span><span class="p">]</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">([</span><span class="n">video1</span><span class="p">,</span> <span class="n">video2</span><span class="p">]):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Missing visual content for &#39;video1&#39; or &#39;video2&#39;.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Missing visual content for 'video1' or 'video2'."</span><span class="p">)</span>
 
         <span class="c1"># Get generation prompt from data item</span>
-        <span class="n">gen_prompt</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;prompt&quot;</span><span class="p">]</span>
+        <span class="n">gen_prompt</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s2">"prompt"</span><span class="p">]</span>
 
         <span class="c1"># Get system prompts from config</span>
-        <span class="n">task_instruction_template</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;task_instruction&quot;</span><span class="p">]</span>
+        <span class="n">task_instruction_template</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">"task_instruction"</span><span class="p">]</span>
         <span class="n">task_instruction</span> <span class="o">=</span> <span class="n">task_instruction_template</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">prompt</span><span class="o">=</span><span class="n">gen_prompt</span><span class="p">)</span>
 
         <span class="c1"># Get max_pixels from config</span>
-        <span class="n">max_pixels</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;max_pixels&quot;</span><span class="p">]</span>
+        <span class="n">max_pixels</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">"max_pixels"</span><span class="p">]</span>
 
         <span class="c1"># Get FPS from config</span>
-        <span class="n">fps</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;video_fps&quot;</span><span class="p">]</span>
+        <span class="n">fps</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">"video_fps"</span><span class="p">]</span>
 
         <span class="c1"># Build messages</span>
         <span class="n">messages0</span> <span class="o">=</span> <span class="p">[{</span>
-            <span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;system&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">task_instruction</span><span class="p">)</span>
+            <span class="s2">"role"</span><span class="p">:</span> <span class="s2">"system"</span><span class="p">,</span>
+            <span class="s2">"content"</span><span class="p">:</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">task_instruction</span><span class="p">)</span>
         <span class="p">},</span> <span class="p">{</span>
-            <span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="p">[{</span>
-                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;text&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Please evaluate the following video based on the given task instruction.&quot;</span>
+            <span class="s2">"role"</span><span class="p">:</span> <span class="s2">"user"</span><span class="p">,</span>
+            <span class="s2">"content"</span><span class="p">:</span> <span class="p">[{</span>
+                <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"text"</span><span class="p">,</span>
+                <span class="s2">"text"</span><span class="p">:</span> <span class="s2">"Please evaluate the following video based on the given task instruction."</span>
             <span class="p">},</span> <span class="p">{</span>
-                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;video&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;video&quot;</span><span class="p">:</span> <span class="n">video1</span><span class="p">,</span>
-                <span class="s2">&quot;fps&quot;</span><span class="p">:</span> <span class="n">fps</span><span class="p">,</span>
-                <span class="s2">&quot;max_pixels&quot;</span><span class="p">:</span> <span class="n">max_pixels</span>
+                <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"video"</span><span class="p">,</span>
+                <span class="s2">"video"</span><span class="p">:</span> <span class="n">video1</span><span class="p">,</span>
+                <span class="s2">"fps"</span><span class="p">:</span> <span class="n">fps</span><span class="p">,</span>
+                <span class="s2">"max_pixels"</span><span class="p">:</span> <span class="n">max_pixels</span>
             <span class="p">}]</span>
         <span class="p">}]</span>
 
         <span class="n">messages1</span> <span class="o">=</span> <span class="p">[{</span>
-            <span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;system&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">task_instruction</span><span class="p">)</span>
+            <span class="s2">"role"</span><span class="p">:</span> <span class="s2">"system"</span><span class="p">,</span>
+            <span class="s2">"content"</span><span class="p">:</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">task_instruction</span><span class="p">)</span>
         <span class="p">},</span> <span class="p">{</span>
-            <span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="p">[{</span>
-                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;text&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Please evaluate the following video based on the given task instruction.&quot;</span>
+            <span class="s2">"role"</span><span class="p">:</span> <span class="s2">"user"</span><span class="p">,</span>
+            <span class="s2">"content"</span><span class="p">:</span> <span class="p">[{</span>
+                <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"text"</span><span class="p">,</span>
+                <span class="s2">"text"</span><span class="p">:</span> <span class="s2">"Please evaluate the following video based on the given task instruction."</span>
             <span class="p">},</span> <span class="p">{</span>
-                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;video&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;video&quot;</span><span class="p">:</span> <span class="n">video2</span><span class="p">,</span>
-                <span class="s2">&quot;fps&quot;</span><span class="p">:</span> <span class="n">fps</span><span class="p">,</span>
-                <span class="s2">&quot;max_pixels&quot;</span><span class="p">:</span> <span class="n">max_pixels</span>
+                <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"video"</span><span class="p">,</span>
+                <span class="s2">"video"</span><span class="p">:</span> <span class="n">video2</span><span class="p">,</span>
+                <span class="s2">"fps"</span><span class="p">:</span> <span class="n">fps</span><span class="p">,</span>
+                <span class="s2">"max_pixels"</span><span class="p">:</span> <span class="n">max_pixels</span>
             <span class="p">}]</span>
         <span class="p">}]</span>
 
         <span class="c1"># Get human preference labels based on weighted scores</span>
-        <span class="n">pref_label</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_label</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="s2">&quot;criteria_preference&quot;</span><span class="p">])</span>
+        <span class="n">pref_label</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_label</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="s2">"criteria_preference"</span><span class="p">])</span>
 
         <span class="n">other</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">&quot;preference&quot;</span><span class="p">:</span> <span class="n">pref_label</span><span class="p">,</span>
-            <span class="s2">&quot;task_type&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_type</span><span class="p">,</span>
-            <span class="s2">&quot;criteria&quot;</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;criteria&quot;</span><span class="p">],</span>
-            <span class="s2">&quot;criteria_preference&quot;</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;criteria_preference&quot;</span><span class="p">],</span>
-            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">],</span>
-            <span class="s2">&quot;prompt&quot;</span><span class="p">:</span> <span class="n">gen_prompt</span><span class="p">,</span>
-            <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">],</span>
-            <span class="s2">&quot;video1_path&quot;</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;response1&#39;</span><span class="p">],</span>
-            <span class="s2">&quot;video2_path&quot;</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;response2&#39;</span><span class="p">],</span>
-            <span class="s2">&quot;model1&quot;</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;model1&#39;</span><span class="p">],</span>
-            <span class="s2">&quot;model2&quot;</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;model2&#39;</span><span class="p">],</span>
+            <span class="s2">"preference"</span><span class="p">:</span> <span class="n">pref_label</span><span class="p">,</span>
+            <span class="s2">"task_type"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_type</span><span class="p">,</span>
+            <span class="s2">"criteria"</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s2">"criteria"</span><span class="p">],</span>
+            <span class="s2">"criteria_preference"</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s2">"criteria_preference"</span><span class="p">],</span>
+            <span class="s2">"id"</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s2">"id"</span><span class="p">],</span>
+            <span class="s2">"prompt"</span><span class="p">:</span> <span class="n">gen_prompt</span><span class="p">,</span>
+            <span class="s2">"source"</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s1">'source'</span><span class="p">],</span>
+            <span class="s2">"video1_path"</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s1">'response1'</span><span class="p">],</span>
+            <span class="s2">"video2_path"</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s1">'response2'</span><span class="p">],</span>
+            <span class="s2">"model1"</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s1">'model1'</span><span class="p">],</span>
+            <span class="s2">"model2"</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s1">'model2'</span><span class="p">],</span>
         <span class="p">}</span>
         <span class="k">return</span> <span class="n">messages0</span><span class="p">,</span> <span class="n">messages1</span><span class="p">,</span> <span class="n">other</span></div></div>
 
 
 <div class="viewcode-block" id="OmniRewardBenchT2AHandler"><a class="viewcode-back" href="../../../api_doc/datasets/omnirewardbench.html#lightrft.datasets.omnirewardbench.OmniRewardBenchT2AHandler">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">OmniRewardBenchT2AHandler</span><span class="p">(</span><span class="n">OmniRewardBenchT2IHandler</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Data Handler for OmniRewardBench text-to-audio human preferences benchmark.</span>
 <span class="sd">    Process for scalar reward model training of pairwise-ranking task.</span>
 
 <span class="sd">    Paper: https://huggingface.co/papers/2510.23451</span>
 <span class="sd">    Dataset Repo: https://huggingface.co/datasets/HongbangYuan/OmniRewardBench</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">task_type</span> <span class="o">=</span> <span class="s2">&quot;text-to-audio&quot;</span>
+<span class="sd">    """</span>
+    <span class="n">task_type</span> <span class="o">=</span> <span class="s2">"text-to-audio"</span>
 
 <div class="viewcode-block" id="OmniRewardBenchT2AHandler.get_media_info"><a class="viewcode-back" href="../../../api_doc/datasets/omnirewardbench.html#lightrft.datasets.omnirewardbench.OmniRewardBenchT2AHandler.get_media_info">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_media_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Extract media info (paths) for the two audios.</span>
 
 <span class="sd">        :param item: A data item from load_data</span>
 <span class="sd">        :type item: Dict[str, Any]</span>
 
-<span class="sd">        :return: Dict containing local paths for &#39;audio1&#39; and &#39;audio2&#39;</span>
+<span class="sd">        :return: Dict containing local paths for 'audio1' and 'audio2'</span>
 <span class="sd">        :rtype: Dict[str, Dict[str, str]]</span>
 
 <span class="sd">        **Example:**</span>
@@ -629,19 +634,19 @@
 <span class="sd">        .. code-block:: python</span>
 
 <span class="sd">            info = handler.get_media_info(item)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">data_root</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;data_root&#39;</span><span class="p">]</span>
+<span class="sd">        """</span>
+        <span class="n">data_root</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s1">'data_root'</span><span class="p">]</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">data_root</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Missing &#39;data_root&#39; in item. Cannot resolve audio paths.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Missing 'data_root' in item. Cannot resolve audio paths."</span><span class="p">)</span>
 
-        <span class="n">full_path1</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data_root</span><span class="p">,</span> <span class="s2">&quot;media_data&quot;</span><span class="p">,</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;response1_path&#39;</span><span class="p">])</span>
-        <span class="n">full_path2</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data_root</span><span class="p">,</span> <span class="s2">&quot;media_data&quot;</span><span class="p">,</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;response2_path&#39;</span><span class="p">])</span>
+        <span class="n">full_path1</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data_root</span><span class="p">,</span> <span class="s2">"media_data"</span><span class="p">,</span> <span class="n">item</span><span class="p">[</span><span class="s1">'response1_path'</span><span class="p">])</span>
+        <span class="n">full_path2</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data_root</span><span class="p">,</span> <span class="s2">"media_data"</span><span class="p">,</span> <span class="n">item</span><span class="p">[</span><span class="s1">'response2_path'</span><span class="p">])</span>
 
-        <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;audio1&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;audio_local_path&#39;</span><span class="p">:</span> <span class="n">full_path1</span><span class="p">},</span> <span class="s1">&#39;audio2&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;audio_local_path&#39;</span><span class="p">:</span> <span class="n">full_path2</span><span class="p">}}</span></div>
+        <span class="k">return</span> <span class="p">{</span><span class="s1">'audio1'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'audio_local_path'</span><span class="p">:</span> <span class="n">full_path1</span><span class="p">},</span> <span class="s1">'audio2'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'audio_local_path'</span><span class="p">:</span> <span class="n">full_path2</span><span class="p">}}</span></div>
 
 <div class="viewcode-block" id="OmniRewardBenchT2AHandler.parse_item"><a class="viewcode-back" href="../../../api_doc/datasets/omnirewardbench.html#lightrft.datasets.omnirewardbench.OmniRewardBenchT2AHandler.parse_item">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">parse_item</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">media_content</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
                    <span class="n">config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">],</span> <span class="n">Dict</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Parse a data item from OmniRewardBench-T2A into messages and metadata.</span>
 
 <span class="sd">        :param item: The raw data item</span>
@@ -659,79 +664,79 @@
 <span class="sd">        .. code-block:: python</span>
 
 <span class="sd">            msg0, msg1, other = handler.parse_item(item, media_content, config)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">audio1</span> <span class="o">=</span> <span class="n">media_content</span><span class="p">[</span><span class="s1">&#39;audio1&#39;</span><span class="p">]</span>
-        <span class="n">audio2</span> <span class="o">=</span> <span class="n">media_content</span><span class="p">[</span><span class="s1">&#39;audio2&#39;</span><span class="p">]</span>
+<span class="sd">        """</span>
+        <span class="n">audio1</span> <span class="o">=</span> <span class="n">media_content</span><span class="p">[</span><span class="s1">'audio1'</span><span class="p">]</span>
+        <span class="n">audio2</span> <span class="o">=</span> <span class="n">media_content</span><span class="p">[</span><span class="s1">'audio2'</span><span class="p">]</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">([</span><span class="n">audio1</span><span class="p">,</span> <span class="n">audio2</span><span class="p">]):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Missing visual content for &#39;audio1&#39; or &#39;audio2&#39;.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Missing visual content for 'audio1' or 'audio2'."</span><span class="p">)</span>
 
         <span class="c1"># Get generation prompt from data item</span>
-        <span class="n">gen_prompt</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;prompt&quot;</span><span class="p">]</span>
+        <span class="n">gen_prompt</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s2">"prompt"</span><span class="p">]</span>
 
         <span class="c1"># Get system prompts from config</span>
-        <span class="n">task_instruction_template</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;task_instruction&quot;</span><span class="p">]</span>
+        <span class="n">task_instruction_template</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">"task_instruction"</span><span class="p">]</span>
         <span class="n">task_instruction</span> <span class="o">=</span> <span class="n">task_instruction_template</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">prompt</span><span class="o">=</span><span class="n">gen_prompt</span><span class="p">)</span>
 
         <span class="c1"># Build messages</span>
         <span class="n">messages0</span> <span class="o">=</span> <span class="p">[{</span>
-            <span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;system&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">task_instruction</span><span class="p">)</span>
+            <span class="s2">"role"</span><span class="p">:</span> <span class="s2">"system"</span><span class="p">,</span>
+            <span class="s2">"content"</span><span class="p">:</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">task_instruction</span><span class="p">)</span>
         <span class="p">},</span> <span class="p">{</span>
-            <span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="p">[{</span>
-                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;text&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Please evaluate the following audio based on the given task instruction.&quot;</span>
+            <span class="s2">"role"</span><span class="p">:</span> <span class="s2">"user"</span><span class="p">,</span>
+            <span class="s2">"content"</span><span class="p">:</span> <span class="p">[{</span>
+                <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"text"</span><span class="p">,</span>
+                <span class="s2">"text"</span><span class="p">:</span> <span class="s2">"Please evaluate the following audio based on the given task instruction."</span>
             <span class="p">},</span> <span class="p">{</span>
-                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;audio&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;audio&quot;</span><span class="p">:</span> <span class="n">audio1</span>
+                <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"audio"</span><span class="p">,</span>
+                <span class="s2">"audio"</span><span class="p">:</span> <span class="n">audio1</span>
             <span class="p">}]</span>
         <span class="p">}]</span>
 
         <span class="n">messages1</span> <span class="o">=</span> <span class="p">[{</span>
-            <span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;system&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">task_instruction</span><span class="p">)</span>
+            <span class="s2">"role"</span><span class="p">:</span> <span class="s2">"system"</span><span class="p">,</span>
+            <span class="s2">"content"</span><span class="p">:</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">task_instruction</span><span class="p">)</span>
         <span class="p">},</span> <span class="p">{</span>
-            <span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="p">[{</span>
-                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;text&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Please evaluate the following audio based on the given task instruction.&quot;</span>
+            <span class="s2">"role"</span><span class="p">:</span> <span class="s2">"user"</span><span class="p">,</span>
+            <span class="s2">"content"</span><span class="p">:</span> <span class="p">[{</span>
+                <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"text"</span><span class="p">,</span>
+                <span class="s2">"text"</span><span class="p">:</span> <span class="s2">"Please evaluate the following audio based on the given task instruction."</span>
             <span class="p">},</span> <span class="p">{</span>
-                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;audio&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;audio&quot;</span><span class="p">:</span> <span class="n">audio2</span>
+                <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"audio"</span><span class="p">,</span>
+                <span class="s2">"audio"</span><span class="p">:</span> <span class="n">audio2</span>
             <span class="p">}]</span>
         <span class="p">}]</span>
 
         <span class="c1"># Get human preference labels based on weighted scores</span>
-        <span class="n">pref_label</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_label</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="s2">&quot;criteria_preference&quot;</span><span class="p">])</span>
+        <span class="n">pref_label</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_label</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="s2">"criteria_preference"</span><span class="p">])</span>
 
         <span class="n">other</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">&quot;preference&quot;</span><span class="p">:</span> <span class="n">pref_label</span><span class="p">,</span>
-            <span class="s2">&quot;task_type&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_type</span><span class="p">,</span>
-            <span class="s2">&quot;criteria&quot;</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;criteria&quot;</span><span class="p">],</span>
-            <span class="s2">&quot;criteria_preference&quot;</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;criteria_preference&quot;</span><span class="p">],</span>
-            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">],</span>
-            <span class="s2">&quot;prompt&quot;</span><span class="p">:</span> <span class="n">gen_prompt</span><span class="p">,</span>
-            <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">],</span>
-            <span class="s2">&quot;audio1_path&quot;</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;response1_path&#39;</span><span class="p">],</span>
-            <span class="s2">&quot;audio2_path&quot;</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;response2_path&#39;</span><span class="p">],</span>
-            <span class="s2">&quot;model1&quot;</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;model1&#39;</span><span class="p">],</span>
-            <span class="s2">&quot;model2&quot;</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;model2&#39;</span><span class="p">],</span>
+            <span class="s2">"preference"</span><span class="p">:</span> <span class="n">pref_label</span><span class="p">,</span>
+            <span class="s2">"task_type"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_type</span><span class="p">,</span>
+            <span class="s2">"criteria"</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s2">"criteria"</span><span class="p">],</span>
+            <span class="s2">"criteria_preference"</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s2">"criteria_preference"</span><span class="p">],</span>
+            <span class="s2">"id"</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s2">"id"</span><span class="p">],</span>
+            <span class="s2">"prompt"</span><span class="p">:</span> <span class="n">gen_prompt</span><span class="p">,</span>
+            <span class="s2">"source"</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s1">'source'</span><span class="p">],</span>
+            <span class="s2">"audio1_path"</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s1">'response1_path'</span><span class="p">],</span>
+            <span class="s2">"audio2_path"</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s1">'response2_path'</span><span class="p">],</span>
+            <span class="s2">"model1"</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s1">'model1'</span><span class="p">],</span>
+            <span class="s2">"model2"</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s1">'model2'</span><span class="p">],</span>
         <span class="p">}</span>
         <span class="k">return</span> <span class="n">messages0</span><span class="p">,</span> <span class="n">messages1</span><span class="p">,</span> <span class="n">other</span></div></div>
 
 
 <div class="viewcode-block" id="OmniRewardBenchT2IGRMHandler"><a class="viewcode-back" href="../../../api_doc/datasets/omnirewardbench.html#lightrft.datasets.omnirewardbench.OmniRewardBenchT2IGRMHandler">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">OmniRewardBenchT2IGRMHandler</span><span class="p">(</span><span class="n">OmniRewardBenchT2IHandler</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Data Handler for OmniRewardBench text-to-image human preferences benchmark.</span>
 <span class="sd">    Process for generative reward model training of pair-wise ranking task.</span>
 
 <span class="sd">    Paper: https://huggingface.co/papers/2510.23451</span>
 <span class="sd">    Dataset Repo: https://huggingface.co/datasets/HongbangYuan/OmniRewardBench</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 <div class="viewcode-block" id="OmniRewardBenchT2IGRMHandler.parse_item"><a class="viewcode-back" href="../../../api_doc/datasets/omnirewardbench.html#lightrft.datasets.omnirewardbench.OmniRewardBenchT2IGRMHandler.parse_item">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">parse_item</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">media_content</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
                    <span class="n">config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">],</span> <span class="n">Dict</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Parse a data item from OmniRewardBench-T2I into one message and metadata.</span>
 <span class="sd">        For generative reward model training in pair-wise ranking task.</span>
 
@@ -750,88 +755,88 @@
 <span class="sd">        .. code-block:: python</span>
 
 <span class="sd">            messages, other = handler.parse_item(item, media_content, config)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">image1</span> <span class="o">=</span> <span class="n">media_content</span><span class="p">[</span><span class="s1">&#39;image1&#39;</span><span class="p">]</span>
-        <span class="n">image2</span> <span class="o">=</span> <span class="n">media_content</span><span class="p">[</span><span class="s1">&#39;image2&#39;</span><span class="p">]</span>
+<span class="sd">        """</span>
+        <span class="n">image1</span> <span class="o">=</span> <span class="n">media_content</span><span class="p">[</span><span class="s1">'image1'</span><span class="p">]</span>
+        <span class="n">image2</span> <span class="o">=</span> <span class="n">media_content</span><span class="p">[</span><span class="s1">'image2'</span><span class="p">]</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">([</span><span class="n">image1</span><span class="p">,</span> <span class="n">image2</span><span class="p">]):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Missing visual content for &#39;image1&#39; or &#39;image2&#39;.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Missing visual content for 'image1' or 'image2'."</span><span class="p">)</span>
 
         <span class="c1"># Get generation prompt from data item</span>
-        <span class="n">gen_prompt</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;prompt&quot;</span><span class="p">]</span>
+        <span class="n">gen_prompt</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s2">"prompt"</span><span class="p">]</span>
 
         <span class="c1"># Get system prompts from config</span>
-        <span class="n">task_instruction_template</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;task_instruction&quot;</span><span class="p">]</span>
+        <span class="n">task_instruction_template</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">"task_instruction"</span><span class="p">]</span>
         <span class="n">task_instruction</span> <span class="o">=</span> <span class="n">task_instruction_template</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">prompt</span><span class="o">=</span><span class="n">gen_prompt</span><span class="p">)</span>
-        <span class="n">criteria</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;criteria&quot;</span><span class="p">]</span>
+        <span class="n">criteria</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s2">"criteria"</span><span class="p">]</span>
 
         <span class="c1"># Get max_pixels from config</span>
-        <span class="n">max_pixels</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;max_pixels&quot;</span><span class="p">]</span>
+        <span class="n">max_pixels</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">"max_pixels"</span><span class="p">]</span>
 
         <span class="c1"># Build messages</span>
         <span class="n">messages</span> <span class="o">=</span> <span class="p">[</span>
             <span class="p">{</span>
-                <span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;system&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="n">task_instruction</span>
+                <span class="s2">"role"</span><span class="p">:</span> <span class="s2">"system"</span><span class="p">,</span>
+                <span class="s2">"content"</span><span class="p">:</span> <span class="n">task_instruction</span>
             <span class="p">},</span>
             <span class="p">{</span>
-                <span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;system&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;Please give your evaluation considering the following criteria: </span><span class="si">{</span><span class="n">criteria</span><span class="si">}</span><span class="s2">.&quot;</span>
+                <span class="s2">"role"</span><span class="p">:</span> <span class="s2">"system"</span><span class="p">,</span>
+                <span class="s2">"content"</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"Please give your evaluation considering the following criteria: </span><span class="si">{</span><span class="n">criteria</span><span class="si">}</span><span class="s2">."</span>
             <span class="p">},</span>
             <span class="p">{</span>
-                <span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="p">[{</span>
-                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;text&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;**Image 1:**&quot;</span>
+                <span class="s2">"role"</span><span class="p">:</span> <span class="s2">"user"</span><span class="p">,</span>
+                <span class="s2">"content"</span><span class="p">:</span> <span class="p">[{</span>
+                    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"text"</span><span class="p">,</span>
+                    <span class="s2">"text"</span><span class="p">:</span> <span class="s2">"**Image 1:**"</span>
                 <span class="p">},</span> <span class="p">{</span>
-                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;image&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;image&quot;</span><span class="p">:</span> <span class="n">image1</span><span class="p">,</span>
-                    <span class="s2">&quot;max_pixels&quot;</span><span class="p">:</span> <span class="n">max_pixels</span>
+                    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"image"</span><span class="p">,</span>
+                    <span class="s2">"image"</span><span class="p">:</span> <span class="n">image1</span><span class="p">,</span>
+                    <span class="s2">"max_pixels"</span><span class="p">:</span> <span class="n">max_pixels</span>
                 <span class="p">}]</span>
             <span class="p">},</span>
             <span class="p">{</span>
-                <span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="p">[{</span>
-                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;text&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;**Image 2:**&quot;</span>
+                <span class="s2">"role"</span><span class="p">:</span> <span class="s2">"user"</span><span class="p">,</span>
+                <span class="s2">"content"</span><span class="p">:</span> <span class="p">[{</span>
+                    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"text"</span><span class="p">,</span>
+                    <span class="s2">"text"</span><span class="p">:</span> <span class="s2">"**Image 2:**"</span>
                 <span class="p">},</span> <span class="p">{</span>
-                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;image&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;image&quot;</span><span class="p">:</span> <span class="n">image2</span><span class="p">,</span>
-                    <span class="s2">&quot;max_pixels&quot;</span><span class="p">:</span> <span class="n">max_pixels</span>
+                    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"image"</span><span class="p">,</span>
+                    <span class="s2">"image"</span><span class="p">:</span> <span class="n">image2</span><span class="p">,</span>
+                    <span class="s2">"max_pixels"</span><span class="p">:</span> <span class="n">max_pixels</span>
                 <span class="p">}]</span>
             <span class="p">},</span>
         <span class="p">]</span>
 
         <span class="c1"># Get human preference labels based on weighted scores</span>
-        <span class="n">pref_label</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_label</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="s2">&quot;criteria_preference&quot;</span><span class="p">])</span>
+        <span class="n">pref_label</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_label</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="s2">"criteria_preference"</span><span class="p">])</span>
 
         <span class="n">other</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">&quot;preference&quot;</span><span class="p">:</span> <span class="n">pref_label</span><span class="p">,</span>
-            <span class="s2">&quot;task_type&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_type</span><span class="p">,</span>
-            <span class="s2">&quot;criteria&quot;</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;criteria&quot;</span><span class="p">],</span>
-            <span class="s2">&quot;criteria_preference&quot;</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;criteria_preference&quot;</span><span class="p">],</span>
-            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">],</span>
-            <span class="s2">&quot;prompt&quot;</span><span class="p">:</span> <span class="n">gen_prompt</span><span class="p">,</span>
-            <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">],</span>
-            <span class="s2">&quot;image1_path&quot;</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;response1_path&#39;</span><span class="p">],</span>
-            <span class="s2">&quot;image2_path&quot;</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;response2_path&#39;</span><span class="p">],</span>
-            <span class="s2">&quot;model1&quot;</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;model1&#39;</span><span class="p">],</span>
-            <span class="s2">&quot;model2&quot;</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;model2&#39;</span><span class="p">],</span>
+            <span class="s2">"preference"</span><span class="p">:</span> <span class="n">pref_label</span><span class="p">,</span>
+            <span class="s2">"task_type"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_type</span><span class="p">,</span>
+            <span class="s2">"criteria"</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s2">"criteria"</span><span class="p">],</span>
+            <span class="s2">"criteria_preference"</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s2">"criteria_preference"</span><span class="p">],</span>
+            <span class="s2">"id"</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s2">"id"</span><span class="p">],</span>
+            <span class="s2">"prompt"</span><span class="p">:</span> <span class="n">gen_prompt</span><span class="p">,</span>
+            <span class="s2">"source"</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s1">'source'</span><span class="p">],</span>
+            <span class="s2">"image1_path"</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s1">'response1_path'</span><span class="p">],</span>
+            <span class="s2">"image2_path"</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s1">'response2_path'</span><span class="p">],</span>
+            <span class="s2">"model1"</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s1">'model1'</span><span class="p">],</span>
+            <span class="s2">"model2"</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s1">'model2'</span><span class="p">],</span>
         <span class="p">}</span>
         <span class="k">return</span> <span class="n">messages</span><span class="p">,</span> <span class="n">other</span></div></div>
 
 
 <div class="viewcode-block" id="OmniRewardBenchT2IPairHandler"><a class="viewcode-back" href="../../../api_doc/datasets/omnirewardbench.html#lightrft.datasets.omnirewardbench.OmniRewardBenchT2IPairHandler">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">OmniRewardBenchT2IPairHandler</span><span class="p">(</span><span class="n">OmniRewardBenchT2IHandler</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Data Handler for OmniRewardBench text-to-image human preferences benchmark.</span>
 <span class="sd">    Process for generative reward model on pair-wise ranking task.</span>
 
 <span class="sd">    Paper: https://huggingface.co/papers/2510.23451</span>
 <span class="sd">    Dataset Repo: https://huggingface.co/datasets/HongbangYuan/OmniRewardBench</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 <div class="viewcode-block" id="OmniRewardBenchT2IPairHandler.parse_item"><a class="viewcode-back" href="../../../api_doc/datasets/omnirewardbench.html#lightrft.datasets.omnirewardbench.OmniRewardBenchT2IPairHandler.parse_item">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">parse_item</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">media_content</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
                    <span class="n">config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">],</span> <span class="n">Dict</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Parse a data item into generative messages and metadata.</span>
 
 <span class="sd">        :param item: The raw data item</span>
@@ -849,89 +854,89 @@
 <span class="sd">        .. code-block:: python</span>
 
 <span class="sd">            messages, other = handler.parse_item(item, media_content, config)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">image1</span> <span class="o">=</span> <span class="n">media_content</span><span class="p">[</span><span class="s1">&#39;image1&#39;</span><span class="p">]</span>
-        <span class="n">image2</span> <span class="o">=</span> <span class="n">media_content</span><span class="p">[</span><span class="s1">&#39;image2&#39;</span><span class="p">]</span>
+<span class="sd">        """</span>
+        <span class="n">image1</span> <span class="o">=</span> <span class="n">media_content</span><span class="p">[</span><span class="s1">'image1'</span><span class="p">]</span>
+        <span class="n">image2</span> <span class="o">=</span> <span class="n">media_content</span><span class="p">[</span><span class="s1">'image2'</span><span class="p">]</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">([</span><span class="n">image1</span><span class="p">,</span> <span class="n">image2</span><span class="p">]):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Missing visual content for &#39;image1&#39; or &#39;image2&#39;.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Missing visual content for 'image1' or 'image2'."</span><span class="p">)</span>
 
         <span class="c1"># Get generation prompt from data item</span>
-        <span class="n">prompt_text</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;prompt&quot;</span><span class="p">]</span>
+        <span class="n">prompt_text</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s2">"prompt"</span><span class="p">]</span>
 
         <span class="c1"># Get system prompts from config</span>
         <span class="n">task_instruction_template</span> <span class="o">=</span> <span class="n">get_task_instructions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">)</span>
         <span class="n">task_instruction</span> <span class="o">=</span> <span class="n">task_instruction_template</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">prompt</span><span class="o">=</span><span class="n">prompt_text</span><span class="p">)</span>
-        <span class="n">criteria</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;criteria&quot;</span><span class="p">]</span>
+        <span class="n">criteria</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s2">"criteria"</span><span class="p">]</span>
 
         <span class="c1"># Get max_pixels from config</span>
-        <span class="n">max_pixels</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;max_pixels&quot;</span><span class="p">]</span>
+        <span class="n">max_pixels</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">"max_pixels"</span><span class="p">]</span>
 
         <span class="c1"># Build messages</span>
         <span class="n">messages</span> <span class="o">=</span> <span class="p">[</span>
             <span class="p">{</span>
-                <span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;system&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="n">task_instruction</span>
+                <span class="s2">"role"</span><span class="p">:</span> <span class="s2">"system"</span><span class="p">,</span>
+                <span class="s2">"content"</span><span class="p">:</span> <span class="n">task_instruction</span>
             <span class="p">},</span>
             <span class="p">{</span>
-                <span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;system&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;Please give your evaluation considering the following criteria: </span><span class="si">{</span><span class="n">criteria</span><span class="si">}</span><span class="s2">.&quot;</span>
+                <span class="s2">"role"</span><span class="p">:</span> <span class="s2">"system"</span><span class="p">,</span>
+                <span class="s2">"content"</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"Please give your evaluation considering the following criteria: </span><span class="si">{</span><span class="n">criteria</span><span class="si">}</span><span class="s2">."</span>
             <span class="p">},</span>
             <span class="p">{</span>
-                <span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="p">[{</span>
-                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;text&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;**Image 1:**&quot;</span>
+                <span class="s2">"role"</span><span class="p">:</span> <span class="s2">"user"</span><span class="p">,</span>
+                <span class="s2">"content"</span><span class="p">:</span> <span class="p">[{</span>
+                    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"text"</span><span class="p">,</span>
+                    <span class="s2">"text"</span><span class="p">:</span> <span class="s2">"**Image 1:**"</span>
                 <span class="p">},</span> <span class="p">{</span>
-                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;image&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;image&quot;</span><span class="p">:</span> <span class="n">image1</span><span class="p">,</span>
-                    <span class="s2">&quot;max_pixels&quot;</span><span class="p">:</span> <span class="n">max_pixels</span><span class="p">,</span>
+                    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"image"</span><span class="p">,</span>
+                    <span class="s2">"image"</span><span class="p">:</span> <span class="n">image1</span><span class="p">,</span>
+                    <span class="s2">"max_pixels"</span><span class="p">:</span> <span class="n">max_pixels</span><span class="p">,</span>
                 <span class="p">}]</span>
             <span class="p">},</span>
             <span class="p">{</span>
-                <span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="p">[{</span>
-                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;text&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;**Image 2:**&quot;</span>
+                <span class="s2">"role"</span><span class="p">:</span> <span class="s2">"user"</span><span class="p">,</span>
+                <span class="s2">"content"</span><span class="p">:</span> <span class="p">[{</span>
+                    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"text"</span><span class="p">,</span>
+                    <span class="s2">"text"</span><span class="p">:</span> <span class="s2">"**Image 2:**"</span>
                 <span class="p">},</span> <span class="p">{</span>
-                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;image&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;image&quot;</span><span class="p">:</span> <span class="n">image2</span><span class="p">,</span>
-                    <span class="s2">&quot;max_pixels&quot;</span><span class="p">:</span> <span class="n">max_pixels</span><span class="p">,</span>
+                    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"image"</span><span class="p">,</span>
+                    <span class="s2">"image"</span><span class="p">:</span> <span class="n">image2</span><span class="p">,</span>
+                    <span class="s2">"max_pixels"</span><span class="p">:</span> <span class="n">max_pixels</span><span class="p">,</span>
                 <span class="p">}]</span>
             <span class="p">},</span>
         <span class="p">]</span>
 
         <span class="c1"># Get human preference labels based on weighted scores</span>
-        <span class="n">pref_label</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_label</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="s2">&quot;criteria_preference&quot;</span><span class="p">])</span>
+        <span class="n">pref_label</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_label</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="s2">"criteria_preference"</span><span class="p">])</span>
 
         <span class="n">other</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">&quot;preference&quot;</span><span class="p">:</span> <span class="n">pref_label</span><span class="p">,</span>
-            <span class="s2">&quot;reward_rule_label&quot;</span><span class="p">:</span> <span class="s2">&quot;general&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;task_type&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_type</span><span class="p">,</span>
-            <span class="s2">&quot;criteria&quot;</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;criteria&quot;</span><span class="p">],</span>
-            <span class="s2">&quot;criteria_preference&quot;</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;criteria_preference&quot;</span><span class="p">],</span>
-            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">],</span>
-            <span class="s2">&quot;prompt&quot;</span><span class="p">:</span> <span class="n">prompt_text</span><span class="p">,</span>
-            <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">],</span>
-            <span class="s2">&quot;image1_path&quot;</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;response1_path&#39;</span><span class="p">],</span>
-            <span class="s2">&quot;image2_path&quot;</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;response2_path&#39;</span><span class="p">],</span>
-            <span class="s2">&quot;model1&quot;</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;model1&#39;</span><span class="p">],</span>
-            <span class="s2">&quot;model2&quot;</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;model2&#39;</span><span class="p">],</span>
+            <span class="s2">"preference"</span><span class="p">:</span> <span class="n">pref_label</span><span class="p">,</span>
+            <span class="s2">"reward_rule_label"</span><span class="p">:</span> <span class="s2">"general"</span><span class="p">,</span>
+            <span class="s2">"task_type"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_type</span><span class="p">,</span>
+            <span class="s2">"criteria"</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s2">"criteria"</span><span class="p">],</span>
+            <span class="s2">"criteria_preference"</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s2">"criteria_preference"</span><span class="p">],</span>
+            <span class="s2">"id"</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s2">"id"</span><span class="p">],</span>
+            <span class="s2">"prompt"</span><span class="p">:</span> <span class="n">prompt_text</span><span class="p">,</span>
+            <span class="s2">"source"</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s1">'source'</span><span class="p">],</span>
+            <span class="s2">"image1_path"</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s1">'response1_path'</span><span class="p">],</span>
+            <span class="s2">"image2_path"</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s1">'response2_path'</span><span class="p">],</span>
+            <span class="s2">"model1"</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s1">'model1'</span><span class="p">],</span>
+            <span class="s2">"model2"</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s1">'model2'</span><span class="p">],</span>
         <span class="p">}</span>
         <span class="k">return</span> <span class="n">messages</span><span class="p">,</span> <span class="n">other</span></div></div>
 
 
 <div class="viewcode-block" id="OmniRewardBenchT2VPairHandler"><a class="viewcode-back" href="../../../api_doc/datasets/omnirewardbench.html#lightrft.datasets.omnirewardbench.OmniRewardBenchT2VPairHandler">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">OmniRewardBenchT2VPairHandler</span><span class="p">(</span><span class="n">OmniRewardBenchT2VHandler</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Data Handler for OmniRewardBench text-to-video human preferences benchmark.</span>
 <span class="sd">    Process for generative reward model on pair-wise ranking task.</span>
 
 <span class="sd">    Paper: https://huggingface.co/papers/2510.23451</span>
 <span class="sd">    Dataset Repo: https://huggingface.co/datasets/HongbangYuan/OmniRewardBench</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 <div class="viewcode-block" id="OmniRewardBenchT2VPairHandler.parse_item"><a class="viewcode-back" href="../../../api_doc/datasets/omnirewardbench.html#lightrft.datasets.omnirewardbench.OmniRewardBenchT2VPairHandler.parse_item">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">parse_item</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">media_content</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
                    <span class="n">config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">],</span> <span class="n">Dict</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Parse a data item into generative messages and metadata.</span>
 
 <span class="sd">        :param item: The raw data item</span>
@@ -949,68 +954,68 @@
 <span class="sd">        .. code-block:: python</span>
 
 <span class="sd">            messages, other = handler.parse_item(item, media_content, config)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">video1</span> <span class="o">=</span> <span class="n">media_content</span><span class="p">[</span><span class="s1">&#39;video1&#39;</span><span class="p">]</span>
-        <span class="n">video2</span> <span class="o">=</span> <span class="n">media_content</span><span class="p">[</span><span class="s1">&#39;video2&#39;</span><span class="p">]</span>
+<span class="sd">        """</span>
+        <span class="n">video1</span> <span class="o">=</span> <span class="n">media_content</span><span class="p">[</span><span class="s1">'video1'</span><span class="p">]</span>
+        <span class="n">video2</span> <span class="o">=</span> <span class="n">media_content</span><span class="p">[</span><span class="s1">'video2'</span><span class="p">]</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">([</span><span class="n">video1</span><span class="p">,</span> <span class="n">video2</span><span class="p">]):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Missing visual content for &#39;video1&#39; or &#39;video2&#39;.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Missing visual content for 'video1' or 'video2'."</span><span class="p">)</span>
 
         <span class="c1"># Get generation prompt from data item</span>
-        <span class="n">gen_prompt</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;prompt&quot;</span><span class="p">]</span>
+        <span class="n">gen_prompt</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s2">"prompt"</span><span class="p">]</span>
 
         <span class="c1"># Get system prompts from config</span>
         <span class="n">task_instruction_template</span> <span class="o">=</span> <span class="n">get_task_instructions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">)</span>
         <span class="n">task_instruction</span> <span class="o">=</span> <span class="n">task_instruction_template</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">prompt</span><span class="o">=</span><span class="n">gen_prompt</span><span class="p">)</span>
 
         <span class="c1"># Get FPS and max_pixels from config</span>
-        <span class="n">fps</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;video_fps&quot;</span><span class="p">]</span>
-        <span class="n">max_pixels</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;max_pixels&quot;</span><span class="p">]</span>
+        <span class="n">fps</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">"video_fps"</span><span class="p">]</span>
+        <span class="n">max_pixels</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">"max_pixels"</span><span class="p">]</span>
 
         <span class="c1"># Build messages</span>
         <span class="n">messages</span> <span class="o">=</span> <span class="p">[{</span>
-            <span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;system&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">task_instruction</span><span class="p">)</span>
+            <span class="s2">"role"</span><span class="p">:</span> <span class="s2">"system"</span><span class="p">,</span>
+            <span class="s2">"content"</span><span class="p">:</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">task_instruction</span><span class="p">)</span>
         <span class="p">},</span> <span class="p">{</span>
-            <span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="p">[{</span>
-                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;text&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;**Video 1:**&quot;</span>
+            <span class="s2">"role"</span><span class="p">:</span> <span class="s2">"user"</span><span class="p">,</span>
+            <span class="s2">"content"</span><span class="p">:</span> <span class="p">[{</span>
+                <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"text"</span><span class="p">,</span>
+                <span class="s2">"text"</span><span class="p">:</span> <span class="s2">"**Video 1:**"</span>
             <span class="p">},</span> <span class="p">{</span>
-                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;video&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;video&quot;</span><span class="p">:</span> <span class="n">video1</span><span class="p">,</span>
-                <span class="s2">&quot;fps&quot;</span><span class="p">:</span> <span class="n">fps</span><span class="p">,</span>
-                <span class="s2">&quot;max_pixels&quot;</span><span class="p">:</span> <span class="n">max_pixels</span>
+                <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"video"</span><span class="p">,</span>
+                <span class="s2">"video"</span><span class="p">:</span> <span class="n">video1</span><span class="p">,</span>
+                <span class="s2">"fps"</span><span class="p">:</span> <span class="n">fps</span><span class="p">,</span>
+                <span class="s2">"max_pixels"</span><span class="p">:</span> <span class="n">max_pixels</span>
             <span class="p">}]</span>
         <span class="p">},</span> <span class="p">{</span>
-            <span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="p">[{</span>
-                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;text&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;**Video 2:**&quot;</span>
+            <span class="s2">"role"</span><span class="p">:</span> <span class="s2">"user"</span><span class="p">,</span>
+            <span class="s2">"content"</span><span class="p">:</span> <span class="p">[{</span>
+                <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"text"</span><span class="p">,</span>
+                <span class="s2">"text"</span><span class="p">:</span> <span class="s2">"**Video 2:**"</span>
             <span class="p">},</span> <span class="p">{</span>
-                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;video&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;video&quot;</span><span class="p">:</span> <span class="n">video2</span><span class="p">,</span>
-                <span class="s2">&quot;fps&quot;</span><span class="p">:</span> <span class="n">fps</span><span class="p">,</span>
-                <span class="s2">&quot;max_pixels&quot;</span><span class="p">:</span> <span class="n">max_pixels</span>
+                <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"video"</span><span class="p">,</span>
+                <span class="s2">"video"</span><span class="p">:</span> <span class="n">video2</span><span class="p">,</span>
+                <span class="s2">"fps"</span><span class="p">:</span> <span class="n">fps</span><span class="p">,</span>
+                <span class="s2">"max_pixels"</span><span class="p">:</span> <span class="n">max_pixels</span>
             <span class="p">}]</span>
         <span class="p">}]</span>
 
         <span class="c1"># Get human preference labels based on weighted scores</span>
-        <span class="n">pref_label</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_label</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="s2">&quot;criteria_preference&quot;</span><span class="p">])</span>
+        <span class="n">pref_label</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_label</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="s2">"criteria_preference"</span><span class="p">])</span>
 
         <span class="n">other</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">&quot;preference&quot;</span><span class="p">:</span> <span class="n">pref_label</span><span class="p">,</span>
-            <span class="s2">&quot;reward_rule_label&quot;</span><span class="p">:</span> <span class="s2">&quot;general&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;task_type&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_type</span><span class="p">,</span>
-            <span class="s2">&quot;criteria&quot;</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;criteria&quot;</span><span class="p">],</span>
-            <span class="s2">&quot;criteria_preference&quot;</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;criteria_preference&quot;</span><span class="p">],</span>
-            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;id&quot;</span><span class="p">],</span>
-            <span class="s2">&quot;prompt&quot;</span><span class="p">:</span> <span class="n">gen_prompt</span><span class="p">,</span>
-            <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">],</span>
-            <span class="s2">&quot;video1_path&quot;</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;response1&#39;</span><span class="p">],</span>
-            <span class="s2">&quot;video2_path&quot;</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;response2&#39;</span><span class="p">],</span>
-            <span class="s2">&quot;model1&quot;</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;model1&#39;</span><span class="p">],</span>
-            <span class="s2">&quot;model2&quot;</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;model2&#39;</span><span class="p">],</span>
+            <span class="s2">"preference"</span><span class="p">:</span> <span class="n">pref_label</span><span class="p">,</span>
+            <span class="s2">"reward_rule_label"</span><span class="p">:</span> <span class="s2">"general"</span><span class="p">,</span>
+            <span class="s2">"task_type"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_type</span><span class="p">,</span>
+            <span class="s2">"criteria"</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s2">"criteria"</span><span class="p">],</span>
+            <span class="s2">"criteria_preference"</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s2">"criteria_preference"</span><span class="p">],</span>
+            <span class="s2">"id"</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s2">"id"</span><span class="p">],</span>
+            <span class="s2">"prompt"</span><span class="p">:</span> <span class="n">gen_prompt</span><span class="p">,</span>
+            <span class="s2">"source"</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s1">'source'</span><span class="p">],</span>
+            <span class="s2">"video1_path"</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s1">'response1'</span><span class="p">],</span>
+            <span class="s2">"video2_path"</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s1">'response2'</span><span class="p">],</span>
+            <span class="s2">"model1"</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s1">'model1'</span><span class="p">],</span>
+            <span class="s2">"model2"</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s1">'model2'</span><span class="p">],</span>
         <span class="p">}</span>
         <span class="k">return</span> <span class="n">messages</span><span class="p">,</span> <span class="n">other</span></div></div>
 </pre></div>
@@ -1025,7 +1030,7 @@
 
   <div role="contentinfo">
     <p>
-      &copy; Copyright 2025, OpenDILab.
+      &copy; Copyright 2025-2026, OpenDILab.
 
     </p>
   </div>
@@ -1062,8 +1067,8 @@
   <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
   <script src="../../../_static/doctools.js"></script>
   <script src="../../../_static/sphinx_highlight.js"></script>
-  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-  <script src="../../../_static/js/language_switch.js"></script>
+  <script src="../../../_static/clipboard.min.js"></script>
+  <script src="../../../_static/copybutton.js"></script>
   
 
   
@@ -1092,7 +1097,7 @@
     <div class="container-fluid">
       <div class="container">
         <div class="mobile-main-menu-header-container">
-          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="header-logo" href="https://github.com/opendilab/LightRFT" aria-label="OpenMMLab"></a>
           <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
         </div>
       </div>

@@ -33,9 +33,12 @@
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
   <link rel="stylesheet" href="../_static/css/readthedocs.css" type="text/css" />
   <link rel="index" title="Index" href="../genindex.html" />
   <link rel="search" title="Search" href="../search.html" />
+  <link rel="next" title="支持的算法" href="algorithms_zh.html" />
+  <link rel="prev" title="快速入门" href="index_zh.html" />
   <!-- Google Analytics -->
   <script type="text/javascript">
     var collapsedSections = [];
@@ -85,7 +88,7 @@
 <div class="container-fluid header-holder tutorials-header" id="header-holder">
   <div class="container">
     <div class="header-container">
-      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+      <a class="header-logo" href="https://github.com/opendilab/LightRFT"
         aria-label="OpenMMLab"></a>
 
       <div class="main-menu">
@@ -235,6 +238,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../api_doc/strategy/index.html">lightrft.strategy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api_doc/trainer/index.html">lightrft.trainer</a></li>
 </ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../index_zh.html">欢迎来到 LightRFT 文档!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index_zh.html#id4">索引与表格</a></li>
+</ul>
 
         
         
@@ -271,6 +278,10 @@
         </a> &gt;
       </li>
 
+        
+          <li><a href="../index_zh.html">欢迎来到 LightRFT 文档!</a> &gt;</li>
+        
+          <li><a href="index_zh.html">快速入门</a> &gt;</li>
         
       <li>LightRFT 项目概览</li>
     
@@ -374,8 +385,8 @@
 <p>Trainer 模块实现了强化学习算法和训练循环。它协调模型、策略和优化过程之间的交互。</p>
 <p>核心组件：</p>
 <ul class="simple">
-<li><p>策略优化算法实现：PPO, GRPO, GSPO, GMPO, Dr.GRPO, DAPO</p></li>
-<li><p>优势估计 (Advantage estimation) 与回报计算：REINFORCE++, CPGD</p></li>
+<li><p>策略优化：PPO/GRPO、CPGD、DAPO 组件与高熵 token 筛选；GSPO、GMPO、Dr.GRPO 仍属于未完整接通的接口</p></li>
+<li><p>优势估计与回报计算：GAE、REINFORCE、RLOO、REINFORCE with baseline、组归一化和 CPGD；REINFORCE++ 尚未接入优势计算器工厂</p></li>
 <li><p>经验生成与采样策略：FIRE Sampling</p></li>
 <li><p>奖励处理与稳定性增强：Reward Norm/Clip, High Entropy Token Selection</p></li>
 <li><p>策略与价值函数更新</p></li>
@@ -433,12 +444,24 @@
             </div>
             <footer>
   
+  <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+    
+    <a href="algorithms_zh.html" class="btn btn-neutral float-right" title="支持的算法" accesskey="n"
+      rel="next">Next <img src="../_static/images/chevron-right-blue.svg"
+        class="next-page"></a>
+    
+    
+    <a href="index_zh.html" class="btn btn-neutral" title="快速入门" accesskey="p"
+      rel="prev"><img src="../_static/images/chevron-right-blue.svg" class="previous-page"> Previous</a>
+    
+  </div>
+  
 
   <hr>
 
   <div role="contentinfo">
     <p>
-      &copy; Copyright 2025, OpenDILab.
+      &copy; Copyright 2025-2026, OpenDILab.
 
     </p>
   </div>
@@ -492,8 +515,8 @@
   <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
   <script src="../_static/doctools.js"></script>
   <script src="../_static/sphinx_highlight.js"></script>
-  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-  <script src="../_static/js/language_switch.js"></script>
+  <script src="../_static/clipboard.min.js"></script>
+  <script src="../_static/copybutton.js"></script>
   
 
   
@@ -522,7 +545,7 @@
     <div class="container-fluid">
       <div class="container">
         <div class="mobile-main-menu-header-container">
-          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="header-logo" href="https://github.com/opendilab/LightRFT" aria-label="OpenMMLab"></a>
           <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
         </div>
       </div>

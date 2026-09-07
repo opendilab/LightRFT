@@ -32,6 +32,7 @@
   <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/css/readthedocs.css" type="text/css" />
   <link rel="index" title="Index" href="../../../genindex.html" />
   <link rel="search" title="Search" href="../../../search.html" />
@@ -84,7 +85,7 @@
 <div class="container-fluid header-holder tutorials-header" id="header-holder">
   <div class="container">
     <div class="header-container">
-      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+      <a class="header-logo" href="https://github.com/opendilab/LightRFT"
         aria-label="OpenMMLab"></a>
 
       <div class="main-menu">
@@ -234,6 +235,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../api_doc/strategy/index.html">lightrft.strategy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api_doc/trainer/index.html">lightrft.trainer</a></li>
 </ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../index_zh.html">欢迎来到 LightRFT 文档!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../index_zh.html#id4">索引与表格</a></li>
+</ul>
 
         
         
@@ -300,7 +305,7 @@
               <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
                 
   <h1>Source code for lightrft.utils.logging_utils</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;Logging configuration using loguru.&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""Logging configuration using loguru."""</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TYPE_CHECKING</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">loguru</span><span class="w"> </span><span class="kn">import</span> <span class="n">logger</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
@@ -310,20 +315,20 @@
 
 <span class="c1"># Configure loguru with format similar to the old logging configuration</span>
 <span class="n">_FORMAT</span> <span class="o">=</span> <span class="p">(</span>
-    <span class="s2">&quot;&lt;level&gt;</span><span class="si">{level: &lt;8}</span><span class="s2">&lt;/level&gt; &lt;green&gt;{time:MM-DD HH:mm:ss}&lt;/green&gt; &quot;</span>
-    <span class="s2">&quot;&lt;cyan&gt;</span><span class="si">{name}</span><span class="s2">&lt;/cyan&gt;:&lt;cyan&gt;</span><span class="si">{line}</span><span class="s2">&lt;/cyan&gt;] </span><span class="si">{message}</span><span class="s2">&quot;</span>
+    <span class="s2">"&lt;level&gt;</span><span class="si">{level: &lt;8}</span><span class="s2">&lt;/level&gt; &lt;green&gt;{time:MM-DD HH:mm:ss}&lt;/green&gt; "</span>
+    <span class="s2">"&lt;cyan&gt;</span><span class="si">{name}</span><span class="s2">&lt;/cyan&gt;:&lt;cyan&gt;</span><span class="si">{line}</span><span class="s2">&lt;/cyan&gt;] </span><span class="si">{message}</span><span class="s2">"</span>
 <span class="p">)</span>
 
 <span class="c1"># Remove default handler and add custom one</span>
 <span class="n">logger</span><span class="o">.</span><span class="n">remove</span><span class="p">()</span>
 
 
-<div class="viewcode-block" id="init_logger"><a class="viewcode-back" href="../../../api_doc/utils/logging_utils.html#lightrft.utils.logging_utils.init_logger">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">init_logger</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">level</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;DEBUG&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Logger&quot;</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="init_logger"><a class="viewcode-back" href="../../../api_doc/utils/logging_utils.html#lightrft.utils.logging_utils.init_logger">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">init_logger</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">level</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"DEBUG"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"Logger"</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Return the loguru logger instance.</span>
 
 <span class="sd">    Note: loguru uses a singleton pattern, so all loggers share the same configuration.</span>
-<span class="sd">    The &#39;name&#39; parameter is kept for backward compatibility but is not used by loguru.</span>
+<span class="sd">    The 'name' parameter is kept for backward compatibility but is not used by loguru.</span>
 
 <span class="sd">    :param name: Logger name (kept for backward compatibility)</span>
 <span class="sd">    :type name: str</span>
@@ -331,7 +336,7 @@
 <span class="sd">    :type level: str</span>
 <span class="sd">    :return: The loguru logger instance</span>
 <span class="sd">    :rtype: loguru.Logger</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
         <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span>
         <span class="nb">format</span><span class="o">=</span><span class="n">_FORMAT</span><span class="p">,</span>
@@ -351,7 +356,7 @@
 
   <div role="contentinfo">
     <p>
-      &copy; Copyright 2025, OpenDILab.
+      &copy; Copyright 2025-2026, OpenDILab.
 
     </p>
   </div>
@@ -388,8 +393,8 @@
   <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
   <script src="../../../_static/doctools.js"></script>
   <script src="../../../_static/sphinx_highlight.js"></script>
-  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-  <script src="../../../_static/js/language_switch.js"></script>
+  <script src="../../../_static/clipboard.min.js"></script>
+  <script src="../../../_static/copybutton.js"></script>
   
 
   
@@ -418,7 +423,7 @@
     <div class="container-fluid">
       <div class="container">
         <div class="mobile-main-menu-header-container">
-          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="header-logo" href="https://github.com/opendilab/LightRFT" aria-label="OpenMMLab"></a>
           <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
         </div>
       </div>

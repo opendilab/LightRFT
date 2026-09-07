@@ -32,6 +32,7 @@
   <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/css/readthedocs.css" type="text/css" />
   <link rel="index" title="Index" href="../../../genindex.html" />
   <link rel="search" title="Search" href="../../../search.html" />
@@ -84,7 +85,7 @@
 <div class="container-fluid header-holder tutorials-header" id="header-holder">
   <div class="container">
     <div class="header-container">
-      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+      <a class="header-logo" href="https://github.com/opendilab/LightRFT"
         aria-label="OpenMMLab"></a>
 
       <div class="main-menu">
@@ -234,6 +235,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../api_doc/strategy/index.html">lightrft.strategy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api_doc/trainer/index.html">lightrft.trainer</a></li>
 </ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../index_zh.html">欢迎来到 LightRFT 文档!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../index_zh.html#id4">索引与表格</a></li>
+</ul>
 
         
         
@@ -312,7 +317,7 @@
 
 
 <div class="viewcode-block" id="GenerativeRewardModelVL"><a class="viewcode-back" href="../../../api_doc/models/grm_vl.html#lightrft.models.grm_vl.GenerativeRewardModelVL">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">GenerativeRewardModelVL</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Generative reward model for reinforcement learning applications.</span>
 
 <span class="sd">    This class wraps a pretrained vision-language model to serve as a generative reward model,</span>
@@ -336,7 +341,7 @@
 <span class="sd">    :type ds_config: Optional[dict]</span>
 <span class="sd">    :param device_map: Device mapping for loading the model onto specific devices</span>
 <span class="sd">    :type device_map: Optional[dict]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">pretrain_or_model</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
@@ -354,11 +359,11 @@
 
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pretrain_or_model</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">pretrain_or_model</span> <span class="o">=</span> <span class="n">pretrain_or_model</span>
-            <span class="n">attn_implementation</span> <span class="o">=</span> <span class="s2">&quot;flash_attention_2&quot;</span> <span class="k">if</span> <span class="n">use_flash_attention_2</span> <span class="k">else</span> <span class="s2">&quot;eager&quot;</span>
+            <span class="n">attn_implementation</span> <span class="o">=</span> <span class="s2">"flash_attention_2"</span> <span class="k">if</span> <span class="n">use_flash_attention_2</span> <span class="k">else</span> <span class="s2">"eager"</span>
 
             <span class="c1"># Note: dschf is defined in function scope to avoid global effects</span>
             <span class="c1"># https://huggingface.co/docs/transformers/deepspeed#non-trainer-deepspeed-integration</span>
-            <span class="k">if</span> <span class="n">ds_config</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">ds_config</span><span class="p">[</span><span class="s2">&quot;zero_optimization&quot;</span><span class="p">][</span><span class="s2">&quot;stage&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">ds_config</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">ds_config</span><span class="p">[</span><span class="s2">"zero_optimization"</span><span class="p">][</span><span class="s2">"stage"</span><span class="p">]</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
                 <span class="n">dschf</span> <span class="o">=</span> <span class="n">HfDeepSpeedConfig</span><span class="p">(</span><span class="n">ds_config</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">dschf</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># noqa: F841</span>
@@ -367,7 +372,7 @@
                 <span class="n">pretrain_or_model</span><span class="p">,</span>
                 <span class="n">trust_remote_code</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                 <span class="n">attn_implementation</span><span class="o">=</span><span class="n">attn_implementation</span><span class="p">,</span>
-                <span class="n">torch_dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">bfloat16</span> <span class="k">if</span> <span class="n">bf16</span> <span class="k">else</span> <span class="s2">&quot;auto&quot;</span><span class="p">,</span>
+                <span class="n">torch_dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">bfloat16</span> <span class="k">if</span> <span class="n">bf16</span> <span class="k">else</span> <span class="s2">"auto"</span><span class="p">,</span>
                 <span class="n">device_map</span><span class="o">=</span><span class="n">device_map</span><span class="p">,</span>
             <span class="p">)</span>
 
@@ -389,7 +394,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">pretrain_or_model</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">pretrain_or_model</span> <span class="o">=</span> <span class="n">pretrain_or_model</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">model_type</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;pretrain_or_model: &quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pretrain_or_model</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"pretrain_or_model: "</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pretrain_or_model</span><span class="p">)</span>
 
 <div class="viewcode-block" id="GenerativeRewardModelVL.forward"><a class="viewcode-back" href="../../../api_doc/models/grm_vl.html#lightrft.models.grm_vl.GenerativeRewardModelVL.forward">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -402,7 +407,7 @@
         <span class="n">video_grid_thw</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">return_outputs</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">ModelOutput</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        The forward pass takes sequences and visual content (if exists) as input and returns the model output.</span>
 
 <span class="sd">        :param sequences: Input token sequences</span>
@@ -451,7 +456,7 @@
 <span class="sd">                video_grid_thw=video_grid_thw,</span>
 <span class="sd">                return_outputs=True</span>
 <span class="sd">            )</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">position_ids</span> <span class="o">=</span> <span class="n">attention_mask</span><span class="o">.</span><span class="n">long</span><span class="p">()</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
         <span class="n">position_ids</span><span class="o">.</span><span class="n">masked_fill_</span><span class="p">(</span><span class="n">attention_mask</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 
@@ -489,7 +494,7 @@
         <span class="n">num_beams</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">ModelOutput</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">LongTensor</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Generate text sequences based on input text and visual information.</span>
 
 <span class="sd">        :param input_ids: Input token IDs representing the text prompt</span>
@@ -522,7 +527,7 @@
 
 <span class="sd">        :return: Generated sequences</span>
 <span class="sd">        :rtype: Union[ModelOutput, torch.LongTensor]</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span>
             <span class="n">input_ids</span><span class="o">=</span><span class="n">input_ids</span><span class="p">,</span>
             <span class="n">attention_mask</span><span class="o">=</span><span class="n">attention_mask</span><span class="p">,</span>
@@ -540,8 +545,8 @@
             <span class="o">**</span><span class="n">kwargs</span>
         <span class="p">)</span>
 
-<div class="viewcode-block" id="GenerativeRewardModelVL.gradient_checkpointing_enable"><a class="viewcode-back" href="../../../api_doc/models/grm_vl.html#lightrft.models.grm_vl.GenerativeRewardModelVL.gradient_checkpointing_enable">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">gradient_checkpointing_enable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gradient_checkpointing_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;use_reentrant&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="GenerativeRewardModelVL.gradient_checkpointing_enable"><a class="viewcode-back" href="../../../api_doc/models/grm_vl.html#lightrft.models.grm_vl.GenerativeRewardModelVL.gradient_checkpointing_enable">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">gradient_checkpointing_enable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gradient_checkpointing_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">"use_reentrant"</span><span class="p">:</span> <span class="kc">False</span><span class="p">}):</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Enable gradient checkpointing to reduce memory usage during training.</span>
 
 <span class="sd">        Gradient checkpointing trades compute for memory by recomputing intermediate</span>
@@ -557,12 +562,12 @@
 <span class="sd">            actor.gradient_checkpointing_enable()</span>
 
 <span class="sd">            # Enable with custom settings</span>
-<span class="sd">            actor.gradient_checkpointing_enable({&quot;use_reentrant&quot;: True})</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">            actor.gradient_checkpointing_enable({"use_reentrant": True})</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">gradient_checkpointing_enable</span><span class="p">(</span><span class="n">gradient_checkpointing_kwargs</span><span class="o">=</span><span class="n">gradient_checkpointing_kwargs</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="GenerativeRewardModelVL.gradient_checkpointing_disable"><a class="viewcode-back" href="../../../api_doc/models/grm_vl.html#lightrft.models.grm_vl.GenerativeRewardModelVL.gradient_checkpointing_disable">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">gradient_checkpointing_disable</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Disable gradient checkpointing to use normal forward/backward computation.</span>
 
 <span class="sd">        This method restores the default behavior where all intermediate activations</span>
@@ -573,11 +578,11 @@
 
 <span class="sd">            # Disable gradient checkpointing</span>
 <span class="sd">            actor.gradient_checkpointing_disable()</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">gradient_checkpointing_disable</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="GenerativeRewardModelVL.print_trainable_parameters"><a class="viewcode-back" href="../../../api_doc/models/grm_vl.html#lightrft.models.grm_vl.GenerativeRewardModelVL.print_trainable_parameters">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">print_trainable_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Print information about trainable parameters in the model.</span>
 
 <span class="sd">        This method displays the number and percentage of trainable parameters,</span>
@@ -589,7 +594,7 @@
 <span class="sd">            # Print trainable parameter statistics</span>
 <span class="sd">            actor.print_trainable_parameters()</span>
 <span class="sd">            # Output: trainable params: 4,194,304 || all params: 7,241,732,096 || trainable%: 0.058</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">print_trainable_parameters</span><span class="p">()</span></div></div>
 </pre></div>
 
@@ -603,7 +608,7 @@
 
   <div role="contentinfo">
     <p>
-      &copy; Copyright 2025, OpenDILab.
+      &copy; Copyright 2025-2026, OpenDILab.
 
     </p>
   </div>
@@ -640,8 +645,8 @@
   <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
   <script src="../../../_static/doctools.js"></script>
   <script src="../../../_static/sphinx_highlight.js"></script>
-  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-  <script src="../../../_static/js/language_switch.js"></script>
+  <script src="../../../_static/clipboard.min.js"></script>
+  <script src="../../../_static/copybutton.js"></script>
   
 
   
@@ -670,7 +675,7 @@
     <div class="container-fluid">
       <div class="container">
         <div class="mobile-main-menu-header-container">
-          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="header-logo" href="https://github.com/opendilab/LightRFT" aria-label="OpenMMLab"></a>
           <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
         </div>
       </div>

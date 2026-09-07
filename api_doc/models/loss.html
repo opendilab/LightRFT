@@ -33,6 +33,7 @@
   <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
   <link rel="stylesheet" href="../../_static/css/readthedocs.css" type="text/css" />
   <link rel="index" title="Index" href="../../genindex.html" />
   <link rel="search" title="Search" href="../../search.html" />
@@ -87,7 +88,7 @@
 <div class="container-fluid header-holder tutorials-header" id="header-holder">
   <div class="container">
     <div class="header-container">
-      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+      <a class="header-logo" href="https://github.com/opendilab/LightRFT"
         aria-label="OpenMMLab"></a>
 
       <div class="main-menu">
@@ -237,6 +238,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../strategy/index.html">lightrft.strategy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../trainer/index.html">lightrft.trainer</a></li>
 </ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../../index_zh.html">欢迎来到 LightRFT 文档!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../index_zh.html#id4">索引与表格</a></li>
+</ul>
 
         
         
@@ -311,27 +316,31 @@
 <p>Loss functions used across LightRFT models.</p>
 <p>This module implements a comprehensive collection of loss functions for reinforcement learning
 from human feedback (RLHF) and related training paradigms:</p>
-<p><strong>Policy Optimization Losses:</strong>
-- PolicyLoss: Multi-purpose policy loss supporting PPO, CPGD (via use_cpg_loss), DAPO-style</p>
-<blockquote>
-<div><p>decoupled clipping, and high-entropy token filtering for efficient training.</p>
-</div></blockquote>
+<p><strong>Policy Optimization Losses:</strong></p>
 <ul class="simple">
+<li><p>PolicyLoss: Multi-purpose policy loss supporting PPO, CPGD (via use_cpg_loss), DAPO-style
+decoupled clipping, and high-entropy token filtering for efficient training.</p></li>
 <li><p>ValueLoss: Value function loss for PPO with optional value clipping.</p></li>
 </ul>
-<p><strong>Reward Model Losses:</strong>
-- GPTLMLoss: Next-token prediction loss for generative reward model training.
-- LogSigmoidLoss: Log-sigmoid pairwise loss for scalar reward model training.
-- LogExpLoss: Log-exp pairwise loss for scalar reward model training.
-- HPSLoss: Human Preference Score loss for scalar reward model training.
-- PairWiseLoss: Generic pairwise preference loss for reward models.
-- PRMLoss: Process Reward Model loss for token-level reward prediction.</p>
-<p><strong>Preference Learning Losses:</strong>
-- DPOLoss: Direct Preference Optimization loss for aligning language models with preferences.
-- KTOLoss: Kahneman-Tversky Optimization loss for uneven sampling scenarios.
-- VanillaKTOLoss: Simplified KTO loss for even sampling scenarios.</p>
-<p><strong>Knowledge Distillation:</strong>
-- KDLoss: Knowledge Distillation loss for transferring knowledge from teacher to student models.</p>
+<p><strong>Reward Model Losses:</strong></p>
+<ul class="simple">
+<li><p>GPTLMLoss: Next-token prediction loss for generative reward model training.</p></li>
+<li><p>LogSigmoidLoss: Log-sigmoid pairwise loss for scalar reward model training.</p></li>
+<li><p>LogExpLoss: Log-exp pairwise loss for scalar reward model training.</p></li>
+<li><p>HPSLoss: Human Preference Score loss for scalar reward model training.</p></li>
+<li><p>PairWiseLoss: Generic pairwise preference loss for reward models.</p></li>
+<li><p>PRMLoss: Process Reward Model loss for token-level reward prediction.</p></li>
+</ul>
+<p><strong>Preference Learning Losses:</strong></p>
+<ul class="simple">
+<li><p>DPOLoss: Direct Preference Optimization loss for aligning language models with preferences.</p></li>
+<li><p>KTOLoss: Kahneman-Tversky Optimization loss for uneven sampling scenarios.</p></li>
+<li><p>VanillaKTOLoss: Simplified KTO loss for even sampling scenarios.</p></li>
+</ul>
+<p><strong>Knowledge Distillation:</strong></p>
+<ul class="simple">
+<li><p>KDLoss: Knowledge Distillation loss for transferring knowledge from teacher to student models.</p></li>
+</ul>
 <p>All loss functions are designed to work seamlessly with the LightRFT training framework,
 supporting distributed training, mixed precision, and various optimization strategies.</p>
 <dl class="py class">
@@ -664,19 +673,20 @@ token filtering. Set to 0.0 to disable. Default: 0.0</p></li>
 </dl>
 <p><strong>Loss Computation:</strong></p>
 <p>The loss is computed as follows:</p>
-<ol class="arabic">
+<ol class="arabic simple">
 <li><p><strong>Mask Application</strong>: Combines <code class="docutils literal notranslate"><span class="pre">action_mask</span></code> (valid tokens) with <code class="docutils literal notranslate"><span class="pre">entropy_mask</span></code>
 (high-entropy tokens) to create a final mask for loss computation.</p></li>
-<li><p><strong>PPO Mode</strong> (default, <code class="docutils literal notranslate"><span class="pre">use_cpg_loss=False</span></code>):
-- Computes policy ratio: <code class="docutils literal notranslate"><span class="pre">ratio</span> <span class="pre">=</span> <span class="pre">exp(log_probs</span> <span class="pre">-</span> <span class="pre">old_log_probs)</span></code>
-- Clips ratio: <code class="docutils literal notranslate"><span class="pre">clipped_ratio</span> <span class="pre">=</span> <span class="pre">clamp(ratio,</span> <span class="pre">1</span> <span class="pre">-</span> <span class="pre">clip_eps,</span> <span class="pre">1</span> <span class="pre">+</span> <span class="pre">clip_eps)</span></code>
-- Loss: <code class="docutils literal notranslate"><span class="pre">-min(ratio</span> <span class="pre">*</span> <span class="pre">advantages,</span> <span class="pre">clipped_ratio</span> <span class="pre">*</span> <span class="pre">advantages)</span></code></p></li>
-<li><p><strong>CPGD Mode</strong> (<code class="docutils literal notranslate"><span class="pre">use_cpg_loss=True</span></code>):
-- Uses asymmetric clipping: upper bound <code class="docutils literal notranslate"><span class="pre">log(1</span> <span class="pre">+</span> <span class="pre">clip_eps)</span></code> for positive advantages,</p>
-<blockquote>
-<div><p>lower bound <code class="docutils literal notranslate"><span class="pre">log(1</span> <span class="pre">-</span> <span class="pre">clip_eps)</span></code> for negative advantages</p>
-</div></blockquote>
+<li><p><strong>PPO Mode</strong> (default, <code class="docutils literal notranslate"><span class="pre">use_cpg_loss=False</span></code>):</p>
 <ul class="simple">
+<li><p>Computes policy ratio: <code class="docutils literal notranslate"><span class="pre">ratio</span> <span class="pre">=</span> <span class="pre">exp(log_probs</span> <span class="pre">-</span> <span class="pre">old_log_probs)</span></code></p></li>
+<li><p>Clips ratio: <code class="docutils literal notranslate"><span class="pre">clipped_ratio</span> <span class="pre">=</span> <span class="pre">clamp(ratio,</span> <span class="pre">1</span> <span class="pre">-</span> <span class="pre">clip_eps,</span> <span class="pre">1</span> <span class="pre">+</span> <span class="pre">clip_eps)</span></code></p></li>
+<li><p>Loss: <code class="docutils literal notranslate"><span class="pre">-min(ratio</span> <span class="pre">*</span> <span class="pre">advantages,</span> <span class="pre">clipped_ratio</span> <span class="pre">*</span> <span class="pre">advantages)</span></code></p></li>
+</ul>
+</li>
+<li><p><strong>CPGD Mode</strong> (<code class="docutils literal notranslate"><span class="pre">use_cpg_loss=True</span></code>):</p>
+<ul class="simple">
+<li><p>Uses asymmetric clipping: upper bound <code class="docutils literal notranslate"><span class="pre">log(1</span> <span class="pre">+</span> <span class="pre">clip_eps)</span></code> for positive advantages,
+lower bound <code class="docutils literal notranslate"><span class="pre">log(1</span> <span class="pre">-</span> <span class="pre">clip_eps)</span></code> for negative advantages</p></li>
 <li><p>Loss: <code class="docutils literal notranslate"><span class="pre">-clipped_log_probs</span> <span class="pre">*</span> <span class="pre">advantages</span></code></p></li>
 </ul>
 </li>
@@ -732,13 +742,11 @@ If provided, overrides the instance-level <code class="docutils literal notransl
 </dd>
 </dl>
 <p><strong>Masking Strategy:</strong></p>
-<p>The final mask is computed as:
-- If <code class="docutils literal notranslate"><span class="pre">entropy_mask</span></code> is provided: <code class="docutils literal notranslate"><span class="pre">final_mask</span> <span class="pre">=</span> <span class="pre">entropy_mask</span></code></p>
-<blockquote>
-<div><p>(Note: <code class="docutils literal notranslate"><span class="pre">entropy_mask</span></code> is already created considering <code class="docutils literal notranslate"><span class="pre">action_mask</span></code> in
-<code class="docutils literal notranslate"><span class="pre">create_high_entropy_mask</span></code>, so padding positions are already excluded)</p>
-</div></blockquote>
+<p>The final mask is computed as:</p>
 <ul class="simple">
+<li><p>If <code class="docutils literal notranslate"><span class="pre">entropy_mask</span></code> is provided: <code class="docutils literal notranslate"><span class="pre">final_mask</span> <span class="pre">=</span> <span class="pre">entropy_mask</span></code>
+(Note: <code class="docutils literal notranslate"><span class="pre">entropy_mask</span></code> is already created considering <code class="docutils literal notranslate"><span class="pre">action_mask</span></code> in
+<code class="docutils literal notranslate"><span class="pre">create_high_entropy_mask</span></code>, so padding positions are already excluded)</p></li>
 <li><p>Else: <code class="docutils literal notranslate"><span class="pre">final_mask</span> <span class="pre">=</span> <span class="pre">action_mask</span></code></p></li>
 </ul>
 <p>Only tokens where <code class="docutils literal notranslate"><span class="pre">final_mask</span> <span class="pre">==</span> <span class="pre">1</span></code> contribute to the loss computation.</p>
@@ -834,7 +842,7 @@ If provided, overrides the instance-level <code class="docutils literal notransl
 
   <div role="contentinfo">
     <p>
-      &copy; Copyright 2025, OpenDILab.
+      &copy; Copyright 2025-2026, OpenDILab.
 
     </p>
   </div>
@@ -924,8 +932,8 @@ If provided, overrides the instance-level <code class="docutils literal notransl
   <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
   <script src="../../_static/doctools.js"></script>
   <script src="../../_static/sphinx_highlight.js"></script>
-  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-  <script src="../../_static/js/language_switch.js"></script>
+  <script src="../../_static/clipboard.min.js"></script>
+  <script src="../../_static/copybutton.js"></script>
   
 
   
@@ -954,7 +962,7 @@ If provided, overrides the instance-level <code class="docutils literal notransl
     <div class="container-fluid">
       <div class="container">
         <div class="mobile-main-menu-header-container">
-          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="header-logo" href="https://github.com/opendilab/LightRFT" aria-label="OpenMMLab"></a>
           <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
         </div>
       </div>

@@ -32,6 +32,7 @@
   <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../../../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/copybutton.css" type="text/css" />
   <link rel="stylesheet" href="../../../../_static/css/readthedocs.css" type="text/css" />
   <link rel="index" title="Index" href="../../../../genindex.html" />
   <link rel="search" title="Search" href="../../../../search.html" />
@@ -84,7 +85,7 @@
 <div class="container-fluid header-holder tutorials-header" id="header-holder">
   <div class="container">
     <div class="header-container">
-      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+      <a class="header-logo" href="https://github.com/opendilab/LightRFT"
         aria-label="OpenMMLab"></a>
 
       <div class="main-menu">
@@ -234,6 +235,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../api_doc/strategy/index.html">lightrft.strategy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../api_doc/trainer/index.html">lightrft.trainer</a></li>
 </ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../index_zh.html">欢迎来到 LightRFT 文档!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../index_zh.html#id4">索引与表格</a></li>
+</ul>
 
         
         
@@ -300,14 +305,14 @@
               <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
                 
   <h1>Source code for lightrft.models.monkey_patch.apply</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""</span>
 <span class="sd">This module provides monkey patching functionality for attention mechanisms in LLaMA and Qwen2 models.</span>
 <span class="sd">It allows replacing the original attention forward methods with custom implementations for better</span>
 <span class="sd">performance or different behavior.</span>
 
 <span class="sd">The module supports patching both LlamaAttention and Qwen2Attention classes by replacing their</span>
 <span class="sd">forward methods with custom implementations defined in separate modules.</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">transformers.models.llama.modeling_llama</span><span class="w"> </span><span class="kn">import</span> <span class="n">LlamaAttention</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">transformers.models.qwen2.modeling_qwen2</span><span class="w"> </span><span class="kn">import</span> <span class="n">Qwen2Attention</span>
@@ -317,34 +322,34 @@
 
 
 <div class="viewcode-block" id="apply_monkey_patch_to_llama"><a class="viewcode-back" href="../../../../api_doc/models/monkey_patch/apply.html#lightrft.models.monkey_patch.apply.apply_monkey_patch_to_llama">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">apply_monkey_patch_to_llama</span><span class="p">():</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Apply monkey patch to LlamaAttention class by replacing its forward method.</span>
 
 <span class="sd">    This function replaces the original forward method of LlamaAttention with a custom</span>
 <span class="sd">    implementation defined in llama_attn_forward. This can be used to modify the attention</span>
-<span class="sd">    mechanism&#39;s behavior or improve its performance.</span>
+<span class="sd">    mechanism's behavior or improve its performance.</span>
 
 <span class="sd">    :return: None</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">LlamaAttention</span><span class="o">.</span><span class="n">forward</span> <span class="o">=</span> <span class="n">llama_attn_forward</span></div>
 
 
 <div class="viewcode-block" id="apply_monkey_patch_to_qwen2"><a class="viewcode-back" href="../../../../api_doc/models/monkey_patch/apply.html#lightrft.models.monkey_patch.apply.apply_monkey_patch_to_qwen2">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">apply_monkey_patch_to_qwen2</span><span class="p">():</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Apply monkey patch to Qwen2Attention class by replacing its forward method.</span>
 
 <span class="sd">    This function replaces the original forward method of Qwen2Attention with a custom</span>
 <span class="sd">    implementation defined in qwen2_attn_forward. This can be used to modify the attention</span>
-<span class="sd">    mechanism&#39;s behavior or improve its performance.</span>
+<span class="sd">    mechanism's behavior or improve its performance.</span>
 
 <span class="sd">    :return: None</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">Qwen2Attention</span><span class="o">.</span><span class="n">forward</span> <span class="o">=</span> <span class="n">qwen2_attn_forward</span></div>
 
 
 <span class="n">MONKEY_PATCH_FUNC</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">&quot;llama&quot;</span><span class="p">:</span> <span class="n">apply_monkey_patch_to_llama</span><span class="p">,</span>
-    <span class="s2">&quot;qwen2&quot;</span><span class="p">:</span> <span class="n">apply_monkey_patch_to_qwen2</span><span class="p">,</span>
+    <span class="s2">"llama"</span><span class="p">:</span> <span class="n">apply_monkey_patch_to_llama</span><span class="p">,</span>
+    <span class="s2">"qwen2"</span><span class="p">:</span> <span class="n">apply_monkey_patch_to_qwen2</span><span class="p">,</span>
 <span class="p">}</span>
 </pre></div>
 
@@ -358,7 +363,7 @@
 
   <div role="contentinfo">
     <p>
-      &copy; Copyright 2025, OpenDILab.
+      &copy; Copyright 2025-2026, OpenDILab.
 
     </p>
   </div>
@@ -395,8 +400,8 @@
   <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
   <script src="../../../../_static/doctools.js"></script>
   <script src="../../../../_static/sphinx_highlight.js"></script>
-  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-  <script src="../../../../_static/js/language_switch.js"></script>
+  <script src="../../../../_static/clipboard.min.js"></script>
+  <script src="../../../../_static/copybutton.js"></script>
   
 
   
@@ -425,7 +430,7 @@
     <div class="container-fluid">
       <div class="container">
         <div class="mobile-main-menu-header-container">
-          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="header-logo" href="https://github.com/opendilab/LightRFT" aria-label="OpenMMLab"></a>
           <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
         </div>
       </div>

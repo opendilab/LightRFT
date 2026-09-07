@@ -33,6 +33,7 @@
   <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
   <link rel="stylesheet" href="../../_static/css/readthedocs.css" type="text/css" />
   <link rel="index" title="Index" href="../../genindex.html" />
   <link rel="search" title="Search" href="../../search.html" />
@@ -87,7 +88,7 @@
 <div class="container-fluid header-holder tutorials-header" id="header-holder">
   <div class="container">
     <div class="header-container">
-      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+      <a class="header-logo" href="https://github.com/opendilab/LightRFT"
         aria-label="OpenMMLab"></a>
 
       <div class="main-menu">
@@ -237,6 +238,10 @@
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">lightrft.strategy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../trainer/index.html">lightrft.trainer</a></li>
 </ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../../index_zh.html">欢迎来到 LightRFT 文档!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../index_zh.html#id4">索引与表格</a></li>
+</ul>
 
         
         
@@ -313,9 +318,9 @@
 It handles distributed training setup, model/optimizer preparation, checkpointing, and inference engine management.</p>
 <section id="enginestatus">
 <h2>EngineStatus<a class="headerlink" href="#enginestatus" title="Permalink to this heading">¶</a></h2>
-<dl class="py class enum">
+<dl class="py class">
 <dt class="sig sig-object py" id="lightrft.strategy.strategy_base.EngineStatus">
-<em class="property"><span class="pre">enum</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">lightrft.strategy.strategy_base.</span></span><span class="sig-name descname"><span class="pre">EngineStatus</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/strategy/strategy_base.html#EngineStatus"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.strategy_base.EngineStatus" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">lightrft.strategy.strategy_base.</span></span><span class="sig-name descname"><span class="pre">EngineStatus</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">names=&lt;not</span> <span class="pre">given&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">*values</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">module=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qualname=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start=1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">boundary=None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/strategy/strategy_base.html#EngineStatus"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.strategy_base.EngineStatus" title="Permalink to this definition">¶</a></dt>
 <dd><p>Enum class for inference engine status.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Variables<span class="colon">:</span></dt>
@@ -325,17 +330,6 @@ It handles distributed training setup, model/optimizer preparation, checkpointin
 </ul>
 </dd>
 </dl>
-<p>Valid values are as follows:</p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="lightrft.strategy.strategy_base.EngineStatus.SLEEPED">
-<span class="sig-name descname"><span class="pre">SLEEPED</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;EngineStatus.SLEEPED:</span> <span class="pre">0&gt;</span></em><a class="headerlink" href="#lightrft.strategy.strategy_base.EngineStatus.SLEEPED" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="lightrft.strategy.strategy_base.EngineStatus.WAKEUP">
-<span class="sig-name descname"><span class="pre">WAKEUP</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;EngineStatus.WAKEUP:</span> <span class="pre">1&gt;</span></em><a class="headerlink" href="#lightrft.strategy.strategy_base.EngineStatus.WAKEUP" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
 </dd></dl>
 
 </section>
@@ -485,7 +479,7 @@ images_num = [2, 1, 3]
 
 <dl class="py method">
 <dt class="sig sig-object py" id="lightrft.strategy.strategy_base.StrategyBase.engine_generate_local">
-<span class="sig-name descname"><span class="pre">engine_generate_local</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sampling_params</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prompt_token_ids</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multi_modal_inputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">EasyDict</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/lightrft/strategy/strategy_base.html#StrategyBase.engine_generate_local"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.strategy_base.StrategyBase.engine_generate_local" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">engine_generate_local</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sampling_params</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prompt_token_ids</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multi_modal_inputs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">easydict.EasyDict</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/lightrft/strategy/strategy_base.html#StrategyBase.engine_generate_local"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.strategy.strategy_base.StrategyBase.engine_generate_local" title="Permalink to this definition">¶</a></dt>
 <dd><p>Perform text or multimodal generation using different inference engines based on the input mode.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -493,20 +487,9 @@ images_num = [2, 1, 3]
 <li><p><strong>sampling_params</strong> – Parameters used for controlling the generation process (e.g., temperature, top_k).</p></li>
 <li><p><strong>prompt_token_ids</strong> – List of text token IDs.</p></li>
 <li><p><strong>multi_modal_inputs</strong> – <p>A list of dictionaries representing multimodal inputs.
-Each dictionary should contain a raw text under the “prompt” key,
-and additional modalities (such as images) under the “multi_modal_data” key.
-Example:
-multi_modal_inputs = [{</p>
-<blockquote>
-<div><p>”prompt”: […],
-“multi_modal_data”: {</p>
-<blockquote>
-<div><p>”image”: […],
-“video”: […]</p>
-</div></blockquote>
-<p>}</p>
-</div></blockquote>
-<p>}]</p>
+Each dictionary contains raw text under <code class="docutils literal notranslate"><span class="pre">prompt</span></code> and optional
+media under <code class="docutils literal notranslate"><span class="pre">multi_modal_data</span></code>. For example:</p>
+<p><code class="docutils literal notranslate"><span class="pre">[{&quot;prompt&quot;:</span> <span class="pre">&quot;...&quot;,</span> <span class="pre">&quot;multi_modal_data&quot;:</span> <span class="pre">{&quot;image&quot;:</span> <span class="pre">[...]}}]</span></code></p>
 </p></li>
 </ul>
 </dd>
@@ -935,7 +918,7 @@ After sleeping, synchronizes and clears the cache.</p>
 
   <div role="contentinfo">
     <p>
-      &copy; Copyright 2025, OpenDILab.
+      &copy; Copyright 2025-2026, OpenDILab.
 
     </p>
   </div>
@@ -957,11 +940,7 @@ After sleeping, synchronizes and clears the cache.</p>
               <ul>
 <li><a class="reference internal" href="#">lightrft.strategy.strategy_base</a><ul>
 <li><a class="reference internal" href="#enginestatus">EngineStatus</a><ul>
-<li><a class="reference internal" href="#lightrft.strategy.strategy_base.EngineStatus"><code class="docutils literal notranslate"><span class="pre">EngineStatus</span></code></a><ul>
-<li><a class="reference internal" href="#lightrft.strategy.strategy_base.EngineStatus.SLEEPED"><code class="docutils literal notranslate"><span class="pre">EngineStatus.SLEEPED</span></code></a></li>
-<li><a class="reference internal" href="#lightrft.strategy.strategy_base.EngineStatus.WAKEUP"><code class="docutils literal notranslate"><span class="pre">EngineStatus.WAKEUP</span></code></a></li>
-</ul>
-</li>
+<li><a class="reference internal" href="#lightrft.strategy.strategy_base.EngineStatus"><code class="docutils literal notranslate"><span class="pre">EngineStatus</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#strategybase">StrategyBase</a><ul>
@@ -1024,8 +1003,8 @@ After sleeping, synchronizes and clears the cache.</p>
   <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
   <script src="../../_static/doctools.js"></script>
   <script src="../../_static/sphinx_highlight.js"></script>
-  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-  <script src="../../_static/js/language_switch.js"></script>
+  <script src="../../_static/clipboard.min.js"></script>
+  <script src="../../_static/copybutton.js"></script>
   
 
   
@@ -1054,7 +1033,7 @@ After sleeping, synchronizes and clears the cache.</p>
     <div class="container-fluid">
       <div class="container">
         <div class="mobile-main-menu-header-container">
-          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="header-logo" href="https://github.com/opendilab/LightRFT" aria-label="OpenMMLab"></a>
           <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
         </div>
       </div>

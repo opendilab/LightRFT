@@ -32,6 +32,7 @@
   <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../../../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/copybutton.css" type="text/css" />
   <link rel="stylesheet" href="../../../../_static/css/readthedocs.css" type="text/css" />
   <link rel="index" title="Index" href="../../../../genindex.html" />
   <link rel="search" title="Search" href="../../../../search.html" />
@@ -84,7 +85,7 @@
 <div class="container-fluid header-holder tutorials-header" id="header-holder">
   <div class="container">
     <div class="header-container">
-      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+      <a class="header-logo" href="https://github.com/opendilab/LightRFT"
         aria-label="OpenMMLab"></a>
 
       <div class="main-menu">
@@ -234,6 +235,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../api_doc/strategy/index.html">lightrft.strategy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../api_doc/trainer/index.html">lightrft.trainer</a></li>
 </ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../index_zh.html">欢迎来到 LightRFT 文档!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../index_zh.html#id4">索引与表格</a></li>
+</ul>
 
         
         
@@ -300,15 +305,15 @@
               <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
                 
   <h1>Source code for lightrft.strategy.fsdp.fsdpv2</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""</span>
 <span class="sd">Hugging Face FSDP (Fully Sharded Data Parallel) Strategy Module.</span>
 
-<span class="sd">This module provides implementations for distributed training using PyTorch&#39;s FSDP.</span>
+<span class="sd">This module provides implementations for distributed training using PyTorch's FSDP.</span>
 <span class="sd">It includes utilities for model wrapping, optimization, checkpointing, and state management</span>
 <span class="sd">in a distributed training environment. The module supports FSDP v2 strategy,</span>
 <span class="sd">with special handling for model sharding, mixed precision training, and optimizer state</span>
 <span class="sd">management.</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
@@ -366,27 +371,27 @@
 <span class="n">ModelOrModelOptimPair</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span> <span class="n">ModelOptimPair</span><span class="p">]</span>
 
 <span class="n">manual_transformer_cls_names_to_wrap</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="s2">&quot;Embedding&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;Qwen2VLDecoderLayer&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;Qwen2VLVisionBlock&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;Qwen2_5_VLVisionBlock&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;Qwen2_5_VLDecoderLayer&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;Qwen2DecoderLayer&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;LlamaDecoderLayer&quot;</span><span class="p">,</span>  <span class="c1"># for DeepSeek-R1-Distill-Llama-70B</span>
-    <span class="s2">&quot;DeepseekDecoderLayer&quot;</span><span class="p">,</span>
+    <span class="s2">"Embedding"</span><span class="p">,</span>
+    <span class="s2">"Qwen2VLDecoderLayer"</span><span class="p">,</span>
+    <span class="s2">"Qwen2VLVisionBlock"</span><span class="p">,</span>
+    <span class="s2">"Qwen2_5_VLVisionBlock"</span><span class="p">,</span>
+    <span class="s2">"Qwen2_5_VLDecoderLayer"</span><span class="p">,</span>
+    <span class="s2">"Qwen2DecoderLayer"</span><span class="p">,</span>
+    <span class="s2">"LlamaDecoderLayer"</span><span class="p">,</span>  <span class="c1"># for DeepSeek-R1-Distill-Llama-70B</span>
+    <span class="s2">"DeepseekDecoderLayer"</span><span class="p">,</span>
 <span class="p">]</span>
 
 <span class="n">vit_transformer_cls_names</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="s2">&quot;Qwen2VLVisionBlock&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;Qwen2_5_VLVisionBlock&quot;</span><span class="p">,</span>
+    <span class="s2">"Qwen2VLVisionBlock"</span><span class="p">,</span>
+    <span class="s2">"Qwen2_5_VLVisionBlock"</span><span class="p">,</span>
 <span class="p">]</span>
 
 
 <div class="viewcode-block" id="FSDPV2Strategy"><a class="viewcode-back" href="../../../../api_doc/strategy/fsdp/fsdpv2.html#lightrft.strategy.fsdp.fsdpv2.FSDPV2Strategy">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">FSDPV2Strategy</span><span class="p">(</span><span class="n">StrategyBase</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    The strategy for training with PyTorch&#39;s Fully Sharded Data Parallel V2.</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    The strategy for training with PyTorch's Fully Sharded Data Parallel V2.</span>
 
-<span class="sd">    This strategy implements model sharding using PyTorch&#39;s FSDP to enable training</span>
+<span class="sd">    This strategy implements model sharding using PyTorch's FSDP to enable training</span>
 <span class="sd">    of large models across multiple GPUs with memory efficiency.</span>
 
 <span class="sd">    :param seed: Random seed for reproducibility.</span>
@@ -406,7 +411,7 @@
 
 <span class="sd">    :param args: Additional arguments for the strategy.</span>
 <span class="sd">    :type args: object</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
 <div class="viewcode-block" id="FSDPV2Strategy.__init__"><a class="viewcode-back" href="../../../../api_doc/strategy/fsdp/fsdpv2.html#lightrft.strategy.fsdp.fsdpv2.FSDPV2Strategy.__init__">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>  <span class="c1"># pylint: disable=R0917</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -417,7 +422,7 @@
         <span class="n">bf16</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">args</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Initialize the FSDP V2 strategy.</span>
 
 <span class="sd">        :param seed: Random seed for reproducibility</span>
@@ -432,7 +437,7 @@
 <span class="sd">        :type bf16: bool</span>
 <span class="sd">        :param args: Additional arguments for the strategy</span>
 <span class="sd">        :type args: object</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">seed</span><span class="p">,</span> <span class="n">max_norm</span><span class="p">,</span> <span class="n">micro_train_batch_size</span><span class="p">,</span> <span class="n">train_batch_size</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">bf16</span> <span class="o">=</span> <span class="n">bf16</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">mixed_mm_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">mixed_mm_data</span>
@@ -443,12 +448,12 @@
         <span class="c1"># fsdp cpu offload automatically offloads optimizer</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">fsdp_cpu_offload</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">adam_offload</span> <span class="o">=</span> <span class="kc">False</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="s2">&quot;FSDPV2Strategy fsdp_cpu_offload is True&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="s2">"FSDPV2Strategy fsdp_cpu_offload is True"</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="s2">&quot;FSDPV2Strategy Initialized&quot;</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="s2">"FSDPV2Strategy Initialized"</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="FSDPV2Strategy.create_optimizer"><a class="viewcode-back" href="../../../../api_doc/strategy/fsdp/fsdpv2.html#lightrft.strategy.fsdp.fsdpv2.FSDPV2Strategy.create_optimizer">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">create_optimizer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optimizer</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Create an optimizer for the model with proper parameter grouping.</span>
 
 <span class="sd">        Groups parameters by dtype, dtensor shard size, and weight decay to avoid errors</span>
@@ -463,27 +468,27 @@
 <span class="sd">        Example::</span>
 
 <span class="sd">            &gt;&gt;&gt; optimizer = strategy.create_optimizer(model, lr=1e-4, weight_decay=0.01)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="n">is_actor</span><span class="p">(</span><span class="n">model</span><span class="p">):</span>
             <span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">model</span>
         <span class="c1"># group params by (dtype, dtensor shard size, weight_dacay) to avoid error in clip_grad and opt.step</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">grouped_params</span> <span class="o">=</span> <span class="n">group_parameters_for_optimizer_dtensor</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;weight_decay&quot;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grouped_params</span> <span class="o">=</span> <span class="n">group_parameters_for_optimizer_dtensor</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">[</span><span class="s2">"weight_decay"</span><span class="p">])</span>
         <span class="c1"># Convert the grouped parameters into the final format for the optimizer</span>
         <span class="n">optim_params</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="p">(</span><span class="n">wd_val</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">),</span> <span class="n">params_list</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">grouped_params</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="n">optim_params</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
-                <span class="s2">&quot;params&quot;</span><span class="p">:</span> <span class="n">params_list</span><span class="p">,</span>
-                <span class="s2">&quot;weight_decay&quot;</span><span class="p">:</span> <span class="n">wd_val</span><span class="p">,</span>
+                <span class="s2">"params"</span><span class="p">:</span> <span class="n">params_list</span><span class="p">,</span>
+                <span class="s2">"weight_decay"</span><span class="p">:</span> <span class="n">wd_val</span><span class="p">,</span>
             <span class="p">})</span>
         <span class="n">optim</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">AdamW</span><span class="p">(</span><span class="n">optim_params</span><span class="p">,</span> <span class="n">fused</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Creating optimizer with </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">use_naive_opt</span><span class="si">=}</span><span class="s2"> &quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Creating optimizer with </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">use_naive_opt</span><span class="si">=}</span><span class="s2"> "</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_naive_opt</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">optim</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">FSDPadaptOptimizer</span><span class="p">(</span><span class="n">optim</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="FSDPV2Strategy.backward"><a class="viewcode-back" href="../../../../api_doc/strategy/fsdp/fsdpv2.html#lightrft.strategy.fsdp.fsdpv2.FSDPV2Strategy.backward">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">backward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">loss</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">:</span> <span class="n">optim</span><span class="o">.</span><span class="n">Optimizer</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Perform backward pass for the loss.</span>
 
 <span class="sd">        :param loss: The loss tensor</span>
@@ -493,7 +498,7 @@
 <span class="sd">        :param optimizer: The optimizer</span>
 <span class="sd">        :type optimizer: torch.optim.Optimizer</span>
 <span class="sd">        :param kwargs: Additional arguments</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="FSDPV2Strategy.optimizer_step"><a class="viewcode-back" href="../../../../api_doc/strategy/fsdp/fsdpv2.html#lightrft.strategy.fsdp.fsdpv2.FSDPV2Strategy.optimizer_step">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">optimizer_step</span><span class="p">(</span>
@@ -501,10 +506,10 @@
         <span class="n">optimizer</span><span class="p">:</span> <span class="n">optim</span><span class="o">.</span><span class="n">Optimizer</span><span class="p">,</span>
         <span class="n">model</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span>
         <span class="n">scheduler</span><span class="p">,</span>
-        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;model&quot;</span><span class="p">,</span>
+        <span class="n">name</span><span class="o">=</span><span class="s2">"model"</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Perform an optimization step.</span>
 
 <span class="sd">        Handles gradient accumulation by only stepping the optimizer and scheduler</span>
@@ -518,7 +523,7 @@
 <span class="sd">        :param name: Name identifier for the model</span>
 <span class="sd">        :type name: str</span>
 <span class="sd">        :param kwargs: Additional arguments</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cur_step</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cur_step</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">accumulated_gradient</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">is_actor</span><span class="p">(</span><span class="n">model</span><span class="p">):</span>
@@ -529,7 +534,7 @@
                 <span class="n">grad_norms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">clip_grad_norm_</span><span class="p">(</span><span class="n">param_group</span><span class="p">,</span> <span class="n">max_norm</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">max_norm</span><span class="p">))</span>
             <span class="c1"># if grad_norm is not finite, skip the update</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">grad_norm</span><span class="p">)</span> <span class="k">for</span> <span class="n">grad_norm</span> <span class="ow">in</span> <span class="n">grad_norms</span><span class="p">):</span>
-                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;WARN: grad_norm is not finite: </span><span class="si">{</span><span class="n">grad_norms</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"WARN: grad_norm is not finite: </span><span class="si">{</span><span class="n">grad_norms</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
                 <span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
@@ -543,7 +548,7 @@
                       <span class="n">is_training</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                       <span class="n">shard_size</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
                       <span class="n">reshard_after_forward</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">ModelOrModelOptimPair</span><span class="p">],</span> <span class="n">ModelOrModelOptimPair</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Prepares a model for FSDP training.</span>
 
 <span class="sd">        :param model: The model to prepare.</span>
@@ -555,9 +560,9 @@
 <span class="sd">        Example::</span>
 
 <span class="sd">            &gt;&gt;&gt; prepared_model = strategy.prepare_model(model)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">def</span><span class="w"> </span><span class="nf">get_auto_shard_size</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">is_training</span><span class="p">):</span>
-<span class="w">            </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">            </span><span class="sd">"""</span>
 <span class="sd">            Automatically determine the shard size based on model size and training mode.</span>
 
 <span class="sd">            :param model: The model to analyze</span>
@@ -566,7 +571,7 @@
 <span class="sd">            :type is_training: bool</span>
 <span class="sd">            :return: The recommended shard size</span>
 <span class="sd">            :rtype: int</span>
-<span class="sd">            &quot;&quot;&quot;</span>
+<span class="sd">            """</span>
             <span class="k">if</span> <span class="n">is_training</span><span class="p">:</span>
                 <span class="k">return</span> <span class="o">-</span><span class="mi">1</span>
             <span class="c1"># Calculate total number of parameters (in billions)</span>
@@ -579,11 +584,11 @@
             <span class="k">else</span><span class="p">:</span>  <span class="c1"># ≥ 80B</span>
                 <span class="k">return</span> <span class="o">-</span><span class="mi">1</span>
 
-        <span class="n">shard_size</span> <span class="o">=</span> <span class="n">get_auto_shard_size</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">is_training</span><span class="p">)</span> <span class="k">if</span> <span class="n">shard_size</span> <span class="o">==</span> <span class="s2">&quot;auto&quot;</span> <span class="k">else</span> <span class="n">shard_size</span>
+        <span class="n">shard_size</span> <span class="o">=</span> <span class="n">get_auto_shard_size</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">is_training</span><span class="p">)</span> <span class="k">if</span> <span class="n">shard_size</span> <span class="o">==</span> <span class="s2">"auto"</span> <span class="k">else</span> <span class="n">shard_size</span>
 
         <span class="k">if</span> <span class="n">model</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">model</span>
-        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="s2">&quot;base_model&quot;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="s2">"base_model"</span><span class="p">):</span>
             <span class="c1"># when RM.base_model is an Engine or already wrapped by FSDP, skip fsdp init</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">base_model</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
                 <span class="k">return</span> <span class="n">model</span>
@@ -595,7 +600,7 @@
 
     <span class="nd">@torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">()</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_fsdp_init_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">is_training</span><span class="p">,</span> <span class="n">shard_size</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">reshard_after_forward</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Initialize a model with FSDP wrapping.</span>
 
 <span class="sd">        Sets up mixed precision, auto-wrapping policy, and sharding strategy for the model.</span>
@@ -611,8 +616,8 @@
 
 <span class="sd">        :return: The FSDP-wrapped model</span>
 <span class="sd">        :rtype: torch.nn.Module</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">report_memory</span><span class="p">(</span><span class="s2">&quot;before FSDP2 wrap model&quot;</span><span class="p">)</span>
+<span class="sd">        """</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">report_memory</span><span class="p">(</span><span class="s2">"before FSDP2 wrap model"</span><span class="p">)</span>
 
         <span class="n">naive_mp_training</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">use_naive_opt</span> <span class="ow">and</span> <span class="n">is_training</span>
 
@@ -621,10 +626,10 @@
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">model_to_wrap</span><span class="p">,</span> <span class="n">FSDPModule</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">model</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">report_memory</span><span class="p">(</span><span class="s2">&quot;before FSDP2 wrap model pos2&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">report_memory</span><span class="p">(</span><span class="s2">"before FSDP2 wrap model pos2"</span><span class="p">)</span>
 
         <span class="c1"># this is not sufficient enough, for example, it will only return Qwen2DecoderLayer for qwen2</span>
-        <span class="n">default_transformer_cls_names_to_wrap</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">model_to_wrap</span><span class="p">,</span> <span class="s2">&quot;_no_split_modules&quot;</span><span class="p">,</span> <span class="p">[])</span>
+        <span class="n">default_transformer_cls_names_to_wrap</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">model_to_wrap</span><span class="p">,</span> <span class="s2">"_no_split_modules"</span><span class="p">,</span> <span class="p">[])</span>
 
         <span class="c1"># so we add some manual rules</span>
         <span class="n">transformer_cls_names_to_wrap</span> <span class="o">=</span> <span class="n">default_transformer_cls_names_to_wrap</span>
@@ -635,7 +640,7 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mixed_mm_data</span><span class="p">:</span>
             <span class="c1"># Note:if we have mixed multi-modal data across DP ranks</span>
             <span class="c1"># (e.g. some ranks pure text, other ranks contains images)</span>
-            <span class="c1"># we either keep vision model in full state, or keep it in FSDP&#39;s root module.</span>
+            <span class="c1"># we either keep vision model in full state, or keep it in FSDP's root module.</span>
             <span class="c1"># below we keep vit in root module to avoid stuck</span>
             <span class="k">for</span> <span class="n">cls_name</span> <span class="ow">in</span> <span class="n">vit_transformer_cls_names</span><span class="p">:</span>
                 <span class="n">transformer_cls_names_to_wrap</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">cls_name</span><span class="p">)</span>
@@ -656,8 +661,8 @@
         <span class="c1">#         vit_transformer_cls.append(transformer_cls)</span>
 
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">transformer_cls_to_wrap</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="s2">&quot;len(transformer_cls_to_wrap)=0&quot;</span><span class="p">,</span> <span class="n">model_to_wrap</span><span class="p">)</span>
-            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;len(transformer_cls_to_wrap) == 0, please check the wrapping rules!&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="s2">"len(transformer_cls_to_wrap)=0"</span><span class="p">,</span> <span class="n">model_to_wrap</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">"len(transformer_cls_to_wrap) == 0, please check the wrapping rules!"</span><span class="p">)</span>
 
         <span class="n">mp_policy</span> <span class="o">=</span> <span class="n">MixedPrecisionPolicy</span><span class="p">(</span>
             <span class="n">param_dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">bfloat16</span> <span class="k">if</span> <span class="n">naive_mp_training</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
@@ -668,23 +673,23 @@
         <span class="k">if</span> <span class="n">shard_size</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
             <span class="k">assert</span> <span class="n">world_size</span> <span class="o">%</span> <span class="n">shard_size</span> <span class="o">==</span> <span class="mi">0</span>
             <span class="n">mesh</span> <span class="o">=</span> <span class="n">init_device_mesh</span><span class="p">(</span>
-                <span class="s2">&quot;cuda&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">world_size</span> <span class="o">//</span> <span class="n">shard_size</span><span class="p">,</span> <span class="n">shard_size</span><span class="p">),</span> <span class="n">mesh_dim_names</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;replicate&quot;</span><span class="p">,</span> <span class="s2">&quot;shard&quot;</span><span class="p">)</span>
+                <span class="s2">"cuda"</span><span class="p">,</span> <span class="p">(</span><span class="n">world_size</span> <span class="o">//</span> <span class="n">shard_size</span><span class="p">,</span> <span class="n">shard_size</span><span class="p">),</span> <span class="n">mesh_dim_names</span><span class="o">=</span><span class="p">(</span><span class="s2">"replicate"</span><span class="p">,</span> <span class="s2">"shard"</span><span class="p">)</span>
             <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">mesh</span> <span class="o">=</span> <span class="n">init_device_mesh</span><span class="p">(</span><span class="s2">&quot;cuda&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">world_size</span><span class="p">),</span> <span class="n">mesh_dim_names</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;replicate&quot;</span><span class="p">,</span> <span class="s2">&quot;shard&quot;</span><span class="p">))</span>
+            <span class="n">mesh</span> <span class="o">=</span> <span class="n">init_device_mesh</span><span class="p">(</span><span class="s2">"cuda"</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">world_size</span><span class="p">),</span> <span class="n">mesh_dim_names</span><span class="o">=</span><span class="p">(</span><span class="s2">"replicate"</span><span class="p">,</span> <span class="s2">"shard"</span><span class="p">))</span>
 
-        <span class="n">no_shard_mesh</span> <span class="o">=</span> <span class="n">init_device_mesh</span><span class="p">(</span><span class="s2">&quot;cuda&quot;</span><span class="p">,</span> <span class="p">(</span><span class="n">world_size</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">mesh_dim_names</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;replicate&quot;</span><span class="p">,</span> <span class="s2">&quot;shard&quot;</span><span class="p">))</span>  <span class="c1"># noqa</span>
+        <span class="n">no_shard_mesh</span> <span class="o">=</span> <span class="n">init_device_mesh</span><span class="p">(</span><span class="s2">"cuda"</span><span class="p">,</span> <span class="p">(</span><span class="n">world_size</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">mesh_dim_names</span><span class="o">=</span><span class="p">(</span><span class="s2">"replicate"</span><span class="p">,</span> <span class="s2">"shard"</span><span class="p">))</span>  <span class="c1"># noqa</span>
 
         <span class="n">offload_policy</span> <span class="o">=</span> <span class="n">CPUOffloadPolicy</span><span class="p">()</span> <span class="k">if</span> <span class="n">is_training</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">fsdp_cpu_offload</span> <span class="k">else</span> <span class="n">OffloadPolicy</span><span class="p">()</span>
         <span class="n">fsdp_kwargs</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">&quot;reshard_after_forward&quot;</span><span class="p">:</span> <span class="n">reshard_after_forward</span><span class="p">,</span>
-            <span class="s2">&quot;mp_policy&quot;</span><span class="p">:</span> <span class="n">mp_policy</span><span class="p">,</span>
-            <span class="s2">&quot;offload_policy&quot;</span><span class="p">:</span> <span class="n">offload_policy</span><span class="p">,</span>
-            <span class="s2">&quot;mesh&quot;</span><span class="p">:</span> <span class="n">mesh</span><span class="p">,</span>
+            <span class="s2">"reshard_after_forward"</span><span class="p">:</span> <span class="n">reshard_after_forward</span><span class="p">,</span>
+            <span class="s2">"mp_policy"</span><span class="p">:</span> <span class="n">mp_policy</span><span class="p">,</span>
+            <span class="s2">"offload_policy"</span><span class="p">:</span> <span class="n">offload_policy</span><span class="p">,</span>
+            <span class="s2">"mesh"</span><span class="p">:</span> <span class="n">mesh</span><span class="p">,</span>
         <span class="p">}</span>
         <span class="c1"># fsdp_kwargs_no_shard = fsdp_kwargs.copy()</span>
-        <span class="c1"># fsdp_kwargs_no_shard[&#39;mesh&#39;] = no_shard_mesh</span>
-        <span class="c1"># fsdp_kwargs_no_shard[&#39;reshard_after_forward&#39;] = True</span>
+        <span class="c1"># fsdp_kwargs_no_shard['mesh'] = no_shard_mesh</span>
+        <span class="c1"># fsdp_kwargs_no_shard['reshard_after_forward'] = True</span>
         <span class="c1"># fsdp_kwargs_vit = fsdp_kwargs_no_shard if self.no_shard_vit else fsdp_kwargs</span>
 
         <span class="k">for</span> <span class="n">cls_to_wrap</span> <span class="ow">in</span> <span class="n">transformer_cls_to_wrap</span><span class="p">:</span>
@@ -698,7 +703,7 @@
             <span class="c1"># In fused linear logprob implementation, lm_head.weight is directly used to calculate logprob</span>
             <span class="c1"># If lm_head is sharded here, it may stuck in actor forward.</span>
             <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">module</span> <span class="ow">in</span> <span class="n">model_to_wrap</span><span class="o">.</span><span class="n">named_modules</span><span class="p">():</span>
-                <span class="k">if</span> <span class="s2">&quot;lm_head&quot;</span> <span class="ow">in</span> <span class="n">name</span><span class="p">:</span>
+                <span class="k">if</span> <span class="s2">"lm_head"</span> <span class="ow">in</span> <span class="n">name</span><span class="p">:</span>
                     <span class="n">fully_shard</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="o">**</span><span class="n">fsdp_kwargs</span><span class="p">)</span>
 
         <span class="n">fully_shard</span><span class="p">(</span><span class="n">model_to_wrap</span><span class="p">,</span> <span class="o">**</span><span class="n">fsdp_kwargs</span><span class="p">)</span>
@@ -708,35 +713,35 @@
             <span class="c1"># https://github.com/pytorch/torchtitan/issues/1133#issuecomment-2824429682</span>
             <span class="n">model_to_wrap</span> <span class="o">=</span> <span class="n">model_to_wrap</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">model_to_wrap</span><span class="p">,</span> <span class="s2">&quot;generate&quot;</span><span class="p">):</span>
-            <span class="n">register_fsdp_forward_method</span><span class="p">(</span><span class="n">model_to_wrap</span><span class="p">,</span> <span class="s2">&quot;generate&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">model_to_wrap</span><span class="p">,</span> <span class="s2">"generate"</span><span class="p">):</span>
+            <span class="n">register_fsdp_forward_method</span><span class="p">(</span><span class="n">model_to_wrap</span><span class="p">,</span> <span class="s2">"generate"</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">is_meta_initialized</span><span class="p">(</span><span class="n">model_to_wrap</span><span class="p">):</span>
-            <span class="n">model</span><span class="o">.</span><span class="n">to_empty</span><span class="p">(</span><span class="n">device</span><span class="o">=</span><span class="s2">&quot;cuda&quot;</span><span class="p">)</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">to_empty</span><span class="p">(</span><span class="n">device</span><span class="o">=</span><span class="s2">"cuda"</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;after _fsdp2_init_model: </span><span class="si">{</span><span class="n">model_to_wrap</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">report_memory</span><span class="p">(</span><span class="s2">&quot;after FSDP2 wrap model&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"after _fsdp2_init_model: </span><span class="si">{</span><span class="n">model_to_wrap</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">report_memory</span><span class="p">(</span><span class="s2">"after FSDP2 wrap model"</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">model</span>
 
 <div class="viewcode-block" id="FSDPV2Strategy.init_model_context"><a class="viewcode-back" href="../../../../api_doc/strategy/fsdp/fsdpv2.html#lightrft.strategy.fsdp.fsdpv2.FSDPV2Strategy.init_model_context">[docs]</a>    <span class="nd">@contextmanager</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">init_model_context</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">meta_init</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Context manager for model initialization, for large models it can be initialized on Meta device.</span>
 
 <span class="sd">        :param meta_init: if init on meta device</span>
 <span class="sd">        :type meta_init: bool</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">meta_init</span><span class="p">:</span>
-                <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">&quot;meta&quot;</span><span class="p">):</span>
+                <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">"meta"</span><span class="p">):</span>
                     <span class="k">yield</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">yield</span>
         <span class="k">finally</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">report_memory</span><span class="p">(</span><span class="s2">&quot;Finished init_model_context&quot;</span><span class="p">)</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">report_memory</span><span class="p">(</span><span class="s2">"Finished init_model_context"</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="FSDPV2Strategy.unwrap_model"><a class="viewcode-back" href="../../../../api_doc/strategy/fsdp/fsdpv2.html#lightrft.strategy.fsdp.fsdpv2.FSDPV2Strategy.unwrap_model">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">unwrap_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Unwraps the model from any wrapper modules.</span>
 
 <span class="sd">        :param model: The model to unwrap.</span>
@@ -748,14 +753,14 @@
 <span class="sd">        Example::</span>
 
 <span class="sd">            &gt;&gt;&gt; unwrapped_model = strategy.unwrap_model(wrapped_model)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="s2">&quot;module&quot;</span><span class="p">):</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="s2">"module"</span><span class="p">):</span>
             <span class="k">return</span> <span class="n">model</span><span class="o">.</span><span class="n">module</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">model</span></div>
 
 <div class="viewcode-block" id="FSDPV2Strategy.save_model"><a class="viewcode-back" href="../../../../api_doc/strategy/fsdp/fsdpv2.html#lightrft.strategy.fsdp.fsdpv2.FSDPV2Strategy.save_model">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">save_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span> <span class="n">tokenizer</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Save the model, its configuration, and tokenizer in Hugging Face format.</span>
 <span class="sd">        In LoRA mode, this saves the adapter. In full mode, this saves the full model.</span>
 
@@ -768,12 +773,12 @@
 <span class="sd">        :param output_dir: Directory to save the model to</span>
 <span class="sd">        :type output_dir: str</span>
 <span class="sd">        :param kwargs: Additional arguments to pass to model.save_pretrained</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># Determine the model to save (unwrap ActorVL or similar wrappers)</span>
-        <span class="n">actual_model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">model</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="s2">&quot;model&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="n">model</span>
+        <span class="n">actual_model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">model</span> <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="s2">"model"</span><span class="p">)</span> <span class="k">else</span> <span class="n">model</span>
 
         <span class="c1"># [Gather Configuration]</span>
-        <span class="c1"># In this environment, get_model_state_dict uses &#39;options&#39; and &#39;StateDictOptions&#39;.</span>
+        <span class="c1"># In this environment, get_model_state_dict uses 'options' and 'StateDictOptions'.</span>
         <span class="c1"># We want the full state dict collected to rank 0 (cpu_offload=True to avoid OOM).</span>
         <span class="n">opts</span> <span class="o">=</span> <span class="n">StateDictOptions</span><span class="p">(</span><span class="n">full_state_dict</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">cpu_offload</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
@@ -785,19 +790,19 @@
             <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
             <span class="c1"># Use save_pretrained if available (handles HF and PEFT)</span>
-            <span class="c1"># PEFT&#39;s save_pretrained will automatically filter for adapter weights if state_dict is provided</span>
-            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">actual_model</span><span class="p">,</span> <span class="s2">&quot;save_pretrained&quot;</span><span class="p">):</span>
+            <span class="c1"># PEFT's save_pretrained will automatically filter for adapter weights if state_dict is provided</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">actual_model</span><span class="p">,</span> <span class="s2">"save_pretrained"</span><span class="p">):</span>
                 <span class="n">actual_model</span><span class="o">.</span><span class="n">save_pretrained</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="n">state_dict</span><span class="o">=</span><span class="n">state_dict</span><span class="p">,</span> <span class="n">safe_serialization</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="c1"># Fallback to torch.save</span>
-                <span class="n">save_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="s2">&quot;pytorch_model.bin&quot;</span><span class="p">)</span>
+                <span class="n">save_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="s2">"pytorch_model.bin"</span><span class="p">)</span>
                 <span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">state_dict</span><span class="p">,</span> <span class="n">save_path</span><span class="p">)</span>
 
             <span class="c1"># Save the tokenizer</span>
             <span class="k">if</span> <span class="n">tokenizer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">tokenizer</span><span class="o">.</span><span class="n">save_pretrained</span><span class="p">(</span><span class="n">output_dir</span><span class="p">)</span>
 
-            <span class="bp">self</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Hugging Face model saved to </span><span class="si">{</span><span class="n">output_dir</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Hugging Face model saved to </span><span class="si">{</span><span class="n">output_dir</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
         <span class="c1"># Ensure all ranks wait for rank 0 to finish saving</span>
         <span class="n">dist</span><span class="o">.</span><span class="n">barrier</span><span class="p">()</span></div>
@@ -814,7 +819,7 @@
         <span class="n">optimizer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">scheduler</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>  <span class="c1"># pylint: disable=R0917,W0102</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Save model checkpoints in a distributed environment with automatic rotation.</span>
 
 <span class="sd">        This method saves the sharded model weights to disk and manages the number and total size</span>
@@ -850,8 +855,8 @@
 
 <span class="sd">        Example::</span>
 
-<span class="sd">            &gt;&gt;&gt; trainer.save_ckpt(model, &quot;checkpoints&quot;, tag=&quot;step_1000&quot;, max_num=5)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">            &gt;&gt;&gt; trainer.save_ckpt(model, "checkpoints", tag="step_1000", max_num=5)</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_rank_0</span><span class="p">():</span>
             <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">save_dir</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
@@ -866,14 +871,14 @@
                     <span class="n">oldest_dir</span> <span class="o">=</span> <span class="n">subdirs</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
                     <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">oldest_dir</span><span class="p">):</span>
                         <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">oldest_dir</span><span class="p">)</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Deleted oldest ckpt </span><span class="si">{</span><span class="n">oldest_dir</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Deleted oldest ckpt </span><span class="si">{</span><span class="n">oldest_dir</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="k">break</span>
 
         <span class="n">dist</span><span class="o">.</span><span class="n">barrier</span><span class="p">()</span>
 
         <span class="c1"># Determine the model to save (unwrap ActorVL or similar wrappers)</span>
-        <span class="n">actual_model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">model</span> <span class="k">if</span> <span class="n">is_actor</span><span class="p">(</span><span class="n">model</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="s2">&quot;model&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="n">model</span>
+        <span class="n">actual_model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">model</span> <span class="k">if</span> <span class="n">is_actor</span><span class="p">(</span><span class="n">model</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="s2">"model"</span><span class="p">)</span> <span class="k">else</span> <span class="n">model</span>
 
         <span class="c1"># [Sharded State Dict]</span>
         <span class="c1"># For DCP, we want the sharded state dict (full_state_dict=False by default)</span>
@@ -883,28 +888,28 @@
         <span class="n">fp</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">save_dir</span><span class="p">,</span> <span class="n">tag</span><span class="p">)</span>
         <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">fp</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="n">dcp</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">fsdp_state_dict</span><span class="p">,</span> <span class="n">checkpoint_id</span><span class="o">=</span><span class="n">fp</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;DCP checkpoint saved to </span><span class="si">{</span><span class="n">fp</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"DCP checkpoint saved to </span><span class="si">{</span><span class="n">fp</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">optimizer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">opt_base_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">save_dir</span><span class="p">,</span> <span class="n">tag</span><span class="p">,</span> <span class="s2">&quot;optim_states&quot;</span><span class="p">)</span>
+            <span class="n">opt_base_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">save_dir</span><span class="p">,</span> <span class="n">tag</span><span class="p">,</span> <span class="s2">"optim_states"</span><span class="p">)</span>
             <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">opt_base_dir</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">is_mp_optimizer</span><span class="p">(</span><span class="n">optimizer</span><span class="p">):</span>
-                <span class="n">opt_ckpt_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">opt_base_dir</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;_rank</span><span class="si">{</span><span class="n">torch</span><span class="o">.</span><span class="n">distributed</span><span class="o">.</span><span class="n">get_rank</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">opt_ckpt_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">opt_base_dir</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"_rank</span><span class="si">{</span><span class="n">torch</span><span class="o">.</span><span class="n">distributed</span><span class="o">.</span><span class="n">get_rank</span><span class="p">()</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
                 <span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">optimizer</span><span class="o">.</span><span class="n">state_dict</span><span class="p">(),</span> <span class="n">opt_ckpt_path</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="c1"># DCP can only be use with naive optimizer</span>
                 <span class="n">fsdp_optim_state_dict</span> <span class="o">=</span> <span class="n">get_optimizer_state_dict</span><span class="p">(</span><span class="n">actual_model</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">)</span>
                 <span class="n">dcp</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">fsdp_optim_state_dict</span><span class="p">,</span> <span class="n">checkpoint_id</span><span class="o">=</span><span class="n">opt_base_dir</span><span class="p">)</span>
 
-        <span class="n">client_ckpt_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">fp</span><span class="p">,</span> <span class="s2">&quot;client_state.pt&quot;</span><span class="p">)</span>
+        <span class="n">client_ckpt_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">fp</span><span class="p">,</span> <span class="s2">"client_state.pt"</span><span class="p">)</span>
         <span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">client_state</span><span class="p">,</span> <span class="n">client_ckpt_path</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;client_state save to </span><span class="si">{</span><span class="n">client_ckpt_path</span><span class="si">}</span><span class="s2">, content: </span><span class="si">{</span><span class="n">client_state</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"client_state save to </span><span class="si">{</span><span class="n">client_ckpt_path</span><span class="si">}</span><span class="s2">, content: </span><span class="si">{</span><span class="n">client_state</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">scheduler</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">sched_ckpt_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">fp</span><span class="p">,</span> <span class="s2">&quot;scheduler_state.pt&quot;</span><span class="p">)</span>
+            <span class="n">sched_ckpt_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">fp</span><span class="p">,</span> <span class="s2">"scheduler_state.pt"</span><span class="p">)</span>
             <span class="n">scheduler_state</span> <span class="o">=</span> <span class="n">scheduler</span><span class="o">.</span><span class="n">state_dict</span><span class="p">()</span>
             <span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">scheduler_state</span><span class="p">,</span> <span class="n">sched_ckpt_path</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;scheduler_state save to </span><span class="si">{</span><span class="n">sched_ckpt_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"scheduler_state save to </span><span class="si">{</span><span class="n">sched_ckpt_path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="FSDPV2Strategy.load_ckpt"><a class="viewcode-back" href="../../../../api_doc/strategy/fsdp/fsdpv2.html#lightrft.strategy.fsdp.fsdpv2.FSDPV2Strategy.load_ckpt">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">load_ckpt</span><span class="p">(</span>  <span class="c1"># pylint: disable=R0917</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -917,7 +922,7 @@
         <span class="n">load_lr_scheduler_states</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Load model checkpoints in a distributed environment.</span>
 
 <span class="sd">        This method loads sharded model weights from disk for each distributed process.</span>
@@ -950,11 +955,11 @@
 
 <span class="sd">        Example::</span>
 
-<span class="sd">            &gt;&gt;&gt; load_dir, client_states = trainer.load_ckpt(model, &quot;checkpoints/step_1000&quot;)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">            &gt;&gt;&gt; load_dir, client_states = trainer.load_ckpt(model, "checkpoints/step_1000")</span>
+<span class="sd">        """</span>
 
         <span class="n">latest_path</span> <span class="o">=</span> <span class="n">find_latest_checkpoint_dir</span><span class="p">(</span><span class="n">load_dir</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Loading DCP checkpoint from </span><span class="si">{</span><span class="n">latest_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Loading DCP checkpoint from </span><span class="si">{</span><span class="n">latest_path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
         <span class="n">fsdp_state_dict</span> <span class="o">=</span> <span class="n">get_model_state_dict</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
 
@@ -962,43 +967,43 @@
         <span class="n">set_model_state_dict</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">fsdp_state_dict</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">optimizer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">load_optimizer_states</span><span class="p">:</span>
-            <span class="n">opt_ckpt_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">latest_path</span><span class="p">,</span> <span class="s2">&quot;optim_states&quot;</span><span class="p">)</span>
+            <span class="n">opt_ckpt_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">latest_path</span><span class="p">,</span> <span class="s2">"optim_states"</span><span class="p">)</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">opt_ckpt_path</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;WARNING: Opt ckpt </span><span class="si">{</span><span class="n">opt_ckpt_path</span><span class="si">}</span><span class="s2"> does not exist! Skipping ... &quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"WARNING: Opt ckpt </span><span class="si">{</span><span class="n">opt_ckpt_path</span><span class="si">}</span><span class="s2"> does not exist! Skipping ... "</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Loading DCP checkpoint from </span><span class="si">{</span><span class="n">opt_ckpt_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Loading DCP checkpoint from </span><span class="si">{</span><span class="n">opt_ckpt_path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
                 <span class="k">if</span> <span class="n">is_mp_optimizer</span><span class="p">(</span><span class="n">optimizer</span><span class="p">):</span>
-                    <span class="n">opt_ckpt_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">latest_path</span><span class="p">,</span> <span class="s2">&quot;optim_states&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;_rank</span><span class="si">{</span><span class="n">torch</span><span class="o">.</span><span class="n">distributed</span><span class="o">.</span><span class="n">get_rank</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="n">opt_ckpt_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">latest_path</span><span class="p">,</span> <span class="s2">"optim_states"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"_rank</span><span class="si">{</span><span class="n">torch</span><span class="o">.</span><span class="n">distributed</span><span class="o">.</span><span class="n">get_rank</span><span class="p">()</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
                     <span class="n">opt_states</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">opt_ckpt_path</span><span class="p">)</span>
                     <span class="n">optimizer</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">opt_states</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="c1"># DCP can only be use with naive optimizer</span>
                     <span class="n">fsdp_optim_state_dict</span> <span class="o">=</span> <span class="n">get_optimizer_state_dict</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">)</span>
-                    <span class="n">opt_ckpt_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">latest_path</span><span class="p">,</span> <span class="s2">&quot;optim_states&quot;</span><span class="p">)</span>
+                    <span class="n">opt_ckpt_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">latest_path</span><span class="p">,</span> <span class="s2">"optim_states"</span><span class="p">)</span>
                     <span class="n">dcp</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">state_dict</span><span class="o">=</span><span class="n">fsdp_optim_state_dict</span><span class="p">,</span> <span class="n">checkpoint_id</span><span class="o">=</span><span class="n">opt_ckpt_path</span><span class="p">)</span>
                     <span class="n">set_optimizer_state_dict</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">fsdp_optim_state_dict</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">scheduler</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">load_lr_scheduler_states</span><span class="p">:</span>
-            <span class="n">sched_ckpt_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">latest_path</span><span class="p">,</span> <span class="s2">&quot;scheduler_state.pt&quot;</span><span class="p">)</span>
+            <span class="n">sched_ckpt_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">latest_path</span><span class="p">,</span> <span class="s2">"scheduler_state.pt"</span><span class="p">)</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">sched_ckpt_path</span><span class="p">):</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;WARNING: Scheduler ckpt </span><span class="si">{</span><span class="n">sched_ckpt_path</span><span class="si">}</span><span class="s2"> does not exist! Skipping ... &quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"WARNING: Scheduler ckpt </span><span class="si">{</span><span class="n">sched_ckpt_path</span><span class="si">}</span><span class="s2"> does not exist! Skipping ... "</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Loading lr_scheduler_states from </span><span class="si">{</span><span class="n">sched_ckpt_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Loading lr_scheduler_states from </span><span class="si">{</span><span class="n">sched_ckpt_path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
                 <span class="n">loaded_scheduler_state</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">sched_ckpt_path</span><span class="p">)</span>
                 <span class="n">scheduler</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">loaded_scheduler_state</span><span class="p">)</span>
 
         <span class="n">client_states</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="n">client_ckpt_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">latest_path</span><span class="p">,</span> <span class="s2">&quot;client_state.pt&quot;</span><span class="p">)</span>
+        <span class="n">client_ckpt_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">latest_path</span><span class="p">,</span> <span class="s2">"client_state.pt"</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">client_ckpt_path</span><span class="p">):</span>
             <span class="n">client_states</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">client_ckpt_path</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Loaded client states: </span><span class="si">{</span><span class="n">client_states</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Loaded client states: </span><span class="si">{</span><span class="n">client_states</span><span class="si">=}</span><span class="s2">"</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">sync_and_clear_cache</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">latest_path</span><span class="p">,</span> <span class="n">client_states</span></div>
 
 <div class="viewcode-block" id="FSDPV2Strategy.maybe_offload_optimizer"><a class="viewcode-back" href="../../../../api_doc/strategy/fsdp/fsdpv2.html#lightrft.strategy.fsdp.fsdpv2.FSDPV2Strategy.maybe_offload_optimizer">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">maybe_offload_optimizer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Offload FSDP optimizer states to CPU if adam_offload is enabled.</span>
 
 <span class="sd">        :param optimizer: The optimizer to potentially offload</span>
@@ -1006,12 +1011,12 @@
 
 <span class="sd">        :return: The offloaded optimizer if adam_offload is enabled, otherwise the original optimizer</span>
 <span class="sd">        :rtype: torch.optim.Optimizer</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">adam_offload</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">offload_fsdp_optimizer</span><span class="p">(</span><span class="n">optimizer</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="FSDPV2Strategy.maybe_load_optimizer"><a class="viewcode-back" href="../../../../api_doc/strategy/fsdp/fsdpv2.html#lightrft.strategy.fsdp.fsdpv2.FSDPV2Strategy.maybe_load_optimizer">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">maybe_load_optimizer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">current_device</span><span class="p">()):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Load FSDP optimizer states back to GPU if adam_offload is enabled.</span>
 
 <span class="sd">        :param optimizer: The optimizer to potentially load</span>
@@ -1021,13 +1026,13 @@
 
 <span class="sd">        :return: The loaded optimizer if adam_offload is enabled, otherwise the original optimizer</span>
 <span class="sd">        :rtype: torch.optim.Optimizer</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">adam_offload</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">load_fsdp_optimizer</span><span class="p">(</span><span class="n">optimizer</span><span class="p">,</span> <span class="n">device</span><span class="p">)</span></div>
 
     <span class="nd">@torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">()</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">offload_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">models</span><span class="p">,</span> <span class="n">empty_cache</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Offload model(s) to CPU to free GPU memory.</span>
 
 <span class="sd">        This method moves the model parameters and buffers to CPU memory, which can be useful</span>
@@ -1041,22 +1046,22 @@
 <span class="sd">        Example::</span>
 
 <span class="sd">            &gt;&gt;&gt; strategy.offload_model([actor_model, critic_model])</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">def</span><span class="w"> </span><span class="nf">offload_single</span><span class="p">(</span><span class="n">model</span><span class="p">):</span>
-<span class="w">            </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">            </span><span class="sd">"""</span>
 <span class="sd">            Offload a single model to CPU.</span>
 
 <span class="sd">            :param model: The model to offload</span>
 <span class="sd">            :type model: torch.nn.Module</span>
-<span class="sd">            &quot;&quot;&quot;</span>
+<span class="sd">            """</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
                 <span class="k">return</span>
-            <span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">&quot;cpu&quot;</span><span class="p">))</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">"cpu"</span><span class="p">))</span>
             <span class="c1"># the following code does not work for QwenVL+FSDP2, it will result in some unreleased memory.</span>
             <span class="c1"># for param in model.parameters():</span>
-            <span class="c1">#     param = param.to(torch.device(&quot;cpu&quot;), non_blocking=True)</span>
+            <span class="c1">#     param = param.to(torch.device("cpu"), non_blocking=True)</span>
             <span class="c1"># for buf in model.buffers():</span>
-            <span class="c1">#     buf.data = buf.data.to(torch.device(&quot;cpu&quot;), non_blocking=True)</span>
+            <span class="c1">#     buf.data = buf.data.to(torch.device("cpu"), non_blocking=True)</span>
 
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">models</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
             <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">models</span><span class="p">:</span>
@@ -1066,11 +1071,11 @@
 
         <span class="k">if</span> <span class="n">empty_cache</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">sync_and_clear_cache</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">report_memory</span><span class="p">(</span><span class="s2">&quot;after offload_model&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">report_memory</span><span class="p">(</span><span class="s2">"after offload_model"</span><span class="p">)</span>
 
     <span class="nd">@torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">()</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">reload_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">models</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Reload model(s) from CPU back to GPU.</span>
 
 <span class="sd">        This method moves the model parameters and buffers back to GPU memory after they</span>
@@ -1082,16 +1087,16 @@
 <span class="sd">        Example::</span>
 
 <span class="sd">            &gt;&gt;&gt; strategy.reload_model([actor_model, critic_model])</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">current_device</span><span class="p">()</span>
 
         <span class="k">def</span><span class="w"> </span><span class="nf">reload_single</span><span class="p">(</span><span class="n">model</span><span class="p">):</span>
-<span class="w">            </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">            </span><span class="sd">"""</span>
 <span class="sd">            Reload a single model to GPU.</span>
 
 <span class="sd">            :param model: The model to reload</span>
 <span class="sd">            :type model: torch.nn.Module</span>
-<span class="sd">            &quot;&quot;&quot;</span>
+<span class="sd">            """</span>
             <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
                 <span class="k">return</span>
             <span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
@@ -1106,11 +1111,11 @@
                 <span class="n">reload_single</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">reload_single</span><span class="p">(</span><span class="n">models</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">report_memory</span><span class="p">(</span><span class="s2">&quot;after reload_model&quot;</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">report_memory</span><span class="p">(</span><span class="s2">"after reload_model"</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="is_mp_optimizer"><a class="viewcode-back" href="../../../../api_doc/strategy/fsdp/fsdpv2.html#lightrft.strategy.fsdp.fsdpv2.is_mp_optimizer">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">is_mp_optimizer</span><span class="p">(</span><span class="n">optim</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Check if an optimizer is an instance of FSDPadaptOptimizer.</span>
 
 <span class="sd">    This function determines whether the provided optimizer is a model parallel</span>
@@ -1128,7 +1133,7 @@
 <span class="sd">        &gt;&gt;&gt; is_mp = is_mp_optimizer(optimizer)</span>
 <span class="sd">        &gt;&gt;&gt; print(is_mp)</span>
 <span class="sd">        True</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">optim</span><span class="p">,</span> <span class="n">FSDPadaptOptimizer</span><span class="p">)</span></div>
 </pre></div>
 
@@ -1142,7 +1147,7 @@
 
   <div role="contentinfo">
     <p>
-      &copy; Copyright 2025, OpenDILab.
+      &copy; Copyright 2025-2026, OpenDILab.
 
     </p>
   </div>
@@ -1179,8 +1184,8 @@
   <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
   <script src="../../../../_static/doctools.js"></script>
   <script src="../../../../_static/sphinx_highlight.js"></script>
-  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-  <script src="../../../../_static/js/language_switch.js"></script>
+  <script src="../../../../_static/clipboard.min.js"></script>
+  <script src="../../../../_static/copybutton.js"></script>
   
 
   
@@ -1209,7 +1214,7 @@
     <div class="container-fluid">
       <div class="container">
         <div class="mobile-main-menu-header-container">
-          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="header-logo" href="https://github.com/opendilab/LightRFT" aria-label="OpenMMLab"></a>
           <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
         </div>
       </div>

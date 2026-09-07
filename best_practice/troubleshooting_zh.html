@@ -33,9 +33,12 @@
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
   <link rel="stylesheet" href="../_static/css/readthedocs.css" type="text/css" />
   <link rel="index" title="Index" href="../genindex.html" />
   <link rel="search" title="Search" href="../search.html" />
+  <link rel="next" title="参与贡献 LightRFT" href="contributing_zh.html" />
+  <link rel="prev" title="常见问题解答 (FAQ)" href="faq_zh.html" />
   <!-- Google Analytics -->
   <script type="text/javascript">
     var collapsedSections = [];
@@ -85,7 +88,7 @@
 <div class="container-fluid header-holder tutorials-header" id="header-holder">
   <div class="container">
     <div class="header-container">
-      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+      <a class="header-logo" href="https://github.com/opendilab/LightRFT"
         aria-label="OpenMMLab"></a>
 
       <div class="main-menu">
@@ -235,6 +238,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../api_doc/strategy/index.html">lightrft.strategy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api_doc/trainer/index.html">lightrft.trainer</a></li>
 </ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../index_zh.html">欢迎来到 LightRFT 文档!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index_zh.html#id4">索引与表格</a></li>
+</ul>
 
         
         
@@ -271,6 +278,10 @@
         </a> &gt;
       </li>
 
+        
+          <li><a href="../index_zh.html">欢迎来到 LightRFT 文档!</a> &gt;</li>
+        
+          <li><a href="index_zh.html">最佳实践</a> &gt;</li>
         
       <li>故障排除指南</li>
     
@@ -322,7 +333,7 @@
 <section id="id4">
 <h3>问题：包导入错误<a class="headerlink" href="#id4" title="Permalink to this heading">¶</a></h3>
 <p><strong>现象</strong>：</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="ne">ModuleNotFoundError</span><span class="p">:</span> <span class="n">No</span> <span class="n">module</span> <span class="n">named</span> <span class="s1">&#39;lightrft&#39;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="ne">ModuleNotFoundError</span><span class="p">:</span> <span class="n">No</span> <span class="n">module</span> <span class="n">named</span> <span class="s1">'lightrft'</span>
 </pre></div>
 </div>
 <p><strong>解决方案</strong>：</p>
@@ -342,7 +353,7 @@ pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </s
 <p><strong>解决方案</strong>：</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># 检查 CUDA 版本</span>
 nvcc<span class="w"> </span>--version
-python<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;import torch; print(torch.version.cuda)&quot;</span>
+python<span class="w"> </span>-c<span class="w"> </span><span class="s2">"import torch; print(torch.version.cuda)"</span>
 
 <span class="c1"># 使用正确的 CUDA 版本重新安装 PyTorch</span>
 pip<span class="w"> </span>install<span class="w"> </span><span class="nv">torch</span><span class="o">==</span><span class="m">2</span>.9.1+cu128<span class="w"> </span>--index-url<span class="w"> </span>https://download.pytorch.org/whl/cu128
@@ -845,7 +856,7 @@ df<span class="w"> </span>-h
 <span class="o">...</span>
 
 <span class="c1"># 导出快照文件</span>
-<span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">memory</span><span class="o">.</span><span class="n">_dump_snapshot</span><span class="p">(</span><span class="s2">&quot;memory.pickle&quot;</span><span class="p">)</span>
+<span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">memory</span><span class="o">.</span><span class="n">_dump_snapshot</span><span class="p">(</span><span class="s2">"memory.pickle"</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -862,7 +873,7 @@ df<span class="w"> </span>-h
     <span class="n">trainer</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
 
 <span class="c1"># 查看耗时分布</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">prof</span><span class="o">.</span><span class="n">key_averages</span><span class="p">()</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">sort_by</span><span class="o">=</span><span class="s2">&quot;cuda_time_total&quot;</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">prof</span><span class="o">.</span><span class="n">key_averages</span><span class="p">()</span><span class="o">.</span><span class="n">table</span><span class="p">(</span><span class="n">sort_by</span><span class="o">=</span><span class="s2">"cuda_time_total"</span><span class="p">))</span>
 </pre></div>
 </div>
 </section>
@@ -901,23 +912,23 @@ df<span class="w"> </span>-h
 </thead>
 <tbody>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">CUDA</span> <span class="pre">out</span> <span class="pre">of</span> <span class="pre">memory</span></code></p></td>
-<td><p>显存问题</p></td>
+<td><p><a class="reference internal" href="#id5">显存问题</a></p></td>
 <td><p>减小 batch size，开启梯度检查点</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">num_rollouts_per_episodes</span> <span class="pre">=</span> <span class="pre">0</span></code></p></td>
-<td><p>训练问题</p></td>
+<td><p><a class="reference internal" href="#id7">训练问题</a></p></td>
 <td><p>增大 <code class="docutils literal notranslate"><span class="pre">train_batch_size</span></code></p></td>
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">NCCL</span> <span class="pre">timeout</span></code></p></td>
-<td><p>分布式训练问题</p></td>
+<td><p><a class="reference internal" href="#id10">分布式训练问题</a></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">export</span> <span class="pre">NCCL_TIMEOUT=1800</span></code></p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">Failed</span> <span class="pre">to</span> <span class="pre">initialize</span> <span class="pre">vLLM</span></code></p></td>
-<td><p>推理引擎问题</p></td>
+<td><p><a class="reference internal" href="#id16">推理引擎问题</a></p></td>
 <td><p>调低 <code class="docutils literal notranslate"><span class="pre">engine_mem_util</span></code></p></td>
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">NaN</span> <span class="pre">loss</span></code></p></td>
-<td><p>训练问题</p></td>
+<td><p><a class="reference internal" href="#id7">训练问题</a></p></td>
 <td><p>调低学习率，开启梯度裁剪</p></td>
 </tr>
 </tbody>
@@ -927,8 +938,8 @@ df<span class="w"> </span>-h
 <h2>另请参阅<a class="headerlink" href="#id26" title="Permalink to this heading">¶</a></h2>
 <ul class="simple">
 <li><p><a class="reference internal" href="faq_zh.html"><span class="std std-doc">常见问题 (FAQ)</span></a> - 汇总的常见问题解答</p></li>
-<li><p><a class="reference internal" href="#../user_guide/configuration.md"><span class="xref myst">配置指南</span></a> - 全量参数说明</p></li>
-<li><p><a class="reference internal" href="#../best_practice/strategy_usage.md"><span class="xref myst">最佳实践</span></a> - 框架优化建议</p></li>
+<li><p><a class="reference internal" href="../quick_start/configuration_zh.html"><span class="std std-doc">配置指南</span></a> - 全量参数说明</p></li>
+<li><p><a class="reference internal" href="strategy_zh.html"><span class="std std-doc">最佳实践</span></a> - 框架优化建议</p></li>
 </ul>
 </section>
 </section>
@@ -939,12 +950,24 @@ df<span class="w"> </span>-h
             </div>
             <footer>
   
+  <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+    
+    <a href="contributing_zh.html" class="btn btn-neutral float-right" title="参与贡献 LightRFT" accesskey="n"
+      rel="next">Next <img src="../_static/images/chevron-right-blue.svg"
+        class="next-page"></a>
+    
+    
+    <a href="faq_zh.html" class="btn btn-neutral" title="常见问题解答 (FAQ)" accesskey="p"
+      rel="prev"><img src="../_static/images/chevron-right-blue.svg" class="previous-page"> Previous</a>
+    
+  </div>
+  
 
   <hr>
 
   <div role="contentinfo">
     <p>
-      &copy; Copyright 2025, OpenDILab.
+      &copy; Copyright 2025-2026, OpenDILab.
 
     </p>
   </div>
@@ -1036,8 +1059,8 @@ df<span class="w"> </span>-h
   <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
   <script src="../_static/doctools.js"></script>
   <script src="../_static/sphinx_highlight.js"></script>
-  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-  <script src="../_static/js/language_switch.js"></script>
+  <script src="../_static/clipboard.min.js"></script>
+  <script src="../_static/copybutton.js"></script>
   
 
   
@@ -1066,7 +1089,7 @@ df<span class="w"> </span>-h
     <div class="container-fluid">
       <div class="container">
         <div class="mobile-main-menu-header-container">
-          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="header-logo" href="https://github.com/opendilab/LightRFT" aria-label="OpenMMLab"></a>
           <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
         </div>
       </div>

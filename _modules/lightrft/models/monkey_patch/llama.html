@@ -32,6 +32,7 @@
   <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../../../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/copybutton.css" type="text/css" />
   <link rel="stylesheet" href="../../../../_static/css/readthedocs.css" type="text/css" />
   <link rel="index" title="Index" href="../../../../genindex.html" />
   <link rel="search" title="Search" href="../../../../search.html" />
@@ -84,7 +85,7 @@
 <div class="container-fluid header-holder tutorials-header" id="header-holder">
   <div class="container">
     <div class="header-container">
-      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+      <a class="header-logo" href="https://github.com/opendilab/LightRFT"
         aria-label="OpenMMLab"></a>
 
       <div class="main-menu">
@@ -234,6 +235,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../api_doc/strategy/index.html">lightrft.strategy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../api_doc/trainer/index.html">lightrft.trainer</a></li>
 </ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../index_zh.html">欢迎来到 LightRFT 文档!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../index_zh.html#id4">索引与表格</a></li>
+</ul>
 
         
         
@@ -300,23 +305,23 @@
               <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
                 
   <h1>Source code for lightrft.models.monkey_patch.llama</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""</span>
 <span class="sd">This module implements a modified version of the LLaMA attention mechanism with support for Ulysses</span>
 <span class="sd">sequence parallelism. It adapts the original transformers implementation to work with sequence</span>
 <span class="sd">parallelism for improved performance on distributed systems.</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="c1"># adopted from https://github.com/volcengine/verl/blob/main/verl/models/transformers/llama.py</span>
 <span class="c1"># Copyright 2024 Bytedance Ltd. and/or its affiliates</span>
 <span class="c1">#</span>
-<span class="c1"># Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);</span>
+<span class="c1"># Licensed under the Apache License, Version 2.0 (the "License");</span>
 <span class="c1"># you may not use this file except in compliance with the License.</span>
 <span class="c1"># You may obtain a copy of the License at</span>
 <span class="c1">#</span>
 <span class="c1">#     http://www.apache.org/licenses/LICENSE-2.0</span>
 <span class="c1">#</span>
 <span class="c1"># Unless required by applicable law or agreed to in writing, software</span>
-<span class="c1"># distributed under the License is distributed on an &quot;AS IS&quot; BASIS,</span>
+<span class="c1"># distributed under the License is distributed on an "AS IS" BASIS,</span>
 <span class="c1"># WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.</span>
 <span class="c1"># See the License for the specific language governing permissions and</span>
 <span class="c1"># limitations under the License.</span>
@@ -343,7 +348,7 @@
     <span class="n">cache_position</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">LongTensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Modified LLaMA attention forward pass with Ulysses sequence parallelism support.</span>
 
 <span class="sd">    This function implements the attention mechanism for LLaMA models with added support for</span>
@@ -382,7 +387,7 @@
 <span class="sd">        Adapted from transformers 4.49.0 to support Ulysses sequence parallelism for transformers &gt;= 4.48.0.</span>
 
 <span class="sd">        This function has been tested only on transformers versions between 4.48.0 and 4.49.0.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">transformers.modeling_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">ALL_ATTENTION_FUNCTIONS</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">transformers.models.llama.modeling_llama</span><span class="w"> </span><span class="kn">import</span> <span class="n">eager_attention_forward</span>
 
@@ -403,15 +408,15 @@
     <span class="n">query_states</span><span class="p">,</span> <span class="n">key_states</span> <span class="o">=</span> <span class="n">apply_rotary_pos_emb</span><span class="p">(</span><span class="n">query_states</span><span class="p">,</span> <span class="n">key_states</span><span class="p">,</span> <span class="n">cos</span><span class="p">,</span> <span class="n">sin</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">past_key_value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="c1"># sin and cos are specific to RoPE models; cache_position needed for the static cache</span>
-        <span class="n">cache_kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;sin&quot;</span><span class="p">:</span> <span class="n">sin</span><span class="p">,</span> <span class="s2">&quot;cos&quot;</span><span class="p">:</span> <span class="n">cos</span><span class="p">,</span> <span class="s2">&quot;cache_position&quot;</span><span class="p">:</span> <span class="n">cache_position</span><span class="p">}</span>
+        <span class="n">cache_kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"sin"</span><span class="p">:</span> <span class="n">sin</span><span class="p">,</span> <span class="s2">"cos"</span><span class="p">:</span> <span class="n">cos</span><span class="p">,</span> <span class="s2">"cache_position"</span><span class="p">:</span> <span class="n">cache_position</span><span class="p">}</span>
         <span class="n">key_states</span><span class="p">,</span> <span class="n">value_states</span> <span class="o">=</span> <span class="n">past_key_value</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">key_states</span><span class="p">,</span> <span class="n">value_states</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">layer_idx</span><span class="p">,</span> <span class="n">cache_kwargs</span><span class="p">)</span>
     <span class="n">attention_interface</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="n">eager_attention_forward</span>
-    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">_attn_implementation</span> <span class="o">!=</span> <span class="s2">&quot;eager&quot;</span><span class="p">:</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">_attn_implementation</span> <span class="o">==</span> <span class="s2">&quot;sdpa&quot;</span> <span class="ow">and</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;output_attentions&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">_attn_implementation</span> <span class="o">!=</span> <span class="s2">"eager"</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">_attn_implementation</span> <span class="o">==</span> <span class="s2">"sdpa"</span> <span class="ow">and</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"output_attentions"</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">warning_once</span><span class="p">(</span>
-                <span class="s2">&quot;`torch.nn.functional.scaled_dot_product_attention` does not support `output_attentions=True`. &quot;</span>
-                <span class="s2">&quot;Falling back to eager attention. &quot;</span>
-                <span class="s2">&quot;This warning can be removed using the argument `attn_implementation=eager`.&quot;</span>
+                <span class="s2">"`torch.nn.functional.scaled_dot_product_attention` does not support `output_attentions=True`. "</span>
+                <span class="s2">"Falling back to eager attention. "</span>
+                <span class="s2">"This warning can be removed using the argument `attn_implementation=eager`."</span>
             <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">attention_interface</span> <span class="o">=</span> <span class="n">ALL_ATTENTION_FUNCTIONS</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">_attn_implementation</span><span class="p">]</span>
@@ -445,7 +450,7 @@
 
   <div role="contentinfo">
     <p>
-      &copy; Copyright 2025, OpenDILab.
+      &copy; Copyright 2025-2026, OpenDILab.
 
     </p>
   </div>
@@ -482,8 +487,8 @@
   <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
   <script src="../../../../_static/doctools.js"></script>
   <script src="../../../../_static/sphinx_highlight.js"></script>
-  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-  <script src="../../../../_static/js/language_switch.js"></script>
+  <script src="../../../../_static/clipboard.min.js"></script>
+  <script src="../../../../_static/copybutton.js"></script>
   
 
   
@@ -512,7 +517,7 @@
     <div class="container-fluid">
       <div class="container">
         <div class="mobile-main-menu-header-container">
-          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="header-logo" href="https://github.com/opendilab/LightRFT" aria-label="OpenMMLab"></a>
           <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
         </div>
       </div>

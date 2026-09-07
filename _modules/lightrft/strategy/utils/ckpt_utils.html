@@ -32,6 +32,7 @@
   <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../../../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/copybutton.css" type="text/css" />
   <link rel="stylesheet" href="../../../../_static/css/readthedocs.css" type="text/css" />
   <link rel="index" title="Index" href="../../../../genindex.html" />
   <link rel="search" title="Search" href="../../../../search.html" />
@@ -84,7 +85,7 @@
 <div class="container-fluid header-holder tutorials-header" id="header-holder">
   <div class="container">
     <div class="header-container">
-      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+      <a class="header-logo" href="https://github.com/opendilab/LightRFT"
         aria-label="OpenMMLab"></a>
 
       <div class="main-menu">
@@ -234,6 +235,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../api_doc/strategy/index.html">lightrft.strategy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../api_doc/trainer/index.html">lightrft.trainer</a></li>
 </ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../index_zh.html">欢迎来到 LightRFT 文档!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../index_zh.html#id4">索引与表格</a></li>
+</ul>
 
         
         
@@ -300,23 +305,23 @@
               <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
                 
   <h1>Source code for lightrft.strategy.utils.ckpt_utils</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""</span>
 <span class="sd">Utility module for finding the latest checkpoint directory in machine learning training workflows.</span>
 
 <span class="sd">This module provides functionality to locate the most recent checkpoint directory based on</span>
-<span class="sd">a naming pattern that includes a step number. It&#39;s commonly used in deep learning training</span>
+<span class="sd">a naming pattern that includes a step number. It's commonly used in deep learning training</span>
 <span class="sd">scenarios where checkpoints are saved periodically with incremental step numbers.</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span>
 
 
-<div class="viewcode-block" id="find_latest_checkpoint_dir"><a class="viewcode-back" href="../../../../api_doc/strategy/utils/ckpt_utils.html#lightrft.strategy.utils.ckpt_utils.find_latest_checkpoint_dir">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">find_latest_checkpoint_dir</span><span class="p">(</span><span class="n">load_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;global_step&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="find_latest_checkpoint_dir"><a class="viewcode-back" href="../../../../api_doc/strategy/utils/ckpt_utils.html#lightrft.strategy.utils.ckpt_utils.find_latest_checkpoint_dir">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">find_latest_checkpoint_dir</span><span class="p">(</span><span class="n">load_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"global_step"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Finds the latest subdirectory within the specified directory whose name</span>
-<span class="sd">    matches the &#39;&lt;prefix&gt;&lt;number&gt;&#39; format.</span>
+<span class="sd">    matches the '&lt;prefix&gt;&lt;number&gt;' format.</span>
 
 <span class="sd">    This function is particularly useful in machine learning training scenarios where</span>
 <span class="sd">    checkpoints are saved with incremental step numbers. It searches through all</span>
@@ -327,7 +332,7 @@
 
 <span class="sd">    :param load_dir: The path to the parent directory containing checkpoint subdirectories.</span>
 <span class="sd">    :type load_dir: str</span>
-<span class="sd">    :param prefix: The expected prefix string at the beginning of checkpoint directory names. Defaults to &quot;global_step&quot;.</span>
+<span class="sd">    :param prefix: The expected prefix string at the beginning of checkpoint directory names. Defaults to "global_step".</span>
 <span class="sd">    :type prefix: str, optional</span>
 <span class="sd">    :return: The full path to the latest checkpoint subdirectory.</span>
 <span class="sd">             Returns `load_dir` if no matching subdirectory is found.</span>
@@ -336,21 +341,21 @@
 
 <span class="sd">    Example::</span>
 
-<span class="sd">        # Find latest checkpoint with default prefix &quot;global_step&quot;</span>
-<span class="sd">        latest_dir = find_latest_checkpoint_dir(&quot;/path/to/checkpoints&quot;)</span>
-<span class="sd">        # Returns: &quot;/path/to/checkpoints/global_step1000&quot; (if it&#39;s the highest numbered)</span>
+<span class="sd">        # Find latest checkpoint with default prefix "global_step"</span>
+<span class="sd">        latest_dir = find_latest_checkpoint_dir("/path/to/checkpoints")</span>
+<span class="sd">        # Returns: "/path/to/checkpoints/global_step1000" (if it's the highest numbered)</span>
 
 <span class="sd">        # Find latest checkpoint with custom prefix</span>
-<span class="sd">        latest_dir = find_latest_checkpoint_dir(&quot;/path/to/models&quot;, prefix=&quot;step_&quot;)</span>
-<span class="sd">        # Returns: &quot;/path/to/models/step_500&quot; (if it&#39;s the highest numbered)</span>
+<span class="sd">        latest_dir = find_latest_checkpoint_dir("/path/to/models", prefix="step_")</span>
+<span class="sd">        # Returns: "/path/to/models/step_500" (if it's the highest numbered)</span>
 
-<span class="sd">        # Handle case where directory doesn&#39;t exist</span>
-<span class="sd">        result = find_latest_checkpoint_dir(&quot;/nonexistent/path&quot;)</span>
+<span class="sd">        # Handle case where directory doesn't exist</span>
+<span class="sd">        result = find_latest_checkpoint_dir("/nonexistent/path")</span>
 <span class="sd">        # Returns: None</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># Check if load_dir exists and is a directory</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">load_dir</span><span class="p">):</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error: Directory &#39;</span><span class="si">{</span><span class="n">load_dir</span><span class="si">}</span><span class="s2">&#39; not found or is not a valid directory.&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Error: Directory '</span><span class="si">{</span><span class="n">load_dir</span><span class="si">}</span><span class="s2">' not found or is not a valid directory."</span><span class="p">)</span>
         <span class="k">return</span> <span class="kc">None</span>
 
     <span class="n">latest_step</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>  <span class="c1"># Initialize with a step number lower than any possible step</span>
@@ -359,11 +364,11 @@
 
     <span class="k">try</span><span class="p">:</span>
         <span class="c1"># Regex: Matches start (^), escaped prefix, one or more digits (\d+), end ($)</span>
-        <span class="n">pattern_str</span> <span class="o">=</span> <span class="sa">rf</span><span class="s2">&quot;^</span><span class="si">{</span><span class="n">re</span><span class="o">.</span><span class="n">escape</span><span class="p">(</span><span class="n">prefix</span><span class="p">)</span><span class="si">}</span><span class="s2">(\d+)$&quot;</span>
+        <span class="n">pattern_str</span> <span class="o">=</span> <span class="sa">rf</span><span class="s2">"^</span><span class="si">{</span><span class="n">re</span><span class="o">.</span><span class="n">escape</span><span class="p">(</span><span class="n">prefix</span><span class="p">)</span><span class="si">}</span><span class="s2">(\d+)$"</span>
         <span class="n">pattern</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">pattern_str</span><span class="p">)</span>
     <span class="k">except</span> <span class="n">re</span><span class="o">.</span><span class="n">error</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
         <span class="c1"># Invalid regex prefix</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error: Invalid prefix &#39;</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2">&#39; resulted in a regex error: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Error: Invalid prefix '</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2">' resulted in a regex error: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="k">return</span> <span class="kc">None</span>
 
     <span class="k">try</span><span class="p">:</span>
@@ -385,14 +390,14 @@
                             <span class="c1"># Update to the path of the latest checkpoint directory</span>
                             <span class="n">latest_ckpt_path</span> <span class="o">=</span> <span class="n">item_path</span>
                     <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
-                        <span class="c1"># If \d+ matched but couldn&#39;t be converted to int (should not happen theoretically)</span>
-                        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Warning: Could not parse step number from directory name &#39;</span><span class="si">{</span><span class="n">item_name</span><span class="si">}</span><span class="s2">&#39;.&quot;</span><span class="p">)</span>
+                        <span class="c1"># If \d+ matched but couldn't be converted to int (should not happen theoretically)</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Warning: Could not parse step number from directory name '</span><span class="si">{</span><span class="n">item_name</span><span class="si">}</span><span class="s2">'."</span><span class="p">)</span>
                         <span class="c1"># Skip this directory</span>
                         <span class="k">continue</span>
 
     <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
         <span class="c1"># Catch potential OS errors during listdir (e.g., permission issues)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error: An OS error occurred while accessing directory &#39;</span><span class="si">{</span><span class="n">load_dir</span><span class="si">}</span><span class="s2">&#39;: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Error: An OS error occurred while accessing directory '</span><span class="si">{</span><span class="n">load_dir</span><span class="si">}</span><span class="s2">': </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="k">return</span> <span class="kc">None</span>
 
     <span class="c1"># If a matching directory was found, latest_ckpt_path was updated to the latest one.</span>
@@ -410,7 +415,7 @@
 
   <div role="contentinfo">
     <p>
-      &copy; Copyright 2025, OpenDILab.
+      &copy; Copyright 2025-2026, OpenDILab.
 
     </p>
   </div>
@@ -447,8 +452,8 @@
   <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
   <script src="../../../../_static/doctools.js"></script>
   <script src="../../../../_static/sphinx_highlight.js"></script>
-  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-  <script src="../../../../_static/js/language_switch.js"></script>
+  <script src="../../../../_static/clipboard.min.js"></script>
+  <script src="../../../../_static/copybutton.js"></script>
   
 
   
@@ -477,7 +482,7 @@
     <div class="container-fluid">
       <div class="container">
         <div class="mobile-main-menu-header-container">
-          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="header-logo" href="https://github.com/opendilab/LightRFT" aria-label="OpenMMLab"></a>
           <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
         </div>
       </div>

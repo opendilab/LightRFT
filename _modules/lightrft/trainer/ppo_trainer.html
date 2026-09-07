@@ -32,6 +32,7 @@
   <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/css/readthedocs.css" type="text/css" />
   <link rel="index" title="Index" href="../../../genindex.html" />
   <link rel="search" title="Search" href="../../../search.html" />
@@ -84,7 +85,7 @@
 <div class="container-fluid header-holder tutorials-header" id="header-holder">
   <div class="container">
     <div class="header-container">
-      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+      <a class="header-logo" href="https://github.com/opendilab/LightRFT"
         aria-label="OpenMMLab"></a>
 
       <div class="main-menu">
@@ -234,6 +235,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../api_doc/strategy/index.html">lightrft.strategy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api_doc/trainer/index.html">lightrft.trainer</a></li>
 </ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../index_zh.html">欢迎来到 LightRFT 文档!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../index_zh.html#id4">索引与表格</a></li>
+</ul>
 
         
         
@@ -319,7 +324,7 @@
 
 
 <div class="viewcode-block" id="PPOTrainer"><a class="viewcode-back" href="../../../api_doc/trainer/ppo_trainer.html#lightrft.trainer.ppo_trainer.PPOTrainer">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">PPOTrainer</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Trainer for Proximal Policy Optimization (PPO) algorithm.</span>
 
 <span class="sd">    :param strategy: The training strategy to use.</span>
@@ -386,7 +391,7 @@
 <span class="sd">    :type disable_ds_ckpt: bool</span>
 <span class="sd">    :param generate_kwargs: Additional arguments for model generation.</span>
 <span class="sd">    :type generate_kwargs: dict</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">strategy</span><span class="p">,</span>
@@ -424,14 +429,14 @@
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">assert</span> <span class="p">(</span>
             <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">reward_model</span><span class="p">,</span> <span class="n">List</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">reward_model</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">reward_fn</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
-        <span class="p">),</span> <span class="s2">&quot;reward_fn must be specified if using multiple reward models&quot;</span>
+        <span class="p">),</span> <span class="s2">"reward_fn must be specified if using multiple reward models"</span>
 
         <span class="n">ABC</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
         <span class="c1"># Get current filename and line number for debugging</span>
         <span class="n">current_filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span>
         <span class="n">current_lineno</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">_getframe</span><span class="p">()</span><span class="o">.</span><span class="n">f_lineno</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">current_filename</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">current_lineno</span><span class="si">}</span><span class="s2">]&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"[</span><span class="si">{</span><span class="n">current_filename</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">current_lineno</span><span class="si">}</span><span class="s2">]"</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span> <span class="o">=</span> <span class="n">strategy</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">args</span> <span class="o">=</span> <span class="n">strategy</span><span class="o">.</span><span class="n">args</span>
@@ -466,7 +471,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">critic_loss_fn</span> <span class="o">=</span> <span class="n">ValueLoss</span><span class="p">(</span><span class="n">value_clip</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ptx_loss_fn</span> <span class="o">=</span> <span class="n">GPTLMLoss</span><span class="p">()</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">freezing_actor_steps</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">,</span> <span class="s2">&quot;freezing_actor_steps&quot;</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">freezing_actor_steps</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">,</span> <span class="s2">"freezing_actor_steps"</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
 
         <span class="c1"># Mixtral 8x7b auxiliary loss</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">aux_loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">aux_loss_coef</span> <span class="o">&gt;</span> <span class="mf">1e-8</span>
@@ -488,7 +493,7 @@
             <span class="n">remote_rm_url</span><span class="p">,</span>
             <span class="n">reward_fn</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="n">packing_samples</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">,</span> <span class="s2">&quot;packing_samples&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="n">packing_samples</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">,</span> <span class="s2">"packing_samples"</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">replay_buffer</span> <span class="o">=</span> <span class="n">NaiveReplayBuffer</span><span class="p">(</span>
             <span class="n">micro_train_batch_size</span><span class="p">,</span> <span class="n">buffer_limit</span><span class="p">,</span> <span class="n">buffer_cpu_offload</span><span class="p">,</span> <span class="n">packing_samples</span>
         <span class="p">)</span>
@@ -515,14 +520,14 @@
             <span class="c1"># - rollout/*: Metrics from experience generation phase</span>
             <span class="c1"># - train/*: Metrics from policy optimization phase</span>
             <span class="c1"># - eval/*: Metrics from evaluation phase</span>
-            <span class="n">wandb</span><span class="o">.</span><span class="n">define_metric</span><span class="p">(</span><span class="s2">&quot;rollout/global_step&quot;</span><span class="p">)</span>
-            <span class="n">wandb</span><span class="o">.</span><span class="n">define_metric</span><span class="p">(</span><span class="s2">&quot;rollout/*&quot;</span><span class="p">,</span> <span class="n">step_metric</span><span class="o">=</span><span class="s2">&quot;rollout/global_step&quot;</span><span class="p">,</span> <span class="n">step_sync</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">wandb</span><span class="o">.</span><span class="n">define_metric</span><span class="p">(</span><span class="s2">"rollout/global_step"</span><span class="p">)</span>
+            <span class="n">wandb</span><span class="o">.</span><span class="n">define_metric</span><span class="p">(</span><span class="s2">"rollout/*"</span><span class="p">,</span> <span class="n">step_metric</span><span class="o">=</span><span class="s2">"rollout/global_step"</span><span class="p">,</span> <span class="n">step_sync</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-            <span class="n">wandb</span><span class="o">.</span><span class="n">define_metric</span><span class="p">(</span><span class="s2">&quot;train/global_step&quot;</span><span class="p">)</span>
-            <span class="n">wandb</span><span class="o">.</span><span class="n">define_metric</span><span class="p">(</span><span class="s2">&quot;train/*&quot;</span><span class="p">,</span> <span class="n">step_metric</span><span class="o">=</span><span class="s2">&quot;train/global_step&quot;</span><span class="p">,</span> <span class="n">step_sync</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">wandb</span><span class="o">.</span><span class="n">define_metric</span><span class="p">(</span><span class="s2">"train/global_step"</span><span class="p">)</span>
+            <span class="n">wandb</span><span class="o">.</span><span class="n">define_metric</span><span class="p">(</span><span class="s2">"train/*"</span><span class="p">,</span> <span class="n">step_metric</span><span class="o">=</span><span class="s2">"train/global_step"</span><span class="p">,</span> <span class="n">step_sync</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-            <span class="n">wandb</span><span class="o">.</span><span class="n">define_metric</span><span class="p">(</span><span class="s2">&quot;eval/epoch&quot;</span><span class="p">)</span>
-            <span class="n">wandb</span><span class="o">.</span><span class="n">define_metric</span><span class="p">(</span><span class="s2">&quot;eval/*&quot;</span><span class="p">,</span> <span class="n">step_metric</span><span class="o">=</span><span class="s2">&quot;eval/epoch&quot;</span><span class="p">,</span> <span class="n">step_sync</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">wandb</span><span class="o">.</span><span class="n">define_metric</span><span class="p">(</span><span class="s2">"eval/epoch"</span><span class="p">)</span>
+            <span class="n">wandb</span><span class="o">.</span><span class="n">define_metric</span><span class="p">(</span><span class="s2">"eval/*"</span><span class="p">,</span> <span class="n">step_metric</span><span class="o">=</span><span class="s2">"eval/epoch"</span><span class="p">,</span> <span class="n">step_sync</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
         <span class="c1"># Initialize TensorBoard writer if wandb is not available</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">use_tensorboard</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_wandb</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">is_rank_0</span><span class="p">():</span>
@@ -540,7 +545,7 @@
         <span class="n">consumed_samples</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
         <span class="n">num_update_steps_per_episodes</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Main training loop for PPO.</span>
 
 <span class="sd">        :param args: Training arguments.</span>
@@ -553,7 +558,7 @@
 <span class="sd">        :type consumed_samples: int</span>
 <span class="sd">        :param num_update_steps_per_episodes: Number of update steps per episode, defaults to 1.</span>
 <span class="sd">        :type num_update_steps_per_episodes: int</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">num_rollouts_per_episodes</span> <span class="o">=</span> <span class="p">(</span>
             <span class="n">num_update_steps_per_episodes</span> <span class="o">*</span> <span class="n">args</span><span class="o">.</span><span class="n">train_batch_size</span> <span class="o">//</span> <span class="n">args</span><span class="o">.</span><span class="n">max_epochs</span> <span class="o">//</span> <span class="n">args</span><span class="o">.</span><span class="n">rollout_batch_size</span> <span class="o">//</span>
             <span class="n">args</span><span class="o">.</span><span class="n">n_samples_per_prompt</span>
@@ -563,7 +568,7 @@
         <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">eval_steps</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
             <span class="n">args</span><span class="o">.</span><span class="n">eval_steps</span> <span class="o">=</span> <span class="n">num_rollouts_per_episodes</span>  <span class="c1"># Evaluate once per epoch</span>
         <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">save_steps</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
-            <span class="n">args</span><span class="o">.</span><span class="n">save_steps</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;inf&quot;</span><span class="p">)</span>  <span class="c1"># Do not save checkpoint</span>
+            <span class="n">args</span><span class="o">.</span><span class="n">save_steps</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s2">"inf"</span><span class="p">)</span>  <span class="c1"># Do not save checkpoint</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">prompts_dataloader</span> <span class="o">=</span> <span class="n">prompts_dataloader</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">pretrain_dataloader</span> <span class="o">=</span> <span class="n">pretrain_dataloader</span>
@@ -580,7 +585,7 @@
                 <span class="p">)</span>
             <span class="n">pbar</span> <span class="o">=</span> <span class="n">tqdm</span><span class="p">(</span>
                 <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prompts_dataloader</span><span class="o">.</span><span class="fm">__len__</span><span class="p">()),</span>
-                <span class="n">desc</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Episode [</span><span class="si">{</span><span class="n">episode</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">args</span><span class="o">.</span><span class="n">num_episodes</span><span class="si">}</span><span class="s2">]&quot;</span><span class="p">,</span>
+                <span class="n">desc</span><span class="o">=</span><span class="sa">f</span><span class="s2">"Episode [</span><span class="si">{</span><span class="n">episode</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">args</span><span class="o">.</span><span class="n">num_episodes</span><span class="si">}</span><span class="s2">]"</span><span class="p">,</span>
                 <span class="n">disable</span><span class="o">=</span><span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">is_rank_0</span><span class="p">(),</span>
             <span class="p">)</span>
 
@@ -597,22 +602,22 @@
                         <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">replay_buffer</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">experience</span><span class="p">)</span>
 
-                <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">report_memory</span><span class="p">(</span><span class="s1">&#39;after replay_buffer ready&#39;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">report_memory</span><span class="p">(</span><span class="s1">'after replay_buffer ready'</span><span class="p">)</span>
 
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">advantage_estimator</span> <span class="o">!=</span> <span class="s2">&quot;group_norm&quot;</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">replay_buffer</span><span class="o">.</span><span class="n">normalize</span><span class="p">(</span><span class="s2">&quot;advantages&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">report_memory</span><span class="p">(</span><span class="s1">&#39;before train&#39;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">advantage_estimator</span> <span class="o">!=</span> <span class="s2">"group_norm"</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">replay_buffer</span><span class="o">.</span><span class="n">normalize</span><span class="p">(</span><span class="s2">"advantages"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">report_memory</span><span class="p">(</span><span class="s1">'before train'</span><span class="p">)</span>
                 <span class="n">status</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ppo_train</span><span class="p">(</span><span class="n">steps</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">report_memory</span><span class="p">(</span><span class="s1">&#39;before clear buffer&#39;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">report_memory</span><span class="p">(</span><span class="s1">'before clear buffer'</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">replay_buffer</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">report_memory</span><span class="p">(</span><span class="s1">&#39;after train&#39;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">report_memory</span><span class="p">(</span><span class="s1">'after train'</span><span class="p">)</span>
 
-                <span class="k">if</span> <span class="s2">&quot;kl&quot;</span> <span class="ow">in</span> <span class="n">status</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">kl_ctl</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">status</span><span class="p">[</span><span class="s2">&quot;kl&quot;</span><span class="p">],</span> <span class="n">args</span><span class="o">.</span><span class="n">rollout_batch_size</span> <span class="o">*</span> <span class="n">args</span><span class="o">.</span><span class="n">n_samples_per_prompt</span><span class="p">)</span>
+                <span class="k">if</span> <span class="s2">"kl"</span> <span class="ow">in</span> <span class="n">status</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">kl_ctl</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">status</span><span class="p">[</span><span class="s2">"kl"</span><span class="p">],</span> <span class="n">args</span><span class="o">.</span><span class="n">rollout_batch_size</span> <span class="o">*</span> <span class="n">args</span><span class="o">.</span><span class="n">n_samples_per_prompt</span><span class="p">)</span>
                 <span class="n">pbar</span><span class="o">.</span><span class="n">set_postfix</span><span class="p">(</span><span class="n">status</span><span class="p">)</span>
 
                 <span class="c1"># Logs/checkpoints</span>
-                <span class="n">client_states</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;consumed_samples&quot;</span><span class="p">:</span> <span class="n">steps</span> <span class="o">*</span> <span class="n">args</span><span class="o">.</span><span class="n">rollout_batch_size</span><span class="p">}</span>
+                <span class="n">client_states</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"consumed_samples"</span><span class="p">:</span> <span class="n">steps</span> <span class="o">*</span> <span class="n">args</span><span class="o">.</span><span class="n">rollout_batch_size</span><span class="p">}</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">save_logs_and_checkpoints</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">steps</span><span class="p">,</span> <span class="n">pbar</span><span class="p">,</span> <span class="n">status</span><span class="p">,</span> <span class="n">client_states</span><span class="p">)</span>
 
                 <span class="n">pbar</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
@@ -624,14 +629,14 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_tensorboard</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="PPOTrainer.ppo_train"><a class="viewcode-back" href="../../../api_doc/trainer/ppo_trainer.html#lightrft.trainer.ppo_trainer.PPOTrainer.ppo_train">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">ppo_train</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">global_steps</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        PPO training loop over the replay buffer.</span>
 
 <span class="sd">        :param global_steps: Current global step count, defaults to 0.</span>
 <span class="sd">        :type global_steps: int</span>
 <span class="sd">        :return: Dictionary of averaged training statistics.</span>
 <span class="sd">        :rtype: dict</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">empty_cache</span><span class="p">()</span>
         <span class="c1"># Replay buffer may be empty at first, we should rebuild at each training</span>
         <span class="n">dataloader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span>
@@ -649,7 +654,7 @@
         <span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">max_epochs</span><span class="p">):</span>
             <span class="n">pbar</span> <span class="o">=</span> <span class="n">tqdm</span><span class="p">(</span>
                 <span class="n">dataloader</span><span class="p">,</span>
-                <span class="n">desc</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Train epoch [</span><span class="si">{</span><span class="n">epoch</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">max_epochs</span><span class="si">}</span><span class="s2">]&quot;</span><span class="p">,</span>
+                <span class="n">desc</span><span class="o">=</span><span class="sa">f</span><span class="s2">"Train epoch [</span><span class="si">{</span><span class="n">epoch</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">max_epochs</span><span class="si">}</span><span class="s2">]"</span><span class="p">,</span>
                 <span class="n">disable</span><span class="o">=</span><span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">is_rank_0</span><span class="p">(),</span>
             <span class="p">)</span>
             <span class="k">for</span> <span class="n">experience</span> <span class="ow">in</span> <span class="n">pbar</span><span class="p">:</span>
@@ -657,31 +662,31 @@
                 <span class="n">status</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">training_step</span><span class="p">(</span><span class="n">experience</span><span class="p">,</span> <span class="n">global_steps</span><span class="p">)</span>
 
                 <span class="c1"># For DP: weighted mean for KL</span>
-                <span class="k">if</span> <span class="s2">&quot;kl&quot;</span> <span class="ow">in</span> <span class="n">status</span><span class="p">:</span>
-                    <span class="n">status</span><span class="p">[</span><span class="s2">&quot;kl&quot;</span><span class="p">]</span> <span class="o">*=</span> <span class="n">status</span><span class="p">[</span><span class="s2">&quot;response_length&quot;</span><span class="p">]</span>
+                <span class="k">if</span> <span class="s2">"kl"</span> <span class="ow">in</span> <span class="n">status</span><span class="p">:</span>
+                    <span class="n">status</span><span class="p">[</span><span class="s2">"kl"</span><span class="p">]</span> <span class="o">*=</span> <span class="n">status</span><span class="p">[</span><span class="s2">"response_length"</span><span class="p">]</span>
                     <span class="n">status</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">all_reduce</span><span class="p">(</span><span class="n">status</span><span class="p">)</span>
-                    <span class="n">status</span><span class="p">[</span><span class="s2">&quot;kl&quot;</span><span class="p">]</span> <span class="o">/=</span> <span class="n">status</span><span class="p">[</span><span class="s2">&quot;response_length&quot;</span><span class="p">]</span>
+                    <span class="n">status</span><span class="p">[</span><span class="s2">"kl"</span><span class="p">]</span> <span class="o">/=</span> <span class="n">status</span><span class="p">[</span><span class="s2">"response_length"</span><span class="p">]</span>
 
                 <span class="n">short_status</span> <span class="o">=</span> <span class="p">{}</span>
 
-                <span class="k">if</span> <span class="s2">&quot;policy_loss&quot;</span> <span class="ow">in</span> <span class="n">status</span><span class="p">:</span>
+                <span class="k">if</span> <span class="s2">"policy_loss"</span> <span class="ow">in</span> <span class="n">status</span><span class="p">:</span>
                     <span class="n">short_status</span> <span class="o">=</span> <span class="p">{</span>
-                        <span class="s2">&quot;pg&quot;</span><span class="p">:</span> <span class="n">status</span><span class="p">[</span><span class="s2">&quot;policy_loss&quot;</span><span class="p">],</span>
-                        <span class="s2">&quot;rm&quot;</span><span class="p">:</span> <span class="n">status</span><span class="p">[</span><span class="s2">&quot;reward&quot;</span><span class="p">],</span>
-                        <span class="s2">&quot;ret&quot;</span><span class="p">:</span> <span class="n">status</span><span class="p">[</span><span class="s2">&quot;return&quot;</span><span class="p">],</span>
-                        <span class="s2">&quot;glen&quot;</span><span class="p">:</span> <span class="n">status</span><span class="p">[</span><span class="s2">&quot;response_length&quot;</span><span class="p">],</span>
-                        <span class="s2">&quot;tlen&quot;</span><span class="p">:</span> <span class="n">status</span><span class="p">[</span><span class="s2">&quot;total_length&quot;</span><span class="p">],</span>
-                        <span class="s2">&quot;kl&quot;</span><span class="p">:</span> <span class="n">status</span><span class="p">[</span><span class="s2">&quot;kl&quot;</span><span class="p">],</span>
-                        <span class="s2">&quot;act_lr&quot;</span><span class="p">:</span> <span class="n">status</span><span class="p">[</span><span class="s2">&quot;actor_lr&quot;</span><span class="p">],</span>
+                        <span class="s2">"pg"</span><span class="p">:</span> <span class="n">status</span><span class="p">[</span><span class="s2">"policy_loss"</span><span class="p">],</span>
+                        <span class="s2">"rm"</span><span class="p">:</span> <span class="n">status</span><span class="p">[</span><span class="s2">"reward"</span><span class="p">],</span>
+                        <span class="s2">"ret"</span><span class="p">:</span> <span class="n">status</span><span class="p">[</span><span class="s2">"return"</span><span class="p">],</span>
+                        <span class="s2">"glen"</span><span class="p">:</span> <span class="n">status</span><span class="p">[</span><span class="s2">"response_length"</span><span class="p">],</span>
+                        <span class="s2">"tlen"</span><span class="p">:</span> <span class="n">status</span><span class="p">[</span><span class="s2">"total_length"</span><span class="p">],</span>
+                        <span class="s2">"kl"</span><span class="p">:</span> <span class="n">status</span><span class="p">[</span><span class="s2">"kl"</span><span class="p">],</span>
+                        <span class="s2">"act_lr"</span><span class="p">:</span> <span class="n">status</span><span class="p">[</span><span class="s2">"actor_lr"</span><span class="p">],</span>
                     <span class="p">}</span>
 
-                <span class="k">if</span> <span class="s2">&quot;critic_loss&quot;</span> <span class="ow">in</span> <span class="n">status</span><span class="p">:</span>
-                    <span class="n">short_status</span><span class="p">[</span><span class="s2">&quot;cri&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">status</span><span class="p">[</span><span class="s2">&quot;critic_loss&quot;</span><span class="p">]</span>
-                    <span class="n">short_status</span><span class="p">[</span><span class="s2">&quot;vals&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">status</span><span class="p">[</span><span class="s2">&quot;values&quot;</span><span class="p">]</span>
-                    <span class="n">short_status</span><span class="p">[</span><span class="s2">&quot;cri_lr&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">status</span><span class="p">[</span><span class="s2">&quot;critic_lr&quot;</span><span class="p">]</span>
+                <span class="k">if</span> <span class="s2">"critic_loss"</span> <span class="ow">in</span> <span class="n">status</span><span class="p">:</span>
+                    <span class="n">short_status</span><span class="p">[</span><span class="s2">"cri"</span><span class="p">]</span> <span class="o">=</span> <span class="n">status</span><span class="p">[</span><span class="s2">"critic_loss"</span><span class="p">]</span>
+                    <span class="n">short_status</span><span class="p">[</span><span class="s2">"vals"</span><span class="p">]</span> <span class="o">=</span> <span class="n">status</span><span class="p">[</span><span class="s2">"values"</span><span class="p">]</span>
+                    <span class="n">short_status</span><span class="p">[</span><span class="s2">"cri_lr"</span><span class="p">]</span> <span class="o">=</span> <span class="n">status</span><span class="p">[</span><span class="s2">"critic_lr"</span><span class="p">]</span>
 
-                <span class="k">if</span> <span class="s2">&quot;ptx_loss&quot;</span> <span class="ow">in</span> <span class="n">status</span><span class="p">:</span>
-                    <span class="n">short_status</span><span class="p">[</span><span class="s2">&quot;ptx&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">status</span><span class="p">[</span><span class="s2">&quot;ptx_loss&quot;</span><span class="p">]</span>
+                <span class="k">if</span> <span class="s2">"ptx_loss"</span> <span class="ow">in</span> <span class="n">status</span><span class="p">:</span>
+                    <span class="n">short_status</span><span class="p">[</span><span class="s2">"ptx"</span><span class="p">]</span> <span class="o">=</span> <span class="n">status</span><span class="p">[</span><span class="s2">"ptx_loss"</span><span class="p">]</span>
 
                 <span class="n">status_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">status</span><span class="p">)</span>
                 <span class="n">pbar</span><span class="o">.</span><span class="n">set_postfix</span><span class="p">(</span><span class="n">short_status</span><span class="p">)</span>
@@ -700,7 +705,7 @@
                       <span class="n">experience</span><span class="p">:</span> <span class="n">Experience</span><span class="p">,</span>
                       <span class="n">global_steps</span><span class="p">,</span>
                       <span class="n">entropy_mask</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Single training step combining actor and critic updates.</span>
 
 <span class="sd">        :param experience: Experience batch from replay buffer.</span>
@@ -711,7 +716,7 @@
 <span class="sd">        :type entropy_mask: Optional[torch.Tensor]</span>
 <span class="sd">        :return: Dictionary of training statistics.</span>
 <span class="sd">        :rtype: Dict[str, float]</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">status</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">if</span> <span class="n">global_steps</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">freezing_actor_steps</span><span class="p">:</span>
             <span class="n">status</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">training_step_actor</span><span class="p">(</span><span class="n">experience</span><span class="p">,</span> <span class="n">entropy_mask</span><span class="o">=</span><span class="n">entropy_mask</span><span class="p">)</span>
@@ -722,14 +727,14 @@
 <div class="viewcode-block" id="PPOTrainer.training_step_actor"><a class="viewcode-back" href="../../../api_doc/trainer/ppo_trainer.html#lightrft.trainer.ppo_trainer.PPOTrainer.training_step_actor">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">training_step_actor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                             <span class="n">experience</span><span class="p">:</span> <span class="n">Experience</span><span class="p">,</span>
                             <span class="n">entropy_mask</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Actor training step.</span>
 
 <span class="sd">        :param experience: Experience batch from replay buffer.</span>
 <span class="sd">        :type experience: Experience</span>
 <span class="sd">        :return: Dictionary of actor training statistics.</span>
 <span class="sd">        :rtype: Dict[str, float]</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">actor</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
 
         <span class="c1"># TODO: This is a bad indicator to say that data is packed... not supported</span>
@@ -791,7 +796,7 @@
                 <span class="n">kl_mean</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="n">each_kl</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span> <span class="k">for</span> <span class="n">each_kl</span> <span class="ow">in</span> <span class="n">kl</span><span class="p">],</span> <span class="n">device</span><span class="o">=</span><span class="n">action_log_probs</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
 
             <span class="n">kl_loss</span> <span class="o">=</span> <span class="n">kl_mean</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
-            <span class="n">experience</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;kl&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">kl_loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+            <span class="n">experience</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s2">"kl"</span><span class="p">]</span> <span class="o">=</span> <span class="n">kl_loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">kl_loss</span> <span class="o">=</span> <span class="mi">0</span>
 
@@ -815,7 +820,7 @@
             <span class="p">)</span>
 
             <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">actor</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">attention_mask</span><span class="o">=</span><span class="n">attention_mask</span><span class="p">,</span> <span class="n">return_output</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-            <span class="n">ptx_log_probs</span> <span class="o">=</span> <span class="n">output</span><span class="p">[</span><span class="s2">&quot;logits&quot;</span><span class="p">]</span>
+            <span class="n">ptx_log_probs</span> <span class="o">=</span> <span class="n">output</span><span class="p">[</span><span class="s2">"logits"</span><span class="p">]</span>
 
             <span class="c1"># Loss function</span>
             <span class="n">ptx_loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ptx_loss_fn</span><span class="p">(</span><span class="n">ptx_log_probs</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span>
@@ -827,37 +832,37 @@
             <span class="n">loss</span> <span class="o">=</span> <span class="n">ptx_loss</span> <span class="o">+</span> <span class="n">aux_loss</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">aux_loss_coef</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">backward</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ptx_coef</span> <span class="o">*</span> <span class="n">loss</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">actor</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">actor_optim</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">optimizer_step</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">actor_optim</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">actor</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">actor_scheduler</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;actor&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">optimizer_step</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">actor_optim</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">actor</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">actor_scheduler</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"actor"</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ema_model</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">moving_average</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">actor</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ema_model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ema_beta</span><span class="p">,</span> <span class="s2">&quot;cuda&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">moving_average</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">actor</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ema_model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ema_beta</span><span class="p">,</span> <span class="s2">"cuda"</span><span class="p">)</span>
 
         <span class="c1"># Status</span>
-        <span class="n">status</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;policy_loss&quot;</span><span class="p">:</span> <span class="n">actor_loss</span><span class="o">.</span><span class="n">item</span><span class="p">(),</span> <span class="s2">&quot;actor_lr&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">actor_scheduler</span><span class="o">.</span><span class="n">get_last_lr</span><span class="p">()[</span><span class="mi">0</span><span class="p">]}</span>
+        <span class="n">status</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"policy_loss"</span><span class="p">:</span> <span class="n">actor_loss</span><span class="o">.</span><span class="n">item</span><span class="p">(),</span> <span class="s2">"actor_lr"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">actor_scheduler</span><span class="o">.</span><span class="n">get_last_lr</span><span class="p">()[</span><span class="mi">0</span><span class="p">]}</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pretrain_dataloader</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">status</span><span class="p">[</span><span class="s2">&quot;ptx_loss&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ptx_loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+            <span class="n">status</span><span class="p">[</span><span class="s2">"ptx_loss"</span><span class="p">]</span> <span class="o">=</span> <span class="n">ptx_loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
 
         <span class="c1"># Add ratio and loss component statistics from PolicyLoss for diagnosis</span>
-        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">actor_loss_fn</span><span class="p">,</span> <span class="s1">&#39;get_last_stats&#39;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">actor_loss_fn</span><span class="p">,</span> <span class="s1">'get_last_stats'</span><span class="p">):</span>
             <span class="n">policy_stats</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">actor_loss_fn</span><span class="o">.</span><span class="n">get_last_stats</span><span class="p">()</span>
             <span class="n">status</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">policy_stats</span><span class="p">)</span>
 
         <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">experience</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="s2">&quot;kl&quot;</span><span class="p">:</span>
-                <span class="n">status</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="p">((</span><span class="n">v</span> <span class="o">*</span> <span class="n">experience</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;response_length&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span>
-                             <span class="n">experience</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s2">&quot;response_length&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="s2">"kl"</span><span class="p">:</span>
+                <span class="n">status</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="p">((</span><span class="n">v</span> <span class="o">*</span> <span class="n">experience</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s2">"response_length"</span><span class="p">])</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span>
+                             <span class="n">experience</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s2">"response_length"</span><span class="p">]</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">status</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">status</span></div>
 
 <div class="viewcode-block" id="PPOTrainer.training_step_critic"><a class="viewcode-back" href="../../../api_doc/trainer/ppo_trainer.html#lightrft.trainer.ppo_trainer.PPOTrainer.training_step_critic">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">training_step_critic</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">experience</span><span class="p">:</span> <span class="n">Experience</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Critic training step.</span>
 
 <span class="sd">        :param experience: Experience batch from replay buffer.</span>
 <span class="sd">        :type experience: Experience</span>
 <span class="sd">        :return: Dictionary of critic training statistics.</span>
 <span class="sd">        :rtype: Dict[str, float]</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">critic</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
 
         <span class="c1"># TODO: This is a bad indicator to say that data is packed... not supported</span>
@@ -899,18 +904,18 @@
             <span class="n">aux_loss</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">loss</span> <span class="o">=</span> <span class="n">critic_loss</span> <span class="o">+</span> <span class="n">aux_loss</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">aux_loss_coef</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">backward</span><span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">critic</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">critic_optim</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">optimizer_step</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">critic_optim</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">critic</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">critic_scheduler</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;critic&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">optimizer_step</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">critic_optim</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">critic</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">critic_scheduler</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"critic"</span><span class="p">)</span>
 
         <span class="c1"># Status</span>
         <span class="n">status</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">&quot;critic_loss&quot;</span><span class="p">:</span> <span class="n">critic_loss</span><span class="o">.</span><span class="n">item</span><span class="p">(),</span>
-            <span class="s2">&quot;values&quot;</span><span class="p">:</span> <span class="n">masked_mean</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">experience</span><span class="o">.</span><span class="n">action_mask</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">(),</span>
-            <span class="s2">&quot;critic_lr&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">critic_scheduler</span><span class="o">.</span><span class="n">get_last_lr</span><span class="p">()[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="s2">"critic_loss"</span><span class="p">:</span> <span class="n">critic_loss</span><span class="o">.</span><span class="n">item</span><span class="p">(),</span>
+            <span class="s2">"values"</span><span class="p">:</span> <span class="n">masked_mean</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">experience</span><span class="o">.</span><span class="n">action_mask</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">(),</span>
+            <span class="s2">"critic_lr"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">critic_scheduler</span><span class="o">.</span><span class="n">get_last_lr</span><span class="p">()[</span><span class="mi">0</span><span class="p">],</span>
         <span class="p">}</span>
         <span class="k">return</span> <span class="n">status</span></div>
 
 <div class="viewcode-block" id="PPOTrainer.save_logs_and_checkpoints"><a class="viewcode-back" href="../../../api_doc/trainer/ppo_trainer.html#lightrft.trainer.ppo_trainer.PPOTrainer.save_logs_and_checkpoints">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">save_logs_and_checkpoints</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">global_step</span><span class="p">,</span> <span class="n">step_bar</span><span class="p">,</span> <span class="n">logs_dict</span><span class="o">=</span><span class="p">{},</span> <span class="n">client_states</span><span class="o">=</span><span class="p">{}):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Save logs to wandb/tensorboard and save model checkpoints.</span>
 
 <span class="sd">        :param args: Training arguments.</span>
@@ -923,29 +928,29 @@
 <span class="sd">        :type logs_dict: dict</span>
 <span class="sd">        :param client_states: Client state for checkpoint recovery, defaults to {}.</span>
 <span class="sd">        :type client_states: dict</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="n">global_step</span> <span class="o">%</span> <span class="n">args</span><span class="o">.</span><span class="n">logging_steps</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="c1"># Define which metrics should be excluded from train/ logs to avoid duplication</span>
             <span class="c1"># These metrics are already logged in the rollout/ namespace</span>
             <span class="n">ROLLOUT_ONLY_METRICS</span> <span class="o">=</span> <span class="p">{</span>
-                <span class="s1">&#39;reward&#39;</span><span class="p">,</span>  <span class="c1"># Already logged as rollout/reward</span>
-                <span class="s1">&#39;response_length&#39;</span><span class="p">,</span>  <span class="c1"># Already logged as rollout/response_length</span>
-                <span class="s1">&#39;total_length&#39;</span><span class="p">,</span>  <span class="c1"># Rollout-specific metric</span>
-                <span class="s1">&#39;num_actions&#39;</span><span class="p">,</span>  <span class="c1"># Rollout-specific metric</span>
-                <span class="s1">&#39;return&#39;</span><span class="p">,</span>  <span class="c1"># Rollout-specific metric (computed from rewards)</span>
+                <span class="s1">'reward'</span><span class="p">,</span>  <span class="c1"># Already logged as rollout/reward</span>
+                <span class="s1">'response_length'</span><span class="p">,</span>  <span class="c1"># Already logged as rollout/response_length</span>
+                <span class="s1">'total_length'</span><span class="p">,</span>  <span class="c1"># Rollout-specific metric</span>
+                <span class="s1">'num_actions'</span><span class="p">,</span>  <span class="c1"># Rollout-specific metric</span>
+                <span class="s1">'return'</span><span class="p">,</span>  <span class="c1"># Rollout-specific metric (computed from rewards)</span>
             <span class="p">}</span>
 
             <span class="c1"># Also exclude reward_metrics sub-keys (format_reward, accuracy_reward)</span>
-            <span class="n">ROLLOUT_ONLY_METRIC_PREFIXES</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;reward_metrics/&#39;</span><span class="p">}</span>
+            <span class="n">ROLLOUT_ONLY_METRIC_PREFIXES</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'reward_metrics/'</span><span class="p">}</span>
 
             <span class="c1"># Separate rollout and training metrics for clarity</span>
             <span class="n">rollout_metrics</span> <span class="o">=</span> <span class="p">{}</span>
             <span class="n">train_metrics</span> <span class="o">=</span> <span class="p">{}</span>
 
             <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">logs_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                <span class="k">if</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;rollout_&#39;</span><span class="p">):</span>
-                    <span class="c1"># Remove &#39;rollout_&#39; prefix and log under rollout/ namespace</span>
-                    <span class="n">clean_key</span> <span class="o">=</span> <span class="n">k</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;rollout_&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">'rollout_'</span><span class="p">):</span>
+                    <span class="c1"># Remove 'rollout_' prefix and log under rollout/ namespace</span>
+                    <span class="n">clean_key</span> <span class="o">=</span> <span class="n">k</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">'rollout_'</span><span class="p">,</span> <span class="s1">''</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
                     <span class="n">rollout_metrics</span><span class="p">[</span><span class="n">clean_key</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
                 <span class="k">elif</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">ROLLOUT_ONLY_METRICS</span><span class="p">:</span>
                     <span class="c1"># Skip metrics that are already in rollout/ namespace</span>
@@ -961,30 +966,30 @@
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_wandb</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">is_rank_0</span><span class="p">():</span>
                 <span class="c1"># Log rollout metrics with rollout/ prefix</span>
                 <span class="k">if</span> <span class="n">rollout_metrics</span><span class="p">:</span>
-                    <span class="n">rollout_logs</span> <span class="o">=</span> <span class="p">{</span><span class="sa">f</span><span class="s2">&quot;rollout/</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">rollout_metrics</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
-                    <span class="n">rollout_logs</span><span class="p">[</span><span class="s2">&quot;rollout/global_step&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">global_step</span>
+                    <span class="n">rollout_logs</span> <span class="o">=</span> <span class="p">{</span><span class="sa">f</span><span class="s2">"rollout/</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">"</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">rollout_metrics</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+                    <span class="n">rollout_logs</span><span class="p">[</span><span class="s2">"rollout/global_step"</span><span class="p">]</span> <span class="o">=</span> <span class="n">global_step</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_wandb</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">rollout_logs</span><span class="p">)</span>
 
                 <span class="c1"># Log training metrics with train/ prefix</span>
                 <span class="k">if</span> <span class="n">train_metrics</span><span class="p">:</span>
-                    <span class="n">train_logs</span> <span class="o">=</span> <span class="p">{</span><span class="sa">f</span><span class="s2">&quot;train/</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">train_metrics</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
-                    <span class="n">train_logs</span><span class="p">[</span><span class="s2">&quot;train/global_step&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">global_step</span>
+                    <span class="n">train_logs</span> <span class="o">=</span> <span class="p">{</span><span class="sa">f</span><span class="s2">"train/</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">"</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">train_metrics</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+                    <span class="n">train_logs</span><span class="p">[</span><span class="s2">"train/global_step"</span><span class="p">]</span> <span class="o">=</span> <span class="n">global_step</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_wandb</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">train_logs</span><span class="p">)</span>
 
                 <span class="c1"># Log performance stats</span>
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">experience_maker</span><span class="o">.</span><span class="n">perf_stats</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                    <span class="n">perf_logs</span> <span class="o">=</span> <span class="p">{</span><span class="sa">f</span><span class="s2">&quot;perf/experience_maker/</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">experience_maker</span><span class="o">.</span><span class="n">perf_stats</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+                    <span class="n">perf_logs</span> <span class="o">=</span> <span class="p">{</span><span class="sa">f</span><span class="s2">"perf/experience_maker/</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">"</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">experience_maker</span><span class="o">.</span><span class="n">perf_stats</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_wandb</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">perf_logs</span><span class="p">)</span>
 
             <span class="c1"># TensorBoard logging</span>
             <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tensorboard</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">is_rank_0</span><span class="p">():</span>
                 <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">rollout_metrics</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_tensorboard</span><span class="o">.</span><span class="n">add_scalar</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;rollout/</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">global_step</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_tensorboard</span><span class="o">.</span><span class="n">add_scalar</span><span class="p">(</span><span class="sa">f</span><span class="s2">"rollout/</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">global_step</span><span class="p">)</span>
                 <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">train_metrics</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_tensorboard</span><span class="o">.</span><span class="n">add_scalar</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;train/</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">global_step</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_tensorboard</span><span class="o">.</span><span class="n">add_scalar</span><span class="p">(</span><span class="sa">f</span><span class="s2">"train/</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">global_step</span><span class="p">)</span>
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">experience_maker</span><span class="o">.</span><span class="n">perf_stats</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">experience_maker</span><span class="o">.</span><span class="n">perf_stats</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">_tensorboard</span><span class="o">.</span><span class="n">add_scalar</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;perf/experience_maker/</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">global_step</span><span class="p">)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_tensorboard</span><span class="o">.</span><span class="n">add_scalar</span><span class="p">(</span><span class="sa">f</span><span class="s2">"perf/experience_maker/</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">global_step</span><span class="p">)</span>
 
         <span class="c1"># TODO: Add evaluation mechanism for PPO</span>
         <span class="k">if</span> <span class="n">global_step</span> <span class="o">%</span> <span class="n">args</span><span class="o">.</span><span class="n">eval_steps</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
@@ -993,24 +998,24 @@
         <span class="c1"># Save checkpoint</span>
         <span class="c1"># TODO: Save best model on dev, use loss/perplexity/others on whole dev dataset as metric</span>
         <span class="k">if</span> <span class="n">global_step</span> <span class="o">%</span> <span class="n">args</span><span class="o">.</span><span class="n">save_steps</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">tag</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;global_step</span><span class="si">{</span><span class="n">global_step</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="n">tag</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"global_step</span><span class="si">{</span><span class="n">global_step</span><span class="si">}</span><span class="s2">"</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_save_checkpoint</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">tag</span><span class="p">,</span> <span class="n">client_states</span><span class="p">)</span></div>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_save_checkpoint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">tag</span><span class="p">,</span> <span class="n">client_states</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Save model checkpoint to disk.</span>
 
 <span class="sd">        :param args: Training arguments.</span>
 <span class="sd">        :type args: Namespace</span>
-<span class="sd">        :param tag: Checkpoint tag (e.g., &quot;global_step1000&quot;).</span>
+<span class="sd">        :param tag: Checkpoint tag (e.g., "global_step1000").</span>
 <span class="sd">        :type tag: str</span>
 <span class="sd">        :param client_states: Client state for checkpoint recovery.</span>
 <span class="sd">        :type client_states: dict</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">disable_ds_ckpt</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">save_ckpt</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">actor</span><span class="o">.</span><span class="n">model</span><span class="p">,</span>
-                <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">ckpt_path</span><span class="p">,</span> <span class="s2">&quot;_actor&quot;</span><span class="p">),</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">ckpt_path</span><span class="p">,</span> <span class="s2">"_actor"</span><span class="p">),</span>
                 <span class="n">tag</span><span class="p">,</span>
                 <span class="n">args</span><span class="o">.</span><span class="n">max_ckpt_num</span><span class="p">,</span>
                 <span class="n">args</span><span class="o">.</span><span class="n">max_ckpt_mem</span><span class="p">,</span>
@@ -1018,16 +1023,16 @@
             <span class="p">)</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">critic</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">save_ckpt</span><span class="p">(</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">critic</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">ckpt_path</span><span class="p">,</span> <span class="s2">&quot;_critic&quot;</span><span class="p">),</span> <span class="n">tag</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">max_ckpt_num</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">max_ckpt_mem</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">critic</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">ckpt_path</span><span class="p">,</span> <span class="s2">"_critic"</span><span class="p">),</span> <span class="n">tag</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">max_ckpt_num</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">max_ckpt_mem</span>
                 <span class="p">)</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">save_hf_ckpt</span><span class="p">:</span>
             <span class="c1"># Get current filename and line number for debugging</span>
             <span class="n">current_filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span>
             <span class="n">current_lineno</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">_getframe</span><span class="p">()</span><span class="o">.</span><span class="n">f_lineno</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">current_filename</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">current_lineno</span><span class="si">}</span><span class="s2">] self.save_hf_ckpt: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">save_hf_ckpt</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"[</span><span class="si">{</span><span class="n">current_filename</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">current_lineno</span><span class="si">}</span><span class="s2">] self.save_hf_ckpt: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">save_hf_ckpt</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
-            <span class="n">save_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">ckpt_path</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">tag</span><span class="si">}</span><span class="s2">_hf&quot;</span><span class="p">)</span>
+            <span class="n">save_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">ckpt_path</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">tag</span><span class="si">}</span><span class="s2">_hf"</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">save_model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">actor</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tokenizer</span><span class="p">,</span> <span class="n">save_path</span><span class="p">)</span></div>
 </pre></div>
 
@@ -1041,7 +1046,7 @@
 
   <div role="contentinfo">
     <p>
-      &copy; Copyright 2025, OpenDILab.
+      &copy; Copyright 2025-2026, OpenDILab.
 
     </p>
   </div>
@@ -1078,8 +1083,8 @@
   <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
   <script src="../../../_static/doctools.js"></script>
   <script src="../../../_static/sphinx_highlight.js"></script>
-  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-  <script src="../../../_static/js/language_switch.js"></script>
+  <script src="../../../_static/clipboard.min.js"></script>
+  <script src="../../../_static/copybutton.js"></script>
   
 
   
@@ -1108,7 +1113,7 @@
     <div class="container-fluid">
       <div class="container">
         <div class="mobile-main-menu-header-container">
-          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="header-logo" href="https://github.com/opendilab/LightRFT" aria-label="OpenMMLab"></a>
           <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
         </div>
       </div>

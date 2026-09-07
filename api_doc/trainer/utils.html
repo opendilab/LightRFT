@@ -33,9 +33,11 @@
   <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
   <link rel="stylesheet" href="../../_static/css/readthedocs.css" type="text/css" />
   <link rel="index" title="Index" href="../../genindex.html" />
   <link rel="search" title="Search" href="../../search.html" />
+  <link rel="next" title="欢迎来到 LightRFT 文档!" href="../../index_zh.html" />
   <link rel="prev" title="lightrft.trainer.srm_trainer_vl" href="srm_trainer_vl.html" />
   <!-- Google Analytics -->
   <script type="text/javascript">
@@ -86,7 +88,7 @@
 <div class="container-fluid header-holder tutorials-header" id="header-holder">
   <div class="container">
     <div class="header-container">
-      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+      <a class="header-logo" href="https://github.com/opendilab/LightRFT"
         aria-label="OpenMMLab"></a>
 
       <div class="main-menu">
@@ -236,6 +238,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../strategy/index.html">lightrft.strategy</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">lightrft.trainer</a></li>
 </ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../../index_zh.html">欢迎来到 LightRFT 文档!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../index_zh.html#id4">索引与表格</a></li>
+</ul>
 
         
         
@@ -338,7 +344,7 @@ amounts of data.</p>
     <span class="o">&gt;&gt;&gt;</span> <span class="n">mean1</span><span class="p">,</span> <span class="n">std1</span> <span class="o">=</span> <span class="n">moments</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">batch1</span><span class="p">)</span>
     <span class="o">&gt;&gt;&gt;</span> <span class="n">batch2</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
     <span class="o">&gt;&gt;&gt;</span> <span class="n">mean2</span><span class="p">,</span> <span class="n">std2</span> <span class="o">=</span> <span class="n">moments</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">batch2</span><span class="p">)</span>
-    <span class="o">&gt;&gt;&gt;</span> <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Running mean: </span><span class="si">{</span><span class="n">moments</span><span class="o">.</span><span class="n">mean</span><span class="si">}</span><span class="s2">, Running std: </span><span class="si">{</span><span class="n">moments</span><span class="o">.</span><span class="n">std</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="o">&gt;&gt;&gt;</span> <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Running mean: </span><span class="si">{</span><span class="n">moments</span><span class="o">.</span><span class="n">mean</span><span class="si">}</span><span class="s2">, Running std: </span><span class="si">{</span><span class="n">moments</span><span class="o">.</span><span class="n">std</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </pre></div>
 </div>
 <dl class="py method">
@@ -366,7 +372,7 @@ storing all previous data points.</p>
     <span class="o">&gt;&gt;&gt;</span> <span class="n">moments</span> <span class="o">=</span> <span class="n">RunningMoments</span><span class="p">()</span>
     <span class="o">&gt;&gt;&gt;</span> <span class="n">new_data</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">,</span> <span class="mf">4.0</span><span class="p">,</span> <span class="mf">5.0</span><span class="p">])</span>
     <span class="o">&gt;&gt;&gt;</span> <span class="n">batch_mean</span><span class="p">,</span> <span class="n">batch_std</span> <span class="o">=</span> <span class="n">moments</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">new_data</span><span class="p">)</span>
-    <span class="o">&gt;&gt;&gt;</span> <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Batch mean: </span><span class="si">{</span><span class="n">batch_mean</span><span class="si">}</span><span class="s2">, Batch std: </span><span class="si">{</span><span class="n">batch_std</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="o">&gt;&gt;&gt;</span> <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Batch mean: </span><span class="si">{</span><span class="n">batch_mean</span><span class="si">}</span><span class="s2">, Batch std: </span><span class="si">{</span><span class="n">batch_std</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -412,13 +418,13 @@ clipped values in the input tensor.</p>
 <span class="sig-prename descclassname"><span class="pre">lightrft.trainer.utils.</span></span><span class="sig-name descname"><span class="pre">fire_sampling</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">all_prompt_token_ids</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">generate_fn</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">engine_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'vllm'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">first_token_temperature</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">temperature</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">first_token_top_k</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">first_token_top_p</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_multimodal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_prompts</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_images</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_images_num</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_videos</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_videos_num</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sampling_params</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">object</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tokenizer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span></span></span><a class="reference internal" href="../../_modules/lightrft/trainer/utils.html#fire_sampling"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.trainer.utils.fire_sampling" title="Permalink to this definition">¶</a></dt>
 <dd><p>FIRE sampling (Flaming-hot Initiation with Regular Execution)</p>
 <p>FIRE sampling paper link: <a class="reference external" href="https://arxiv.org/abs/2410.21236">https://arxiv.org/abs/2410.21236</a></p>
-<p>According to the paper, FIRE sampling:
-1. Samples the FIRST token at a very high temperature (“flaming-hot initiation”)
-2. Proceeds with regular temperature for remaining tokens
-3. IMPORTANT: top_k, top_p, min_p, and other sampling parameters remain THE SAME</p>
-<blockquote>
-<div><p>for both first token and remaining tokens. Only temperature changes.</p>
-</div></blockquote>
+<p>According to the paper, FIRE sampling:</p>
+<ol class="arabic simple">
+<li><p>Samples the FIRST token at a very high temperature (“flaming-hot initiation”)</p></li>
+<li><p>Proceeds with regular temperature for remaining tokens</p></li>
+<li><p>IMPORTANT: top_k, top_p, min_p, and other sampling parameters remain THE SAME
+for both first token and remaining tokens. Only temperature changes.</p></li>
+</ol>
 <p>This implementation follows the paper’s design: we only modify temperature between
 the first token and remaining tokens, keeping all other sampling parameters identical.</p>
 <dl class="field-list simple">
@@ -526,6 +532,10 @@ which ensures compatibility when using the default SGLang backend.</p>
   
   <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
     
+    <a href="../../index_zh.html" class="btn btn-neutral float-right" title="欢迎来到 LightRFT 文档!" accesskey="n"
+      rel="next">Next <img src="../../_static/images/chevron-right-blue.svg"
+        class="next-page"></a>
+    
     
     <a href="srm_trainer_vl.html" class="btn btn-neutral" title="lightrft.trainer.srm_trainer_vl" accesskey="p"
       rel="prev"><img src="../../_static/images/chevron-right-blue.svg" class="previous-page"> Previous</a>
@@ -537,7 +547,7 @@ which ensures compatibility when using the default SGLang backend.</p>
 
   <div role="contentinfo">
     <p>
-      &copy; Copyright 2025, OpenDILab.
+      &copy; Copyright 2025-2026, OpenDILab.
 
     </p>
   </div>
@@ -587,8 +597,8 @@ which ensures compatibility when using the default SGLang backend.</p>
   <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
   <script src="../../_static/doctools.js"></script>
   <script src="../../_static/sphinx_highlight.js"></script>
-  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-  <script src="../../_static/js/language_switch.js"></script>
+  <script src="../../_static/clipboard.min.js"></script>
+  <script src="../../_static/copybutton.js"></script>
   
 
   
@@ -617,7 +627,7 @@ which ensures compatibility when using the default SGLang backend.</p>
     <div class="container-fluid">
       <div class="container">
         <div class="mobile-main-menu-header-container">
-          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="header-logo" href="https://github.com/opendilab/LightRFT" aria-label="OpenMMLab"></a>
           <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
         </div>
       </div>

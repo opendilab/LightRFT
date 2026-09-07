@@ -33,6 +33,7 @@
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
   <link rel="stylesheet" href="../_static/css/readthedocs.css" type="text/css" />
   <link rel="index" title="Index" href="../genindex.html" />
   <link rel="search" title="Search" href="../search.html" />
@@ -87,7 +88,7 @@
 <div class="container-fluid header-holder tutorials-header" id="header-holder">
   <div class="container">
     <div class="header-container">
-      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+      <a class="header-logo" href="https://github.com/opendilab/LightRFT"
         aria-label="OpenMMLab"></a>
 
       <div class="main-menu">
@@ -237,6 +238,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../api_doc/strategy/index.html">lightrft.strategy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api_doc/trainer/index.html">lightrft.trainer</a></li>
 </ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../index_zh.html">欢迎来到 LightRFT 文档!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index_zh.html#id4">索引与表格</a></li>
+</ul>
 
         
         
@@ -382,8 +387,8 @@ In LightRFT, we extend this concept across all models used in training, establis
 <p>The Trainer module implements the reinforcement learning algorithms and training loops. It coordinates the interaction between models, strategies, and optimization processes.</p>
 <p>Key components:</p>
 <ul class="simple">
-<li><p>Policy optimization algorithms: PPO, GRPO, GSPO, GMPO, Dr.GRPO, DAPO</p></li>
-<li><p>Advantage estimation and return computation: REINFORCE++, CPGD</p></li>
+<li><p>Policy optimization: PPO/GRPO, CPGD, DAPO components, and high-entropy token filtering; GSPO, GMPO, and Dr.GRPO remain incomplete interfaces</p></li>
+<li><p>Advantage estimation and return computation: GAE, REINFORCE, RLOO, REINFORCE with baseline, group normalization, and CPGD; REINFORCE++ is not yet connected to the calculator factory</p></li>
 <li><p>Experience generation and sampling strategies: FIRE Sampling</p></li>
 <li><p>Reward processing and stability enhancement: Reward Norm/Clip, High Entropy Token Selection</p></li>
 <li><p>Policy and value function updates</p></li>
@@ -458,7 +463,7 @@ In LightRFT, we extend this concept across all models used in training, establis
 
   <div role="contentinfo">
     <p>
-      &copy; Copyright 2025, OpenDILab.
+      &copy; Copyright 2025-2026, OpenDILab.
 
     </p>
   </div>
@@ -512,8 +517,8 @@ In LightRFT, we extend this concept across all models used in training, establis
   <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
   <script src="../_static/doctools.js"></script>
   <script src="../_static/sphinx_highlight.js"></script>
-  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-  <script src="../_static/js/language_switch.js"></script>
+  <script src="../_static/clipboard.min.js"></script>
+  <script src="../_static/copybutton.js"></script>
   
 
   
@@ -542,7 +547,7 @@ In LightRFT, we extend this concept across all models used in training, establis
     <div class="container-fluid">
       <div class="container">
         <div class="mobile-main-menu-header-container">
-          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="header-logo" href="https://github.com/opendilab/LightRFT" aria-label="OpenMMLab"></a>
           <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
         </div>
       </div>

@@ -32,6 +32,7 @@
   <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/css/readthedocs.css" type="text/css" />
   <link rel="index" title="Index" href="../../../genindex.html" />
   <link rel="search" title="Search" href="../../../search.html" />
@@ -84,7 +85,7 @@
 <div class="container-fluid header-holder tutorials-header" id="header-holder">
   <div class="container">
     <div class="header-container">
-      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+      <a class="header-logo" href="https://github.com/opendilab/LightRFT"
         aria-label="OpenMMLab"></a>
 
       <div class="main-menu">
@@ -234,6 +235,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../api_doc/strategy/index.html">lightrft.strategy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api_doc/trainer/index.html">lightrft.trainer</a></li>
 </ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../index_zh.html">欢迎来到 LightRFT 文档!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../index_zh.html#id4">索引与表格</a></li>
+</ul>
 
         
         
@@ -313,7 +318,7 @@
 
 
 <div class="viewcode-block" id="NaiveReplayBufferVL"><a class="viewcode-back" href="../../../api_doc/trainer/replay_buffer_vl.html#lightrft.trainer.replay_buffer_vl.NaiveReplayBufferVL">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">NaiveReplayBufferVL</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Naive replay buffer class for Vision-Language models. It stores experience samples.</span>
 
 <span class="sd">    :param sample_batch_size: Batch size when sampling (train_micro_batch_size).</span>
@@ -324,7 +329,7 @@
 <span class="sd">    :type cpu_offload: bool</span>
 <span class="sd">    :param packing_samples: Whether to use packed samples format, defaults to False.</span>
 <span class="sd">    :type packing_samples: bool</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">sample_batch_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">limit</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">cpu_offload</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">packing_samples</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -334,19 +339,19 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">limit</span> <span class="o">=</span> <span class="n">limit</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cpu_offload</span> <span class="o">=</span> <span class="n">cpu_offload</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">packing_samples</span> <span class="o">=</span> <span class="n">packing_samples</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">target_device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;cuda:</span><span class="si">{</span><span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">current_device</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">target_device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="sa">f</span><span class="s2">"cuda:</span><span class="si">{</span><span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">current_device</span><span class="p">()</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">items</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">BufferItemVL</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
 
     <span class="nd">@torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">()</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">append</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">experience</span><span class="p">:</span> <span class="n">ExperienceVL</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Append experience to the replay buffer.</span>
 
 <span class="sd">        :param experience: Experience batch to append.</span>
 <span class="sd">        :type experience: ExperienceVL</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cpu_offload</span><span class="p">:</span>
-            <span class="n">experience</span><span class="o">.</span><span class="n">to_device</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">&quot;cpu&quot;</span><span class="p">))</span>
+            <span class="n">experience</span><span class="o">.</span><span class="n">to_device</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">"cpu"</span><span class="p">))</span>
         <span class="n">items</span> <span class="o">=</span> <span class="n">split_experience_batch</span><span class="p">(</span><span class="n">experience</span><span class="p">)</span>
         <span class="c1"># The packed samples come with no padding</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">packing_samples</span><span class="p">:</span>
@@ -358,19 +363,19 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">items</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">items</span><span class="p">[</span><span class="n">samples_to_remove</span><span class="p">:]</span>
 
 <div class="viewcode-block" id="NaiveReplayBufferVL.clear"><a class="viewcode-back" href="../../../api_doc/trainer/replay_buffer_vl.html#lightrft.trainer.replay_buffer_vl.NaiveReplayBufferVL.clear">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Clear all items from the replay buffer.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">items</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span></div>
 
     <span class="nd">@torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">()</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">sample</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ExperienceVL</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Sample a batch of experiences from the replay buffer.</span>
 
 <span class="sd">        :return: Batch of sampled experiences.</span>
 <span class="sd">        :rtype: ExperienceVL</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">items</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">items</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sample_batch_size</span><span class="p">)</span>
         <span class="n">experience</span> <span class="o">=</span> <span class="n">make_experience_batch</span><span class="p">(</span><span class="n">items</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">packing_samples</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cpu_offload</span><span class="p">:</span>
@@ -378,50 +383,50 @@
         <span class="k">return</span> <span class="n">experience</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the number of items in the replay buffer.</span>
 
 <span class="sd">        :return: Number of items.</span>
 <span class="sd">        :rtype: int</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">items</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BufferItemVL</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get an item from the replay buffer by index.</span>
 
 <span class="sd">        :param idx: Index of the item.</span>
 <span class="sd">        :type idx: int</span>
 <span class="sd">        :return: Buffer item at the specified index.</span>
 <span class="sd">        :rtype: BufferItemVL</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">items</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
 
 <div class="viewcode-block" id="NaiveReplayBufferVL.collate_fn"><a class="viewcode-back" href="../../../api_doc/trainer/replay_buffer_vl.html#lightrft.trainer.replay_buffer_vl.NaiveReplayBufferVL.collate_fn">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">collate_fn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ExperienceVL</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Collate function for DataLoader.</span>
 
 <span class="sd">        :param batch: Batch of buffer items.</span>
 <span class="sd">        :type batch: List[BufferItemVL]</span>
 <span class="sd">        :return: Batched experience.</span>
 <span class="sd">        :rtype: ExperienceVL</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">experience</span> <span class="o">=</span> <span class="n">make_experience_batch</span><span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">packing_samples</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">experience</span></div>
 
 <div class="viewcode-block" id="NaiveReplayBufferVL.normalize"><a class="viewcode-back" href="../../../api_doc/trainer/replay_buffer_vl.html#lightrft.trainer.replay_buffer_vl.NaiveReplayBufferVL.normalize">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">normalize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attribute</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">strategy</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Normalize a specified attribute across all items in the buffer.</span>
 
 <span class="sd">        This method computes the mean and standard deviation of the specified attribute</span>
-<span class="sd">        across all items and normalizes them. Currently only supports &quot;advantages&quot;.</span>
+<span class="sd">        across all items and normalizes them. Currently only supports "advantages".</span>
 
-<span class="sd">        :param attribute: Name of the attribute to normalize (currently only &quot;advantages&quot; is supported).</span>
+<span class="sd">        :param attribute: Name of the attribute to normalize (currently only "advantages" is supported).</span>
 <span class="sd">        :type attribute: str</span>
 <span class="sd">        :param strategy: Distributed training strategy for all_reduce operations.</span>
 <span class="sd">        :type strategy: Strategy</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">assert</span> <span class="n">attribute</span> <span class="o">==</span> <span class="s2">&quot;advantages&quot;</span>
+<span class="sd">        """</span>
+        <span class="k">assert</span> <span class="n">attribute</span> <span class="o">==</span> <span class="s2">"advantages"</span>
         <span class="n">items</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">action_masks</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
@@ -440,12 +445,12 @@
 
         <span class="c1"># For distributed data parallel: compute mean</span>
         <span class="n">sum_and_count</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="n">items_vector</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span> <span class="n">num_actions</span><span class="p">],</span> <span class="n">device</span><span class="o">=</span><span class="n">items_vector</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
-        <span class="n">all_sum</span><span class="p">,</span> <span class="n">all_count</span> <span class="o">=</span> <span class="n">strategy</span><span class="o">.</span><span class="n">all_reduce</span><span class="p">(</span><span class="n">sum_and_count</span><span class="p">,</span> <span class="s2">&quot;sum&quot;</span><span class="p">)</span>
+        <span class="n">all_sum</span><span class="p">,</span> <span class="n">all_count</span> <span class="o">=</span> <span class="n">strategy</span><span class="o">.</span><span class="n">all_reduce</span><span class="p">(</span><span class="n">sum_and_count</span><span class="p">,</span> <span class="s2">"sum"</span><span class="p">)</span>
         <span class="n">mean</span> <span class="o">=</span> <span class="n">all_sum</span> <span class="o">/</span> <span class="n">all_count</span>
 
         <span class="c1"># Compute standard deviation</span>
         <span class="n">std</span> <span class="o">=</span> <span class="p">((</span><span class="n">items_vector</span> <span class="o">-</span> <span class="n">mean</span><span class="p">)</span><span class="o">.</span><span class="n">pow</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">action_masks_vector</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-        <span class="n">all_std</span> <span class="o">=</span> <span class="n">strategy</span><span class="o">.</span><span class="n">all_reduce</span><span class="p">(</span><span class="n">std</span><span class="p">,</span> <span class="s2">&quot;sum&quot;</span><span class="p">)</span>
+        <span class="n">all_std</span> <span class="o">=</span> <span class="n">strategy</span><span class="o">.</span><span class="n">all_reduce</span><span class="p">(</span><span class="n">std</span><span class="p">,</span> <span class="s2">"sum"</span><span class="p">)</span>
         <span class="n">rstd</span> <span class="o">=</span> <span class="p">(</span><span class="n">all_std</span> <span class="o">/</span> <span class="n">all_count</span><span class="p">)</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="nb">min</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">)</span><span class="o">.</span><span class="n">rsqrt</span><span class="p">()</span>
 
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">item</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -462,7 +467,7 @@
 
   <div role="contentinfo">
     <p>
-      &copy; Copyright 2025, OpenDILab.
+      &copy; Copyright 2025-2026, OpenDILab.
 
     </p>
   </div>
@@ -499,8 +504,8 @@
   <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
   <script src="../../../_static/doctools.js"></script>
   <script src="../../../_static/sphinx_highlight.js"></script>
-  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-  <script src="../../../_static/js/language_switch.js"></script>
+  <script src="../../../_static/clipboard.min.js"></script>
+  <script src="../../../_static/copybutton.js"></script>
   
 
   
@@ -529,7 +534,7 @@
     <div class="container-fluid">
       <div class="container">
         <div class="mobile-main-menu-header-container">
-          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="header-logo" href="https://github.com/opendilab/LightRFT" aria-label="OpenMMLab"></a>
           <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
         </div>
       </div>

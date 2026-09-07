@@ -32,6 +32,7 @@
   <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../../../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/copybutton.css" type="text/css" />
   <link rel="stylesheet" href="../../../../_static/css/readthedocs.css" type="text/css" />
   <link rel="index" title="Index" href="../../../../genindex.html" />
   <link rel="search" title="Search" href="../../../../search.html" />
@@ -84,7 +85,7 @@
 <div class="container-fluid header-holder tutorials-header" id="header-holder">
   <div class="container">
     <div class="header-container">
-      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+      <a class="header-logo" href="https://github.com/opendilab/LightRFT"
         aria-label="OpenMMLab"></a>
 
       <div class="main-menu">
@@ -234,6 +235,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../api_doc/strategy/index.html">lightrft.strategy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../api_doc/trainer/index.html">lightrft.trainer</a></li>
 </ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../index_zh.html">欢迎来到 LightRFT 文档!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../index_zh.html#id4">索引与表格</a></li>
+</ul>
 
         
         
@@ -300,7 +305,7 @@
               <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
                 
   <h1>Source code for lightrft.strategy.utils.parallel_utils</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""</span>
 <span class="sd">Sequence Parallelism Utilities for Distributed Training</span>
 
 <span class="sd">This module provides utilities for sequence parallelism in distributed training environments.</span>
@@ -313,7 +318,7 @@
 <span class="sd">- Processing data for sequence parallel distribution</span>
 <span class="sd">- Slicing and padding inputs for sequence parallelism</span>
 <span class="sd">- Specialized tensor operations for sequence parallel training</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
 
@@ -324,34 +329,34 @@
 
 
 <div class="viewcode-block" id="set_sequence_parallel_group"><a class="viewcode-back" href="../../../../api_doc/strategy/utils/parallel_utils.html#lightrft.strategy.utils.parallel_utils.set_sequence_parallel_group">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">set_sequence_parallel_group</span><span class="p">(</span><span class="n">group</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Set the global sequence parallel process group.</span>
 
 <span class="sd">    :param group: The process group to use for sequence parallelism.</span>
 <span class="sd">    :type group: torch.distributed.ProcessGroup</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">global</span> <span class="n">_SEQUENCE_PARALLEL_GROUP</span>  <span class="c1"># pylint: disable=W0602</span>
     <span class="n">_SEQUENCE_PARALLEL_GROUP</span> <span class="o">=</span> <span class="n">group</span></div>
 
 
 <div class="viewcode-block" id="get_sequence_parallel_group"><a class="viewcode-back" href="../../../../api_doc/strategy/utils/parallel_utils.html#lightrft.strategy.utils.parallel_utils.get_sequence_parallel_group">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">get_sequence_parallel_group</span><span class="p">():</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Get the current sequence parallel process group.</span>
 
 <span class="sd">    :return: The current sequence parallel process group.</span>
 <span class="sd">    :rtype: torch.distributed.ProcessGroup or None</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">global</span> <span class="n">_SEQUENCE_PARALLEL_GROUP</span>  <span class="c1"># pylint: disable=W0602  # noqa: F824</span>
     <span class="k">return</span> <span class="n">_SEQUENCE_PARALLEL_GROUP</span></div>
 
 
 <div class="viewcode-block" id="get_sequence_parallel_world_size"><a class="viewcode-back" href="../../../../api_doc/strategy/utils/parallel_utils.html#lightrft.strategy.utils.parallel_utils.get_sequence_parallel_world_size">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">get_sequence_parallel_world_size</span><span class="p">():</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Get the world size of the sequence parallel group.</span>
 
 <span class="sd">    :return: The world size of the sequence parallel group, or 1 if no group is set.</span>
 <span class="sd">    :rtype: int</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">global</span> <span class="n">_SEQUENCE_PARALLEL_GROUP</span>  <span class="c1"># pylint: disable=W0602  # noqa: F824</span>
     <span class="k">if</span> <span class="n">_SEQUENCE_PARALLEL_GROUP</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">distributed</span><span class="o">.</span><span class="n">get_world_size</span><span class="p">(</span><span class="n">_SEQUENCE_PARALLEL_GROUP</span><span class="p">)</span>
@@ -359,12 +364,12 @@
 
 
 <div class="viewcode-block" id="get_sequence_parallel_rank"><a class="viewcode-back" href="../../../../api_doc/strategy/utils/parallel_utils.html#lightrft.strategy.utils.parallel_utils.get_sequence_parallel_rank">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">get_sequence_parallel_rank</span><span class="p">():</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Get the rank of the current process in the sequence parallel group.</span>
 
 <span class="sd">    :return: The rank in the sequence parallel group, or 0 if no group is set.</span>
 <span class="sd">    :rtype: int</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">global</span> <span class="n">_SEQUENCE_PARALLEL_GROUP</span>  <span class="c1"># pylint: disable=W0602  # noqa: F824</span>
     <span class="k">if</span> <span class="n">_SEQUENCE_PARALLEL_GROUP</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">distributed</span><span class="o">.</span><span class="n">get_rank</span><span class="p">(</span><span class="n">_SEQUENCE_PARALLEL_GROUP</span><span class="p">)</span>
@@ -372,24 +377,24 @@
 
 
 <div class="viewcode-block" id="SPDataProcessor"><a class="viewcode-back" href="../../../../api_doc/strategy/utils/parallel_utils.html#lightrft.strategy.utils.parallel_utils.SPDataProcessor">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">SPDataProcessor</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    A context manager for preprocessing data before conducting sequence parallel operations.</span>
 
 <span class="sd">    This class handles the distribution and collection of data across sequence parallel ranks,</span>
 <span class="sd">    ensuring proper data sharding and gathering for sequence parallel training.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Initialize the sequence parallel data processor.</span>
 
 <span class="sd">        Sets up the sequence parallel size, group, and rank for data processing.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">sp_size</span> <span class="o">=</span> <span class="n">get_sequence_parallel_world_size</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">sp_group</span> <span class="o">=</span> <span class="n">get_sequence_parallel_group</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">sp_rank</span> <span class="o">=</span> <span class="n">get_sequence_parallel_rank</span><span class="p">()</span>
 
 <div class="viewcode-block" id="SPDataProcessor.preprocess"><a class="viewcode-back" href="../../../../api_doc/strategy/utils/parallel_utils.html#lightrft.strategy.utils.parallel_utils.SPDataProcessor.preprocess">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">preprocess</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Preprocess data for sequence parallelism by gathering data from all ranks.</span>
 
 <span class="sd">        :param data: The data to preprocess.</span>
@@ -397,7 +402,7 @@
 
 <span class="sd">        :return: The preprocessed data, gathered from all ranks if sp_size &gt; 1.</span>
 <span class="sd">        :rtype: Any</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sp_size</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">data</span>
         <span class="c1"># gather data for rank in the same dp group</span>
@@ -408,7 +413,7 @@
         <span class="k">return</span> <span class="n">all_data</span></div>
 
 <div class="viewcode-block" id="SPDataProcessor.postprocess"><a class="viewcode-back" href="../../../../api_doc/strategy/utils/parallel_utils.html#lightrft.strategy.utils.parallel_utils.SPDataProcessor.postprocess">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">postprocess</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Postprocess data after sequence parallel operations by distributing data to appropriate ranks.</span>
 
 <span class="sd">        :param data: The data to postprocess.</span>
@@ -417,7 +422,7 @@
 <span class="sd">        :return: The postprocessed data, distributed to the current rank.</span>
 <span class="sd">        :rtype: Any</span>
 <span class="sd">        :raises AssertionError: If the data length is not divisible by sp_size.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sp_size</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">data</span>
         <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">sp_size</span> <span class="o">==</span> <span class="mi">0</span>
@@ -428,7 +433,7 @@
 
 <span class="c1"># adapted from https://github.com/volcengine/verl/blob/main/verl/utils/ulysses.py</span>
 <div class="viewcode-block" id="sp_slice_and_pad_input"><a class="viewcode-back" href="../../../../api_doc/strategy/utils/parallel_utils.html#lightrft.strategy.utils.parallel_utils.sp_slice_and_pad_input">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">sp_slice_and_pad_input</span><span class="p">(</span><span class="n">input_ids</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">position_ids</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Pad and slice input_ids to be divisible by sp_size and pad position_ids to be divisible by sp_size.</span>
 
 <span class="sd">    Note both input_ids and position_ids will be padded, but only input_ids will be sliced.</span>
@@ -444,7 +449,7 @@
 <span class="sd">             - Padded position_ids</span>
 <span class="sd">             - Size of padding added</span>
 <span class="sd">    :rtype: Tuple[torch.Tensor, torch.Tensor, int]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">sp_group</span> <span class="o">=</span> <span class="n">get_sequence_parallel_group</span><span class="p">()</span>
     <span class="n">sp_size</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">distributed</span><span class="o">.</span><span class="n">get_world_size</span><span class="p">(</span><span class="n">sp_group</span><span class="p">)</span>
     <span class="n">sp_rank</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">distributed</span><span class="o">.</span><span class="n">get_rank</span><span class="p">(</span><span class="n">sp_group</span><span class="p">)</span>
@@ -461,7 +466,7 @@
         <span class="k">if</span> <span class="n">position_ids</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">pad_pos_ids</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">pad_size</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">position_ids</span><span class="o">.</span><span class="n">device</span><span class="p">)</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
             <span class="n">position_ids</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="n">position_ids</span><span class="p">,</span> <span class="n">pad_pos_ids</span><span class="p">),</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
-    <span class="c1"># we don&#39;t need to slice position ids</span>
+    <span class="c1"># we don't need to slice position ids</span>
     <span class="n">parts</span> <span class="o">=</span> <span class="n">input_ids</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">//</span> <span class="n">sp_size</span>
     <span class="n">slc</span> <span class="o">=</span> <span class="p">[</span><span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">)]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">input_ids</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
     <span class="n">slc</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="n">sp_rank</span> <span class="o">*</span> <span class="n">parts</span><span class="p">,</span> <span class="p">(</span><span class="n">sp_rank</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">parts</span><span class="p">)</span>
@@ -470,7 +475,7 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_split</span><span class="p">(</span><span class="n">input_</span><span class="p">,</span> <span class="n">group</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Split a tensor along the specified dimension according to the world size.</span>
 
 <span class="sd">    :param input_: The input tensor to split.</span>
@@ -483,7 +488,7 @@
 <span class="sd">    :return: The portion of the input tensor corresponding to the current rank.</span>
 <span class="sd">    :rtype: torch.Tensor</span>
 <span class="sd">    :raises AssertionError: If the dimension size is not divisible by world size.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># skip if only one rank involved</span>
     <span class="n">world_size</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">distributed</span><span class="o">.</span><span class="n">get_world_size</span><span class="p">(</span><span class="n">group</span><span class="o">=</span><span class="n">group</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">world_size</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
@@ -491,8 +496,8 @@
     <span class="c1"># Split along last dimension.</span>
     <span class="n">dim_size</span> <span class="o">=</span> <span class="n">input_</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">dim</span><span class="p">)</span>
     <span class="k">assert</span> <span class="n">dim_size</span> <span class="o">%</span> <span class="n">world_size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="p">(</span>
-        <span class="sa">f</span><span class="s2">&quot;The dimension to split (</span><span class="si">{</span><span class="n">dim_size</span><span class="si">}</span><span class="s2">) is not a multiple of world size (</span><span class="si">{</span><span class="n">world_size</span><span class="si">}</span><span class="s2">), &quot;</span>
-        <span class="sa">f</span><span class="s2">&quot;cannot split tensor evenly&quot;</span>
+        <span class="sa">f</span><span class="s2">"The dimension to split (</span><span class="si">{</span><span class="n">dim_size</span><span class="si">}</span><span class="s2">) is not a multiple of world size (</span><span class="si">{</span><span class="n">world_size</span><span class="si">}</span><span class="s2">), "</span>
+        <span class="sa">f</span><span class="s2">"cannot split tensor evenly"</span>
     <span class="p">)</span>
     <span class="n">tensor_list</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">input_</span><span class="p">,</span> <span class="n">dim_size</span> <span class="o">//</span> <span class="n">world_size</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="n">dim</span><span class="p">)</span>
     <span class="n">rank</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">distributed</span><span class="o">.</span><span class="n">get_rank</span><span class="p">(</span><span class="n">group</span><span class="o">=</span><span class="n">group</span><span class="p">)</span>
@@ -502,7 +507,7 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_gather</span><span class="p">(</span><span class="n">input_</span><span class="p">,</span> <span class="n">group</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Gather tensors from all ranks and concatenate them along the specified dimension.</span>
 
 <span class="sd">    :param input_: The input tensor from the current rank.</span>
@@ -514,7 +519,7 @@
 
 <span class="sd">    :return: The concatenated tensor from all ranks.</span>
 <span class="sd">    :rtype: torch.Tensor</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># skip if only one rank involved</span>
     <span class="n">world_size</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">distributed</span><span class="o">.</span><span class="n">get_world_size</span><span class="p">(</span><span class="n">group</span><span class="o">=</span><span class="n">group</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">world_size</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
@@ -530,16 +535,16 @@
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">_GatherForwardSplitBackward</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Function</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Custom autograd function that gathers input from model parallel region during forward pass</span>
 <span class="sd">    and splits gradients during backward pass.</span>
 
 <span class="sd">    This function is useful for operations that need to be performed on the full tensor</span>
 <span class="sd">    in the forward pass but can have their gradients computed in parallel.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">symbolic</span><span class="p">(</span><span class="n">input_</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Symbolic function for torchscript.</span>
 
 <span class="sd">        :param input_: The input tensor.</span>
@@ -547,12 +552,12 @@
 
 <span class="sd">        :return: The gathered tensor.</span>
 <span class="sd">        :rtype: torch.Tensor</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">_gather</span><span class="p">(</span><span class="n">input_</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">input_</span><span class="p">,</span> <span class="n">group</span><span class="p">,</span> <span class="n">dim</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Forward pass: gather the input tensor from all ranks.</span>
 
 <span class="sd">        :param ctx: Context object to save information for backward pass.</span>
@@ -566,14 +571,14 @@
 
 <span class="sd">        :return: The gathered tensor from all ranks.</span>
 <span class="sd">        :rtype: torch.Tensor</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">ctx</span><span class="o">.</span><span class="n">group</span> <span class="o">=</span> <span class="n">group</span>
         <span class="n">ctx</span><span class="o">.</span><span class="n">dim</span> <span class="o">=</span> <span class="n">dim</span>
         <span class="k">return</span> <span class="n">_gather</span><span class="p">(</span><span class="n">input_</span><span class="p">,</span> <span class="n">group</span><span class="p">,</span> <span class="n">dim</span><span class="p">)</span>
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">backward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">grad_output</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Backward pass: split the gradient tensor across ranks.</span>
 
 <span class="sd">        :param ctx: Context object with saved information from forward pass.</span>
@@ -583,12 +588,12 @@
 
 <span class="sd">        :return: The split gradient tensor for the current rank, and None for other inputs.</span>
 <span class="sd">        :rtype: Tuple[torch.Tensor, None, None]</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">_split</span><span class="p">(</span><span class="n">grad_output</span><span class="p">,</span> <span class="n">ctx</span><span class="o">.</span><span class="n">group</span><span class="p">,</span> <span class="n">ctx</span><span class="o">.</span><span class="n">dim</span><span class="p">),</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
 
 
 <div class="viewcode-block" id="gather_forward_split_backward_and_unpad"><a class="viewcode-back" href="../../../../api_doc/strategy/utils/parallel_utils.html#lightrft.strategy.utils.parallel_utils.gather_forward_split_backward_and_unpad">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">gather_forward_split_backward_and_unpad</span><span class="p">(</span><span class="n">input_</span><span class="p">,</span> <span class="n">group</span><span class="p">,</span> <span class="n">dim</span><span class="p">,</span> <span class="n">padding_size</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">unpad_dim</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Gather tensors in the forward pass, split gradients in the backward pass, and remove padding if needed.</span>
 
 <span class="sd">    :param input_: The input tensor from the current rank.</span>
@@ -604,7 +609,7 @@
 
 <span class="sd">    :return: The gathered (and possibly unpadded) tensor.</span>
 <span class="sd">    :rtype: torch.Tensor</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">gather_input</span> <span class="o">=</span> <span class="n">_GatherForwardSplitBackward</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">input_</span><span class="p">,</span> <span class="n">group</span><span class="p">,</span> <span class="n">dim</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">padding_size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">gather_input</span>
@@ -616,12 +621,12 @@
 
 <span class="c1"># adpated from https://github.com/microsoft/DeepSpeed/blob/master/deepspeed/sequence/layer.py</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">_SeqAllToAll</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Function</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Custom autograd function for sequence all-to-all communication.</span>
 
 <span class="sd">    This function performs all-to-all communication in the forward pass and handles</span>
 <span class="sd">    the corresponding backward pass correctly.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span>
         <span class="n">ctx</span><span class="p">,</span>
@@ -630,7 +635,7 @@
         <span class="n">gather_idx</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="nb">int</span><span class="p">]],</span>
         <span class="o">*</span><span class="n">input_</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Forward pass: perform all-to-all communication.</span>
 
 <span class="sd">        :param ctx: Context object to save information for backward pass.</span>
@@ -646,7 +651,7 @@
 
 <span class="sd">        :return: The result of all-to-all communication.</span>
 <span class="sd">        :rtype: torch.Tensor or Tuple[torch.Tensor]</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">ctx</span><span class="o">.</span><span class="n">group</span> <span class="o">=</span> <span class="n">group</span>
         <span class="n">ctx</span><span class="o">.</span><span class="n">scatter_idx</span> <span class="o">=</span> <span class="n">scatter_idx</span>
         <span class="n">ctx</span><span class="o">.</span><span class="n">gather_idx</span> <span class="o">=</span> <span class="n">gather_idx</span>
@@ -686,7 +691,7 @@
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">backward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="o">*</span><span class="n">grad_output</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Backward pass for the custom autograd function.</span>
 
 <span class="sd">        This method handles the gradient computation during backpropagation. If the distributed</span>
@@ -700,7 +705,7 @@
 
 <span class="sd">        :return: Tuple containing None for non-tensor inputs and the gradient tensors</span>
 <span class="sd">        :rtype: Tuple[None, torch.Tensor, None, None]</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="n">dist</span><span class="o">.</span><span class="n">get_world_size</span><span class="p">(</span><span class="n">ctx</span><span class="o">.</span><span class="n">group</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="o">*</span><span class="n">grad_output</span>
         <span class="n">res</span> <span class="o">=</span> <span class="n">_SeqAllToAll</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">ctx</span><span class="o">.</span><span class="n">group</span><span class="p">,</span> <span class="n">ctx</span><span class="o">.</span><span class="n">gather_idx</span><span class="p">,</span> <span class="n">ctx</span><span class="o">.</span><span class="n">scatter_idx</span><span class="p">,</span> <span class="o">*</span><span class="n">grad_output</span><span class="p">)</span>
@@ -719,7 +724,7 @@
 
   <div role="contentinfo">
     <p>
-      &copy; Copyright 2025, OpenDILab.
+      &copy; Copyright 2025-2026, OpenDILab.
 
     </p>
   </div>
@@ -756,8 +761,8 @@
   <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
   <script src="../../../../_static/doctools.js"></script>
   <script src="../../../../_static/sphinx_highlight.js"></script>
-  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-  <script src="../../../../_static/js/language_switch.js"></script>
+  <script src="../../../../_static/clipboard.min.js"></script>
+  <script src="../../../../_static/copybutton.js"></script>
   
 
   
@@ -786,7 +791,7 @@
     <div class="container-fluid">
       <div class="container">
         <div class="mobile-main-menu-header-container">
-          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="header-logo" href="https://github.com/opendilab/LightRFT" aria-label="OpenMMLab"></a>
           <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
         </div>
       </div>

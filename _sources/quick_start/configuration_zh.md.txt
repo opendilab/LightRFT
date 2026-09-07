@@ -144,13 +144,14 @@
 
 ### `--advantage_estimator`
 - **类型**: `str`
-- **选项**: `group_norm`, `reinforce`, `cpgd`, `gspo`, `gmpo`
+- **选项**: `gae`, `reinforce`, `rloo`, `reinforce_baseline`, `group_norm`, `cpgd`, `reinforce++`, `on_policy_distillation`
 - **默认值**: `group_norm`
 - **描述**: 优势估计 (Advantage estimation) 的方法
 - **建议**:
   - `group_norm`: 通用选择 (GRPO)
   - `reinforce`: 需要低方差时使用
   - `cpgd`: 旨在保持基础模型能力时使用
+- **说明**：当前参数解析器可以接受 `reinforce++`，但优势计算器工厂尚未提供对应映射；在该集成完成前不应使用此选项。
 
 ### `--n_samples_per_prompt`
 - **类型**: `int`

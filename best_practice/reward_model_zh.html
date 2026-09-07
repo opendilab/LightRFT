@@ -33,9 +33,12 @@
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
   <link rel="stylesheet" href="../_static/css/readthedocs.css" type="text/css" />
   <link rel="index" title="Index" href="../genindex.html" />
   <link rel="search" title="Search" href="../search.html" />
+  <link rel="next" title="Strategy 使用指南" href="strategy_zh.html" />
+  <link rel="prev" title="LightRFT 模型设计文档" href="model_zh.html" />
   <!-- Google Analytics -->
   <script type="text/javascript">
     var collapsedSections = [];
@@ -85,7 +88,7 @@
 <div class="container-fluid header-holder tutorials-header" id="header-holder">
   <div class="container">
     <div class="header-container">
-      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+      <a class="header-logo" href="https://github.com/opendilab/LightRFT"
         aria-label="OpenMMLab"></a>
 
       <div class="main-menu">
@@ -235,6 +238,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../api_doc/strategy/index.html">lightrft.strategy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api_doc/trainer/index.html">lightrft.trainer</a></li>
 </ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../index_zh.html">欢迎来到 LightRFT 文档!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index_zh.html#id4">索引与表格</a></li>
+</ul>
 
         
         
@@ -272,6 +279,10 @@
       </li>
 
         
+          <li><a href="../index_zh.html">欢迎来到 LightRFT 文档!</a> &gt;</li>
+        
+          <li><a href="index_zh.html">最佳实践</a> &gt;</li>
+        
       <li>LightRFT Reward Model 训练最佳实践指南</li>
     
     
@@ -307,15 +318,15 @@
 <section id="id1">
 <h2>目录<a class="headerlink" href="#id1" title="Permalink to this heading">¶</a></h2>
 <ol class="arabic simple">
-<li><p>概述</p></li>
-<li><p>Reward Model 类型</p></li>
-<li><p>环境准备</p></li>
-<li><p>模型训练</p></li>
-<li><p>模型评估</p></li>
-<li><p>常见问题</p></li>
-<li><p>基准测试与性能参考</p></li>
-<li><p>进阶话题</p></li>
-<li><p>参考资源</p></li>
+<li><p><a class="reference internal" href="#id2">概述</a></p></li>
+<li><p><a class="reference internal" href="#id3">Reward Model 类型</a></p></li>
+<li><p><a class="reference internal" href="#id13">环境准备</a></p></li>
+<li><p><a class="reference internal" href="#id15">模型训练</a></p></li>
+<li><p><a class="reference internal" href="#id20">模型评估</a></p></li>
+<li><p><a class="reference internal" href="#id26">常见问题</a></p></li>
+<li><p><a class="reference internal" href="#id37">基准测试与性能参考</a></p></li>
+<li><p><a class="reference internal" href="#id42">进阶话题</a></p></li>
+<li><p><a class="reference internal" href="#id45">参考资源</a></p></li>
 </ol>
 </section>
 <hr class="docutils" />
@@ -551,21 +562,21 @@ bash<span class="w"> </span>examples/srm_training/run_grm_vl.sh
 <span class="nb">export</span><span class="w"> </span><span class="nv">MASTER_PORT</span><span class="o">=</span><span class="m">29500</span><span class="w">            </span><span class="c1"># 主节点端口</span>
 
 <span class="c1"># 训练参数</span>
-<span class="nv">PRETRAIN</span><span class="o">=</span><span class="s2">&quot;Qwen/Qwen2.5-VL-3B&quot;</span>
+<span class="nv">PRETRAIN</span><span class="o">=</span><span class="s2">"Qwen/Qwen2.5-VL-3B"</span>
 <span class="c1"># 使用 HPDv3 训练集 和 测试集</span>
-<span class="nv">TRAIN_DATA</span><span class="o">=</span><span class="s2">&quot;/path/to/hpdv3/train.json&quot;</span>
-<span class="nv">EVAL_DATA</span><span class="o">=</span><span class="s2">&quot;/path/to/hpdv3/test.json&quot;</span>
-<span class="nv">SAVE_PATH</span><span class="o">=</span><span class="s2">&quot;./checkpoints/srm_qwen2.5vl_3b_hpdv3&quot;</span>
+<span class="nv">TRAIN_DATA</span><span class="o">=</span><span class="s2">"/path/to/hpdv3/train.json"</span>
+<span class="nv">EVAL_DATA</span><span class="o">=</span><span class="s2">"/path/to/hpdv3/test.json"</span>
+<span class="nv">SAVE_PATH</span><span class="o">=</span><span class="s2">"./checkpoints/srm_qwen2.5vl_3b_hpdv3"</span>
 
 <span class="c1"># 设置 Task Instruncion</span>
-<span class="nv">TASK_INSTRUCTION</span><span class="o">=</span><span class="s2">&quot;Your will act as an expert image evaluator for text-to-image generation.</span>
+<span class="nv">TASK_INSTRUCTION</span><span class="o">=</span><span class="s2">"Your will act as an expert image evaluator for text-to-image generation.</span>
 <span class="s2">Given a text prompt and a generated image, your task is to assess the overall quality of the image in relation to the prompt.</span>
 <span class="s2">Your evaluation should focus on the following key aspects:</span>
 <span class="s2">• Preference: Which image would a human viewer find more satisfying or visually appealing overall.</span>
 <span class="s2">• Alignment: How well the image content matches the given text prompt in semantics, objects, and attributes.</span>
 <span class="s2">Your task is provided in the following, please give your judgement based on above criteria.</span>
 <span class="s2">The prompt used for generation is as follows: {prompt}.</span>
-<span class="s2">&quot;</span>
+<span class="s2">"</span>
 
 <span class="c1"># 启动训练</span>
 <span class="nb">set</span><span class="w"> </span>-x
@@ -587,7 +598,7 @@ torchrun<span class="w"> </span>--nnodes<span class="w"> </span><span class="nv"
 <span class="w">    </span>--heads_types<span class="w"> </span>preference<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--scale_for_train<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--margin<span class="w"> </span><span class="m">0</span>.1<span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--task_instruction<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$TASK_INSTRUCTION</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--task_instruction<span class="w"> </span><span class="s2">"</span><span class="nv">$TASK_INSTRUCTION</span><span class="s2">"</span><span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--loss_type<span class="w"> </span>hps<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--zero_stage<span class="w"> </span><span class="m">2</span><span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--bf16<span class="w"> </span><span class="se">\</span>
@@ -595,8 +606,8 @@ torchrun<span class="w"> </span>--nnodes<span class="w"> </span><span class="nv"
 <span class="w">    </span>--gradient_checkpointing<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--logging_steps<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--save_steps<span class="w"> </span><span class="m">100</span><span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--use_wandb<span class="w"> </span><span class="s2">&quot;your_wandb_key&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--wandb_project<span class="w"> </span><span class="s2">&quot;reward_model_training&quot;</span>
+<span class="w">    </span>--use_wandb<span class="w"> </span><span class="s2">"your_wandb_key"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--wandb_project<span class="w"> </span><span class="s2">"reward_model_training"</span>
 </pre></div>
 </div>
 </section>
@@ -656,7 +667,7 @@ LightRFT 支持多种训练日志记录方式：</p>
 <h4>4.1.3 LoRA 训练<a class="headerlink" href="#lora" title="Permalink to this heading">¶</a></h4>
 <p>对于大模型（&gt; 7B）或显存受限情况，推荐使用 LoRA：</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>examples/demo_srm_training/train_srm.py<span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--pretrain<span class="w"> </span><span class="s2">&quot;Qwen/Qwen2.5-VL-72B-Instruct&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--pretrain<span class="w"> </span><span class="s2">"Qwen/Qwen2.5-VL-72B-Instruct"</span><span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>...<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--lora_rank<span class="w"> </span><span class="m">64</span><span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--lora_alpha<span class="w"> </span><span class="m">128</span><span class="w"> </span><span class="se">\</span>
@@ -673,9 +684,9 @@ LightRFT 支持多种训练日志记录方式：</p>
 <h4>4.2.1 基础训练脚本 (基于 T2I 实验)<a class="headerlink" href="#id19" title="Permalink to this heading">¶</a></h4>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/bin/bash</span>
 
-<span class="nv">PRETRAIN</span><span class="o">=</span><span class="s2">&quot;Qwen/Qwen2.5-VL-3B&quot;</span>
-<span class="nv">TRAIN_DATA</span><span class="o">=</span><span class="s2">&quot;/path/to/ImageGen-CoT-Reward-5K.json&quot;</span>
-<span class="nv">SAVE_PATH</span><span class="o">=</span><span class="s2">&quot;./checkpoints/grm_qwen2.5vl_3b&quot;</span>
+<span class="nv">PRETRAIN</span><span class="o">=</span><span class="s2">"Qwen/Qwen2.5-VL-3B"</span>
+<span class="nv">TRAIN_DATA</span><span class="o">=</span><span class="s2">"/path/to/ImageGen-CoT-Reward-5K.json"</span>
+<span class="nv">SAVE_PATH</span><span class="o">=</span><span class="s2">"./checkpoints/grm_qwen2.5vl_3b"</span>
 
 torchrun<span class="w"> </span>--nnodes<span class="w"> </span><span class="nv">$NNODES</span><span class="w"> </span>--nproc-per-node<span class="w"> </span><span class="nv">$GPUS_PER_NODE</span><span class="w"> </span>--node_rank<span class="w"> </span><span class="nv">$NODE_RANK</span><span class="w"> </span>--master-port<span class="w"> </span><span class="nv">$MASTER_PORT</span><span class="w"> </span>--master-addr<span class="w"> </span><span class="nv">$MASTER_ADDR</span><span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>examples/demo_grm_training/train_grm_vl.py<span class="w"> </span><span class="se">\</span>
@@ -760,7 +771,7 @@ torchrun<span class="w"> </span>--nnodes<span class="w"> </span><span class="nv"
 <h3>5.3 评估脚本示例<a class="headerlink" href="#id23" title="Permalink to this heading">¶</a></h3>
 <p>我们在 <code class="docutils literal notranslate"><span class="pre">examples/demo_srm_training</span></code> 和 <code class="docutils literal notranslate"><span class="pre">examples/demo_grm_training</span></code> 目录下提供了评估脚本 <code class="docutils literal notranslate"><span class="pre">test_srm_vl.py</span></code> 和 <code class="docutils literal notranslate"><span class="pre">test_grm_vl.py</span></code>，分别用于 SRM 和 GRM 的评测。评估脚本中为不同的 benchmark 实现相应的 Evaluator 类。支持实现自定义的 Evaluator 以适应新的评估需求。</p>
 <p>另外，也支持在训练脚本中指定评估数据，实现训练过程中的定期评估:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>--eval_data<span class="w"> </span><span class="s2">&quot;/path/to/your/eval.json&quot;</span><span class="w"> </span><span class="se">\</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>--eval_data<span class="w"> </span><span class="s2">"/path/to/your/eval.json"</span><span class="w"> </span><span class="se">\</span>
 --eval_steps<span class="w"> </span><span class="m">100</span><span class="w">  </span><span class="c1"># 每 100 步评估一次</span>
 </pre></div>
 </div>
@@ -785,7 +796,7 @@ torchrun<span class="w"> </span>--nnodes<span class="w"> </span><span class="nv"
 </section>
 <section id="id25">
 <h3>5.5 基准测试<a class="headerlink" href="#id25" title="Permalink to this heading">¶</a></h3>
-<p>我们基于 <code class="docutils literal notranslate"><span class="pre">Qwen2.5-VL-3B</span></code> 模型进行了一系列基准测试。详细的设置和结果请参考 <strong>章节 7: 基准测试与性能参考</strong>。</p>
+<p>我们基于 <code class="docutils literal notranslate"><span class="pre">Qwen2.5-VL-3B</span></code> 模型进行了一系列基准测试。详细的设置和结果请参考 <strong><a class="reference internal" href="#id37">章节 7: 基准测试与性能参考</a></strong>。</p>
 </section>
 </section>
 <hr class="docutils" />
@@ -851,11 +862,11 @@ torchrun<span class="w"> </span>--nnodes<span class="w"> </span><span class="nv"
 <h6>SRM 数据格式<a class="headerlink" href="#id31" title="Permalink to this heading">¶</a></h6>
 <p><strong>一个典型的格式示例</strong> (JSON Lines):</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;prompt&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;A beautiful sunset over the ocean&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;image_0&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/path/to/image0.jpg&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;image_1&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/path/to/image1.jpg&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;preference&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;A&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;alignment&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;B&quot;</span>
+<span class="w">  </span><span class="nt">"prompt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"A beautiful sunset over the ocean"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"image_0"</span><span class="p">:</span><span class="w"> </span><span class="s2">"/path/to/image0.jpg"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"image_1"</span><span class="p">:</span><span class="w"> </span><span class="s2">"/path/to/image1.jpg"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"preference"</span><span class="p">:</span><span class="w"> </span><span class="s2">"A"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"alignment"</span><span class="p">:</span><span class="w"> </span><span class="s2">"B"</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -872,10 +883,10 @@ torchrun<span class="w"> </span>--nnodes<span class="w"> </span><span class="nv"
 <p>GRM 的训练数据需要包含模型生成的文本评价，通常包含思维链和最终结论，以便基于 Next-Token Prediction 进行有监督微调训练。</p>
 <p><strong>一个数据格式示例</strong> (JSON Lines):</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;prompt&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Describe this image&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;image_0&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/path/to/image0.jpg&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;image_1&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/path/to/image1.jpg&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;response&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&lt;think&gt;Reasoning here&lt;/think&gt;&lt;answer&gt;Image 1 is better&lt;/answer&gt;&quot;</span>
+<span class="w">  </span><span class="nt">"prompt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Describe this image"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"image_0"</span><span class="p">:</span><span class="w"> </span><span class="s2">"/path/to/image0.jpg"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"image_1"</span><span class="p">:</span><span class="w"> </span><span class="s2">"/path/to/image1.jpg"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"response"</span><span class="p">:</span><span class="w"> </span><span class="s2">"&lt;think&gt;Reasoning here&lt;/think&gt;&lt;answer&gt;Image 1 is better&lt;/answer&gt;"</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -1547,12 +1558,24 @@ The prompt used for generation is as follows: {prompt}.
             </div>
             <footer>
   
+  <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+    
+    <a href="strategy_zh.html" class="btn btn-neutral float-right" title="Strategy 使用指南" accesskey="n"
+      rel="next">Next <img src="../_static/images/chevron-right-blue.svg"
+        class="next-page"></a>
+    
+    
+    <a href="model_zh.html" class="btn btn-neutral" title="LightRFT 模型设计文档" accesskey="p"
+      rel="prev"><img src="../_static/images/chevron-right-blue.svg" class="previous-page"> Previous</a>
+    
+  </div>
+  
 
   <hr>
 
   <div role="contentinfo">
     <p>
-      &copy; Copyright 2025, OpenDILab.
+      &copy; Copyright 2025-2026, OpenDILab.
 
     </p>
   </div>
@@ -1710,8 +1733,8 @@ The prompt used for generation is as follows: {prompt}.
   <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
   <script src="../_static/doctools.js"></script>
   <script src="../_static/sphinx_highlight.js"></script>
-  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-  <script src="../_static/js/language_switch.js"></script>
+  <script src="../_static/clipboard.min.js"></script>
+  <script src="../_static/copybutton.js"></script>
   
 
   
@@ -1740,7 +1763,7 @@ The prompt used for generation is as follows: {prompt}.
     <div class="container-fluid">
       <div class="container">
         <div class="mobile-main-menu-header-container">
-          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="header-logo" href="https://github.com/opendilab/LightRFT" aria-label="OpenMMLab"></a>
           <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
         </div>
       </div>

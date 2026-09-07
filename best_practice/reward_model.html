@@ -33,6 +33,7 @@
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
   <link rel="stylesheet" href="../_static/css/readthedocs.css" type="text/css" />
   <link rel="index" title="Index" href="../genindex.html" />
   <link rel="search" title="Search" href="../search.html" />
@@ -87,7 +88,7 @@
 <div class="container-fluid header-holder tutorials-header" id="header-holder">
   <div class="container">
     <div class="header-container">
-      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+      <a class="header-logo" href="https://github.com/opendilab/LightRFT"
         aria-label="OpenMMLab"></a>
 
       <div class="main-menu">
@@ -237,6 +238,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../api_doc/strategy/index.html">lightrft.strategy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api_doc/trainer/index.html">lightrft.trainer</a></li>
 </ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../index_zh.html">欢迎来到 LightRFT 文档!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index_zh.html#id4">索引与表格</a></li>
+</ul>
 
         
         
@@ -311,15 +316,15 @@
 <section id="table-of-contents">
 <h2>Table of Contents<a class="headerlink" href="#table-of-contents" title="Permalink to this heading">¶</a></h2>
 <ol class="arabic simple">
-<li><p>Overview</p></li>
-<li><p>Reward Model Types</p></li>
-<li><p>Environment Preparation</p></li>
-<li><p>Model Training</p></li>
-<li><p>Model Evaluation</p></li>
-<li><p>FAQ</p></li>
-<li><p>Benchmarks &amp; Performance</p></li>
-<li><p>Advanced Topics</p></li>
-<li><p>References</p></li>
+<li><p><a class="reference internal" href="#overview">Overview</a></p></li>
+<li><p><a class="reference internal" href="#reward-model-types">Reward Model Types</a></p></li>
+<li><p><a class="reference internal" href="#environment-preparation">Environment Preparation</a></p></li>
+<li><p><a class="reference internal" href="#model-training">Model Training</a></p></li>
+<li><p><a class="reference internal" href="#model-evaluation">Model Evaluation</a></p></li>
+<li><p><a class="reference internal" href="#faq">FAQ</a></p></li>
+<li><p><a class="reference internal" href="#benchmarks-performance">Benchmarks &amp; Performance</a></p></li>
+<li><p><a class="reference internal" href="#advanced-topics">Advanced Topics</a></p></li>
+<li><p><a class="reference internal" href="#references">References</a></p></li>
 </ol>
 </section>
 <hr class="docutils" />
@@ -555,21 +560,21 @@ bash<span class="w"> </span>examples/grm_training/run_grm_vl.sh
 <span class="nb">export</span><span class="w"> </span><span class="nv">MASTER_PORT</span><span class="o">=</span><span class="m">29500</span><span class="w">            </span><span class="c1"># Master node port</span>
 
 <span class="c1"># Training parameters</span>
-<span class="nv">PRETRAIN</span><span class="o">=</span><span class="s2">&quot;Qwen/Qwen2.5-VL-3B&quot;</span>
+<span class="nv">PRETRAIN</span><span class="o">=</span><span class="s2">"Qwen/Qwen2.5-VL-3B"</span>
 <span class="c1"># Use HPDv3 Train Set and Test Set</span>
-<span class="nv">TRAIN_DATA</span><span class="o">=</span><span class="s2">&quot;/path/to/hpdv3/train.json&quot;</span>
-<span class="nv">EVAL_DATA</span><span class="o">=</span><span class="s2">&quot;/path/to/hpdv3/test.json&quot;</span>
-<span class="nv">SAVE_PATH</span><span class="o">=</span><span class="s2">&quot;./checkpoints/srm_qwen2.5vl_3b_hpdv3&quot;</span>
+<span class="nv">TRAIN_DATA</span><span class="o">=</span><span class="s2">"/path/to/hpdv3/train.json"</span>
+<span class="nv">EVAL_DATA</span><span class="o">=</span><span class="s2">"/path/to/hpdv3/test.json"</span>
+<span class="nv">SAVE_PATH</span><span class="o">=</span><span class="s2">"./checkpoints/srm_qwen2.5vl_3b_hpdv3"</span>
 
 <span class="c1"># Set Task Instruction</span>
-<span class="nv">TASK_INSTRUCTION</span><span class="o">=</span><span class="s2">&quot;Your will act as an expert image evaluator for text-to-image generation.</span>
+<span class="nv">TASK_INSTRUCTION</span><span class="o">=</span><span class="s2">"Your will act as an expert image evaluator for text-to-image generation.</span>
 <span class="s2">Given a text prompt and a generated image, your task is to assess the overall quality of the image in relation to the prompt.</span>
 <span class="s2">Your evaluation should focus on the following key aspects:</span>
 <span class="s2">• Preference: Which image would a human viewer find more satisfying or visually appealing overall.</span>
 <span class="s2">• Alignment: How well the image content matches the given text prompt in semantics, objects, and attributes.</span>
 <span class="s2">Your task is provided in the following, please give your judgement based on above criteria.</span>
 <span class="s2">The prompt used for generation is as follows: {prompt}.</span>
-<span class="s2">&quot;</span>
+<span class="s2">"</span>
 
 <span class="c1"># Start training</span>
 <span class="nb">set</span><span class="w"> </span>-x
@@ -591,7 +596,7 @@ torchrun<span class="w"> </span>--nnodes<span class="w"> </span><span class="nv"
 <span class="w">    </span>--heads_types<span class="w"> </span>preference<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--scale_for_train<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--margin<span class="w"> </span><span class="m">0</span>.1<span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--task_instruction<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$TASK_INSTRUCTION</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--task_instruction<span class="w"> </span><span class="s2">"</span><span class="nv">$TASK_INSTRUCTION</span><span class="s2">"</span><span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--loss_type<span class="w"> </span>hps<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--zero_stage<span class="w"> </span><span class="m">2</span><span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--bf16<span class="w"> </span><span class="se">\</span>
@@ -599,8 +604,8 @@ torchrun<span class="w"> </span>--nnodes<span class="w"> </span><span class="nv"
 <span class="w">    </span>--gradient_checkpointing<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--logging_steps<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--save_steps<span class="w"> </span><span class="m">100</span><span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--use_wandb<span class="w"> </span><span class="s2">&quot;your_wandb_key&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--wandb_project<span class="w"> </span><span class="s2">&quot;reward_model_training&quot;</span>
+<span class="w">    </span>--use_wandb<span class="w"> </span><span class="s2">"your_wandb_key"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--wandb_project<span class="w"> </span><span class="s2">"reward_model_training"</span>
 </pre></div>
 </div>
 </section>
@@ -660,7 +665,7 @@ Enable by adding <code class="docutils literal notranslate"><span class="pre">--
 <h4>4.1.3 LoRA Training<a class="headerlink" href="#lora-training" title="Permalink to this heading">¶</a></h4>
 <p>For large models (&gt; 7B) or VRAM-constrained situations, using LoRA is recommended:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>examples/demo_srm_training/train_srm.py<span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--pretrain<span class="w"> </span><span class="s2">&quot;Qwen/Qwen2.5-VL-72B-Instruct&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--pretrain<span class="w"> </span><span class="s2">"Qwen/Qwen2.5-VL-72B-Instruct"</span><span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>...<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--lora_rank<span class="w"> </span><span class="m">64</span><span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--lora_alpha<span class="w"> </span><span class="m">128</span><span class="w"> </span><span class="se">\</span>
@@ -677,9 +682,9 @@ Enable by adding <code class="docutils literal notranslate"><span class="pre">--
 <h4>4.2.1 Basic Training Script (Based on T2I Experiment)<a class="headerlink" href="#id4" title="Permalink to this heading">¶</a></h4>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/bin/bash</span>
 
-<span class="nv">PRETRAIN</span><span class="o">=</span><span class="s2">&quot;Qwen/Qwen2.5-VL-3B&quot;</span>
-<span class="nv">TRAIN_DATA</span><span class="o">=</span><span class="s2">&quot;/path/to/ImageGen-CoT-Reward-5K.json&quot;</span>
-<span class="nv">SAVE_PATH</span><span class="o">=</span><span class="s2">&quot;./checkpoints/grm_qwen2.5vl_3b&quot;</span>
+<span class="nv">PRETRAIN</span><span class="o">=</span><span class="s2">"Qwen/Qwen2.5-VL-3B"</span>
+<span class="nv">TRAIN_DATA</span><span class="o">=</span><span class="s2">"/path/to/ImageGen-CoT-Reward-5K.json"</span>
+<span class="nv">SAVE_PATH</span><span class="o">=</span><span class="s2">"./checkpoints/grm_qwen2.5vl_3b"</span>
 
 torchrun<span class="w"> </span>--nnodes<span class="w"> </span><span class="nv">$NNODES</span><span class="w"> </span>--nproc-per-node<span class="w"> </span><span class="nv">$GPUS_PER_NODE</span><span class="w"> </span>--node_rank<span class="w"> </span><span class="nv">$NODE_RANK</span><span class="w"> </span>--master-port<span class="w"> </span><span class="nv">$MASTER_PORT</span><span class="w"> </span>--master-addr<span class="w"> </span><span class="nv">$MASTER_ADDR</span><span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>examples/demo_grm_training/train_grm_vl.py<span class="w"> </span><span class="se">\</span>
@@ -764,7 +769,7 @@ torchrun<span class="w"> </span>--nnodes<span class="w"> </span><span class="nv"
 <h3>5.3 Evaluation Script Example<a class="headerlink" href="#evaluation-script-example" title="Permalink to this heading">¶</a></h3>
 <p>We provide evaluation scripts <code class="docutils literal notranslate"><span class="pre">test_srm_vl.py</span></code> and <code class="docutils literal notranslate"><span class="pre">test_grm_vl.py</span></code> in the <code class="docutils literal notranslate"><span class="pre">examples/demo_srm_training</span></code> and <code class="docutils literal notranslate"><span class="pre">examples/demo_grm_training</span></code> directories respectively, for benchmarking SRM and GRM. The evaluation scripts implement corresponding Evaluator classes for different benchmarks. Implementing custom Evaluators to adapt to new evaluation needs is supported.</p>
 <p>Additionally, specifying evaluation data in the training script is also supported to implement periodic evaluation during the training process:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>--eval_data<span class="w"> </span><span class="s2">&quot;/path/to/your/eval.json&quot;</span><span class="w"> </span><span class="se">\</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>--eval_data<span class="w"> </span><span class="s2">"/path/to/your/eval.json"</span><span class="w"> </span><span class="se">\</span>
 --eval_steps<span class="w"> </span><span class="m">100</span><span class="w">  </span><span class="c1"># Evaluate every 100 steps</span>
 </pre></div>
 </div>
@@ -789,7 +794,7 @@ torchrun<span class="w"> </span>--nnodes<span class="w"> </span><span class="nv"
 </section>
 <section id="benchmarks">
 <h3>5.5 Benchmarks<a class="headerlink" href="#benchmarks" title="Permalink to this heading">¶</a></h3>
-<p>We conducted a series of benchmarks based on the <code class="docutils literal notranslate"><span class="pre">Qwen2.5-VL-3B</span></code> model. For detailed settings and results, please refer to <strong>Section 7: Benchmarks &amp; Performance</strong>.</p>
+<p>We conducted a series of benchmarks based on the <code class="docutils literal notranslate"><span class="pre">Qwen2.5-VL-3B</span></code> model. For detailed settings and results, please refer to <strong><a class="reference internal" href="#benchmarks-performance">Section 7: Benchmarks &amp; Performance</a></strong>.</p>
 </section>
 </section>
 <hr class="docutils" />
@@ -855,11 +860,11 @@ Register your Data Handler class in the <code class="docutils literal notranslat
 <h6>SRM Data Format<a class="headerlink" href="#srm-data-format" title="Permalink to this heading">¶</a></h6>
 <p><strong>A typical format example</strong> (JSON Lines):</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;prompt&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;A beautiful sunset over the ocean&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;image_0&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/path/to/image0.jpg&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;image_1&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/path/to/image1.jpg&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;preference&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;A&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;alignment&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;B&quot;</span>
+<span class="w">  </span><span class="nt">"prompt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"A beautiful sunset over the ocean"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"image_0"</span><span class="p">:</span><span class="w"> </span><span class="s2">"/path/to/image0.jpg"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"image_1"</span><span class="p">:</span><span class="w"> </span><span class="s2">"/path/to/image1.jpg"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"preference"</span><span class="p">:</span><span class="w"> </span><span class="s2">"A"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"alignment"</span><span class="p">:</span><span class="w"> </span><span class="s2">"B"</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -876,10 +881,10 @@ We use the following labels for preference training.</p>
 <p>GRM training data needs to include text evaluations generated by the model, typically containing Chain-of-Thought and final conclusions, to facilitate supervised fine-tuning training based on Next-Token Prediction.</p>
 <p><strong>A data format example</strong> (JSON Lines):</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;prompt&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Describe this image&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;image_0&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/path/to/image0.jpg&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;image_1&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/path/to/image1.jpg&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;response&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&lt;think&gt;Reasoning here&lt;/think&gt;&lt;answer&gt;Image 1 is better&lt;/answer&gt;&quot;</span>
+<span class="w">  </span><span class="nt">"prompt"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Describe this image"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"image_0"</span><span class="p">:</span><span class="w"> </span><span class="s2">"/path/to/image0.jpg"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"image_1"</span><span class="p">:</span><span class="w"> </span><span class="s2">"/path/to/image1.jpg"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"response"</span><span class="p">:</span><span class="w"> </span><span class="s2">"&lt;think&gt;Reasoning here&lt;/think&gt;&lt;answer&gt;Image 1 is better&lt;/answer&gt;"</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -1567,7 +1572,7 @@ To solve the above problems, future research can attempt the following direction
 
   <div role="contentinfo">
     <p>
-      &copy; Copyright 2025, OpenDILab.
+      &copy; Copyright 2025-2026, OpenDILab.
 
     </p>
   </div>
@@ -1725,8 +1730,8 @@ To solve the above problems, future research can attempt the following direction
   <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
   <script src="../_static/doctools.js"></script>
   <script src="../_static/sphinx_highlight.js"></script>
-  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-  <script src="../_static/js/language_switch.js"></script>
+  <script src="../_static/clipboard.min.js"></script>
+  <script src="../_static/copybutton.js"></script>
   
 
   
@@ -1755,7 +1760,7 @@ To solve the above problems, future research can attempt the following direction
     <div class="container-fluid">
       <div class="container">
         <div class="mobile-main-menu-header-container">
-          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="header-logo" href="https://github.com/opendilab/LightRFT" aria-label="OpenMMLab"></a>
           <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
         </div>
       </div>

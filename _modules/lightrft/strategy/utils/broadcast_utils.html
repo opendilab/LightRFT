@@ -32,6 +32,7 @@
   <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../../../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/copybutton.css" type="text/css" />
   <link rel="stylesheet" href="../../../../_static/css/readthedocs.css" type="text/css" />
   <link rel="index" title="Index" href="../../../../genindex.html" />
   <link rel="search" title="Search" href="../../../../search.html" />
@@ -84,7 +85,7 @@
 <div class="container-fluid header-holder tutorials-header" id="header-holder">
   <div class="container">
     <div class="header-container">
-      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+      <a class="header-logo" href="https://github.com/opendilab/LightRFT"
         aria-label="OpenMMLab"></a>
 
       <div class="main-menu">
@@ -234,6 +235,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../api_doc/strategy/index.html">lightrft.strategy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../api_doc/trainer/index.html">lightrft.trainer</a></li>
 </ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../index_zh.html">欢迎来到 LightRFT 文档!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../index_zh.html#id4">索引与表格</a></li>
+</ul>
 
         
         
@@ -300,14 +305,14 @@
               <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
                 
   <h1>Source code for lightrft.strategy.utils.broadcast_utils</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""</span>
 <span class="sd">Module for managing weight synchronization between training and inference engines.</span>
 
 <span class="sd">This module provides functionality to broadcast model weights from training to inference engines,</span>
 <span class="sd">supporting different distributed training strategies including DeepSpeed and FSDP (Fully Sharded</span>
 <span class="sd">Data Parallel v2). It handles the complexities of gathering sharded</span>
 <span class="sd">parameters and efficiently transferring them to inference engines like vllm and sglang.</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">OrderedDict</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span>
@@ -320,19 +325,19 @@
 
 
 <div class="viewcode-block" id="BroadcastManager"><a class="viewcode-back" href="../../../../api_doc/strategy/utils/broadcast_utils.html#lightrft.strategy.utils.broadcast_utils.BroadcastManager">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">BroadcastManager</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Manage the weight synchronization between training and inference engine.</span>
 
 <span class="sd">    This class handles the broadcasting of model weights from a distributed training setup</span>
 <span class="sd">    to inference engines. It supports different distributed training strategies including</span>
-<span class="sd">    DeepSpeed ZeRO and PyTorch&#39;s FSDP v2.</span>
+<span class="sd">    DeepSpeed ZeRO and PyTorch's FSDP v2.</span>
 
 <span class="sd">    :param actor: The actor model containing weights to be broadcasted</span>
 <span class="sd">    :param strategy: The training strategy object containing configuration and methods</span>
 <span class="sd">    :param inference_engine: The inference engine (vllm or sglang) to receive the weights</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 <div class="viewcode-block" id="BroadcastManager.__init__"><a class="viewcode-back" href="../../../../api_doc/strategy/utils/broadcast_utils.html#lightrft.strategy.utils.broadcast_utils.BroadcastManager.__init__">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">actor</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span> <span class="n">strategy</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">inference_engine</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Initialize the BroadcastManager with the necessary components.</span>
 
 <span class="sd">        :param actor: The actor model containing weights to be broadcasted</span>
@@ -341,13 +346,13 @@
 <span class="sd">        :type actor: torch.nn.Module</span>
 <span class="sd">        :type strategy: object</span>
 <span class="sd">        :type inference_engine: object</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">actor</span> <span class="o">=</span> <span class="n">actor</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span> <span class="o">=</span> <span class="n">strategy</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">inference_engine</span> <span class="o">=</span> <span class="n">inference_engine</span></div>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_map_weight_name_for_sglang</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Map weight names from training model format to SGLang format.</span>
 
 <span class="sd">        Training model (Qwen2.5-VL with wrapper):</span>
@@ -366,58 +371,58 @@
 
 <span class="sd">        :param name: Original weight name from training model</span>
 <span class="sd">        :return: Mapped weight name for SGLang</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># Step 0: Handle PEFT/LoRA wrapping prefixes</span>
         <span class="c1"># PEFT models have weights like base_model.model.&lt;original_name&gt;</span>
-        <span class="c1"># Strip &quot;base_model.model.&quot; prefix (possibly nested) to get the original name.</span>
-        <span class="k">while</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;base_model.model.&quot;</span><span class="p">):</span>
-            <span class="n">name</span> <span class="o">=</span> <span class="n">name</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="s2">&quot;base_model.model.&quot;</span><span class="p">):]</span>
+        <span class="c1"># Strip "base_model.model." prefix (possibly nested) to get the original name.</span>
+        <span class="k">while</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"base_model.model."</span><span class="p">):</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="n">name</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="s2">"base_model.model."</span><span class="p">):]</span>
 
-        <span class="c1"># PEFT models also rename original weights to include &quot;.base_layer.&quot;</span>
+        <span class="c1"># PEFT models also rename original weights to include ".base_layer."</span>
         <span class="c1"># we need to strip this to match standard weight names</span>
-        <span class="n">name</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;.base_layer.&quot;</span><span class="p">,</span> <span class="s2">&quot;.&quot;</span><span class="p">)</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">".base_layer."</span><span class="p">,</span> <span class="s2">"."</span><span class="p">)</span>
 
         <span class="c1"># Step 1: Handle VLM models wrapped by ActorVL</span>
-        <span class="c1"># ActorVL wraps the HF model as self.model, so parameter names get an extra &quot;model.&quot; prefix:</span>
+        <span class="c1"># ActorVL wraps the HF model as self.model, so parameter names get an extra "model." prefix:</span>
         <span class="c1">#   Training (ActorVL):  model.visual.xxx,       model.model.layers.xxx, model.lm_head.xxx</span>
         <span class="c1">#   SGLang expects:      visual.xxx,             model.layers.xxx,       lm_head.xxx</span>
-        <span class="c1"># Also handle the &quot;model.language_model.&quot; pattern (some VLM architectures):</span>
+        <span class="c1"># Also handle the "model.language_model." pattern (some VLM architectures):</span>
         <span class="c1">#   Training:            model.language_model.model.layers.xxx</span>
         <span class="c1">#   SGLang expects:      model.layers.xxx</span>
-        <span class="k">if</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;model.language_model.&quot;</span><span class="p">):</span>
-            <span class="n">inner</span> <span class="o">=</span> <span class="n">name</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="s2">&quot;model.language_model.&quot;</span><span class="p">):]</span>
-            <span class="k">if</span> <span class="n">inner</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;lm_head&quot;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"model.language_model."</span><span class="p">):</span>
+            <span class="n">inner</span> <span class="o">=</span> <span class="n">name</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="s2">"model.language_model."</span><span class="p">):]</span>
+            <span class="k">if</span> <span class="n">inner</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"lm_head"</span><span class="p">):</span>
                 <span class="k">return</span> <span class="n">inner</span>
-            <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;model.</span><span class="si">{</span><span class="n">inner</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">return</span> <span class="sa">f</span><span class="s2">"model.</span><span class="si">{</span><span class="n">inner</span><span class="si">}</span><span class="s2">"</span>
 
-        <span class="k">if</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;model.visual.&quot;</span><span class="p">):</span>
-            <span class="k">return</span> <span class="n">name</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="s2">&quot;model.&quot;</span><span class="p">):]</span>
+        <span class="k">if</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"model.visual."</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">name</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="s2">"model."</span><span class="p">):]</span>
 
-        <span class="k">if</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;model.lm_head&quot;</span><span class="p">):</span>
-            <span class="k">return</span> <span class="n">name</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="s2">&quot;model.&quot;</span><span class="p">):]</span>
+        <span class="k">if</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"model.lm_head"</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">name</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="s2">"model."</span><span class="p">):]</span>
 
-        <span class="c1"># Handle VLM&#39;s double &quot;model.model.&quot; prefix (ActorVL.model -&gt; HF model.layers)</span>
+        <span class="c1"># Handle VLM's double "model.model." prefix (ActorVL.model -&gt; HF model.layers)</span>
         <span class="c1"># model.model.layers.xxx -&gt; model.layers.xxx</span>
         <span class="c1"># model.model.embed_tokens.xxx -&gt; model.embed_tokens.xxx</span>
-        <span class="k">if</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;model.model.&quot;</span><span class="p">):</span>
-            <span class="k">return</span> <span class="n">name</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="s2">&quot;model.&quot;</span><span class="p">):]</span>
+        <span class="k">if</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"model.model."</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">name</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="s2">"model."</span><span class="p">):]</span>
 
         <span class="c1"># Step 2: For text-only models (e.g., Qwen2.5-0.5B-Instruct), parameter names</span>
-        <span class="c1"># are already in SGLang&#39;s expected format: model.layers.xxx, model.embed_tokens.xxx,</span>
-        <span class="c1"># model.norm.xxx, lm_head.xxx. Return as-is without stripping &quot;model.&quot; prefix.</span>
+        <span class="c1"># are already in SGLang's expected format: model.layers.xxx, model.embed_tokens.xxx,</span>
+        <span class="c1"># model.norm.xxx, lm_head.xxx. Return as-is without stripping "model." prefix.</span>
         <span class="k">return</span> <span class="n">name</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_deepspeed_broadcast</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Broadcast model weights using DeepSpeed&#39;s ZeRO optimization.</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Broadcast model weights using DeepSpeed's ZeRO optimization.</span>
 
 <span class="sd">        This method handles gathering sharded parameters in ZeRO-3 and broadcasts them</span>
 <span class="sd">        to all inference engines. It processes parameters one by one to avoid memory issues.</span>
-<span class="sd">        For ZeRO-3, it uses DeepSpeed&#39;s GatheredParameters context manager to collect</span>
+<span class="sd">        For ZeRO-3, it uses DeepSpeed's GatheredParameters context manager to collect</span>
 <span class="sd">        sharded parameters before broadcasting.</span>
 
 <span class="sd">        :raises NotImplementedError: If an unsupported inference engine is specified</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># avoid OOM</span>
         <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">empty_cache</span><span class="p">()</span>
         <span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">actor</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">module</span>
@@ -428,61 +433,61 @@
             <span class="c1"># For ZeRO-3, allgather sharded parameter and broadcast to all vllm engines by rank 0</span>
             <span class="k">with</span> <span class="n">deepspeed</span><span class="o">.</span><span class="n">zero</span><span class="o">.</span><span class="n">GatheredParameters</span><span class="p">([</span><span class="n">param</span><span class="p">],</span> <span class="n">enabled</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">zero_stage</span> <span class="o">==</span> <span class="mi">3</span><span class="p">):</span>
                 <span class="c1"># Both engines: LoRA adapters are already merged, no need to broadcast them</span>
-                <span class="k">if</span> <span class="s2">&quot;.lora_&quot;</span> <span class="ow">in</span> <span class="n">name</span><span class="p">:</span>
+                <span class="k">if</span> <span class="s2">".lora_"</span> <span class="ow">in</span> <span class="n">name</span><span class="p">:</span>
                     <span class="k">continue</span>
 
                 <span class="n">shape</span> <span class="o">=</span> <span class="n">param</span><span class="o">.</span><span class="n">shape</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">zero_stage</span> <span class="o">!=</span> <span class="mi">3</span> <span class="k">else</span> <span class="n">param</span><span class="o">.</span><span class="n">ds_shape</span>
                 <span class="n">kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
                     <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">param</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="n">shape</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="n">param</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">empty_cache</span><span class="o">=</span><span class="p">(</span><span class="n">count</span> <span class="o">==</span> <span class="n">num_params</span><span class="p">)</span>
                 <span class="p">)</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">engine_type</span> <span class="o">==</span> <span class="s2">&quot;vllm&quot;</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="s2">&quot;.base_layer&quot;</span> <span class="ow">in</span> <span class="n">name</span> <span class="ow">or</span> <span class="s2">&quot;base_model&quot;</span> <span class="ow">in</span> <span class="n">name</span><span class="p">:</span>
-                        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;vLLM name mapping is not supported for LoRA broadcasting yet.&quot;</span><span class="p">)</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">inference_engine</span><span class="o">.</span><span class="n">llm_engine</span><span class="o">.</span><span class="n">model_executor</span><span class="o">.</span><span class="n">collective_rpc</span><span class="p">(</span><span class="s2">&quot;update_weight&quot;</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="n">kwargs</span><span class="p">)</span>
-                <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">engine_type</span> <span class="o">==</span> <span class="s2">&quot;sglang&quot;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">engine_type</span> <span class="o">==</span> <span class="s2">"vllm"</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="s2">".base_layer"</span> <span class="ow">in</span> <span class="n">name</span> <span class="ow">or</span> <span class="s2">"base_model"</span> <span class="ow">in</span> <span class="n">name</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">"vLLM name mapping is not supported for LoRA broadcasting yet."</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">inference_engine</span><span class="o">.</span><span class="n">llm_engine</span><span class="o">.</span><span class="n">model_executor</span><span class="o">.</span><span class="n">collective_rpc</span><span class="p">(</span><span class="s2">"update_weight"</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="n">kwargs</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">engine_type</span> <span class="o">==</span> <span class="s2">"sglang"</span><span class="p">:</span>
                     <span class="n">sglang_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_map_weight_name_for_sglang</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">inference_engine</span><span class="o">.</span><span class="n">update_weights_from_tensor</span><span class="p">(</span>
                         <span class="n">sglang_name</span><span class="p">,</span> <span class="n">param</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">flush_cache</span><span class="o">=</span><span class="p">(</span><span class="n">count</span> <span class="o">==</span> <span class="n">num_params</span><span class="p">)</span>
                     <span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unsupported engine type: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">engine_type</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unsupported engine type: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">engine_type</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_fsdp_v2_broadcast</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Broadcast model weights using PyTorch&#39;s FSDP v2.</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Broadcast model weights using PyTorch's FSDP v2.</span>
 
 <span class="sd">        Specialized for LoRA/PEFT:</span>
 <span class="sd">        Instead of calling merge_adapter() which fails on FSDP DTensors,</span>
 <span class="sd">        we manually gather base and lora weights and merge them on the fly.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">actor</span><span class="o">.</span><span class="n">model</span>
         <span class="n">param_dict</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">named_parameters</span><span class="p">())</span>
         <span class="n">count</span><span class="p">,</span> <span class="n">num_params</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">param_dict</span><span class="p">)</span>
         <span class="n">dst_dtype</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">bfloat16</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">bf16</span> <span class="k">else</span> <span class="n">torch</span><span class="o">.</span><span class="n">float16</span>
 
         <span class="c1"># Get PEFT config for scaling</span>
-        <span class="n">is_peft</span> <span class="o">=</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="s2">&quot;peft_config&quot;</span><span class="p">)</span>
-        <span class="n">lora_config</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">peft_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;default&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="n">is_peft</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="n">is_peft</span> <span class="o">=</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="s2">"peft_config"</span><span class="p">)</span>
+        <span class="n">lora_config</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">peft_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"default"</span><span class="p">)</span> <span class="k">if</span> <span class="n">is_peft</span> <span class="k">else</span> <span class="kc">None</span>
         <span class="n">scaling</span> <span class="o">=</span> <span class="n">lora_config</span><span class="o">.</span><span class="n">lora_alpha</span> <span class="o">/</span> <span class="n">lora_config</span><span class="o">.</span><span class="n">r</span> <span class="k">if</span> <span class="n">lora_config</span> <span class="k">else</span> <span class="mf">1.0</span>
 
         <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">param_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span>
 
             <span class="c1"># Skip LoRA adapters directly, they will be merged when processing base_layer</span>
-            <span class="k">if</span> <span class="s2">&quot;.lora_&quot;</span> <span class="ow">in</span> <span class="n">name</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s2">".lora_"</span> <span class="ow">in</span> <span class="n">name</span><span class="p">:</span>
                 <span class="k">continue</span>
 
             <span class="c1"># Identify if this is a PEFT base layer</span>
             <span class="n">effective_name</span> <span class="o">=</span> <span class="n">name</span>
             <span class="n">full_weight</span> <span class="o">=</span> <span class="kc">None</span>
 
-            <span class="k">if</span> <span class="s2">&quot;.base_layer.weight&quot;</span> <span class="ow">in</span> <span class="n">name</span><span class="p">:</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">engine_type</span> <span class="o">==</span> <span class="s2">&quot;vllm&quot;</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;vLLM is not supported for FSDP LoRA broadcasting yet.&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="s2">".base_layer.weight"</span> <span class="ow">in</span> <span class="n">name</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">engine_type</span> <span class="o">==</span> <span class="s2">"vllm"</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">"vLLM is not supported for FSDP LoRA broadcasting yet."</span><span class="p">)</span>
                 <span class="c1"># This is a LoRA-enabled layer</span>
-                <span class="n">prefix</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;.base_layer.weight&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
-                <span class="n">lora_a_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2">.lora_A.default.weight&quot;</span>
-                <span class="n">lora_b_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2">.lora_B.default.weight&quot;</span>
+                <span class="n">prefix</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">".base_layer.weight"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span>
+                <span class="n">lora_a_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2">.lora_A.default.weight"</span>
+                <span class="n">lora_b_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2">.lora_B.default.weight"</span>
 
                 <span class="c1"># Gather Base, LoRA A, and LoRA B</span>
                 <span class="n">w_base</span> <span class="o">=</span> <span class="n">param</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">get_current_device</span><span class="p">())</span><span class="o">.</span><span class="n">full_tensor</span><span class="p">()</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
@@ -504,7 +509,7 @@
                 <span class="k">del</span> <span class="n">param_on_device</span>
 
             <span class="c1"># Broadcast to engine</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">engine_type</span> <span class="o">==</span> <span class="s2">&quot;vllm&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">engine_type</span> <span class="o">==</span> <span class="s2">"vllm"</span><span class="p">:</span>
                 <span class="c1"># TODO：map weight name for vllm</span>
                 <span class="n">kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
                     <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
@@ -513,8 +518,8 @@
                     <span class="n">weight</span><span class="o">=</span><span class="n">full_weight</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
                     <span class="n">empty_cache</span><span class="o">=</span><span class="p">(</span><span class="n">count</span> <span class="o">==</span> <span class="n">num_params</span><span class="p">),</span>
                 <span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">inference_engine</span><span class="o">.</span><span class="n">llm_engine</span><span class="o">.</span><span class="n">model_executor</span><span class="o">.</span><span class="n">collective_rpc</span><span class="p">(</span><span class="s2">&quot;update_weight&quot;</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="n">kwargs</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">engine_type</span> <span class="o">==</span> <span class="s2">&quot;sglang&quot;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">inference_engine</span><span class="o">.</span><span class="n">llm_engine</span><span class="o">.</span><span class="n">model_executor</span><span class="o">.</span><span class="n">collective_rpc</span><span class="p">(</span><span class="s2">"update_weight"</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">engine_type</span> <span class="o">==</span> <span class="s2">"sglang"</span><span class="p">:</span>
                 <span class="n">sglang_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_map_weight_name_for_sglang</span><span class="p">(</span><span class="n">effective_name</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">inference_engine</span><span class="o">.</span><span class="n">update_weights_from_tensor</span><span class="p">(</span>
                     <span class="n">sglang_name</span><span class="p">,</span> <span class="n">full_weight</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">flush_cache</span><span class="o">=</span><span class="p">(</span><span class="n">count</span> <span class="o">==</span> <span class="n">num_params</span><span class="p">)</span>
@@ -523,33 +528,33 @@
             <span class="k">del</span> <span class="n">full_weight</span>
 
 <div class="viewcode-block" id="BroadcastManager.broadcast_to_engine"><a class="viewcode-back" href="../../../../api_doc/strategy/utils/broadcast_utils.html#lightrft.strategy.utils.broadcast_utils.BroadcastManager.broadcast_to_engine">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">broadcast_to_engine</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Broadcast model weights to the inference engine.</span>
 
 <span class="sd">        This method selects the appropriate broadcasting strategy based on the</span>
 <span class="sd">        distributed training configuration (DeepSpeed, FSDP v2).</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">engine_type</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;vllm&quot;</span><span class="p">,</span> <span class="s2">&quot;sglang&quot;</span><span class="p">):</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">engine_type</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"vllm"</span><span class="p">,</span> <span class="s2">"sglang"</span><span class="p">):</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">fsdp</span><span class="p">:</span>
                 <span class="c1"># FSDP handles merging manually inside _fsdp_v2_broadcast</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_fsdp_v2_broadcast</span><span class="p">()</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="c1"># DeepSpeed path</span>
-                <span class="n">is_peft</span> <span class="o">=</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">actor</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="s2">&quot;merge_adapter&quot;</span><span class="p">)</span>
+                <span class="n">is_peft</span> <span class="o">=</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">actor</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="s2">"merge_adapter"</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">is_peft</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="s2">&quot;Merging LoRA adapters for weight synchronization...&quot;</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="s2">"Merging LoRA adapters for weight synchronization..."</span><span class="p">)</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">actor</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">merge_adapter</span><span class="p">()</span>
 
                 <span class="k">try</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_deepspeed_broadcast</span><span class="p">()</span>
                 <span class="k">finally</span><span class="p">:</span>
                     <span class="k">if</span> <span class="n">is_peft</span><span class="p">:</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="s2">&quot;Unmerging LoRA adapters after synchronization...&quot;</span><span class="p">)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="s2">"Unmerging LoRA adapters after synchronization..."</span><span class="p">)</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">actor</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">unmerge_adapter</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unsupported engine type: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">engine_type</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unsupported engine type: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">engine_type</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="s2">&quot;Finished weight broadcasting to inference engine.&quot;</span><span class="p">)</span></div></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="s2">"Finished weight broadcasting to inference engine."</span><span class="p">)</span></div></div>
 </pre></div>
 
               </article>
@@ -562,7 +567,7 @@
 
   <div role="contentinfo">
     <p>
-      &copy; Copyright 2025, OpenDILab.
+      &copy; Copyright 2025-2026, OpenDILab.
 
     </p>
   </div>
@@ -599,8 +604,8 @@
   <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
   <script src="../../../../_static/doctools.js"></script>
   <script src="../../../../_static/sphinx_highlight.js"></script>
-  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-  <script src="../../../../_static/js/language_switch.js"></script>
+  <script src="../../../../_static/clipboard.min.js"></script>
+  <script src="../../../../_static/copybutton.js"></script>
   
 
   
@@ -629,7 +634,7 @@
     <div class="container-fluid">
       <div class="container">
         <div class="mobile-main-menu-header-container">
-          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="header-logo" href="https://github.com/opendilab/LightRFT" aria-label="OpenMMLab"></a>
           <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
         </div>
       </div>

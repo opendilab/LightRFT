@@ -23,8 +23,8 @@ Key Features
    * Flexible engine sleep/wake mechanisms for optimal resource utilization
 
 🧠 **Rich Algorithm Ecosystem**
-   * Policy Optimization: GRPO, GSPO, GMPO, Dr.GRPO
-   * Advantage Estimation: REINFORCE++, CPGD
+   * Policy Optimization: GRPO, CPGD, DAPO components, and high-entropy token filtering
+   * Experimental interfaces: GSPO and REINFORCE++ are not fully wired end to end; GMPO and Dr.GRPO remain work in progress
    * Reward Processing: Reward Norm/Clip
    * Sampling Strategy: FIRE Sampling, Token-Level Policy
    * Stability Enhancement: Clip Higher, select_high_entropy_tokens
@@ -89,3 +89,8 @@ Indices and Tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
+
+.. toctree::
+   :hidden:
+
+   index_zh

@@ -33,6 +33,7 @@
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
   <link rel="stylesheet" href="../_static/css/readthedocs.css" type="text/css" />
   <link rel="index" title="Index" href="../genindex.html" />
   <link rel="search" title="Search" href="../search.html" />
@@ -87,7 +88,7 @@
 <div class="container-fluid header-holder tutorials-header" id="header-holder">
   <div class="container">
     <div class="header-container">
-      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+      <a class="header-logo" href="https://github.com/opendilab/LightRFT"
         aria-label="OpenMMLab"></a>
 
       <div class="main-menu">
@@ -237,6 +238,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../api_doc/strategy/index.html">lightrft.strategy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api_doc/trainer/index.html">lightrft.trainer</a></li>
 </ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../index_zh.html">欢迎来到 LightRFT 文档!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index_zh.html#id4">索引与表格</a></li>
+</ul>
 
         
         
@@ -312,15 +317,15 @@
 <section id="table-of-contents">
 <h2>Table of Contents<a class="headerlink" href="#table-of-contents" title="Permalink to this heading">¶</a></h2>
 <ol class="arabic simple">
-<li><p><a class="reference internal" href="#model-parameters"><span class="std std-ref">Model Parameters</span></a></p></li>
-<li><p><a class="reference internal" href="#training-parameters"><span class="std std-ref">Training Parameters</span></a></p></li>
-<li><p><a class="reference internal" href="#batch-size-configuration"><span class="std std-ref">Batch Size Configuration</span></a></p></li>
-<li><p><a class="reference internal" href="#algorithm-parameters"><span class="std std-ref">Algorithm Parameters</span></a></p></li>
-<li><p><a class="reference internal" href="#distributed-training"><span class="std std-ref">Distributed Training</span></a></p></li>
-<li><p><a class="reference internal" href="#inference-engine"><span class="std std-ref">Inference Engine</span></a></p></li>
-<li><p><a class="reference internal" href="#memory-optimization"><span class="std std-ref">Memory Optimization</span></a></p></li>
-<li><p><a class="reference internal" href="#logging-and-monitoring"><span class="std std-ref">Logging and Monitoring</span></a></p></li>
-<li><p><a class="reference internal" href="#checkpoint-management"><span class="std std-ref">Checkpoint Management</span></a></p></li>
+<li><p><a class="reference internal" href="#model-parameters">Model Parameters</a></p></li>
+<li><p><a class="reference internal" href="#training-parameters">Training Parameters</a></p></li>
+<li><p><a class="reference internal" href="#batch-size-configuration">Batch Size Configuration</a></p></li>
+<li><p><a class="reference internal" href="#algorithm-parameters">Algorithm Parameters</a></p></li>
+<li><p><a class="reference internal" href="#distributed-training">Distributed Training</a></p></li>
+<li><p><a class="reference internal" href="#inference-engine">Inference Engine</a></p></li>
+<li><p><a class="reference internal" href="#memory-optimization">Memory Optimization</a></p></li>
+<li><p><a class="reference internal" href="#logging-and-monitoring">Logging and Monitoring</a></p></li>
+<li><p><a class="reference internal" href="#checkpoint-management">Checkpoint Management</a></p></li>
 </ol>
 </section>
 <section id="model-parameters">
@@ -509,7 +514,7 @@
 <h3><code class="docutils literal notranslate"><span class="pre">--advantage_estimator</span></code><a class="headerlink" href="#advantage-estimator" title="Permalink to this heading">¶</a></h3>
 <ul class="simple">
 <li><p><strong>Type</strong>: <code class="docutils literal notranslate"><span class="pre">str</span></code></p></li>
-<li><p><strong>Choices</strong>: <code class="docutils literal notranslate"><span class="pre">group_norm</span></code>, <code class="docutils literal notranslate"><span class="pre">reinforce</span></code>, <code class="docutils literal notranslate"><span class="pre">cpgd</span></code>, <code class="docutils literal notranslate"><span class="pre">gspo</span></code>, <code class="docutils literal notranslate"><span class="pre">gmpo</span></code></p></li>
+<li><p><strong>Choices</strong>: <code class="docutils literal notranslate"><span class="pre">gae</span></code>, <code class="docutils literal notranslate"><span class="pre">reinforce</span></code>, <code class="docutils literal notranslate"><span class="pre">rloo</span></code>, <code class="docutils literal notranslate"><span class="pre">reinforce_baseline</span></code>, <code class="docutils literal notranslate"><span class="pre">group_norm</span></code>, <code class="docutils literal notranslate"><span class="pre">cpgd</span></code>, <code class="docutils literal notranslate"><span class="pre">reinforce++</span></code>, <code class="docutils literal notranslate"><span class="pre">on_policy_distillation</span></code></p></li>
 <li><p><strong>Default</strong>: <code class="docutils literal notranslate"><span class="pre">group_norm</span></code></p></li>
 <li><p><strong>Description</strong>: Method for advantage estimation</p></li>
 <li><p><strong>Recommendation</strong>:</p>
@@ -519,6 +524,7 @@
 <li><p><code class="docutils literal notranslate"><span class="pre">cpgd</span></code>: Preserve base capabilities</p></li>
 </ul>
 </li>
+<li><p><strong>Note</strong>: <code class="docutils literal notranslate"><span class="pre">reinforce++</span></code> is accepted by the parser but is not mapped by the current advantage-calculator factory; do not use it until that integration is completed.</p></li>
 </ul>
 </section>
 <section id="n-samples-per-prompt">
@@ -1064,7 +1070,7 @@
 <h2>See Also<a class="headerlink" href="#see-also" title="Permalink to this heading">¶</a></h2>
 <ul class="simple">
 <li><p><a class="reference internal" href="algorithms.html"><span class="std std-doc">Algorithm Guide</span></a> - Detailed algorithm descriptions</p></li>
-<li><p><a class="reference internal" href="#../best_practice/strategy_usage.md"><span class="xref myst">Strategy Usage</span></a> - Distributed training strategies</p></li>
+<li><p><a class="reference internal" href="../best_practice/strategy.html"><span class="std std-doc">Strategy Usage</span></a> - Distributed training strategies</p></li>
 <li><p><a class="reference internal" href="../installation/index.html"><span class="std std-doc">Installation</span></a> - Setup instructions</p></li>
 </ul>
 </section>
@@ -1093,7 +1099,7 @@
 
   <div role="contentinfo">
     <p>
-      &copy; Copyright 2025, OpenDILab.
+      &copy; Copyright 2025-2026, OpenDILab.
 
     </p>
   </div>
@@ -1241,8 +1247,8 @@
   <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
   <script src="../_static/doctools.js"></script>
   <script src="../_static/sphinx_highlight.js"></script>
-  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-  <script src="../_static/js/language_switch.js"></script>
+  <script src="../_static/clipboard.min.js"></script>
+  <script src="../_static/copybutton.js"></script>
   
 
   
@@ -1271,7 +1277,7 @@
     <div class="container-fluid">
       <div class="container">
         <div class="mobile-main-menu-header-container">
-          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="header-logo" href="https://github.com/opendilab/LightRFT" aria-label="OpenMMLab"></a>
           <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
         </div>
       </div>

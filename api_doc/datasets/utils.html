@@ -33,6 +33,7 @@
   <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
   <link rel="stylesheet" href="../../_static/css/readthedocs.css" type="text/css" />
   <link rel="index" title="Index" href="../../genindex.html" />
   <link rel="search" title="Search" href="../../search.html" />
@@ -87,7 +88,7 @@
 <div class="container-fluid header-holder tutorials-header" id="header-holder">
   <div class="container">
     <div class="header-container">
-      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+      <a class="header-logo" href="https://github.com/opendilab/LightRFT"
         aria-label="OpenMMLab"></a>
 
       <div class="main-menu">
@@ -237,6 +238,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../strategy/index.html">lightrft.strategy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../trainer/index.html">lightrft.trainer</a></li>
 </ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../../index_zh.html">欢迎来到 LightRFT 文档!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../index_zh.html#id4">索引与表格</a></li>
+</ul>
 
         
         
@@ -332,10 +337,10 @@
 </dd>
 </dl>
 <dl>
-<dt>Example::</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">item</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;init_image_path&#39;</span><span class="p">:</span> <span class="s1">&#39;/path/img.jpg&#39;</span><span class="p">,</span> <span class="s1">&#39;video_path&#39;</span><span class="p">:</span> <span class="s1">&#39;/path/vid.mp4&#39;</span><span class="p">}</span>
+<dt>Example::</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">item</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'init_image_path'</span><span class="p">:</span> <span class="s1">'/path/img.jpg'</span><span class="p">,</span> <span class="s1">'video_path'</span><span class="p">:</span> <span class="s1">'/path/vid.mp4'</span><span class="p">}</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">visual_info</span> <span class="o">=</span> <span class="n">get_media_info</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">visual_info</span><span class="p">)</span>
-<span class="go">{&#39;init_image&#39;: {&#39;image_local_path&#39;: &#39;/path/img.jpg&#39;}, &#39;video&#39;: {&#39;video_local_path&#39;: &#39;/path/vid.mp4&#39;}}</span>
+<span class="go">{'init_image': {'image_local_path': '/path/img.jpg'}, 'video': {'video_local_path': '/path/vid.mp4'}}</span>
 </pre></div>
 </div>
 </dd>
@@ -372,24 +377,11 @@
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><p>A tuple containing message lists and a metadata dictionary.
-- For point-wise scoring data (e.g., Scalar Reward Model training/evaluation):</p>
-<blockquote>
-<div><p>Return (messages_chosen, messages_rejected, other)</p>
-</div></blockquote>
-<ul class="simple">
-<li><p>For pair-wise ranking data (e.g., Generative Reward Model training/evaluation):
-Return (messages, other)</p></li>
-</ul>
-<p>The <cite>other</cite> dictionary contains metadata, and can optionally include:
-- “preference”: (str) Indicates the ground truth preferred choice (“A”, “B”, or “C”).
-- “task_type”: (str) The type of task (e.g., “text-to-video”).
-- “reward_rule_label”: (str) A label used in RL to identify which reward</p>
-<blockquote>
-<div><p>function or reward model to apply to this specific sample when performing
-reinforcement fine-tuning.</p>
-</div></blockquote>
-</p>
+<dd class="field-even"><p>For scalar-reward ranking data, a tuple of
+<code class="docutils literal notranslate"><span class="pre">(messages_chosen,</span> <span class="pre">messages_rejected,</span> <span class="pre">other)</span></code>. For generative-reward
+data, a tuple of <code class="docutils literal notranslate"><span class="pre">(messages,</span> <span class="pre">other)</span></code>. The <code class="docutils literal notranslate"><span class="pre">other</span></code> dictionary may
+contain <code class="docutils literal notranslate"><span class="pre">preference</span></code>, <code class="docutils literal notranslate"><span class="pre">task_type</span></code>, and <code class="docutils literal notranslate"><span class="pre">reward_rule_label</span></code>
+metadata.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>Union[Tuple[List[Dict], List[Dict], Dict], Tuple[List[Dict], Dict]]</p>
@@ -435,7 +427,7 @@ reinforcement fine-tuning.</p>
 </dd>
 </dl>
 <dl>
-<dt>Example::</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">text</span> <span class="o">=</span> <span class="s2">&quot;The result is &lt;answer&gt;Image 1 is better&lt;/answer&gt; based on the evaluation.&quot;</span>
+<dt>Example::</dt><dd><div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">text</span> <span class="o">=</span> <span class="s2">"The result is &lt;answer&gt;Image 1 is better&lt;/answer&gt; based on the evaluation."</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">answer</span> <span class="o">=</span> <span class="n">extract_answer</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">answer</span><span class="p">)</span>  <span class="c1"># Output: Image 1 is better</span>
 </pre></div>
@@ -538,7 +530,7 @@ is treated as the sequence length to be padded.</p></li>
 </dl>
 <p>Example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">seqs</span> <span class="o">=</span> <span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">]),</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">])]</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">zero_pad_sequences</span><span class="p">(</span><span class="n">seqs</span><span class="p">,</span> <span class="n">side</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">zero_pad_sequences</span><span class="p">(</span><span class="n">seqs</span><span class="p">,</span> <span class="n">side</span><span class="o">=</span><span class="s2">"left"</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 <span class="go">tensor([[1, 2, 3],</span>
 <span class="go">        [0, 4, 5]])</span>
 </pre></div>
@@ -570,7 +562,7 @@ is treated as the sequence length to be padded.</p></li>
 
   <div role="contentinfo">
     <p>
-      &copy; Copyright 2025, OpenDILab.
+      &copy; Copyright 2025-2026, OpenDILab.
 
     </p>
   </div>
@@ -624,8 +616,8 @@ is treated as the sequence length to be padded.</p></li>
   <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
   <script src="../../_static/doctools.js"></script>
   <script src="../../_static/sphinx_highlight.js"></script>
-  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-  <script src="../../_static/js/language_switch.js"></script>
+  <script src="../../_static/clipboard.min.js"></script>
+  <script src="../../_static/copybutton.js"></script>
   
 
   
@@ -654,7 +646,7 @@ is treated as the sequence length to be padded.</p></li>
     <div class="container-fluid">
       <div class="container">
         <div class="mobile-main-menu-header-container">
-          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="header-logo" href="https://github.com/opendilab/LightRFT" aria-label="OpenMMLab"></a>
           <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
         </div>
       </div>

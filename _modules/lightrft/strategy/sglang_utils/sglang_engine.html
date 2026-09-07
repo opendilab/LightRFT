@@ -32,6 +32,7 @@
   <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../../../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/copybutton.css" type="text/css" />
   <link rel="stylesheet" href="../../../../_static/css/readthedocs.css" type="text/css" />
   <link rel="index" title="Index" href="../../../../genindex.html" />
   <link rel="search" title="Search" href="../../../../search.html" />
@@ -84,7 +85,7 @@
 <div class="container-fluid header-holder tutorials-header" id="header-holder">
   <div class="container">
     <div class="header-container">
-      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+      <a class="header-logo" href="https://github.com/opendilab/LightRFT"
         aria-label="OpenMMLab"></a>
 
       <div class="main-menu">
@@ -234,6 +235,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../api_doc/strategy/index.html">lightrft.strategy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../api_doc/trainer/index.html">lightrft.trainer</a></li>
 </ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../index_zh.html">欢迎来到 LightRFT 文档!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../index_zh.html#id4">索引与表格</a></li>
+</ul>
 
         
         
@@ -302,11 +307,11 @@
               <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
                 
   <h1>Source code for lightrft.strategy.sglang_utils.sglang_engine</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""</span>
 <span class="sd">This module provides a distributed reinforcement learning generation engine for language models.</span>
 
 <span class="sd">The RLGenerationEngine class facilitates text generation across multiple processes and nodes,</span>
-<span class="sd">leveraging PyTorch&#39;s distributed capabilities. It supports tensor parallelism for efficient</span>
+<span class="sd">leveraging PyTorch's distributed capabilities. It supports tensor parallelism for efficient</span>
 <span class="sd">model execution and provides methods for generating text, updating model weights, and</span>
 <span class="sd">managing memory resources.</span>
 
@@ -316,7 +321,7 @@
 
 <span class="sd">The module is designed to work with the SGLang runtime (srt) system and supports features</span>
 <span class="sd">such as batch processing, custom sampling parameters, and LoRA fine-tuning.</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
@@ -349,7 +354,7 @@
 
 
 <div class="viewcode-block" id="RLGenerationEngine"><a class="viewcode-back" href="../../../../api_doc/strategy/sglang_utils/sglang_engine.html#lightrft.strategy.sglang_utils.sglang_engine.RLGenerationEngine">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">RLGenerationEngine</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    A distributed reinforcement learning generation engine for language models.</span>
 
 <span class="sd">    This class manages text generation across multiple processes and nodes using tensor parallelism.</span>
@@ -370,21 +375,21 @@
 
 <span class="sd">        &gt;&gt;&gt; import torch.distributed as dist</span>
 <span class="sd">        &gt;&gt;&gt; # Initialize distributed environment</span>
-<span class="sd">        &gt;&gt;&gt; dist.init_process_group(&quot;nccl&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; dist.init_process_group("nccl")</span>
 <span class="sd">        &gt;&gt;&gt; tp_group = dist.new_group()</span>
 <span class="sd">        &gt;&gt;&gt; engine = RLGenerationEngine(</span>
 <span class="sd">        ...     tp_group_cpu=tp_group,</span>
 <span class="sd">        ...     num_gpu_per_node=8,</span>
-<span class="sd">        ...     model=&quot;llama2-7b&quot;</span>
+<span class="sd">        ...     model="llama2-7b"</span>
 <span class="sd">        ... )</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">tp_group_cpu</span><span class="p">,</span>
         <span class="n">num_gpu_per_node</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">8</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Initialize the RLGenerationEngine with distributed configuration.</span>
 
 <span class="sd">        :param tp_group_cpu: PyTorch process group for tensor parallelism on CPU</span>
@@ -392,7 +397,7 @@
 <span class="sd">        :param num_gpu_per_node: Number of GPUs per node, defaults to 8</span>
 <span class="sd">        :type num_gpu_per_node: int</span>
 <span class="sd">        :param kwargs: Additional arguments to pass to the underlying SGLang Engine</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">tp_group_cpu</span> <span class="o">=</span> <span class="n">tp_group_cpu</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_leader_rank</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">get_process_group_ranks</span><span class="p">(</span><span class="n">group</span><span class="o">=</span><span class="n">tp_group_cpu</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
@@ -408,7 +413,7 @@
             <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tp_size</span> <span class="o">%</span> <span class="n">num_gpu_per_node</span> <span class="o">==</span> <span class="mi">0</span>
 
         <span class="k">if</span> <span class="n">first_rank_in_node</span><span class="p">:</span>
-            <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;SGLANG_BLOCK_NONZERO_RANK_CHILDREN&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;0&quot;</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">"SGLANG_BLOCK_NONZERO_RANK_CHILDREN"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"0"</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_engine</span> <span class="o">=</span> <span class="n">Engine</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">,</span> <span class="n">tp_size</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_tp_size</span><span class="p">,</span> <span class="n">node_rank</span><span class="o">=</span><span class="n">node_rank</span><span class="p">,</span> <span class="n">nnodes</span><span class="o">=</span><span class="n">nnodes</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_engine</span> <span class="o">=</span> <span class="kc">None</span>
@@ -432,7 +437,7 @@
         <span class="n">custom_logit_processor</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">gather_inputs</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Generate text using the language model in a distributed manner.</span>
 
 <span class="sd">        This method coordinates text generation across multiple processes, with only the leader</span>
@@ -469,18 +474,18 @@
 <span class="sd">        Example::</span>
 
 <span class="sd">            &gt;&gt;&gt; result = engine.generate(</span>
-<span class="sd">            ...     prompt=&quot;Translate this to French: Hello, world!&quot;,</span>
-<span class="sd">            ...     sampling_params={&quot;temperature&quot;: 0.7, &quot;max_tokens&quot;: 50}</span>
+<span class="sd">            ...     prompt="Translate this to French: Hello, world!",</span>
+<span class="sd">            ...     sampling_params={"temperature": 0.7, "max_tokens": 50}</span>
 <span class="sd">            ... )</span>
-<span class="sd">            &gt;&gt;&gt; print(result[&quot;text&quot;])</span>
+<span class="sd">            &gt;&gt;&gt; print(result["text"])</span>
 <span class="sd">            &gt;&gt;&gt;</span>
 <span class="sd">            &gt;&gt;&gt; # Batch generation with different parameters</span>
 <span class="sd">            &gt;&gt;&gt; results = engine.generate(</span>
-<span class="sd">            ...     prompt=[&quot;Hello&quot;, &quot;Goodbye&quot;],</span>
-<span class="sd">            ...     sampling_params=[{&quot;temperature&quot;: 0.5}, {&quot;temperature&quot;: 0.9}],</span>
+<span class="sd">            ...     prompt=["Hello", "Goodbye"],</span>
+<span class="sd">            ...     sampling_params=[{"temperature": 0.5}, {"temperature": 0.9}],</span>
 <span class="sd">            ...     return_logprob=True</span>
 <span class="sd">            ... )</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tp_size</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">gather_inputs</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">prompt</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">prompt</span> <span class="o">=</span> <span class="n">gather_inputs_object_for_inference</span><span class="p">(</span><span class="n">prompt</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tp_group_cpu</span><span class="p">)</span>
@@ -516,7 +521,7 @@
                     <span class="n">force_cpu_device</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                 <span class="p">)</span>
             <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
-                <span class="c1"># Older versions don&#39;t support force_cpu_device parameter</span>
+                <span class="c1"># Older versions don't support force_cpu_device parameter</span>
                 <span class="p">[</span><span class="n">output</span><span class="p">]</span> <span class="o">=</span> <span class="n">broadcast_pyobj</span><span class="p">(</span>
                     <span class="n">data</span><span class="o">=</span><span class="p">[</span><span class="n">output</span><span class="p">],</span>
                     <span class="n">rank</span><span class="o">=</span><span class="n">global_rank</span><span class="p">,</span>
@@ -536,7 +541,7 @@
         <span class="n">flush_cache</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="n">load_format</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Update model weights with the provided tensor in a distributed manner.</span>
 
 <span class="sd">        This method allows dynamic updating of model parameters during runtime, which is</span>
@@ -544,7 +549,7 @@
 <span class="sd">        to be updated based on training feedback. The method handles distributed coordination</span>
 <span class="sd">        to ensure all ranks participate in the weight update process.</span>
 
-<span class="sd">        :param name: Name of the weight tensor to update (e.g., &quot;model.layers.0.self_attn.q_proj.weight&quot;)</span>
+<span class="sd">        :param name: Name of the weight tensor to update (e.g., "model.layers.0.self_attn.q_proj.weight")</span>
 <span class="sd">        :type name: str</span>
 <span class="sd">        :param tensor: New weight tensor to replace the existing weights</span>
 <span class="sd">        :type tensor: torch.Tensor</span>
@@ -555,14 +560,14 @@
 
 <span class="sd">        Example::</span>
 
-<span class="sd">            &gt;&gt;&gt; # Update a specific layer&#39;s weights</span>
+<span class="sd">            &gt;&gt;&gt; # Update a specific layer's weights</span>
 <span class="sd">            &gt;&gt;&gt; new_weights = torch.randn(768, 768)</span>
 <span class="sd">            &gt;&gt;&gt; engine.update_weights_from_tensor(</span>
-<span class="sd">            ...     &quot;model.layers.0.self_attn.q_proj.weight&quot;,</span>
+<span class="sd">            ...     "model.layers.0.self_attn.q_proj.weight",</span>
 <span class="sd">            ...     new_weights,</span>
 <span class="sd">            ...     flush_cache=True</span>
 <span class="sd">            ... )</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># Most naive implementation, can optimize a lot if it is bottleneck</span>
         <span class="n">serialized_tensor</span> <span class="o">=</span> <span class="n">MultiprocessingSerializer</span><span class="o">.</span><span class="n">serialize</span><span class="p">(</span><span class="n">_preprocess_tensor_for_update_weights</span><span class="p">(</span><span class="n">tensor</span><span class="p">))</span>
 
@@ -588,7 +593,7 @@
             <span class="p">)</span></div>
 
 <div class="viewcode-block" id="RLGenerationEngine.sleep"><a class="viewcode-back" href="../../../../api_doc/strategy/sglang_utils/sglang_engine.html#lightrft.strategy.sglang_utils.sglang_engine.RLGenerationEngine.sleep">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">sleep</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">release_weights</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Release memory resources temporarily to free up GPU memory.</span>
 
 <span class="sd">        This method releases KV cache and CUDA graph memory to free up GPU resources</span>
@@ -616,7 +621,7 @@
 <span class="sd">            &gt;&gt;&gt; # Maximum memory savings: also release weights (use with caution)</span>
 <span class="sd">            &gt;&gt;&gt; engine.sleep(release_weights=True)</span>
 <span class="sd">            &gt;&gt;&gt; engine.wake_up(release_weights=True)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tp_rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="c1"># Determine which memory types to release</span>
             <span class="k">if</span> <span class="n">release_weights</span><span class="p">:</span>
@@ -634,7 +639,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_engine</span><span class="o">.</span><span class="n">release_memory_occupation</span><span class="p">(</span><span class="n">tags</span><span class="o">=</span><span class="n">tags</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="RLGenerationEngine.wake_up"><a class="viewcode-back" href="../../../../api_doc/strategy/sglang_utils/sglang_engine.html#lightrft.strategy.sglang_utils.sglang_engine.RLGenerationEngine.wake_up">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">wake_up</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">release_weights</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Resume memory occupation after a call to sleep().</span>
 
 <span class="sd">        This method should be called before using the engine for generation</span>
@@ -655,12 +660,12 @@
 <span class="sd">            &gt;&gt;&gt; engine.sleep()              # Only KV cache &amp; CUDA graph released</span>
 <span class="sd">            &gt;&gt;&gt; # ... do other work ...</span>
 <span class="sd">            &gt;&gt;&gt; engine.wake_up()            # Only KV cache &amp; CUDA graph restored</span>
-<span class="sd">            &gt;&gt;&gt; result = engine.generate(&quot;Hello world&quot;)</span>
+<span class="sd">            &gt;&gt;&gt; result = engine.generate("Hello world")</span>
 <span class="sd">            &gt;&gt;&gt;</span>
 <span class="sd">            &gt;&gt;&gt; # If weights were released (use with caution)</span>
 <span class="sd">            &gt;&gt;&gt; engine.sleep(release_weights=True)</span>
 <span class="sd">            &gt;&gt;&gt; engine.wake_up(release_weights=True)  # Must match!</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tp_rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="c1"># Determine which memory types to resume</span>
             <span class="k">if</span> <span class="n">release_weights</span><span class="p">:</span>
@@ -678,7 +683,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_engine</span><span class="o">.</span><span class="n">resume_memory_occupation</span><span class="p">(</span><span class="n">tags</span><span class="o">=</span><span class="n">tags</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="RLGenerationEngine.shutdown"><a class="viewcode-back" href="../../../../api_doc/strategy/sglang_utils/sglang_engine.html#lightrft.strategy.sglang_utils.sglang_engine.RLGenerationEngine.shutdown">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">shutdown</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Shut down the engine and release all resources.</span>
 
 <span class="sd">        This method should be called when the engine is no longer needed to</span>
@@ -689,16 +694,16 @@
 
 <span class="sd">            &gt;&gt;&gt; try:</span>
 <span class="sd">            ...     # Use engine for generation</span>
-<span class="sd">            ...     results = engine.generate(&quot;Hello&quot;)</span>
+<span class="sd">            ...     results = engine.generate("Hello")</span>
 <span class="sd">            ... finally:</span>
 <span class="sd">            ...     engine.shutdown()  # Always clean up resources</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_engine</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_engine</span><span class="o">.</span><span class="n">shutdown</span><span class="p">()</span></div></div>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_preprocess_tensor_for_update_weights</span><span class="p">(</span><span class="n">tensor</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Preprocess tensor for weight updates, handling DTensor conversion.</span>
 
 <span class="sd">    This function ensures that tensors are in the correct format for weight updates,</span>
@@ -720,7 +725,7 @@
 <span class="sd">        &gt;&gt;&gt; # For regular tensor, this returns the tensor unchanged</span>
 <span class="sd">        &gt;&gt;&gt; regular_tensor = torch.randn(100, 100)</span>
 <span class="sd">        &gt;&gt;&gt; same_tensor = _preprocess_tensor_for_update_weights(regular_tensor)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">tensor</span><span class="p">,</span> <span class="n">DTensor</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">tensor</span><span class="o">.</span><span class="n">full_tensor</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">tensor</span>
@@ -736,7 +741,7 @@
 
   <div role="contentinfo">
     <p>
-      &copy; Copyright 2025, OpenDILab.
+      &copy; Copyright 2025-2026, OpenDILab.
 
     </p>
   </div>
@@ -773,8 +778,8 @@
   <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
   <script src="../../../../_static/doctools.js"></script>
   <script src="../../../../_static/sphinx_highlight.js"></script>
-  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-  <script src="../../../../_static/js/language_switch.js"></script>
+  <script src="../../../../_static/clipboard.min.js"></script>
+  <script src="../../../../_static/copybutton.js"></script>
   
 
   
@@ -803,7 +808,7 @@
     <div class="container-fluid">
       <div class="container">
         <div class="mobile-main-menu-header-container">
-          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="header-logo" href="https://github.com/opendilab/LightRFT" aria-label="OpenMMLab"></a>
           <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
         </div>
       </div>

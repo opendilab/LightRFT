@@ -32,6 +32,7 @@
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
   <link rel="stylesheet" href="../_static/css/readthedocs.css" type="text/css" />
   <link rel="index" title="Index" href="../genindex.html" />
   <link rel="search" title="Search" href="../search.html" />
@@ -84,7 +85,7 @@
 <div class="container-fluid header-holder tutorials-header" id="header-holder">
   <div class="container">
     <div class="header-container">
-      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+      <a class="header-logo" href="https://github.com/opendilab/LightRFT"
         aria-label="OpenMMLab"></a>
 
       <div class="main-menu">
@@ -234,6 +235,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../api_doc/strategy/index.html">lightrft.strategy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api_doc/trainer/index.html">lightrft.trainer</a></li>
 </ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../index_zh.html">欢迎来到 LightRFT 文档!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index_zh.html#id4">索引与表格</a></li>
+</ul>
 
         
         
@@ -298,12 +303,19 @@
               <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
                 
   <h1>All modules for which code is available</h1>
-<ul><li><a href="lightrft/datasets/grm_dataset.html">lightrft.datasets.grm_dataset</a></li>
+<ul><li><a href="lightrft/datasets/audio_alpaca.html">lightrft.datasets.audio_alpaca</a></li>
+<li><a href="lightrft/datasets/grm_dataset.html">lightrft.datasets.grm_dataset</a></li>
 <li><a href="lightrft/datasets/hpdv3.html">lightrft.datasets.hpdv3</a></li>
 <li><a href="lightrft/datasets/image_reward_db.html">lightrft.datasets.image_reward_db</a></li>
 <li><a href="lightrft/datasets/imagegen_cot_reward.html">lightrft.datasets.imagegen_cot_reward</a></li>
 <li><a href="lightrft/datasets/omnirewardbench.html">lightrft.datasets.omnirewardbench</a></li>
+<li><a href="lightrft/datasets/process_reward_dataset.html">lightrft.datasets.process_reward_dataset</a></li>
+<li><a href="lightrft/datasets/prompts_dataset.html">lightrft.datasets.prompts_dataset</a></li>
+<li><a href="lightrft/datasets/prompts_dataset_vl.html">lightrft.datasets.prompts_dataset_vl</a></li>
 <li><a href="lightrft/datasets/rapidata.html">lightrft.datasets.rapidata</a></li>
+<li><a href="lightrft/datasets/sft_dataset.html">lightrft.datasets.sft_dataset</a></li>
+<li><a href="lightrft/datasets/sft_dataset_vl.html">lightrft.datasets.sft_dataset_vl</a></li>
+<li><a href="lightrft/datasets/srm_dataset.html">lightrft.datasets.srm_dataset</a></li>
 <li><a href="lightrft/datasets/utils.html">lightrft.datasets.utils</a></li>
 <li><a href="lightrft/models/actor_al.html">lightrft.models.actor_al</a></li>
 <li><a href="lightrft/models/actor_language.html">lightrft.models.actor_language</a></li>
@@ -337,13 +349,19 @@
 <li><a href="lightrft/strategy/utils/statistic.html">lightrft.strategy.utils.statistic</a></li>
 <li><a href="lightrft/strategy/vllm_utils.html">lightrft.strategy.vllm_utils</a></li>
 <ul><li><a href="lightrft/strategy/vllm_utils/vllm_worker_wrap_no_ray.html">lightrft.strategy.vllm_utils.vllm_worker_wrap_no_ray</a></li>
-</ul><li><a href="lightrft/trainer/experience_maker_vl.html">lightrft.trainer.experience_maker_vl</a></li>
+</ul><li><a href="lightrft/trainer/experience_maker.html">lightrft.trainer.experience_maker</a></li>
+<li><a href="lightrft/trainer/experience_maker_vl.html">lightrft.trainer.experience_maker_vl</a></li>
+<li><a href="lightrft/trainer/fast_exp_maker.html">lightrft.trainer.fast_exp_maker</a></li>
+<li><a href="lightrft/trainer/grm_trainer_vl.html">lightrft.trainer.grm_trainer_vl</a></li>
 <li><a href="lightrft/trainer/kl_controller.html">lightrft.trainer.kl_controller</a></li>
 <li><a href="lightrft/trainer/ppo_trainer.html">lightrft.trainer.ppo_trainer</a></li>
 <li><a href="lightrft/trainer/ppo_trainer_vl.html">lightrft.trainer.ppo_trainer_vl</a></li>
 <li><a href="lightrft/trainer/replay_buffer.html">lightrft.trainer.replay_buffer</a></li>
 <li><a href="lightrft/trainer/replay_buffer_utils.html">lightrft.trainer.replay_buffer_utils</a></li>
 <li><a href="lightrft/trainer/replay_buffer_vl.html">lightrft.trainer.replay_buffer_vl</a></li>
+<li><a href="lightrft/trainer/spmd_ppo_trainer.html">lightrft.trainer.spmd_ppo_trainer</a></li>
+<li><a href="lightrft/trainer/srm_trainer_al.html">lightrft.trainer.srm_trainer_al</a></li>
+<li><a href="lightrft/trainer/srm_trainer_vl.html">lightrft.trainer.srm_trainer_vl</a></li>
 <li><a href="lightrft/trainer/utils.html">lightrft.trainer.utils</a></li>
 <li><a href="lightrft/utils/cli_args.html">lightrft.utils.cli_args</a></li>
 <li><a href="lightrft/utils/distributed_sampler.html">lightrft.utils.distributed_sampler</a></li>
@@ -366,7 +384,7 @@
 
   <div role="contentinfo">
     <p>
-      &copy; Copyright 2025, OpenDILab.
+      &copy; Copyright 2025-2026, OpenDILab.
 
     </p>
   </div>
@@ -403,8 +421,8 @@
   <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
   <script src="../_static/doctools.js"></script>
   <script src="../_static/sphinx_highlight.js"></script>
-  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-  <script src="../_static/js/language_switch.js"></script>
+  <script src="../_static/clipboard.min.js"></script>
+  <script src="../_static/copybutton.js"></script>
   
 
   
@@ -433,7 +451,7 @@
     <div class="container-fluid">
       <div class="container">
         <div class="mobile-main-menu-header-container">
-          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="header-logo" href="https://github.com/opendilab/LightRFT" aria-label="OpenMMLab"></a>
           <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
         </div>
       </div>

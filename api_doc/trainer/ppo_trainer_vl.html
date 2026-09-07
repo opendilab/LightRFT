@@ -33,6 +33,7 @@
   <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
   <link rel="stylesheet" href="../../_static/css/readthedocs.css" type="text/css" />
   <link rel="index" title="Index" href="../../genindex.html" />
   <link rel="search" title="Search" href="../../search.html" />
@@ -87,7 +88,7 @@
 <div class="container-fluid header-holder tutorials-header" id="header-holder">
   <div class="container">
     <div class="header-container">
-      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+      <a class="header-logo" href="https://github.com/opendilab/LightRFT"
         aria-label="OpenMMLab"></a>
 
       <div class="main-menu">
@@ -236,6 +237,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../models/index.html">lightrft.models</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../strategy/index.html">lightrft.strategy</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">lightrft.trainer</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../../index_zh.html">欢迎来到 LightRFT 文档!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../index_zh.html#id4">索引与表格</a></li>
 </ul>
 
         
@@ -421,17 +426,10 @@ as it’s overridden by external classes (e.g., lightrft/trainer/spmd_ppo_traine
 <li><p><strong>args</strong> (<em>Namespace</em>) – Training arguments.</p></li>
 <li><p><strong>global_step</strong> (<em>int</em>) – Current global step.</p></li>
 <li><p><strong>step_bar</strong> (<em>tqdm</em>) – Progress bar object.</p></li>
-<li><p><strong>logs_dict</strong> (<em>dict</em>) – <p>Dictionary of metrics to log. Should contain both:
-- Rollout statistics (rollout_reward, rollout_response_length, etc.)</p>
-<blockquote>
-<div><p>from inference/generation phase</p>
-</div></blockquote>
-<ul>
-<li><p>Training statistics (policy_loss, critic_loss, kl, etc.)
-from optimization phase</p></li>
-</ul>
-<p>Defaults to {}.</p>
-</p></li>
+<li><p><strong>logs_dict</strong> (<em>dict</em>) – Metrics from both rollout and optimization. Rollout
+keys include values such as <code class="docutils literal notranslate"><span class="pre">rollout_reward</span></code> and
+<code class="docutils literal notranslate"><span class="pre">rollout_response_length</span></code>; training keys include values such as
+<code class="docutils literal notranslate"><span class="pre">policy_loss</span></code>, <code class="docutils literal notranslate"><span class="pre">critic_loss</span></code>, and <code class="docutils literal notranslate"><span class="pre">kl</span></code>.</p></li>
 <li><p><strong>client_states</strong> (<em>dict</em>) – Client state for checkpoint recovery, defaults to {}.</p></li>
 <li><p><strong>episode</strong> (<em>int</em>) – Current episode number, defaults to 0.</p></li>
 </ul>
@@ -521,7 +519,7 @@ from optimization phase</p></li>
 
   <div role="contentinfo">
     <p>
-      &copy; Copyright 2025, OpenDILab.
+      &copy; Copyright 2025-2026, OpenDILab.
 
     </p>
   </div>
@@ -573,8 +571,8 @@ from optimization phase</p></li>
   <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
   <script src="../../_static/doctools.js"></script>
   <script src="../../_static/sphinx_highlight.js"></script>
-  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-  <script src="../../_static/js/language_switch.js"></script>
+  <script src="../../_static/clipboard.min.js"></script>
+  <script src="../../_static/copybutton.js"></script>
   
 
   
@@ -603,7 +601,7 @@ from optimization phase</p></li>
     <div class="container-fluid">
       <div class="container">
         <div class="mobile-main-menu-header-container">
-          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="header-logo" href="https://github.com/opendilab/LightRFT" aria-label="OpenMMLab"></a>
           <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
         </div>
       </div>

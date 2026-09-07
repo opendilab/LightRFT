@@ -32,6 +32,7 @@
   <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/css/readthedocs.css" type="text/css" />
   <link rel="index" title="Index" href="../../../genindex.html" />
   <link rel="search" title="Search" href="../../../search.html" />
@@ -84,7 +85,7 @@
 <div class="container-fluid header-holder tutorials-header" id="header-holder">
   <div class="container">
     <div class="header-container">
-      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+      <a class="header-logo" href="https://github.com/opendilab/LightRFT"
         aria-label="OpenMMLab"></a>
 
       <div class="main-menu">
@@ -234,6 +235,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../api_doc/strategy/index.html">lightrft.strategy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api_doc/trainer/index.html">lightrft.trainer</a></li>
 </ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../index_zh.html">欢迎来到 LightRFT 文档!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../index_zh.html#id4">索引与表格</a></li>
+</ul>
 
         
         
@@ -300,12 +305,12 @@
               <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
                 
   <h1>Source code for lightrft.strategy.config</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""</span>
 <span class="sd">Configuration dataclasses for LightRFT strategy module.</span>
 
 <span class="sd">This module provides typed configuration objects to replace the use of getattr</span>
 <span class="sd">for accessing configuration parameters, improving type safety and code clarity.</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">field</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span>
@@ -315,7 +320,7 @@
 
 <div class="viewcode-block" id="StrategyConfig"><a class="viewcode-back" href="../../../api_doc/strategy/config.html#lightrft.strategy.config.StrategyConfig">[docs]</a><span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">StrategyConfig</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Base configuration for all training strategies.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Base configuration for all training strategies."""</span>
 
     <span class="c1"># Basic training parameters</span>
     <span class="c1"># (int): Random seed, defaults to 42</span>
@@ -350,8 +355,8 @@
     <span class="n">overlap_comm</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
 
     <span class="c1"># Engine and inference parameters</span>
-    <span class="c1"># (str): Inference engine type, defaults to &quot;vllm&quot;</span>
-    <span class="n">engine_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;vllm&quot;</span>
+    <span class="c1"># (str): Inference engine type, defaults to "vllm"</span>
+    <span class="n">engine_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"vllm"</span>
     <span class="c1"># (int): Engine tensor parallelism size, defaults to 1</span>
     <span class="n">engine_tp_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span>
     <span class="c1"># (bool): Enable engine sleep mode, defaults to False</span>
@@ -414,8 +419,8 @@
     <span class="c1"># Dynamic sampling and advantage estimation</span>
     <span class="c1"># (bool): Enable dynamic sampling for advantage estimation, defaults to False</span>
     <span class="n">dynamic_sampling</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
-    <span class="c1"># (str): Advantage estimator method, defaults to &quot;gae&quot;</span>
-    <span class="n">advantage_estimator</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;group_norm&quot;</span>
+    <span class="c1"># (str): Advantage estimator method, defaults to "gae"</span>
+    <span class="n">advantage_estimator</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"group_norm"</span>
     <span class="c1"># (float): OPD KL coefficient for on-policy distillation penalty</span>
     <span class="n">opd_kl_coef</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span>
     <span class="c1"># (str): Dedicated teacher model URL for OPD (falls back to remote_rm_url if not set)</span>
@@ -427,8 +432,8 @@
     <span class="c1"># KL loss and estimation</span>
     <span class="c1"># (bool): Use KL loss in training, defaults to False</span>
     <span class="n">use_kl_loss</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
-    <span class="c1"># (str): KL divergence estimator method, defaults to &quot;mean&quot;</span>
-    <span class="n">kl_estimator</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;k3&quot;</span>
+    <span class="c1"># (str): KL divergence estimator method, defaults to "mean"</span>
+    <span class="n">kl_estimator</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"k3"</span>
 
     <span class="c1"># FSDP specific parameters</span>
     <span class="c1"># (bool): Use mixed precision matrix multiplication data, defaults to False</span>
@@ -447,8 +452,8 @@
     <span class="n">extra_args</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">)</span>
 
 <div class="viewcode-block" id="StrategyConfig.from_args"><a class="viewcode-back" href="../../../api_doc/strategy/config.html#lightrft.strategy.config.StrategyConfig.from_args">[docs]</a>    <span class="nd">@classmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">from_args</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">args_dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;StrategyConfig&#39;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_args</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">args_dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">'StrategyConfig'</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Create StrategyConfig from argparse.Namespace or similar object.</span>
 
 <span class="sd">        This method provides backward compatibility by extracting parameters</span>
@@ -473,18 +478,18 @@
 
 <span class="sd">            # From dictionary</span>
 <span class="sd">            args_dict = {</span>
-<span class="sd">                &#39;seed&#39;: 42,</span>
-<span class="sd">                &#39;max_norm&#39;: 1.0,</span>
-<span class="sd">                &#39;micro_train_batch_size&#39;: 1,</span>
+<span class="sd">                'seed': 42,</span>
+<span class="sd">                'max_norm': 1.0,</span>
+<span class="sd">                'micro_train_batch_size': 1,</span>
 <span class="sd">                # ... other parameters</span>
 <span class="sd">            }</span>
 <span class="sd">            config = StrategyConfig.from_args(args_dict)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># Extract all known parameters with their default values</span>
         <span class="n">config</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">()</span>
 
-        <span class="c1"># Get all field names from the dataclass (excluding &#39;extra_args&#39;)</span>
-        <span class="n">field_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">field</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">dataclasses</span><span class="o">.</span><span class="n">fields</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="k">if</span> <span class="n">field</span><span class="o">.</span><span class="n">name</span> <span class="o">!=</span> <span class="s1">&#39;extra_args&#39;</span><span class="p">]</span>
+        <span class="c1"># Get all field names from the dataclass (excluding 'extra_args')</span>
+        <span class="n">field_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">field</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">dataclasses</span><span class="o">.</span><span class="n">fields</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="k">if</span> <span class="n">field</span><span class="o">.</span><span class="n">name</span> <span class="o">!=</span> <span class="s1">'extra_args'</span><span class="p">]</span>
 
         <span class="c1"># Automatically assign values using getattr/hasattr</span>
         <span class="k">for</span> <span class="n">field_name</span> <span class="ow">in</span> <span class="n">field_names</span><span class="p">:</span>
@@ -499,137 +504,137 @@
         <span class="k">return</span> <span class="n">config</span></div>
 
 <div class="viewcode-block" id="StrategyConfig.print_config_summary"><a class="viewcode-back" href="../../../api_doc/strategy/config.html#lightrft.strategy.config.StrategyConfig.print_config_summary">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">print_config_summary</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Print a summary of the configuration for verification.</span>
 
 <span class="sd">        This method shows which parameters were overridden from defaults</span>
 <span class="sd">        and which are using default values.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># Only print on rank 0 GPU to avoid duplicate output in distributed training</span>
         <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">distributed</span><span class="o">.</span><span class="n">is_initialized</span><span class="p">()</span> <span class="ow">and</span> <span class="n">torch</span><span class="o">.</span><span class="n">distributed</span><span class="o">.</span><span class="n">get_rank</span><span class="p">()</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">return</span>
 
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;=&quot;</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;StrategyConfig Configuration Verification Result&quot;</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;=&quot;</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"="</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"StrategyConfig Configuration Verification Result"</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"="</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span>
 
         <span class="c1"># Define default configuration for comparison</span>
         <span class="n">default_config</span> <span class="o">=</span> <span class="n">StrategyConfig</span><span class="p">()</span>
 
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Configuration Parameters Details:&quot;</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;-&quot;</span> <span class="o">*</span> <span class="mi">40</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">Configuration Parameters Details:"</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"-"</span> <span class="o">*</span> <span class="mi">40</span><span class="p">)</span>
 
         <span class="c1"># Basic Training Parameters</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Basic Training Parameters:&quot;</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;seed&#39;</span><span class="p">,</span> <span class="s1">&#39;max_norm&#39;</span><span class="p">,</span> <span class="s1">&#39;micro_train_batch_size&#39;</span><span class="p">,</span> <span class="s1">&#39;train_batch_size&#39;</span><span class="p">,</span> <span class="s1">&#39;bf16&#39;</span><span class="p">]:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"Basic Training Parameters:"</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">'seed'</span><span class="p">,</span> <span class="s1">'max_norm'</span><span class="p">,</span> <span class="s1">'micro_train_batch_size'</span><span class="p">,</span> <span class="s1">'train_batch_size'</span><span class="p">,</span> <span class="s1">'bf16'</span><span class="p">]:</span>
             <span class="n">current</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span>
             <span class="n">default</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">default_config</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span>
-            <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;Overridden&quot;</span> <span class="k">if</span> <span class="n">current</span> <span class="o">!=</span> <span class="n">default</span> <span class="k">else</span> <span class="s2">&quot;Default&quot;</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">attr</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">current</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">status</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+            <span class="n">status</span> <span class="o">=</span> <span class="s2">"Overridden"</span> <span class="k">if</span> <span class="n">current</span> <span class="o">!=</span> <span class="n">default</span> <span class="k">else</span> <span class="s2">"Default"</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  </span><span class="si">{</span><span class="n">attr</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">current</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">status</span><span class="si">}</span><span class="s2">)"</span><span class="p">)</span>
 
         <span class="c1"># Distributed Training Parameters</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Distributed Training Parameters:&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">Distributed Training Parameters:"</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="p">[</span>
-            <span class="s1">&#39;zero_stage&#39;</span><span class="p">,</span> <span class="s1">&#39;fsdp&#39;</span><span class="p">,</span> <span class="s1">&#39;fsdp_cpu_offload&#39;</span><span class="p">,</span> <span class="s1">&#39;adam_offload&#39;</span><span class="p">,</span> <span class="s1">&#39;zpg&#39;</span><span class="p">,</span> <span class="s1">&#39;grad_accum_dtype&#39;</span><span class="p">,</span> <span class="s1">&#39;overlap_comm&#39;</span>
+            <span class="s1">'zero_stage'</span><span class="p">,</span> <span class="s1">'fsdp'</span><span class="p">,</span> <span class="s1">'fsdp_cpu_offload'</span><span class="p">,</span> <span class="s1">'adam_offload'</span><span class="p">,</span> <span class="s1">'zpg'</span><span class="p">,</span> <span class="s1">'grad_accum_dtype'</span><span class="p">,</span> <span class="s1">'overlap_comm'</span>
         <span class="p">]:</span>
             <span class="n">current</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span>
             <span class="n">default</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">default_config</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span>
-            <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;Overridden&quot;</span> <span class="k">if</span> <span class="n">current</span> <span class="o">!=</span> <span class="n">default</span> <span class="k">else</span> <span class="s2">&quot;Default&quot;</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">attr</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">current</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">status</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+            <span class="n">status</span> <span class="o">=</span> <span class="s2">"Overridden"</span> <span class="k">if</span> <span class="n">current</span> <span class="o">!=</span> <span class="n">default</span> <span class="k">else</span> <span class="s2">"Default"</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  </span><span class="si">{</span><span class="n">attr</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">current</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">status</span><span class="si">}</span><span class="s2">)"</span><span class="p">)</span>
 
         <span class="c1"># Engine and Inference Parameters</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Engine and Inference Parameters:&quot;</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;engine_type&#39;</span><span class="p">,</span> <span class="s1">&#39;engine_tp_size&#39;</span><span class="p">,</span> <span class="s1">&#39;enable_engine_sleep&#39;</span><span class="p">,</span> <span class="s1">&#39;local_rank&#39;</span><span class="p">,</span> <span class="s1">&#39;sp_size&#39;</span><span class="p">]:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">Engine and Inference Parameters:"</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">'engine_type'</span><span class="p">,</span> <span class="s1">'engine_tp_size'</span><span class="p">,</span> <span class="s1">'enable_engine_sleep'</span><span class="p">,</span> <span class="s1">'local_rank'</span><span class="p">,</span> <span class="s1">'sp_size'</span><span class="p">]:</span>
             <span class="n">current</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span>
             <span class="n">default</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">default_config</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span>
-            <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;Overridden&quot;</span> <span class="k">if</span> <span class="n">current</span> <span class="o">!=</span> <span class="n">default</span> <span class="k">else</span> <span class="s2">&quot;Default&quot;</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">attr</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">current</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">status</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+            <span class="n">status</span> <span class="o">=</span> <span class="s2">"Overridden"</span> <span class="k">if</span> <span class="n">current</span> <span class="o">!=</span> <span class="n">default</span> <span class="k">else</span> <span class="s2">"Default"</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  </span><span class="si">{</span><span class="n">attr</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">current</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">status</span><span class="si">}</span><span class="s2">)"</span><span class="p">)</span>
 
         <span class="c1"># Model Parameters</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Model Parameters:&quot;</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;actor_learning_rate&#39;</span><span class="p">,</span> <span class="s1">&#39;critic_learning_rate&#39;</span><span class="p">,</span> <span class="s1">&#39;adam_betas&#39;</span><span class="p">,</span> <span class="s1">&#39;l2&#39;</span><span class="p">,</span> <span class="s1">&#39;lr_warmup_ratio&#39;</span><span class="p">]:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">Model Parameters:"</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">'actor_learning_rate'</span><span class="p">,</span> <span class="s1">'critic_learning_rate'</span><span class="p">,</span> <span class="s1">'adam_betas'</span><span class="p">,</span> <span class="s1">'l2'</span><span class="p">,</span> <span class="s1">'lr_warmup_ratio'</span><span class="p">]:</span>
             <span class="n">current</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span>
             <span class="n">default</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">default_config</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span>
-            <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;Overridden&quot;</span> <span class="k">if</span> <span class="n">current</span> <span class="o">!=</span> <span class="n">default</span> <span class="k">else</span> <span class="s2">&quot;Default&quot;</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">attr</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">current</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">status</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+            <span class="n">status</span> <span class="o">=</span> <span class="s2">"Overridden"</span> <span class="k">if</span> <span class="n">current</span> <span class="o">!=</span> <span class="n">default</span> <span class="k">else</span> <span class="s2">"Default"</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  </span><span class="si">{</span><span class="n">attr</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">current</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">status</span><span class="si">}</span><span class="s2">)"</span><span class="p">)</span>
 
         <span class="c1"># Training Control Parameters</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Training Control Parameters:&quot;</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;critic_pretrain&#39;</span><span class="p">,</span> <span class="s1">&#39;remote_rm_url&#39;</span><span class="p">,</span> <span class="s1">&#39;pretrain_data&#39;</span><span class="p">,</span> <span class="s1">&#39;fused_linear_logprob&#39;</span><span class="p">]:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">Training Control Parameters:"</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">'critic_pretrain'</span><span class="p">,</span> <span class="s1">'remote_rm_url'</span><span class="p">,</span> <span class="s1">'pretrain_data'</span><span class="p">,</span> <span class="s1">'fused_linear_logprob'</span><span class="p">]:</span>
             <span class="n">current</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span>
             <span class="n">default</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">default_config</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span>
-            <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;Overridden&quot;</span> <span class="k">if</span> <span class="n">current</span> <span class="o">!=</span> <span class="n">default</span> <span class="k">else</span> <span class="s2">&quot;Default&quot;</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">attr</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">current</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">status</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+            <span class="n">status</span> <span class="o">=</span> <span class="s2">"Overridden"</span> <span class="k">if</span> <span class="n">current</span> <span class="o">!=</span> <span class="n">default</span> <span class="k">else</span> <span class="s2">"Default"</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  </span><span class="si">{</span><span class="n">attr</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">current</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">status</span><span class="si">}</span><span class="s2">)"</span><span class="p">)</span>
 
         <span class="c1"># Reward and Advantage Processing Parameters</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Reward and Advantage Processing Parameters:&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">Reward and Advantage Processing Parameters:"</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="p">[</span>
-            <span class="s1">&#39;reward_running_norm&#39;</span><span class="p">,</span> <span class="s1">&#39;reward_running_norm_minus_mean&#39;</span><span class="p">,</span> <span class="s1">&#39;advantages_norm&#39;</span><span class="p">,</span> <span class="s1">&#39;advantage_clip&#39;</span><span class="p">,</span> <span class="s1">&#39;reward_clip&#39;</span>
+            <span class="s1">'reward_running_norm'</span><span class="p">,</span> <span class="s1">'reward_running_norm_minus_mean'</span><span class="p">,</span> <span class="s1">'advantages_norm'</span><span class="p">,</span> <span class="s1">'advantage_clip'</span><span class="p">,</span> <span class="s1">'reward_clip'</span>
         <span class="p">]:</span>
             <span class="n">current</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span>
             <span class="n">default</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">default_config</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span>
-            <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;Overridden&quot;</span> <span class="k">if</span> <span class="n">current</span> <span class="o">!=</span> <span class="n">default</span> <span class="k">else</span> <span class="s2">&quot;Default&quot;</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">attr</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">current</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">status</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+            <span class="n">status</span> <span class="o">=</span> <span class="s2">"Overridden"</span> <span class="k">if</span> <span class="n">current</span> <span class="o">!=</span> <span class="n">default</span> <span class="k">else</span> <span class="s2">"Default"</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  </span><span class="si">{</span><span class="n">attr</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">current</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">status</span><span class="si">}</span><span class="s2">)"</span><span class="p">)</span>
 
         <span class="c1"># Experience Generation Parameters</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Experience Generation Parameters:&quot;</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;micro_rollout_batch_size&#39;</span><span class="p">,</span> <span class="s1">&#39;n_samples_per_prompt&#39;</span><span class="p">]:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">Experience Generation Parameters:"</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">'micro_rollout_batch_size'</span><span class="p">,</span> <span class="s1">'n_samples_per_prompt'</span><span class="p">]:</span>
             <span class="n">current</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span>
             <span class="n">default</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">default_config</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span>
-            <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;Overridden&quot;</span> <span class="k">if</span> <span class="n">current</span> <span class="o">!=</span> <span class="n">default</span> <span class="k">else</span> <span class="s2">&quot;Default&quot;</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">attr</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">current</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">status</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+            <span class="n">status</span> <span class="o">=</span> <span class="s2">"Overridden"</span> <span class="k">if</span> <span class="n">current</span> <span class="o">!=</span> <span class="n">default</span> <span class="k">else</span> <span class="s2">"Default"</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  </span><span class="si">{</span><span class="n">attr</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">current</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">status</span><span class="si">}</span><span class="s2">)"</span><span class="p">)</span>
 
         <span class="c1"># Overlong Sequence Handling Parameters</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Overlong Sequence Handling Parameters:&quot;</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;overlong_buffer&#39;</span><span class="p">,</span> <span class="s1">&#39;overlong_buffer_len&#39;</span><span class="p">,</span> <span class="s1">&#39;overlong_buffer_penalty_factor&#39;</span><span class="p">]:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">Overlong Sequence Handling Parameters:"</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">'overlong_buffer'</span><span class="p">,</span> <span class="s1">'overlong_buffer_len'</span><span class="p">,</span> <span class="s1">'overlong_buffer_penalty_factor'</span><span class="p">]:</span>
             <span class="n">current</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span>
             <span class="n">default</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">default_config</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span>
-            <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;Overridden&quot;</span> <span class="k">if</span> <span class="n">current</span> <span class="o">!=</span> <span class="n">default</span> <span class="k">else</span> <span class="s2">&quot;Default&quot;</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">attr</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">current</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">status</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+            <span class="n">status</span> <span class="o">=</span> <span class="s2">"Overridden"</span> <span class="k">if</span> <span class="n">current</span> <span class="o">!=</span> <span class="n">default</span> <span class="k">else</span> <span class="s2">"Default"</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  </span><span class="si">{</span><span class="n">attr</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">current</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">status</span><span class="si">}</span><span class="s2">)"</span><span class="p">)</span>
 
         <span class="c1"># Dynamic Sampling and Advantage Estimation Parameters</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Dynamic Sampling and Advantage Estimation Parameters:&quot;</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;dynamic_sampling&#39;</span><span class="p">,</span> <span class="s1">&#39;advantage_estimator&#39;</span><span class="p">]:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">Dynamic Sampling and Advantage Estimation Parameters:"</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">'dynamic_sampling'</span><span class="p">,</span> <span class="s1">'advantage_estimator'</span><span class="p">]:</span>
             <span class="n">current</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span>
             <span class="n">default</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">default_config</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span>
-            <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;Overridden&quot;</span> <span class="k">if</span> <span class="n">current</span> <span class="o">!=</span> <span class="n">default</span> <span class="k">else</span> <span class="s2">&quot;Default&quot;</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">attr</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">current</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">status</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+            <span class="n">status</span> <span class="o">=</span> <span class="s2">"Overridden"</span> <span class="k">if</span> <span class="n">current</span> <span class="o">!=</span> <span class="n">default</span> <span class="k">else</span> <span class="s2">"Default"</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  </span><span class="si">{</span><span class="n">attr</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">current</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">status</span><span class="si">}</span><span class="s2">)"</span><span class="p">)</span>
 
         <span class="c1"># KL Loss and Estimation Parameters</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">KL Loss and Estimation Parameters:&quot;</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;use_kl_loss&#39;</span><span class="p">,</span> <span class="s1">&#39;kl_estimator&#39;</span><span class="p">]:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">KL Loss and Estimation Parameters:"</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">'use_kl_loss'</span><span class="p">,</span> <span class="s1">'kl_estimator'</span><span class="p">]:</span>
             <span class="n">current</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span>
             <span class="n">default</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">default_config</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span>
-            <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;Overridden&quot;</span> <span class="k">if</span> <span class="n">current</span> <span class="o">!=</span> <span class="n">default</span> <span class="k">else</span> <span class="s2">&quot;Default&quot;</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">attr</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">current</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">status</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+            <span class="n">status</span> <span class="o">=</span> <span class="s2">"Overridden"</span> <span class="k">if</span> <span class="n">current</span> <span class="o">!=</span> <span class="n">default</span> <span class="k">else</span> <span class="s2">"Default"</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  </span><span class="si">{</span><span class="n">attr</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">current</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">status</span><span class="si">}</span><span class="s2">)"</span><span class="p">)</span>
 
         <span class="c1"># FSDP Specific Parameters</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">FSDP Specific Parameters:&quot;</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;mixed_mm_data&#39;</span><span class="p">,</span> <span class="s1">&#39;use_mp_opt&#39;</span><span class="p">]:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">FSDP Specific Parameters:"</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">'mixed_mm_data'</span><span class="p">,</span> <span class="s1">'use_mp_opt'</span><span class="p">]:</span>
             <span class="n">current</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span>
             <span class="n">default</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">default_config</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span>
-            <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;Overridden&quot;</span> <span class="k">if</span> <span class="n">current</span> <span class="o">!=</span> <span class="n">default</span> <span class="k">else</span> <span class="s2">&quot;Default&quot;</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">attr</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">current</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">status</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+            <span class="n">status</span> <span class="o">=</span> <span class="s2">"Overridden"</span> <span class="k">if</span> <span class="n">current</span> <span class="o">!=</span> <span class="n">default</span> <span class="k">else</span> <span class="s2">"Default"</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  </span><span class="si">{</span><span class="n">attr</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">current</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">status</span><span class="si">}</span><span class="s2">)"</span><span class="p">)</span>
 
         <span class="c1"># Analysis and Monitoring Parameters</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Analysis and Monitoring Parameters:&quot;</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;plot_every&#39;</span><span class="p">,</span> <span class="s1">&#39;use_tensorboard&#39;</span><span class="p">]:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">Analysis and Monitoring Parameters:"</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">'plot_every'</span><span class="p">,</span> <span class="s1">'use_tensorboard'</span><span class="p">]:</span>
             <span class="n">current</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span>
             <span class="n">default</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">default_config</span><span class="p">,</span> <span class="n">attr</span><span class="p">)</span>
-            <span class="n">status</span> <span class="o">=</span> <span class="s2">&quot;Overridden&quot;</span> <span class="k">if</span> <span class="n">current</span> <span class="o">!=</span> <span class="n">default</span> <span class="k">else</span> <span class="s2">&quot;Default&quot;</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">attr</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">current</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">status</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+            <span class="n">status</span> <span class="o">=</span> <span class="s2">"Overridden"</span> <span class="k">if</span> <span class="n">current</span> <span class="o">!=</span> <span class="n">default</span> <span class="k">else</span> <span class="s2">"Default"</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  </span><span class="si">{</span><span class="n">attr</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">current</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">status</span><span class="si">}</span><span class="s2">)"</span><span class="p">)</span>
 
         <span class="c1"># extra_args</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">extra_args</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Extra Parameters (extra_args):&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">Extra Parameters (extra_args):"</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">extra_args</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Extra Parameters: None&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">Extra Parameters: None"</span><span class="p">)</span>
 
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="s2">&quot;=&quot;</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Configuration verification completed!&quot;</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;=&quot;</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span></div></div>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">"</span> <span class="o">+</span> <span class="s2">"="</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"Configuration verification completed!"</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">"="</span> <span class="o">*</span> <span class="mi">60</span><span class="p">)</span></div></div>
 </pre></div>
 
               </article>
@@ -642,7 +647,7 @@
 
   <div role="contentinfo">
     <p>
-      &copy; Copyright 2025, OpenDILab.
+      &copy; Copyright 2025-2026, OpenDILab.
 
     </p>
   </div>
@@ -679,8 +684,8 @@
   <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
   <script src="../../../_static/doctools.js"></script>
   <script src="../../../_static/sphinx_highlight.js"></script>
-  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-  <script src="../../../_static/js/language_switch.js"></script>
+  <script src="../../../_static/clipboard.min.js"></script>
+  <script src="../../../_static/copybutton.js"></script>
   
 
   
@@ -709,7 +714,7 @@
     <div class="container-fluid">
       <div class="container">
         <div class="mobile-main-menu-header-container">
-          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="header-logo" href="https://github.com/opendilab/LightRFT" aria-label="OpenMMLab"></a>
           <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
         </div>
       </div>

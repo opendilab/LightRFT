@@ -33,9 +33,12 @@
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
   <link rel="stylesheet" href="../_static/css/readthedocs.css" type="text/css" />
   <link rel="index" title="Index" href="../genindex.html" />
   <link rel="search" title="Search" href="../search.html" />
+  <link rel="next" title="LightRFT 运行时架构与资源复用原理" href="runtime_architecture_zh.html" />
+  <link rel="prev" title="Strategy 使用指南" href="strategy_zh.html" />
   <!-- Google Analytics -->
   <script type="text/javascript">
     var collapsedSections = [];
@@ -85,7 +88,7 @@
 <div class="container-fluid header-holder tutorials-header" id="header-holder">
   <div class="container">
     <div class="header-container">
-      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+      <a class="header-logo" href="https://github.com/opendilab/LightRFT"
         aria-label="OpenMMLab"></a>
 
       <div class="main-menu">
@@ -235,6 +238,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../api_doc/strategy/index.html">lightrft.strategy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api_doc/trainer/index.html">lightrft.trainer</a></li>
 </ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../index_zh.html">欢迎来到 LightRFT 文档!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index_zh.html#id4">索引与表格</a></li>
+</ul>
 
         
         
@@ -271,6 +278,10 @@
         </a> &gt;
       </li>
 
+        
+          <li><a href="../index_zh.html">欢迎来到 LightRFT 文档!</a> &gt;</li>
+        
+          <li><a href="index_zh.html">最佳实践</a> &gt;</li>
         
       <li>LightRFT 策略设计理念</li>
     
@@ -315,8 +326,8 @@
 <p><strong>原则</strong>：提供统一的接口，抽象掉不同分布式训练框架的复杂性。</p>
 <p><strong>实现</strong>：</p>
 <ul class="simple">
-<li><p>所有策略均继承自 <a class="reference internal" href="#../../lightrft/strategy/strategy_base.py"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">StrategyBase</span></code></span></a></p></li>
-<li><p>通用方法如 <a class="reference internal" href="#../../lightrft/strategy/strategy_base.py"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">backward()</span></code></span></a>、<a class="reference internal" href="#../../lightrft/strategy/strategy_base.py"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">optimizer_step()</span></code></span></a> 和 <a class="reference internal" href="#../../lightrft/strategy/strategy_base.py"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">save_ckpt()</span></code></span></a> 具有一致的签名。</p></li>
+<li><p>所有策略均继承自 <a class="reference download internal" download="" href="../_downloads/0ab7c2ee07c7c5fb09bbe07058664c3d/strategy_base.py"><span class="xref download myst"><code class="docutils literal notranslate"><span class="pre">StrategyBase</span></code></span></a></p></li>
+<li><p>通用方法如 <a class="reference download internal" download="" href="../_downloads/0ab7c2ee07c7c5fb09bbe07058664c3d/strategy_base.py"><span class="xref download myst"><code class="docutils literal notranslate"><span class="pre">backward()</span></code></span></a>、<a class="reference download internal" download="" href="../_downloads/0ab7c2ee07c7c5fb09bbe07058664c3d/strategy_base.py"><span class="xref download myst"><code class="docutils literal notranslate"><span class="pre">optimizer_step()</span></code></span></a> 和 <a class="reference download internal" download="" href="../_downloads/0ab7c2ee07c7c5fb09bbe07058664c3d/strategy_base.py"><span class="xref download myst"><code class="docutils literal notranslate"><span class="pre">save_ckpt()</span></code></span></a> 具有一致的签名。</p></li>
 <li><p>特定策略的实现封装在具体的策略类中。</p></li>
 </ul>
 </section>
@@ -325,7 +336,7 @@
 <p><strong>原则</strong>：使用类型化的配置对象（Typed Configuration Objects）代替动态属性访问，以实现更好的类型安全性和代码清晰度。</p>
 <p><strong>实现</strong>：</p>
 <ul class="simple">
-<li><p><a class="reference internal" href="#../../lightrft/strategy/config.py"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">StrategyConfig</span></code></span></a> 数据类提供了对所有配置参数的类型化访问。</p></li>
+<li><p><a class="reference download internal" download="" href="../_downloads/3e5677a2b3e79bbbc543b3f76b0e2e91/config.py"><span class="xref download myst"><code class="docutils literal notranslate"><span class="pre">StrategyConfig</span></code></span></a> 数据类提供了对所有配置参数的类型化访问。</p></li>
 <li><p>消除了对 <code class="docutils literal notranslate"><span class="pre">getattr(args,</span> <span class="pre">&quot;parameter&quot;,</span> <span class="pre">default)</span></code> 模式的需求。</p></li>
 <li><p>支持 IDE 自动补全和静态类型检查。</p></li>
 </ul>
@@ -335,9 +346,9 @@
 <p><strong>原则</strong>：在引入改进的同时，保持与现有代码的兼容性。</p>
 <p><strong>实现</strong>：</p>
 <ul class="simple">
-<li><p><a class="reference internal" href="#../../lightrft/strategy/config.py"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">StrategyConfig.from_args()</span></code></span></a> 方法可从旧版本的参数对象中提取参数。</p></li>
+<li><p><a class="reference download internal" download="" href="../_downloads/3e5677a2b3e79bbbc543b3f76b0e2e91/config.py"><span class="xref download myst"><code class="docutils literal notranslate"><span class="pre">StrategyConfig.from_args()</span></code></span></a> 方法可从旧版本的参数对象中提取参数。</p></li>
 <li><p>保留原始 <code class="docutils literal notranslate"><span class="pre">args</span></code> 对象以保持兼容性。</p></li>
-<li><p><a class="reference internal" href="#../../lightrft/strategy/config.py"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">get_extra_arg()</span></code></span></a> 方法提供了对非标准参数的访问。</p></li>
+<li><p><a class="reference download internal" download="" href="../_downloads/3e5677a2b3e79bbbc543b3f76b0e2e91/config.py"><span class="xref download myst"><code class="docutils literal notranslate"><span class="pre">get_extra_arg()</span></code></span></a> 方法提供了对非标准参数的访问。</p></li>
 </ul>
 </section>
 <section id="id6">
@@ -345,7 +356,7 @@
 <p><strong>原则</strong>：无需分布式环境即可进行全面测试。</p>
 <p><strong>实现</strong>：</p>
 <ul class="simple">
-<li><p><a class="reference internal" href="#../../lightrft/strategy/fake_strategy.py"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">FakeStrategy</span></code></span></a> 提供了一个可用于测试的直接替代方案。</p></li>
+<li><p><a class="reference download internal" download="" href="../_downloads/f2cabbe456e446bd14e02decead07786/fake_strategy.py"><span class="xref download myst"><code class="docutils literal notranslate"><span class="pre">FakeStrategy</span></code></span></a> 提供了一个可用于测试的直接替代方案。</p></li>
 <li><p>所有策略方法都有用于单进程测试的 Mock 实现。</p></li>
 <li><p>单元测试验证功能和 API 的一致性。</p></li>
 </ul>
@@ -366,7 +377,7 @@
 <h3>关键组件<a class="headerlink" href="#id9" title="Permalink to this heading">¶</a></h3>
 <section id="id10">
 <h4>1. 策略工厂<a class="headerlink" href="#id10" title="Permalink to this heading">¶</a></h4>
-<p><a class="reference internal" href="#../../lightrft/strategy/strategy.py"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">get_strategy()</span></code></span></a> 函数作为入口点，根据配置自动选择合适的策略：</p>
+<p><a class="reference download internal" download="" href="../_downloads/461d19e9d6eaa69d06306e9f6c5f1849/strategy.py"><span class="xref download myst"><code class="docutils literal notranslate"><span class="pre">get_strategy()</span></code></span></a> 函数作为入口点，根据配置自动选择合适的策略：</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">lightrft.strategy</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_strategy</span>
 
 <span class="c1"># 根据 args.fsdp 自动选择 DeepSpeed 或 FSDP</span>
@@ -376,7 +387,7 @@
 </section>
 <section id="id11">
 <h4>2. 配置管理<a class="headerlink" href="#id11" title="Permalink to this heading">¶</a></h4>
-<p><a class="reference internal" href="#../../lightrft/strategy/config.py"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">StrategyConfig</span></code></span></a> 类集中管理所有配置参数：</p>
+<p><a class="reference download internal" download="" href="../_downloads/3e5677a2b3e79bbbc543b3f76b0e2e91/config.py"><span class="xref download myst"><code class="docutils literal notranslate"><span class="pre">StrategyConfig</span></code></span></a> 类集中管理所有配置参数：</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">lightrft.strategy.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">StrategyConfig</span>
 
 <span class="n">config</span> <span class="o">=</span> <span class="n">StrategyConfig</span><span class="o">.</span><span class="n">from_args</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
@@ -453,7 +464,7 @@
 <span class="c1"># 所有操作无需分布式环境即可运行</span>
 <span class="n">strategy</span><span class="o">.</span><span class="n">setup_distributed</span><span class="p">()</span>
 <span class="n">strategy</span><span class="o">.</span><span class="n">backward</span><span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">)</span>
-<span class="n">strategy</span><span class="o">.</span><span class="n">save_ckpt</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="s2">&quot;checkpoints&quot;</span><span class="p">)</span>
+<span class="n">strategy</span><span class="o">.</span><span class="n">save_ckpt</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="s2">"checkpoints"</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -463,8 +474,8 @@
 <section id="id17">
 <h3>1. 提高类型安全性<a class="headerlink" href="#id17" title="Permalink to this heading">¶</a></h3>
 <p><strong>改进前</strong> (使用 getattr):</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">seed</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="s2">&quot;seed&quot;</span><span class="p">,</span> <span class="mi">42</span><span class="p">)</span>  <span class="c1"># 类型: Any</span>
-<span class="n">max_norm</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="s2">&quot;max_norm&quot;</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>  <span class="c1"># 类型: Any</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">seed</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="s2">"seed"</span><span class="p">,</span> <span class="mi">42</span><span class="p">)</span>  <span class="c1"># 类型: Any</span>
+<span class="n">max_norm</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="s2">"max_norm"</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>  <span class="c1"># 类型: Any</span>
 </pre></div>
 </div>
 <p><strong>改进后</strong> (使用 StrategyConfig):</p>
@@ -477,15 +488,15 @@
 <section id="id18">
 <h3>2. 更好的代码组织<a class="headerlink" href="#id18" title="Permalink to this heading">¶</a></h3>
 <ul class="simple">
-<li><p>配置参数在 <a class="reference internal" href="#../../lightrft/strategy/config.py"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">StrategyConfig</span></code></span></a> 中明确定义。</p></li>
+<li><p>配置参数在 <a class="reference download internal" download="" href="../_downloads/3e5677a2b3e79bbbc543b3f76b0e2e91/config.py"><span class="xref download myst"><code class="docutils literal notranslate"><span class="pre">StrategyConfig</span></code></span></a> 中明确定义。</p></li>
 <li><p>策略特定的逻辑封装在具体的策略类中。</p></li>
-<li><p>通用功能在 <a class="reference internal" href="#../../lightrft/strategy/strategy_base.py"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">StrategyBase</span></code></span></a> 中实现。</p></li>
+<li><p>通用功能在 <a class="reference download internal" download="" href="../_downloads/0ab7c2ee07c7c5fb09bbe07058664c3d/strategy_base.py"><span class="xref download myst"><code class="docutils literal notranslate"><span class="pre">StrategyBase</span></code></span></a> 中实现。</p></li>
 </ul>
 </section>
 <section id="id19">
 <h3>3. 增强可测试性<a class="headerlink" href="#id19" title="Permalink to this heading">¶</a></h3>
 <ul class="simple">
-<li><p><a class="reference internal" href="#../../lightrft/strategy/fake_strategy.py"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">FakeStrategy</span></code></span></a> 使得无需分布式设置即可进行测试。</p></li>
+<li><p><a class="reference download internal" download="" href="../_downloads/f2cabbe456e446bd14e02decead07786/fake_strategy.py"><span class="xref download myst"><code class="docutils literal notranslate"><span class="pre">FakeStrategy</span></code></span></a> 使得无需分布式设置即可进行测试。</p></li>
 <li><p>单元测试可以验证所有策略功能。</p></li>
 <li><p>Mock 实现确保了行为的一致性。</p></li>
 </ul>
@@ -493,7 +504,7 @@
 <section id="id20">
 <h3>4. 未来的扩展性<a class="headerlink" href="#id20" title="Permalink to this heading">¶</a></h3>
 <ul class="simple">
-<li><p>通过实现 <a class="reference internal" href="#../../lightrft/strategy/strategy_base.py"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">StrategyBase</span></code></span></a> 接口，可以轻松添加新策略。</p></li>
+<li><p>通过实现 <a class="reference download internal" download="" href="../_downloads/0ab7c2ee07c7c5fb09bbe07058664c3d/strategy_base.py"><span class="xref download myst"><code class="docutils literal notranslate"><span class="pre">StrategyBase</span></code></span></a> 接口，可以轻松添加新策略。</p></li>
 <li><p>配置可以扩展而不破坏现有代码。</p></li>
 <li><p>工厂模式使得添加新策略类型变得非常简单。</p></li>
 </ul>
@@ -504,31 +515,31 @@
 <section id="id22">
 <h3>1. 配置管理<a class="headerlink" href="#id22" title="Permalink to this heading">¶</a></h3>
 <ul class="simple">
-<li><p>使用 <a class="reference internal" href="#../../lightrft/strategy/config.py"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">StrategyConfig</span></code></span></a> 进行所有参数访问。</p></li>
+<li><p>使用 <a class="reference download internal" download="" href="../_downloads/3e5677a2b3e79bbbc543b3f76b0e2e91/config.py"><span class="xref download myst"><code class="docutils literal notranslate"><span class="pre">StrategyConfig</span></code></span></a> 进行所有参数访问。</p></li>
 <li><p>避免直接对参数对象调用 <code class="docutils literal notranslate"><span class="pre">getattr</span></code>。</p></li>
-<li><p>对于非标准参数，使用 <a class="reference internal" href="#../../lightrft/strategy/config.py"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">get_extra_arg()</span></code></span></a>。</p></li>
+<li><p>对于非标准参数，使用 <a class="reference download internal" download="" href="../_downloads/3e5677a2b3e79bbbc543b3f76b0e2e91/config.py"><span class="xref download myst"><code class="docutils literal notranslate"><span class="pre">get_extra_arg()</span></code></span></a>。</p></li>
 </ul>
 </section>
 <section id="id23">
 <h3>2. 策略选择<a class="headerlink" href="#id23" title="Permalink to this heading">¶</a></h3>
 <ul class="simple">
-<li><p>使用 <a class="reference internal" href="#../../lightrft/strategy/strategy.py"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">get_strategy()</span></code></span></a> 工厂函数创建策略。</p></li>
+<li><p>使用 <a class="reference download internal" download="" href="../_downloads/461d19e9d6eaa69d06306e9f6c5f1849/strategy.py"><span class="xref download myst"><code class="docutils literal notranslate"><span class="pre">get_strategy()</span></code></span></a> 工厂函数创建策略。</p></li>
 <li><p>让工厂根据配置确定适当的策略。</p></li>
-<li><p>在开发和测试中使用 <a class="reference internal" href="#../../lightrft/strategy/fake_strategy.py"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">FakeStrategy</span></code></span></a>。</p></li>
+<li><p>在开发和测试中使用 <a class="reference download internal" download="" href="../_downloads/f2cabbe456e446bd14e02decead07786/fake_strategy.py"><span class="xref download myst"><code class="docutils literal notranslate"><span class="pre">FakeStrategy</span></code></span></a>。</p></li>
 </ul>
 </section>
 <section id="id24">
 <h3>3. 错误处理<a class="headerlink" href="#id24" title="Permalink to this heading">¶</a></h3>
 <ul class="simple">
 <li><p>策略应对不支持的操作提供清晰的错误消息。</p></li>
-<li><p>使用策略的 <a class="reference internal" href="#../../lightrft/strategy/strategy_base.py"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">print()</span></code></span></a> 方法进行日志记录。</p></li>
+<li><p>使用策略的 <a class="reference download internal" download="" href="../_downloads/0ab7c2ee07c7c5fb09bbe07058664c3d/strategy_base.py"><span class="xref download myst"><code class="docutils literal notranslate"><span class="pre">print()</span></code></span></a> 方法进行日志记录。</p></li>
 <li><p>在上下文管理器中实现适当的清理。</p></li>
 </ul>
 </section>
 <section id="id25">
 <h3>4. 测试<a class="headerlink" href="#id25" title="Permalink to this heading">¶</a></h3>
 <ul class="simple">
-<li><p>在单元测试中使用 <a class="reference internal" href="#../../lightrft/strategy/fake_strategy.py"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">FakeStrategy</span></code></span></a>。</p></li>
+<li><p>在单元测试中使用 <a class="reference download internal" download="" href="../_downloads/f2cabbe456e446bd14e02decead07786/fake_strategy.py"><span class="xref download myst"><code class="docutils literal notranslate"><span class="pre">FakeStrategy</span></code></span></a>。</p></li>
 <li><p>测试策略特定的功能和通用功能。</p></li>
 <li><p>验证所有策略是否都实现了所需的接口。</p></li>
 </ul>
@@ -541,15 +552,15 @@
 <h3>核心设计<a class="headerlink" href="#id27" title="Permalink to this heading">¶</a></h3>
 <ul class="simple">
 <li><p><strong>统一接口架构</strong>：封装 DeepSpeed、FSDP 等分布式后端，提供一致的 API。开发者无需修改业务代码即可切换底层策略。</p></li>
-<li><p><strong>类型安全配置</strong>：通过 <a class="reference internal" href="#../../lightrft/strategy/config.py"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">StrategyConfig</span></code></span></a> 将动态配置转为强类型对象，减少运行时错误，并支持 IDE 自动补全。</p></li>
-<li><p><strong>工厂模式选择</strong>：<a class="reference internal" href="#../../lightrft/strategy/strategy.py"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">get_strategy()</span></code></span></a> 根据配置参数自动实例化策略，在简化调用的同时保留了对后端的控制权。</p></li>
+<li><p><strong>类型安全配置</strong>：通过 <a class="reference download internal" download="" href="../_downloads/3e5677a2b3e79bbbc543b3f76b0e2e91/config.py"><span class="xref download myst"><code class="docutils literal notranslate"><span class="pre">StrategyConfig</span></code></span></a> 将动态配置转为强类型对象，减少运行时错误，并支持 IDE 自动补全。</p></li>
+<li><p><strong>工厂模式选择</strong>：<a class="reference download internal" download="" href="../_downloads/461d19e9d6eaa69d06306e9f6c5f1849/strategy.py"><span class="xref download myst"><code class="docutils literal notranslate"><span class="pre">get_strategy()</span></code></span></a> 根据配置参数自动实例化策略，在简化调用的同时保留了对后端的控制权。</p></li>
 </ul>
 </section>
 <section id="id28">
 <h3>功能特性<a class="headerlink" href="#id28" title="Permalink to this heading">¶</a></h3>
 <ul class="simple">
 <li><p><strong>推理引擎集成</strong>：通过统一接口支持纯文本及多模态生成，兼容 vLLM 和 SGLang 后端。</p></li>
-<li><p><strong>便捷测试支持</strong>：提供 <a class="reference internal" href="#../../lightrft/strategy/fake_strategy.py"><span class="xref myst"><code class="docutils literal notranslate"><span class="pre">FakeStrategy</span></code></span></a>，允许在无分布式环境下测试训练工作流，降低调试成本。</p></li>
+<li><p><strong>便捷测试支持</strong>：提供 <a class="reference download internal" download="" href="../_downloads/f2cabbe456e446bd14e02decead07786/fake_strategy.py"><span class="xref download myst"><code class="docutils literal notranslate"><span class="pre">FakeStrategy</span></code></span></a>，允许在无分布式环境下测试训练工作流，降低调试成本。</p></li>
 <li><p><strong>资源效率优化</strong>：支持推理引擎休眠/唤醒、梯度累积及内存感知检查点，优化大规模训练时的资源使用。</p></li>
 </ul>
 </section>
@@ -566,12 +577,24 @@
             </div>
             <footer>
   
+  <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+    
+    <a href="runtime_architecture_zh.html" class="btn btn-neutral float-right" title="LightRFT 运行时架构与资源复用原理" accesskey="n"
+      rel="next">Next <img src="../_static/images/chevron-right-blue.svg"
+        class="next-page"></a>
+    
+    
+    <a href="strategy_zh.html" class="btn btn-neutral" title="Strategy 使用指南" accesskey="p"
+      rel="prev"><img src="../_static/images/chevron-right-blue.svg" class="previous-page"> Previous</a>
+    
+  </div>
+  
 
   <hr>
 
   <div role="contentinfo">
     <p>
-      &copy; Copyright 2025, OpenDILab.
+      &copy; Copyright 2025-2026, OpenDILab.
 
     </p>
   </div>
@@ -657,8 +680,8 @@
   <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
   <script src="../_static/doctools.js"></script>
   <script src="../_static/sphinx_highlight.js"></script>
-  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-  <script src="../_static/js/language_switch.js"></script>
+  <script src="../_static/clipboard.min.js"></script>
+  <script src="../_static/copybutton.js"></script>
   
 
   
@@ -687,7 +710,7 @@
     <div class="container-fluid">
       <div class="container">
         <div class="mobile-main-menu-header-container">
-          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="header-logo" href="https://github.com/opendilab/LightRFT" aria-label="OpenMMLab"></a>
           <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
         </div>
       </div>

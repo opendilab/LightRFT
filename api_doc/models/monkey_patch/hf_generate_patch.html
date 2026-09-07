@@ -13,7 +13,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>lightrft.models.monkey_patch.hf_generate_patch &mdash; LightRFT v0.1.1 documentation</title>
+  <title>Hugging Face generation patch &mdash; LightRFT v0.1.1 documentation</title>
   
 
   <link rel="shortcut icon" href="../../../_static/images/favicon.ico" />
@@ -33,6 +33,7 @@
   <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/css/readthedocs.css" type="text/css" />
   <link rel="index" title="Index" href="../../../genindex.html" />
   <link rel="search" title="Search" href="../../../search.html" />
@@ -87,7 +88,7 @@
 <div class="container-fluid header-holder tutorials-header" id="header-holder">
   <div class="container">
     <div class="header-container">
-      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+      <a class="header-logo" href="https://github.com/opendilab/LightRFT"
         aria-label="OpenMMLab"></a>
 
       <div class="main-menu">
@@ -237,6 +238,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../../strategy/index.html">lightrft.strategy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../trainer/index.html">lightrft.trainer</a></li>
 </ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../../../index_zh.html">欢迎来到 LightRFT 文档!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../index_zh.html#id4">索引与表格</a></li>
+</ul>
 
         
         
@@ -278,7 +283,7 @@
         
           <li><a href="index.html">lightrft.models.monkey_patch</a> &gt;</li>
         
-      <li>lightrft.models.monkey_patch.hf_generate_patch</li>
+      <li>Hugging Face generation patch</li>
     
     
       <li class="pytorch-breadcrumbs-aside">
@@ -308,8 +313,27 @@
             <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
               <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
                 
-  <section id="lightrft-models-monkey-patch-hf-generate-patch">
-<h1>lightrft.models.monkey_patch.hf_generate_patch<a class="headerlink" href="#lightrft-models-monkey-patch-hf-generate-patch" title="Permalink to this heading">¶</a></h1>
+  <section id="hugging-face-generation-patch">
+<h1>Hugging Face generation patch<a class="headerlink" href="#hugging-face-generation-patch" title="Permalink to this heading">¶</a></h1>
+<p><code class="docutils literal notranslate"><span class="pre">lightrft.models.monkey_patch.hf_generate_patch</span></code> replaces Transformers’
+stopping-criteria builder with a variant that omits the EOS criterion. It is an
+explicit monkey patch: importing the module alone does not modify
+<code class="docutils literal notranslate"><span class="pre">GenerationMixin</span></code>; callers must invoke
+<code class="docutils literal notranslate"><span class="pre">apply_monkey_patch_to_generation_mixin()</span></code>.</p>
+<p>The implementation is tied to the Transformers generation API noted in the
+source file and should be revalidated when that dependency is upgraded.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">apply_monkey_patch_to_generation_mixin</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Apply the monkey patch to replace the original _get_stopping_criteria method.</span>
+
+<span class="sd">    This function replaces the default _get_stopping_criteria implementation in GenerationMixin</span>
+<span class="sd">    with our modified version that excludes EOS token stopping.</span>
+
+<span class="sd">    :return: None</span>
+<span class="sd">    """</span>
+    <span class="n">GenerationMixin</span><span class="o">.</span><span class="n">_get_stopping_criteria</span> <span class="o">=</span> <span class="n">_get_stopping_criteria_hacked</span>
+</pre></div>
+</div>
 </section>
 
 
@@ -335,7 +359,7 @@
 
   <div role="contentinfo">
     <p>
-      &copy; Copyright 2025, OpenDILab.
+      &copy; Copyright 2025-2026, OpenDILab.
 
     </p>
   </div>
@@ -355,7 +379,7 @@
           <div class="pytorch-right-menu" id="pytorch-right-menu">
             <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
               <ul>
-<li><a class="reference internal" href="#">lightrft.models.monkey_patch.hf_generate_patch</a></li>
+<li><a class="reference internal" href="#">Hugging Face generation patch</a></li>
 </ul>
 
             </div>
@@ -375,8 +399,8 @@
   <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
   <script src="../../../_static/doctools.js"></script>
   <script src="../../../_static/sphinx_highlight.js"></script>
-  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-  <script src="../../../_static/js/language_switch.js"></script>
+  <script src="../../../_static/clipboard.min.js"></script>
+  <script src="../../../_static/copybutton.js"></script>
   
 
   
@@ -405,7 +429,7 @@
     <div class="container-fluid">
       <div class="container">
         <div class="mobile-main-menu-header-container">
-          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="header-logo" href="https://github.com/opendilab/LightRFT" aria-label="OpenMMLab"></a>
           <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
         </div>
       </div>

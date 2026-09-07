@@ -33,9 +33,12 @@
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
   <link rel="stylesheet" href="../_static/css/readthedocs.css" type="text/css" />
   <link rel="index" title="Index" href="../genindex.html" />
   <link rel="search" title="Search" href="../search.html" />
+  <link rel="next" title="LightRFT 模型设计文档" href="model_zh.html" />
+  <link rel="prev" title="GRPO 训练教程：GSM8K 与 Geo3K 数据集" href="../quick_start/grpo_gsm8k_geo3k_tutorial_zh.html" />
   <!-- Google Analytics -->
   <script type="text/javascript">
     var collapsedSections = [];
@@ -85,7 +88,7 @@
 <div class="container-fluid header-holder tutorials-header" id="header-holder">
   <div class="container">
     <div class="header-container">
-      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+      <a class="header-logo" href="https://github.com/opendilab/LightRFT"
         aria-label="OpenMMLab"></a>
 
       <div class="main-menu">
@@ -235,6 +238,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../api_doc/strategy/index.html">lightrft.strategy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api_doc/trainer/index.html">lightrft.trainer</a></li>
 </ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../index_zh.html">欢迎来到 LightRFT 文档!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index_zh.html#id4">索引与表格</a></li>
+</ul>
 
         
         
@@ -271,6 +278,8 @@
         </a> &gt;
       </li>
 
+        
+          <li><a href="../index_zh.html">欢迎来到 LightRFT 文档!</a> &gt;</li>
         
       <li>最佳实践</li>
     
@@ -363,6 +372,19 @@
 <li class="toctree-l2"><a class="reference internal" href="strategy_design_philosophy_zh.html#id26">结论</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="runtime_architecture_zh.html">LightRFT 运行时架构与资源复用原理</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="runtime_architecture_zh.html#id1">1. 先建立完整的职责边界</a></li>
+<li class="toctree-l2"><a class="reference internal" href="runtime_architecture_zh.html#torchrun-spmd">2. 原生 <code class="docutils literal notranslate"><span class="pre">torchrun</span></code>/SPMD 运行时</a></li>
+<li class="toctree-l2"><a class="reference internal" href="runtime_architecture_zh.html#strategy">3. Strategy 抽象如何起作用</a></li>
+<li class="toctree-l2"><a class="reference internal" href="runtime_architecture_zh.html#actorrollout-policy-reference-model">4. Actor、rollout policy 与 Reference Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="runtime_architecture_zh.html#colocate">5. Colocate 的准确含义</a></li>
+<li class="toctree-l2"><a class="reference internal" href="runtime_architecture_zh.html#id4">6. 训练参数如何同步到推理引擎</a></li>
+<li class="toctree-l2"><a class="reference internal" href="runtime_architecture_zh.html#id5">7. 一个训练迭代的时序</a></li>
+<li class="toctree-l2"><a class="reference internal" href="runtime_architecture_zh.html#id6">8. 性能与稳定性的主要权衡</a></li>
+<li class="toctree-l2"><a class="reference internal" href="runtime_architecture_zh.html#id7">9. 调试检查表</a></li>
+<li class="toctree-l2"><a class="reference internal" href="runtime_architecture_zh.html#id9">10. 源码导航</a></li>
+</ul>
+</li>
 </ul>
 </div>
 <div class="toctree-wrapper compound">
@@ -382,12 +404,24 @@
             </div>
             <footer>
   
+  <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+    
+    <a href="model_zh.html" class="btn btn-neutral float-right" title="LightRFT 模型设计文档" accesskey="n"
+      rel="next">Next <img src="../_static/images/chevron-right-blue.svg"
+        class="next-page"></a>
+    
+    
+    <a href="../quick_start/grpo_gsm8k_geo3k_tutorial_zh.html" class="btn btn-neutral" title="GRPO 训练教程：GSM8K 与 Geo3K 数据集" accesskey="p"
+      rel="prev"><img src="../_static/images/chevron-right-blue.svg" class="previous-page"> Previous</a>
+    
+  </div>
+  
 
   <hr>
 
   <div role="contentinfo">
     <p>
-      &copy; Copyright 2025, OpenDILab.
+      &copy; Copyright 2025-2026, OpenDILab.
 
     </p>
   </div>
@@ -429,8 +463,8 @@
   <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
   <script src="../_static/doctools.js"></script>
   <script src="../_static/sphinx_highlight.js"></script>
-  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-  <script src="../_static/js/language_switch.js"></script>
+  <script src="../_static/clipboard.min.js"></script>
+  <script src="../_static/copybutton.js"></script>
   
 
   
@@ -459,7 +493,7 @@
     <div class="container-fluid">
       <div class="container">
         <div class="mobile-main-menu-header-container">
-          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="header-logo" href="https://github.com/opendilab/LightRFT" aria-label="OpenMMLab"></a>
           <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
         </div>
       </div>

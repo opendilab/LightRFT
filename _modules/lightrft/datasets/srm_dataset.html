@@ -1,0 +1,990 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js" lang="en">
+<!--<![endif]-->
+
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>lightrft.datasets.srm_dataset &mdash; LightRFT v0.1.1 documentation</title>
+  
+
+  <link rel="shortcut icon" href="../../../_static/images/favicon.ico" />
+  
+  
+
+  
+
+  
+  
+  
+
+  
+
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <!-- <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" /> -->
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/readthedocs.css" type="text/css" />
+  <link rel="index" title="Index" href="../../../genindex.html" />
+  <link rel="search" title="Search" href="../../../search.html" />
+  <!-- Google Analytics -->
+  <script type="text/javascript">
+    var collapsedSections = [];
+  </script>
+  
+  <!-- End Google Analytics -->
+  
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+  <script>
+    MathJax = {
+        chtml: {
+            scale: 1,
+            minScale: 1,
+        },
+        svg: {
+            scale: 1,
+            minScale: 1,
+        }
+    }
+</script>
+
+  <!-- Preload the theme fonts -->
+
+<link rel="preload" href="../../../_static/fonts/FreightSans/freight-sans-book.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../_static/fonts/FreightSans/freight-sans-medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../_static/fonts/IBMPlexMono/IBMPlexMono-Medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../_static/fonts/FreightSans/freight-sans-bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../_static/fonts/FreightSans/freight-sans-medium-italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../_static/fonts/IBMPlexMono/IBMPlexMono-SemiBold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+
+<!-- Preload the katex fonts -->
+
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Math-Italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size1-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size4-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size2-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size3-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Caligraphic-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.2/css/all.css"
+    integrity="sha384-vSIIfh2YWi9wW0r9iZe7RJPrKwp6bG+s9QZMoITbCckVJqGCCRhc+ccxNcdpHuYu" crossorigin="anonymous">
+</head>
+
+<div class="container-fluid header-holder tutorials-header" id="header-holder">
+  <div class="container">
+    <div class="header-container">
+      <a class="header-logo" href="https://github.com/opendilab/LightRFT"
+        aria-label="OpenMMLab"></a>
+
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://github.com/opendilab/LightRFT" target="_blank">GitHub</a>
+          </li>
+          <li >
+            <div id="resourcesDropdownButton" data-toggle="resources-dropdown" class="resources-dropdown">
+              <a
+                class="resource-option with-down-arrow">
+                OpenDILab
+              </a>
+              <div class="resources-dropdown-menu">
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-engine" target="_blank">
+                  <span class="dropdown-title">DI-engine </span>
+                  <p>OpenDILab Decision AI Engine</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/LightZero" target="_blank">
+                  <span class="dropdown-title">LightZero </span>
+                  <p>OpenDILab Decision Monte Carlo Tree Search Framework</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/GenerativeRL" target="_blank">
+                  <span class="dropdown-title">GenerativeRL </span>
+                  <p>OpenDILab Generative AI Framework</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-star" target="_blank">
+                  <span class="dropdown-title">DI-star </span>
+                  <p>OpenDILab Decision AI in StarCraftII</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-drive" target="_blank">
+                  <span class="dropdown-title">DI-drive </span>
+                  <p>OpenDILab Auto-driving platform</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/GoBigger" target="_blank">
+                  <span class="dropdown-title">GoBigger </span>
+                  <p>OpenDILab Multi-Agent Environment</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-smartcross" target="_blank">
+                  <span class="dropdown-title">DI-smartcross </span>
+                  <p>Decision Intelligence Platform for Traffic Crossing Signal Control</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-treetensor" target="_blank">
+                  <span class="dropdown-title">DI-treetensor </span>
+                  <p>Tree Nested PyTorch Tensor Lib</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-sheep" target="_blank">
+                  <span class="dropdown-title">DI-sheep </span>
+                  <p>Deep Reinforcement Learning + 3 Tiles Game</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-model-based-RL" target="_blank">
+                  <span class="dropdown-title">awesome-model-based-RL </span>
+                  <p>A curated list of awesome model based RL resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-decision-transformer" target="_blank">
+                  <span class="dropdown-title">awesome-decision-transformer </span>
+                  <p>A curated list of Decision Transformer resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-exploration-rl" target="_blank">
+                  <span class="dropdown-title">awesome-exploration-rl </span>
+                  <p>A curated list of awesome exploration RL resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-multi-modal-reinforcement-learning" target="_blank">
+                  <span class="dropdown-title">awesome-multi-modal-reinforcement-learning </span>
+                  <p>A curated list of Multi-Modal Reinforcement Learning resources (continually updated)</p>
+                </a>
+              </div>
+          </li>
+        </ul>
+      </div>
+
+      <a class="main-menu-open-button" href="#" data-behavior="open-mobile-menu"></a>
+    </div>
+  </div>
+</div>
+
+<body class="pytorch-body">
+
+   
+
+  
+
+  <div class="table-of-contents-link-wrapper">
+    <span>Table of Contents</span>
+    <a href="#" class="toggle-table-of-contents" data-behavior="toggle-table-of-contents"></a>
+  </div>
+
+  <nav data-toggle="wy-nav-shift" class="pytorch-left-menu" id="pytorch-left-menu">
+    <div class="pytorch-side-scroll">
+      <div class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        <div class="pytorch-left-menu-search">
+          
+
+          
+          
+          
+          
+
+          
+
+
+
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search Docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        
+        
+        
+        
+        
+        <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../quick_start/index.html">Quick Start</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide &amp; Best Practices</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../best_practice/index.html">Best Practices</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_doc/utils/index.html">lightrft.utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_doc/datasets/index.html">lightrft.datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_doc/models/index.html">lightrft.models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_doc/strategy/index.html">lightrft.strategy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_doc/trainer/index.html">lightrft.trainer</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../index_zh.html">欢迎来到 LightRFT 文档!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../index_zh.html#id4">索引与表格</a></li>
+</ul>
+
+        
+        
+      </div>
+    </div>
+  </nav>
+
+  <div class="pytorch-container">
+    <div class="pytorch-page-level-bar" id="pytorch-page-level-bar">
+      <div class="pytorch-breadcrumbs-wrapper">
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="pytorch-breadcrumbs">
+    
+      <li>
+        <a href="../../../index.html">
+            Docs
+        </a> &gt;
+      </li>
+
+        
+          <li><a href="../../index.html">Module code</a> &gt;</li>
+        
+      <li>lightrft.datasets.srm_dataset</li>
+    
+    
+      <li class="pytorch-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+</div>
+      </div>
+
+      <div class="pytorch-shortcuts-wrapper" id="pytorch-shortcuts-wrapper">
+        Shortcuts
+      </div>
+    </div>
+
+    <section data-toggle="wy-nav-shift" id="pytorch-content-wrap" class="pytorch-content-wrap">
+      <div class="pytorch-content-left">
+        
+          <div class="rst-content">
+            
+            <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
+              <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
+                
+  <h1>Source code for lightrft.datasets.srm_dataset</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">io</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">random</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Optional</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">librosa</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">loguru</span><span class="w"> </span><span class="kn">import</span> <span class="n">logger</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">torch.utils.data</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dataset</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">transformers</span><span class="w"> </span><span class="kn">import</span> <span class="n">AutoTokenizer</span><span class="p">,</span> <span class="n">AutoProcessor</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.hpdv3</span><span class="w"> </span><span class="kn">import</span> <span class="n">HPDv3Handler</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.rapidata</span><span class="w"> </span><span class="kn">import</span> <span class="n">RapidataT2VHandler</span><span class="p">,</span> <span class="n">RapidataI2VHandler</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.omnirewardbench</span><span class="w"> </span><span class="kn">import</span> <span class="n">OmniRewardBenchT2VHandler</span><span class="p">,</span> <span class="n">OmniRewardBenchT2IHandler</span><span class="p">,</span> <span class="n">OmniRewardBenchT2AHandler</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.image_reward_db</span><span class="w"> </span><span class="kn">import</span> <span class="n">ImageRewardDBHandler</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.audio_alpaca</span><span class="w"> </span><span class="kn">import</span> <span class="n">AudioAlpacaHandler</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">zero_pad_sequences</span><span class="p">,</span> <span class="n">load_multimodal_content</span>
+
+
+<div class="viewcode-block" id="RankDatasetVL"><a class="viewcode-back" href="../../../api_doc/datasets/srm_dataset.html#lightrft.datasets.srm_dataset.RankDatasetVL">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">RankDatasetVL</span><span class="p">(</span><span class="n">Dataset</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Preference ranking dataset used for vision-language scalar reward model (RM) training.</span>
+
+<span class="sd">    RMRankDatasetVL dataset supports multiple data sources through pluggable</span>
+<span class="sd">    Data Handlers and covers both understanding tasks (image-to-text, video-to-text)</span>
+<span class="sd">    and generation tasks (text-to-image, text-to-video).</span>
+
+<span class="sd">    Each example contains two inputs to be compared. Labels use "A", "B",</span>
+<span class="sd">    and "C" to indicate which input is better or if they tie. For example,</span>
+<span class="sd">    label "A" means input0 is preferred over input1; "C" means a tie.</span>
+
+<span class="sd">    :param dataset_paths: List of dataset file paths or directories, in the format ``source:path`` where</span>
+<span class="sd">        the handler is determined by the source keyword such as hpdv3, rapidata, or omnirewardbench.</span>
+<span class="sd">    :type dataset_paths: List[str]</span>
+<span class="sd">    :param processor: Multimodal processor used for tokenization and visual</span>
+<span class="sd">        processing.</span>
+<span class="sd">    :type processor: transformers.AutoProcessor</span>
+<span class="sd">    :param tokenizer: Tokenizer used for text tokenization.</span>
+<span class="sd">    :type tokenizer: transformers.AutoTokenizer</span>
+<span class="sd">    :param strategy: Optional data loading strategy.</span>
+<span class="sd">    :type strategy: Any</span>
+<span class="sd">    :param max_length: Maximum sequence length for tokenization/truncation.</span>
+<span class="sd">    :type max_length: int</span>
+<span class="sd">    :param config: Additional configuration options. Supported keys include</span>
+<span class="sd">        ``task_instruction`` for the evaluation instruction and</span>
+<span class="sd">        ``system_prompt_template`` for a template containing a ``{prompt}``</span>
+<span class="sd">        placeholder.</span>
+<span class="sd">    :type config: Dict[str, Any]</span>
+
+<span class="sd">    **Example:**</span>
+
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            dataset = RankDatasetVL([</span>
+<span class="sd">                'hpdv3:/data/hpdv3/train.json'</span>
+<span class="sd">            ], processor=proc, tokenizer=tok, max_length=4096)</span>
+<span class="sd">    """</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">dataset_paths</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+        <span class="n">processor</span><span class="p">:</span> <span class="n">AutoProcessor</span><span class="p">,</span>
+        <span class="n">tokenizer</span><span class="p">:</span> <span class="n">AutoTokenizer</span><span class="p">,</span>
+        <span class="n">strategy</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">max_length</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4096</span><span class="p">,</span>
+        <span class="n">config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">):</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">processor</span> <span class="o">=</span> <span class="n">processor</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tokenizer</span> <span class="o">=</span> <span class="n">tokenizer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span> <span class="o">=</span> <span class="n">strategy</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_length</span> <span class="o">=</span> <span class="n">max_length</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">config</span> <span class="k">if</span> <span class="n">config</span> <span class="k">else</span> <span class="p">{}</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">media_content_loader</span> <span class="o">=</span> <span class="n">load_multimodal_content</span>
+
+        <span class="k">if</span> <span class="s2">"qwen"</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">processor</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">qwen_vl_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">process_vision_info</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">process_vision_info</span> <span class="o">=</span> <span class="n">process_vision_info</span>
+        <span class="k">elif</span> <span class="s2">"keye"</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">processor</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">keye_vl_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">process_vision_info</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">process_vision_info</span> <span class="o">=</span> <span class="n">process_vision_info</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Processor type </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">processor</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> not supported yet."</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">handlers</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">"hpdv3"</span><span class="p">:</span> <span class="n">HPDv3Handler</span><span class="p">(),</span>
+            <span class="s2">"rapidata-t2v"</span><span class="p">:</span> <span class="n">RapidataT2VHandler</span><span class="p">(),</span>
+            <span class="s2">"rapidata-i2v"</span><span class="p">:</span> <span class="n">RapidataI2VHandler</span><span class="p">(),</span>
+            <span class="s2">"omnirewardbench-t2v"</span><span class="p">:</span> <span class="n">OmniRewardBenchT2VHandler</span><span class="p">(),</span>
+            <span class="s2">"omnirewardbench-t2i"</span><span class="p">:</span> <span class="n">OmniRewardBenchT2IHandler</span><span class="p">(),</span>
+            <span class="s2">"imagerewarddb"</span><span class="p">:</span> <span class="n">ImageRewardDBHandler</span><span class="p">(),</span>
+        <span class="p">}</span>
+
+        <span class="c1"># Load data from all specified dataset paths</span>
+        <span class="c1"># We expect dataset_paths to be in the format: "source:path"</span>
+        <span class="c1"># e.g. "rapidata-t2v:/path/to/file.parquet"</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">dataset_paths</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">source</span><span class="p">,</span> <span class="n">path</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">":"</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Dataset path '</span><span class="si">{</span><span class="n">item</span><span class="si">}</span><span class="s2">' is not in the expected format 'source:path'."</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">source</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">handlers</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"The data handler for source </span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2"> is not implemented."</span><span class="p">)</span>
+
+            <span class="n">handler</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">handlers</span><span class="p">[</span><span class="n">source</span><span class="p">]</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">loaded_items</span> <span class="o">=</span> <span class="n">handler</span><span class="o">.</span><span class="n">load_data</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">loaded_items</span><span class="p">:</span>
+                    <span class="n">item</span><span class="p">[</span><span class="s2">"source"</span><span class="p">]</span> <span class="o">=</span> <span class="n">source</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">loaded_items</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Failed to load data </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2"> (source: </span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2">): </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Loaded </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span><span class="si">}</span><span class="s2"> items in total, sources: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">dataset_paths</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="n">random</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Get the total number of items in the dataset.</span>
+
+<span class="sd">        :return: Total number of items</span>
+<span class="sd">        :rtype: int</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Get a single item pair from the dataset by index.</span>
+
+<span class="sd">        :param idx: Index of the item to retrieve</span>
+<span class="sd">        :type idx: int</span>
+
+<span class="sd">        :return: A tuple of (input0_token, input1_token, metadata)</span>
+<span class="sd">        :rtype: Tuple[Dict[str, torch.Tensor], Dict[str, torch.Tensor], Dict[str, Any]]</span>
+
+<span class="sd">        **Example:**</span>
+
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            tokens0, tokens1, meta = dataset[0]</span>
+<span class="sd">        """</span>
+        <span class="n">item</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+        <span class="n">source</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s2">"source"</span><span class="p">]</span>
+
+        <span class="n">handler</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">handlers</span><span class="p">[</span><span class="n">source</span><span class="p">]</span>
+
+        <span class="c1"># Get paths for all media content</span>
+        <span class="n">media_info</span> <span class="o">=</span> <span class="n">handler</span><span class="o">.</span><span class="n">get_media_info</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+
+        <span class="c1"># Load all media content at once</span>
+        <span class="n">loaded_content</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">media_content_loader</span><span class="p">(</span><span class="n">media_info</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">loaded_content</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Failed to load media content: </span><span class="si">{</span><span class="n">media_info</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+
+        <span class="c1"># Pass the loaded content dict to parse_item</span>
+        <span class="n">messages0</span><span class="p">,</span> <span class="n">messages1</span><span class="p">,</span> <span class="n">other</span> <span class="o">=</span> <span class="n">handler</span><span class="o">.</span><span class="n">parse_item</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">loaded_content</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">)</span>
+
+        <span class="c1"># Tokenize the two message sequences</span>
+        <span class="n">input0_token</span><span class="p">,</span> <span class="n">input1_token</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tokenize_pair</span><span class="p">(</span><span class="n">messages0</span><span class="p">,</span> <span class="n">messages1</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">input0_token</span><span class="p">,</span> <span class="n">input1_token</span><span class="p">,</span> <span class="n">other</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_tokenize_pair</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">messages0</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">],</span>
+                       <span class="n">messages1</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Tokenize a pair of messages.</span>
+
+<span class="sd">        :param messages0: First message sequence</span>
+<span class="sd">        :type messages0: List[Dict]</span>
+<span class="sd">        :param messages1: Second message sequence</span>
+<span class="sd">        :type messages1: List[Dict]</span>
+
+<span class="sd">        :return: A tuple of (input0_token, input1_token)</span>
+<span class="sd">        :rtype: Tuple[Dict[str, torch.Tensor], Dict[str, torch.Tensor]]</span>
+<span class="sd">        """</span>
+        <span class="n">input0_text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">processor</span><span class="o">.</span><span class="n">apply_chat_template</span><span class="p">(</span><span class="n">messages0</span><span class="p">,</span> <span class="n">tokenize</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">add_generation_prompt</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">input1_text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">processor</span><span class="o">.</span><span class="n">apply_chat_template</span><span class="p">(</span><span class="n">messages1</span><span class="p">,</span> <span class="n">tokenize</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">add_generation_prompt</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">input0_text</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tokenizer</span><span class="o">.</span><span class="n">eos_token</span><span class="p">):</span>
+            <span class="n">input0_text</span> <span class="o">+=</span> <span class="s2">" "</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">tokenizer</span><span class="o">.</span><span class="n">eos_token</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">input1_text</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tokenizer</span><span class="o">.</span><span class="n">eos_token</span><span class="p">):</span>
+            <span class="n">input1_text</span> <span class="o">+=</span> <span class="s2">" "</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">tokenizer</span><span class="o">.</span><span class="n">eos_token</span>
+
+        <span class="n">image_inputs0</span><span class="p">,</span> <span class="n">video_inputs0</span><span class="p">,</span> <span class="n">video_kwargs0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">process_vision_info</span><span class="p">(</span><span class="n">messages0</span><span class="p">,</span> <span class="n">return_video_kwargs</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">image_inputs1</span><span class="p">,</span> <span class="n">video_inputs1</span><span class="p">,</span> <span class="n">video_kwargs1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">process_vision_info</span><span class="p">(</span><span class="n">messages1</span><span class="p">,</span> <span class="n">return_video_kwargs</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="n">input0_token</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">processor</span><span class="p">(</span>
+            <span class="n">text</span><span class="o">=</span><span class="p">[</span><span class="n">input0_text</span><span class="p">],</span>
+            <span class="n">images</span><span class="o">=</span><span class="n">image_inputs0</span><span class="p">,</span>
+            <span class="n">videos</span><span class="o">=</span><span class="n">video_inputs0</span><span class="p">,</span>
+            <span class="n">max_length</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">max_length</span><span class="p">,</span>
+            <span class="n">padding</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">truncation</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">return_tensors</span><span class="o">=</span><span class="s2">"pt"</span><span class="p">,</span>
+            <span class="n">add_special_tokens</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">video_kwargs0</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">input0_token</span><span class="p">[</span><span class="s2">"input_ids"</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tokenizer</span><span class="o">.</span><span class="n">eos_token_id</span>
+        <span class="n">input0_token</span><span class="p">[</span><span class="s2">"attention_mask"</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="n">input1_token</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">processor</span><span class="p">(</span>
+            <span class="n">text</span><span class="o">=</span><span class="p">[</span><span class="n">input1_text</span><span class="p">],</span>
+            <span class="n">images</span><span class="o">=</span><span class="n">image_inputs1</span><span class="p">,</span>
+            <span class="n">videos</span><span class="o">=</span><span class="n">video_inputs1</span><span class="p">,</span>
+            <span class="n">max_length</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">max_length</span><span class="p">,</span>
+            <span class="n">padding</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">truncation</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">return_tensors</span><span class="o">=</span><span class="s2">"pt"</span><span class="p">,</span>
+            <span class="n">add_special_tokens</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">video_kwargs1</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">input1_token</span><span class="p">[</span><span class="s2">"input_ids"</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tokenizer</span><span class="o">.</span><span class="n">eos_token_id</span>
+        <span class="n">input1_token</span><span class="p">[</span><span class="s2">"attention_mask"</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="k">return</span> <span class="n">input0_token</span><span class="p">,</span> <span class="n">input1_token</span>
+
+<div class="viewcode-block" id="RankDatasetVL.collate_fn"><a class="viewcode-back" href="../../../api_doc/datasets/srm_dataset.html#lightrft.datasets.srm_dataset.RankDatasetVL.collate_fn">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">collate_fn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tuple</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Collate a batch of items into a single batch for model processing.</span>
+
+<span class="sd">        :param batch: A list of items returned by __getitem__</span>
+<span class="sd">        :type batch: List[Tuple]</span>
+
+<span class="sd">        :return: A tuple containing batched inputs for both samples in the pair and extras.</span>
+<span class="sd">        :rtype: Optional[Tuple]</span>
+
+<span class="sd">        **Example:**</span>
+
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            batch = dataset.collate_fn([dataset[i] for i in range(4)])</span>
+<span class="sd">        """</span>
+        <span class="n">batch</span> <span class="o">=</span> <span class="p">[</span><span class="n">b</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">batch</span> <span class="k">if</span> <span class="n">b</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">batch</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">input0_ids_list</span><span class="p">,</span> <span class="n">input0_masks_list</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
+        <span class="n">input1_ids_list</span><span class="p">,</span> <span class="n">input1_masks_list</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
+        <span class="n">extras_list</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="n">input0_img_pixels</span><span class="p">,</span> <span class="n">input0_img_grid</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
+        <span class="n">input0_video_pixels</span><span class="p">,</span> <span class="n">input0_video_grid</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
+
+        <span class="n">input1_img_pixels</span><span class="p">,</span> <span class="n">input1_img_grid</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
+        <span class="n">input1_video_pixels</span><span class="p">,</span> <span class="n">input1_video_grid</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">input0_token</span><span class="p">,</span> <span class="n">input1_token</span><span class="p">,</span> <span class="n">extra</span> <span class="ow">in</span> <span class="n">batch</span><span class="p">:</span>
+            <span class="n">extras_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">extra</span><span class="p">)</span>
+
+            <span class="c1"># --- Get text  ---</span>
+            <span class="n">input0_ids_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">input0_token</span><span class="p">[</span><span class="s1">'input_ids'</span><span class="p">])</span>
+            <span class="n">input0_masks_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">input0_token</span><span class="p">[</span><span class="s1">'attention_mask'</span><span class="p">])</span>
+            <span class="n">input1_ids_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">input1_token</span><span class="p">[</span><span class="s1">'input_ids'</span><span class="p">])</span>
+            <span class="n">input1_masks_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">input1_token</span><span class="p">[</span><span class="s1">'attention_mask'</span><span class="p">])</span>
+
+            <span class="c1"># --- Get visuals  ---</span>
+            <span class="k">if</span> <span class="s1">'pixel_values'</span> <span class="ow">in</span> <span class="n">input0_token</span><span class="p">:</span>
+                <span class="n">input0_img_pixels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">input0_token</span><span class="p">[</span><span class="s1">'pixel_values'</span><span class="p">])</span>
+                <span class="n">input0_img_grid</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">input0_token</span><span class="p">[</span><span class="s1">'image_grid_thw'</span><span class="p">])</span>
+                <span class="n">input1_img_pixels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">input1_token</span><span class="p">[</span><span class="s1">'pixel_values'</span><span class="p">])</span>
+                <span class="n">input1_img_grid</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">input1_token</span><span class="p">[</span><span class="s1">'image_grid_thw'</span><span class="p">])</span>
+
+            <span class="k">if</span> <span class="s1">'pixel_values_videos'</span> <span class="ow">in</span> <span class="n">input0_token</span><span class="p">:</span>
+                <span class="n">input0_video_pixels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">input0_token</span><span class="p">[</span><span class="s1">'pixel_values_videos'</span><span class="p">])</span>
+                <span class="n">input0_video_grid</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">input0_token</span><span class="p">[</span><span class="s1">'video_grid_thw'</span><span class="p">])</span>
+                <span class="n">input1_video_pixels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">input1_token</span><span class="p">[</span><span class="s1">'pixel_values_videos'</span><span class="p">])</span>
+                <span class="n">input1_video_grid</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">input1_token</span><span class="p">[</span><span class="s1">'video_grid_thw'</span><span class="p">])</span>
+
+        <span class="n">padding_side</span> <span class="o">=</span> <span class="s2">"left"</span>
+        <span class="n">input0_ids</span> <span class="o">=</span> <span class="n">zero_pad_sequences</span><span class="p">(</span><span class="n">input0_ids_list</span><span class="p">,</span> <span class="n">side</span><span class="o">=</span><span class="n">padding_side</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tokenizer</span><span class="o">.</span><span class="n">pad_token_id</span><span class="p">)</span>
+        <span class="n">input0_masks</span> <span class="o">=</span> <span class="n">zero_pad_sequences</span><span class="p">(</span><span class="n">input0_masks_list</span><span class="p">,</span> <span class="n">side</span><span class="o">=</span><span class="n">padding_side</span><span class="p">)</span>
+        <span class="n">input1_ids</span> <span class="o">=</span> <span class="n">zero_pad_sequences</span><span class="p">(</span><span class="n">input1_ids_list</span><span class="p">,</span> <span class="n">side</span><span class="o">=</span><span class="n">padding_side</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tokenizer</span><span class="o">.</span><span class="n">pad_token_id</span><span class="p">)</span>
+        <span class="n">input1_masks</span> <span class="o">=</span> <span class="n">zero_pad_sequences</span><span class="p">(</span><span class="n">input1_masks_list</span><span class="p">,</span> <span class="n">side</span><span class="o">=</span><span class="n">padding_side</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="c1"># Text inputs</span>
+            <span class="n">input0_ids</span><span class="p">,</span>
+            <span class="n">input0_masks</span><span class="p">,</span>
+            <span class="n">input1_ids</span><span class="p">,</span>
+            <span class="n">input1_masks</span><span class="p">,</span>
+            <span class="c1"># Image inputs</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">input0_img_pixels</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="k">if</span> <span class="n">input0_img_pixels</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">input0_img_grid</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="k">if</span> <span class="n">input0_img_grid</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">input1_img_pixels</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="k">if</span> <span class="n">input1_img_pixels</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">input1_img_grid</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="k">if</span> <span class="n">input1_img_grid</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="c1"># Video inputs</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">input0_video_pixels</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="k">if</span> <span class="n">input0_video_pixels</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">input0_video_grid</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="k">if</span> <span class="n">input0_video_grid</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">input1_video_pixels</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="k">if</span> <span class="n">input1_video_pixels</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">input1_video_grid</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="k">if</span> <span class="n">input1_video_grid</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="c1"># Extras</span>
+            <span class="n">extras_list</span>
+        <span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="RankDatasetAL"><a class="viewcode-back" href="../../../api_doc/datasets/srm_dataset.html#lightrft.datasets.srm_dataset.RankDatasetAL">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">RankDatasetAL</span><span class="p">(</span><span class="n">Dataset</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Preference ranking dataset used for audio-language scalar reward model (RM) training.</span>
+
+<span class="sd">    RMRankDatasetAL dataset supports multiple audio-language data sources through pluggable</span>
+<span class="sd">    Data Handlers and support training reward model for text-to-audio task.</span>
+
+<span class="sd">    :param dataset_paths: List of dataset file paths or directories, in the format ``source:path`` where</span>
+<span class="sd">        the handler is determined by the source keyword such as audio-alpaca or omnirewardbench-t2a.</span>
+<span class="sd">    :type dataset_paths: List[str]</span>
+<span class="sd">    :param processor: Multimodal processor used for tokenization and audio</span>
+<span class="sd">        processing.</span>
+<span class="sd">    :type processor: transformers.AutoProcessor</span>
+<span class="sd">    :param tokenizer: Tokenizer used for text tokenization.</span>
+<span class="sd">    :type tokenizer: transformers.AutoTokenizer</span>
+<span class="sd">    :param strategy: Optional data loading strategy.</span>
+<span class="sd">    :type strategy: Any</span>
+<span class="sd">    :param max_length: Maximum sequence length for tokenization/truncation.</span>
+<span class="sd">    :type max_length: int</span>
+<span class="sd">    :param config: Additional configuration options. Supported keys include</span>
+<span class="sd">        ``task_instruction`` for the evaluation instruction and</span>
+<span class="sd">        ``system_prompt_template`` for a template containing a ``{prompt}``</span>
+<span class="sd">        placeholder.</span>
+<span class="sd">    :type config: Dict[str, Any]</span>
+
+<span class="sd">    :example:</span>
+
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            dataset = RankDatasetAL([</span>
+<span class="sd">                'audio-alpaca:/path/to/file.parquet'</span>
+<span class="sd">            ], processor=proc, tokenizer=tok, max_length=4096)</span>
+<span class="sd">    """</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">dataset_paths</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+        <span class="n">processor</span><span class="p">:</span> <span class="n">AutoProcessor</span><span class="p">,</span>
+        <span class="n">tokenizer</span><span class="p">:</span> <span class="n">AutoTokenizer</span><span class="p">,</span>
+        <span class="n">strategy</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">max_length</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4096</span><span class="p">,</span>
+        <span class="n">config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">):</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">processor</span> <span class="o">=</span> <span class="n">processor</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tokenizer</span> <span class="o">=</span> <span class="n">tokenizer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span> <span class="o">=</span> <span class="n">strategy</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_length</span> <span class="o">=</span> <span class="n">max_length</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">config</span> <span class="k">if</span> <span class="n">config</span> <span class="k">else</span> <span class="p">{}</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">audio_content_loader</span> <span class="o">=</span> <span class="n">load_multimodal_content</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">handlers</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">"omnirewardbench-t2a"</span><span class="p">:</span> <span class="n">OmniRewardBenchT2AHandler</span><span class="p">(),</span>
+            <span class="s2">"audio-alpaca"</span><span class="p">:</span> <span class="n">AudioAlpacaHandler</span><span class="p">(),</span>
+        <span class="p">}</span>
+
+        <span class="c1"># Load data from all specified dataset paths</span>
+        <span class="c1"># Expect dataset_paths entries in the format: "source:path",</span>
+        <span class="c1"># e.g. "audio-alpaca:/path/to/file.parquet"</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">dataset_paths</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">source</span><span class="p">,</span> <span class="n">path</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">":"</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Dataset path '</span><span class="si">{</span><span class="n">item</span><span class="si">}</span><span class="s2">' is not in the expected format 'source:path'."</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">source</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">handlers</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"The data handler for source </span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2"> is not implemented."</span><span class="p">)</span>
+
+            <span class="n">handler</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">handlers</span><span class="p">[</span><span class="n">source</span><span class="p">]</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">loaded_items</span> <span class="o">=</span> <span class="n">handler</span><span class="o">.</span><span class="n">load_data</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">it</span> <span class="ow">in</span> <span class="n">loaded_items</span><span class="p">:</span>
+                    <span class="n">it</span><span class="p">[</span><span class="s2">"source"</span><span class="p">]</span> <span class="o">=</span> <span class="n">source</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">loaded_items</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Failed to load data </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2"> (source: </span><span class="si">{</span><span class="n">source</span><span class="si">}</span><span class="s2">): </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Loaded </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span><span class="si">}</span><span class="s2"> items in total, sources: </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">dataset_paths</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="n">random</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Get the total number of items in the dataset.</span>
+
+<span class="sd">        :return: Total number of items</span>
+<span class="sd">        :rtype: int</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Get a single item pair from the dataset by index.</span>
+
+<span class="sd">        :param idx: Index of the item to retrieve</span>
+<span class="sd">        :type idx: int</span>
+
+<span class="sd">        :return: A tuple of (input0_token, input1_token, metadata)</span>
+<span class="sd">        :rtype: Tuple[Dict[str, torch.Tensor], Dict[str, torch.Tensor], Dict[str, Any]]</span>
+
+<span class="sd">        **Example:**</span>
+
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            tokens0, tokens1, meta = dataset[0]</span>
+<span class="sd">        """</span>
+        <span class="n">item</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+        <span class="n">source</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s2">"source"</span><span class="p">]</span>
+
+        <span class="n">handler</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">handlers</span><span class="p">[</span><span class="n">source</span><span class="p">]</span>
+
+        <span class="c1"># Get media/audio info for this item. Prefer the generic get_media_info</span>
+        <span class="n">audio_info</span> <span class="o">=</span> <span class="n">handler</span><span class="o">.</span><span class="n">get_media_info</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+
+        <span class="c1"># Load all audio content at once</span>
+        <span class="n">loaded_content</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">audio_content_loader</span><span class="p">(</span><span class="n">audio_info</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">loaded_content</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Failed to load audio content: </span><span class="si">{</span><span class="n">audio_info</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+
+        <span class="c1"># Pass the loaded content dict to parse_item</span>
+        <span class="n">messages0</span><span class="p">,</span> <span class="n">messages1</span><span class="p">,</span> <span class="n">other</span> <span class="o">=</span> <span class="n">handler</span><span class="o">.</span><span class="n">parse_item</span><span class="p">(</span><span class="n">item</span><span class="p">,</span> <span class="n">loaded_content</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">)</span>
+
+        <span class="c1"># Tokenize the two message sequences</span>
+        <span class="n">input0_token</span><span class="p">,</span> <span class="n">input1_token</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tokenize_pair</span><span class="p">(</span><span class="n">messages0</span><span class="p">,</span> <span class="n">messages1</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">input0_token</span><span class="p">,</span> <span class="n">input1_token</span><span class="p">,</span> <span class="n">other</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_tokenize_pair</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">messages0</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">],</span>
+                       <span class="n">messages1</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">],</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Tokenize a pair of messages including audio content.</span>
+
+<span class="sd">        :param messages0: First message sequence</span>
+<span class="sd">        :type messages0: List[Dict]</span>
+<span class="sd">        :param messages1: Second message sequence</span>
+<span class="sd">        :type messages1: List[Dict]</span>
+
+<span class="sd">        :return: A tuple of (input0_token, input1_token)</span>
+<span class="sd">        :rtype: Tuple[Dict[str, torch.Tensor], Dict[str, torch.Tensor]]</span>
+<span class="sd">        """</span>
+        <span class="c1"># Get audio data from messages</span>
+        <span class="n">audio0</span><span class="p">,</span> <span class="n">audio1</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+        <span class="k">for</span> <span class="n">msg</span> <span class="ow">in</span> <span class="n">messages0</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">msg</span><span class="p">[</span><span class="s2">"content"</span><span class="p">],</span> <span class="nb">list</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">ele</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">[</span><span class="s2">"content"</span><span class="p">]:</span>
+                    <span class="k">if</span> <span class="n">ele</span><span class="p">[</span><span class="s2">"type"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"audio"</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ele</span><span class="p">[</span><span class="s1">'audio'</span><span class="p">],</span> <span class="nb">str</span><span class="p">):</span>
+                            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">ele</span><span class="p">[</span><span class="s1">'audio'</span><span class="p">],</span> <span class="s1">'rb'</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                                <span class="n">audio0_bytes</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+                            <span class="n">audio0</span> <span class="o">=</span> <span class="n">librosa</span><span class="o">.</span><span class="n">load</span><span class="p">(</span>
+                                <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">audio0_bytes</span><span class="p">),</span> <span class="n">sr</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">processor</span><span class="o">.</span><span class="n">feature_extractor</span><span class="o">.</span><span class="n">sampling_rate</span>
+                            <span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+                        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ele</span><span class="p">[</span><span class="s1">'audio'</span><span class="p">],</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">):</span>
+                            <span class="n">audio0</span> <span class="o">=</span> <span class="n">librosa</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">ele</span><span class="p">[</span><span class="s1">'audio'</span><span class="p">],</span> <span class="n">sr</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">processor</span><span class="o">.</span><span class="n">feature_extractor</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unsupported audio type: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">ele</span><span class="p">[</span><span class="s1">'audio'</span><span class="p">])</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">msg</span> <span class="ow">in</span> <span class="n">messages1</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">msg</span><span class="p">[</span><span class="s2">"content"</span><span class="p">],</span> <span class="nb">list</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">ele</span> <span class="ow">in</span> <span class="n">msg</span><span class="p">[</span><span class="s2">"content"</span><span class="p">]:</span>
+                    <span class="k">if</span> <span class="n">ele</span><span class="p">[</span><span class="s2">"type"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"audio"</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ele</span><span class="p">[</span><span class="s1">'audio'</span><span class="p">],</span> <span class="nb">str</span><span class="p">):</span>
+                            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">ele</span><span class="p">[</span><span class="s1">'audio'</span><span class="p">],</span> <span class="s1">'rb'</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                                <span class="n">audio1_bytes</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+                            <span class="n">audio1</span> <span class="o">=</span> <span class="n">librosa</span><span class="o">.</span><span class="n">load</span><span class="p">(</span>
+                                <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">audio1_bytes</span><span class="p">),</span> <span class="n">sr</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">processor</span><span class="o">.</span><span class="n">feature_extractor</span><span class="o">.</span><span class="n">sampling_rate</span>
+                            <span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+                        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ele</span><span class="p">[</span><span class="s1">'audio'</span><span class="p">],</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">):</span>
+                            <span class="n">audio1</span> <span class="o">=</span> <span class="n">librosa</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">ele</span><span class="p">[</span><span class="s1">'audio'</span><span class="p">],</span> <span class="n">sr</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">processor</span><span class="o">.</span><span class="n">feature_extractor</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unsupported audio type: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">ele</span><span class="p">[</span><span class="s1">'audio'</span><span class="p">])</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+
+        <span class="n">input0_text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">processor</span><span class="o">.</span><span class="n">apply_chat_template</span><span class="p">(</span><span class="n">messages0</span><span class="p">,</span> <span class="n">tokenize</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">add_generation_prompt</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">input1_text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">processor</span><span class="o">.</span><span class="n">apply_chat_template</span><span class="p">(</span><span class="n">messages1</span><span class="p">,</span> <span class="n">tokenize</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">add_generation_prompt</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">input0_text</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tokenizer</span><span class="o">.</span><span class="n">eos_token</span><span class="p">):</span>
+            <span class="n">input0_text</span> <span class="o">+=</span> <span class="s2">" "</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">tokenizer</span><span class="o">.</span><span class="n">eos_token</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">input1_text</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tokenizer</span><span class="o">.</span><span class="n">eos_token</span><span class="p">):</span>
+            <span class="n">input1_text</span> <span class="o">+=</span> <span class="s2">" "</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">tokenizer</span><span class="o">.</span><span class="n">eos_token</span>
+
+        <span class="n">input0_token</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">processor</span><span class="p">(</span>
+            <span class="n">text</span><span class="o">=</span><span class="p">[</span><span class="n">input0_text</span><span class="p">],</span>
+            <span class="n">audio</span><span class="o">=</span><span class="p">[</span><span class="n">audio0</span><span class="p">],</span>
+            <span class="n">sampling_rate</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">processor</span><span class="o">.</span><span class="n">feature_extractor</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">,</span>
+            <span class="n">padding</span><span class="o">=</span><span class="s2">"longest"</span><span class="p">,</span>  <span class="c1"># See https://github.com/huggingface/transformers/issues/30740</span>
+            <span class="n">truncation</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">return_tensors</span><span class="o">=</span><span class="s2">"pt"</span><span class="p">,</span>
+            <span class="n">add_special_tokens</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">input0_token</span><span class="p">[</span><span class="s2">"input_ids"</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tokenizer</span><span class="o">.</span><span class="n">eos_token_id</span>
+        <span class="n">input0_token</span><span class="p">[</span><span class="s2">"attention_mask"</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="n">input1_token</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">processor</span><span class="p">(</span>
+            <span class="n">text</span><span class="o">=</span><span class="p">[</span><span class="n">input1_text</span><span class="p">],</span>
+            <span class="n">audio</span><span class="o">=</span><span class="p">[</span><span class="n">audio1</span><span class="p">],</span>
+            <span class="n">sampling_rate</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">processor</span><span class="o">.</span><span class="n">feature_extractor</span><span class="o">.</span><span class="n">sampling_rate</span><span class="p">,</span>
+            <span class="n">padding</span><span class="o">=</span><span class="s2">"longest"</span><span class="p">,</span>
+            <span class="n">truncation</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">return_tensors</span><span class="o">=</span><span class="s2">"pt"</span><span class="p">,</span>
+            <span class="n">add_special_tokens</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">input1_token</span><span class="p">[</span><span class="s2">"input_ids"</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tokenizer</span><span class="o">.</span><span class="n">eos_token_id</span>
+        <span class="n">input1_token</span><span class="p">[</span><span class="s2">"attention_mask"</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="k">return</span> <span class="n">input0_token</span><span class="p">,</span> <span class="n">input1_token</span>
+
+<div class="viewcode-block" id="RankDatasetAL.collate_fn"><a class="viewcode-back" href="../../../api_doc/datasets/srm_dataset.html#lightrft.datasets.srm_dataset.RankDatasetAL.collate_fn">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">collate_fn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tuple</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Collate a batch of items into a single batch for model processing.</span>
+
+<span class="sd">        :param batch: A list of items returned by __getitem__</span>
+<span class="sd">        :type batch: List[Tuple]</span>
+
+<span class="sd">        :return: A tuple containing batched inputs for both samples in the pair and extras.</span>
+<span class="sd">        :rtype: Optional[Tuple]</span>
+
+<span class="sd">        **Example:**</span>
+
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            batch = dataset.collate_fn([dataset[i] for i in range(4)])</span>
+<span class="sd">        """</span>
+        <span class="n">batch</span> <span class="o">=</span> <span class="p">[</span><span class="n">b</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">batch</span> <span class="k">if</span> <span class="n">b</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">batch</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">input0_ids_list</span><span class="p">,</span> <span class="n">input0_masks_list</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
+        <span class="n">input1_ids_list</span><span class="p">,</span> <span class="n">input1_masks_list</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
+        <span class="n">extras_list</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="n">input0_input_features</span><span class="p">,</span> <span class="n">input0_feature_attention_mask</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
+        <span class="n">input1_input_features</span><span class="p">,</span> <span class="n">input1_feature_attention_mask</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">input0_token</span><span class="p">,</span> <span class="n">input1_token</span><span class="p">,</span> <span class="n">extra</span> <span class="ow">in</span> <span class="n">batch</span><span class="p">:</span>
+            <span class="n">extras_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">extra</span><span class="p">)</span>
+
+            <span class="c1"># --- Get text  ---</span>
+            <span class="n">input0_ids_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">input0_token</span><span class="p">[</span><span class="s1">'input_ids'</span><span class="p">])</span>
+            <span class="n">input0_masks_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">input0_token</span><span class="p">[</span><span class="s1">'attention_mask'</span><span class="p">])</span>
+            <span class="n">input1_ids_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">input1_token</span><span class="p">[</span><span class="s1">'input_ids'</span><span class="p">])</span>
+            <span class="n">input1_masks_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">input1_token</span><span class="p">[</span><span class="s1">'attention_mask'</span><span class="p">])</span>
+
+            <span class="c1"># --- Get audios  ---</span>
+            <span class="n">input0_input_features</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">input0_token</span><span class="p">[</span><span class="s1">'input_features'</span><span class="p">])</span>
+            <span class="n">input0_feature_attention_mask</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">input0_token</span><span class="p">[</span><span class="s1">'feature_attention_mask'</span><span class="p">])</span>
+            <span class="n">input1_input_features</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">input1_token</span><span class="p">[</span><span class="s1">'input_features'</span><span class="p">])</span>
+            <span class="n">input1_feature_attention_mask</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">input1_token</span><span class="p">[</span><span class="s1">'feature_attention_mask'</span><span class="p">])</span>
+
+        <span class="n">padding_side</span> <span class="o">=</span> <span class="s2">"left"</span>
+        <span class="n">input0_ids</span> <span class="o">=</span> <span class="n">zero_pad_sequences</span><span class="p">(</span><span class="n">input0_ids_list</span><span class="p">,</span> <span class="n">side</span><span class="o">=</span><span class="n">padding_side</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tokenizer</span><span class="o">.</span><span class="n">pad_token_id</span><span class="p">)</span>
+        <span class="n">input0_masks</span> <span class="o">=</span> <span class="n">zero_pad_sequences</span><span class="p">(</span><span class="n">input0_masks_list</span><span class="p">,</span> <span class="n">side</span><span class="o">=</span><span class="n">padding_side</span><span class="p">)</span>
+        <span class="n">input1_ids</span> <span class="o">=</span> <span class="n">zero_pad_sequences</span><span class="p">(</span><span class="n">input1_ids_list</span><span class="p">,</span> <span class="n">side</span><span class="o">=</span><span class="n">padding_side</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tokenizer</span><span class="o">.</span><span class="n">pad_token_id</span><span class="p">)</span>
+        <span class="n">input1_masks</span> <span class="o">=</span> <span class="n">zero_pad_sequences</span><span class="p">(</span><span class="n">input1_masks_list</span><span class="p">,</span> <span class="n">side</span><span class="o">=</span><span class="n">padding_side</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="c1"># Text inputs</span>
+            <span class="n">input0_ids</span><span class="p">,</span>
+            <span class="n">input0_masks</span><span class="p">,</span>
+            <span class="n">input1_ids</span><span class="p">,</span>
+            <span class="n">input1_masks</span><span class="p">,</span>
+            <span class="c1"># Audio inputs</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">input0_input_features</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="k">if</span> <span class="n">input0_input_features</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">input0_feature_attention_mask</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="k">if</span> <span class="n">input0_feature_attention_mask</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">input1_input_features</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="k">if</span> <span class="n">input1_input_features</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">input1_feature_attention_mask</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="k">if</span> <span class="n">input1_feature_attention_mask</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="c1"># Extras</span>
+            <span class="n">extras_list</span>
+        <span class="p">)</span></div></div>
+</pre></div>
+
+              </article>
+              
+            </div>
+            <footer>
+  
+
+  <hr>
+
+  <div role="contentinfo">
+    <p>
+      &copy; Copyright 2025-2026, OpenDILab.
+
+    </p>
+  </div>
+  
+  <div>
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a
+      href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the
+      Docs</a>.
+  </div>
+   
+
+</footer>
+          </div>
+        </div>
+
+        <div class="pytorch-content-right" id="pytorch-content-right">
+          <div class="pytorch-right-menu" id="pytorch-right-menu">
+            <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
+              
+            </div>
+          </div>
+        </div>
+    </section>
+  </div>
+
+  
+
+
+  
+
+  
+  <script type="text/javascript" id="documentation_options" data-url_root="../../../"
+    src="../../../_static/documentation_options.js"></script>
+  <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+  <script src="../../../_static/doctools.js"></script>
+  <script src="../../../_static/sphinx_highlight.js"></script>
+  <script src="../../../_static/clipboard.min.js"></script>
+  <script src="../../../_static/copybutton.js"></script>
+  
+
+  
+
+  <script type="text/javascript" src="../../../_static/js/vendor/popper.min.js"></script>
+  <script type="text/javascript" src="../../../_static/js/vendor/bootstrap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
+  <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+    jQuery(function () {
+      SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+  <!-- Begin Footer -->
+
+  <div class="container-fluid docs-tutorials-resources" id="docs-tutorials-resources">
+  </div>
+
+  <!-- End Footer -->
+
+  <!-- Begin Mobile Menu -->
+
+  <div class="mobile-main-menu">
+    <div class="container-fluid">
+      <div class="container">
+        <div class="mobile-main-menu-header-container">
+          <a class="header-logo" href="https://github.com/opendilab/LightRFT" aria-label="OpenMMLab"></a>
+          <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
+        </div>
+      </div>
+    </div>
+
+    <div class="mobile-main-menu-links-container">
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://github.com/opendilab/LightRFT" target="_blank">GitHub</a>
+          </li>
+      </div>
+    </div>
+  </div>
+
+  <!-- End Mobile Menu -->
+
+  <script type="text/javascript" src="../../../_static/js/vendor/anchor.min.js"></script>
+
+  <script type="text/javascript">
+    $(document).ready(function () {
+      mobileMenu.bind();
+      mobileTOC.bind();
+      pytorchAnchors.bind();
+      sideMenus.bind();
+      scrollToAnchor.bind();
+      highlightNavigation.bind();
+      mainMenuDropdown.bind();
+      filterTags.bind();
+
+      // Add class to links that have code blocks, since we cannot create links in code blocks
+      $("article.pytorch-article a span.pre").each(function (e) {
+        $(this).closest("a").addClass("has-code");
+      });
+    })
+  </script>
+</body>
+
+</html>

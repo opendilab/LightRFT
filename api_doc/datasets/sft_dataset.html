@@ -33,6 +33,7 @@
   <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
   <link rel="stylesheet" href="../../_static/css/readthedocs.css" type="text/css" />
   <link rel="index" title="Index" href="../../genindex.html" />
   <link rel="search" title="Search" href="../../search.html" />
@@ -87,7 +88,7 @@
 <div class="container-fluid header-holder tutorials-header" id="header-holder">
   <div class="container">
     <div class="header-container">
-      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+      <a class="header-logo" href="https://github.com/opendilab/LightRFT"
         aria-label="OpenMMLab"></a>
 
       <div class="main-menu">
@@ -237,6 +238,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../strategy/index.html">lightrft.strategy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../trainer/index.html">lightrft.trainer</a></li>
 </ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../../index_zh.html">欢迎来到 LightRFT 文档!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../index_zh.html#id4">索引与表格</a></li>
+</ul>
 
         
         
@@ -306,8 +311,90 @@
             <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
               <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
                 
-  <section id="lightrft-datasets-sft-dataset">
-<h1>lightrft.datasets.sft_dataset<a class="headerlink" href="#lightrft-datasets-sft-dataset" title="Permalink to this heading">¶</a></h1>
+  <section id="module-lightrft.datasets.sft_dataset">
+<span id="lightrft-datasets-sft-dataset"></span><h1>lightrft.datasets.sft_dataset<a class="headerlink" href="#module-lightrft.datasets.sft_dataset" title="Permalink to this heading">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="lightrft.datasets.sft_dataset.SFTDataset">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">lightrft.datasets.sft_dataset.</span></span><span class="sig-name descname"><span class="pre">SFTDataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/datasets/sft_dataset.html#SFTDataset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.datasets.sft_dataset.SFTDataset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Dataset</span></code></p>
+<p>Dataset for SFT model</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.datasets.sft_dataset.SFTDataset.collate_fn">
+<span class="sig-name descname"><span class="pre">collate_fn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item_list</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/datasets/sft_dataset.html#SFTDataset.collate_fn"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.datasets.sft_dataset.SFTDataset.collate_fn" title="Permalink to this definition">¶</a></dt>
+<dd><p>Collate function to batch samples with padding.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>item_list</strong> (<em>list</em>) – List of tuples (prompt_ids_len, input_id, attention_mask, info).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Batched tensors (prompt_ids_lens, input_ids, attention_masks, infos).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.datasets.sft_dataset.SFTDataset.packing_collate_fn">
+<span class="sig-name descname"><span class="pre">packing_collate_fn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item_list</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/datasets/sft_dataset.html#SFTDataset.packing_collate_fn"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.datasets.sft_dataset.SFTDataset.packing_collate_fn" title="Permalink to this definition">¶</a></dt>
+<dd><p>Collate function for packing multiple samples into a single sequence.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>item_list</strong> (<em>list</em>) – List of tuples (prompt_ids_len, input_id, _, info).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Packed tensors (packed_input_ids, packed_attention_masks, prompt_ids_lens, infos).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.datasets.sft_dataset.SFTDataset.process_data">
+<span class="sig-name descname"><span class="pre">process_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/datasets/sft_dataset.html#SFTDataset.process_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.datasets.sft_dataset.SFTDataset.process_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Process a single data sample for SFT training.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>data</strong> (<em>dict</em>) – Raw data sample dictionary.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Processed data with prompt, response, and metadata.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="lightrft.datasets.sft_dataset.preprocess_data">
+<span class="sig-prename descclassname"><span class="pre">lightrft.datasets.sft_dataset.</span></span><span class="sig-name descname"><span class="pre">preprocess_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_template</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_key</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'input'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_key</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">apply_chat_template</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multiturn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/datasets/sft_dataset.html#preprocess_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.datasets.sft_dataset.preprocess_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Preprocess data sample into prompt and response strings.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>dict</em>) – Raw data sample dictionary.</p></li>
+<li><p><strong>input_template</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – Optional template string to format the input.</p></li>
+<li><p><strong>input_key</strong> (<em>str</em>) – Key for input field in data.</p></li>
+<li><p><strong>output_key</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em>) – Key for output field in data (None for pretrain mode).</p></li>
+<li><p><strong>apply_chat_template</strong> (<em>Optional</em><em>[</em><em>Callable</em><em>]</em>) – Optional chat template function.</p></li>
+<li><p><strong>multiturn</strong> (<em>bool</em>) – Whether to handle multi-turn conversations.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Tuple of (prompt, response) strings.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tuple[str, str]</p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 
 
@@ -333,7 +420,7 @@
 
   <div role="contentinfo">
     <p>
-      &copy; Copyright 2025, OpenDILab.
+      &copy; Copyright 2025-2026, OpenDILab.
 
     </p>
   </div>
@@ -353,7 +440,16 @@
           <div class="pytorch-right-menu" id="pytorch-right-menu">
             <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
               <ul>
-<li><a class="reference internal" href="#">lightrft.datasets.sft_dataset</a></li>
+<li><a class="reference internal" href="#">lightrft.datasets.sft_dataset</a><ul>
+<li><a class="reference internal" href="#lightrft.datasets.sft_dataset.SFTDataset"><code class="docutils literal notranslate"><span class="pre">SFTDataset</span></code></a><ul>
+<li><a class="reference internal" href="#lightrft.datasets.sft_dataset.SFTDataset.collate_fn"><code class="docutils literal notranslate"><span class="pre">SFTDataset.collate_fn()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.datasets.sft_dataset.SFTDataset.packing_collate_fn"><code class="docutils literal notranslate"><span class="pre">SFTDataset.packing_collate_fn()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.datasets.sft_dataset.SFTDataset.process_data"><code class="docutils literal notranslate"><span class="pre">SFTDataset.process_data()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#lightrft.datasets.sft_dataset.preprocess_data"><code class="docutils literal notranslate"><span class="pre">preprocess_data()</span></code></a></li>
+</ul>
+</li>
 </ul>
 
             </div>
@@ -373,8 +469,8 @@
   <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
   <script src="../../_static/doctools.js"></script>
   <script src="../../_static/sphinx_highlight.js"></script>
-  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-  <script src="../../_static/js/language_switch.js"></script>
+  <script src="../../_static/clipboard.min.js"></script>
+  <script src="../../_static/copybutton.js"></script>
   
 
   
@@ -403,7 +499,7 @@
     <div class="container-fluid">
       <div class="container">
         <div class="mobile-main-menu-header-container">
-          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="header-logo" href="https://github.com/opendilab/LightRFT" aria-label="OpenMMLab"></a>
           <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
         </div>
       </div>

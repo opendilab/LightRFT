@@ -32,6 +32,7 @@
   <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/css/readthedocs.css" type="text/css" />
   <link rel="index" title="Index" href="../../../genindex.html" />
   <link rel="search" title="Search" href="../../../search.html" />
@@ -84,7 +85,7 @@
 <div class="container-fluid header-holder tutorials-header" id="header-holder">
   <div class="container">
     <div class="header-container">
-      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+      <a class="header-logo" href="https://github.com/opendilab/LightRFT"
         aria-label="OpenMMLab"></a>
 
       <div class="main-menu">
@@ -234,6 +235,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../api_doc/strategy/index.html">lightrft.strategy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api_doc/trainer/index.html">lightrft.trainer</a></li>
 </ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../index_zh.html">欢迎来到 LightRFT 文档!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../index_zh.html#id4">索引与表格</a></li>
+</ul>
 
         
         
@@ -316,9 +321,9 @@
 
 <div class="viewcode-block" id="request_api_wrapper"><a class="viewcode-back" href="../../../api_doc/utils/remote_rm_utils.html#lightrft.utils.remote_rm_utils.request_api_wrapper">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">request_api_wrapper</span><span class="p">(</span><span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
                         <span class="n">data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
-                        <span class="n">score_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;rewards&quot;</span><span class="p">,</span>
+                        <span class="n">score_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"rewards"</span><span class="p">,</span>
                         <span class="n">try_max_times</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Synchronous request API wrapper for reward model scoring.</span>
 
 <span class="sd">    This function makes HTTP POST requests to a reward model API endpoint and</span>
@@ -340,30 +345,30 @@
 <span class="sd">    Example::</span>
 
 <span class="sd">        score = request_api_wrapper(</span>
-<span class="sd">            url=&quot;http://localhost:8000/score&quot;,</span>
-<span class="sd">            data={&quot;text&quot;: &quot;Hello world&quot;},</span>
-<span class="sd">            score_key=&quot;rewards&quot;,</span>
+<span class="sd">            url="http://localhost:8000/score",</span>
+<span class="sd">            data={"text": "Hello world"},</span>
+<span class="sd">            score_key="rewards",</span>
 <span class="sd">            try_max_times=5</span>
 <span class="sd">        )</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">headers</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">&quot;Content-Type&quot;</span><span class="p">:</span> <span class="s2">&quot;application/json&quot;</span><span class="p">,</span>
+        <span class="s2">"Content-Type"</span><span class="p">:</span> <span class="s2">"application/json"</span><span class="p">,</span>
     <span class="p">}</span>
     <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">try_max_times</span><span class="p">):</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="n">url</span><span class="p">,</span> <span class="n">json</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">3000</span><span class="p">)</span>
             <span class="n">response</span><span class="o">.</span><span class="n">raise_for_status</span><span class="p">()</span>  <span class="c1"># Raise an HTTPError for bad responses</span>
             <span class="n">response</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()</span>
-            <span class="k">assert</span> <span class="n">score_key</span> <span class="ow">in</span> <span class="n">response</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">score_key</span><span class="si">}</span><span class="s2"> not in </span><span class="si">{</span><span class="n">response</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="k">assert</span> <span class="n">score_key</span> <span class="ow">in</span> <span class="n">response</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">score_key</span><span class="si">}</span><span class="s2"> not in </span><span class="si">{</span><span class="n">response</span><span class="si">}</span><span class="s2">"</span>
             <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">score_key</span><span class="p">)</span>
         <span class="k">except</span> <span class="n">requests</span><span class="o">.</span><span class="n">RequestException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Request error, please check: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Request error data: </span><span class="si">{</span><span class="n">data</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Request error, please check: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Request error data: </span><span class="si">{</span><span class="n">data</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unexpected error, please check: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unexpected error, please check: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 
-    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Request error for </span><span class="si">{</span><span class="n">try_max_times</span><span class="si">}</span><span class="s2"> times, returning None. Please check the API server.&quot;</span><span class="p">)</span></div>
+    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Request error for </span><span class="si">{</span><span class="n">try_max_times</span><span class="si">}</span><span class="s2"> times, returning None. Please check the API server."</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="remote_rm_fn"><a class="viewcode-back" href="../../../api_doc/utils/remote_rm_utils.html#lightrft.utils.remote_rm_utils.remote_rm_fn">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">remote_rm_fn</span><span class="p">(</span>
@@ -373,9 +378,9 @@
     <span class="n">labels</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">references</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">raw_images</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">Image</span><span class="o">.</span><span class="n">Image</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">Image</span><span class="o">.</span><span class="n">Image</span><span class="p">]]]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">score_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;rewards&quot;</span>
+    <span class="n">score_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"rewards"</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Remote reward model API function for scoring text and image inputs.</span>
 
 <span class="sd">    This function prepares data and sends requests to a remote reward model API,</span>
@@ -405,26 +410,26 @@
 
 <span class="sd">        # Text-only scoring</span>
 <span class="sd">        scores = remote_rm_fn(</span>
-<span class="sd">            api_url=&quot;http://localhost:8000/score&quot;,</span>
-<span class="sd">            queries=[&quot;What is 2+2?&quot;],</span>
-<span class="sd">            prompts=[&quot;Calculate the following:&quot;],</span>
-<span class="sd">            score_key=&quot;rewards&quot;</span>
+<span class="sd">            api_url="http://localhost:8000/score",</span>
+<span class="sd">            queries=["What is 2+2?"],</span>
+<span class="sd">            prompts=["Calculate the following:"],</span>
+<span class="sd">            score_key="rewards"</span>
 <span class="sd">        )</span>
 
 <span class="sd">        # Multimodal scoring with images</span>
 <span class="sd">        scores = remote_rm_fn(</span>
-<span class="sd">            api_url=&quot;http://localhost:8000/score&quot;,</span>
-<span class="sd">            queries=[&quot;Describe this image&quot;],</span>
-<span class="sd">            prompts=[&quot;Please analyze the image:&quot;],</span>
-<span class="sd">            raw_images=[Image.open(&quot;image.jpg&quot;)],</span>
-<span class="sd">            score_key=&quot;rewards&quot;</span>
+<span class="sd">            api_url="http://localhost:8000/score",</span>
+<span class="sd">            queries=["Describe this image"],</span>
+<span class="sd">            prompts=["Please analyze the image:"],</span>
+<span class="sd">            raw_images=[Image.open("image.jpg")],</span>
+<span class="sd">            score_key="rewards"</span>
 <span class="sd">        )</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;queries&quot;</span><span class="p">:</span> <span class="n">queries</span><span class="p">,</span> <span class="s2">&quot;prompts&quot;</span><span class="p">:</span> <span class="n">prompts</span><span class="p">}</span>
+<span class="sd">    """</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"queries"</span><span class="p">:</span> <span class="n">queries</span><span class="p">,</span> <span class="s2">"prompts"</span><span class="p">:</span> <span class="n">prompts</span><span class="p">}</span>
     <span class="k">if</span> <span class="n">references</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">data</span><span class="p">[</span><span class="s2">&quot;references&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">references</span>
+        <span class="n">data</span><span class="p">[</span><span class="s2">"references"</span><span class="p">]</span> <span class="o">=</span> <span class="n">references</span>
     <span class="k">if</span> <span class="n">raw_images</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="c1"># print(f&quot;=================raw_images: {raw_images}&quot;)</span>
+        <span class="c1"># print(f"=================raw_images: {raw_images}")</span>
         <span class="c1"># Convert PIL images to bytes then to base64 strings</span>
         <span class="n">base64_images</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">imgs</span> <span class="ow">in</span> <span class="n">raw_images</span><span class="p">:</span>
@@ -435,18 +440,18 @@
             <span class="k">with</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">()</span> <span class="k">as</span> <span class="n">buf</span><span class="p">:</span>
                 <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">imgs</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
                     <span class="k">for</span> <span class="n">img</span> <span class="ow">in</span> <span class="n">imgs</span><span class="p">:</span>
-                        <span class="k">if</span> <span class="n">img</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;RGBA&quot;</span><span class="p">:</span>
-                            <span class="n">img</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;RGB&quot;</span><span class="p">)</span>  <span class="c1"># to RGB</span>
-                        <span class="n">img</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;JPEG&#39;</span><span class="p">)</span>
-                        <span class="n">base64_imgs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">base64</span><span class="o">.</span><span class="n">b64encode</span><span class="p">(</span><span class="n">buf</span><span class="o">.</span><span class="n">getvalue</span><span class="p">())</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">))</span>
+                        <span class="k">if</span> <span class="n">img</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="s2">"RGBA"</span><span class="p">:</span>
+                            <span class="n">img</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="s2">"RGB"</span><span class="p">)</span>  <span class="c1"># to RGB</span>
+                        <span class="n">img</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">'JPEG'</span><span class="p">)</span>
+                        <span class="n">base64_imgs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">base64</span><span class="o">.</span><span class="n">b64encode</span><span class="p">(</span><span class="n">buf</span><span class="o">.</span><span class="n">getvalue</span><span class="p">())</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">'utf-8'</span><span class="p">))</span>
                     <span class="n">base64_images</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">base64_imgs</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="n">imgs</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="s2">&quot;RGBA&quot;</span><span class="p">:</span>
-                        <span class="n">imgs</span> <span class="o">=</span> <span class="n">imgs</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;RGB&quot;</span><span class="p">)</span>  <span class="c1"># to RGB</span>
-                    <span class="n">imgs</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;JPEG&#39;</span><span class="p">)</span>
-                    <span class="n">base64_imgs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">base64</span><span class="o">.</span><span class="n">b64encode</span><span class="p">(</span><span class="n">buf</span><span class="o">.</span><span class="n">getvalue</span><span class="p">())</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">))</span>
+                    <span class="k">if</span> <span class="n">imgs</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="s2">"RGBA"</span><span class="p">:</span>
+                        <span class="n">imgs</span> <span class="o">=</span> <span class="n">imgs</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="s2">"RGB"</span><span class="p">)</span>  <span class="c1"># to RGB</span>
+                    <span class="n">imgs</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">'JPEG'</span><span class="p">)</span>
+                    <span class="n">base64_imgs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">base64</span><span class="o">.</span><span class="n">b64encode</span><span class="p">(</span><span class="n">buf</span><span class="o">.</span><span class="n">getvalue</span><span class="p">())</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">'utf-8'</span><span class="p">))</span>
                     <span class="n">base64_images</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">base64_imgs</span><span class="p">)</span>
-        <span class="n">data</span><span class="p">[</span><span class="s2">&quot;images&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">base64_images</span>
+        <span class="n">data</span><span class="p">[</span><span class="s2">"images"</span><span class="p">]</span> <span class="o">=</span> <span class="n">base64_images</span>
     <span class="n">scores</span> <span class="o">=</span> <span class="n">request_api_wrapper</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="n">api_url</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">score_key</span><span class="o">=</span><span class="n">score_key</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">scores</span><span class="p">)</span></div>
 </pre></div>
@@ -461,7 +466,7 @@
 
   <div role="contentinfo">
     <p>
-      &copy; Copyright 2025, OpenDILab.
+      &copy; Copyright 2025-2026, OpenDILab.
 
     </p>
   </div>
@@ -498,8 +503,8 @@
   <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
   <script src="../../../_static/doctools.js"></script>
   <script src="../../../_static/sphinx_highlight.js"></script>
-  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-  <script src="../../../_static/js/language_switch.js"></script>
+  <script src="../../../_static/clipboard.min.js"></script>
+  <script src="../../../_static/copybutton.js"></script>
   
 
   
@@ -528,7 +533,7 @@
     <div class="container-fluid">
       <div class="container">
         <div class="mobile-main-menu-header-container">
-          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="header-logo" href="https://github.com/opendilab/LightRFT" aria-label="OpenMMLab"></a>
           <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
         </div>
       </div>

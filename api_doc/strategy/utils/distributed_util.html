@@ -33,6 +33,7 @@
   <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/css/readthedocs.css" type="text/css" />
   <link rel="index" title="Index" href="../../../genindex.html" />
   <link rel="search" title="Search" href="../../../search.html" />
@@ -87,7 +88,7 @@
 <div class="container-fluid header-holder tutorials-header" id="header-holder">
   <div class="container">
     <div class="header-container">
-      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+      <a class="header-logo" href="https://github.com/opendilab/LightRFT"
         aria-label="OpenMMLab"></a>
 
       <div class="main-menu">
@@ -237,6 +238,10 @@
 <li class="toctree-l1 current"><a class="reference internal" href="../index.html">lightrft.strategy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../trainer/index.html">lightrft.trainer</a></li>
 </ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../../../index_zh.html">欢迎来到 LightRFT 文档!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../index_zh.html#id4">索引与表格</a></li>
+</ul>
 
         
         
@@ -372,7 +377,7 @@ The padding tokens (-1) are removed from the final result.</p>
 </dl>
 <p>Example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Create subgroups with size 4 using NCCL backend</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">regular_group</span><span class="p">,</span> <span class="n">orthogonal_group</span> <span class="o">=</span> <span class="n">create_sub_group</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="s2">&quot;nccl&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">regular_group</span><span class="p">,</span> <span class="n">orthogonal_group</span> <span class="o">=</span> <span class="n">create_sub_group</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="s2">"nccl"</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># With world_size=8, this creates:</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Regular groups: [0,1,2,3] and [4,5,6,7]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Orthogonal groups: [0,4], [1,5], [2,6], [3,7]</span>
@@ -407,7 +412,7 @@ Items from each process are flattened into a single list.</p>
 </dl>
 <p>Example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Gather inference inputs across tensor parallel processes</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">local_inputs</span> <span class="o">=</span> <span class="p">[{</span><span class="s2">&quot;prompt&quot;</span><span class="p">:</span> <span class="s2">&quot;Hello&quot;</span><span class="p">},</span> <span class="p">{</span><span class="s2">&quot;prompt&quot;</span><span class="p">:</span> <span class="s2">&quot;World&quot;</span><span class="p">}]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">local_inputs</span> <span class="o">=</span> <span class="p">[{</span><span class="s2">"prompt"</span><span class="p">:</span> <span class="s2">"Hello"</span><span class="p">},</span> <span class="p">{</span><span class="s2">"prompt"</span><span class="p">:</span> <span class="s2">"World"</span><span class="p">}]</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">all_inputs</span> <span class="o">=</span> <span class="n">gather_inputs_object_for_inference</span><span class="p">(</span><span class="n">local_inputs</span><span class="p">,</span> <span class="n">tp_group</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Result contains inputs from all processes in the tensor parallel group</span>
 </pre></div>
@@ -499,7 +504,7 @@ world_size/rank are invalid when using store.</p>
 
   <div role="contentinfo">
     <p>
-      &copy; Copyright 2025, OpenDILab.
+      &copy; Copyright 2025-2026, OpenDILab.
 
     </p>
   </div>
@@ -545,8 +550,8 @@ world_size/rank are invalid when using store.</p>
   <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
   <script src="../../../_static/doctools.js"></script>
   <script src="../../../_static/sphinx_highlight.js"></script>
-  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-  <script src="../../../_static/js/language_switch.js"></script>
+  <script src="../../../_static/clipboard.min.js"></script>
+  <script src="../../../_static/copybutton.js"></script>
   
 
   
@@ -575,7 +580,7 @@ world_size/rank are invalid when using store.</p>
     <div class="container-fluid">
       <div class="container">
         <div class="mobile-main-menu-header-container">
-          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="header-logo" href="https://github.com/opendilab/LightRFT" aria-label="OpenMMLab"></a>
           <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
         </div>
       </div>

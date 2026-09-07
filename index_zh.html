@@ -33,9 +33,12 @@
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="_static/copybutton.css" type="text/css" />
   <link rel="stylesheet" href="_static/css/readthedocs.css" type="text/css" />
   <link rel="index" title="Index" href="genindex.html" />
   <link rel="search" title="Search" href="search.html" />
+  <link rel="next" title="安装指南" href="installation/index_zh.html" />
+  <link rel="prev" title="lightrft.trainer.utils" href="api_doc/trainer/utils.html" />
   <!-- Google Analytics -->
   <script type="text/javascript">
     var collapsedSections = [];
@@ -85,7 +88,7 @@
 <div class="container-fluid header-holder tutorials-header" id="header-holder">
   <div class="container">
     <div class="header-container">
-      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+      <a class="header-logo" href="https://github.com/opendilab/LightRFT"
         aria-label="OpenMMLab"></a>
 
       <div class="main-menu">
@@ -235,6 +238,10 @@
 <li class="toctree-l1"><a class="reference internal" href="api_doc/strategy/index.html">lightrft.strategy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api_doc/trainer/index.html">lightrft.trainer</a></li>
 </ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">欢迎来到 LightRFT 文档!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="#id4">索引与表格</a></li>
+</ul>
 
         
         
@@ -321,8 +328,8 @@
 </ul>
 </dd>
 <dt>🧠 <strong>丰富的算法生态</strong></dt><dd><ul class="simple">
-<li><p>策略优化 (Policy Optimization): GRPO, GSPO, GMPO, Dr.GRPO</p></li>
-<li><p>优势估计 (Advantage Estimation): REINFORCE++, CPGD</p></li>
+<li><p>策略优化 (Policy Optimization)：GRPO、CPGD、DAPO 组件与高熵 token 筛选</p></li>
+<li><p>实验性接口：GSPO 和 REINFORCE++ 尚未完整接通端到端训练；GMPO 与 Dr.GRPO 仍处于开发阶段</p></li>
 <li><p>奖励处理 (Reward Processing): Reward Norm/Clip</p></li>
 <li><p>采样策略 (Sampling Strategy): FIRE Sampling, Token-Level Policy</p></li>
 <li><p>稳定性增强 (Stability Enhancement): Clip Higher, select_high_entropy_tokens</p></li>
@@ -370,7 +377,7 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="quick_start/index_zh.html">快速入门</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="quick_start/project_zh.html">LightRFT 项目概览</a></li>
-<li class="toctree-l2"><a class="reference internal" href="quick_start/algorithms_zh.html">算法速查表</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quick_start/algorithms_zh.html">支持的算法</a></li>
 <li class="toctree-l2"><a class="reference internal" href="quick_start/configuration_zh.html">配置参数详解</a></li>
 <li class="toctree-l2"><a class="reference internal" href="quick_start/grpo_gsm8k_geo3k_tutorial_zh.html">GRPO 训练教程：GSM8K 与 Geo3K 数据集</a></li>
 </ul>
@@ -385,6 +392,7 @@
 <li class="toctree-l2"><a class="reference internal" href="best_practice/reward_model_zh.html">LightRFT Reward Model 训练最佳实践指南</a></li>
 <li class="toctree-l2"><a class="reference internal" href="best_practice/strategy_zh.html">Strategy 使用指南</a></li>
 <li class="toctree-l2"><a class="reference internal" href="best_practice/strategy_design_philosophy_zh.html">LightRFT 策略设计理念</a></li>
+<li class="toctree-l2"><a class="reference internal" href="best_practice/runtime_architecture_zh.html">LightRFT 运行时架构与资源复用原理</a></li>
 <li class="toctree-l2"><a class="reference internal" href="best_practice/model_testing_zh.html">模型测试指南</a></li>
 <li class="toctree-l2"><a class="reference internal" href="best_practice/faq_zh.html">常见问题解答 (FAQ)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="best_practice/troubleshooting_zh.html">故障排除指南</a></li>
@@ -408,7 +416,7 @@
 <h2>快速链接<a class="headerlink" href="#id3" title="Permalink to this heading">¶</a></h2>
 <ul class="simple">
 <li><p><a class="reference internal" href="installation/index_zh.html#installation-zh"><span class="std std-ref">安装指南</span></a> - 安装指南</p></li>
-<li><p><a class="reference internal" href="quick_start/algorithms_zh.html"><span class="doc">算法速查表</span></a> - 支持的算法</p></li>
+<li><p><a class="reference internal" href="quick_start/algorithms_zh.html"><span class="doc">支持的算法</span></a> - 支持的算法</p></li>
 <li><p><a class="reference internal" href="best_practice/strategy_zh.html"><span class="doc">Strategy 使用指南</span></a> - 策略使用指南</p></li>
 <li><p><a class="reference internal" href="quick_start/configuration_zh.html"><span class="doc">配置参数详解</span></a> - 配置参数</p></li>
 <li><p><a class="reference internal" href="best_practice/faq_zh.html"><span class="doc">常见问题解答 (FAQ)</span></a> - 常见问题解答</p></li>
@@ -431,12 +439,24 @@
             </div>
             <footer>
   
+  <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+    
+    <a href="installation/index_zh.html" class="btn btn-neutral float-right" title="安装指南" accesskey="n"
+      rel="next">Next <img src="_static/images/chevron-right-blue.svg"
+        class="next-page"></a>
+    
+    
+    <a href="api_doc/trainer/utils.html" class="btn btn-neutral" title="lightrft.trainer.utils" accesskey="p"
+      rel="prev"><img src="_static/images/chevron-right-blue.svg" class="previous-page"> Previous</a>
+    
+  </div>
+  
 
   <hr>
 
   <div role="contentinfo">
     <p>
-      &copy; Copyright 2025, OpenDILab.
+      &copy; Copyright 2025-2026, OpenDILab.
 
     </p>
   </div>
@@ -484,8 +504,8 @@
   <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
   <script src="_static/doctools.js"></script>
   <script src="_static/sphinx_highlight.js"></script>
-  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-  <script src="_static/js/language_switch.js"></script>
+  <script src="_static/clipboard.min.js"></script>
+  <script src="_static/copybutton.js"></script>
   
 
   
@@ -514,7 +534,7 @@
     <div class="container-fluid">
       <div class="container">
         <div class="mobile-main-menu-header-container">
-          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="header-logo" href="https://github.com/opendilab/LightRFT" aria-label="OpenMMLab"></a>
           <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
         </div>
       </div>

@@ -144,13 +144,14 @@ This comprehensive guide covers all configuration parameters available in LightR
 
 ### `--advantage_estimator`
 - **Type**: `str`
-- **Choices**: `group_norm`, `reinforce`, `cpgd`, `gspo`, `gmpo`
+- **Choices**: `gae`, `reinforce`, `rloo`, `reinforce_baseline`, `group_norm`, `cpgd`, `reinforce++`, `on_policy_distillation`
 - **Default**: `group_norm`
 - **Description**: Method for advantage estimation
 - **Recommendation**:
   - `group_norm`: General purpose (GRPO)
   - `reinforce`: Low variance needed
   - `cpgd`: Preserve base capabilities
+- **Note**: `reinforce++` is accepted by the parser but is not mapped by the current advantage-calculator factory; do not use it until that integration is completed.
 
 ### `--n_samples_per_prompt`
 - **Type**: `int`
@@ -542,5 +543,5 @@ export NCCL_DEBUG=INFO
 ## See Also
 
 - [Algorithm Guide](algorithms.md) - Detailed algorithm descriptions
-- [Strategy Usage](../best_practice/strategy_usage.md) - Distributed training strategies
+- [Strategy Usage](../best_practice/strategy.rst) - Distributed training strategies
 - [Installation](../installation/index.rst) - Setup instructions

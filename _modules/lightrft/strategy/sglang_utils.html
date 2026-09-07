@@ -32,6 +32,7 @@
   <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/css/readthedocs.css" type="text/css" />
   <link rel="index" title="Index" href="../../../genindex.html" />
   <link rel="search" title="Search" href="../../../search.html" />
@@ -84,7 +85,7 @@
 <div class="container-fluid header-holder tutorials-header" id="header-holder">
   <div class="container">
     <div class="header-container">
-      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+      <a class="header-logo" href="https://github.com/opendilab/LightRFT"
         aria-label="OpenMMLab"></a>
 
       <div class="main-menu">
@@ -234,6 +235,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../api_doc/strategy/index.html">lightrft.strategy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api_doc/trainer/index.html">lightrft.trainer</a></li>
 </ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../index_zh.html">欢迎来到 LightRFT 文档!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../index_zh.html#id4">索引与表格</a></li>
+</ul>
 
         
         
@@ -300,16 +305,16 @@
               <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
                 
   <h1>Source code for lightrft.strategy.sglang_utils</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""</span>
 <span class="sd">This module provides functionality for initializing and configuring a SGLang generation engine</span>
 <span class="sd">for RLHF and RLVR applications. It handles distributed training setup, device coordination,</span>
 <span class="sd">and engine initialization with appropriate parameters.</span>
 
 <span class="sd">Note:</span>
 <span class="sd">    SGLang imports are kept lazy so the rest of LightRFT can still be imported when users</span>
-<span class="sd">    only install the vLLM backend. ImportError is raised only when engine_type=&quot;sglang&quot;</span>
+<span class="sd">    only install the vLLM backend. ImportError is raised only when engine_type="sglang"</span>
 <span class="sd">    is actually requested.</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">datetime</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
@@ -327,16 +332,16 @@
         <span class="kn">from</span><span class="w"> </span><span class="nn">.sglang_engine</span><span class="w"> </span><span class="kn">import</span> <span class="n">RLGenerationEngine</span>
     <span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
-            <span class="s2">&quot;SGLang is not installed but engine_type is set to &#39;sglang&#39;. &quot;</span>
-            <span class="s2">&quot;To use the SGLang backend, install it with: pip install &#39;LightRFT[sglang]&#39; &quot;</span>
-            <span class="s2">&quot;or pip install &#39;sglang&gt;=0.5.9&#39;. &quot;</span>
-            <span class="s2">&quot;Alternatively, use engine_type=&#39;vllm&#39; with: pip install &#39;LightRFT[vllm]&#39;.&quot;</span>
+            <span class="s2">"SGLang is not installed but engine_type is set to 'sglang'. "</span>
+            <span class="s2">"To use the SGLang backend, install it with: pip install 'LightRFT[sglang]' "</span>
+            <span class="s2">"or pip install 'sglang&gt;=0.5.9'. "</span>
+            <span class="s2">"Alternatively, use engine_type='vllm' with: pip install 'LightRFT[vllm]'."</span>
         <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
     <span class="k">return</span> <span class="n">RLGenerationEngine</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">get_sglang_engine_for_rollout</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Initialize and configure a SGLang generation engine for reinforcement learning rollout phase.</span>
 
 <span class="sd">    This function serves as a convenient wrapper around get_sglang_engine, specifically designed</span>
@@ -358,19 +363,19 @@
 
 <span class="sd">        &gt;&gt;&gt; import argparse</span>
 <span class="sd">        &gt;&gt;&gt; args = argparse.Namespace()</span>
-<span class="sd">        &gt;&gt;&gt; args.pretrain = &quot;meta-llama/Llama-2-7b-hf&quot;</span>
+<span class="sd">        &gt;&gt;&gt; args.pretrain = "meta-llama/Llama-2-7b-hf"</span>
 <span class="sd">        &gt;&gt;&gt; args.engine_mem_util = 0.8</span>
 <span class="sd">        &gt;&gt;&gt; args.enable_engine_sleep = True</span>
 <span class="sd">        &gt;&gt;&gt; args.engine_tp_size = 2</span>
 <span class="sd">        &gt;&gt;&gt; args.bf16 = True</span>
 <span class="sd">        &gt;&gt;&gt; engine = get_sglang_engine_for_rollout(args)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="n">get_sglang_engine</span><span class="p">(</span>
         <span class="n">args</span><span class="o">.</span><span class="n">pretrain</span><span class="p">,</span>
         <span class="n">args</span><span class="o">.</span><span class="n">engine_mem_util</span><span class="p">,</span>
         <span class="n">enable_engine_sleep</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">enable_engine_sleep</span><span class="p">,</span>
         <span class="n">tp_size</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">engine_tp_size</span><span class="p">,</span>
-        <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;bfloat16&quot;</span> <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">bf16</span> <span class="k">else</span> <span class="s2">&quot;float16&quot;</span><span class="p">,</span>
+        <span class="n">dtype</span><span class="o">=</span><span class="s2">"bfloat16"</span> <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">bf16</span> <span class="k">else</span> <span class="s2">"float16"</span><span class="p">,</span>
     <span class="p">)</span>
 
 
@@ -380,10 +385,10 @@
     <span class="n">enable_engine_sleep</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
     <span class="n">tp_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
     <span class="n">skip_tokenizer_init</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-    <span class="n">dtype</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;bfloat16&quot;</span><span class="p">,</span>
+    <span class="n">dtype</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"bfloat16"</span><span class="p">,</span>
     <span class="n">disable_cuda_graph</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
 <span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Initialize and configure a SGLang generation engine with distributed processing support.</span>
 
 <span class="sd">    This function creates a RLGenerationEngine instance with proper distributed training</span>
@@ -409,7 +414,7 @@
 <span class="sd">                                Defaults to False as the tokenizer is needed to process</span>
 <span class="sd">                                text inputs (required for VLM use cases)</span>
 <span class="sd">    :type skip_tokenizer_init: bool</span>
-<span class="sd">    :param dtype: Data type for model weights and computations (&quot;bfloat16&quot; or &quot;float16&quot;)</span>
+<span class="sd">    :param dtype: Data type for model weights and computations ("bfloat16" or "float16")</span>
 <span class="sd">    :type dtype: str</span>
 <span class="sd">    :param disable_cuda_graph: Whether to disable CUDA graph optimization</span>
 <span class="sd">    :type disable_cuda_graph: bool</span>
@@ -424,45 +429,45 @@
 
 <span class="sd">        &gt;&gt;&gt; # Initialize engine for single GPU</span>
 <span class="sd">        &gt;&gt;&gt; engine = get_sglang_engine(</span>
-<span class="sd">        ...     model_name_or_path=&quot;meta-llama/Llama-2-7b-hf&quot;,</span>
+<span class="sd">        ...     model_name_or_path="meta-llama/Llama-2-7b-hf",</span>
 <span class="sd">        ...     engine_mem_util=0.8,</span>
 <span class="sd">        ...     tp_size=1</span>
 <span class="sd">        ... )</span>
 
 <span class="sd">        &gt;&gt;&gt; # Initialize engine with tensor parallelism</span>
 <span class="sd">        &gt;&gt;&gt; engine = get_sglang_engine(</span>
-<span class="sd">        ...     model_name_or_path=&quot;meta-llama/Llama-2-70b-hf&quot;,</span>
+<span class="sd">        ...     model_name_or_path="meta-llama/Llama-2-70b-hf",</span>
 <span class="sd">        ...     engine_mem_util=0.9,</span>
 <span class="sd">        ...     tp_size=4,</span>
 <span class="sd">        ...     enable_engine_sleep=False,</span>
-<span class="sd">        ...     dtype=&quot;float16&quot;</span>
+<span class="sd">        ...     dtype="float16"</span>
 <span class="sd">        ... )</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">assert</span> <span class="n">torch</span><span class="o">.</span><span class="n">distributed</span><span class="o">.</span><span class="n">is_initialized</span><span class="p">()</span>
-    <span class="n">sglang_tp_group_cpu</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">create_sub_group</span><span class="p">(</span><span class="n">tp_size</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="s2">&quot;gloo&quot;</span><span class="p">)</span>
+    <span class="n">sglang_tp_group_cpu</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">create_sub_group</span><span class="p">(</span><span class="n">tp_size</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="s2">"gloo"</span><span class="p">)</span>
 
-    <span class="n">local_rank</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;LOCAL_RANK&quot;</span><span class="p">])</span>
-    <span class="n">rank</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;RANK&quot;</span><span class="p">])</span>
-    <span class="n">world_size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;WORLD_SIZE&quot;</span><span class="p">])</span>
+    <span class="n">local_rank</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">"LOCAL_RANK"</span><span class="p">])</span>
+    <span class="n">rank</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">"RANK"</span><span class="p">])</span>
+    <span class="n">world_size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">"WORLD_SIZE"</span><span class="p">])</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_log</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Internal logging function with timestamp and rank information.</span>
 
 <span class="sd">        :param text: Message to log</span>
 <span class="sd">        :type text: str</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">t</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%H:%M:%S&quot;</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">t</span><span class="si">}</span><span class="s2">] [rank=</span><span class="si">{</span><span class="n">rank</span><span class="si">}</span><span class="s2">] </span><span class="si">{</span><span class="n">text</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="sd">        """</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">"%H:%M:%S"</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"[</span><span class="si">{</span><span class="n">t</span><span class="si">}</span><span class="s2">] [rank=</span><span class="si">{</span><span class="n">rank</span><span class="si">}</span><span class="s2">] </span><span class="si">{</span><span class="n">text</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
-    <span class="n">_log</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;start </span><span class="si">{</span><span class="n">local_rank</span><span class="si">=}</span><span class="s1"> </span><span class="si">{</span><span class="n">rank</span><span class="si">=}</span><span class="s1"> </span><span class="si">{</span><span class="n">world_size</span><span class="si">=}</span><span class="s1"> </span><span class="si">{</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="si">=}</span><span class="s1"> </span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;CUDA_VISIBLE_DEVICES&quot;</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="n">_log</span><span class="p">(</span><span class="sa">f</span><span class="s1">'start </span><span class="si">{</span><span class="n">local_rank</span><span class="si">=}</span><span class="s1"> </span><span class="si">{</span><span class="n">rank</span><span class="si">=}</span><span class="s1"> </span><span class="si">{</span><span class="n">world_size</span><span class="si">=}</span><span class="s1"> </span><span class="si">{</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="si">=}</span><span class="s1"> </span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"CUDA_VISIBLE_DEVICES"</span><span class="p">)</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
 
     <span class="n">dp_size</span> <span class="o">=</span> <span class="n">world_size</span> <span class="o">//</span> <span class="n">tp_size</span>
 
     <span class="k">assert</span> <span class="n">world_size</span> <span class="o">==</span> <span class="n">tp_size</span> <span class="o">*</span> <span class="n">dp_size</span>
 
     <span class="c1"># Clean up potentially conflicting environment variables</span>
-    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;TORCHELASTIC_USE_AGENT_STORE&quot;</span><span class="p">]:</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">"TORCHELASTIC_USE_AGENT_STORE"</span><span class="p">]:</span>
         <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">:</span>
             <span class="k">del</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
 
@@ -483,7 +488,7 @@
         <span class="c1"># if you want to debug the sglang engine</span>
         <span class="c1"># please set the following parameters</span>
         <span class="c1"># Otherwise, it will make the engine run too slow</span>
-        <span class="c1"># log_level=&quot;INFO&quot;,</span>
+        <span class="c1"># log_level="INFO",</span>
         <span class="c1"># log_requests=True,</span>
         <span class="c1"># log_requests_level=2,</span>
         <span class="c1"># max_running_requests=1,</span>
@@ -505,7 +510,7 @@
 
   <div role="contentinfo">
     <p>
-      &copy; Copyright 2025, OpenDILab.
+      &copy; Copyright 2025-2026, OpenDILab.
 
     </p>
   </div>
@@ -542,8 +547,8 @@
   <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
   <script src="../../../_static/doctools.js"></script>
   <script src="../../../_static/sphinx_highlight.js"></script>
-  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-  <script src="../../../_static/js/language_switch.js"></script>
+  <script src="../../../_static/clipboard.min.js"></script>
+  <script src="../../../_static/copybutton.js"></script>
   
 
   
@@ -572,7 +577,7 @@
     <div class="container-fluid">
       <div class="container">
         <div class="mobile-main-menu-header-container">
-          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="header-logo" href="https://github.com/opendilab/LightRFT" aria-label="OpenMMLab"></a>
           <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
         </div>
       </div>

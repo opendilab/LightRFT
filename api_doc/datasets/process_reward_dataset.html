@@ -33,6 +33,7 @@
   <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
   <link rel="stylesheet" href="../../_static/css/readthedocs.css" type="text/css" />
   <link rel="index" title="Index" href="../../genindex.html" />
   <link rel="search" title="Search" href="../../search.html" />
@@ -87,7 +88,7 @@
 <div class="container-fluid header-holder tutorials-header" id="header-holder">
   <div class="container">
     <div class="header-container">
-      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+      <a class="header-logo" href="https://github.com/opendilab/LightRFT"
         aria-label="OpenMMLab"></a>
 
       <div class="main-menu">
@@ -237,6 +238,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../strategy/index.html">lightrft.strategy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../trainer/index.html">lightrft.trainer</a></li>
 </ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../../index_zh.html">欢迎来到 LightRFT 文档!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../index_zh.html#id4">索引与表格</a></li>
+</ul>
 
         
         
@@ -306,8 +311,55 @@
             <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
               <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
                 
-  <section id="lightrft-datasets-process-reward-dataset">
-<h1>lightrft.datasets.process_reward_dataset<a class="headerlink" href="#lightrft-datasets-process-reward-dataset" title="Permalink to this heading">¶</a></h1>
+  <section id="module-lightrft.datasets.process_reward_dataset">
+<span id="lightrft-datasets-process-reward-dataset"></span><h1>lightrft.datasets.process_reward_dataset<a class="headerlink" href="#module-lightrft.datasets.process_reward_dataset" title="Permalink to this heading">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="lightrft.datasets.process_reward_dataset.ProcessRewardDataset">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">lightrft.datasets.process_reward_dataset.</span></span><span class="sig-name descname"><span class="pre">ProcessRewardDataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/datasets/process_reward_dataset.html#ProcessRewardDataset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.datasets.process_reward_dataset.ProcessRewardDataset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Dataset</span></code></p>
+<p>Dataset for process reward model</p>
+<dl class="simple">
+<dt>Args:</dt><dd><p>dataset: dataset for reward model
+self.tokenizer: self.tokenizer for reward model
+self.max_length: max length of input</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.datasets.process_reward_dataset.ProcessRewardDataset.collate_fn">
+<span class="sig-name descname"><span class="pre">collate_fn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item_list</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/datasets/process_reward_dataset.html#ProcessRewardDataset.collate_fn"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.datasets.process_reward_dataset.ProcessRewardDataset.collate_fn" title="Permalink to this definition">¶</a></dt>
+<dd><p>Collate function to batch process reward model samples.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>item_list</strong> (<em>list</em>) – List of tuples (input_id, input_mask, label_id).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Batched tensors (input_ids, input_masks, label_ids).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="lightrft.datasets.process_reward_dataset.ProcessRewardDataset.packing_collate_fn">
+<span class="sig-name descname"><span class="pre">packing_collate_fn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item_list</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/lightrft/datasets/process_reward_dataset.html#ProcessRewardDataset.packing_collate_fn"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.datasets.process_reward_dataset.ProcessRewardDataset.packing_collate_fn" title="Permalink to this definition">¶</a></dt>
+<dd><p>Collate function for packing multiple process reward samples.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>item_list</strong> (<em>list</em>) – List of tuples (input_id, input_mask, label_id).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Packed tensors (packed_input_ids, packed_attention_masks, packed_label_ids, infos).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 
 
@@ -333,7 +385,7 @@
 
   <div role="contentinfo">
     <p>
-      &copy; Copyright 2025, OpenDILab.
+      &copy; Copyright 2025-2026, OpenDILab.
 
     </p>
   </div>
@@ -353,7 +405,14 @@
           <div class="pytorch-right-menu" id="pytorch-right-menu">
             <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
               <ul>
-<li><a class="reference internal" href="#">lightrft.datasets.process_reward_dataset</a></li>
+<li><a class="reference internal" href="#">lightrft.datasets.process_reward_dataset</a><ul>
+<li><a class="reference internal" href="#lightrft.datasets.process_reward_dataset.ProcessRewardDataset"><code class="docutils literal notranslate"><span class="pre">ProcessRewardDataset</span></code></a><ul>
+<li><a class="reference internal" href="#lightrft.datasets.process_reward_dataset.ProcessRewardDataset.collate_fn"><code class="docutils literal notranslate"><span class="pre">ProcessRewardDataset.collate_fn()</span></code></a></li>
+<li><a class="reference internal" href="#lightrft.datasets.process_reward_dataset.ProcessRewardDataset.packing_collate_fn"><code class="docutils literal notranslate"><span class="pre">ProcessRewardDataset.packing_collate_fn()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 
             </div>
@@ -373,8 +432,8 @@
   <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
   <script src="../../_static/doctools.js"></script>
   <script src="../../_static/sphinx_highlight.js"></script>
-  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-  <script src="../../_static/js/language_switch.js"></script>
+  <script src="../../_static/clipboard.min.js"></script>
+  <script src="../../_static/copybutton.js"></script>
   
 
   
@@ -403,7 +462,7 @@
     <div class="container-fluid">
       <div class="container">
         <div class="mobile-main-menu-header-container">
-          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="header-logo" href="https://github.com/opendilab/LightRFT" aria-label="OpenMMLab"></a>
           <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
         </div>
       </div>

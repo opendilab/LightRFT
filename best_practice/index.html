@@ -33,6 +33,7 @@
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
   <link rel="stylesheet" href="../_static/css/readthedocs.css" type="text/css" />
   <link rel="index" title="Index" href="../genindex.html" />
   <link rel="search" title="Search" href="../search.html" />
@@ -87,7 +88,7 @@
 <div class="container-fluid header-holder tutorials-header" id="header-holder">
   <div class="container">
     <div class="header-container">
-      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+      <a class="header-logo" href="https://github.com/opendilab/LightRFT"
         aria-label="OpenMMLab"></a>
 
       <div class="main-menu">
@@ -237,6 +238,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../api_doc/strategy/index.html">lightrft.strategy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api_doc/trainer/index.html">lightrft.trainer</a></li>
 </ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../index_zh.html">欢迎来到 LightRFT 文档!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index_zh.html#id4">索引与表格</a></li>
+</ul>
 
         
         
@@ -365,6 +370,18 @@
 <li class="toctree-l2"><a class="reference internal" href="strategy_design_philosophy.html#conclusion">Conclusion</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="runtime_architecture.html">Runtime Architecture and Resource Reuse</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="runtime_architecture.html#component-responsibilities">1. Component responsibilities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="runtime_architecture.html#native-torchrun-and-spmd">2. Native <code class="docutils literal notranslate"><span class="pre">torchrun</span></code> and SPMD</a></li>
+<li class="toctree-l2"><a class="reference internal" href="runtime_architecture.html#strategy-selection-and-boundaries">3. Strategy selection and boundaries</a></li>
+<li class="toctree-l2"><a class="reference internal" href="runtime_architecture.html#actor-rollout-policy-and-reference-model">4. Actor, rollout policy, and Reference Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="runtime_architecture.html#colocated-execution-and-memory-lifecycle">5. Colocated execution and memory lifecycle</a></li>
+<li class="toctree-l2"><a class="reference internal" href="runtime_architecture.html#weight-synchronization">6. Weight synchronization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="runtime_architecture.html#end-to-end-iteration">7. End-to-end iteration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="runtime_architecture.html#operational-checks">8. Operational checks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="runtime_architecture.html#source-map">9. Source map</a></li>
+</ul>
+</li>
 </ul>
 </div>
 <div class="toctree-wrapper compound">
@@ -401,7 +418,7 @@
 
   <div role="contentinfo">
     <p>
-      &copy; Copyright 2025, OpenDILab.
+      &copy; Copyright 2025-2026, OpenDILab.
 
     </p>
   </div>
@@ -443,8 +460,8 @@
   <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
   <script src="../_static/doctools.js"></script>
   <script src="../_static/sphinx_highlight.js"></script>
-  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-  <script src="../_static/js/language_switch.js"></script>
+  <script src="../_static/clipboard.min.js"></script>
+  <script src="../_static/copybutton.js"></script>
   
 
   
@@ -473,7 +490,7 @@
     <div class="container-fluid">
       <div class="container">
         <div class="mobile-main-menu-header-container">
-          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="header-logo" href="https://github.com/opendilab/LightRFT" aria-label="OpenMMLab"></a>
           <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
         </div>
       </div>

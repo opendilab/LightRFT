@@ -32,6 +32,7 @@
   <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../../../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/copybutton.css" type="text/css" />
   <link rel="stylesheet" href="../../../../_static/css/readthedocs.css" type="text/css" />
   <link rel="index" title="Index" href="../../../../genindex.html" />
   <link rel="search" title="Search" href="../../../../search.html" />
@@ -84,7 +85,7 @@
 <div class="container-fluid header-holder tutorials-header" id="header-holder">
   <div class="container">
     <div class="header-container">
-      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+      <a class="header-logo" href="https://github.com/opendilab/LightRFT"
         aria-label="OpenMMLab"></a>
 
       <div class="main-menu">
@@ -234,6 +235,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../api_doc/strategy/index.html">lightrft.strategy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../api_doc/trainer/index.html">lightrft.trainer</a></li>
 </ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../index_zh.html">欢迎来到 LightRFT 文档!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../index_zh.html#id4">索引与表格</a></li>
+</ul>
 
         
         
@@ -300,7 +305,7 @@
               <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
                 
   <h1>Source code for lightrft.strategy.utils.optimizer_utils</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""</span>
 <span class="sd">PyTorch Optimization Utilities Module</span>
 
 <span class="sd">This module provides utility functions for optimizing PyTorch models,</span>
@@ -308,7 +313,7 @@
 <span class="sd">customized weight decay settings. It includes support for both regular</span>
 <span class="sd">tensors and distributed tensors (DTensor) with specialized grouping</span>
 <span class="sd">strategies for optimal performance in distributed training scenarios.</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">defaultdict</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span>
@@ -317,11 +322,11 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">torch.distributed.tensor</span><span class="w"> </span><span class="kn">import</span> <span class="n">DTensor</span>
 
 <span class="n">_DEFAULT_NO_DECAY_NAME_LIST</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="s2">&quot;bias&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;layer_norm.weight&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;layernorm.weight&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;norm.weight&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;ln_f.weight&quot;</span><span class="p">,</span>
+    <span class="s2">"bias"</span><span class="p">,</span>
+    <span class="s2">"layer_norm.weight"</span><span class="p">,</span>
+    <span class="s2">"layernorm.weight"</span><span class="p">,</span>
+    <span class="s2">"norm.weight"</span><span class="p">,</span>
+    <span class="s2">"ln_f.weight"</span><span class="p">,</span>
 <span class="p">]</span>
 
 
@@ -330,7 +335,7 @@
     <span class="n">weight_decay</span><span class="p">,</span>
     <span class="n">no_decay_name_list</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
 <span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Prepare parameter groups for optimizer with weight decay control.</span>
 
 <span class="sd">    Groups parameters into two groups:</span>
@@ -354,24 +359,24 @@
 <span class="sd">        &gt;&gt;&gt; model = nn.Sequential(nn.Linear(10, 10), nn.LayerNorm(10))</span>
 <span class="sd">        &gt;&gt;&gt; grouped_params = get_optimizer_grouped_parameters(model, weight_decay=0.01)</span>
 <span class="sd">        &gt;&gt;&gt; optimizer = torch.optim.AdamW(grouped_params)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">no_decay_name_list</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">no_decay_name_list</span> <span class="o">=</span> <span class="n">_DEFAULT_NO_DECAY_NAME_LIST</span>
 
     <span class="n">optimizer_grouped_parameters</span> <span class="o">=</span> <span class="p">[</span>
         <span class="p">{</span>
-            <span class="s2">&quot;params&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="s2">"params"</span><span class="p">:</span> <span class="p">[</span>
                 <span class="n">p</span> <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">named_parameters</span><span class="p">()</span>
                 <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="nb">any</span><span class="p">(</span><span class="n">nd</span> <span class="ow">in</span> <span class="n">n</span> <span class="k">for</span> <span class="n">nd</span> <span class="ow">in</span> <span class="n">no_decay_name_list</span><span class="p">)</span> <span class="ow">and</span> <span class="n">p</span><span class="o">.</span><span class="n">requires_grad</span><span class="p">)</span>
             <span class="p">],</span>
-            <span class="s2">&quot;weight_decay&quot;</span><span class="p">:</span> <span class="n">weight_decay</span><span class="p">,</span>
+            <span class="s2">"weight_decay"</span><span class="p">:</span> <span class="n">weight_decay</span><span class="p">,</span>
         <span class="p">},</span>
         <span class="p">{</span>
-            <span class="s2">&quot;params&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="s2">"params"</span><span class="p">:</span> <span class="p">[</span>
                 <span class="n">p</span> <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">named_parameters</span><span class="p">()</span>
                 <span class="k">if</span> <span class="p">(</span><span class="nb">any</span><span class="p">(</span><span class="n">nd</span> <span class="ow">in</span> <span class="n">n</span> <span class="k">for</span> <span class="n">nd</span> <span class="ow">in</span> <span class="n">no_decay_name_list</span><span class="p">)</span> <span class="ow">and</span> <span class="n">p</span><span class="o">.</span><span class="n">requires_grad</span><span class="p">)</span>
             <span class="p">],</span>
-            <span class="s2">&quot;weight_decay&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+            <span class="s2">"weight_decay"</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
         <span class="p">},</span>
     <span class="p">]</span>
     <span class="k">return</span> <span class="n">optimizer_grouped_parameters</span></div>
@@ -380,7 +385,7 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">group_parameters_for_optimizer_dtensor</span><span class="p">(</span>
     <span class="n">model</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span> <span class="n">weight_decay</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">no_decay_name_list</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Groups model parameters for optimizer by weight decay, dtype, and device mesh for DTensor.</span>
 
 <span class="sd">    This function creates parameter groups optimized for distributed tensor scenarios by</span>
@@ -407,9 +412,9 @@
 <span class="sd">        &gt;&gt;&gt; model = nn.Sequential(nn.Linear(10, 10), nn.LayerNorm(10))</span>
 <span class="sd">        &gt;&gt;&gt; grouped_params = group_parameters_for_optimizer_dtensor(model, weight_decay=0.01)</span>
 <span class="sd">        &gt;&gt;&gt; # Convert to optimizer format</span>
-<span class="sd">        &gt;&gt;&gt; optimizer_groups = [{&quot;params&quot;: params, &quot;weight_decay&quot;: wd}</span>
+<span class="sd">        &gt;&gt;&gt; optimizer_groups = [{"params": params, "weight_decay": wd}</span>
 <span class="sd">        ...                    for (wd, dtype, mesh), params in grouped_params.items()]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">no_decay_name_list</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">no_decay_name_list</span> <span class="o">=</span> <span class="n">_DEFAULT_NO_DECAY_NAME_LIST</span>
 
@@ -425,10 +430,10 @@
         <span class="n">current_weight_decay</span> <span class="o">=</span> <span class="n">weight_decay</span> <span class="k">if</span> <span class="n">apply_weight_decay</span> <span class="k">else</span> <span class="mf">0.0</span>
 
         <span class="c1"># Determine device mesh info</span>
-        <span class="n">param_mesh_info</span> <span class="o">=</span> <span class="s2">&quot;full_tensor&quot;</span>
+        <span class="n">param_mesh_info</span> <span class="o">=</span> <span class="s2">"full_tensor"</span>
         <span class="c1"># Check if param is a DTensor (assuming it has _is_dtensor and device_mesh)</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">param</span><span class="p">,</span> <span class="n">DTensor</span><span class="p">):</span>
-            <span class="n">param_mesh_info</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;dtensor_</span><span class="si">{</span><span class="n">param</span><span class="o">.</span><span class="n">device_mesh</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="n">param_mesh_info</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"dtensor_</span><span class="si">{</span><span class="n">param</span><span class="o">.</span><span class="n">device_mesh</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span>
 
         <span class="c1"># Grouping key: (weight_decay_value, param_dtype, param_mesh_info)</span>
         <span class="n">group_key</span> <span class="o">=</span> <span class="p">(</span><span class="n">current_weight_decay</span><span class="p">,</span> <span class="n">param</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">param_mesh_info</span><span class="p">)</span>
@@ -447,7 +452,7 @@
 
   <div role="contentinfo">
     <p>
-      &copy; Copyright 2025, OpenDILab.
+      &copy; Copyright 2025-2026, OpenDILab.
 
     </p>
   </div>
@@ -484,8 +489,8 @@
   <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
   <script src="../../../../_static/doctools.js"></script>
   <script src="../../../../_static/sphinx_highlight.js"></script>
-  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-  <script src="../../../../_static/js/language_switch.js"></script>
+  <script src="../../../../_static/clipboard.min.js"></script>
+  <script src="../../../../_static/copybutton.js"></script>
   
 
   
@@ -514,7 +519,7 @@
     <div class="container-fluid">
       <div class="container">
         <div class="mobile-main-menu-header-container">
-          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="header-logo" href="https://github.com/opendilab/LightRFT" aria-label="OpenMMLab"></a>
           <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
         </div>
       </div>

@@ -32,6 +32,7 @@
   <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/css/readthedocs.css" type="text/css" />
   <link rel="index" title="Index" href="../../../genindex.html" />
   <link rel="search" title="Search" href="../../../search.html" />
@@ -84,7 +85,7 @@
 <div class="container-fluid header-holder tutorials-header" id="header-holder">
   <div class="container">
     <div class="header-container">
-      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+      <a class="header-logo" href="https://github.com/opendilab/LightRFT"
         aria-label="OpenMMLab"></a>
 
       <div class="main-menu">
@@ -234,6 +235,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../api_doc/strategy/index.html">lightrft.strategy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api_doc/trainer/index.html">lightrft.trainer</a></li>
 </ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../index_zh.html">欢迎来到 LightRFT 文档!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../index_zh.html#id4">索引与表格</a></li>
+</ul>
 
         
         
@@ -311,22 +316,22 @@
 
 
 <div class="viewcode-block" id="HPDv3Handler"><a class="viewcode-back" href="../../../api_doc/datasets/hpdv3.html#lightrft.datasets.hpdv3.HPDv3Handler">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">HPDv3Handler</span><span class="p">(</span><span class="n">BaseDataHandler</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Data Handler for HPDv3 dataset. Image-to-Text human preferences dataset.</span>
 
 <span class="sd">    Paper: https://huggingface.co/MizzenAI/HPSv3</span>
 <span class="sd">    Dataset Repo: https://huggingface.co/datasets/MizzenAI/HPDv3</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">task_type</span> <span class="o">=</span> <span class="s2">&quot;text-to-image&quot;</span>
+<span class="sd">    """</span>
+    <span class="n">task_type</span> <span class="o">=</span> <span class="s2">"text-to-image"</span>
 
 <div class="viewcode-block" id="HPDv3Handler.load_data"><a class="viewcode-back" href="../../../api_doc/datasets/hpdv3.html#lightrft.datasets.hpdv3.HPDv3Handler.load_data">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">load_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Load and validate HPDv3 data from JSON or JSONL file.</span>
 
 <span class="sd">        :param path: Path to the JSON/JSONL file</span>
 <span class="sd">        :type path: str</span>
 
-<span class="sd">        :return: List of valid samples with &#39;data_root&#39; attached</span>
+<span class="sd">        :return: List of valid samples with 'data_root' attached</span>
 <span class="sd">        :rtype: List[Dict[str, Any]]</span>
 
 <span class="sd">        **Example:**</span>
@@ -334,16 +339,16 @@
 <span class="sd">        .. code-block:: python</span>
 
 <span class="sd">            handler = HPDv3Handler()</span>
-<span class="sd">            data = handler.load_data(&quot;path/to/HPDv3/data.json&quot;)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">            data = handler.load_data("path/to/HPDv3/data.json")</span>
+<span class="sd">        """</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">'rb'</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
                 <span class="n">raw_data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
         <span class="k">except</span> <span class="n">json</span><span class="o">.</span><span class="n">JSONDecodeError</span><span class="p">:</span>
             <span class="c1"># For JSON Lines format</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;JSON: </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">"JSON: </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
             <span class="n">raw_data</span> <span class="o">=</span> <span class="p">[]</span>
-            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">'r'</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">'utf-8'</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
                 <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">f</span><span class="p">:</span>
                     <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">():</span>
                         <span class="n">raw_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">line</span><span class="p">))</span>
@@ -351,28 +356,28 @@
         <span class="c1"># Attach data_root to each item</span>
         <span class="n">data_root</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">raw_data</span><span class="p">:</span>
-            <span class="n">item</span><span class="p">[</span><span class="s1">&#39;data_root&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data_root</span>
+            <span class="n">item</span><span class="p">[</span><span class="s1">'data_root'</span><span class="p">]</span> <span class="o">=</span> <span class="n">data_root</span>
 
         <span class="c1"># Make sure all visual files exist</span>
         <span class="n">valid_data</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">raw_data</span><span class="p">:</span>
             <span class="n">visual_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_media_info</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">visual_info</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Skipping item due to missing visual files: </span><span class="si">{</span><span class="n">item</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Skipping item due to missing visual files: </span><span class="si">{</span><span class="n">item</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
                 <span class="k">continue</span>
             <span class="n">valid_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
 
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Loaded </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">raw_data</span><span class="p">)</span><span class="si">}</span><span class="s2"> HPDv3 samples from </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Loaded </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">raw_data</span><span class="p">)</span><span class="si">}</span><span class="s2"> HPDv3 samples from </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">valid_data</span></div>
 
 <div class="viewcode-block" id="HPDv3Handler.get_media_info"><a class="viewcode-back" href="../../../api_doc/datasets/hpdv3.html#lightrft.datasets.hpdv3.HPDv3Handler.get_media_info">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_media_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Extract path info for the preferred and rejected images.</span>
 
 <span class="sd">        :param item: A data item from load_data</span>
 <span class="sd">        :type item: Dict[str, Any]</span>
 
-<span class="sd">        :return: Dict containing local paths for &#39;preferred_image&#39; and &#39;rejected_image&#39;, or None if files missing</span>
+<span class="sd">        :return: Dict containing local paths for 'preferred_image' and 'rejected_image', or None if files missing</span>
 <span class="sd">        :rtype: Dict[str, Dict[str, str]]</span>
 
 <span class="sd">        **Example:**</span>
@@ -380,29 +385,29 @@
 <span class="sd">        .. code-block:: python</span>
 
 <span class="sd">            info = handler.get_media_info(item)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">data_root</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;data_root&#39;</span><span class="p">]</span>
+<span class="sd">        """</span>
+        <span class="n">data_root</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s1">'data_root'</span><span class="p">]</span>
 
         <span class="c1"># Build full local paths</span>
-        <span class="n">full_path1</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data_root</span><span class="p">,</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;path1&#39;</span><span class="p">])</span>
-        <span class="n">full_path2</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data_root</span><span class="p">,</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;path2&#39;</span><span class="p">])</span>
+        <span class="n">full_path1</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data_root</span><span class="p">,</span> <span class="n">item</span><span class="p">[</span><span class="s1">'path1'</span><span class="p">])</span>
+        <span class="n">full_path2</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data_root</span><span class="p">,</span> <span class="n">item</span><span class="p">[</span><span class="s1">'path2'</span><span class="p">])</span>
 
         <span class="c1"># Make sure files exist</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">full_path1</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">full_path2</span><span class="p">):</span>
             <span class="k">return</span> <span class="kc">None</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="p">{</span>
-                <span class="s1">&#39;preferred_image&#39;</span><span class="p">:</span> <span class="p">{</span>
-                    <span class="s1">&#39;image_local_path&#39;</span><span class="p">:</span> <span class="n">full_path1</span>
+                <span class="s1">'preferred_image'</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s1">'image_local_path'</span><span class="p">:</span> <span class="n">full_path1</span>
                 <span class="p">},</span>
-                <span class="s1">&#39;rejected_image&#39;</span><span class="p">:</span> <span class="p">{</span>
-                    <span class="s1">&#39;image_local_path&#39;</span><span class="p">:</span> <span class="n">full_path2</span>
+                <span class="s1">'rejected_image'</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s1">'image_local_path'</span><span class="p">:</span> <span class="n">full_path2</span>
                 <span class="p">}</span>
             <span class="p">}</span></div>
 
 <div class="viewcode-block" id="HPDv3Handler.parse_item"><a class="viewcode-back" href="../../../api_doc/datasets/hpdv3.html#lightrft.datasets.hpdv3.HPDv3Handler.parse_item">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">parse_item</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">media_content</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
                    <span class="n">config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">],</span> <span class="n">Dict</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Parse a single HPDv3 item into message pairs and metadata for ranking.</span>
 
 <span class="sd">        Randomly shuffles preferred/rejected images to avoid positional bias.</span>
@@ -424,29 +429,29 @@
 <span class="sd">        .. code-block:: python</span>
 
 <span class="sd">            msg0, msg1, other = handler.parse_item(item, media_content, config)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># Get loaded visual content</span>
-        <span class="n">preferred_image</span> <span class="o">=</span> <span class="n">media_content</span><span class="p">[</span><span class="s1">&#39;preferred_image&#39;</span><span class="p">]</span>
-        <span class="n">rejected_image</span> <span class="o">=</span> <span class="n">media_content</span><span class="p">[</span><span class="s1">&#39;rejected_image&#39;</span><span class="p">]</span>
+        <span class="n">preferred_image</span> <span class="o">=</span> <span class="n">media_content</span><span class="p">[</span><span class="s1">'preferred_image'</span><span class="p">]</span>
+        <span class="n">rejected_image</span> <span class="o">=</span> <span class="n">media_content</span><span class="p">[</span><span class="s1">'rejected_image'</span><span class="p">]</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">([</span><span class="n">preferred_image</span><span class="p">,</span> <span class="n">rejected_image</span><span class="p">]):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Missing visual content for &#39;preferred_image&#39; or &#39;rejected_image&#39;.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Missing visual content for 'preferred_image' or 'rejected_image'."</span><span class="p">)</span>
 
         <span class="c1"># Get generation prompt from data item</span>
-        <span class="n">prompt_text</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;prompt&quot;</span><span class="p">]</span>
+        <span class="n">prompt_text</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s2">"prompt"</span><span class="p">]</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">prompt_text</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Missing generation prompt in item: </span><span class="si">{</span><span class="n">item</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Missing generation prompt in item: </span><span class="si">{</span><span class="n">item</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
         <span class="c1"># Get system prompts from config</span>
-        <span class="n">task_instruction_template</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;task_instruction&quot;</span><span class="p">]</span>
+        <span class="n">task_instruction_template</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">"task_instruction"</span><span class="p">]</span>
         <span class="n">task_instruction</span> <span class="o">=</span> <span class="n">task_instruction_template</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">prompt</span><span class="o">=</span><span class="n">prompt_text</span><span class="p">)</span>
 
         <span class="c1"># Get max_pixels from config</span>
-        <span class="n">max_pixels</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;max_pixels&quot;</span><span class="p">]</span>
+        <span class="n">max_pixels</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">"max_pixels"</span><span class="p">]</span>
 
-        <span class="c1"># Random pick from &quot;A&quot; or &quot;B&quot; to avoid positional bias</span>
-        <span class="n">preference</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">([</span><span class="s2">&quot;A&quot;</span><span class="p">,</span> <span class="s2">&quot;B&quot;</span><span class="p">])</span>
-        <span class="k">if</span> <span class="n">preference</span> <span class="o">==</span> <span class="s2">&quot;A&quot;</span><span class="p">:</span>  <span class="c1"># &quot;A&quot; means image0 is preferred</span>
+        <span class="c1"># Random pick from "A" or "B" to avoid positional bias</span>
+        <span class="n">preference</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">([</span><span class="s2">"A"</span><span class="p">,</span> <span class="s2">"B"</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">preference</span> <span class="o">==</span> <span class="s2">"A"</span><span class="p">:</span>  <span class="c1"># "A" means image0 is preferred</span>
             <span class="n">image0</span><span class="p">,</span> <span class="n">image1</span> <span class="o">=</span> <span class="n">preferred_image</span><span class="p">,</span> <span class="n">rejected_image</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">image0</span><span class="p">,</span> <span class="n">image1</span> <span class="o">=</span> <span class="n">rejected_image</span><span class="p">,</span> <span class="n">preferred_image</span>
@@ -454,58 +459,58 @@
         <span class="c1"># Build messages</span>
         <span class="n">messages0</span> <span class="o">=</span> <span class="p">[</span>
             <span class="p">{</span>
-                <span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;system&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">task_instruction</span><span class="p">)</span>
+                <span class="s2">"role"</span><span class="p">:</span> <span class="s2">"system"</span><span class="p">,</span>
+                <span class="s2">"content"</span><span class="p">:</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">task_instruction</span><span class="p">)</span>
             <span class="p">},</span>
             <span class="p">{</span>
-                <span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="p">[{</span>
-                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;image&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;image&quot;</span><span class="p">:</span> <span class="n">image0</span><span class="p">,</span>
-                    <span class="s2">&quot;max_pixels&quot;</span><span class="p">:</span> <span class="n">max_pixels</span>
+                <span class="s2">"role"</span><span class="p">:</span> <span class="s2">"user"</span><span class="p">,</span>
+                <span class="s2">"content"</span><span class="p">:</span> <span class="p">[{</span>
+                    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"image"</span><span class="p">,</span>
+                    <span class="s2">"image"</span><span class="p">:</span> <span class="n">image0</span><span class="p">,</span>
+                    <span class="s2">"max_pixels"</span><span class="p">:</span> <span class="n">max_pixels</span>
                 <span class="p">}</span>  <span class="c1"># to save memory</span>
                             <span class="p">]</span>
             <span class="p">}</span>
         <span class="p">]</span>
 
         <span class="n">messages1</span> <span class="o">=</span> <span class="p">[{</span>
-            <span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;system&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">task_instruction</span><span class="p">)</span>
+            <span class="s2">"role"</span><span class="p">:</span> <span class="s2">"system"</span><span class="p">,</span>
+            <span class="s2">"content"</span><span class="p">:</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">task_instruction</span><span class="p">)</span>
         <span class="p">},</span> <span class="p">{</span>
-            <span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="p">[{</span>
-                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;image&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;image&quot;</span><span class="p">:</span> <span class="n">image1</span><span class="p">,</span>
-                <span class="s2">&quot;max_pixels&quot;</span><span class="p">:</span> <span class="n">max_pixels</span>
+            <span class="s2">"role"</span><span class="p">:</span> <span class="s2">"user"</span><span class="p">,</span>
+            <span class="s2">"content"</span><span class="p">:</span> <span class="p">[{</span>
+                <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"image"</span><span class="p">,</span>
+                <span class="s2">"image"</span><span class="p">:</span> <span class="n">image1</span><span class="p">,</span>
+                <span class="s2">"max_pixels"</span><span class="p">:</span> <span class="n">max_pixels</span>
             <span class="p">}]</span>
         <span class="p">}]</span>
 
         <span class="n">other</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">&quot;preference&quot;</span><span class="p">:</span> <span class="n">preference</span><span class="p">,</span>
-            <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;source&quot;</span><span class="p">],</span>
-            <span class="s2">&quot;task_type&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_type</span><span class="p">,</span>
-            <span class="s2">&quot;prompt&quot;</span><span class="p">:</span> <span class="n">prompt_text</span><span class="p">,</span>
-            <span class="s2">&quot;confidence&quot;</span><span class="p">:</span> <span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;confidence&quot;</span><span class="p">),</span>
-            <span class="s2">&quot;choice_dist&quot;</span><span class="p">:</span> <span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;choice_dist&quot;</span><span class="p">),</span>
-            <span class="s2">&quot;model_chosen&quot;</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;model1&quot;</span><span class="p">],</span>
-            <span class="s2">&quot;model_rejected&quot;</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;model2&quot;</span><span class="p">],</span>
-            <span class="s2">&quot;preferred_path&quot;</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;path1&quot;</span><span class="p">],</span>
-            <span class="s2">&quot;rejected_path&quot;</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;path2&quot;</span><span class="p">],</span>
+            <span class="s2">"preference"</span><span class="p">:</span> <span class="n">preference</span><span class="p">,</span>
+            <span class="s2">"source"</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s2">"source"</span><span class="p">],</span>
+            <span class="s2">"task_type"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_type</span><span class="p">,</span>
+            <span class="s2">"prompt"</span><span class="p">:</span> <span class="n">prompt_text</span><span class="p">,</span>
+            <span class="s2">"confidence"</span><span class="p">:</span> <span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"confidence"</span><span class="p">),</span>
+            <span class="s2">"choice_dist"</span><span class="p">:</span> <span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"choice_dist"</span><span class="p">),</span>
+            <span class="s2">"model_chosen"</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s2">"model1"</span><span class="p">],</span>
+            <span class="s2">"model_rejected"</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s2">"model2"</span><span class="p">],</span>
+            <span class="s2">"preferred_path"</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s2">"path1"</span><span class="p">],</span>
+            <span class="s2">"rejected_path"</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s2">"path2"</span><span class="p">],</span>
         <span class="p">}</span>
         <span class="k">return</span> <span class="n">messages0</span><span class="p">,</span> <span class="n">messages1</span><span class="p">,</span> <span class="n">other</span></div></div>
 
 
 <div class="viewcode-block" id="HPDv3GRMHandler"><a class="viewcode-back" href="../../../api_doc/datasets/hpdv3.html#lightrft.datasets.hpdv3.HPDv3GRMHandler">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">HPDv3GRMHandler</span><span class="p">(</span><span class="n">HPDv3Handler</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Data Handler for HPDv3 dataset with Generative Reward Model (GRM) training.</span>
 <span class="sd">    Inherits from HPDv3Handler but overrides parse_item to suit GRM needs.</span>
 
 <span class="sd">    Paper: https://huggingface.co/MizzenAI/HPSv3</span>
 <span class="sd">    Dataset Repo: https://huggingface.co/datasets/MizzenAI/HPDv3</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 <div class="viewcode-block" id="HPDv3GRMHandler.parse_item"><a class="viewcode-back" href="../../../api_doc/datasets/hpdv3.html#lightrft.datasets.hpdv3.HPDv3GRMHandler.parse_item">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">parse_item</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">media_content</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
                    <span class="n">config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">],</span> <span class="n">Dict</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Parse a single HPDv3 item for GRM training.</span>
 
 <span class="sd">        :param item: The raw data item</span>
@@ -523,29 +528,29 @@
 <span class="sd">        .. code-block:: python</span>
 
 <span class="sd">            messages, other = handler.parse_item(item, media_content, config)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># Get loaded visual content</span>
-        <span class="n">preferred_image</span> <span class="o">=</span> <span class="n">media_content</span><span class="p">[</span><span class="s1">&#39;preferred_image&#39;</span><span class="p">]</span>
-        <span class="n">rejected_image</span> <span class="o">=</span> <span class="n">media_content</span><span class="p">[</span><span class="s1">&#39;rejected_image&#39;</span><span class="p">]</span>
+        <span class="n">preferred_image</span> <span class="o">=</span> <span class="n">media_content</span><span class="p">[</span><span class="s1">'preferred_image'</span><span class="p">]</span>
+        <span class="n">rejected_image</span> <span class="o">=</span> <span class="n">media_content</span><span class="p">[</span><span class="s1">'rejected_image'</span><span class="p">]</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">([</span><span class="n">preferred_image</span><span class="p">,</span> <span class="n">rejected_image</span><span class="p">]):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Missing visual content for &#39;preferred_image&#39; or &#39;rejected_image&#39;.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Missing visual content for 'preferred_image' or 'rejected_image'."</span><span class="p">)</span>
 
         <span class="c1"># Get generation prompt from data item</span>
-        <span class="n">prompt_text</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;prompt&quot;</span><span class="p">]</span>
+        <span class="n">prompt_text</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s2">"prompt"</span><span class="p">]</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">prompt_text</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Missing generation prompt in item: </span><span class="si">{</span><span class="n">item</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Missing generation prompt in item: </span><span class="si">{</span><span class="n">item</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
         <span class="c1"># Get system prompts from config</span>
-        <span class="n">task_instruction_template</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;task_instruction&quot;</span><span class="p">]</span>
+        <span class="n">task_instruction_template</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">"task_instruction"</span><span class="p">]</span>
         <span class="n">task_instruction</span> <span class="o">=</span> <span class="n">task_instruction_template</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">prompt</span><span class="o">=</span><span class="n">prompt_text</span><span class="p">)</span>
 
         <span class="c1"># Get max_pixels from config</span>
-        <span class="n">max_pixels</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;max_pixels&quot;</span><span class="p">]</span>
+        <span class="n">max_pixels</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">"max_pixels"</span><span class="p">]</span>
 
-        <span class="c1"># Random pick from &quot;A&quot; or &quot;B&quot; to avoid positional bias</span>
-        <span class="n">preference</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">([</span><span class="s2">&quot;A&quot;</span><span class="p">,</span> <span class="s2">&quot;B&quot;</span><span class="p">])</span>
-        <span class="k">if</span> <span class="n">preference</span> <span class="o">==</span> <span class="s2">&quot;A&quot;</span><span class="p">:</span>  <span class="c1"># &quot;A&quot; means image0 is preferred</span>
+        <span class="c1"># Random pick from "A" or "B" to avoid positional bias</span>
+        <span class="n">preference</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">([</span><span class="s2">"A"</span><span class="p">,</span> <span class="s2">"B"</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">preference</span> <span class="o">==</span> <span class="s2">"A"</span><span class="p">:</span>  <span class="c1"># "A" means image0 is preferred</span>
             <span class="n">image0</span><span class="p">,</span> <span class="n">image1</span> <span class="o">=</span> <span class="n">preferred_image</span><span class="p">,</span> <span class="n">rejected_image</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">image0</span><span class="p">,</span> <span class="n">image1</span> <span class="o">=</span> <span class="n">rejected_image</span><span class="p">,</span> <span class="n">preferred_image</span>
@@ -553,66 +558,66 @@
         <span class="c1"># Build messages</span>
         <span class="n">messages</span> <span class="o">=</span> <span class="p">[</span>
             <span class="p">{</span>
-                <span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;system&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="n">task_instruction</span>
+                <span class="s2">"role"</span><span class="p">:</span> <span class="s2">"system"</span><span class="p">,</span>
+                <span class="s2">"content"</span><span class="p">:</span> <span class="n">task_instruction</span>
             <span class="p">},</span>
             <span class="p">{</span>
-                <span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">"role"</span><span class="p">:</span> <span class="s2">"user"</span><span class="p">,</span>
+                <span class="s2">"content"</span><span class="p">:</span> <span class="p">[</span>
                     <span class="p">{</span>
-                        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;text&quot;</span><span class="p">,</span>
-                        <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;**Image 1:**&quot;</span>
+                        <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"text"</span><span class="p">,</span>
+                        <span class="s2">"text"</span><span class="p">:</span> <span class="s2">"**Image 1:**"</span>
                     <span class="p">},</span>
                     <span class="p">{</span>
-                        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;image&quot;</span><span class="p">,</span>
-                        <span class="s2">&quot;image&quot;</span><span class="p">:</span> <span class="n">image0</span><span class="p">,</span>
-                        <span class="s2">&quot;max_pixels&quot;</span><span class="p">:</span> <span class="n">max_pixels</span>
+                        <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"image"</span><span class="p">,</span>
+                        <span class="s2">"image"</span><span class="p">:</span> <span class="n">image0</span><span class="p">,</span>
+                        <span class="s2">"max_pixels"</span><span class="p">:</span> <span class="n">max_pixels</span>
                     <span class="p">}</span>  <span class="c1"># to save memory</span>
                 <span class="p">]</span>
             <span class="p">},</span>
             <span class="p">{</span>
-                <span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="p">[{</span>
-                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;text&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;**Image 2:**&quot;</span>
+                <span class="s2">"role"</span><span class="p">:</span> <span class="s2">"user"</span><span class="p">,</span>
+                <span class="s2">"content"</span><span class="p">:</span> <span class="p">[{</span>
+                    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"text"</span><span class="p">,</span>
+                    <span class="s2">"text"</span><span class="p">:</span> <span class="s2">"**Image 2:**"</span>
                 <span class="p">},</span> <span class="p">{</span>
-                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;image&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;image&quot;</span><span class="p">:</span> <span class="n">image1</span><span class="p">,</span>
-                    <span class="s2">&quot;max_pixels&quot;</span><span class="p">:</span> <span class="n">max_pixels</span>
+                    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"image"</span><span class="p">,</span>
+                    <span class="s2">"image"</span><span class="p">:</span> <span class="n">image1</span><span class="p">,</span>
+                    <span class="s2">"max_pixels"</span><span class="p">:</span> <span class="n">max_pixels</span>
                 <span class="p">}]</span>
             <span class="p">}</span>
         <span class="p">]</span>
 
-        <span class="n">response</span> <span class="o">=</span> <span class="s2">&quot;&lt;answer&gt;Image 1 is better&lt;/answer&gt;&quot;</span> <span class="k">if</span> <span class="n">preference</span> <span class="o">==</span> <span class="s2">&quot;A&quot;</span> <span class="k">else</span> <span class="s2">&quot;&lt;answer&gt;Image 2 is better&lt;/answer&gt;&quot;</span>
-        <span class="n">messages</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;assistant&quot;</span><span class="p">,</span> <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="p">[{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;text&quot;</span><span class="p">,</span> <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="n">response</span><span class="p">}]})</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="s2">"&lt;answer&gt;Image 1 is better&lt;/answer&gt;"</span> <span class="k">if</span> <span class="n">preference</span> <span class="o">==</span> <span class="s2">"A"</span> <span class="k">else</span> <span class="s2">"&lt;answer&gt;Image 2 is better&lt;/answer&gt;"</span>
+        <span class="n">messages</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">"role"</span><span class="p">:</span> <span class="s2">"assistant"</span><span class="p">,</span> <span class="s2">"content"</span><span class="p">:</span> <span class="p">[{</span><span class="s2">"type"</span><span class="p">:</span> <span class="s2">"text"</span><span class="p">,</span> <span class="s2">"text"</span><span class="p">:</span> <span class="n">response</span><span class="p">}]})</span>
 
         <span class="n">other</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">&quot;preference&quot;</span><span class="p">:</span> <span class="n">preference</span><span class="p">,</span>
-            <span class="s2">&quot;response&quot;</span><span class="p">:</span> <span class="n">response</span><span class="p">,</span>
-            <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;source&quot;</span><span class="p">],</span>
-            <span class="s2">&quot;task_type&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_type</span><span class="p">,</span>
-            <span class="s2">&quot;prompt&quot;</span><span class="p">:</span> <span class="n">prompt_text</span><span class="p">,</span>
-            <span class="s2">&quot;confidence&quot;</span><span class="p">:</span> <span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;confidence&quot;</span><span class="p">),</span>
-            <span class="s2">&quot;choice_dist&quot;</span><span class="p">:</span> <span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;choice_dist&quot;</span><span class="p">),</span>
-            <span class="s2">&quot;model_chosen&quot;</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;model1&quot;</span><span class="p">],</span>
-            <span class="s2">&quot;model_rejected&quot;</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;model2&quot;</span><span class="p">],</span>
-            <span class="s2">&quot;preferred_path&quot;</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;path1&quot;</span><span class="p">],</span>
-            <span class="s2">&quot;rejected_path&quot;</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;path2&quot;</span><span class="p">],</span>
+            <span class="s2">"preference"</span><span class="p">:</span> <span class="n">preference</span><span class="p">,</span>
+            <span class="s2">"response"</span><span class="p">:</span> <span class="n">response</span><span class="p">,</span>
+            <span class="s2">"source"</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s2">"source"</span><span class="p">],</span>
+            <span class="s2">"task_type"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_type</span><span class="p">,</span>
+            <span class="s2">"prompt"</span><span class="p">:</span> <span class="n">prompt_text</span><span class="p">,</span>
+            <span class="s2">"confidence"</span><span class="p">:</span> <span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"confidence"</span><span class="p">),</span>
+            <span class="s2">"choice_dist"</span><span class="p">:</span> <span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"choice_dist"</span><span class="p">),</span>
+            <span class="s2">"model_chosen"</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s2">"model1"</span><span class="p">],</span>
+            <span class="s2">"model_rejected"</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s2">"model2"</span><span class="p">],</span>
+            <span class="s2">"preferred_path"</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s2">"path1"</span><span class="p">],</span>
+            <span class="s2">"rejected_path"</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s2">"path2"</span><span class="p">],</span>
         <span class="p">}</span>
         <span class="k">return</span> <span class="n">messages</span><span class="p">,</span> <span class="n">other</span></div></div>
 
 
 <div class="viewcode-block" id="HPDv3PairHandler"><a class="viewcode-back" href="../../../api_doc/datasets/hpdv3.html#lightrft.datasets.hpdv3.HPDv3PairHandler">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">HPDv3PairHandler</span><span class="p">(</span><span class="n">HPDv3Handler</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Data Handler for HPDv3 dataset in pairwise format.</span>
 <span class="sd">    Inherits from HPDv3Handler but overrides parse_item to suit pairwise training.</span>
 
 <span class="sd">    Paper: https://huggingface.co/MizzenAI/HPSv3</span>
 <span class="sd">    Dataset Repo: https://huggingface.co/datasets/MizzenAI/HPDv3</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 <div class="viewcode-block" id="HPDv3PairHandler.parse_item"><a class="viewcode-back" href="../../../api_doc/datasets/hpdv3.html#lightrft.datasets.hpdv3.HPDv3PairHandler.parse_item">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">parse_item</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">visual_content</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
                    <span class="n">config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">],</span> <span class="n">Dict</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Parse a data item into pairwise messages and metadata.</span>
 
 <span class="sd">        :param item: The raw data item</span>
@@ -630,71 +635,71 @@
 <span class="sd">        .. code-block:: python</span>
 
 <span class="sd">            messages, other = handler.parse_item(item, media_content, config)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># Get loaded visual content</span>
-        <span class="n">preferred_image</span> <span class="o">=</span> <span class="n">visual_content</span><span class="p">[</span><span class="s1">&#39;preferred_image&#39;</span><span class="p">]</span>
-        <span class="n">rejected_image</span> <span class="o">=</span> <span class="n">visual_content</span><span class="p">[</span><span class="s1">&#39;rejected_image&#39;</span><span class="p">]</span>
+        <span class="n">preferred_image</span> <span class="o">=</span> <span class="n">visual_content</span><span class="p">[</span><span class="s1">'preferred_image'</span><span class="p">]</span>
+        <span class="n">rejected_image</span> <span class="o">=</span> <span class="n">visual_content</span><span class="p">[</span><span class="s1">'rejected_image'</span><span class="p">]</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">([</span><span class="n">preferred_image</span><span class="p">,</span> <span class="n">rejected_image</span><span class="p">]):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Missing visual content for &#39;preferred_image&#39; or &#39;rejected_image&#39;.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Missing visual content for 'preferred_image' or 'rejected_image'."</span><span class="p">)</span>
 
         <span class="c1"># Get generation prompt from data item</span>
-        <span class="n">prompt_text</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;prompt&quot;</span><span class="p">]</span>
+        <span class="n">prompt_text</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s2">"prompt"</span><span class="p">]</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">prompt_text</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Missing generation prompt in item: </span><span class="si">{</span><span class="n">item</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Missing generation prompt in item: </span><span class="si">{</span><span class="n">item</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
         <span class="c1"># Get system prompts from config</span>
         <span class="n">task_instruction_template</span> <span class="o">=</span> <span class="n">get_task_instructions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">)</span>
         <span class="n">task_instruction</span> <span class="o">=</span> <span class="n">task_instruction_template</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">prompt</span><span class="o">=</span><span class="n">prompt_text</span><span class="p">)</span>
 
         <span class="c1"># Get max_pixels from config</span>
-        <span class="n">max_pixels</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;max_pixels&quot;</span><span class="p">]</span>
+        <span class="n">max_pixels</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">"max_pixels"</span><span class="p">]</span>
 
-        <span class="c1"># Random pick from &quot;A&quot; or &quot;B&quot; to avoid positional bias</span>
-        <span class="n">preference</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">([</span><span class="s2">&quot;A&quot;</span><span class="p">,</span> <span class="s2">&quot;B&quot;</span><span class="p">])</span>
-        <span class="k">if</span> <span class="n">preference</span> <span class="o">==</span> <span class="s2">&quot;A&quot;</span><span class="p">:</span>  <span class="c1"># &quot;A&quot; means image0 is preferred</span>
+        <span class="c1"># Random pick from "A" or "B" to avoid positional bias</span>
+        <span class="n">preference</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">([</span><span class="s2">"A"</span><span class="p">,</span> <span class="s2">"B"</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">preference</span> <span class="o">==</span> <span class="s2">"A"</span><span class="p">:</span>  <span class="c1"># "A" means image0 is preferred</span>
             <span class="n">image0</span><span class="p">,</span> <span class="n">image1</span> <span class="o">=</span> <span class="n">preferred_image</span><span class="p">,</span> <span class="n">rejected_image</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">image0</span><span class="p">,</span> <span class="n">image1</span> <span class="o">=</span> <span class="n">rejected_image</span><span class="p">,</span> <span class="n">preferred_image</span>
 
         <span class="c1"># Build messages</span>
         <span class="n">messages</span> <span class="o">=</span> <span class="p">[{</span>
-            <span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;system&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="n">task_instruction</span>
+            <span class="s2">"role"</span><span class="p">:</span> <span class="s2">"system"</span><span class="p">,</span>
+            <span class="s2">"content"</span><span class="p">:</span> <span class="n">task_instruction</span>
         <span class="p">},</span> <span class="p">{</span>
-            <span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="p">[{</span>
-                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;text&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;The following is the first image.&quot;</span>
+            <span class="s2">"role"</span><span class="p">:</span> <span class="s2">"user"</span><span class="p">,</span>
+            <span class="s2">"content"</span><span class="p">:</span> <span class="p">[{</span>
+                <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"text"</span><span class="p">,</span>
+                <span class="s2">"text"</span><span class="p">:</span> <span class="s2">"The following is the first image."</span>
             <span class="p">},</span> <span class="p">{</span>
-                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;image&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;image&quot;</span><span class="p">:</span> <span class="n">image0</span><span class="p">,</span>
-                <span class="s2">&quot;max_pixels&quot;</span><span class="p">:</span> <span class="n">max_pixels</span>
+                <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"image"</span><span class="p">,</span>
+                <span class="s2">"image"</span><span class="p">:</span> <span class="n">image0</span><span class="p">,</span>
+                <span class="s2">"max_pixels"</span><span class="p">:</span> <span class="n">max_pixels</span>
             <span class="p">}]</span>
         <span class="p">},</span> <span class="p">{</span>
-            <span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="p">[{</span>
-                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;text&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;The following is the second image.&quot;</span>
+            <span class="s2">"role"</span><span class="p">:</span> <span class="s2">"user"</span><span class="p">,</span>
+            <span class="s2">"content"</span><span class="p">:</span> <span class="p">[{</span>
+                <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"text"</span><span class="p">,</span>
+                <span class="s2">"text"</span><span class="p">:</span> <span class="s2">"The following is the second image."</span>
             <span class="p">},</span> <span class="p">{</span>
-                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;image&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;image&quot;</span><span class="p">:</span> <span class="n">image1</span><span class="p">,</span>
-                <span class="s2">&quot;max_pixels&quot;</span><span class="p">:</span> <span class="n">max_pixels</span>
+                <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"image"</span><span class="p">,</span>
+                <span class="s2">"image"</span><span class="p">:</span> <span class="n">image1</span><span class="p">,</span>
+                <span class="s2">"max_pixels"</span><span class="p">:</span> <span class="n">max_pixels</span>
             <span class="p">}]</span>
         <span class="p">}]</span>
 
         <span class="n">other</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">&quot;preference&quot;</span><span class="p">:</span> <span class="n">preference</span><span class="p">,</span>
-            <span class="s2">&quot;reward_rule_label&quot;</span><span class="p">:</span> <span class="s2">&quot;general&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;source&quot;</span><span class="p">],</span>
-            <span class="s2">&quot;task_type&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_type</span><span class="p">,</span>
-            <span class="s2">&quot;prompt&quot;</span><span class="p">:</span> <span class="n">prompt_text</span><span class="p">,</span>
-            <span class="s2">&quot;confidence&quot;</span><span class="p">:</span> <span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;confidence&quot;</span><span class="p">),</span>
-            <span class="s2">&quot;choice_dist&quot;</span><span class="p">:</span> <span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;choice_dist&quot;</span><span class="p">),</span>
-            <span class="s2">&quot;model_chosen&quot;</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;model1&quot;</span><span class="p">],</span>
-            <span class="s2">&quot;model_rejected&quot;</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;model2&quot;</span><span class="p">],</span>
-            <span class="s2">&quot;preferred_path&quot;</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;path1&quot;</span><span class="p">],</span>
-            <span class="s2">&quot;rejected_path&quot;</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;path2&quot;</span><span class="p">],</span>
+            <span class="s2">"preference"</span><span class="p">:</span> <span class="n">preference</span><span class="p">,</span>
+            <span class="s2">"reward_rule_label"</span><span class="p">:</span> <span class="s2">"general"</span><span class="p">,</span>
+            <span class="s2">"source"</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s2">"source"</span><span class="p">],</span>
+            <span class="s2">"task_type"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_type</span><span class="p">,</span>
+            <span class="s2">"prompt"</span><span class="p">:</span> <span class="n">prompt_text</span><span class="p">,</span>
+            <span class="s2">"confidence"</span><span class="p">:</span> <span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"confidence"</span><span class="p">),</span>
+            <span class="s2">"choice_dist"</span><span class="p">:</span> <span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"choice_dist"</span><span class="p">),</span>
+            <span class="s2">"model_chosen"</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s2">"model1"</span><span class="p">],</span>
+            <span class="s2">"model_rejected"</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s2">"model2"</span><span class="p">],</span>
+            <span class="s2">"preferred_path"</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s2">"path1"</span><span class="p">],</span>
+            <span class="s2">"rejected_path"</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s2">"path2"</span><span class="p">],</span>
         <span class="p">}</span>
         <span class="k">return</span> <span class="n">messages</span><span class="p">,</span> <span class="n">other</span></div></div>
 </pre></div>
@@ -709,7 +714,7 @@
 
   <div role="contentinfo">
     <p>
-      &copy; Copyright 2025, OpenDILab.
+      &copy; Copyright 2025-2026, OpenDILab.
 
     </p>
   </div>
@@ -746,8 +751,8 @@
   <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
   <script src="../../../_static/doctools.js"></script>
   <script src="../../../_static/sphinx_highlight.js"></script>
-  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-  <script src="../../../_static/js/language_switch.js"></script>
+  <script src="../../../_static/clipboard.min.js"></script>
+  <script src="../../../_static/copybutton.js"></script>
   
 
   
@@ -776,7 +781,7 @@
     <div class="container-fluid">
       <div class="container">
         <div class="mobile-main-menu-header-container">
-          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="header-logo" href="https://github.com/opendilab/LightRFT" aria-label="OpenMMLab"></a>
           <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
         </div>
       </div>

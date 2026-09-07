@@ -32,6 +32,7 @@
   <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../../../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/copybutton.css" type="text/css" />
   <link rel="stylesheet" href="../../../../_static/css/readthedocs.css" type="text/css" />
   <link rel="index" title="Index" href="../../../../genindex.html" />
   <link rel="search" title="Search" href="../../../../search.html" />
@@ -84,7 +85,7 @@
 <div class="container-fluid header-holder tutorials-header" id="header-holder">
   <div class="container">
     <div class="header-container">
-      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+      <a class="header-logo" href="https://github.com/opendilab/LightRFT"
         aria-label="OpenMMLab"></a>
 
       <div class="main-menu">
@@ -234,6 +235,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../api_doc/strategy/index.html">lightrft.strategy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../api_doc/trainer/index.html">lightrft.trainer</a></li>
 </ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../index_zh.html">欢迎来到 LightRFT 文档!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../index_zh.html#id4">索引与表格</a></li>
+</ul>
 
         
         
@@ -302,7 +307,7 @@
               <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
                 
   <h1>Source code for lightrft.strategy.sglang_utils.sgl_model_saver</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""</span>
 <span class="sd">This module provides memory management utilities for SGLang model execution.</span>
 
 <span class="sd">The module implements memory saving functionality by allowing temporary release and restoration</span>
@@ -314,7 +319,7 @@
 <span class="sd">- For older versions: Provides backward-compatible monkey patching</span>
 
 <span class="sd">The module automatically detects which approach to use based on the SGLang version.</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">sglang</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">sglang.srt.managers.scheduler</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">scheduler_module</span>
@@ -336,18 +341,18 @@
 
 
 <div class="viewcode-block" id="release_memory_occupation"><a class="viewcode-back" href="../../../../api_doc/strategy/sglang_utils/sgl_model_saver.html#lightrft.strategy.sglang_utils.sgl_model_saver.release_memory_occupation">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">release_memory_occupation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">recv_req</span><span class="p">:</span> <span class="n">ReleaseMemoryOccupationReqInput</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Release memory occupation by stashing model weights and states to CPU memory.</span>
 
 <span class="sd">    This method temporarily frees GPU memory by moving model parameters and static states</span>
-<span class="sd">    to CPU memory. It&#39;s designed to be used when the model is temporarily not needed,</span>
+<span class="sd">    to CPU memory. It's designed to be used when the model is temporarily not needed,</span>
 <span class="sd">    allowing other processes or models to utilize the freed GPU memory.</span>
 
 <span class="sd">    Compatible with both old and new SGLang versions by detecting the model runner location.</span>
 
 <span class="sd">    The method performs the following operations:</span>
 <span class="sd">        1. Validates the memory saver adapter</span>
-<span class="sd">        2. Exports and stashes the model&#39;s static state</span>
+<span class="sd">        2. Exports and stashes the model's static state</span>
 <span class="sd">        3. Clones model parameters to CPU memory if not already done</span>
 <span class="sd">        4. Pauses the memory saver adapter</span>
 <span class="sd">        5. Flushes the model cache</span>
@@ -363,19 +368,19 @@
 <span class="sd">        &gt;&gt;&gt; req = ReleaseMemoryOccupationReqInput()</span>
 <span class="sd">        &gt;&gt;&gt; response = scheduler.release_memory_occupation(req)</span>
 <span class="sd">        &gt;&gt;&gt; # GPU memory is now freed for other uses</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># Get model reference - compatible with different SGLang versions</span>
     <span class="c1"># Old version: self.tp_worker.worker.model_runner.model</span>
     <span class="c1"># New version (v0.5.6+): self.tp_worker.model_runner.model</span>
-    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tp_worker</span><span class="p">,</span> <span class="s1">&#39;worker&#39;</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tp_worker</span><span class="p">,</span> <span class="s1">'worker'</span><span class="p">):</span>
         <span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tp_worker</span><span class="o">.</span><span class="n">worker</span><span class="o">.</span><span class="n">model_runner</span><span class="o">.</span><span class="n">model</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tp_worker</span><span class="o">.</span><span class="n">model_runner</span><span class="o">.</span><span class="n">model</span>
 
-    <span class="bp">self</span><span class="o">.</span><span class="n">memory_saver_adapter</span><span class="o">.</span><span class="n">check_validity</span><span class="p">(</span><span class="n">caller_name</span><span class="o">=</span><span class="s2">&quot;release_memory_occupation&quot;</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">memory_saver_adapter</span><span class="o">.</span><span class="n">check_validity</span><span class="p">(</span><span class="n">caller_name</span><span class="o">=</span><span class="s2">"release_memory_occupation"</span><span class="p">)</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">stashed_model_static_state</span> <span class="o">=</span> <span class="n">_export_static_state</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;stashed_weights&quot;</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"stashed_weights"</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">stashed_weights</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">named_parameters</span><span class="p">():</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">stashed_weights</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">param</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>
@@ -386,7 +391,7 @@
 
 
 <div class="viewcode-block" id="resume_memory_occupation"><a class="viewcode-back" href="../../../../api_doc/strategy/sglang_utils/sgl_model_saver.html#lightrft.strategy.sglang_utils.sgl_model_saver.resume_memory_occupation">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">resume_memory_occupation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">recv_req</span><span class="p">:</span> <span class="n">ResumeMemoryOccupationReqInput</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Resume memory occupation by restoring model weights and states from CPU memory.</span>
 
 <span class="sd">    This method restores the model to its fully operational state by loading back</span>
@@ -415,25 +420,25 @@
 <span class="sd">        &gt;&gt;&gt; req = ResumeMemoryOccupationReqInput()</span>
 <span class="sd">        &gt;&gt;&gt; response = scheduler.resume_memory_occupation(req)</span>
 <span class="sd">        &gt;&gt;&gt; # Model is now ready for inference again</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># Get model reference - compatible with different SGLang versions</span>
-    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tp_worker</span><span class="p">,</span> <span class="s1">&#39;worker&#39;</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tp_worker</span><span class="p">,</span> <span class="s1">'worker'</span><span class="p">):</span>
         <span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tp_worker</span><span class="o">.</span><span class="n">worker</span><span class="o">.</span><span class="n">model_runner</span><span class="o">.</span><span class="n">model</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tp_worker</span><span class="o">.</span><span class="n">model_runner</span><span class="o">.</span><span class="n">model</span>
 
-    <span class="bp">self</span><span class="o">.</span><span class="n">memory_saver_adapter</span><span class="o">.</span><span class="n">check_validity</span><span class="p">(</span><span class="n">caller_name</span><span class="o">=</span><span class="s2">&quot;resume_memory_occupation&quot;</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">memory_saver_adapter</span><span class="o">.</span><span class="n">check_validity</span><span class="p">(</span><span class="n">caller_name</span><span class="o">=</span><span class="s2">"resume_memory_occupation"</span><span class="p">)</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">memory_saver_adapter</span><span class="o">.</span><span class="n">resume</span><span class="p">()</span>
     <span class="n">_import_static_state</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">stashed_model_static_state</span><span class="p">)</span>
     <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">stashed_model_static_state</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_import_params</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">static_params</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Import parameters from stashed weights back to the model.</span>
 
 <span class="sd">        :param model: The target model to restore parameters to</span>
 <span class="sd">        :param static_params: Dictionary of stashed parameter weights</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">named_parameters</span><span class="p">():</span>
             <span class="n">param</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">copy_</span><span class="p">(</span><span class="n">static_params</span><span class="p">[</span><span class="n">name</span><span class="p">])</span>
 
@@ -442,9 +447,9 @@
     <span class="k">return</span> <span class="n">ResumeMemoryOccupationReqOutput</span><span class="p">()</span></div>
 
 
-<span class="c1"># Apply monkey patching only if the Scheduler class doesn&#39;t already have these methods</span>
+<span class="c1"># Apply monkey patching only if the Scheduler class doesn't already have these methods</span>
 <span class="c1"># This ensures compatibility with both old versions (need patching) and new versions (already have methods)</span>
-<span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">scheduler_module</span><span class="o">.</span><span class="n">Scheduler</span><span class="p">,</span> <span class="s1">&#39;release_memory_occupation&#39;</span><span class="p">):</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">scheduler_module</span><span class="o">.</span><span class="n">Scheduler</span><span class="p">,</span> <span class="s1">'release_memory_occupation'</span><span class="p">):</span>
     <span class="c1"># Old version: need to add the methods via monkey patching</span>
     <span class="n">scheduler_module</span><span class="o">.</span><span class="n">Scheduler</span><span class="o">.</span><span class="n">release_memory_occupation</span> <span class="o">=</span> <span class="n">release_memory_occupation</span>
     <span class="n">scheduler_module</span><span class="o">.</span><span class="n">Scheduler</span><span class="o">.</span><span class="n">resume_memory_occupation</span> <span class="o">=</span> <span class="n">resume_memory_occupation</span>
@@ -464,7 +469,7 @@
 
   <div role="contentinfo">
     <p>
-      &copy; Copyright 2025, OpenDILab.
+      &copy; Copyright 2025-2026, OpenDILab.
 
     </p>
   </div>
@@ -501,8 +506,8 @@
   <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
   <script src="../../../../_static/doctools.js"></script>
   <script src="../../../../_static/sphinx_highlight.js"></script>
-  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-  <script src="../../../../_static/js/language_switch.js"></script>
+  <script src="../../../../_static/clipboard.min.js"></script>
+  <script src="../../../../_static/copybutton.js"></script>
   
 
   
@@ -531,7 +536,7 @@
     <div class="container-fluid">
       <div class="container">
         <div class="mobile-main-menu-header-container">
-          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="header-logo" href="https://github.com/opendilab/LightRFT" aria-label="OpenMMLab"></a>
           <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
         </div>
       </div>

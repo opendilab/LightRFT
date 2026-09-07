@@ -32,6 +32,7 @@
   <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../../../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/copybutton.css" type="text/css" />
   <link rel="stylesheet" href="../../../../_static/css/readthedocs.css" type="text/css" />
   <link rel="index" title="Index" href="../../../../genindex.html" />
   <link rel="search" title="Search" href="../../../../search.html" />
@@ -84,7 +85,7 @@
 <div class="container-fluid header-holder tutorials-header" id="header-holder">
   <div class="container">
     <div class="header-container">
-      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+      <a class="header-logo" href="https://github.com/opendilab/LightRFT"
         aria-label="OpenMMLab"></a>
 
       <div class="main-menu">
@@ -234,6 +235,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../api_doc/strategy/index.html">lightrft.strategy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../api_doc/trainer/index.html">lightrft.trainer</a></li>
 </ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../index_zh.html">欢迎来到 LightRFT 文档!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../index_zh.html#id4">索引与表格</a></li>
+</ul>
 
         
         
@@ -302,13 +307,13 @@
               <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
                 
   <h1>Source code for lightrft.strategy.vllm_utils.vllm_worker_wrap_no_ray</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""</span>
 <span class="sd">This module provides a wrapper for the vLLM worker that extends its functionality.</span>
 
 <span class="sd">The main purpose of this module is to provide a way to update weights of a vLLM worker</span>
 <span class="sd">model from a source rank. This is particularly useful for distributed training or</span>
 <span class="sd">inference scenarios where model weights need to be synchronized across multiple workers.</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">vllm</span>
@@ -325,7 +330,7 @@
 <span class="c1"># from the new v1 path only for vllm&gt;=0.13.0. Older releases like v0.7.x may</span>
 <span class="c1"># already expose a v1 module tree, but their uniproc executor still expects the</span>
 <span class="c1"># legacy Worker implementation with methods such as determine_num_available_blocks.</span>
-<span class="k">if</span> <span class="n">Version</span><span class="p">(</span><span class="n">vllm</span><span class="o">.</span><span class="n">__version__</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">Version</span><span class="p">(</span><span class="s2">&quot;0.13.0&quot;</span><span class="p">):</span>
+<span class="k">if</span> <span class="n">Version</span><span class="p">(</span><span class="n">vllm</span><span class="o">.</span><span class="n">__version__</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">Version</span><span class="p">(</span><span class="s2">"0.13.0"</span><span class="p">):</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">vllm.v1.worker.gpu_worker</span><span class="w"> </span><span class="kn">import</span> <span class="n">Worker</span>
     <span class="k">except</span> <span class="p">(</span><span class="ne">ModuleNotFoundError</span><span class="p">,</span> <span class="ne">ImportError</span><span class="p">):</span>
@@ -333,37 +338,37 @@
             <span class="kn">from</span><span class="w"> </span><span class="nn">vllm.worker.worker</span><span class="w"> </span><span class="kn">import</span> <span class="n">Worker</span>
         <span class="k">except</span> <span class="p">(</span><span class="ne">ModuleNotFoundError</span><span class="p">,</span> <span class="ne">ImportError</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
-                <span class="s2">&quot;Could not import Worker from vllm. &quot;</span>
-                <span class="s2">&quot;Please ensure you have a compatible version of vllm installed. &quot;</span>
-                <span class="s2">&quot;Supported versions: vllm&gt;=0.6.3 or vllm&gt;=0.13.0&quot;</span>
+                <span class="s2">"Could not import Worker from vllm. "</span>
+                <span class="s2">"Please ensure you have a compatible version of vllm installed. "</span>
+                <span class="s2">"Supported versions: vllm&gt;=0.6.3 or vllm&gt;=0.13.0"</span>
             <span class="p">)</span>
 <span class="k">else</span><span class="p">:</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">vllm.worker.worker</span><span class="w"> </span><span class="kn">import</span> <span class="n">Worker</span>
     <span class="k">except</span> <span class="p">(</span><span class="ne">ModuleNotFoundError</span><span class="p">,</span> <span class="ne">ImportError</span><span class="p">):</span>
         <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span>
-            <span class="s2">&quot;Could not import Worker from vllm. &quot;</span>
-            <span class="s2">&quot;Please ensure you have a compatible version of vllm installed. &quot;</span>
-            <span class="s2">&quot;Supported versions: vllm&gt;=0.6.3 or vllm&gt;=0.13.0&quot;</span>
+            <span class="s2">"Could not import Worker from vllm. "</span>
+            <span class="s2">"Please ensure you have a compatible version of vllm installed. "</span>
+            <span class="s2">"Supported versions: vllm&gt;=0.6.3 or vllm&gt;=0.13.0"</span>
         <span class="p">)</span>
 
 
 <div class="viewcode-block" id="WorkerWrap"><a class="viewcode-back" href="../../../../api_doc/strategy/vllm_utils/vllm_worker_wrap_no_ray.html#lightrft.strategy.vllm_utils.vllm_worker_wrap_no_ray.WorkerWrap">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">WorkerWrap</span><span class="p">(</span><span class="n">Worker</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    A wrapper for vLLM worker that extends its functionality.</span>
 
-<span class="sd">    This class inherits from vLLM&#39;s Worker class and adds the ability to update</span>
+<span class="sd">    This class inherits from vLLM's Worker class and adds the ability to update</span>
 <span class="sd">    model weights dynamically. This is particularly useful for distributed setups</span>
 <span class="sd">    where weights need to be broadcast from a source rank to all workers.</span>
 
 <span class="sd">    :inherits: vllm.worker.worker.Worker</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 <div class="viewcode-block" id="WorkerWrap.update_weight"><a class="viewcode-back" href="../../../../api_doc/strategy/vllm_utils/vllm_worker_wrap_no_ray.html#lightrft.strategy.vllm_utils.vllm_worker_wrap_no_ray.WorkerWrap.update_weight">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">update_weight</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">dtype</span><span class="p">,</span> <span class="n">shape</span><span class="p">,</span> <span class="n">weight</span><span class="p">,</span> <span class="n">empty_cache</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>  <span class="c1"># pylint: disable=R0917, W0613</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Broadcast weight to all vLLM workers from source rank 0 (actor model).</span>
 
 <span class="sd">        This method updates a specific weight tensor in the model. It ensures that</span>
-<span class="sd">        the data type of the incoming weight matches the model&#39;s configured data type</span>
+<span class="sd">        the data type of the incoming weight matches the model's configured data type</span>
 <span class="sd">        before loading the weight into the model.</span>
 
 <span class="sd">        :param name: The name of the weight tensor to update.</span>
@@ -377,10 +382,10 @@
 <span class="sd">        :param empty_cache: Whether to empty CUDA cache after updating weights.</span>
 <span class="sd">        :type empty_cache: bool</span>
 
-<span class="sd">        :raises AssertionError: If the data type of the weight doesn&#39;t match the model&#39;s configured data type.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        :raises AssertionError: If the data type of the weight doesn't match the model's configured data type.</span>
+<span class="sd">        """</span>
 
-        <span class="k">assert</span> <span class="n">dtype</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_config</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;mismatch dtype: src </span><span class="si">{</span><span class="n">dtype</span><span class="si">}</span><span class="s2">, dst </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">model_config</span><span class="o">.</span><span class="n">dtype</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">assert</span> <span class="n">dtype</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_config</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"mismatch dtype: src </span><span class="si">{</span><span class="n">dtype</span><span class="si">}</span><span class="s2">, dst </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">model_config</span><span class="o">.</span><span class="n">dtype</span><span class="si">}</span><span class="s2">"</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">model_runner</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">load_weights</span><span class="p">(</span><span class="n">weights</span><span class="o">=</span><span class="p">[(</span><span class="n">name</span><span class="p">,</span> <span class="n">weight</span><span class="p">)])</span>
 
@@ -400,7 +405,7 @@
 
   <div role="contentinfo">
     <p>
-      &copy; Copyright 2025, OpenDILab.
+      &copy; Copyright 2025-2026, OpenDILab.
 
     </p>
   </div>
@@ -437,8 +442,8 @@
   <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
   <script src="../../../../_static/doctools.js"></script>
   <script src="../../../../_static/sphinx_highlight.js"></script>
-  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-  <script src="../../../../_static/js/language_switch.js"></script>
+  <script src="../../../../_static/clipboard.min.js"></script>
+  <script src="../../../../_static/copybutton.js"></script>
   
 
   
@@ -467,7 +472,7 @@
     <div class="container-fluid">
       <div class="container">
         <div class="mobile-main-menu-header-container">
-          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="header-logo" href="https://github.com/opendilab/LightRFT" aria-label="OpenMMLab"></a>
           <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
         </div>
       </div>

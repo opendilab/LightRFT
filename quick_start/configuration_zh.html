@@ -33,9 +33,12 @@
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
   <link rel="stylesheet" href="../_static/css/readthedocs.css" type="text/css" />
   <link rel="index" title="Index" href="../genindex.html" />
   <link rel="search" title="Search" href="../search.html" />
+  <link rel="next" title="GRPO 训练教程：GSM8K 与 Geo3K 数据集" href="grpo_gsm8k_geo3k_tutorial_zh.html" />
+  <link rel="prev" title="支持的算法" href="algorithms_zh.html" />
   <!-- Google Analytics -->
   <script type="text/javascript">
     var collapsedSections = [];
@@ -85,7 +88,7 @@
 <div class="container-fluid header-holder tutorials-header" id="header-holder">
   <div class="container">
     <div class="header-container">
-      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+      <a class="header-logo" href="https://github.com/opendilab/LightRFT"
         aria-label="OpenMMLab"></a>
 
       <div class="main-menu">
@@ -235,6 +238,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../api_doc/strategy/index.html">lightrft.strategy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api_doc/trainer/index.html">lightrft.trainer</a></li>
 </ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../index_zh.html">欢迎来到 LightRFT 文档!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index_zh.html#id4">索引与表格</a></li>
+</ul>
 
         
         
@@ -272,6 +279,10 @@
       </li>
 
         
+          <li><a href="../index_zh.html">欢迎来到 LightRFT 文档!</a> &gt;</li>
+        
+          <li><a href="index_zh.html">快速入门</a> &gt;</li>
+        
       <li>配置参数详解</li>
     
     
@@ -308,15 +319,15 @@
 <section id="id2">
 <h2>目录<a class="headerlink" href="#id2" title="Permalink to this heading">¶</a></h2>
 <ol class="arabic simple">
-<li><p>模型参数</p></li>
-<li><p>训练参数</p></li>
-<li><p>Batch Size 配置</p></li>
-<li><p>算法参数</p></li>
-<li><p>分布式训练</p></li>
-<li><p>推理引擎</p></li>
-<li><p>内存优化</p></li>
-<li><p>日志与监控</p></li>
-<li><p>检查点管理</p></li>
+<li><p><a class="reference internal" href="#id3">模型参数</a></p></li>
+<li><p><a class="reference internal" href="#id4">训练参数</a></p></li>
+<li><p><a class="reference internal" href="#batch-size">Batch Size 配置</a></p></li>
+<li><p><a class="reference internal" href="#id7">算法参数</a></p></li>
+<li><p><a class="reference internal" href="#id8">分布式训练</a></p></li>
+<li><p><a class="reference internal" href="#id9">推理引擎</a></p></li>
+<li><p><a class="reference internal" href="#id10">内存优化</a></p></li>
+<li><p><a class="reference internal" href="#id11">日志与监控</a></p></li>
+<li><p><a class="reference internal" href="#id12">检查点管理</a></p></li>
 </ol>
 </section>
 <section id="id3">
@@ -505,7 +516,7 @@
 <h3><code class="docutils literal notranslate"><span class="pre">--advantage_estimator</span></code><a class="headerlink" href="#advantage-estimator" title="Permalink to this heading">¶</a></h3>
 <ul class="simple">
 <li><p><strong>类型</strong>: <code class="docutils literal notranslate"><span class="pre">str</span></code></p></li>
-<li><p><strong>选项</strong>: <code class="docutils literal notranslate"><span class="pre">group_norm</span></code>, <code class="docutils literal notranslate"><span class="pre">reinforce</span></code>, <code class="docutils literal notranslate"><span class="pre">cpgd</span></code>, <code class="docutils literal notranslate"><span class="pre">gspo</span></code>, <code class="docutils literal notranslate"><span class="pre">gmpo</span></code></p></li>
+<li><p><strong>选项</strong>: <code class="docutils literal notranslate"><span class="pre">gae</span></code>, <code class="docutils literal notranslate"><span class="pre">reinforce</span></code>, <code class="docutils literal notranslate"><span class="pre">rloo</span></code>, <code class="docutils literal notranslate"><span class="pre">reinforce_baseline</span></code>, <code class="docutils literal notranslate"><span class="pre">group_norm</span></code>, <code class="docutils literal notranslate"><span class="pre">cpgd</span></code>, <code class="docutils literal notranslate"><span class="pre">reinforce++</span></code>, <code class="docutils literal notranslate"><span class="pre">on_policy_distillation</span></code></p></li>
 <li><p><strong>默认值</strong>: <code class="docutils literal notranslate"><span class="pre">group_norm</span></code></p></li>
 <li><p><strong>描述</strong>: 优势估计 (Advantage estimation) 的方法</p></li>
 <li><p><strong>建议</strong>:</p>
@@ -515,6 +526,7 @@
 <li><p><code class="docutils literal notranslate"><span class="pre">cpgd</span></code>: 旨在保持基础模型能力时使用</p></li>
 </ul>
 </li>
+<li><p><strong>说明</strong>：当前参数解析器可以接受 <code class="docutils literal notranslate"><span class="pre">reinforce++</span></code>，但优势计算器工厂尚未提供对应映射；在该集成完成前不应使用此选项。</p></li>
 </ul>
 </section>
 <section id="n-samples-per-prompt">
@@ -1072,12 +1084,24 @@
             </div>
             <footer>
   
+  <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+    
+    <a href="grpo_gsm8k_geo3k_tutorial_zh.html" class="btn btn-neutral float-right" title="GRPO 训练教程：GSM8K 与 Geo3K 数据集" accesskey="n"
+      rel="next">Next <img src="../_static/images/chevron-right-blue.svg"
+        class="next-page"></a>
+    
+    
+    <a href="algorithms_zh.html" class="btn btn-neutral" title="支持的算法" accesskey="p"
+      rel="prev"><img src="../_static/images/chevron-right-blue.svg" class="previous-page"> Previous</a>
+    
+  </div>
+  
 
   <hr>
 
   <div role="contentinfo">
     <p>
-      &copy; Copyright 2025, OpenDILab.
+      &copy; Copyright 2025-2026, OpenDILab.
 
     </p>
   </div>
@@ -1225,8 +1249,8 @@
   <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
   <script src="../_static/doctools.js"></script>
   <script src="../_static/sphinx_highlight.js"></script>
-  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-  <script src="../_static/js/language_switch.js"></script>
+  <script src="../_static/clipboard.min.js"></script>
+  <script src="../_static/copybutton.js"></script>
   
 
   
@@ -1255,7 +1279,7 @@
     <div class="container-fluid">
       <div class="container">
         <div class="mobile-main-menu-header-container">
-          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="header-logo" href="https://github.com/opendilab/LightRFT" aria-label="OpenMMLab"></a>
           <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
         </div>
       </div>

@@ -33,9 +33,12 @@
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
   <link rel="stylesheet" href="../_static/css/readthedocs.css" type="text/css" />
   <link rel="index" title="Index" href="../genindex.html" />
   <link rel="search" title="Search" href="../search.html" />
+  <link rel="next" title="快速入门" href="../quick_start/index_zh.html" />
+  <link rel="prev" title="欢迎来到 LightRFT 文档!" href="../index_zh.html" />
   <!-- Google Analytics -->
   <script type="text/javascript">
     var collapsedSections = [];
@@ -85,7 +88,7 @@
 <div class="container-fluid header-holder tutorials-header" id="header-holder">
   <div class="container">
     <div class="header-container">
-      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+      <a class="header-logo" href="https://github.com/opendilab/LightRFT"
         aria-label="OpenMMLab"></a>
 
       <div class="main-menu">
@@ -235,6 +238,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../api_doc/strategy/index.html">lightrft.strategy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api_doc/trainer/index.html">lightrft.trainer</a></li>
 </ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../index_zh.html">欢迎来到 LightRFT 文档!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index_zh.html#id4">索引与表格</a></li>
+</ul>
 
         
         
@@ -271,6 +278,8 @@
         </a> &gt;
       </li>
 
+        
+          <li><a href="../index_zh.html">欢迎来到 LightRFT 文档!</a> &gt;</li>
         
       <li>安装指南</li>
     
@@ -338,7 +347,7 @@ pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </s
 <h3>可选：安装 vLLM 后端<a class="headerlink" href="#vllm" title="Permalink to this heading">¶</a></h3>
 <p>如果您想使用 vLLM 替代（或配合）SGLang：</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># 安装 vLLM 后端</span>
-pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;.[vllm]&quot;</span>
+pip<span class="w"> </span>install<span class="w"> </span><span class="s2">".[vllm]"</span>
 
 <span class="c1"># 或直接安装 vLLM</span>
 pip<span class="w"> </span>install<span class="w"> </span>vllm&gt;<span class="o">=</span><span class="m">0</span>.13.3
@@ -517,7 +526,7 @@ docker<span class="w"> </span>pull<span class="w"> </span>opendilab/lightrft:v0.
 <section id="id8">
 <h2>验证安装<a class="headerlink" href="#id8" title="Permalink to this heading">¶</a></h2>
 <p>验证安装是否成功，运行简单测试：</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;import lightrft; print(lightrft)&quot;</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-c<span class="w"> </span><span class="s2">"import lightrft; print(lightrft)"</span>
 </pre></div>
 </div>
 <p>如果没有导入错误，您应该会看到模块路径。</p>
@@ -578,7 +587,7 @@ bash<span class="w"> </span>examples/gsm8k_geo3k/run_grpo_geo3k_qwen2.5_vl_7b.sh
 <h2>后续步骤<a class="headerlink" href="#id13" title="Permalink to this heading">¶</a></h2>
 <p>安装成功后：</p>
 <ol class="arabic simple">
-<li><p>查阅 <span class="xref std std-doc">../quick_start</span> 指南了解基本使用方法</p></li>
+<li><p>查阅 <a class="reference internal" href="../quick_start/index_zh.html"><span class="doc">快速入门</span></a> 指南了解基本使用方法</p></li>
 <li><p>探索 <a class="reference internal" href="../best_practice/strategy_zh.html"><span class="doc">Strategy 使用指南</span></a> 了解分布式训练策略</p></li>
 <li><p>查看 <code class="docutils literal notranslate"><span class="pre">examples/</span></code> 目录中的完整训练示例</p></li>
 <li><p>阅读算法文档了解具体实现细节</p></li>
@@ -587,9 +596,9 @@ bash<span class="w"> </span>examples/gsm8k_geo3k/run_grpo_geo3k_qwen2.5_vl_7b.sh
 <section id="id14">
 <h2>相关文档<a class="headerlink" href="#id14" title="Permalink to this heading">¶</a></h2>
 <ul class="simple">
-<li><p><span class="xref std std-doc">../quick_start</span> - 快速开始指南</p></li>
-<li><p><span class="xref std std-doc">../best_practice/strategy_usage</span> - Strategy 使用指南</p></li>
-<li><p><span class="xref std std-doc">../api/index</span> - API 参考</p></li>
+<li><p><a class="reference internal" href="../quick_start/index_zh.html"><span class="doc">快速入门</span></a> - 快速开始指南</p></li>
+<li><p><a class="reference internal" href="../best_practice/strategy_zh.html"><span class="doc">Strategy 使用指南</span></a> - Strategy 使用指南</p></li>
+<li><p><a class="reference internal" href="../api_doc/models/index.html"><span class="doc">lightrft.models</span></a> - API 参考</p></li>
 </ul>
 </section>
 </section>
@@ -600,12 +609,24 @@ bash<span class="w"> </span>examples/gsm8k_geo3k/run_grpo_geo3k_qwen2.5_vl_7b.sh
             </div>
             <footer>
   
+  <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+    
+    <a href="../quick_start/index_zh.html" class="btn btn-neutral float-right" title="快速入门" accesskey="n"
+      rel="next">Next <img src="../_static/images/chevron-right-blue.svg"
+        class="next-page"></a>
+    
+    
+    <a href="../index_zh.html" class="btn btn-neutral" title="欢迎来到 LightRFT 文档!" accesskey="p"
+      rel="prev"><img src="../_static/images/chevron-right-blue.svg" class="previous-page"> Previous</a>
+    
+  </div>
+  
 
   <hr>
 
   <div role="contentinfo">
     <p>
-      &copy; Copyright 2025, OpenDILab.
+      &copy; Copyright 2025-2026, OpenDILab.
 
     </p>
   </div>
@@ -669,8 +690,8 @@ bash<span class="w"> </span>examples/gsm8k_geo3k/run_grpo_geo3k_qwen2.5_vl_7b.sh
   <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
   <script src="../_static/doctools.js"></script>
   <script src="../_static/sphinx_highlight.js"></script>
-  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-  <script src="../_static/js/language_switch.js"></script>
+  <script src="../_static/clipboard.min.js"></script>
+  <script src="../_static/copybutton.js"></script>
   
 
   
@@ -699,7 +720,7 @@ bash<span class="w"> </span>examples/gsm8k_geo3k/run_grpo_geo3k_qwen2.5_vl_7b.sh
     <div class="container-fluid">
       <div class="container">
         <div class="mobile-main-menu-header-container">
-          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="header-logo" href="https://github.com/opendilab/LightRFT" aria-label="OpenMMLab"></a>
           <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
         </div>
       </div>

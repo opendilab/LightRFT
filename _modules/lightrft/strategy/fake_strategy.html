@@ -32,6 +32,7 @@
   <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/css/readthedocs.css" type="text/css" />
   <link rel="index" title="Index" href="../../../genindex.html" />
   <link rel="search" title="Search" href="../../../search.html" />
@@ -84,7 +85,7 @@
 <div class="container-fluid header-holder tutorials-header" id="header-holder">
   <div class="container">
     <div class="header-container">
-      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+      <a class="header-logo" href="https://github.com/opendilab/LightRFT"
         aria-label="OpenMMLab"></a>
 
       <div class="main-menu">
@@ -234,6 +235,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../api_doc/strategy/index.html">lightrft.strategy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api_doc/trainer/index.html">lightrft.trainer</a></li>
 </ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../index_zh.html">欢迎来到 LightRFT 文档!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../index_zh.html#id4">索引与表格</a></li>
+</ul>
 
         
         
@@ -300,14 +305,14 @@
               <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
                 
   <h1>Source code for lightrft.strategy.fake_strategy</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""</span>
 <span class="sd">FakeStrategy for testing LightRFT without distributed environment.</span>
 
 <span class="sd">This module provides a FakeStrategy class that mimics the behavior of real</span>
 <span class="sd">distributed training strategies (DeepSpeed, FSDP) but runs in a single process</span>
 <span class="sd">without actual distributed communication. This is useful for unit testing and</span>
 <span class="sd">development environments where distributed setup is not available.</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
@@ -323,12 +328,12 @@
 
 
 <div class="viewcode-block" id="FakeStrategy"><a class="viewcode-back" href="../../../api_doc/strategy/fake_strategy.html#lightrft.strategy.fake_strategy.FakeStrategy">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">FakeStrategy</span><span class="p">(</span><span class="n">StrategyBase</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Fake strategy for testing without distributed environment.</span>
 
 <span class="sd">    This strategy provides the same API as real distributed strategies but</span>
 <span class="sd">    runs everything in a single process without actual distributed communication.</span>
-<span class="sd">    It&#39;s useful for unit testing and development.</span>
+<span class="sd">    It's useful for unit testing and development.</span>
 
 <span class="sd">    :param seed: Random seed for reproducibility</span>
 <span class="sd">    :type seed: int</span>
@@ -340,7 +345,7 @@
 <span class="sd">    :type train_batch_size: int</span>
 <span class="sd">    :param args: Additional configuration arguments</span>
 <span class="sd">    :type args: Any</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">42</span><span class="p">,</span>
@@ -349,34 +354,34 @@
         <span class="n">train_batch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">128</span><span class="p">,</span>
         <span class="n">args</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Initialize fake strategy with common parameters.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">seed</span><span class="p">,</span> <span class="n">max_norm</span><span class="p">,</span> <span class="n">micro_train_batch_size</span><span class="p">,</span> <span class="n">train_batch_size</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
 
         <span class="c1"># Override distributed setup for fake environment</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">world_size</span> <span class="o">=</span> <span class="mi">1</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">accumulated_gradient</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">train_batch_size</span> <span class="o">//</span> <span class="bp">self</span><span class="o">.</span><span class="n">micro_train_batch_size</span> <span class="o">//</span> <span class="bp">self</span><span class="o">.</span><span class="n">world_size</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="s2">&quot;FakeStrategy Initialized (single process mode)&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="s2">"FakeStrategy Initialized (single process mode)"</span><span class="p">)</span>
 
 <div class="viewcode-block" id="FakeStrategy.setup_distributed"><a class="viewcode-back" href="../../../api_doc/strategy/fake_strategy.html#lightrft.strategy.fake_strategy.FakeStrategy.setup_distributed">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">setup_distributed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">num_gpu_per_node</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Fake distributed setup - does nothing in single process mode.</span>
 
 <span class="sd">        :param timeout: Maximum time to wait for initialization (ignored)</span>
 <span class="sd">        :type timeout: timedelta, optional</span>
 <span class="sd">        :param num_gpu_per_node: Number of GPUs per node (ignored)</span>
 <span class="sd">        :type num_gpu_per_node: int</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">set_seed</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">seed</span><span class="p">)</span>
 
         <span class="c1"># Set local rank to 0 for single process</span>
-        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">,</span> <span class="s1">&#39;local_rank&#39;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">,</span> <span class="s1">'local_rank'</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">local_rank</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># For backward compatibility with args</span>
-            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;args&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">'args'</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="o">.</span><span class="n">local_rank</span> <span class="o">=</span> <span class="mi">0</span>
 
         <span class="c1"># Set device</span>
@@ -384,10 +389,10 @@
             <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">set_device</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">world_size</span> <span class="o">=</span> <span class="mi">1</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="s2">&quot;FakeStrategy: Running in single process mode&quot;</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="s2">"FakeStrategy: Running in single process mode"</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="FakeStrategy.create_optimizer"><a class="viewcode-back" href="../../../api_doc/strategy/fake_strategy.html#lightrft.strategy.fake_strategy.FakeStrategy.create_optimizer">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">create_optimizer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optimizer</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Create a standard optimizer for the model.</span>
 
 <span class="sd">        :param model: The model to optimize</span>
@@ -396,8 +401,8 @@
 
 <span class="sd">        :return: The created optimizer</span>
 <span class="sd">        :rtype: Optimizer</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="s2">&quot;is_actor&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">model</span><span class="o">.</span><span class="n">is_actor</span><span class="p">:</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="s2">"is_actor"</span><span class="p">)</span> <span class="ow">and</span> <span class="n">model</span><span class="o">.</span><span class="n">is_actor</span><span class="p">:</span>
             <span class="n">model</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">model</span>
 
         <span class="c1"># Use AdamW as default optimizer</span>
@@ -406,14 +411,14 @@
 <div class="viewcode-block" id="FakeStrategy.prepare"><a class="viewcode-back" href="../../../api_doc/strategy/fake_strategy.html#lightrft.strategy.fake_strategy.FakeStrategy.prepare">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">prepare</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">models_or_model_optim_pairs</span><span class="p">:</span> <span class="n">ModelOrModelOptimPair</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">ModelOrModelOptimPair</span><span class="p">],</span> <span class="n">ModelOrModelOptimPair</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Prepare models and optimizers - returns them as-is in fake mode.</span>
 
 <span class="sd">        :param models_or_model_optim_pairs: Models or (model, optimizer) pairs to prepare</span>
 
 <span class="sd">        :return: Prepared models/optimizers (unchanged in fake mode)</span>
 <span class="sd">        :rtype: Union[List[ModelOrModelOptimPair], ModelOrModelOptimPair]</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">ret</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">models_or_model_optim_pairs</span><span class="p">:</span>
             <span class="n">ret</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span>
@@ -421,7 +426,7 @@
         <span class="k">return</span> <span class="n">ret</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">ret</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">ret</span></div>
 
 <div class="viewcode-block" id="FakeStrategy.backward"><a class="viewcode-back" href="../../../api_doc/strategy/fake_strategy.html#lightrft.strategy.fake_strategy.FakeStrategy.backward">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">backward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">loss</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">:</span> <span class="n">Optimizer</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Perform backward pass using standard PyTorch.</span>
 
 <span class="sd">        :param loss: The loss to backpropagate</span>
@@ -431,11 +436,11 @@
 <span class="sd">        :param optimizer: The optimizer</span>
 <span class="sd">        :type optimizer: Optimizer</span>
 <span class="sd">        :param kwargs: Additional arguments</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="FakeStrategy.optimizer_step"><a class="viewcode-back" href="../../../api_doc/strategy/fake_strategy.html#lightrft.strategy.fake_strategy.FakeStrategy.optimizer_step">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">optimizer_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">:</span> <span class="n">Optimizer</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span> <span class="n">scheduler</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;model&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="FakeStrategy.optimizer_step"><a class="viewcode-back" href="../../../api_doc/strategy/fake_strategy.html#lightrft.strategy.fake_strategy.FakeStrategy.optimizer_step">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">optimizer_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">:</span> <span class="n">Optimizer</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span> <span class="n">scheduler</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"model"</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Take optimizer step using standard PyTorch.</span>
 
 <span class="sd">        :param optimizer: The optimizer</span>
@@ -446,7 +451,7 @@
 <span class="sd">        :param name: Name for logging purposes</span>
 <span class="sd">        :type name: str</span>
 <span class="sd">        :param kwargs: Additional arguments</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># Apply gradient clipping if max_norm is set</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_norm</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">clip_grad_norm_</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_norm</span><span class="p">)</span>
@@ -460,7 +465,7 @@
 <div class="viewcode-block" id="FakeStrategy.save_ckpt"><a class="viewcode-back" href="../../../api_doc/strategy/fake_strategy.html#lightrft.strategy.fake_strategy.FakeStrategy.save_ckpt">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">save_ckpt</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">save_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">tag</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">max_num</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">max_mem</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">client_state</span><span class="o">=</span><span class="p">{},</span> <span class="n">save_latest</span><span class="o">=</span><span class="kc">True</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Save checkpoint using standard PyTorch saving.</span>
 
 <span class="sd">        :param model: The model to save</span>
@@ -475,19 +480,19 @@
 <span class="sd">        :type client_state: dict</span>
 <span class="sd">        :param save_latest: Whether to save as latest checkpoint</span>
 <span class="sd">        :type save_latest: bool</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">save_dir</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">tag</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">tag</span> <span class="o">=</span> <span class="s2">&quot;checkpoint&quot;</span>
+            <span class="n">tag</span> <span class="o">=</span> <span class="s2">"checkpoint"</span>
 
-        <span class="n">checkpoint_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">save_dir</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">tag</span><span class="si">}</span><span class="s2">.pt&quot;</span><span class="p">)</span>
+        <span class="n">checkpoint_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">save_dir</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">tag</span><span class="si">}</span><span class="s2">.pt"</span><span class="p">)</span>
 
         <span class="c1"># Save model state</span>
-        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="s2">&quot;state_dict&quot;</span><span class="p">):</span>
-            <span class="n">checkpoint</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;model_state_dict&#39;</span><span class="p">:</span> <span class="n">model</span><span class="o">.</span><span class="n">state_dict</span><span class="p">(),</span> <span class="s1">&#39;client_state&#39;</span><span class="p">:</span> <span class="n">client_state</span><span class="p">}</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="s2">"state_dict"</span><span class="p">):</span>
+            <span class="n">checkpoint</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'model_state_dict'</span><span class="p">:</span> <span class="n">model</span><span class="o">.</span><span class="n">state_dict</span><span class="p">(),</span> <span class="s1">'client_state'</span><span class="p">:</span> <span class="n">client_state</span><span class="p">}</span>
             <span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">,</span> <span class="n">checkpoint_path</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;FakeStrategy: Saved checkpoint to </span><span class="si">{</span><span class="n">checkpoint_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"FakeStrategy: Saved checkpoint to </span><span class="si">{</span><span class="n">checkpoint_path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="FakeStrategy.load_ckpt"><a class="viewcode-back" href="../../../api_doc/strategy/fake_strategy.html#lightrft.strategy.fake_strategy.FakeStrategy.load_ckpt">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">load_ckpt</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -499,7 +504,7 @@
         <span class="n">load_lr_scheduler_states</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
         <span class="n">load_module_only</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Load checkpoint using standard PyTorch loading.</span>
 
 <span class="sd">        :param model: The model to load checkpoint into</span>
@@ -517,27 +522,27 @@
 
 <span class="sd">        :return: Tuple of (load_path, client_states)</span>
 <span class="sd">        :rtype: tuple</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="n">tag</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">tag</span> <span class="o">=</span> <span class="s2">&quot;checkpoint&quot;</span>
+            <span class="n">tag</span> <span class="o">=</span> <span class="s2">"checkpoint"</span>
 
-        <span class="n">checkpoint_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">load_dir</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">tag</span><span class="si">}</span><span class="s2">.pt&quot;</span><span class="p">)</span>
+        <span class="n">checkpoint_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">load_dir</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">tag</span><span class="si">}</span><span class="s2">.pt"</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">checkpoint_path</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Checkpoint not found: </span><span class="si">{</span><span class="n">checkpoint_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Checkpoint not found: </span><span class="si">{</span><span class="n">checkpoint_path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
         <span class="n">checkpoint</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">checkpoint_path</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="s1">&#39;model_state_dict&#39;</span> <span class="ow">in</span> <span class="n">checkpoint</span><span class="p">:</span>
-            <span class="n">model</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">[</span><span class="s1">&#39;model_state_dict&#39;</span><span class="p">],</span> <span class="n">strict</span><span class="o">=</span><span class="n">load_module_strict</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s1">'model_state_dict'</span> <span class="ow">in</span> <span class="n">checkpoint</span><span class="p">:</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">checkpoint</span><span class="p">[</span><span class="s1">'model_state_dict'</span><span class="p">],</span> <span class="n">strict</span><span class="o">=</span><span class="n">load_module_strict</span><span class="p">)</span>
 
-        <span class="n">client_states</span> <span class="o">=</span> <span class="n">checkpoint</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;client_state&#39;</span><span class="p">,</span> <span class="p">{})</span>
+        <span class="n">client_states</span> <span class="o">=</span> <span class="n">checkpoint</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">'client_state'</span><span class="p">,</span> <span class="p">{})</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;FakeStrategy: Loaded checkpoint from </span><span class="si">{</span><span class="n">checkpoint_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"FakeStrategy: Loaded checkpoint from </span><span class="si">{</span><span class="n">checkpoint_path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">checkpoint_path</span><span class="p">,</span> <span class="n">client_states</span></div>
 
-<div class="viewcode-block" id="FakeStrategy.all_reduce"><a class="viewcode-back" href="../../../api_doc/strategy/fake_strategy.html#lightrft.strategy.fake_strategy.FakeStrategy.all_reduce">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">all_reduce</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">op</span><span class="o">=</span><span class="s2">&quot;mean&quot;</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="FakeStrategy.all_reduce"><a class="viewcode-back" href="../../../api_doc/strategy/fake_strategy.html#lightrft.strategy.fake_strategy.FakeStrategy.all_reduce">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">all_reduce</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">op</span><span class="o">=</span><span class="s2">"mean"</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Fake all-reduce operation - returns data unchanged.</span>
 
 <span class="sd">        :param data: Data to be reduced</span>
@@ -547,11 +552,11 @@
 
 <span class="sd">        :return: Data unchanged</span>
 <span class="sd">        :rtype: Union[torch.Tensor, dict]</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">data</span></div>
 
 <div class="viewcode-block" id="FakeStrategy.all_gather"><a class="viewcode-back" href="../../../api_doc/strategy/fake_strategy.html#lightrft.strategy.fake_strategy.FakeStrategy.all_gather">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">all_gather</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Fake all-gather operation - returns data wrapped in list.</span>
 
 <span class="sd">        :param data: Data to be gathered</span>
@@ -559,7 +564,7 @@
 
 <span class="sd">        :return: Data wrapped to mimic gathered result</span>
 <span class="sd">        :rtype: Union[torch.Tensor, dict]</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
             <span class="k">return</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="p">[</span><span class="n">v</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
         <span class="k">else</span><span class="p">:</span>
@@ -567,25 +572,25 @@
 
 <div class="viewcode-block" id="FakeStrategy.is_rank_0"><a class="viewcode-back" href="../../../api_doc/strategy/fake_strategy.html#lightrft.strategy.fake_strategy.FakeStrategy.is_rank_0">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">is_rank_0</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Always returns True in fake mode (single process is rank 0).</span>
 
 <span class="sd">        :return: True</span>
 <span class="sd">        :rtype: bool</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="kc">True</span></div>
 
 <div class="viewcode-block" id="FakeStrategy.get_rank"><a class="viewcode-back" href="../../../api_doc/strategy/fake_strategy.html#lightrft.strategy.fake_strategy.FakeStrategy.get_rank">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_rank</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Always returns 0 in fake mode (single process).</span>
 
 <span class="sd">        :return: 0</span>
 <span class="sd">        :rtype: int</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="mi">0</span></div>
 
-<div class="viewcode-block" id="FakeStrategy.setup_inference_engine"><a class="viewcode-back" href="../../../api_doc/strategy/fake_strategy.html#lightrft.strategy.fake_strategy.FakeStrategy.setup_inference_engine">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">setup_inference_engine</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">engine_type</span><span class="o">=</span><span class="s2">&quot;vllm&quot;</span><span class="p">,</span> <span class="n">actor</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="FakeStrategy.setup_inference_engine"><a class="viewcode-back" href="../../../api_doc/strategy/fake_strategy.html#lightrft.strategy.fake_strategy.FakeStrategy.setup_inference_engine">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">setup_inference_engine</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">engine_type</span><span class="o">=</span><span class="s2">"vllm"</span><span class="p">,</span> <span class="n">actor</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Fake inference engine setup - returns None.</span>
 
 <span class="sd">        :param args: Configuration arguments</span>
@@ -597,24 +602,24 @@
 
 <span class="sd">        :return: None</span>
 <span class="sd">        :rtype: None</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="s2">&quot;FakeStrategy: Inference engine setup skipped&quot;</span><span class="p">)</span>
+<span class="sd">        """</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="s2">"FakeStrategy: Inference engine setup skipped"</span><span class="p">)</span>
         <span class="k">return</span> <span class="kc">None</span></div>
 
 <div class="viewcode-block" id="FakeStrategy.maybe_sleep_inference_engine"><a class="viewcode-back" href="../../../api_doc/strategy/fake_strategy.html#lightrft.strategy.fake_strategy.FakeStrategy.maybe_sleep_inference_engine">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">maybe_sleep_inference_engine</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Fake inference engine sleep - does nothing.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="s2">&quot;FakeStrategy: Inference engine sleep skipped&quot;</span><span class="p">)</span></div>
+<span class="sd">        """</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="s2">"FakeStrategy: Inference engine sleep skipped"</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="FakeStrategy.wakeup_inference_engine"><a class="viewcode-back" href="../../../api_doc/strategy/fake_strategy.html#lightrft.strategy.fake_strategy.FakeStrategy.wakeup_inference_engine">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">wakeup_inference_engine</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Fake inference engine wakeup - does nothing.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="s2">&quot;FakeStrategy: Inference engine wakeup skipped&quot;</span><span class="p">)</span></div>
+<span class="sd">        """</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="s2">"FakeStrategy: Inference engine wakeup skipped"</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="FakeStrategy.engine_generate_local"><a class="viewcode-back" href="../../../api_doc/strategy/fake_strategy.html#lightrft.strategy.fake_strategy.FakeStrategy.engine_generate_local">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">engine_generate_local</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sampling_params</span><span class="p">,</span> <span class="n">prompt_token_ids</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">multi_modal_inputs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Fake generation - returns empty results.</span>
 
 <span class="sd">        :param sampling_params: Parameters for generation (ignored)</span>
@@ -623,8 +628,8 @@
 
 <span class="sd">        :return: Empty list</span>
 <span class="sd">        :rtype: List</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="s2">&quot;FakeStrategy: Generation skipped&quot;</span><span class="p">)</span>
+<span class="sd">        """</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="s2">"FakeStrategy: Generation skipped"</span><span class="p">)</span>
         <span class="k">return</span> <span class="p">[]</span></div>
 
 <div class="viewcode-block" id="FakeStrategy.gather_and_generate"><a class="viewcode-back" href="../../../api_doc/strategy/fake_strategy.html#lightrft.strategy.fake_strategy.FakeStrategy.gather_and_generate">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">gather_and_generate</span><span class="p">(</span>
@@ -636,7 +641,7 @@
         <span class="n">sleep_engine</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
         <span class="n">images_num</span><span class="o">=</span><span class="kc">None</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Fake gather and generate - returns empty results.</span>
 
 <span class="sd">        :param sampling_params: Parameters for generation (ignored)</span>
@@ -649,30 +654,30 @@
 
 <span class="sd">        :return: Empty list</span>
 <span class="sd">        :rtype: List</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="s2">&quot;FakeStrategy: Gather and generate skipped&quot;</span><span class="p">)</span>
+<span class="sd">        """</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="s2">"FakeStrategy: Gather and generate skipped"</span><span class="p">)</span>
         <span class="k">return</span> <span class="p">[]</span></div>
 
 <div class="viewcode-block" id="FakeStrategy.update_engine_weights"><a class="viewcode-back" href="../../../api_doc/strategy/fake_strategy.html#lightrft.strategy.fake_strategy.FakeStrategy.update_engine_weights">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">update_engine_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">actor</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Fake engine weight update - does nothing.</span>
 
 <span class="sd">        :param actor: The actor model (ignored)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="s2">&quot;FakeStrategy: Engine weight update skipped&quot;</span><span class="p">)</span></div>
+<span class="sd">        """</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="s2">"FakeStrategy: Engine weight update skipped"</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="FakeStrategy.init_model_context"><a class="viewcode-back" href="../../../api_doc/strategy/fake_strategy.html#lightrft.strategy.fake_strategy.FakeStrategy.init_model_context">[docs]</a>    <span class="nd">@contextmanager</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">init_model_context</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Fake model initialization context - does nothing.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="k">yield</span>
         <span class="k">finally</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="s2">&quot;FakeStrategy: Model initialization context finished&quot;</span><span class="p">)</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="s2">"FakeStrategy: Model initialization context finished"</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="FakeStrategy.maybe_offload_optimizer"><a class="viewcode-back" href="../../../api_doc/strategy/fake_strategy.html#lightrft.strategy.fake_strategy.FakeStrategy.maybe_offload_optimizer">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">maybe_offload_optimizer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Fake optimizer offloading - returns optimizer unchanged.</span>
 
 <span class="sd">        :param optimizer: The optimizer to potentially offload</span>
@@ -680,11 +685,11 @@
 
 <span class="sd">        :return: The original optimizer</span>
 <span class="sd">        :rtype: torch.optim.Optimizer</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">optimizer</span></div>
 
 <div class="viewcode-block" id="FakeStrategy.maybe_load_optimizer"><a class="viewcode-back" href="../../../api_doc/strategy/fake_strategy.html#lightrft.strategy.fake_strategy.FakeStrategy.maybe_load_optimizer">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">maybe_load_optimizer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">current_device</span><span class="p">()):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Fake optimizer loading - returns optimizer unchanged.</span>
 
 <span class="sd">        :param optimizer: The optimizer to potentially load</span>
@@ -694,12 +699,12 @@
 
 <span class="sd">        :return: The original optimizer</span>
 <span class="sd">        :rtype: torch.optim.Optimizer</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">optimizer</span></div></div>
 
 
 <div class="viewcode-block" id="get_fake_strategy"><a class="viewcode-back" href="../../../api_doc/strategy/fake_strategy.html#lightrft.strategy.fake_strategy.get_fake_strategy">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">get_fake_strategy</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Create and return a FakeStrategy instance.</span>
 
 <span class="sd">    This is a convenience function similar to get_strategy() but for fake strategy.</span>
@@ -709,7 +714,7 @@
 
 <span class="sd">    :return: A FakeStrategy instance</span>
 <span class="sd">    :rtype: FakeStrategy</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">config</span> <span class="o">=</span> <span class="n">StrategyConfig</span><span class="o">.</span><span class="n">from_args</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="k">if</span> <span class="n">args</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">StrategyConfig</span><span class="p">()</span>
 
     <span class="k">return</span> <span class="n">FakeStrategy</span><span class="p">(</span>
@@ -731,7 +736,7 @@
 
   <div role="contentinfo">
     <p>
-      &copy; Copyright 2025, OpenDILab.
+      &copy; Copyright 2025-2026, OpenDILab.
 
     </p>
   </div>
@@ -768,8 +773,8 @@
   <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
   <script src="../../../_static/doctools.js"></script>
   <script src="../../../_static/sphinx_highlight.js"></script>
-  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-  <script src="../../../_static/js/language_switch.js"></script>
+  <script src="../../../_static/clipboard.min.js"></script>
+  <script src="../../../_static/copybutton.js"></script>
   
 
   
@@ -798,7 +803,7 @@
     <div class="container-fluid">
       <div class="container">
         <div class="mobile-main-menu-header-container">
-          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="header-logo" href="https://github.com/opendilab/LightRFT" aria-label="OpenMMLab"></a>
           <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
         </div>
       </div>

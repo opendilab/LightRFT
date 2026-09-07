@@ -1,0 +1,825 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js" lang="en">
+<!--<![endif]-->
+
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>lightrft.datasets.prompts_dataset_vl &mdash; LightRFT v0.1.1 documentation</title>
+  
+
+  <link rel="shortcut icon" href="../../../_static/images/favicon.ico" />
+  
+  
+
+  
+
+  
+  
+  
+
+  
+
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <!-- <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" /> -->
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/readthedocs.css" type="text/css" />
+  <link rel="index" title="Index" href="../../../genindex.html" />
+  <link rel="search" title="Search" href="../../../search.html" />
+  <!-- Google Analytics -->
+  <script type="text/javascript">
+    var collapsedSections = [];
+  </script>
+  
+  <!-- End Google Analytics -->
+  
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+  <script>
+    MathJax = {
+        chtml: {
+            scale: 1,
+            minScale: 1,
+        },
+        svg: {
+            scale: 1,
+            minScale: 1,
+        }
+    }
+</script>
+
+  <!-- Preload the theme fonts -->
+
+<link rel="preload" href="../../../_static/fonts/FreightSans/freight-sans-book.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../_static/fonts/FreightSans/freight-sans-medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../_static/fonts/IBMPlexMono/IBMPlexMono-Medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../_static/fonts/FreightSans/freight-sans-bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../_static/fonts/FreightSans/freight-sans-medium-italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="../../../_static/fonts/IBMPlexMono/IBMPlexMono-SemiBold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+
+<!-- Preload the katex fonts -->
+
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Math-Italic.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Main-Bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size1-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size4-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size2-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Size3-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.10.0/dist/fonts/KaTeX_Caligraphic-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.2/css/all.css"
+    integrity="sha384-vSIIfh2YWi9wW0r9iZe7RJPrKwp6bG+s9QZMoITbCckVJqGCCRhc+ccxNcdpHuYu" crossorigin="anonymous">
+</head>
+
+<div class="container-fluid header-holder tutorials-header" id="header-holder">
+  <div class="container">
+    <div class="header-container">
+      <a class="header-logo" href="https://github.com/opendilab/LightRFT"
+        aria-label="OpenMMLab"></a>
+
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://github.com/opendilab/LightRFT" target="_blank">GitHub</a>
+          </li>
+          <li >
+            <div id="resourcesDropdownButton" data-toggle="resources-dropdown" class="resources-dropdown">
+              <a
+                class="resource-option with-down-arrow">
+                OpenDILab
+              </a>
+              <div class="resources-dropdown-menu">
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-engine" target="_blank">
+                  <span class="dropdown-title">DI-engine </span>
+                  <p>OpenDILab Decision AI Engine</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/LightZero" target="_blank">
+                  <span class="dropdown-title">LightZero </span>
+                  <p>OpenDILab Decision Monte Carlo Tree Search Framework</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/GenerativeRL" target="_blank">
+                  <span class="dropdown-title">GenerativeRL </span>
+                  <p>OpenDILab Generative AI Framework</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-star" target="_blank">
+                  <span class="dropdown-title">DI-star </span>
+                  <p>OpenDILab Decision AI in StarCraftII</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-drive" target="_blank">
+                  <span class="dropdown-title">DI-drive </span>
+                  <p>OpenDILab Auto-driving platform</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/GoBigger" target="_blank">
+                  <span class="dropdown-title">GoBigger </span>
+                  <p>OpenDILab Multi-Agent Environment</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-smartcross" target="_blank">
+                  <span class="dropdown-title">DI-smartcross </span>
+                  <p>Decision Intelligence Platform for Traffic Crossing Signal Control</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-treetensor" target="_blank">
+                  <span class="dropdown-title">DI-treetensor </span>
+                  <p>Tree Nested PyTorch Tensor Lib</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/DI-sheep" target="_blank">
+                  <span class="dropdown-title">DI-sheep </span>
+                  <p>Deep Reinforcement Learning + 3 Tiles Game</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-model-based-RL" target="_blank">
+                  <span class="dropdown-title">awesome-model-based-RL </span>
+                  <p>A curated list of awesome model based RL resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-decision-transformer" target="_blank">
+                  <span class="dropdown-title">awesome-decision-transformer </span>
+                  <p>A curated list of Decision Transformer resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-exploration-rl" target="_blank">
+                  <span class="dropdown-title">awesome-exploration-rl </span>
+                  <p>A curated list of awesome exploration RL resources (continually updated)</p>
+                </a>
+                <a class="doc-dropdown-option nav-dropdown-item"
+                  href="https://github.com/opendilab/awesome-multi-modal-reinforcement-learning" target="_blank">
+                  <span class="dropdown-title">awesome-multi-modal-reinforcement-learning </span>
+                  <p>A curated list of Multi-Modal Reinforcement Learning resources (continually updated)</p>
+                </a>
+              </div>
+          </li>
+        </ul>
+      </div>
+
+      <a class="main-menu-open-button" href="#" data-behavior="open-mobile-menu"></a>
+    </div>
+  </div>
+</div>
+
+<body class="pytorch-body">
+
+   
+
+  
+
+  <div class="table-of-contents-link-wrapper">
+    <span>Table of Contents</span>
+    <a href="#" class="toggle-table-of-contents" data-behavior="toggle-table-of-contents"></a>
+  </div>
+
+  <nav data-toggle="wy-nav-shift" class="pytorch-left-menu" id="pytorch-left-menu">
+    <div class="pytorch-side-scroll">
+      <div class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        <div class="pytorch-left-menu-search">
+          
+
+          
+          
+          
+          
+
+          
+
+
+
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search Docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        
+        
+        
+        
+        
+        <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../quick_start/index.html">Quick Start</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide &amp; Best Practices</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../best_practice/index.html">Best Practices</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_doc/utils/index.html">lightrft.utils</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_doc/datasets/index.html">lightrft.datasets</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_doc/models/index.html">lightrft.models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_doc/strategy/index.html">lightrft.strategy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api_doc/trainer/index.html">lightrft.trainer</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../index_zh.html">欢迎来到 LightRFT 文档!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../index_zh.html#id4">索引与表格</a></li>
+</ul>
+
+        
+        
+      </div>
+    </div>
+  </nav>
+
+  <div class="pytorch-container">
+    <div class="pytorch-page-level-bar" id="pytorch-page-level-bar">
+      <div class="pytorch-breadcrumbs-wrapper">
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="pytorch-breadcrumbs">
+    
+      <li>
+        <a href="../../../index.html">
+            Docs
+        </a> &gt;
+      </li>
+
+        
+          <li><a href="../../index.html">Module code</a> &gt;</li>
+        
+      <li>lightrft.datasets.prompts_dataset_vl</li>
+    
+    
+      <li class="pytorch-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+</div>
+      </div>
+
+      <div class="pytorch-shortcuts-wrapper" id="pytorch-shortcuts-wrapper">
+        Shortcuts
+      </div>
+    </div>
+
+    <section data-toggle="wy-nav-shift" id="pytorch-content-wrap" class="pytorch-content-wrap">
+      <div class="pytorch-content-left">
+        
+          <div class="rst-content">
+            
+            <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
+              <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
+                
+  <h1>Source code for lightrft.datasets.prompts_dataset_vl</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">ast</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">torch.utils.data</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dataset</span>
+
+
+<span class="c1"># -------------------------------------------------------------</span>
+<span class="c1"># Utility Functions</span>
+<span class="c1"># -------------------------------------------------------------</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_strip_image_tokens</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Removes image placeholders like `&lt;image&gt;`, `&lt;image_1&gt;`, etc., from a string.</span>
+
+<span class="sd">    :param text: The input string, which may contain image tokens</span>
+<span class="sd">    :type text: str</span>
+<span class="sd">    :return: The text with image tokens removed. Returns the original input if it's not a string</span>
+<span class="sd">    :rtype: str</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">text</span>
+    <span class="k">return</span> <span class="n">text</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"&lt;image&gt;"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_extract_user_text</span><span class="p">(</span><span class="n">conversation</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Dict</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Extracts the user's utterance from a conversation object.</span>
+
+<span class="sd">    This function supports various common conversation formats.</span>
+
+<span class="sd">    :param conversation: The conversation object. Supported formats include:</span>
+<span class="sd">        1) A raw string containing the user's message.</span>
+<span class="sd">        2) A list/tuple of message dictionaries, from which the user's message is found.</span>
+<span class="sd">        3) An OpenAI-style dictionary: `{"role": "user", "content": "..."}`.</span>
+<span class="sd">        4) A HuggingFace MMChat-style dictionary with multimodal content.</span>
+<span class="sd">    :type conversation: Union[str, List, Dict]</span>
+<span class="sd">    :return: The extracted and cleaned user text</span>
+<span class="sd">    :rtype: str</span>
+<span class="sd">    :raises ValueError: If the user message cannot be found or the format is unsupported</span>
+<span class="sd">    :raises TypeError: If the conversation object has an unsupported type</span>
+<span class="sd">    """</span>
+    <span class="c1"># Case 1: Raw string</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">conversation</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">_strip_image_tokens</span><span class="p">(</span><span class="n">conversation</span><span class="p">)</span>
+
+    <span class="c1"># Case 2: List or tuple of messages</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">conversation</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
+        <span class="k">for</span> <span class="n">msg</span> <span class="ow">in</span> <span class="n">conversation</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span> <span class="ow">and</span> <span class="n">msg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"role"</span><span class="p">)</span> <span class="o">==</span> <span class="s2">"user"</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">_extract_user_text</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Cannot find user message in the conversation list."</span><span class="p">)</span>
+
+    <span class="c1"># Case 3: Dictionary</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">conversation</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="c1"># Legacy format with "value" key</span>
+        <span class="k">if</span> <span class="s2">"value"</span> <span class="ow">in</span> <span class="n">conversation</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">_strip_image_tokens</span><span class="p">(</span><span class="n">conversation</span><span class="p">[</span><span class="s2">"value"</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="s2">"content"</span> <span class="ow">in</span> <span class="n">conversation</span><span class="p">:</span>
+            <span class="n">content</span> <span class="o">=</span> <span class="n">conversation</span><span class="p">[</span><span class="s2">"content"</span><span class="p">]</span>
+
+            <span class="c1"># OpenAI / Llama style with string content</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">content</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">_strip_image_tokens</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
+
+            <span class="c1"># HuggingFace MMChat style with a list of content segments</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">content</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
+                <span class="n">texts</span> <span class="o">=</span> <span class="p">[</span><span class="n">seg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"text"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span> <span class="k">for</span> <span class="n">seg</span> <span class="ow">in</span> <span class="n">content</span> <span class="k">if</span> <span class="n">seg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"type"</span><span class="p">)</span> <span class="o">==</span> <span class="s2">"text"</span><span class="p">]</span>
+                <span class="k">return</span> <span class="n">_strip_image_tokens</span><span class="p">(</span><span class="s2">" "</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">texts</span><span class="p">))</span>
+
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unsupported conversation dict format: </span><span class="si">{</span><span class="n">conversation</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+
+    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unsupported conversation type: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">conversation</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+
+
+<span class="c1"># -------------------------------------------------------------</span>
+<span class="c1"># Core Pre-processing</span>
+<span class="c1"># -------------------------------------------------------------</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_normalize_reference</span><span class="p">(</span><span class="n">val</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Standardizes various reference/ground_truth formats into a clean annotation.</span>
+
+<span class="sd">    This function processes the input value to produce a consistent format by:</span>
+<span class="sd">    - Extracting the value from a dictionary (e.g., `{"value": ...}`).</span>
+<span class="sd">    - Unwrapping single-element lists or tuples.</span>
+<span class="sd">    - Parsing string-literal representations of lists (e.g., "['9']") and unwrapping them.</span>
+
+<span class="sd">    :param val: The raw reference value</span>
+<span class="sd">    :type val: Any</span>
+<span class="sd">    :return: The normalized reference value</span>
+<span class="sd">    :rtype: Any</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">val</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="c1"># If it's a dict, extract the value from common keys.</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="n">val</span> <span class="o">=</span> <span class="n">val</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"value"</span><span class="p">,</span> <span class="n">val</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"ground_truth"</span><span class="p">,</span> <span class="n">val</span><span class="p">))</span>
+
+    <span class="c1"># If it's a string that looks like a list/tuple, parse it.</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">val</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"["</span><span class="p">)</span> <span class="ow">and</span> <span class="n">s</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">"]"</span><span class="p">))</span> <span class="ow">or</span> <span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"("</span><span class="p">)</span> <span class="ow">and</span> <span class="n">s</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">")"</span><span class="p">)):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">parsed</span> <span class="o">=</span> <span class="n">ast</span><span class="o">.</span><span class="n">literal_eval</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+                <span class="c1"># If the parsed list/tuple has only one element, unwrap it.</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">parsed</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">))</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">parsed</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">parsed</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="k">return</span> <span class="n">parsed</span>
+            <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">SyntaxError</span><span class="p">):</span>
+                <span class="c1"># If parsing fails, return the original string.</span>
+                <span class="k">pass</span>
+        <span class="k">return</span> <span class="n">s</span>
+
+    <span class="c1"># If it's a list/tuple with only one element, unwrap it.</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">))</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">val</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">val</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">val</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_extract_label</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">label_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Extracts a label from the data dictionary using a fallback mechanism.</span>
+
+<span class="sd">    It searches for the label in the following order:</span>
+<span class="sd">    1. Top-level `label_key` in the `data` dictionary.</span>
+<span class="sd">    2. The `label_key` within the `extra_info` dictionary, if it exists.</span>
+
+<span class="sd">    :param data: The data record</span>
+<span class="sd">    :type data: Dict[str, Any]</span>
+<span class="sd">    :param label_key: The key for the label to be extracted</span>
+<span class="sd">    :type label_key: str | None</span>
+<span class="sd">    :return: The extracted label, or None if not found</span>
+<span class="sd">    :rtype: Any</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">label_key</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="c1"># 1. Check top-level keys</span>
+    <span class="k">if</span> <span class="n">label_key</span> <span class="ow">in</span> <span class="n">data</span> <span class="ow">and</span> <span class="n">data</span><span class="p">[</span><span class="n">label_key</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">data</span><span class="p">[</span><span class="n">label_key</span><span class="p">]</span>
+
+    <span class="c1"># 2. Check within `extra_info`</span>
+    <span class="n">extra</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"extra_info"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">extra</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">extra</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">label_key</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="kc">None</span>
+
+
+<span class="c1"># -------------------------------------------------------------</span>
+<span class="c1"># Global cache for chat template style</span>
+<span class="c1"># -------------------------------------------------------------</span>
+<span class="n">_CHAT_TPL_STYLE</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"style"</span><span class="p">:</span> <span class="kc">None</span><span class="p">}</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_render_chat</span><span class="p">(</span>
+    <span class="n">apply_chat_template</span><span class="p">,</span>
+    <span class="n">prompt_struct_segment</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
+    <span class="n">prompt_struct_string</span><span class="p">:</span> <span class="nb">list</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Renders a chat template by automatically detecting the required input style.</span>
+
+<span class="sd">    Some tokenizers expect a list of message segments (HuggingFace MMChat standard),</span>
+<span class="sd">    while others expect a list of messages with string content. This function</span>
+<span class="sd">    tries the segment-based style first and, upon a specific `TypeError`, falls</span>
+<span class="sd">    back to the string-based style. The successful style is cached globally to</span>
+<span class="sd">    avoid repeated trial-and-error for subsequent calls.</span>
+
+<span class="sd">    :param apply_chat_template: The tokenizer's `apply_chat_template` method</span>
+<span class="sd">    :type apply_chat_template: Callable</span>
+<span class="sd">    :param prompt_struct_segment: The prompt structured as a list of message</span>
+<span class="sd">        segments (for MMChat-style templates)</span>
+<span class="sd">    :type prompt_struct_segment: list</span>
+<span class="sd">    :param prompt_struct_string: The prompt structured with simple string</span>
+<span class="sd">        content (for Llama/Qwen-style templates)</span>
+<span class="sd">    :type prompt_struct_string: list</span>
+<span class="sd">    :return: The rendered prompt string</span>
+<span class="sd">    :rtype: str</span>
+<span class="sd">    """</span>
+    <span class="c1"># 1. If style is already detected, use the cached style.</span>
+    <span class="k">if</span> <span class="n">_CHAT_TPL_STYLE</span><span class="p">[</span><span class="s2">"style"</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">_CHAT_TPL_STYLE</span><span class="p">[</span><span class="s2">"style"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"segment"</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">apply_chat_template</span><span class="p">(</span><span class="n">prompt_struct_segment</span><span class="p">,</span> <span class="n">tokenize</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">add_generation_prompt</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>  <span class="c1"># style == "string"</span>
+            <span class="k">return</span> <span class="n">apply_chat_template</span><span class="p">(</span><span class="n">prompt_struct_string</span><span class="p">,</span> <span class="n">tokenize</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">add_generation_prompt</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># 2. First attempt: Try the segment-list style.</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">rendered</span> <span class="o">=</span> <span class="n">apply_chat_template</span><span class="p">(</span><span class="n">prompt_struct_segment</span><span class="p">,</span> <span class="n">tokenize</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">add_generation_prompt</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">_CHAT_TPL_STYLE</span><span class="p">[</span><span class="s2">"style"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"segment"</span>  <span class="c1"># Cache success</span>
+        <span class="k">return</span> <span class="n">rendered</span>
+    <span class="k">except</span> <span class="ne">TypeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="c1"># Fallback only on the typical error message, raise others.</span>
+        <span class="k">if</span> <span class="s2">"list"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">):</span>
+            <span class="k">raise</span>
+
+    <span class="c1"># 3. Fallback: Use the string-content style.</span>
+    <span class="n">rendered</span> <span class="o">=</span> <span class="n">apply_chat_template</span><span class="p">(</span><span class="n">prompt_struct_string</span><span class="p">,</span> <span class="n">tokenize</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">add_generation_prompt</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">_CHAT_TPL_STYLE</span><span class="p">[</span><span class="s2">"style"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"string"</span>  <span class="c1"># Cache success</span>
+    <span class="k">return</span> <span class="n">rendered</span>
+
+
+<div class="viewcode-block" id="preprocess_data"><a class="viewcode-back" href="../../../api_doc/datasets/prompts_dataset_vl.html#lightrft.datasets.prompts_dataset_vl.preprocess_data">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">preprocess_data</span><span class="p">(</span>
+    <span class="n">data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+    <span class="n">input_template</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">prompt_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">images_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"images"</span><span class="p">,</span>
+    <span class="n">reference_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">label_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">apply_chat_template</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">processor</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">system_prompt</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Extracts and formats prompt, images, reference, and label from a data record.</span>
+
+<span class="sd">    This function serves as the core pre-processing logic for preparing a single</span>
+<span class="sd">    data point for a vision-language model.</span>
+
+<span class="sd">    :param data: A single data record as a dictionary</span>
+<span class="sd">    :type data: Dict[str, Any]</span>
+<span class="sd">    :param input_template: A template to format the user's prompt</span>
+<span class="sd">    :type input_template: str | None</span>
+<span class="sd">    :param prompt_key: The key to access the prompt/conversation</span>
+<span class="sd">    :type prompt_key: str | None</span>
+<span class="sd">    :param images_key: The key to access images</span>
+<span class="sd">    :type images_key: str</span>
+<span class="sd">    :param reference_key: The primary key for the reference/answer</span>
+<span class="sd">    :type reference_key: str | None</span>
+<span class="sd">    :param label_key: The key for the label</span>
+<span class="sd">    :type label_key: str | None</span>
+<span class="sd">    :param apply_chat_template: The tokenizer's `apply_chat_template` method</span>
+<span class="sd">    :type apply_chat_template: Callable, optional</span>
+<span class="sd">    :param processor: The model's processor (used for chat template)</span>
+<span class="sd">    :type processor: Any, optional</span>
+<span class="sd">    :param system_prompt: An optional system prompt to prepend</span>
+<span class="sd">    :type system_prompt: str | None</span>
+<span class="sd">    :return: A tuple containing the processed (prompt, images, reference, label)</span>
+<span class="sd">    :rtype: Tuple[Any, Any, Any, Any]</span>
+<span class="sd">    """</span>
+
+    <span class="c1"># ---------- 1. Process Prompt ----------</span>
+    <span class="k">if</span> <span class="n">apply_chat_template</span><span class="p">:</span>
+        <span class="n">system_msgs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">system_prompt</span><span class="p">:</span>
+            <span class="n">system_msgs</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">"role"</span><span class="p">:</span> <span class="s2">"system"</span><span class="p">,</span> <span class="s2">"content"</span><span class="p">:</span> <span class="n">system_prompt</span><span class="p">})</span>
+
+        <span class="n">conversation</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">prompt_key</span><span class="p">)</span>
+        <span class="n">user_text</span> <span class="o">=</span> <span class="n">_extract_user_text</span><span class="p">(</span><span class="n">conversation</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">input_template</span><span class="p">:</span>
+            <span class="n">user_text</span> <span class="o">=</span> <span class="n">input_template</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">user_text</span><span class="p">)</span>
+
+        <span class="c1"># a) Segment-based structure (for HuggingFace MMChat)</span>
+        <span class="n">user_content_seg</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">images_key</span><span class="p">):</span>
+            <span class="n">user_content_seg</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">"type"</span><span class="p">:</span> <span class="s2">"image"</span><span class="p">,</span> <span class="s2">"image"</span><span class="p">:</span> <span class="s2">""</span><span class="p">})</span>
+        <span class="n">user_content_seg</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">"type"</span><span class="p">:</span> <span class="s2">"text"</span><span class="p">,</span> <span class="s2">"text"</span><span class="p">:</span> <span class="n">user_text</span><span class="p">})</span>
+        <span class="n">prompt_struct_seg</span> <span class="o">=</span> <span class="n">system_msgs</span> <span class="o">+</span> <span class="p">[{</span><span class="s2">"role"</span><span class="p">:</span> <span class="s2">"user"</span><span class="p">,</span> <span class="s2">"content"</span><span class="p">:</span> <span class="n">user_content_seg</span><span class="p">}]</span>
+
+        <span class="c1"># b) String-based structure (for Llama, Qwen, etc.)</span>
+        <span class="n">user_prompt_str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"&lt;image&gt; </span><span class="si">{</span><span class="n">user_text</span><span class="si">}</span><span class="s2">"</span> <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">images_key</span><span class="p">)</span> <span class="k">else</span> <span class="n">user_text</span>
+        <span class="n">prompt_struct_str</span> <span class="o">=</span> <span class="n">system_msgs</span> <span class="o">+</span> <span class="p">[{</span><span class="s2">"role"</span><span class="p">:</span> <span class="s2">"user"</span><span class="p">,</span> <span class="s2">"content"</span><span class="p">:</span> <span class="n">user_prompt_str</span><span class="p">}]</span>
+
+        <span class="c1"># Render the prompt using the auto-detecting function</span>
+        <span class="n">prompt</span> <span class="o">=</span> <span class="n">_render_chat</span><span class="p">(</span><span class="n">apply_chat_template</span><span class="p">,</span> <span class="n">prompt_struct_seg</span><span class="p">,</span> <span class="n">prompt_struct_str</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">prompt</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">prompt_key</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">input_template</span><span class="p">:</span>
+            <span class="n">prompt</span> <span class="o">=</span> <span class="n">input_template</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">prompt</span><span class="p">)</span>
+
+    <span class="c1"># ---------- 2. Extract Images ----------</span>
+    <span class="n">images</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">images_key</span><span class="p">)</span>
+
+    <span class="c1"># ---------- 3. Extract Reference with Fallbacks ----------</span>
+    <span class="n">reference</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">reference_key</span><span class="p">:</span>
+        <span class="n">reference</span> <span class="o">=</span> <span class="n">_normalize_reference</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">reference_key</span><span class="p">))</span>
+
+    <span class="c1"># Fallback 1: Check inside a `reward_model` dictionary.</span>
+    <span class="k">if</span> <span class="n">reference</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"reward_model"</span><span class="p">),</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="n">reference</span> <span class="o">=</span> <span class="n">_normalize_reference</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">"reward_model"</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"ground_truth"</span><span class="p">))</span>
+
+    <span class="c1"># Fallback 2: Check for a top-level `ground_truth` key.</span>
+    <span class="k">if</span> <span class="n">reference</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="s2">"ground_truth"</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+        <span class="n">reference</span> <span class="o">=</span> <span class="n">_normalize_reference</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">"ground_truth"</span><span class="p">])</span>
+
+    <span class="c1"># Fallback 3: Check for `constraints` inside `extra_info`.</span>
+    <span class="k">if</span> <span class="n">reference</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">extra</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"extra_info"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">extra</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">reference</span> <span class="o">=</span> <span class="n">_normalize_reference</span><span class="p">(</span><span class="n">extra</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"constraints"</span><span class="p">))</span>
+
+    <span class="c1"># ---------- 4. Extract Label ----------</span>
+    <span class="n">label</span> <span class="o">=</span> <span class="n">_extract_label</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">label_key</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">prompt</span><span class="p">,</span> <span class="n">images</span><span class="p">,</span> <span class="n">reference</span><span class="p">,</span> <span class="n">label</span></div>
+
+
+<span class="c1"># -------------------------------------------------------------</span>
+<span class="c1"># Dataset Wrapper</span>
+<span class="c1"># -------------------------------------------------------------</span>
+<div class="viewcode-block" id="PromptDatasetVL"><a class="viewcode-back" href="../../../api_doc/datasets/prompts_dataset_vl.html#lightrft.datasets.prompts_dataset_vl.PromptDatasetVL">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">PromptDatasetVL</span><span class="p">(</span><span class="n">Dataset</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    A PyTorch Dataset for Vision-Language (VL) prompting tasks.</span>
+
+<span class="sd">    This class wraps a raw dataset (e.g., a HuggingFace Dataset, list of dicts)</span>
+<span class="sd">    and preprocesses each item on-the-fly using the `preprocess_data` function.</span>
+<span class="sd">    It prepares the data in a `(prompt, images, reference, label)` format suitable</span>
+<span class="sd">    for training or evaluation.</span>
+
+<span class="sd">    :param dataset: The underlying raw dataset (can be a HuggingFace Dataset, list, or pandas-like object)</span>
+<span class="sd">    :type dataset: Any</span>
+<span class="sd">    :param tokenizer: The tokenizer for text processing</span>
+<span class="sd">    :type tokenizer: Any</span>
+<span class="sd">    :param processor: The processor, which may include the tokenizer and image processor</span>
+<span class="sd">    :type processor: Any</span>
+<span class="sd">    :param max_length: The maximum sequence length for the tokenizer</span>
+<span class="sd">    :type max_length: int</span>
+<span class="sd">    :param strategy: A configuration object containing keys and flags for data extraction</span>
+<span class="sd">    :type strategy: Any</span>
+<span class="sd">    :param input_template: Template for formatting input text</span>
+<span class="sd">    :type input_template: str | None</span>
+<span class="sd">    """</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">dataset</span><span class="p">,</span>  <span class="c1"># Can be a HuggingFace Dataset, list, or pandas-like object</span>
+        <span class="n">tokenizer</span><span class="p">,</span>
+        <span class="n">processor</span><span class="p">,</span>
+        <span class="n">max_length</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">strategy</span><span class="p">,</span>
+        <span class="n">input_template</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dataset</span> <span class="o">=</span> <span class="n">dataset</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tokenizer</span> <span class="o">=</span> <span class="n">tokenizer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">processor</span> <span class="o">=</span> <span class="n">processor</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_length</span> <span class="o">=</span> <span class="n">max_length</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">strategy</span> <span class="o">=</span> <span class="n">strategy</span>
+
+        <span class="c1"># Read field names and settings from the strategy object, with defaults.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">prompt_key</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">strategy</span><span class="o">.</span><span class="n">args</span><span class="p">,</span> <span class="s2">"input_key"</span><span class="p">,</span> <span class="s2">"prompt"</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">images_key</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">strategy</span><span class="o">.</span><span class="n">args</span><span class="p">,</span> <span class="s2">"images_key"</span><span class="p">,</span> <span class="s2">"images"</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reference_key</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">strategy</span><span class="o">.</span><span class="n">args</span><span class="p">,</span> <span class="s2">"reference_key"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">label_key</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">strategy</span><span class="o">.</span><span class="n">args</span><span class="p">,</span> <span class="s2">"label_key"</span><span class="p">,</span> <span class="s2">"label"</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">apply_chat_template_flag</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">strategy</span><span class="o">.</span><span class="n">args</span><span class="p">,</span> <span class="s2">"apply_chat_template"</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">system_prompt</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">strategy</span><span class="o">.</span><span class="n">args</span><span class="p">,</span> <span class="s2">"system_prompt"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">input_template</span> <span class="o">=</span> <span class="n">input_template</span>
+        <span class="c1"># self.min_size = int(processor.image_processor.min_pixels ** 0.5)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">apply_chat_template</span> <span class="o">=</span> <span class="p">(</span><span class="n">processor</span><span class="o">.</span><span class="n">apply_chat_template</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">apply_chat_template_flag</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Returns the total number of items in the dataset.</span>
+
+<span class="sd">        :return: Number of items in the dataset</span>
+<span class="sd">        :rtype: int</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dataset</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Retrieves and preprocesses one item from the dataset.</span>
+
+<span class="sd">        :param idx: The index of the item to retrieve</span>
+<span class="sd">        :type idx: int</span>
+<span class="sd">        :return: A tuple containing the processed (prompt, images, reference, label)</span>
+<span class="sd">        :rtype: Tuple[Any, Any, Any, Any]</span>
+<span class="sd">        """</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dataset</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+
+        <span class="n">prompt</span><span class="p">,</span> <span class="n">images</span><span class="p">,</span> <span class="n">reference</span><span class="p">,</span> <span class="n">label</span> <span class="o">=</span> <span class="n">preprocess_data</span><span class="p">(</span>
+            <span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span>
+            <span class="n">input_template</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">input_template</span><span class="p">,</span>
+            <span class="n">prompt_key</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">prompt_key</span><span class="p">,</span>
+            <span class="n">images_key</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">images_key</span><span class="p">,</span>
+            <span class="n">reference_key</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">reference_key</span><span class="p">,</span>
+            <span class="n">label_key</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">label_key</span><span class="p">,</span>
+            <span class="n">apply_chat_template</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">apply_chat_template</span><span class="p">,</span>
+            <span class="n">processor</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">processor</span><span class="p">,</span>
+            <span class="n">system_prompt</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">system_prompt</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">prompt</span><span class="p">,</span> <span class="n">images</span><span class="p">,</span> <span class="n">reference</span><span class="p">,</span> <span class="n">label</span>
+
+<div class="viewcode-block" id="PromptDatasetVL.collate_fn"><a class="viewcode-back" href="../../../api_doc/datasets/prompts_dataset_vl.html#lightrft.datasets.prompts_dataset_vl.PromptDatasetVL.collate_fn">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">collate_fn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">List</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Collates a batch of preprocessed data items.</span>
+
+<span class="sd">        :param batch: A list of tuples, where each tuple is the output of `__getitem__`</span>
+<span class="sd">        :type batch: List[Tuple]</span>
+<span class="sd">        :return: A tuple of lists, containing (prompts, images, references, labels)</span>
+<span class="sd">        :rtype: Tuple[List, List, List, List]</span>
+<span class="sd">        """</span>
+        <span class="n">prompts</span><span class="p">,</span> <span class="n">images</span><span class="p">,</span> <span class="n">refs</span><span class="p">,</span> <span class="n">labels</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">batch</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">prompts</span><span class="p">),</span> <span class="nb">list</span><span class="p">(</span><span class="n">images</span><span class="p">),</span> <span class="nb">list</span><span class="p">(</span><span class="n">refs</span><span class="p">),</span> <span class="nb">list</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span></div></div>
+</pre></div>
+
+              </article>
+              
+            </div>
+            <footer>
+  
+
+  <hr>
+
+  <div role="contentinfo">
+    <p>
+      &copy; Copyright 2025-2026, OpenDILab.
+
+    </p>
+  </div>
+  
+  <div>
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a
+      href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the
+      Docs</a>.
+  </div>
+   
+
+</footer>
+          </div>
+        </div>
+
+        <div class="pytorch-content-right" id="pytorch-content-right">
+          <div class="pytorch-right-menu" id="pytorch-right-menu">
+            <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
+              
+            </div>
+          </div>
+        </div>
+    </section>
+  </div>
+
+  
+
+
+  
+
+  
+  <script type="text/javascript" id="documentation_options" data-url_root="../../../"
+    src="../../../_static/documentation_options.js"></script>
+  <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+  <script src="../../../_static/doctools.js"></script>
+  <script src="../../../_static/sphinx_highlight.js"></script>
+  <script src="../../../_static/clipboard.min.js"></script>
+  <script src="../../../_static/copybutton.js"></script>
+  
+
+  
+
+  <script type="text/javascript" src="../../../_static/js/vendor/popper.min.js"></script>
+  <script type="text/javascript" src="../../../_static/js/vendor/bootstrap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/list.js/1.5.0/list.min.js"></script>
+  <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+    jQuery(function () {
+      SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+  <!-- Begin Footer -->
+
+  <div class="container-fluid docs-tutorials-resources" id="docs-tutorials-resources">
+  </div>
+
+  <!-- End Footer -->
+
+  <!-- Begin Mobile Menu -->
+
+  <div class="mobile-main-menu">
+    <div class="container-fluid">
+      <div class="container">
+        <div class="mobile-main-menu-header-container">
+          <a class="header-logo" href="https://github.com/opendilab/LightRFT" aria-label="OpenMMLab"></a>
+          <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
+        </div>
+      </div>
+    </div>
+
+    <div class="mobile-main-menu-links-container">
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="https://github.com/opendilab/LightRFT" target="_blank">GitHub</a>
+          </li>
+      </div>
+    </div>
+  </div>
+
+  <!-- End Mobile Menu -->
+
+  <script type="text/javascript" src="../../../_static/js/vendor/anchor.min.js"></script>
+
+  <script type="text/javascript">
+    $(document).ready(function () {
+      mobileMenu.bind();
+      mobileTOC.bind();
+      pytorchAnchors.bind();
+      sideMenus.bind();
+      scrollToAnchor.bind();
+      highlightNavigation.bind();
+      mainMenuDropdown.bind();
+      filterTags.bind();
+
+      // Add class to links that have code blocks, since we cannot create links in code blocks
+      $("article.pytorch-article a span.pre").each(function (e) {
+        $(this).closest("a").addClass("has-code");
+      });
+    })
+  </script>
+</body>
+
+</html>

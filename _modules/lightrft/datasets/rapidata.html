@@ -32,6 +32,7 @@
   <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/css/readthedocs.css" type="text/css" />
   <link rel="index" title="Index" href="../../../genindex.html" />
   <link rel="search" title="Search" href="../../../search.html" />
@@ -84,7 +85,7 @@
 <div class="container-fluid header-holder tutorials-header" id="header-holder">
   <div class="container">
     <div class="header-container">
-      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+      <a class="header-logo" href="https://github.com/opendilab/LightRFT"
         aria-label="OpenMMLab"></a>
 
       <div class="main-menu">
@@ -234,6 +235,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../api_doc/strategy/index.html">lightrft.strategy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api_doc/trainer/index.html">lightrft.trainer</a></li>
 </ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../index_zh.html">欢迎来到 LightRFT 文档!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../index_zh.html#id4">索引与表格</a></li>
+</ul>
 
         
         
@@ -309,7 +314,7 @@
 
 
 <div class="viewcode-block" id="RapidataT2VHandler"><a class="viewcode-back" href="../../../api_doc/datasets/rapidata.html#lightrft.datasets.rapidata.RapidataT2VHandler">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">RapidataT2VHandler</span><span class="p">(</span><span class="n">BaseDataHandler</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Data Handler for Rapidata text-to-video human preferences dataset.</span>
 
 <span class="sd">    Support datasets:</span>
@@ -321,22 +326,22 @@
 <span class="sd">    This dataset contains pairs of videos (video1, video2) generated from a prompt.</span>
 <span class="sd">    It includes weighted scores for Preference, Coherence, and Alignment.</span>
 
-<span class="sd">    - &#39;A&#39; means video1 (messages0) is preferred.</span>
-<span class="sd">    - &#39;B&#39; means video2 (messages1) is preferred.</span>
-<span class="sd">    - &#39;C&#39; means they are equal or tied.</span>
+<span class="sd">    - 'A' means video1 (messages0) is preferred.</span>
+<span class="sd">    - 'B' means video2 (messages1) is preferred.</span>
+<span class="sd">    - 'C' means they are equal or tied.</span>
 
 <span class="sd">    Dataset Repo: https://huggingface.co/Rapidata/datasets</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">task_type</span> <span class="o">=</span> <span class="s2">&quot;text-to-video&quot;</span>
+<span class="sd">    """</span>
+    <span class="n">task_type</span> <span class="o">=</span> <span class="s2">"text-to-video"</span>
 
 <div class="viewcode-block" id="RapidataT2VHandler.load_data"><a class="viewcode-back" href="../../../api_doc/datasets/rapidata.html#lightrft.datasets.rapidata.RapidataT2VHandler.load_data">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">load_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Loads data from parquet file.</span>
 
 <span class="sd">        :param path: Path to the parquet file</span>
 <span class="sd">        :type path: str</span>
 
-<span class="sd">        :return: List of samples with &#39;data_root&#39; attached</span>
+<span class="sd">        :return: List of samples with 'data_root' attached</span>
 <span class="sd">        :rtype: List[Dict[str, Any]]</span>
 
 <span class="sd">        **Example:**</span>
@@ -344,8 +349,8 @@
 <span class="sd">        .. code-block:: python</span>
 
 <span class="sd">            handler = RapidataT2VHandler()</span>
-<span class="sd">            data = handler.load_data(&quot;path/to/Rapidata/data.parquet&quot;)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">            data = handler.load_data("path/to/Rapidata/data.parquet")</span>
+<span class="sd">        """</span>
         <span class="n">raw_data</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="kn">import</span><span class="w"> </span><span class="nn">pyarrow.parquet</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pq</span>
         <span class="n">data_table</span> <span class="o">=</span> <span class="n">pq</span><span class="o">.</span><span class="n">read_table</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
@@ -357,49 +362,49 @@
 
         <span class="n">data_root</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">path</span><span class="p">))</span>
         <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">raw_data</span><span class="p">:</span>
-            <span class="n">item</span><span class="p">[</span><span class="s1">&#39;data_root&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">data_root</span>
+            <span class="n">item</span><span class="p">[</span><span class="s1">'data_root'</span><span class="p">]</span> <span class="o">=</span> <span class="n">data_root</span>
 
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Loaded </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">raw_data</span><span class="p">)</span><span class="si">}</span><span class="s2"> samples from </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Loaded </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">raw_data</span><span class="p">)</span><span class="si">}</span><span class="s2"> samples from </span><span class="si">{</span><span class="n">path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">raw_data</span></div>
 
 <div class="viewcode-block" id="RapidataT2VHandler.get_media_info"><a class="viewcode-back" href="../../../api_doc/datasets/rapidata.html#lightrft.datasets.rapidata.RapidataT2VHandler.get_media_info">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_media_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Extract path info for the two videos.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">data_root</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;data_root&quot;</span><span class="p">]</span>
+<span class="sd">        """</span>
+        <span class="n">data_root</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s2">"data_root"</span><span class="p">]</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">data_root</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Missing &#39;data_root&#39; in item. Cannot resolve video paths.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Missing 'data_root' in item. Cannot resolve video paths."</span><span class="p">)</span>
 
-        <span class="k">if</span> <span class="s1">&#39;file_name1&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">item</span> <span class="ow">or</span> <span class="s1">&#39;file_name2&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">item</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Item missing &#39;file_name1&#39; or &#39;file_name2&#39;.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s1">'file_name1'</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">item</span> <span class="ow">or</span> <span class="s1">'file_name2'</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">item</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Item missing 'file_name1' or 'file_name2'."</span><span class="p">)</span>
 
-        <span class="c1"># Try both &quot;videos&quot; and &quot;Videos&quot;</span>
-        <span class="n">video_dir</span> <span class="o">=</span> <span class="s2">&quot;videos&quot;</span>
+        <span class="c1"># Try both "videos" and "Videos"</span>
+        <span class="n">video_dir</span> <span class="o">=</span> <span class="s2">"videos"</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data_root</span><span class="p">,</span> <span class="n">video_dir</span><span class="p">)):</span>
-            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data_root</span><span class="p">,</span> <span class="s2">&quot;Videos&quot;</span><span class="p">)):</span>
-                <span class="n">video_dir</span> <span class="o">=</span> <span class="s2">&quot;Videos&quot;</span>
+            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data_root</span><span class="p">,</span> <span class="s2">"Videos"</span><span class="p">)):</span>
+                <span class="n">video_dir</span> <span class="o">=</span> <span class="s2">"Videos"</span>
 
-        <span class="n">full_path1</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data_root</span><span class="p">,</span> <span class="n">video_dir</span><span class="p">,</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;file_name1&#39;</span><span class="p">])</span>
-        <span class="n">full_path2</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data_root</span><span class="p">,</span> <span class="n">video_dir</span><span class="p">,</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;file_name2&#39;</span><span class="p">])</span>
+        <span class="n">full_path1</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data_root</span><span class="p">,</span> <span class="n">video_dir</span><span class="p">,</span> <span class="n">item</span><span class="p">[</span><span class="s1">'file_name1'</span><span class="p">])</span>
+        <span class="n">full_path2</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data_root</span><span class="p">,</span> <span class="n">video_dir</span><span class="p">,</span> <span class="n">item</span><span class="p">[</span><span class="s1">'file_name2'</span><span class="p">])</span>
 
-        <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;video1&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;video_local_path&#39;</span><span class="p">:</span> <span class="n">full_path1</span><span class="p">},</span> <span class="s1">&#39;video2&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;video_local_path&#39;</span><span class="p">:</span> <span class="n">full_path2</span><span class="p">}}</span></div>
+        <span class="k">return</span> <span class="p">{</span><span class="s1">'video1'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'video_local_path'</span><span class="p">:</span> <span class="n">full_path1</span><span class="p">},</span> <span class="s1">'video2'</span><span class="p">:</span> <span class="p">{</span><span class="s1">'video_local_path'</span><span class="p">:</span> <span class="n">full_path2</span><span class="p">}}</span></div>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_get_label</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">val1</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">val2</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Helper to determine preference label based on two scores.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="n">val1</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">val2</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">return</span> <span class="s2">&quot;C&quot;</span>
+            <span class="k">return</span> <span class="s2">"C"</span>
         <span class="k">if</span> <span class="n">val1</span> <span class="o">&gt;</span> <span class="n">val2</span><span class="p">:</span>
-            <span class="k">return</span> <span class="s2">&quot;A&quot;</span>
+            <span class="k">return</span> <span class="s2">"A"</span>
         <span class="k">elif</span> <span class="n">val1</span> <span class="o">&lt;</span> <span class="n">val2</span><span class="p">:</span>
-            <span class="k">return</span> <span class="s2">&quot;B&quot;</span>
+            <span class="k">return</span> <span class="s2">"B"</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="s2">&quot;C&quot;</span>  <span class="c1"># TIE</span>
+            <span class="k">return</span> <span class="s2">"C"</span>  <span class="c1"># TIE</span>
 
 <div class="viewcode-block" id="RapidataT2VHandler.parse_item"><a class="viewcode-back" href="../../../api_doc/datasets/rapidata.html#lightrft.datasets.rapidata.RapidataT2VHandler.parse_item">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">parse_item</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">media_content</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
                    <span class="n">config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">],</span> <span class="n">Dict</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Parse a single Rapidata-T2V data item into message pairs for ranking.</span>
 
 <span class="sd">        :param item: The raw data item</span>
@@ -417,76 +422,76 @@
 <span class="sd">        .. code-block:: python</span>
 
 <span class="sd">            msg0, msg1, other = handler.parse_item(item, media_content, config)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">video1</span> <span class="o">=</span> <span class="n">media_content</span><span class="p">[</span><span class="s1">&#39;video1&#39;</span><span class="p">]</span>
-        <span class="n">video2</span> <span class="o">=</span> <span class="n">media_content</span><span class="p">[</span><span class="s1">&#39;video2&#39;</span><span class="p">]</span>
+<span class="sd">        """</span>
+        <span class="n">video1</span> <span class="o">=</span> <span class="n">media_content</span><span class="p">[</span><span class="s1">'video1'</span><span class="p">]</span>
+        <span class="n">video2</span> <span class="o">=</span> <span class="n">media_content</span><span class="p">[</span><span class="s1">'video2'</span><span class="p">]</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">([</span><span class="n">video1</span><span class="p">,</span> <span class="n">video2</span><span class="p">]):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Missing visual content for &#39;video1&#39; or &#39;video2&#39;.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Missing visual content for 'video1' or 'video2'."</span><span class="p">)</span>
 
         <span class="c1"># Get generation prompt from data item</span>
-        <span class="n">video_gen_prompt</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;prompt&quot;</span><span class="p">]</span>
+        <span class="n">video_gen_prompt</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s2">"prompt"</span><span class="p">]</span>
 
         <span class="c1"># Get system prompts from config</span>
-        <span class="n">task_instruction_template</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;task_instruction&quot;</span><span class="p">]</span>
+        <span class="n">task_instruction_template</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">"task_instruction"</span><span class="p">]</span>
         <span class="n">task_instruction</span> <span class="o">=</span> <span class="n">task_instruction_template</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">prompt</span><span class="o">=</span><span class="n">video_gen_prompt</span><span class="p">)</span>
 
         <span class="c1"># Get max_pixels from config</span>
-        <span class="n">max_pixels</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;max_pixels&quot;</span><span class="p">]</span>
+        <span class="n">max_pixels</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">"max_pixels"</span><span class="p">]</span>
 
         <span class="c1"># Get FPS from config</span>
-        <span class="n">fps</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;video_fps&quot;</span><span class="p">]</span>
+        <span class="n">fps</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">"video_fps"</span><span class="p">]</span>
 
         <span class="c1"># Build messages</span>
         <span class="n">messages0</span> <span class="o">=</span> <span class="p">[{</span>
-            <span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;system&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">task_instruction</span><span class="p">)</span>
+            <span class="s2">"role"</span><span class="p">:</span> <span class="s2">"system"</span><span class="p">,</span>
+            <span class="s2">"content"</span><span class="p">:</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">task_instruction</span><span class="p">)</span>
         <span class="p">},</span> <span class="p">{</span>
-            <span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="p">[{</span>
-                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;video&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;video&quot;</span><span class="p">:</span> <span class="n">video1</span><span class="p">,</span>
-                <span class="s2">&quot;fps&quot;</span><span class="p">:</span> <span class="n">fps</span><span class="p">,</span>
-                <span class="s2">&quot;max_pixels&quot;</span><span class="p">:</span> <span class="n">max_pixels</span>
+            <span class="s2">"role"</span><span class="p">:</span> <span class="s2">"user"</span><span class="p">,</span>
+            <span class="s2">"content"</span><span class="p">:</span> <span class="p">[{</span>
+                <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"video"</span><span class="p">,</span>
+                <span class="s2">"video"</span><span class="p">:</span> <span class="n">video1</span><span class="p">,</span>
+                <span class="s2">"fps"</span><span class="p">:</span> <span class="n">fps</span><span class="p">,</span>
+                <span class="s2">"max_pixels"</span><span class="p">:</span> <span class="n">max_pixels</span>
             <span class="p">}]</span>
         <span class="p">}]</span>
 
         <span class="n">messages1</span> <span class="o">=</span> <span class="p">[{</span>
-            <span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;system&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">task_instruction</span><span class="p">)</span>
+            <span class="s2">"role"</span><span class="p">:</span> <span class="s2">"system"</span><span class="p">,</span>
+            <span class="s2">"content"</span><span class="p">:</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">task_instruction</span><span class="p">)</span>
         <span class="p">},</span> <span class="p">{</span>
-            <span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="p">[{</span>
-                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;video&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;video&quot;</span><span class="p">:</span> <span class="n">video2</span><span class="p">,</span>
-                <span class="s2">&quot;fps&quot;</span><span class="p">:</span> <span class="n">fps</span><span class="p">,</span>
-                <span class="s2">&quot;max_pixels&quot;</span><span class="p">:</span> <span class="n">max_pixels</span>
+            <span class="s2">"role"</span><span class="p">:</span> <span class="s2">"user"</span><span class="p">,</span>
+            <span class="s2">"content"</span><span class="p">:</span> <span class="p">[{</span>
+                <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"video"</span><span class="p">,</span>
+                <span class="s2">"video"</span><span class="p">:</span> <span class="n">video2</span><span class="p">,</span>
+                <span class="s2">"fps"</span><span class="p">:</span> <span class="n">fps</span><span class="p">,</span>
+                <span class="s2">"max_pixels"</span><span class="p">:</span> <span class="n">max_pixels</span>
             <span class="p">}]</span>
         <span class="p">}]</span>
 
         <span class="c1"># Get human preference labels and total scores based on weighted metrics</span>
-        <span class="n">metrics</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Preference&#39;</span><span class="p">,</span> <span class="s1">&#39;Coherence&#39;</span><span class="p">,</span> <span class="s1">&#39;Alignment&#39;</span><span class="p">]</span>
+        <span class="n">metrics</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'Preference'</span><span class="p">,</span> <span class="s1">'Coherence'</span><span class="p">,</span> <span class="s1">'Alignment'</span><span class="p">]</span>
         <span class="n">labels</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">m</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="si">}</span><span class="s2">_label&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_label</span><span class="p">(</span>
-                <span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;weighted_results1_</span><span class="si">{</span><span class="n">m</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">),</span> <span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;weighted_results2_</span><span class="si">{</span><span class="n">m</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">m</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="si">}</span><span class="s2">_label"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_label</span><span class="p">(</span>
+                <span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="sa">f</span><span class="s1">'weighted_results1_</span><span class="si">{</span><span class="n">m</span><span class="si">}</span><span class="s1">'</span><span class="p">),</span> <span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="sa">f</span><span class="s1">'weighted_results2_</span><span class="si">{</span><span class="n">m</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
             <span class="p">)</span>
             <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">metrics</span>
         <span class="p">}</span>
 
-        <span class="n">score1</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;weighted_results1_</span><span class="si">{</span><span class="n">m</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="mf">0.0</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">metrics</span><span class="p">)</span>
-        <span class="n">score2</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;weighted_results2_</span><span class="si">{</span><span class="n">m</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="mf">0.0</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">metrics</span><span class="p">)</span>
+        <span class="n">score1</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="sa">f</span><span class="s1">'weighted_results1_</span><span class="si">{</span><span class="n">m</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span> <span class="ow">or</span> <span class="mf">0.0</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">metrics</span><span class="p">)</span>
+        <span class="n">score2</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="sa">f</span><span class="s1">'weighted_results2_</span><span class="si">{</span><span class="n">m</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span> <span class="ow">or</span> <span class="mf">0.0</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">metrics</span><span class="p">)</span>
 
         <span class="n">other</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">&quot;preference&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_label</span><span class="p">(</span><span class="n">score1</span><span class="p">,</span> <span class="n">score2</span><span class="p">),</span>
+            <span class="s2">"preference"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_label</span><span class="p">(</span><span class="n">score1</span><span class="p">,</span> <span class="n">score2</span><span class="p">),</span>
             <span class="o">**</span><span class="n">labels</span><span class="p">,</span>
-            <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">],</span>
-            <span class="s2">&quot;task_type&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_type</span><span class="p">,</span>
+            <span class="s2">"source"</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s1">'source'</span><span class="p">],</span>
+            <span class="s2">"task_type"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_type</span><span class="p">,</span>
         <span class="p">}</span>
         <span class="k">return</span> <span class="n">messages0</span><span class="p">,</span> <span class="n">messages1</span><span class="p">,</span> <span class="n">other</span></div></div>
 
 
 <div class="viewcode-block" id="RapidataI2VHandler"><a class="viewcode-back" href="../../../api_doc/datasets/rapidata.html#lightrft.datasets.rapidata.RapidataI2VHandler">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">RapidataI2VHandler</span><span class="p">(</span><span class="n">RapidataT2VHandler</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Data Handler for Rapidata image-to-video human preferences dataset.</span>
 
 <span class="sd">    Support datasets:</span>
@@ -494,20 +499,20 @@
 <span class="sd">    - Rapidata/image-2-video-human-preferences-seedance-1-pro</span>
 
 <span class="sd">    Dataset Repo: https://huggingface.co/Rapidata/datasets</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">task_type</span> <span class="o">=</span> <span class="s2">&quot;image-to-video&quot;</span>
+<span class="sd">    """</span>
+    <span class="n">task_type</span> <span class="o">=</span> <span class="s2">"image-to-video"</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
 
 <div class="viewcode-block" id="RapidataI2VHandler.get_media_info"><a class="viewcode-back" href="../../../api_doc/datasets/rapidata.html#lightrft.datasets.rapidata.RapidataI2VHandler.get_media_info">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">get_media_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Extract media info (paths) for the two videos and bytes for initial image.</span>
 
 <span class="sd">        :param item: A data item from load_data</span>
 <span class="sd">        :type item: Dict[str, Any]</span>
 
-<span class="sd">        :return: Dict containing local paths for videos and bytes for &#39;init_image&#39;</span>
+<span class="sd">        :return: Dict containing local paths for videos and bytes for 'init_image'</span>
 <span class="sd">        :rtype: Dict[str, Dict[str, Any]]</span>
 
 <span class="sd">        **Example:**</span>
@@ -515,17 +520,17 @@
 <span class="sd">        .. code-block:: python</span>
 
 <span class="sd">            info = handler.get_media_info(item)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">data_root</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;data_root&quot;</span><span class="p">]</span>
+<span class="sd">        """</span>
+        <span class="n">data_root</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s2">"data_root"</span><span class="p">]</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">data_root</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Missing &#39;data_root&#39; in item. Cannot resolve video paths.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Missing 'data_root' in item. Cannot resolve video paths."</span><span class="p">)</span>
 
         <span class="c1"># Get video paths</span>
-        <span class="k">if</span> <span class="s1">&#39;file_name1&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">item</span> <span class="ow">or</span> <span class="s1">&#39;file_name2&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">item</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Item missing &#39;file_name1&#39; or &#39;file_name2&#39;.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s1">'file_name1'</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">item</span> <span class="ow">or</span> <span class="s1">'file_name2'</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">item</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Item missing 'file_name1' or 'file_name2'."</span><span class="p">)</span>
 
         <span class="k">def</span><span class="w"> </span><span class="nf">process_path</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">root_path</span><span class="p">):</span>
-<span class="w">            </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">            </span><span class="sd">"""</span>
 <span class="sd">            Process filename to construct local path from URL or relative path.</span>
 
 <span class="sd">            :param fname: Filename or URL.</span>
@@ -534,39 +539,39 @@
 <span class="sd">            :type root_path: str</span>
 <span class="sd">            :return: Local file path.</span>
 <span class="sd">            :rtype: str</span>
-<span class="sd">            &quot;&quot;&quot;</span>
-            <span class="k">if</span> <span class="n">fname</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;https&quot;</span><span class="p">):</span>
-                <span class="n">fname</span> <span class="o">=</span> <span class="n">fname</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span>
+<span class="sd">            """</span>
+            <span class="k">if</span> <span class="n">fname</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"https"</span><span class="p">):</span>
+                <span class="n">fname</span> <span class="o">=</span> <span class="n">fname</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"/"</span><span class="p">)</span>
                 <span class="n">model_name</span> <span class="o">=</span> <span class="n">fname</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
                 <span class="n">video_name</span> <span class="o">=</span> <span class="n">fname</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-                <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root_path</span><span class="p">,</span> <span class="s2">&quot;videos&quot;</span><span class="p">,</span> <span class="n">model_name</span><span class="p">,</span> <span class="n">video_name</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="s2">&quot;hailuo&quot;</span> <span class="ow">in</span> <span class="n">fname</span><span class="p">:</span>
-                <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root_path</span><span class="p">,</span> <span class="s2">&quot;videos&quot;</span><span class="p">,</span> <span class="s2">&quot;hailuo-02&quot;</span><span class="p">,</span> <span class="n">fname</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root_path</span><span class="p">,</span> <span class="s2">"videos"</span><span class="p">,</span> <span class="n">model_name</span><span class="p">,</span> <span class="n">video_name</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="s2">"hailuo"</span> <span class="ow">in</span> <span class="n">fname</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root_path</span><span class="p">,</span> <span class="s2">"videos"</span><span class="p">,</span> <span class="s2">"hailuo-02"</span><span class="p">,</span> <span class="n">fname</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root_path</span><span class="p">,</span> <span class="s2">&quot;videos&quot;</span><span class="p">,</span> <span class="s2">&quot;hailuo-02&quot;</span><span class="p">,</span> <span class="s2">&quot;marey&quot;</span><span class="p">,</span> <span class="n">fname</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root_path</span><span class="p">,</span> <span class="s2">"videos"</span><span class="p">,</span> <span class="s2">"hailuo-02"</span><span class="p">,</span> <span class="s2">"marey"</span><span class="p">,</span> <span class="n">fname</span><span class="p">)</span>
 
-        <span class="n">full_path1</span> <span class="o">=</span> <span class="n">process_path</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="s1">&#39;file_name1&#39;</span><span class="p">],</span> <span class="n">data_root</span><span class="p">)</span>
-        <span class="n">full_path2</span> <span class="o">=</span> <span class="n">process_path</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="s1">&#39;file_name2&#39;</span><span class="p">],</span> <span class="n">data_root</span><span class="p">)</span>
+        <span class="n">full_path1</span> <span class="o">=</span> <span class="n">process_path</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="s1">'file_name1'</span><span class="p">],</span> <span class="n">data_root</span><span class="p">)</span>
+        <span class="n">full_path2</span> <span class="o">=</span> <span class="n">process_path</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="s1">'file_name2'</span><span class="p">],</span> <span class="n">data_root</span><span class="p">)</span>
 
         <span class="c1"># Get initial image bytes</span>
-        <span class="k">assert</span> <span class="s1">&#39;prompt_asset&#39;</span> <span class="ow">in</span> <span class="n">item</span><span class="p">,</span> <span class="s2">&quot;Missing initial image in item.&quot;</span>
-        <span class="n">img_bytes</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;prompt_asset&#39;</span><span class="p">][</span><span class="s1">&#39;bytes&#39;</span><span class="p">]</span>
+        <span class="k">assert</span> <span class="s1">'prompt_asset'</span> <span class="ow">in</span> <span class="n">item</span><span class="p">,</span> <span class="s2">"Missing initial image in item."</span>
+        <span class="n">img_bytes</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s1">'prompt_asset'</span><span class="p">][</span><span class="s1">'bytes'</span><span class="p">]</span>
 
         <span class="k">return</span> <span class="p">{</span>
-            <span class="s1">&#39;video1&#39;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s1">&#39;video_local_path&#39;</span><span class="p">:</span> <span class="n">full_path1</span>
+            <span class="s1">'video1'</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s1">'video_local_path'</span><span class="p">:</span> <span class="n">full_path1</span>
             <span class="p">},</span>
-            <span class="s1">&#39;video2&#39;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s1">&#39;video_local_path&#39;</span><span class="p">:</span> <span class="n">full_path2</span>
+            <span class="s1">'video2'</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s1">'video_local_path'</span><span class="p">:</span> <span class="n">full_path2</span>
             <span class="p">},</span>
-            <span class="s1">&#39;init_image&#39;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s1">&#39;image_bytes&#39;</span><span class="p">:</span> <span class="n">img_bytes</span>
+            <span class="s1">'init_image'</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s1">'image_bytes'</span><span class="p">:</span> <span class="n">img_bytes</span>
             <span class="p">}</span>
         <span class="p">}</span></div>
 
 <div class="viewcode-block" id="RapidataI2VHandler.parse_item"><a class="viewcode-back" href="../../../api_doc/datasets/rapidata.html#lightrft.datasets.rapidata.RapidataI2VHandler.parse_item">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">parse_item</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">media_content</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
                    <span class="n">config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">],</span> <span class="n">Dict</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Parse a single Rapidata-I2V data item into message pairs for ranking.</span>
 
 <span class="sd">        :param item: The raw data item</span>
@@ -584,93 +589,93 @@
 <span class="sd">        .. code-block:: python</span>
 
 <span class="sd">            msg0, msg1, other = handler.parse_item(item, media_content, config)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">video1</span> <span class="o">=</span> <span class="n">media_content</span><span class="p">[</span><span class="s1">&#39;video1&#39;</span><span class="p">]</span>
-        <span class="n">video2</span> <span class="o">=</span> <span class="n">media_content</span><span class="p">[</span><span class="s1">&#39;video2&#39;</span><span class="p">]</span>
-        <span class="n">init_image</span> <span class="o">=</span> <span class="n">media_content</span><span class="p">[</span><span class="s1">&#39;init_image&#39;</span><span class="p">]</span>
+<span class="sd">        """</span>
+        <span class="n">video1</span> <span class="o">=</span> <span class="n">media_content</span><span class="p">[</span><span class="s1">'video1'</span><span class="p">]</span>
+        <span class="n">video2</span> <span class="o">=</span> <span class="n">media_content</span><span class="p">[</span><span class="s1">'video2'</span><span class="p">]</span>
+        <span class="n">init_image</span> <span class="o">=</span> <span class="n">media_content</span><span class="p">[</span><span class="s1">'init_image'</span><span class="p">]</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">([</span><span class="n">video1</span><span class="p">,</span> <span class="n">video2</span><span class="p">,</span> <span class="n">init_image</span><span class="p">]):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Missing visual content for &#39;video1&#39; or &#39;video2&#39; or &#39;init_image&#39;.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Missing visual content for 'video1' or 'video2' or 'init_image'."</span><span class="p">)</span>
 
         <span class="c1"># Get generation prompt from data item</span>
-        <span class="n">prompt_text</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;prompt&quot;</span><span class="p">]</span>
+        <span class="n">prompt_text</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s2">"prompt"</span><span class="p">]</span>
 
         <span class="c1"># Get system prompts from config</span>
-        <span class="n">task_instruction_template</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;task_instruction&quot;</span><span class="p">]</span>
+        <span class="n">task_instruction_template</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">"task_instruction"</span><span class="p">]</span>
         <span class="n">task_instruction</span> <span class="o">=</span> <span class="n">task_instruction_template</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">prompt</span><span class="o">=</span><span class="n">prompt_text</span><span class="p">)</span>
 
         <span class="c1"># Get max_pixels from config</span>
-        <span class="n">max_pixels</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;max_pixels&quot;</span><span class="p">]</span>
+        <span class="n">max_pixels</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">"max_pixels"</span><span class="p">]</span>
 
         <span class="c1"># Get FPS from config</span>
-        <span class="n">fps</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;video_fps&quot;</span><span class="p">]</span>
+        <span class="n">fps</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">"video_fps"</span><span class="p">]</span>
 
         <span class="c1"># Build messages</span>
         <span class="n">messages0</span> <span class="o">=</span> <span class="p">[{</span>
-            <span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;system&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">task_instruction</span><span class="p">)</span>
+            <span class="s2">"role"</span><span class="p">:</span> <span class="s2">"system"</span><span class="p">,</span>
+            <span class="s2">"content"</span><span class="p">:</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">task_instruction</span><span class="p">)</span>
         <span class="p">},</span> <span class="p">{</span>
-            <span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="p">[{</span>
-                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;image&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;image&quot;</span><span class="p">:</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">init_image</span><span class="p">),</span>
-                <span class="s2">&quot;max_pixels&quot;</span><span class="p">:</span> <span class="n">max_pixels</span>
+            <span class="s2">"role"</span><span class="p">:</span> <span class="s2">"user"</span><span class="p">,</span>
+            <span class="s2">"content"</span><span class="p">:</span> <span class="p">[{</span>
+                <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"image"</span><span class="p">,</span>
+                <span class="s2">"image"</span><span class="p">:</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">init_image</span><span class="p">),</span>
+                <span class="s2">"max_pixels"</span><span class="p">:</span> <span class="n">max_pixels</span>
             <span class="p">},</span> <span class="p">{</span>
-                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;video&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;video&quot;</span><span class="p">:</span> <span class="n">video1</span><span class="p">,</span>
-                <span class="s2">&quot;fps&quot;</span><span class="p">:</span> <span class="n">fps</span><span class="p">,</span>
-                <span class="s2">&quot;max_pixels&quot;</span><span class="p">:</span> <span class="n">max_pixels</span>
+                <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"video"</span><span class="p">,</span>
+                <span class="s2">"video"</span><span class="p">:</span> <span class="n">video1</span><span class="p">,</span>
+                <span class="s2">"fps"</span><span class="p">:</span> <span class="n">fps</span><span class="p">,</span>
+                <span class="s2">"max_pixels"</span><span class="p">:</span> <span class="n">max_pixels</span>
             <span class="p">}]</span>
         <span class="p">}]</span>
 
         <span class="n">messages1</span> <span class="o">=</span> <span class="p">[{</span>
-            <span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;system&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">task_instruction</span><span class="p">)</span>
+            <span class="s2">"role"</span><span class="p">:</span> <span class="s2">"system"</span><span class="p">,</span>
+            <span class="s2">"content"</span><span class="p">:</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">task_instruction</span><span class="p">)</span>
         <span class="p">},</span> <span class="p">{</span>
-            <span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="p">[{</span>
-                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;image&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;image&quot;</span><span class="p">:</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">init_image</span><span class="p">),</span>
-                <span class="s2">&quot;max_pixels&quot;</span><span class="p">:</span> <span class="n">max_pixels</span>
+            <span class="s2">"role"</span><span class="p">:</span> <span class="s2">"user"</span><span class="p">,</span>
+            <span class="s2">"content"</span><span class="p">:</span> <span class="p">[{</span>
+                <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"image"</span><span class="p">,</span>
+                <span class="s2">"image"</span><span class="p">:</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">init_image</span><span class="p">),</span>
+                <span class="s2">"max_pixels"</span><span class="p">:</span> <span class="n">max_pixels</span>
             <span class="p">},</span> <span class="p">{</span>
-                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;video&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;video&quot;</span><span class="p">:</span> <span class="n">video2</span><span class="p">,</span>
-                <span class="s2">&quot;fps&quot;</span><span class="p">:</span> <span class="n">fps</span><span class="p">,</span>
-                <span class="s2">&quot;max_pixels&quot;</span><span class="p">:</span> <span class="n">max_pixels</span>
+                <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"video"</span><span class="p">,</span>
+                <span class="s2">"video"</span><span class="p">:</span> <span class="n">video2</span><span class="p">,</span>
+                <span class="s2">"fps"</span><span class="p">:</span> <span class="n">fps</span><span class="p">,</span>
+                <span class="s2">"max_pixels"</span><span class="p">:</span> <span class="n">max_pixels</span>
             <span class="p">}]</span>
         <span class="p">}]</span>
 
         <span class="c1"># Get human preference labels and total scores based on weighted metrics</span>
-        <span class="n">metrics</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Preference&#39;</span><span class="p">,</span> <span class="s1">&#39;Coherence&#39;</span><span class="p">,</span> <span class="s1">&#39;Alignment&#39;</span><span class="p">]</span>
+        <span class="n">metrics</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'Preference'</span><span class="p">,</span> <span class="s1">'Coherence'</span><span class="p">,</span> <span class="s1">'Alignment'</span><span class="p">]</span>
         <span class="n">labels</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">m</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="si">}</span><span class="s2">_label&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_label</span><span class="p">(</span>
-                <span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;weighted_results1_</span><span class="si">{</span><span class="n">m</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">),</span> <span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;weighted_results2_</span><span class="si">{</span><span class="n">m</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">m</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="si">}</span><span class="s2">_label"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_label</span><span class="p">(</span>
+                <span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="sa">f</span><span class="s1">'weighted_results1_</span><span class="si">{</span><span class="n">m</span><span class="si">}</span><span class="s1">'</span><span class="p">),</span> <span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="sa">f</span><span class="s1">'weighted_results2_</span><span class="si">{</span><span class="n">m</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
             <span class="p">)</span>
             <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">metrics</span>
         <span class="p">}</span>
 
-        <span class="n">score1</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;weighted_results1_</span><span class="si">{</span><span class="n">m</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="mf">0.0</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">metrics</span><span class="p">)</span>
-        <span class="n">score2</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;weighted_results2_</span><span class="si">{</span><span class="n">m</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="mf">0.0</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">metrics</span><span class="p">)</span>
+        <span class="n">score1</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="sa">f</span><span class="s1">'weighted_results1_</span><span class="si">{</span><span class="n">m</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span> <span class="ow">or</span> <span class="mf">0.0</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">metrics</span><span class="p">)</span>
+        <span class="n">score2</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="sa">f</span><span class="s1">'weighted_results2_</span><span class="si">{</span><span class="n">m</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span> <span class="ow">or</span> <span class="mf">0.0</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">metrics</span><span class="p">)</span>
 
         <span class="n">other</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">&quot;preference&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_label</span><span class="p">(</span><span class="n">score1</span><span class="p">,</span> <span class="n">score2</span><span class="p">),</span>
+            <span class="s2">"preference"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_label</span><span class="p">(</span><span class="n">score1</span><span class="p">,</span> <span class="n">score2</span><span class="p">),</span>
             <span class="o">**</span><span class="n">labels</span><span class="p">,</span>
-            <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">],</span>
-            <span class="s2">&quot;task_type&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_type</span><span class="p">,</span>
+            <span class="s2">"source"</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s1">'source'</span><span class="p">],</span>
+            <span class="s2">"task_type"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_type</span><span class="p">,</span>
         <span class="p">}</span>
         <span class="k">return</span> <span class="n">messages0</span><span class="p">,</span> <span class="n">messages1</span><span class="p">,</span> <span class="n">other</span></div></div>
 
 
 <div class="viewcode-block" id="RapidataT2VPairHandler"><a class="viewcode-back" href="../../../api_doc/datasets/rapidata.html#lightrft.datasets.rapidata.RapidataT2VPairHandler">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">RapidataT2VPairHandler</span><span class="p">(</span><span class="n">RapidataT2VHandler</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Data Handler for Rapidata text-to-video human preferences dataset in pairwise format.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
 
 <div class="viewcode-block" id="RapidataT2VPairHandler.parse_item"><a class="viewcode-back" href="../../../api_doc/datasets/rapidata.html#lightrft.datasets.rapidata.RapidataT2VPairHandler.parse_item">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">parse_item</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">media_content</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
                    <span class="n">config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">],</span> <span class="n">Dict</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Parse a text-to-video data item into pairwise messages and metadata.</span>
 
 <span class="sd">        :param item: The raw data item</span>
@@ -688,93 +693,93 @@
 <span class="sd">        .. code-block:: python</span>
 
 <span class="sd">            messages, other = handler.parse_item(item, media_content, config)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">video1</span> <span class="o">=</span> <span class="n">media_content</span><span class="p">[</span><span class="s1">&#39;video1&#39;</span><span class="p">]</span>
-        <span class="n">video2</span> <span class="o">=</span> <span class="n">media_content</span><span class="p">[</span><span class="s1">&#39;video2&#39;</span><span class="p">]</span>
+<span class="sd">        """</span>
+        <span class="n">video1</span> <span class="o">=</span> <span class="n">media_content</span><span class="p">[</span><span class="s1">'video1'</span><span class="p">]</span>
+        <span class="n">video2</span> <span class="o">=</span> <span class="n">media_content</span><span class="p">[</span><span class="s1">'video2'</span><span class="p">]</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">([</span><span class="n">video1</span><span class="p">,</span> <span class="n">video2</span><span class="p">]):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Missing visual content for &#39;video1&#39; or &#39;video2&#39;.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Missing visual content for 'video1' or 'video2'."</span><span class="p">)</span>
 
         <span class="c1"># Get generation prompt from data item</span>
-        <span class="n">video_gen_prompt</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;prompt&quot;</span><span class="p">]</span>
+        <span class="n">video_gen_prompt</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s2">"prompt"</span><span class="p">]</span>
 
         <span class="c1"># Get system prompts from config</span>
         <span class="n">task_instruction_template</span> <span class="o">=</span> <span class="n">get_task_instructions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">)</span>
         <span class="n">task_instruction</span> <span class="o">=</span> <span class="n">task_instruction_template</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">prompt</span><span class="o">=</span><span class="n">video_gen_prompt</span><span class="p">)</span>
 
         <span class="c1"># Get max_pixels from config</span>
-        <span class="n">max_pixels</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;max_pixels&quot;</span><span class="p">]</span>
+        <span class="n">max_pixels</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">"max_pixels"</span><span class="p">]</span>
 
         <span class="c1"># Get FPS from config</span>
-        <span class="n">fps</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;video_fps&quot;</span><span class="p">]</span>
+        <span class="n">fps</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">"video_fps"</span><span class="p">]</span>
 
         <span class="c1"># Build messages</span>
         <span class="n">messages</span> <span class="o">=</span> <span class="p">[{</span>
-            <span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;system&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="p">[{</span>
-                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;text&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="n">task_instruction</span>
+            <span class="s2">"role"</span><span class="p">:</span> <span class="s2">"system"</span><span class="p">,</span>
+            <span class="s2">"content"</span><span class="p">:</span> <span class="p">[{</span>
+                <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"text"</span><span class="p">,</span>
+                <span class="s2">"text"</span><span class="p">:</span> <span class="n">task_instruction</span>
             <span class="p">}]</span>
         <span class="p">},</span> <span class="p">{</span>
-            <span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="s2">"role"</span><span class="p">:</span> <span class="s2">"user"</span><span class="p">,</span>
+            <span class="s2">"content"</span><span class="p">:</span> <span class="p">[</span>
                 <span class="p">{</span>
-                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;text&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;The following is the first video.&quot;</span>
+                    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"text"</span><span class="p">,</span>
+                    <span class="s2">"text"</span><span class="p">:</span> <span class="s2">"The following is the first video."</span>
                 <span class="p">},</span>
                 <span class="p">{</span>
-                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;video&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;video&quot;</span><span class="p">:</span> <span class="n">video1</span><span class="p">,</span>
-                    <span class="s2">&quot;fps&quot;</span><span class="p">:</span> <span class="n">fps</span><span class="p">,</span>
-                    <span class="s2">&quot;max_pixels&quot;</span><span class="p">:</span> <span class="n">max_pixels</span>
+                    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"video"</span><span class="p">,</span>
+                    <span class="s2">"video"</span><span class="p">:</span> <span class="n">video1</span><span class="p">,</span>
+                    <span class="s2">"fps"</span><span class="p">:</span> <span class="n">fps</span><span class="p">,</span>
+                    <span class="s2">"max_pixels"</span><span class="p">:</span> <span class="n">max_pixels</span>
                 <span class="p">},</span>
                 <span class="p">{</span>
-                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;text&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;The following is the second video.&quot;</span>
+                    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"text"</span><span class="p">,</span>
+                    <span class="s2">"text"</span><span class="p">:</span> <span class="s2">"The following is the second video."</span>
                 <span class="p">},</span>
                 <span class="p">{</span>
-                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;video&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;video&quot;</span><span class="p">:</span> <span class="n">video2</span><span class="p">,</span>
-                    <span class="s2">&quot;fps&quot;</span><span class="p">:</span> <span class="n">fps</span><span class="p">,</span>
-                    <span class="s2">&quot;max_pixels&quot;</span><span class="p">:</span> <span class="n">max_pixels</span>
+                    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"video"</span><span class="p">,</span>
+                    <span class="s2">"video"</span><span class="p">:</span> <span class="n">video2</span><span class="p">,</span>
+                    <span class="s2">"fps"</span><span class="p">:</span> <span class="n">fps</span><span class="p">,</span>
+                    <span class="s2">"max_pixels"</span><span class="p">:</span> <span class="n">max_pixels</span>
                 <span class="p">},</span>
             <span class="p">]</span>
         <span class="p">}]</span>
 
         <span class="c1"># Get human preference labels and total scores based on weighted metrics</span>
-        <span class="n">metrics</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Preference&#39;</span><span class="p">,</span> <span class="s1">&#39;Coherence&#39;</span><span class="p">,</span> <span class="s1">&#39;Alignment&#39;</span><span class="p">]</span>
+        <span class="n">metrics</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'Preference'</span><span class="p">,</span> <span class="s1">'Coherence'</span><span class="p">,</span> <span class="s1">'Alignment'</span><span class="p">]</span>
         <span class="n">labels</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">m</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="si">}</span><span class="s2">_label&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_label</span><span class="p">(</span>
-                <span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;weighted_results1_</span><span class="si">{</span><span class="n">m</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">),</span> <span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;weighted_results2_</span><span class="si">{</span><span class="n">m</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">m</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="si">}</span><span class="s2">_label"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_label</span><span class="p">(</span>
+                <span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="sa">f</span><span class="s1">'weighted_results1_</span><span class="si">{</span><span class="n">m</span><span class="si">}</span><span class="s1">'</span><span class="p">),</span> <span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="sa">f</span><span class="s1">'weighted_results2_</span><span class="si">{</span><span class="n">m</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
             <span class="p">)</span>
             <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">metrics</span>
         <span class="p">}</span>
 
-        <span class="n">score1</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;weighted_results1_</span><span class="si">{</span><span class="n">m</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="mf">0.0</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">metrics</span><span class="p">)</span>
-        <span class="n">score2</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;weighted_results2_</span><span class="si">{</span><span class="n">m</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="mf">0.0</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">metrics</span><span class="p">)</span>
+        <span class="n">score1</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="sa">f</span><span class="s1">'weighted_results1_</span><span class="si">{</span><span class="n">m</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span> <span class="ow">or</span> <span class="mf">0.0</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">metrics</span><span class="p">)</span>
+        <span class="n">score2</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="sa">f</span><span class="s1">'weighted_results2_</span><span class="si">{</span><span class="n">m</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span> <span class="ow">or</span> <span class="mf">0.0</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">metrics</span><span class="p">)</span>
 
         <span class="n">other</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">&quot;preference&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_label</span><span class="p">(</span><span class="n">score1</span><span class="p">,</span> <span class="n">score2</span><span class="p">),</span>
+            <span class="s2">"preference"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_label</span><span class="p">(</span><span class="n">score1</span><span class="p">,</span> <span class="n">score2</span><span class="p">),</span>
             <span class="o">**</span><span class="n">labels</span><span class="p">,</span>
-            <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">],</span>
-            <span class="s2">&quot;task_type&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_type</span><span class="p">,</span>
-            <span class="s2">&quot;reward_rule_label&quot;</span><span class="p">:</span> <span class="s2">&quot;general&quot;</span><span class="p">,</span>
+            <span class="s2">"source"</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s1">'source'</span><span class="p">],</span>
+            <span class="s2">"task_type"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_type</span><span class="p">,</span>
+            <span class="s2">"reward_rule_label"</span><span class="p">:</span> <span class="s2">"general"</span><span class="p">,</span>
         <span class="p">}</span>
         <span class="k">return</span> <span class="n">messages</span><span class="p">,</span> <span class="n">other</span></div></div>
 
 
 <div class="viewcode-block" id="RapidataI2VPairHandler"><a class="viewcode-back" href="../../../api_doc/datasets/rapidata.html#lightrft.datasets.rapidata.RapidataI2VPairHandler">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">RapidataI2VPairHandler</span><span class="p">(</span><span class="n">RapidataI2VHandler</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Data Handler for Rapidata image-to-video human preferences dataset in pairwise format.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">task_type</span> <span class="o">=</span> <span class="s2">&quot;image-to-video&quot;</span>
+<span class="sd">    """</span>
+    <span class="n">task_type</span> <span class="o">=</span> <span class="s2">"image-to-video"</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
 
 <div class="viewcode-block" id="RapidataI2VPairHandler.parse_item"><a class="viewcode-back" href="../../../api_doc/datasets/rapidata.html#lightrft.datasets.rapidata.RapidataI2VPairHandler.parse_item">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">parse_item</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">media_content</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
                    <span class="n">config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Dict</span><span class="p">],</span> <span class="n">Dict</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Parse an image-to-video data item into pairwise messages and metadata.</span>
 
 <span class="sd">        :param item: The raw data item</span>
@@ -792,85 +797,85 @@
 <span class="sd">        .. code-block:: python</span>
 
 <span class="sd">            messages, other = handler.parse_item(item, media_content, config)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">video1</span> <span class="o">=</span> <span class="n">media_content</span><span class="p">[</span><span class="s1">&#39;video1&#39;</span><span class="p">]</span>
-        <span class="n">video2</span> <span class="o">=</span> <span class="n">media_content</span><span class="p">[</span><span class="s1">&#39;video2&#39;</span><span class="p">]</span>
-        <span class="n">init_image</span> <span class="o">=</span> <span class="n">media_content</span><span class="p">[</span><span class="s1">&#39;init_image&#39;</span><span class="p">]</span>
+<span class="sd">        """</span>
+        <span class="n">video1</span> <span class="o">=</span> <span class="n">media_content</span><span class="p">[</span><span class="s1">'video1'</span><span class="p">]</span>
+        <span class="n">video2</span> <span class="o">=</span> <span class="n">media_content</span><span class="p">[</span><span class="s1">'video2'</span><span class="p">]</span>
+        <span class="n">init_image</span> <span class="o">=</span> <span class="n">media_content</span><span class="p">[</span><span class="s1">'init_image'</span><span class="p">]</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">([</span><span class="n">video1</span><span class="p">,</span> <span class="n">video2</span><span class="p">,</span> <span class="n">init_image</span><span class="p">]):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Missing visual content for &#39;video1&#39; or &#39;video2&#39; or &#39;init_image&#39;.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Missing visual content for 'video1' or 'video2' or 'init_image'."</span><span class="p">)</span>
 
         <span class="c1"># Get generation prompt from data item</span>
-        <span class="n">prompt_text</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s2">&quot;prompt&quot;</span><span class="p">]</span>
+        <span class="n">prompt_text</span> <span class="o">=</span> <span class="n">item</span><span class="p">[</span><span class="s2">"prompt"</span><span class="p">]</span>
 
         <span class="c1"># Get system prompts from config</span>
         <span class="n">task_instruction_template</span> <span class="o">=</span> <span class="n">get_task_instructions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config</span><span class="p">)</span>
         <span class="n">task_instruction</span> <span class="o">=</span> <span class="n">task_instruction_template</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">prompt</span><span class="o">=</span><span class="n">prompt_text</span><span class="p">)</span>
 
         <span class="c1"># Get FPS from config</span>
-        <span class="n">fps</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;video_fps&quot;</span><span class="p">]</span>
-        <span class="n">max_pixels</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;max_pixels&quot;</span><span class="p">]</span>
+        <span class="n">fps</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">"video_fps"</span><span class="p">]</span>
+        <span class="n">max_pixels</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">"max_pixels"</span><span class="p">]</span>
 
         <span class="c1"># Build messages</span>
         <span class="n">messages</span> <span class="o">=</span> <span class="p">[{</span>
-            <span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;system&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="p">[{</span>
-                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;text&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="n">task_instruction</span>
+            <span class="s2">"role"</span><span class="p">:</span> <span class="s2">"system"</span><span class="p">,</span>
+            <span class="s2">"content"</span><span class="p">:</span> <span class="p">[{</span>
+                <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"text"</span><span class="p">,</span>
+                <span class="s2">"text"</span><span class="p">:</span> <span class="n">task_instruction</span>
             <span class="p">}]</span>
         <span class="p">},</span> <span class="p">{</span>
-            <span class="s2">&quot;role&quot;</span><span class="p">:</span> <span class="s2">&quot;user&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;content&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="s2">"role"</span><span class="p">:</span> <span class="s2">"user"</span><span class="p">,</span>
+            <span class="s2">"content"</span><span class="p">:</span> <span class="p">[</span>
                 <span class="p">{</span>
-                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;text&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Reference Image:&quot;</span>
+                    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"text"</span><span class="p">,</span>
+                    <span class="s2">"text"</span><span class="p">:</span> <span class="s2">"Reference Image:"</span>
                 <span class="p">},</span>
                 <span class="p">{</span>
-                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;image&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;image&quot;</span><span class="p">:</span> <span class="n">init_image</span><span class="p">,</span>
-                    <span class="s2">&quot;max_pixels&quot;</span><span class="p">:</span> <span class="n">max_pixels</span>
+                    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"image"</span><span class="p">,</span>
+                    <span class="s2">"image"</span><span class="p">:</span> <span class="n">init_image</span><span class="p">,</span>
+                    <span class="s2">"max_pixels"</span><span class="p">:</span> <span class="n">max_pixels</span>
                 <span class="p">},</span>
                 <span class="p">{</span>
-                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;text&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;The following is the first video.&quot;</span>
+                    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"text"</span><span class="p">,</span>
+                    <span class="s2">"text"</span><span class="p">:</span> <span class="s2">"The following is the first video."</span>
                 <span class="p">},</span>
                 <span class="p">{</span>
-                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;video&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;video&quot;</span><span class="p">:</span> <span class="n">video1</span><span class="p">,</span>
-                    <span class="s2">&quot;fps&quot;</span><span class="p">:</span> <span class="n">fps</span><span class="p">,</span>
-                    <span class="s2">&quot;max_pixels&quot;</span><span class="p">:</span> <span class="n">max_pixels</span>
+                    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"video"</span><span class="p">,</span>
+                    <span class="s2">"video"</span><span class="p">:</span> <span class="n">video1</span><span class="p">,</span>
+                    <span class="s2">"fps"</span><span class="p">:</span> <span class="n">fps</span><span class="p">,</span>
+                    <span class="s2">"max_pixels"</span><span class="p">:</span> <span class="n">max_pixels</span>
                 <span class="p">},</span>
                 <span class="p">{</span>
-                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;text&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;The following is the second video.&quot;</span>
+                    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"text"</span><span class="p">,</span>
+                    <span class="s2">"text"</span><span class="p">:</span> <span class="s2">"The following is the second video."</span>
                 <span class="p">},</span>
                 <span class="p">{</span>
-                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;video&quot;</span><span class="p">,</span>
-                    <span class="s2">&quot;video&quot;</span><span class="p">:</span> <span class="n">video2</span><span class="p">,</span>
-                    <span class="s2">&quot;fps&quot;</span><span class="p">:</span> <span class="n">fps</span><span class="p">,</span>
-                    <span class="s2">&quot;max_pixels&quot;</span><span class="p">:</span> <span class="n">max_pixels</span>
+                    <span class="s2">"type"</span><span class="p">:</span> <span class="s2">"video"</span><span class="p">,</span>
+                    <span class="s2">"video"</span><span class="p">:</span> <span class="n">video2</span><span class="p">,</span>
+                    <span class="s2">"fps"</span><span class="p">:</span> <span class="n">fps</span><span class="p">,</span>
+                    <span class="s2">"max_pixels"</span><span class="p">:</span> <span class="n">max_pixels</span>
                 <span class="p">},</span>
             <span class="p">]</span>
         <span class="p">}]</span>
 
         <span class="c1"># Get human preference labels and total scores based on weighted metrics</span>
-        <span class="n">metrics</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Preference&#39;</span><span class="p">,</span> <span class="s1">&#39;Coherence&#39;</span><span class="p">,</span> <span class="s1">&#39;Alignment&#39;</span><span class="p">]</span>
+        <span class="n">metrics</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'Preference'</span><span class="p">,</span> <span class="s1">'Coherence'</span><span class="p">,</span> <span class="s1">'Alignment'</span><span class="p">]</span>
         <span class="n">labels</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">m</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="si">}</span><span class="s2">_label&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_label</span><span class="p">(</span>
-                <span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;weighted_results1_</span><span class="si">{</span><span class="n">m</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">),</span> <span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;weighted_results2_</span><span class="si">{</span><span class="n">m</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">m</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="si">}</span><span class="s2">_label"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_label</span><span class="p">(</span>
+                <span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="sa">f</span><span class="s1">'weighted_results1_</span><span class="si">{</span><span class="n">m</span><span class="si">}</span><span class="s1">'</span><span class="p">),</span> <span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="sa">f</span><span class="s1">'weighted_results2_</span><span class="si">{</span><span class="n">m</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
             <span class="p">)</span>
             <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">metrics</span>
         <span class="p">}</span>
 
-        <span class="n">score1</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;weighted_results1_</span><span class="si">{</span><span class="n">m</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="mf">0.0</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">metrics</span><span class="p">)</span>
-        <span class="n">score2</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;weighted_results2_</span><span class="si">{</span><span class="n">m</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="mf">0.0</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">metrics</span><span class="p">)</span>
+        <span class="n">score1</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="sa">f</span><span class="s1">'weighted_results1_</span><span class="si">{</span><span class="n">m</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span> <span class="ow">or</span> <span class="mf">0.0</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">metrics</span><span class="p">)</span>
+        <span class="n">score2</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="sa">f</span><span class="s1">'weighted_results2_</span><span class="si">{</span><span class="n">m</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span> <span class="ow">or</span> <span class="mf">0.0</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">metrics</span><span class="p">)</span>
 
         <span class="n">other</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">&quot;preference&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_label</span><span class="p">(</span><span class="n">score1</span><span class="p">,</span> <span class="n">score2</span><span class="p">),</span>
+            <span class="s2">"preference"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_label</span><span class="p">(</span><span class="n">score1</span><span class="p">,</span> <span class="n">score2</span><span class="p">),</span>
             <span class="o">**</span><span class="n">labels</span><span class="p">,</span>
-            <span class="s2">&quot;source&quot;</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;source&#39;</span><span class="p">],</span>
-            <span class="s2">&quot;task_type&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_type</span><span class="p">,</span>
-            <span class="s2">&quot;reward_rule_label&quot;</span><span class="p">:</span> <span class="s2">&quot;general&quot;</span><span class="p">,</span>
+            <span class="s2">"source"</span><span class="p">:</span> <span class="n">item</span><span class="p">[</span><span class="s1">'source'</span><span class="p">],</span>
+            <span class="s2">"task_type"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">task_type</span><span class="p">,</span>
+            <span class="s2">"reward_rule_label"</span><span class="p">:</span> <span class="s2">"general"</span><span class="p">,</span>
         <span class="p">}</span>
         <span class="k">return</span> <span class="n">messages</span><span class="p">,</span> <span class="n">other</span></div></div>
 </pre></div>
@@ -885,7 +890,7 @@
 
   <div role="contentinfo">
     <p>
-      &copy; Copyright 2025, OpenDILab.
+      &copy; Copyright 2025-2026, OpenDILab.
 
     </p>
   </div>
@@ -922,8 +927,8 @@
   <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
   <script src="../../../_static/doctools.js"></script>
   <script src="../../../_static/sphinx_highlight.js"></script>
-  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-  <script src="../../../_static/js/language_switch.js"></script>
+  <script src="../../../_static/clipboard.min.js"></script>
+  <script src="../../../_static/copybutton.js"></script>
   
 
   
@@ -952,7 +957,7 @@
     <div class="container-fluid">
       <div class="container">
         <div class="mobile-main-menu-header-container">
-          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="header-logo" href="https://github.com/opendilab/LightRFT" aria-label="OpenMMLab"></a>
           <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
         </div>
       </div>

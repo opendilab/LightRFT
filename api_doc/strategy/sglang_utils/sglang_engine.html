@@ -33,6 +33,7 @@
   <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/css/readthedocs.css" type="text/css" />
   <link rel="index" title="Index" href="../../../genindex.html" />
   <link rel="search" title="Search" href="../../../search.html" />
@@ -87,7 +88,7 @@
 <div class="container-fluid header-holder tutorials-header" id="header-holder">
   <div class="container">
     <div class="header-container">
-      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+      <a class="header-logo" href="https://github.com/opendilab/LightRFT"
         aria-label="OpenMMLab"></a>
 
       <div class="main-menu">
@@ -237,6 +238,10 @@
 <li class="toctree-l1 current"><a class="reference internal" href="../index.html">lightrft.strategy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../trainer/index.html">lightrft.trainer</a></li>
 </ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../../../index_zh.html">欢迎来到 LightRFT 文档!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../index_zh.html#id4">索引与表格</a></li>
+</ul>
 
         
         
@@ -344,12 +349,12 @@ various input formats including text prompts, token IDs, and image data.</p>
 <p>Example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">torch.distributed</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">dist</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Initialize distributed environment</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">dist</span><span class="o">.</span><span class="n">init_process_group</span><span class="p">(</span><span class="s2">&quot;nccl&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dist</span><span class="o">.</span><span class="n">init_process_group</span><span class="p">(</span><span class="s2">"nccl"</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">tp_group</span> <span class="o">=</span> <span class="n">dist</span><span class="o">.</span><span class="n">new_group</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">engine</span> <span class="o">=</span> <span class="n">RLGenerationEngine</span><span class="p">(</span>
 <span class="gp">... </span>    <span class="n">tp_group_cpu</span><span class="o">=</span><span class="n">tp_group</span><span class="p">,</span>
 <span class="gp">... </span>    <span class="n">num_gpu_per_node</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
-<span class="gp">... </span>    <span class="n">model</span><span class="o">=</span><span class="s2">&quot;llama2-7b&quot;</span>
+<span class="gp">... </span>    <span class="n">model</span><span class="o">=</span><span class="s2">"llama2-7b"</span>
 <span class="gp">... </span><span class="p">)</span>
 </pre></div>
 </div>
@@ -386,15 +391,15 @@ Please refer to <cite>GenerateReqInput</cite> for detailed documentation of each
 </dl>
 <p>Example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">engine</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">prompt</span><span class="o">=</span><span class="s2">&quot;Translate this to French: Hello, world!&quot;</span><span class="p">,</span>
-<span class="gp">... </span>    <span class="n">sampling_params</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;temperature&quot;</span><span class="p">:</span> <span class="mf">0.7</span><span class="p">,</span> <span class="s2">&quot;max_tokens&quot;</span><span class="p">:</span> <span class="mi">50</span><span class="p">}</span>
+<span class="gp">... </span>    <span class="n">prompt</span><span class="o">=</span><span class="s2">"Translate this to French: Hello, world!"</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">sampling_params</span><span class="o">=</span><span class="p">{</span><span class="s2">"temperature"</span><span class="p">:</span> <span class="mf">0.7</span><span class="p">,</span> <span class="s2">"max_tokens"</span><span class="p">:</span> <span class="mi">50</span><span class="p">}</span>
 <span class="gp">... </span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s2">&quot;text&quot;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s2">"text"</span><span class="p">])</span>
 <span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># Batch generation with different parameters</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">results</span> <span class="o">=</span> <span class="n">engine</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">prompt</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;Hello&quot;</span><span class="p">,</span> <span class="s2">&quot;Goodbye&quot;</span><span class="p">],</span>
-<span class="gp">... </span>    <span class="n">sampling_params</span><span class="o">=</span><span class="p">[{</span><span class="s2">&quot;temperature&quot;</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">},</span> <span class="p">{</span><span class="s2">&quot;temperature&quot;</span><span class="p">:</span> <span class="mf">0.9</span><span class="p">}],</span>
+<span class="gp">... </span>    <span class="n">prompt</span><span class="o">=</span><span class="p">[</span><span class="s2">"Hello"</span><span class="p">,</span> <span class="s2">"Goodbye"</span><span class="p">],</span>
+<span class="gp">... </span>    <span class="n">sampling_params</span><span class="o">=</span><span class="p">[{</span><span class="s2">"temperature"</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">},</span> <span class="p">{</span><span class="s2">"temperature"</span><span class="p">:</span> <span class="mf">0.9</span><span class="p">}],</span>
 <span class="gp">... </span>    <span class="n">return_logprob</span><span class="o">=</span><span class="kc">True</span>
 <span class="gp">... </span><span class="p">)</span>
 </pre></div>
@@ -411,7 +416,7 @@ any background threads. It ensures a clean termination of the engine.</p>
 <p>Example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">try</span><span class="p">:</span>
 <span class="gp">... </span>    <span class="c1"># Use engine for generation</span>
-<span class="gp">... </span>    <span class="n">results</span> <span class="o">=</span> <span class="n">engine</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="s2">&quot;Hello&quot;</span><span class="p">)</span>
+<span class="gp">... </span>    <span class="n">results</span> <span class="o">=</span> <span class="n">engine</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="s2">"Hello"</span><span class="p">)</span>
 <span class="gp">... </span><span class="k">finally</span><span class="p">:</span>
 <span class="gp">... </span>    <span class="n">engine</span><span class="o">.</span><span class="n">shutdown</span><span class="p">()</span>  <span class="c1"># Always clean up resources</span>
 </pre></div>
@@ -473,10 +478,10 @@ to ensure all ranks participate in the weight update process.</p>
 </dd>
 </dl>
 <p>Example:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Update a specific layer&#39;s weights</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Update a specific layer's weights</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">new_weights</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">768</span><span class="p">,</span> <span class="mi">768</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">engine</span><span class="o">.</span><span class="n">update_weights_from_tensor</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="s2">&quot;model.layers.0.self_attn.q_proj.weight&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="s2">"model.layers.0.self_attn.q_proj.weight"</span><span class="p">,</span>
 <span class="gp">... </span>    <span class="n">new_weights</span><span class="p">,</span>
 <span class="gp">... </span>    <span class="n">flush_cache</span><span class="o">=</span><span class="kc">True</span>
 <span class="gp">... </span><span class="p">)</span>
@@ -509,7 +514,7 @@ operational state with all necessary memory allocations.</p>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">engine</span><span class="o">.</span><span class="n">sleep</span><span class="p">()</span>              <span class="c1"># Only KV cache &amp; CUDA graph released</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># ... do other work ...</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">engine</span><span class="o">.</span><span class="n">wake_up</span><span class="p">()</span>            <span class="c1"># Only KV cache &amp; CUDA graph restored</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">engine</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="s2">&quot;Hello world&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">result</span> <span class="o">=</span> <span class="n">engine</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="s2">"Hello world"</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt;</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="c1"># If weights were released (use with caution)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">engine</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">release_weights</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -546,7 +551,7 @@ operational state with all necessary memory allocations.</p>
 
   <div role="contentinfo">
     <p>
-      &copy; Copyright 2025, OpenDILab.
+      &copy; Copyright 2025-2026, OpenDILab.
 
     </p>
   </div>
@@ -599,8 +604,8 @@ operational state with all necessary memory allocations.</p>
   <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
   <script src="../../../_static/doctools.js"></script>
   <script src="../../../_static/sphinx_highlight.js"></script>
-  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-  <script src="../../../_static/js/language_switch.js"></script>
+  <script src="../../../_static/clipboard.min.js"></script>
+  <script src="../../../_static/copybutton.js"></script>
   
 
   
@@ -629,7 +634,7 @@ operational state with all necessary memory allocations.</p>
     <div class="container-fluid">
       <div class="container">
         <div class="mobile-main-menu-header-container">
-          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="header-logo" href="https://github.com/opendilab/LightRFT" aria-label="OpenMMLab"></a>
           <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
         </div>
       </div>

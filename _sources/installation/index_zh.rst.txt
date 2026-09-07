@@ -300,7 +300,7 @@ LightRFT 组织成几个关键模块：
 
 安装成功后：
 
-1. 查阅 :doc:`../quick_start` 指南了解基本使用方法
+1. 查阅 :doc:`../quick_start/index_zh` 指南了解基本使用方法
 2. 探索 :doc:`../best_practice/strategy_zh` 了解分布式训练策略
 3. 查看 ``examples/`` 目录中的完整训练示例
 4. 阅读算法文档了解具体实现细节
@@ -308,6 +308,6 @@ LightRFT 组织成几个关键模块：
 相关文档
 ========
 
-* :doc:`../quick_start` - 快速开始指南
-* :doc:`../best_practice/strategy_usage` - Strategy 使用指南
-* :doc:`../api/index` - API 参考
+* :doc:`../quick_start/index_zh` - 快速开始指南
+* :doc:`../best_practice/strategy_zh` - Strategy 使用指南
+* :doc:`../api_doc/models/index` - API 参考

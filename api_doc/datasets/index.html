@@ -33,6 +33,7 @@
   <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
   <link rel="stylesheet" href="../../_static/css/readthedocs.css" type="text/css" />
   <link rel="index" title="Index" href="../../genindex.html" />
   <link rel="search" title="Search" href="../../search.html" />
@@ -87,7 +88,7 @@
 <div class="container-fluid header-holder tutorials-header" id="header-holder">
   <div class="container">
     <div class="header-container">
-      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+      <a class="header-logo" href="https://github.com/opendilab/LightRFT"
         aria-label="OpenMMLab"></a>
 
       <div class="main-menu">
@@ -237,6 +238,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../strategy/index.html">lightrft.strategy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../trainer/index.html">lightrft.trainer</a></li>
 </ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../../index_zh.html">欢迎来到 LightRFT 文档!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../index_zh.html#id4">索引与表格</a></li>
+</ul>
 
         
         
@@ -304,11 +309,19 @@
             <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
               <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
                 
-  <section id="lightrft-datasets">
-<h1>lightrft.datasets<a class="headerlink" href="#lightrft-datasets" title="Permalink to this heading">¶</a></h1>
+  <section id="module-lightrft.datasets">
+<span id="lightrft-datasets"></span><h1>lightrft.datasets<a class="headerlink" href="#module-lightrft.datasets" title="Permalink to this heading">¶</a></h1>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="audio_alpaca.html">lightrft.datasets.audio_alpaca</a></li>
+<li class="toctree-l1"><a class="reference internal" href="audio_alpaca.html">lightrft.datasets.audio_alpaca</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="audio_alpaca.html#lightrft.datasets.audio_alpaca.AudioAlpacaHandler"><code class="docutils literal notranslate"><span class="pre">AudioAlpacaHandler</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="audio_alpaca.html#lightrft.datasets.audio_alpaca.AudioAlpacaHandler.get_media_info"><code class="docutils literal notranslate"><span class="pre">AudioAlpacaHandler.get_media_info()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="audio_alpaca.html#lightrft.datasets.audio_alpaca.AudioAlpacaHandler.load_data"><code class="docutils literal notranslate"><span class="pre">AudioAlpacaHandler.load_data()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="audio_alpaca.html#lightrft.datasets.audio_alpaca.AudioAlpacaHandler.parse_item"><code class="docutils literal notranslate"><span class="pre">AudioAlpacaHandler.parse_item()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="grm_dataset.html">lightrft.datasets.grm_dataset</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="grm_dataset.html#lightrft.datasets.grm_dataset.GRMDataset"><code class="docutils literal notranslate"><span class="pre">GRMDataset</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="grm_dataset.html#lightrft.datasets.grm_dataset.GRMDataset.collate_fn"><code class="docutils literal notranslate"><span class="pre">GRMDataset.collate_fn()</span></code></a></li>
@@ -388,9 +401,30 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="process_reward_dataset.html">lightrft.datasets.process_reward_dataset</a></li>
-<li class="toctree-l1"><a class="reference internal" href="prompts_dataset.html">lightrft.datasets.prompts_dataset</a></li>
-<li class="toctree-l1"><a class="reference internal" href="prompts_dataset_vl.html">lightrft.datasets.prompts_dataset_vl</a></li>
+<li class="toctree-l1"><a class="reference internal" href="process_reward_dataset.html">lightrft.datasets.process_reward_dataset</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="process_reward_dataset.html#lightrft.datasets.process_reward_dataset.ProcessRewardDataset"><code class="docutils literal notranslate"><span class="pre">ProcessRewardDataset</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="process_reward_dataset.html#lightrft.datasets.process_reward_dataset.ProcessRewardDataset.collate_fn"><code class="docutils literal notranslate"><span class="pre">ProcessRewardDataset.collate_fn()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="process_reward_dataset.html#lightrft.datasets.process_reward_dataset.ProcessRewardDataset.packing_collate_fn"><code class="docutils literal notranslate"><span class="pre">ProcessRewardDataset.packing_collate_fn()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="prompts_dataset.html">lightrft.datasets.prompts_dataset</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="prompts_dataset.html#lightrft.datasets.prompts_dataset.PromptDataset"><code class="docutils literal notranslate"><span class="pre">PromptDataset</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="prompts_dataset.html#lightrft.datasets.prompts_dataset.PromptDataset.collate_fn"><code class="docutils literal notranslate"><span class="pre">PromptDataset.collate_fn()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="prompts_dataset.html#lightrft.datasets.prompts_dataset.preprocess_data"><code class="docutils literal notranslate"><span class="pre">preprocess_data()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="prompts_dataset_vl.html">lightrft.datasets.prompts_dataset_vl</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="prompts_dataset_vl.html#lightrft.datasets.prompts_dataset_vl.PromptDatasetVL"><code class="docutils literal notranslate"><span class="pre">PromptDatasetVL</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="prompts_dataset_vl.html#lightrft.datasets.prompts_dataset_vl.PromptDatasetVL.collate_fn"><code class="docutils literal notranslate"><span class="pre">PromptDatasetVL.collate_fn()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="prompts_dataset_vl.html#lightrft.datasets.prompts_dataset_vl.preprocess_data"><code class="docutils literal notranslate"><span class="pre">preprocess_data()</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="rapidata.html">lightrft.datasets.rapidata</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="rapidata.html#lightrft.datasets.rapidata.RapidataI2VHandler"><code class="docutils literal notranslate"><span class="pre">RapidataI2VHandler</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="rapidata.html#lightrft.datasets.rapidata.RapidataI2VHandler.get_media_info"><code class="docutils literal notranslate"><span class="pre">RapidataI2VHandler.get_media_info()</span></code></a></li>
@@ -416,9 +450,37 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="sft_dataset.html">lightrft.datasets.sft_dataset</a></li>
-<li class="toctree-l1"><a class="reference internal" href="sft_dataset_vl.html">lightrft.datasets.sft_dataset_vl</a></li>
-<li class="toctree-l1"><a class="reference internal" href="srm_dataset.html">lightrft.datasets.srm_dataset</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sft_dataset.html">lightrft.datasets.sft_dataset</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="sft_dataset.html#lightrft.datasets.sft_dataset.SFTDataset"><code class="docutils literal notranslate"><span class="pre">SFTDataset</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="sft_dataset.html#lightrft.datasets.sft_dataset.SFTDataset.collate_fn"><code class="docutils literal notranslate"><span class="pre">SFTDataset.collate_fn()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sft_dataset.html#lightrft.datasets.sft_dataset.SFTDataset.packing_collate_fn"><code class="docutils literal notranslate"><span class="pre">SFTDataset.packing_collate_fn()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sft_dataset.html#lightrft.datasets.sft_dataset.SFTDataset.process_data"><code class="docutils literal notranslate"><span class="pre">SFTDataset.process_data()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="sft_dataset.html#lightrft.datasets.sft_dataset.preprocess_data"><code class="docutils literal notranslate"><span class="pre">preprocess_data()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="sft_dataset_vl.html">lightrft.datasets.sft_dataset_vl</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="sft_dataset_vl.html#lightrft.datasets.sft_dataset_vl.SFTDatasetVL"><code class="docutils literal notranslate"><span class="pre">SFTDatasetVL</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="sft_dataset_vl.html#lightrft.datasets.sft_dataset_vl.SFTDatasetVL.collate_fn"><code class="docutils literal notranslate"><span class="pre">SFTDatasetVL.collate_fn()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sft_dataset_vl.html#lightrft.datasets.sft_dataset_vl.SFTDatasetVL.packing_collate_fn"><code class="docutils literal notranslate"><span class="pre">SFTDatasetVL.packing_collate_fn()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sft_dataset_vl.html#lightrft.datasets.sft_dataset_vl.SFTDatasetVL.process_data"><code class="docutils literal notranslate"><span class="pre">SFTDatasetVL.process_data()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="sft_dataset_vl.html#lightrft.datasets.sft_dataset_vl.preprocess_data"><code class="docutils literal notranslate"><span class="pre">preprocess_data()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="srm_dataset.html">lightrft.datasets.srm_dataset</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="srm_dataset.html#lightrft.datasets.srm_dataset.RankDatasetAL"><code class="docutils literal notranslate"><span class="pre">RankDatasetAL</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="srm_dataset.html#lightrft.datasets.srm_dataset.RankDatasetAL.collate_fn"><code class="docutils literal notranslate"><span class="pre">RankDatasetAL.collate_fn()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="srm_dataset.html#lightrft.datasets.srm_dataset.RankDatasetVL"><code class="docutils literal notranslate"><span class="pre">RankDatasetVL</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="srm_dataset.html#lightrft.datasets.srm_dataset.RankDatasetVL.collate_fn"><code class="docutils literal notranslate"><span class="pre">RankDatasetVL.collate_fn()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="utils.html">lightrft.datasets.utils</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="utils.html#lightrft.datasets.utils.BaseDataHandler"><code class="docutils literal notranslate"><span class="pre">BaseDataHandler</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="utils.html#lightrft.datasets.utils.BaseDataHandler.get_media_info"><code class="docutils literal notranslate"><span class="pre">BaseDataHandler.get_media_info()</span></code></a></li>
@@ -461,7 +523,7 @@
 
   <div role="contentinfo">
     <p>
-      &copy; Copyright 2025, OpenDILab.
+      &copy; Copyright 2025-2026, OpenDILab.
 
     </p>
   </div>
@@ -501,8 +563,8 @@
   <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
   <script src="../../_static/doctools.js"></script>
   <script src="../../_static/sphinx_highlight.js"></script>
-  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-  <script src="../../_static/js/language_switch.js"></script>
+  <script src="../../_static/clipboard.min.js"></script>
+  <script src="../../_static/copybutton.js"></script>
   
 
   
@@ -531,7 +593,7 @@
     <div class="container-fluid">
       <div class="container">
         <div class="mobile-main-menu-header-container">
-          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="header-logo" href="https://github.com/opendilab/LightRFT" aria-label="OpenMMLab"></a>
           <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
         </div>
       </div>

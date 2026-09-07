@@ -32,6 +32,7 @@
   <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/css/readthedocs.css" type="text/css" />
   <link rel="index" title="Index" href="../../../genindex.html" />
   <link rel="search" title="Search" href="../../../search.html" />
@@ -84,7 +85,7 @@
 <div class="container-fluid header-holder tutorials-header" id="header-holder">
   <div class="container">
     <div class="header-container">
-      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+      <a class="header-logo" href="https://github.com/opendilab/LightRFT"
         aria-label="OpenMMLab"></a>
 
       <div class="main-menu">
@@ -234,6 +235,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../api_doc/strategy/index.html">lightrft.strategy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api_doc/trainer/index.html">lightrft.trainer</a></li>
 </ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../index_zh.html">欢迎来到 LightRFT 文档!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../index_zh.html#id4">索引与表格</a></li>
+</ul>
 
         
         
@@ -312,16 +317,16 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">get_tokenizer</span><span class="p">(</span>
-    <span class="n">pretrain</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">PreTrainedModel</span><span class="p">,</span> <span class="n">padding_side</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;left&quot;</span><span class="p">,</span> <span class="n">use_fast</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">pretrain</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">model</span><span class="p">:</span> <span class="n">PreTrainedModel</span><span class="p">,</span> <span class="n">padding_side</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"left"</span><span class="p">,</span> <span class="n">use_fast</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PreTrainedTokenizer</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Load and configure a tokenizer for language models.</span>
 
 <span class="sd">    :param pretrain: Path or name of the pretrained tokenizer.</span>
 <span class="sd">    :type pretrain: str</span>
 <span class="sd">    :param model: Model instance to sync pad_token_id with.</span>
 <span class="sd">    :type model: transformers.PreTrainedModel</span>
-<span class="sd">    :param padding_side: Which side to pad on (&#39;left&#39; or &#39;right&#39;). Defaults to &#39;left&#39;</span>
+<span class="sd">    :param padding_side: Which side to pad on ('left' or 'right'). Defaults to 'left'</span>
 <span class="sd">        for causal language models to enable efficient batching during generation,</span>
 <span class="sd">        where padding tokens should be on the left to avoid affecting the generation.</span>
 <span class="sd">    :type padding_side: str</span>
@@ -329,7 +334,7 @@
 <span class="sd">    :type use_fast: bool</span>
 <span class="sd">    :return: Configured tokenizer instance.</span>
 <span class="sd">    :rtype: transformers.PreTrainedTokenizer</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">tokenizer</span> <span class="o">=</span> <span class="n">AutoTokenizer</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">pretrain</span><span class="p">,</span> <span class="n">trust_remote_code</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">use_fast</span><span class="o">=</span><span class="n">use_fast</span><span class="p">)</span>
     <span class="n">tokenizer</span><span class="o">.</span><span class="n">padding_side</span> <span class="o">=</span> <span class="n">padding_side</span>
     <span class="c1"># NOTE: When enable vLLM, do not resize_token_embeddings, or the vocab size will mismatch with vLLM.</span>
@@ -345,17 +350,17 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">get_tokenizer_processor_vl</span><span class="p">(</span>
     <span class="n">pretrain</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">model</span><span class="p">:</span> <span class="n">PreTrainedModel</span><span class="p">,</span>
-    <span class="n">padding_side</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;left&quot;</span><span class="p">,</span>
+    <span class="n">padding_side</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"left"</span><span class="p">,</span>
     <span class="n">use_fast</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">PreTrainedTokenizer</span><span class="p">,</span> <span class="n">ProcessorMixin</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Load and configure tokenizer and processor for vision-language models.</span>
 
 <span class="sd">    :param pretrain: Path or name of the pretrained model.</span>
 <span class="sd">    :type pretrain: str</span>
 <span class="sd">    :param model: Model instance to sync pad_token_id with.</span>
 <span class="sd">    :type model: transformers.PreTrainedModel</span>
-<span class="sd">    :param padding_side: Which side to pad on (&#39;left&#39; or &#39;right&#39;). Defaults to &#39;left&#39;</span>
+<span class="sd">    :param padding_side: Which side to pad on ('left' or 'right'). Defaults to 'left'</span>
 <span class="sd">        for causal language models to enable efficient batching during generation,</span>
 <span class="sd">        where padding tokens should be on the left to avoid affecting the generation.</span>
 <span class="sd">    :type padding_side: str</span>
@@ -363,7 +368,7 @@
 <span class="sd">    :type use_fast: bool</span>
 <span class="sd">    :return: Tuple of (tokenizer, processor).</span>
 <span class="sd">    :rtype: Tuple[transformers.PreTrainedTokenizer, transformers.ProcessorMixin]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">tokenizer</span> <span class="o">=</span> <span class="n">AutoTokenizer</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">pretrain</span><span class="p">,</span> <span class="n">trust_remote_code</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">use_fast</span><span class="o">=</span><span class="n">use_fast</span><span class="p">)</span>
     <span class="n">processor</span> <span class="o">=</span> <span class="n">AutoProcessor</span><span class="o">.</span><span class="n">from_pretrained</span><span class="p">(</span><span class="n">pretrain</span><span class="p">,</span> <span class="n">trust_remote_code</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">use_fast</span><span class="o">=</span><span class="n">use_fast</span><span class="p">)</span>
 
@@ -385,19 +390,19 @@
     <span class="n">seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">42</span><span class="p">,</span>
     <span class="n">max_count</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5000000</span><span class="p">,</span>
     <span class="n">return_eval</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-    <span class="n">stopping_strategy</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;first_exhausted&quot;</span><span class="p">,</span>
-    <span class="n">train_split</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;train&quot;</span><span class="p">,</span>
-    <span class="n">eval_split</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;test&quot;</span><span class="p">,</span>
+    <span class="n">stopping_strategy</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"first_exhausted"</span><span class="p">,</span>
+    <span class="n">train_split</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"train"</span><span class="p">,</span>
+    <span class="n">eval_split</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"test"</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">Dataset</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Dataset</span><span class="p">,</span> <span class="n">Dataset</span><span class="p">]]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Load and blend multiple datasets with specified sampling probabilities.</span>
 
 <span class="sd">    Supports various dataset formats including local files (.json, .jsonl, .csv),</span>
 <span class="sd">    HuggingFace datasets, and datasets saved with ``save_to_disk``.</span>
 
-<span class="sd">    :param datasets: Comma-separated dataset paths or names (e.g., &#39;path1,path2&#39;).</span>
+<span class="sd">    :param datasets: Comma-separated dataset paths or names (e.g., 'path1,path2').</span>
 <span class="sd">    :type datasets: str</span>
-<span class="sd">    :param probabilities: Comma-separated sampling probabilities (e.g., &#39;0.5,0.5&#39;).</span>
+<span class="sd">    :param probabilities: Comma-separated sampling probabilities (e.g., '0.5,0.5').</span>
 <span class="sd">    :type probabilities: str</span>
 <span class="sd">    :param strategy: Optional training strategy for distributed logging.</span>
 <span class="sd">    :type strategy: Optional[Any]</span>
@@ -408,7 +413,7 @@
 <span class="sd">    :param return_eval: Whether to return evaluation dataset.</span>
 <span class="sd">    :type return_eval: bool</span>
 <span class="sd">    :param stopping_strategy: How to handle datasets of different sizes</span>
-<span class="sd">        (&#39;first_exhausted&#39; or &#39;all_exhausted&#39;).</span>
+<span class="sd">        ('first_exhausted' or 'all_exhausted').</span>
 <span class="sd">    :type stopping_strategy: str</span>
 <span class="sd">    :param train_split: Name of the training split.</span>
 <span class="sd">    :type train_split: str</span>
@@ -416,9 +421,9 @@
 <span class="sd">    :type eval_split: str</span>
 <span class="sd">    :return: Training dataset, or tuple of (train_dataset, eval_dataset) if return_eval=True.</span>
 <span class="sd">    :rtype: Union[Dataset, Tuple[Dataset, Dataset]]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">datasets</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
-    <span class="n">probabilities</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">probabilities</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)))</span>
+<span class="sd">    """</span>
+    <span class="n">datasets</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">","</span><span class="p">)</span>
+    <span class="n">probabilities</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">probabilities</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">","</span><span class="p">)))</span>
     <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">probabilities</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">datasets</span><span class="p">)</span>
 
     <span class="n">train_data_list</span> <span class="o">=</span> <span class="p">[]</span>
@@ -426,43 +431,43 @@
     <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">dataset</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">datasets</span><span class="p">):</span>
         <span class="n">dataset</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">strategy</span><span class="p">:</span>
-            <span class="n">strategy</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;dataset: </span><span class="si">{</span><span class="n">dataset</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">strategy</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"dataset: </span><span class="si">{</span><span class="n">dataset</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
-        <span class="n">data_dir</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;@&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">if</span> <span class="s2">&quot;@&quot;</span> <span class="ow">in</span> <span class="n">dataset</span> <span class="k">else</span> <span class="kc">None</span>
-        <span class="n">dataset</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;@&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="n">data_dir</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"@"</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">if</span> <span class="s2">"@"</span> <span class="ow">in</span> <span class="n">dataset</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="n">dataset</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"@"</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
         <span class="n">dataset_basename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
 
         <span class="n">ext</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">dataset</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
         <span class="c1"># local python script</span>
-        <span class="k">if</span> <span class="n">ext</span> <span class="o">==</span> <span class="s2">&quot;.py&quot;</span> <span class="ow">or</span> <span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">dataset_basename</span><span class="si">}</span><span class="s2">.py&quot;</span><span class="p">))):</span>
+        <span class="k">if</span> <span class="n">ext</span> <span class="o">==</span> <span class="s2">".py"</span> <span class="ow">or</span> <span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">dataset_basename</span><span class="si">}</span><span class="s2">.py"</span><span class="p">))):</span>
             <span class="n">data</span> <span class="o">=</span> <span class="n">load_dataset</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">trust_remote_code</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">strategy</span><span class="p">:</span>
-                <span class="n">strategy</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;loaded </span><span class="si">{</span><span class="n">dataset</span><span class="si">}</span><span class="s2"> with python script&quot;</span><span class="p">)</span>
+                <span class="n">strategy</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"loaded </span><span class="si">{</span><span class="n">dataset</span><span class="si">}</span><span class="s2"> with python script"</span><span class="p">)</span>
         <span class="c1"># local text file</span>
-        <span class="k">elif</span> <span class="n">ext</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;.json&quot;</span><span class="p">,</span> <span class="s2">&quot;.jsonl&quot;</span><span class="p">,</span> <span class="s2">&quot;.csv&quot;</span><span class="p">]:</span>
-            <span class="n">ext</span> <span class="o">=</span> <span class="n">ext</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">ext</span> <span class="o">==</span> <span class="s2">&quot;jsonl&quot;</span><span class="p">:</span>
-                <span class="n">ext</span> <span class="o">=</span> <span class="s2">&quot;json&quot;</span>
+        <span class="k">elif</span> <span class="n">ext</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">".json"</span><span class="p">,</span> <span class="s2">".jsonl"</span><span class="p">,</span> <span class="s2">".csv"</span><span class="p">]:</span>
+            <span class="n">ext</span> <span class="o">=</span> <span class="n">ext</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">"."</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">ext</span> <span class="o">==</span> <span class="s2">"jsonl"</span><span class="p">:</span>
+                <span class="n">ext</span> <span class="o">=</span> <span class="s2">"json"</span>
             <span class="n">data</span> <span class="o">=</span> <span class="n">load_dataset</span><span class="p">(</span><span class="n">ext</span><span class="p">,</span> <span class="n">data_files</span><span class="o">=</span><span class="n">dataset</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">strategy</span><span class="p">:</span>
-                <span class="n">strategy</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;loaded </span><span class="si">{</span><span class="n">dataset</span><span class="si">}</span><span class="s2"> with data_files=</span><span class="si">{</span><span class="n">dataset</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">strategy</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"loaded </span><span class="si">{</span><span class="n">dataset</span><span class="si">}</span><span class="s2"> with data_files=</span><span class="si">{</span><span class="n">dataset</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="c1"># local dataset saved with `datasets.Dataset.save_to_disk`</span>
         <span class="k">elif</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">dataset</span><span class="p">):</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">data</span> <span class="o">=</span> <span class="n">load_from_disk</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">strategy</span><span class="p">:</span>
-                    <span class="n">strategy</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;loaded </span><span class="si">{</span><span class="n">dataset</span><span class="si">}</span><span class="s2"> from disk&quot;</span><span class="p">)</span>
+                    <span class="n">strategy</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"loaded </span><span class="si">{</span><span class="n">dataset</span><span class="si">}</span><span class="s2"> from disk"</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">strategy</span><span class="p">:</span>
-                    <span class="n">strategy</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;failed to load </span><span class="si">{</span><span class="n">dataset</span><span class="si">}</span><span class="s2"> from disk: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="n">strategy</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"failed to load </span><span class="si">{</span><span class="n">dataset</span><span class="si">}</span><span class="s2"> from disk: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
                 <span class="n">data</span> <span class="o">=</span> <span class="n">load_dataset</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">data_dir</span><span class="o">=</span><span class="n">data_dir</span><span class="p">)</span>
                 <span class="k">if</span> <span class="n">strategy</span><span class="p">:</span>
-                    <span class="n">strategy</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;loaded </span><span class="si">{</span><span class="n">dataset</span><span class="si">}</span><span class="s2"> from files&quot;</span><span class="p">)</span>
+                    <span class="n">strategy</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"loaded </span><span class="si">{</span><span class="n">dataset</span><span class="si">}</span><span class="s2"> from files"</span><span class="p">)</span>
         <span class="c1"># remote/local folder or common file</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">data</span> <span class="o">=</span> <span class="n">load_dataset</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">data_dir</span><span class="o">=</span><span class="n">data_dir</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">strategy</span><span class="p">:</span>
-                <span class="n">strategy</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;loaded </span><span class="si">{</span><span class="n">dataset</span><span class="si">}</span><span class="s2"> from files&quot;</span><span class="p">)</span>
+                <span class="n">strategy</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"loaded </span><span class="si">{</span><span class="n">dataset</span><span class="si">}</span><span class="s2"> from files"</span><span class="p">)</span>
 
         <span class="c1"># ==================== FIX AND OPTIMIZATION START ====================</span>
         <span class="c1"># This block is made robust to handle both Dataset and DatasetDict objects.</span>
@@ -474,23 +479,23 @@
             <span class="c1"># If the specified split is not found, or if data is a single Dataset</span>
             <span class="n">actual_dataset</span> <span class="o">=</span> <span class="kc">None</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">DatasetDict</span><span class="p">):</span>
-                <span class="c1"># If it&#39;s a DatasetDict, intelligently use the first available split.</span>
-                <span class="c1"># This makes the function compatible with datasets that don&#39;t have a &#39;train&#39; split.</span>
+                <span class="c1"># If it's a DatasetDict, intelligently use the first available split.</span>
+                <span class="c1"># This makes the function compatible with datasets that don't have a 'train' split.</span>
                 <span class="n">available_splits</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
                 <span class="k">if</span> <span class="ow">not</span> <span class="n">available_splits</span><span class="p">:</span>
-                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;DatasetDict loaded from </span><span class="si">{</span><span class="n">dataset</span><span class="si">}</span><span class="s2"> is empty and has no splits.&quot;</span><span class="p">)</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"DatasetDict loaded from </span><span class="si">{</span><span class="n">dataset</span><span class="si">}</span><span class="s2"> is empty and has no splits."</span><span class="p">)</span>
 
                 <span class="n">split_name</span> <span class="o">=</span> <span class="n">available_splits</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
                 <span class="n">actual_dataset</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">split_name</span><span class="p">]</span>
                 <span class="k">if</span> <span class="n">strategy</span><span class="p">:</span>
                     <span class="n">strategy</span><span class="o">.</span><span class="n">print</span><span class="p">(</span>
-                        <span class="sa">f</span><span class="s2">&quot;WARN: &#39;</span><span class="si">{</span><span class="n">train_split</span><span class="si">}</span><span class="s2">&#39; split not found or not provided. Using the first split: &#39;</span><span class="si">{</span><span class="n">split_name</span><span class="si">}</span><span class="s2">&#39;&quot;</span>
+                        <span class="sa">f</span><span class="s2">"WARN: '</span><span class="si">{</span><span class="n">train_split</span><span class="si">}</span><span class="s2">' split not found or not provided. Using the first split: '</span><span class="si">{</span><span class="n">split_name</span><span class="si">}</span><span class="s2">'"</span>
                     <span class="p">)</span>
             <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">Dataset</span><span class="p">):</span>
-                <span class="c1"># If it&#39;s already a single Dataset, use it directly.</span>
+                <span class="c1"># If it's already a single Dataset, use it directly.</span>
                 <span class="n">actual_dataset</span> <span class="o">=</span> <span class="n">data</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Loaded data from </span><span class="si">{</span><span class="n">dataset</span><span class="si">}</span><span class="s2"> is of an unexpected type: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Loaded data from </span><span class="si">{</span><span class="n">dataset</span><span class="si">}</span><span class="s2"> is of an unexpected type: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
             <span class="n">train_data</span> <span class="o">=</span> <span class="n">actual_dataset</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">max_count</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">actual_dataset</span><span class="p">))))</span>
 
@@ -507,13 +512,13 @@
                 <span class="n">eval_data</span> <span class="o">=</span> <span class="n">train_data</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">max_count</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">train_data</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.03</span><span class="p">))))</span>
                 <span class="k">if</span> <span class="n">strategy</span><span class="p">:</span>
                     <span class="n">strategy</span><span class="o">.</span><span class="n">print</span><span class="p">(</span>
-                        <span class="sa">f</span><span class="s2">&quot;WARN: &#39;</span><span class="si">{</span><span class="n">eval_split</span><span class="si">}</span><span class="s2">&#39; split not found. Using 3% of the training data for evaluation.&quot;</span>
+                        <span class="sa">f</span><span class="s2">"WARN: '</span><span class="si">{</span><span class="n">eval_split</span><span class="si">}</span><span class="s2">' split not found. Using 3% of the training data for evaluation."</span>
                     <span class="p">)</span>
             <span class="n">eval_data_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">eval_data</span><span class="p">)</span>
 
     <span class="c1"># merge datasets</span>
     <span class="k">if</span> <span class="n">strategy</span> <span class="ow">and</span> <span class="n">strategy</span><span class="o">.</span><span class="n">is_rank_0</span><span class="p">():</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Blending </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">train_data_list</span><span class="p">)</span><span class="si">}</span><span class="s2"> training datasets...&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Blending </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">train_data_list</span><span class="p">)</span><span class="si">}</span><span class="s2"> training datasets..."</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="n">train_data_list</span><span class="p">)</span>
 
     <span class="n">train_dataset</span> <span class="o">=</span> <span class="n">interleave_datasets</span><span class="p">(</span>
@@ -524,7 +529,7 @@
     <span class="p">)</span>
     <span class="k">if</span> <span class="n">return_eval</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">strategy</span> <span class="ow">and</span> <span class="n">strategy</span><span class="o">.</span><span class="n">is_rank_0</span><span class="p">():</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Blending </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">eval_data_list</span><span class="p">)</span><span class="si">}</span><span class="s2"> evaluation datasets...&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Blending </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">eval_data_list</span><span class="p">)</span><span class="si">}</span><span class="s2"> evaluation datasets..."</span><span class="p">)</span>
             <span class="nb">print</span><span class="p">(</span><span class="n">eval_data_list</span><span class="p">)</span>
         <span class="n">eval_dataset</span> <span class="o">=</span> <span class="n">interleave_datasets</span><span class="p">(</span>
             <span class="n">eval_data_list</span><span class="p">,</span>
@@ -538,7 +543,7 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">convert_token_to_id</span><span class="p">(</span><span class="n">token</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">tokenizer</span><span class="p">:</span> <span class="n">PreTrainedTokenizer</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Convert a string token to its corresponding token ID.</span>
 
 <span class="sd">    :param token: Token string to convert.</span>
@@ -548,17 +553,17 @@
 <span class="sd">    :return: Token ID.</span>
 <span class="sd">    :rtype: int</span>
 <span class="sd">    :raises ValueError: If token is not a string or encodes to multiple IDs.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">token</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
         <span class="n">token_ids</span> <span class="o">=</span> <span class="n">tokenizer</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="n">token</span><span class="p">,</span> <span class="n">add_special_tokens</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">token_ids</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Token &#39;</span><span class="si">{</span><span class="n">token</span><span class="si">}</span><span class="s2">&#39; encodes to </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">token_ids</span><span class="p">)</span><span class="si">}</span><span class="s2"> IDs, expected 1&quot;</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">token_ids</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"Token '</span><span class="si">{</span><span class="n">token</span><span class="si">}</span><span class="s2">' encodes to </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">token_ids</span><span class="p">)</span><span class="si">}</span><span class="s2"> IDs, expected 1"</span>
         <span class="k">return</span> <span class="n">token_ids</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;token should be a string, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">token</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"token should be a string, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">token</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="print_rank_0"><a class="viewcode-back" href="../../../api_doc/utils/utils.html#lightrft.utils.utils.print_rank_0">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">print_rank_0</span><span class="p">(</span><span class="n">msg</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Prints message only from rank 0 process in distributed training.</span>
 
 <span class="sd">    This function helps avoid duplicate prints in multi-GPU training by</span>
@@ -571,14 +576,14 @@
 
 <span class="sd">    Example::</span>
 
-<span class="sd">        &gt;&gt;&gt; print_rank_0(&quot;Training started&quot;, epoch=1)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">        &gt;&gt;&gt; print_rank_0("Training started", epoch=1)</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">distributed</span><span class="o">.</span><span class="n">get_rank</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;RANK 0: </span><span class="si">{</span><span class="n">msg</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">args</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">kwargs</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"RANK 0: </span><span class="si">{</span><span class="n">msg</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">args</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">kwargs</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="get_current_device"><a class="viewcode-back" href="../../../api_doc/utils/utils.html#lightrft.utils.utils.get_current_device">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">get_current_device</span><span class="p">(</span><span class="n">num_device_per_node</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">8</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Returns the current CUDA device.</span>
 
 <span class="sd">    This function provides a convenient way to get the current CUDA device</span>
@@ -593,17 +598,17 @@
 
 <span class="sd">        &gt;&gt;&gt; device = get_current_device()</span>
 <span class="sd">        &gt;&gt;&gt; model = model.to(device)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">torch</span><span class="o">.</span><span class="n">distributed</span><span class="o">.</span><span class="n">is_initialized</span><span class="p">():</span>
         <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">current_device</span><span class="p">()</span>
-    <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;cuda:</span><span class="si">{</span><span class="n">torch</span><span class="o">.</span><span class="n">distributed</span><span class="o">.</span><span class="n">get_rank</span><span class="p">()</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="n">num_device_per_node</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="sa">f</span><span class="s2">"cuda:</span><span class="si">{</span><span class="n">torch</span><span class="o">.</span><span class="n">distributed</span><span class="o">.</span><span class="n">get_rank</span><span class="p">()</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="n">num_device_per_node</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="get_torch_profiler"><a class="viewcode-back" href="../../../api_doc/utils/utils.html#lightrft.utils.utils.get_torch_profiler">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">get_torch_profiler</span><span class="p">(</span><span class="n">output_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
                        <span class="n">warmup</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
                        <span class="n">active</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
-                       <span class="n">repeat</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">profiler</span><span class="o">.</span><span class="n">profile</span><span class="p">,</span> <span class="s2">&quot;DummyProfile&quot;</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+                       <span class="n">repeat</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">profiler</span><span class="o">.</span><span class="n">profile</span><span class="p">,</span> <span class="s2">"DummyProfile"</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Creates and returns a PyTorch profiler configured for distributed training.</span>
 
 <span class="sd">    This function returns a properly configured PyTorch profiler for the current process.</span>
@@ -626,11 +631,11 @@
 
 <span class="sd">    Example::</span>
 
-<span class="sd">        &gt;&gt;&gt; with get_torch_profiler(&quot;./profiler_output&quot;, warmup=5, active=10) as prof:</span>
+<span class="sd">        &gt;&gt;&gt; with get_torch_profiler("./profiler_output", warmup=5, active=10) as prof:</span>
 <span class="sd">        &gt;&gt;&gt;     for step in range(100):</span>
 <span class="sd">        &gt;&gt;&gt;         train_step()</span>
 <span class="sd">        &gt;&gt;&gt;         prof.step()</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">torch.profiler</span><span class="w"> </span><span class="kn">import</span> <span class="n">ProfilerActivity</span>
 
     <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">distributed</span><span class="o">.</span><span class="n">get_rank</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
@@ -648,7 +653,7 @@
 
 
 <div class="viewcode-block" id="DummyProfile"><a class="viewcode-back" href="../../../api_doc/utils/utils.html#lightrft.utils.utils.DummyProfile">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">DummyProfile</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Dummy Profile class that mimics the PyTorch profiler API but does nothing.</span>
 
 <span class="sd">    This class is used as a placeholder for non-rank-0 processes where profiling</span>
@@ -660,59 +665,59 @@
 <span class="sd">        &gt;&gt;&gt; prof = DummyProfile() if rank != 0 else torch.profiler.profile(...)</span>
 <span class="sd">        &gt;&gt;&gt; with prof:</span>
 <span class="sd">        &gt;&gt;&gt;     # code to be profiled</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 <div class="viewcode-block" id="DummyProfile.__init__"><a class="viewcode-back" href="../../../api_doc/utils/utils.html#lightrft.utils.utils.DummyProfile.__init__">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Initialize a dummy profiler instance.</span>
 
 <span class="sd">        :param args: Positional arguments (ignored)</span>
 <span class="sd">        :param kwargs: Keyword arguments (ignored)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">pass</span></div>
 
-<div class="viewcode-block" id="DummyProfile.__enter__"><a class="viewcode-back" href="../../../api_doc/utils/utils.html#lightrft.utils.utils.DummyProfile.__enter__">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;DummyProfile&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="DummyProfile.__enter__"><a class="viewcode-back" href="../../../api_doc/utils/utils.html#lightrft.utils.utils.DummyProfile.__enter__">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"DummyProfile"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Context manager entry method.</span>
 
 <span class="sd">        :return: Self instance</span>
 <span class="sd">        :rtype: DummyProfile</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span></div>
 
 <div class="viewcode-block" id="DummyProfile.__exit__"><a class="viewcode-back" href="../../../api_doc/utils/utils.html#lightrft.utils.utils.DummyProfile.__exit__">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">c</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Context manager exit method.</span>
 
 <span class="sd">        :param a: Exception type</span>
 <span class="sd">        :param b: Exception value</span>
 <span class="sd">        :param c: Exception traceback</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">pass</span></div>
 
 <div class="viewcode-block" id="DummyProfile.start"><a class="viewcode-back" href="../../../api_doc/utils/utils.html#lightrft.utils.utils.DummyProfile.start">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Dummy implementation of the profiler start method.</span>
 <span class="sd">        Does nothing.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">pass</span></div>
 
 <div class="viewcode-block" id="DummyProfile.stop"><a class="viewcode-back" href="../../../api_doc/utils/utils.html#lightrft.utils.utils.DummyProfile.stop">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Dummy implementation of the profiler stop method.</span>
 <span class="sd">        Does nothing.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">pass</span></div>
 
 <div class="viewcode-block" id="DummyProfile.step"><a class="viewcode-back" href="../../../api_doc/utils/utils.html#lightrft.utils.utils.DummyProfile.step">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Dummy implementation of the profiler step method.</span>
 <span class="sd">        Does nothing.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">pass</span></div></div>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">ensure_video_input_available</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Ensure ``VideoInput`` is available from ``transformers.image_utils``.</span>
 
 <span class="sd">    This function handles compatibility issues across different versions of</span>
@@ -748,7 +753,7 @@
 <span class="sd">    This keeps downstream code compatible with projects that expect</span>
 <span class="sd">    ``transformers.image_utils.VideoInput`` to exist, regardless of the</span>
 <span class="sd">    installed Transformers version.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">transformers.image_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">VideoInput</span>
     <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
@@ -757,22 +762,22 @@
         <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
 
             <span class="k">class</span><span class="w"> </span><span class="nc">VideoInput</span><span class="p">:</span>
-<span class="w">                </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">                Placeholder class for VideoInput when transformers doesn&#39;t provide it.</span>
+<span class="w">                </span><span class="sd">"""</span>
+<span class="sd">                Placeholder class for VideoInput when transformers doesn't provide it.</span>
 
 <span class="sd">                This class serves as a compatibility shim for older Transformers versions</span>
-<span class="sd">                that don&#39;t export VideoInput from transformers.image_utils or</span>
+<span class="sd">                that don't export VideoInput from transformers.image_utils or</span>
 <span class="sd">                transformers.video_utils.</span>
-<span class="sd">                &quot;&quot;&quot;</span>
+<span class="sd">                """</span>
                 <span class="k">pass</span>
 
         <span class="kn">import</span><span class="w"> </span><span class="nn">transformers</span>
         <span class="n">transformers</span><span class="o">.</span><span class="n">image_utils</span><span class="o">.</span><span class="n">VideoInput</span> <span class="o">=</span> <span class="n">VideoInput</span>
-        <span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="s2">&quot;transformers.image_utils&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">VideoInput</span> <span class="o">=</span> <span class="n">VideoInput</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="s2">"transformers.image_utils"</span><span class="p">]</span><span class="o">.</span><span class="n">VideoInput</span> <span class="o">=</span> <span class="n">VideoInput</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">all_gather_and_flatten</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">group</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">dist</span><span class="o">.</span><span class="n">ProcessGroup</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Gather data from all processes and flatten the result into a single list.</span>
 
 <span class="sd">    :param data: The data to gather from the current process.</span>
@@ -782,7 +787,7 @@
 
 <span class="sd">    :returns: A flattened list containing data from all processes.</span>
 <span class="sd">    :rtype: List[Any]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">dist</span><span class="o">.</span><span class="n">is_initialized</span><span class="p">():</span>
         <span class="k">return</span> <span class="n">data</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="k">else</span> <span class="p">[</span><span class="n">data</span><span class="p">]</span>
 
@@ -800,22 +805,22 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">all_reduce_dict</span><span class="p">(</span><span class="n">metrics_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span>
-                    <span class="n">op</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;sum&quot;</span><span class="p">,</span>
+                    <span class="n">op</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"sum"</span><span class="p">,</span>
                     <span class="n">group</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">dist</span><span class="o">.</span><span class="n">ProcessGroup</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Perform all-reduce operation on a dictionary of metrics.</span>
 <span class="sd">    This function converts the dictionary values to a single tensor for efficient reduction.</span>
 
 <span class="sd">    :param metrics_dict: Dictionary of metrics to be reduced.</span>
 <span class="sd">    :type metrics_dict: Dict[str, float]</span>
-<span class="sd">    :param op: Reduction operation (&#39;sum&#39;, &#39;max&#39;, &#39;min&#39;, &#39;mean&#39;).</span>
+<span class="sd">    :param op: Reduction operation ('sum', 'max', 'min', 'mean').</span>
 <span class="sd">    :type op: str</span>
 <span class="sd">    :param group: The process group to work on. If None, the default process group is used.</span>
 <span class="sd">    :type group: ProcessGroup, optional</span>
 
 <span class="sd">    :returns: Reduced dictionary of metrics.</span>
 <span class="sd">    :rtype: Dict[str, float]</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">dist</span><span class="o">.</span><span class="n">is_initialized</span><span class="p">():</span>
         <span class="k">return</span> <span class="n">metrics_dict</span>
 
@@ -823,20 +828,20 @@
     <span class="n">values</span> <span class="o">=</span> <span class="p">[</span><span class="n">metrics_dict</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">keys</span><span class="p">]</span>
 
     <span class="c1"># Use the current device if available, otherwise CPU</span>
-    <span class="n">device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">current_device</span><span class="p">()</span> <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="k">else</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
+    <span class="n">device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">current_device</span><span class="p">()</span> <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="k">else</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">"cpu"</span><span class="p">)</span>
     <span class="n">tensor</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
 
     <span class="n">dist_op_map</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">&quot;sum&quot;</span><span class="p">:</span> <span class="n">dist</span><span class="o">.</span><span class="n">ReduceOp</span><span class="o">.</span><span class="n">SUM</span><span class="p">,</span>
-        <span class="s2">&quot;max&quot;</span><span class="p">:</span> <span class="n">dist</span><span class="o">.</span><span class="n">ReduceOp</span><span class="o">.</span><span class="n">MAX</span><span class="p">,</span>
-        <span class="s2">&quot;min&quot;</span><span class="p">:</span> <span class="n">dist</span><span class="o">.</span><span class="n">ReduceOp</span><span class="o">.</span><span class="n">MIN</span><span class="p">,</span>
-        <span class="s2">&quot;mean&quot;</span><span class="p">:</span> <span class="n">dist</span><span class="o">.</span><span class="n">ReduceOp</span><span class="o">.</span><span class="n">SUM</span><span class="p">,</span>  <span class="c1"># Mean is handled by sum then divide</span>
+        <span class="s2">"sum"</span><span class="p">:</span> <span class="n">dist</span><span class="o">.</span><span class="n">ReduceOp</span><span class="o">.</span><span class="n">SUM</span><span class="p">,</span>
+        <span class="s2">"max"</span><span class="p">:</span> <span class="n">dist</span><span class="o">.</span><span class="n">ReduceOp</span><span class="o">.</span><span class="n">MAX</span><span class="p">,</span>
+        <span class="s2">"min"</span><span class="p">:</span> <span class="n">dist</span><span class="o">.</span><span class="n">ReduceOp</span><span class="o">.</span><span class="n">MIN</span><span class="p">,</span>
+        <span class="s2">"mean"</span><span class="p">:</span> <span class="n">dist</span><span class="o">.</span><span class="n">ReduceOp</span><span class="o">.</span><span class="n">SUM</span><span class="p">,</span>  <span class="c1"># Mean is handled by sum then divide</span>
     <span class="p">}</span>
     <span class="n">dist_op</span> <span class="o">=</span> <span class="n">dist_op_map</span><span class="p">[</span><span class="n">op</span><span class="o">.</span><span class="n">lower</span><span class="p">()]</span>
 
     <span class="n">dist</span><span class="o">.</span><span class="n">all_reduce</span><span class="p">(</span><span class="n">tensor</span><span class="p">,</span> <span class="n">op</span><span class="o">=</span><span class="n">dist_op</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">group</span><span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">op</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;mean&quot;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">op</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">"mean"</span><span class="p">:</span>
         <span class="n">tensor</span> <span class="o">/=</span> <span class="n">dist</span><span class="o">.</span><span class="n">get_world_size</span><span class="p">(</span><span class="n">group</span><span class="o">=</span><span class="n">group</span><span class="p">)</span>
 
     <span class="n">reduced_values</span> <span class="o">=</span> <span class="n">tensor</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
@@ -848,22 +853,22 @@
     <span class="n">max_num</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">suffix</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">strategy</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">label</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;checkpoint&quot;</span><span class="p">,</span>
+    <span class="n">label</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"checkpoint"</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Remove oldest checkpoint directories under a path when reaching a limit.</span>
 
 <span class="sd">    :param ckpt_path: Parent checkpoint directory.</span>
 <span class="sd">    :type ckpt_path: str</span>
 <span class="sd">    :param max_num: Maximum number of checkpoints to keep.</span>
 <span class="sd">    :type max_num: int</span>
-<span class="sd">    :param suffix: Optional directory suffix filter (e.g., &quot;_lora&quot;).</span>
+<span class="sd">    :param suffix: Optional directory suffix filter (e.g., "_lora").</span>
 <span class="sd">    :type suffix: Optional[str]</span>
 <span class="sd">    :param strategy: Optional strategy for logging.</span>
 <span class="sd">    :type strategy: Optional[Any]</span>
 <span class="sd">    :param label: Label used in log messages.</span>
 <span class="sd">    :type label: str</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">max_num</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">max_num</span> <span class="o">&lt;=</span> <span class="mi">0</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">ckpt_path</span><span class="p">):</span>
         <span class="k">return</span>
 
@@ -879,7 +884,7 @@
         <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">oldest_dir</span><span class="p">):</span>
             <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">oldest_dir</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">strategy</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">strategy</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Deleted oldest </span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">oldest_dir</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">strategy</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Deleted oldest </span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">oldest_dir</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </pre></div>
 
               </article>
@@ -892,7 +897,7 @@
 
   <div role="contentinfo">
     <p>
-      &copy; Copyright 2025, OpenDILab.
+      &copy; Copyright 2025-2026, OpenDILab.
 
     </p>
   </div>
@@ -929,8 +934,8 @@
   <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
   <script src="../../../_static/doctools.js"></script>
   <script src="../../../_static/sphinx_highlight.js"></script>
-  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-  <script src="../../../_static/js/language_switch.js"></script>
+  <script src="../../../_static/clipboard.min.js"></script>
+  <script src="../../../_static/copybutton.js"></script>
   
 
   
@@ -959,7 +964,7 @@
     <div class="container-fluid">
       <div class="container">
         <div class="mobile-main-menu-header-container">
-          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="header-logo" href="https://github.com/opendilab/LightRFT" aria-label="OpenMMLab"></a>
           <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
         </div>
       </div>

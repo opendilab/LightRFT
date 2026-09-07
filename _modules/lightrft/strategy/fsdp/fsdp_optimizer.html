@@ -32,6 +32,7 @@
   <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../../../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../../../../_static/copybutton.css" type="text/css" />
   <link rel="stylesheet" href="../../../../_static/css/readthedocs.css" type="text/css" />
   <link rel="index" title="Index" href="../../../../genindex.html" />
   <link rel="search" title="Search" href="../../../../search.html" />
@@ -84,7 +85,7 @@
 <div class="container-fluid header-holder tutorials-header" id="header-holder">
   <div class="container">
     <div class="header-container">
-      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+      <a class="header-logo" href="https://github.com/opendilab/LightRFT"
         aria-label="OpenMMLab"></a>
 
       <div class="main-menu">
@@ -234,6 +235,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../../api_doc/strategy/index.html">lightrft.strategy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../api_doc/trainer/index.html">lightrft.trainer</a></li>
 </ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../index_zh.html">欢迎来到 LightRFT 文档!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../index_zh.html#id4">索引与表格</a></li>
+</ul>
 
         
         
@@ -300,10 +305,10 @@
               <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
                 
   <h1>Source code for lightrft.strategy.fsdp.fsdp_optimizer</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""</span>
 <span class="sd">FSDP Optimizer Module for PyTorch.</span>
 
-<span class="sd">This module provides optimizers and utilities for working with PyTorch&#39;s Fully Sharded Data Parallel (FSDP)</span>
+<span class="sd">This module provides optimizers and utilities for working with PyTorch's Fully Sharded Data Parallel (FSDP)</span>
 <span class="sd">training. It includes an adapted optimizer for FSDP that handles gradient scaling, clipping, and state</span>
 <span class="sd">management, as well as utility functions for offloading and loading optimizer states.</span>
 
@@ -331,8 +336,8 @@
 <span class="sd">        fsdp_optimizer.backward(loss)</span>
 <span class="sd">        success = fsdp_optimizer.step()</span>
 <span class="sd">        if not success:</span>
-<span class="sd">            print(&quot;Gradient overflow detected, skipping step&quot;)</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            print("Gradient overflow detected, skipping step")</span>
+<span class="sd">"""</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">torch.distributed</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">dist</span>
@@ -351,7 +356,7 @@
 
 
 <div class="viewcode-block" id="FSDPadaptOptimizer"><a class="viewcode-back" href="../../../../api_doc/strategy/fsdp/fsdp_optimizer.html#lightrft.strategy.fsdp.fsdp_optimizer.FSDPadaptOptimizer">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">FSDPadaptOptimizer</span><span class="p">(</span><span class="n">BaseOptimizer</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Optimizer wrapper for PyTorch FSDP (Fully Sharded Data Parallel).</span>
 
 <span class="sd">    This optimizer handles the necessary components for mixed precision training with FSDP:</span>
@@ -363,7 +368,7 @@
 <span class="sd">    - Overflow detection and recovery mechanisms</span>
 
 <span class="sd">    The optimizer maintains separate FP16 and FP32 parameter groups where FP16 parameters</span>
-<span class="sd">    share memory space with the model&#39;s FlatParam, while FP32 parameters are used for</span>
+<span class="sd">    share memory space with the model's FlatParam, while FP32 parameters are used for</span>
 <span class="sd">    the actual optimization step to maintain numerical precision.</span>
 
 <span class="sd">    :param optimizer: The base optimizer to wrap (e.g., AdamW, SGD)</span>
@@ -381,17 +386,17 @@
 <span class="sd">        loss = model(batch)</span>
 <span class="sd">        fsdp_optimizer.backward(loss)</span>
 <span class="sd">        success = fsdp_optimizer.step()</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">optimizer</span><span class="p">:</span> <span class="n">Optimizer</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Initialize the FSDP adapted optimizer.</span>
 
 <span class="sd">        :param optimizer: The base optimizer to wrap</span>
 <span class="sd">        :type optimizer: torch.optim.Optimizer</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">optim</span><span class="o">=</span><span class="n">optimizer</span><span class="p">)</span>
 
         <span class="c1"># gradient scaler for mixed precision training</span>
@@ -411,7 +416,7 @@
 
         <span class="c1"># initialize fp16 and fp32 parameter groups</span>
         <span class="k">for</span> <span class="n">group_idx</span><span class="p">,</span> <span class="n">param_group</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">param_groups</span><span class="p">):</span>
-            <span class="n">group_params</span> <span class="o">=</span> <span class="n">param_group</span><span class="p">[</span><span class="s2">&quot;params&quot;</span><span class="p">]</span>
+            <span class="n">group_params</span> <span class="o">=</span> <span class="n">param_group</span><span class="p">[</span><span class="s2">"params"</span><span class="p">]</span>
 
             <span class="c1"># store reference to fp16 FlatParam storage</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_fp16_param_groups</span><span class="p">[</span><span class="n">group_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">group_params</span>
@@ -421,20 +426,20 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_fp32_param_tensor_groups</span><span class="p">[</span><span class="n">group_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">fp32_tensor_param</span>
 
             <span class="c1"># replace optimizer parameter group with fp32 copies</span>
-            <span class="n">param_group</span><span class="p">[</span><span class="s2">&quot;params&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">fp32_tensor_param</span>
+            <span class="n">param_group</span><span class="p">[</span><span class="s2">"params"</span><span class="p">]</span> <span class="o">=</span> <span class="n">fp32_tensor_param</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">loss_scale</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the current loss scale value used for gradient scaling.</span>
 
 <span class="sd">        :return: The current loss scale tensor</span>
 <span class="sd">        :rtype: torch.Tensor</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">grad_scaler</span><span class="o">.</span><span class="n">scale</span>
 
 <div class="viewcode-block" id="FSDPadaptOptimizer.backward"><a class="viewcode-back" href="../../../../api_doc/strategy/fsdp/fsdp_optimizer.html#lightrft.strategy.fsdp.fsdp_optimizer.FSDPadaptOptimizer.backward">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">backward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">loss</span><span class="p">,</span> <span class="n">retain_graph</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Perform backward pass with loss scaling for mixed precision training.</span>
 
 <span class="sd">        The loss is scaled to prevent gradient underflow in FP16 computations.</span>
@@ -448,16 +453,16 @@
 
 <span class="sd">            loss = criterion(outputs, targets)</span>
 <span class="sd">            optimizer.backward(loss)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss_scale</span> <span class="o">*</span> <span class="p">(</span><span class="n">loss</span><span class="o">.</span><span class="n">float</span><span class="p">())</span>
         <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">(</span><span class="n">retain_graph</span><span class="o">=</span><span class="n">retain_graph</span><span class="p">)</span></div>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_compute_norm_with_fsdp_flatten</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">group_id</span><span class="p">,</span> <span class="n">norm_type</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Compute the gradient norm for a parameter group with FSDP flattened parameters.</span>
 
 <span class="sd">        This method handles the computation of gradient norms across distributed processes,</span>
-<span class="sd">        taking into account FSDP&#39;s parameter flattening and sharding. It supports both</span>
+<span class="sd">        taking into account FSDP's parameter flattening and sharding. It supports both</span>
 <span class="sd">        regular tensors and DTensor for distributed computation.</span>
 
 <span class="sd">        :param group_id: The parameter group ID to compute norm for</span>
@@ -467,7 +472,7 @@
 
 <span class="sd">        :return: The computed gradient norm, or -1 if overflow is detected</span>
 <span class="sd">        :rtype: torch.Tensor</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">params</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fp16_param_groups</span><span class="p">[</span><span class="n">group_id</span><span class="p">]</span> <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">untyped_storage</span><span class="p">()</span><span class="o">.</span><span class="n">size</span><span class="p">()</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">]</span>
         <span class="n">gradients</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span><span class="o">.</span><span class="n">grad</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">params</span> <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">untyped_storage</span><span class="p">()</span><span class="o">.</span><span class="n">size</span><span class="p">()</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">]</span>
 
@@ -502,7 +507,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># reduce across processes in Zero3 group</span>
             <span class="n">dist</span><span class="o">.</span><span class="n">all_reduce</span><span class="p">(</span><span class="n">total_norm_cuda</span><span class="p">,</span> <span class="n">op</span><span class="o">=</span><span class="n">dist</span><span class="o">.</span><span class="n">ReduceOp</span><span class="o">.</span><span class="n">SUM</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;after reduce </span><span class="si">{</span><span class="n">total_norm_cuda</span><span class="si">=}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"after reduce </span><span class="si">{</span><span class="n">total_norm_cuda</span><span class="si">=}</span><span class="s2">"</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
         <span class="n">total_norm</span> <span class="o">=</span> <span class="n">total_norm_cuda</span> <span class="o">**</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="n">norm_type</span><span class="p">)</span>
 
@@ -518,18 +523,18 @@
         <span class="k">return</span> <span class="n">total_norm</span>
 
 <div class="viewcode-block" id="FSDPadaptOptimizer.zero_grad"><a class="viewcode-back" href="../../../../api_doc/strategy/fsdp/fsdp_optimizer.html#lightrft.strategy.fsdp.fsdp_optimizer.FSDPadaptOptimizer.zero_grad">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">zero_grad</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Set gradients of all FP16 parameters to None.</span>
 
 <span class="sd">        This method clears gradients from the FP16 parameter groups that are used</span>
 <span class="sd">        for the forward pass and gradient computation.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">param_group</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fp16_param_groups</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">param_group</span><span class="p">:</span>
                 <span class="n">param</span><span class="o">.</span><span class="n">grad</span> <span class="o">=</span> <span class="kc">None</span></div>
 
 <div class="viewcode-block" id="FSDPadaptOptimizer.step"><a class="viewcode-back" href="../../../../api_doc/strategy/fsdp/fsdp_optimizer.html#lightrft.strategy.fsdp.fsdp_optimizer.FSDPadaptOptimizer.step">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Perform a single optimization step with overflow detection and gradient processing.</span>
 
 <span class="sd">        This method orchestrates the complete optimization process:</span>
@@ -547,8 +552,8 @@
 
 <span class="sd">            success = optimizer.step()</span>
 <span class="sd">            if not success:</span>
-<span class="sd">                print(&quot;Gradient overflow detected, step skipped&quot;)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">                print("Gradient overflow detected, step skipped")</span>
+<span class="sd">        """</span>
         <span class="c1"># compute gradient norms for overflow detection</span>
         <span class="n">found_inf</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="n">norm_groups</span> <span class="o">=</span> <span class="p">[]</span>
@@ -562,7 +567,7 @@
         <span class="n">loss_scale</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">loss_scale</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>  <span class="c1"># backup current scale</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">grad_scaler</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">found_inf</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">found_inf</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Overflow occurs, please check it.&quot;</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">"Overflow occurs, please check it."</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
             <span class="k">return</span> <span class="kc">False</span>
 
@@ -603,7 +608,7 @@
         <span class="k">return</span> <span class="kc">True</span></div>
 
 <div class="viewcode-block" id="FSDPadaptOptimizer.clip_grad_norm"><a class="viewcode-back" href="../../../../api_doc/strategy/fsdp/fsdp_optimizer.html#lightrft.strategy.fsdp.fsdp_optimizer.FSDPadaptOptimizer.clip_grad_norm">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">clip_grad_norm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">max_norm</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Set gradient clipping norm (actual clipping is performed in the step() method).</span>
 
 <span class="sd">        :param model: The model whose gradients will be clipped (unused in current implementation)</span>
@@ -613,7 +618,7 @@
 <span class="sd">        Note:</span>
 <span class="sd">            The actual gradient clipping is performed internally in the step() method</span>
 <span class="sd">            using the _unscale_and_clip_grads method.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># actual clipping is conducted in the step() method</span>
         <span class="k">pass</span></div>
 
@@ -622,7 +627,7 @@
     <span class="c1">#########################</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_unscale_and_clip_grads</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">total_norm</span><span class="p">,</span> <span class="n">loss_scale</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Unscale and clip gradients based on the total norm and loss scale.</span>
 
 <span class="sd">        This method combines gradient unscaling (to reverse the loss scaling) with</span>
@@ -633,7 +638,7 @@
 <span class="sd">        :type total_norm: torch.Tensor</span>
 <span class="sd">        :param loss_scale: The current loss scale used for gradient scaling</span>
 <span class="sd">        :type loss_scale: float</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># compute combined scale factor for this group</span>
         <span class="n">combined_scale</span> <span class="o">=</span> <span class="n">loss_scale</span>
 
@@ -650,7 +655,7 @@
                     <span class="n">p</span><span class="o">.</span><span class="n">grad</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">mul_</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="n">combined_scale</span><span class="p">)</span>
 
 <div class="viewcode-block" id="FSDPadaptOptimizer.state_dict"><a class="viewcode-back" href="../../../../api_doc/strategy/fsdp/fsdp_optimizer.html#lightrft.strategy.fsdp.fsdp_optimizer.FSDPadaptOptimizer.state_dict">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">state_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Get the complete state dictionary for checkpointing.</span>
 
 <span class="sd">        The state dictionary includes:</span>
@@ -665,32 +670,32 @@
 
 <span class="sd">            # Save optimizer state</span>
 <span class="sd">            checkpoint = {</span>
-<span class="sd">                &#39;model&#39;: model.state_dict(),</span>
-<span class="sd">                &#39;optimizer&#39;: optimizer.state_dict(),</span>
-<span class="sd">                &#39;epoch&#39;: epoch</span>
+<span class="sd">                'model': model.state_dict(),</span>
+<span class="sd">                'optimizer': optimizer.state_dict(),</span>
+<span class="sd">                'epoch': epoch</span>
 <span class="sd">            }</span>
-<span class="sd">            torch.save(checkpoint, &#39;checkpoint.pt&#39;)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">            torch.save(checkpoint, 'checkpoint.pt')</span>
+<span class="sd">        """</span>
         <span class="n">states</span> <span class="o">=</span> <span class="p">{}</span>
 
         <span class="c1"># save gradient scaler state</span>
         <span class="n">grad_scaler</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">grad_scaler</span><span class="o">.</span><span class="n">state_dict</span><span class="p">()</span>
-        <span class="n">states</span><span class="p">[</span><span class="s2">&quot;grad_scaler&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">grad_scaler</span>
+        <span class="n">states</span><span class="p">[</span><span class="s2">"grad_scaler"</span><span class="p">]</span> <span class="o">=</span> <span class="n">grad_scaler</span>
 
         <span class="c1"># save base optimizer states</span>
         <span class="n">optim_states</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">state_dict</span><span class="p">()</span>
-        <span class="n">states</span><span class="p">[</span><span class="s2">&quot;base_optim_states&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">optim_states</span>
+        <span class="n">states</span><span class="p">[</span><span class="s2">"base_optim_states"</span><span class="p">]</span> <span class="o">=</span> <span class="n">optim_states</span>
 
         <span class="c1"># save fp32 parameter weights</span>
         <span class="n">flat_fp32_weights</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">for</span> <span class="n">group_idx</span><span class="p">,</span> <span class="n">param</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fp32_param_tensor_groups</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="n">flat_fp32_weights</span><span class="p">[</span><span class="n">group_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">param</span>
-        <span class="n">states</span><span class="p">[</span><span class="s2">&quot;flat_fp32_weights&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">flat_fp32_weights</span>
+        <span class="n">states</span><span class="p">[</span><span class="s2">"flat_fp32_weights"</span><span class="p">]</span> <span class="o">=</span> <span class="n">flat_fp32_weights</span>
 
         <span class="k">return</span> <span class="n">states</span></div>
 
 <div class="viewcode-block" id="FSDPadaptOptimizer.load_state_dict"><a class="viewcode-back" href="../../../../api_doc/strategy/fsdp/fsdp_optimizer.html#lightrft.strategy.fsdp.fsdp_optimizer.FSDPadaptOptimizer.load_state_dict">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">load_state_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">states</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Load a complete state dictionary from checkpoint.</span>
 
 <span class="sd">        This method restores the optimizer to its exact previous state, including</span>
@@ -703,24 +708,24 @@
 <span class="sd">        Example::</span>
 
 <span class="sd">            # Load optimizer state</span>
-<span class="sd">            checkpoint = torch.load(&#39;checkpoint.pt&#39;)</span>
-<span class="sd">            optimizer.load_state_dict(checkpoint[&#39;optimizer&#39;])</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">assert</span> <span class="s2">&quot;grad_scaler&quot;</span> <span class="ow">in</span> <span class="n">states</span><span class="p">,</span> <span class="s2">&quot;Not found grad_scaler state!&quot;</span>
-        <span class="n">grad_scaler</span> <span class="o">=</span> <span class="n">states</span><span class="p">[</span><span class="s2">&quot;grad_scaler&quot;</span><span class="p">]</span>
+<span class="sd">            checkpoint = torch.load('checkpoint.pt')</span>
+<span class="sd">            optimizer.load_state_dict(checkpoint['optimizer'])</span>
+<span class="sd">        """</span>
+        <span class="k">assert</span> <span class="s2">"grad_scaler"</span> <span class="ow">in</span> <span class="n">states</span><span class="p">,</span> <span class="s2">"Not found grad_scaler state!"</span>
+        <span class="n">grad_scaler</span> <span class="o">=</span> <span class="n">states</span><span class="p">[</span><span class="s2">"grad_scaler"</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">grad_scaler</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">grad_scaler</span><span class="p">)</span>
 
         <span class="c1"># load base optimizer states</span>
-        <span class="n">optim_states</span> <span class="o">=</span> <span class="n">states</span><span class="p">[</span><span class="s2">&quot;base_optim_states&quot;</span><span class="p">]</span>
+        <span class="n">optim_states</span> <span class="o">=</span> <span class="n">states</span><span class="p">[</span><span class="s2">"base_optim_states"</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">optim_states</span><span class="p">)</span>
 
         <span class="c1"># load fp32 optimizer weights</span>
-        <span class="n">flat_fp32_weights</span> <span class="o">=</span> <span class="n">states</span><span class="p">[</span><span class="s2">&quot;flat_fp32_weights&quot;</span><span class="p">]</span>
+        <span class="n">flat_fp32_weights</span> <span class="o">=</span> <span class="n">states</span><span class="p">[</span><span class="s2">"flat_fp32_weights"</span><span class="p">]</span>
         <span class="k">assert</span> <span class="nb">set</span><span class="p">(</span><span class="n">flat_fp32_weights</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="o">==</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fp32_param_tensor_groups</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">group_idx</span><span class="p">,</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">flat_fp32_weights</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="n">self_param</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fp32_param_tensor_groups</span><span class="p">[</span><span class="n">group_idx</span><span class="p">]</span>
             <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">self_param</span>
-                       <span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">param</span><span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;The number of flat tensor is inconsistent, </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">self_param</span><span class="p">)</span><span class="si">}</span><span class="s2"> != </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">param</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+                       <span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">param</span><span class="p">),</span> <span class="sa">f</span><span class="s2">"The number of flat tensor is inconsistent, </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">self_param</span><span class="p">)</span><span class="si">}</span><span class="s2"> != </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">param</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span>
             <span class="k">for</span> <span class="n">p</span><span class="p">,</span> <span class="n">q</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">self_param</span><span class="p">,</span> <span class="n">param</span><span class="p">):</span>
                 <span class="n">p</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">copy_</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
 
@@ -734,7 +739,7 @@
 
 <span class="nd">@torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">()</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">offload_fsdp_optimizer</span><span class="p">(</span><span class="n">optimizer</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Offload optimizer states from GPU to CPU memory to reduce GPU memory usage.</span>
 
 <span class="sd">    This function moves all tensor-based optimizer states (such as momentum buffers,</span>
@@ -756,21 +761,21 @@
 <span class="sd">    Note:</span>
 <span class="sd">        After offloading, you should call load_fsdp_optimizer before the next</span>
 <span class="sd">        optimization step to ensure states are available on the correct device.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">optimizer</span><span class="o">.</span><span class="n">state</span><span class="p">:</span>
         <span class="k">return</span>
     <span class="k">for</span> <span class="n">param_group</span> <span class="ow">in</span> <span class="n">optimizer</span><span class="o">.</span><span class="n">param_groups</span><span class="p">:</span>
-        <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">param_group</span><span class="p">[</span><span class="s2">&quot;params&quot;</span><span class="p">]:</span>
+        <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">param_group</span><span class="p">[</span><span class="s2">"params"</span><span class="p">]:</span>
             <span class="n">state</span> <span class="o">=</span> <span class="n">optimizer</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="n">param</span><span class="p">]</span>
             <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">state</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                 <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
-                    <span class="n">state</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">&quot;cpu&quot;</span><span class="p">,</span> <span class="n">non_blocking</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                    <span class="n">state</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="s2">"cpu"</span><span class="p">,</span> <span class="n">non_blocking</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">empty_cache</span><span class="p">()</span>
 
 
 <span class="nd">@torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">()</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">load_fsdp_optimizer</span><span class="p">(</span><span class="n">optimizer</span><span class="p">,</span> <span class="n">device_id</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">current_device</span><span class="p">()):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Load optimizer states from CPU back to the specified GPU device.</span>
 
 <span class="sd">    This function moves all tensor-based optimizer states from CPU memory back to</span>
@@ -793,14 +798,14 @@
 <span class="sd">    Note:</span>
 <span class="sd">        This function automatically determines the current device using get_current_device()</span>
 <span class="sd">        to ensure compatibility with distributed training setups.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">optimizer</span><span class="o">.</span><span class="n">state</span><span class="p">:</span>
         <span class="k">return</span>
     <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">empty_cache</span><span class="p">()</span>
     <span class="c1"># Use get_current_device() instead of torch.cuda.current_device() for distributed compatibility</span>
     <span class="n">device_id</span> <span class="o">=</span> <span class="n">get_current_device</span><span class="p">()</span>
     <span class="k">for</span> <span class="n">param_group</span> <span class="ow">in</span> <span class="n">optimizer</span><span class="o">.</span><span class="n">param_groups</span><span class="p">:</span>
-        <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">param_group</span><span class="p">[</span><span class="s2">&quot;params&quot;</span><span class="p">]:</span>
+        <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">param_group</span><span class="p">[</span><span class="s2">"params"</span><span class="p">]:</span>
             <span class="n">state</span> <span class="o">=</span> <span class="n">optimizer</span><span class="o">.</span><span class="n">state</span><span class="p">[</span><span class="n">param</span><span class="p">]</span>
             <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">state</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                 <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
@@ -817,7 +822,7 @@
 
   <div role="contentinfo">
     <p>
-      &copy; Copyright 2025, OpenDILab.
+      &copy; Copyright 2025-2026, OpenDILab.
 
     </p>
   </div>
@@ -854,8 +859,8 @@
   <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
   <script src="../../../../_static/doctools.js"></script>
   <script src="../../../../_static/sphinx_highlight.js"></script>
-  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-  <script src="../../../../_static/js/language_switch.js"></script>
+  <script src="../../../../_static/clipboard.min.js"></script>
+  <script src="../../../../_static/copybutton.js"></script>
   
 
   
@@ -884,7 +889,7 @@
     <div class="container-fluid">
       <div class="container">
         <div class="mobile-main-menu-header-container">
-          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="header-logo" href="https://github.com/opendilab/LightRFT" aria-label="OpenMMLab"></a>
           <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
         </div>
       </div>

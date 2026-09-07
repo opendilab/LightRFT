@@ -33,9 +33,12 @@
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
   <link rel="stylesheet" href="../_static/css/readthedocs.css" type="text/css" />
   <link rel="index" title="Index" href="../genindex.html" />
   <link rel="search" title="Search" href="../search.html" />
+  <link rel="next" title="最佳实践" href="../best_practice/index_zh.html" />
+  <link rel="prev" title="配置参数详解" href="configuration_zh.html" />
   <!-- Google Analytics -->
   <script type="text/javascript">
     var collapsedSections = [];
@@ -85,7 +88,7 @@
 <div class="container-fluid header-holder tutorials-header" id="header-holder">
   <div class="container">
     <div class="header-container">
-      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+      <a class="header-logo" href="https://github.com/opendilab/LightRFT"
         aria-label="OpenMMLab"></a>
 
       <div class="main-menu">
@@ -235,6 +238,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../api_doc/strategy/index.html">lightrft.strategy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api_doc/trainer/index.html">lightrft.trainer</a></li>
 </ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../index_zh.html">欢迎来到 LightRFT 文档!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index_zh.html#id4">索引与表格</a></li>
+</ul>
 
         
         
@@ -271,6 +278,10 @@
         </a> &gt;
       </li>
 
+        
+          <li><a href="../index_zh.html">欢迎来到 LightRFT 文档!</a> &gt;</li>
+        
+          <li><a href="index_zh.html">快速入门</a> &gt;</li>
         
       <li>GRPO 训练教程：GSM8K 与 Geo3K 数据集</li>
     
@@ -365,13 +376,13 @@
 <li><p>将每个问题封装为 chat 结构的 prompt：</p></li>
 </ol>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;prompt&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">    </span><span class="p">{</span><span class="nt">&quot;role&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;system&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;content&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;You FIRST think about the reasoning process step by step ... The final answer MUST BE put in \\boxed{} after the reasoning.&quot;</span><span class="p">},</span>
-<span class="w">    </span><span class="p">{</span><span class="nt">&quot;role&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;user&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;content&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&lt;原始问题&gt;&quot;</span><span class="p">}</span>
+<span class="w">  </span><span class="nt">"prompt"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span><span class="nt">"role"</span><span class="p">:</span><span class="w"> </span><span class="s2">"system"</span><span class="p">,</span><span class="w"> </span><span class="nt">"content"</span><span class="p">:</span><span class="w"> </span><span class="s2">"You FIRST think about the reasoning process step by step ... The final answer MUST BE put in \\boxed{} after the reasoning."</span><span class="p">},</span>
+<span class="w">    </span><span class="p">{</span><span class="nt">"role"</span><span class="p">:</span><span class="w"> </span><span class="s2">"user"</span><span class="p">,</span><span class="w"> </span><span class="nt">"content"</span><span class="p">:</span><span class="w"> </span><span class="s2">"&lt;原始问题&gt;"</span><span class="p">}</span>
 <span class="w">  </span><span class="p">],</span>
-<span class="w">  </span><span class="nt">&quot;extra_info&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;label&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;gsm8k_rule&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;reference&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&lt;提取的数值答案&gt;&quot;</span>
+<span class="w">  </span><span class="nt">"extra_info"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"label"</span><span class="p">:</span><span class="w"> </span><span class="s2">"gsm8k_rule"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"reference"</span><span class="p">:</span><span class="w"> </span><span class="s2">"&lt;提取的数值答案&gt;"</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -393,14 +404,14 @@
 <li><p>将每个问题封装为包含图像引用的 chat 结构 prompt：</p></li>
 </ol>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;prompt&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">    </span><span class="p">{</span><span class="nt">&quot;role&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;system&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;content&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;You FIRST think about the reasoning process ... The final answer MUST BE put in \\boxed{}.&quot;</span><span class="p">},</span>
-<span class="w">    </span><span class="p">{</span><span class="nt">&quot;role&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;user&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;content&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&lt;几何问题文本&gt;&quot;</span><span class="p">}</span>
+<span class="w">  </span><span class="nt">"prompt"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span><span class="nt">"role"</span><span class="p">:</span><span class="w"> </span><span class="s2">"system"</span><span class="p">,</span><span class="w"> </span><span class="nt">"content"</span><span class="p">:</span><span class="w"> </span><span class="s2">"You FIRST think about the reasoning process ... The final answer MUST BE put in \\boxed{}."</span><span class="p">},</span>
+<span class="w">    </span><span class="p">{</span><span class="nt">"role"</span><span class="p">:</span><span class="w"> </span><span class="s2">"user"</span><span class="p">,</span><span class="w"> </span><span class="nt">"content"</span><span class="p">:</span><span class="w"> </span><span class="s2">"&lt;几何问题文本&gt;"</span><span class="p">}</span>
 <span class="w">  </span><span class="p">],</span>
-<span class="w">  </span><span class="nt">&quot;images&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;&lt;PIL Image&gt;&quot;</span><span class="p">],</span>
-<span class="w">  </span><span class="nt">&quot;extra_info&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;label&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;geo3k_rule&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;reference&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;&lt;标准答案&gt;&quot;</span>
+<span class="w">  </span><span class="nt">"images"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"&lt;PIL Image&gt;"</span><span class="p">],</span>
+<span class="w">  </span><span class="nt">"extra_info"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"label"</span><span class="p">:</span><span class="w"> </span><span class="s2">"geo3k_rule"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"reference"</span><span class="p">:</span><span class="w"> </span><span class="s2">"&lt;标准答案&gt;"</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -472,14 +483,14 @@ bash<span class="w"> </span>examples/gsm8k_geo3k/run_grpo_gsm8k_qwen2.5_0.5b.sh
 <span class="w">    </span>--freeze_prefix<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--adam_offload<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--rm_use_engine<span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--reward_pretrain<span class="w"> </span><span class="s2">&quot;{}&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--reward_pretrain<span class="w"> </span><span class="s2">"{}"</span><span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--engine_type<span class="w"> </span>sglang<span class="w"> </span>--engine_tp_size<span class="w"> </span><span class="m">2</span><span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--engine_mem_util<span class="w"> </span><span class="m">0</span>.6<span class="w"> </span>--enable_engine_sleep<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--eval_steps<span class="w"> </span><span class="m">20</span><span class="w"> </span>--eval_split<span class="w"> </span><span class="nb">test</span><span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--max_eval_samples<span class="w"> </span><span class="m">1319</span><span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--save_path<span class="w"> </span>results/gsm8k_grpo<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--save_steps<span class="w"> </span><span class="m">20</span><span class="w"> </span>--max_ckpt_num<span class="w"> </span><span class="m">3</span><span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--system_prompt<span class="w"> </span><span class="s1">&#39;A conversation between the User and Assistant. The User asks a question, and the Assistant provides a solution. The Assistant first thinks through the reasoning process internally with self-reflection and consistency check and then gives the final analysis and answer. The reasoning process should be enclosed within &lt;think&gt;&lt;/think&gt;, followed directly by the final thought and answer, the final answer MUST BE put in \\boxed{}, like this: &lt;think&gt; reasoning process here &lt;/think&gt; final thought and \\boxed{answer} here.&#39;</span>
+<span class="w">    </span>--system_prompt<span class="w"> </span><span class="s1">'A conversation between the User and Assistant. The User asks a question, and the Assistant provides a solution. The Assistant first thinks through the reasoning process internally with self-reflection and consistency check and then gives the final analysis and answer. The reasoning process should be enclosed within &lt;think&gt;&lt;/think&gt;, followed directly by the final thought and answer, the final answer MUST BE put in \\boxed{}, like this: &lt;think&gt; reasoning process here &lt;/think&gt; final thought and \\boxed{answer} here.'</span>
 </pre></div>
 </div>
 </section>
@@ -518,7 +529,7 @@ bash<span class="w"> </span>examples/gsm8k_geo3k/run_grpo_geo3k_qwen2.5_vl_7b.sh
 <span class="w">    </span>--freeze_prefix<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--adam_offload<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--rm_use_engine<span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--reward_pretrain<span class="w"> </span><span class="s2">&quot;{}&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--reward_pretrain<span class="w"> </span><span class="s2">"{}"</span><span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--engine_type<span class="w"> </span>sglang<span class="w"> </span>--engine_tp_size<span class="w"> </span><span class="m">2</span><span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--engine_mem_util<span class="w"> </span><span class="m">0</span>.6<span class="w"> </span>--enable_engine_sleep<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--limit_mm_image_per_prompt<span class="w"> </span><span class="m">10</span><span class="w"> </span><span class="se">\</span>
@@ -526,7 +537,7 @@ bash<span class="w"> </span>examples/gsm8k_geo3k/run_grpo_geo3k_qwen2.5_vl_7b.sh
 <span class="w">    </span>--max_eval_samples<span class="w"> </span><span class="m">700</span><span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--save_path<span class="w"> </span>results/geo3k_grpo<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--save_steps<span class="w"> </span><span class="m">20</span><span class="w"> </span>--max_ckpt_num<span class="w"> </span><span class="m">2</span><span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--system_prompt<span class="w"> </span><span class="s1">&#39;A conversation between the User and Assistant. The User asks a question, and the Assistant provides a solution. The Assistant first thinks through the reasoning process internally with self-reflection and consistency check and then gives the final analysis and answer. The reasoning process should be enclosed within &lt;think&gt;&lt;/think&gt;, followed directly by the final thought and answer, the final answer MUST BE put in \\boxed{}, like this: &lt;think&gt; reasoning process here &lt;/think&gt; final thought and \\boxed{answer} here.&#39;</span>
+<span class="w">    </span>--system_prompt<span class="w"> </span><span class="s1">'A conversation between the User and Assistant. The User asks a question, and the Assistant provides a solution. The Assistant first thinks through the reasoning process internally with self-reflection and consistency check and then gives the final analysis and answer. The reasoning process should be enclosed within &lt;think&gt;&lt;/think&gt;, followed directly by the final thought and answer, the final answer MUST BE put in \\boxed{}, like this: &lt;think&gt; reasoning process here &lt;/think&gt; final thought and \\boxed{answer} here.'</span>
 </pre></div>
 </div>
 </section>
@@ -651,8 +662,8 @@ bash<span class="w"> </span>examples/gsm8k_geo3k/run_grpo_geo3k_qwen2.5_vl_7b.sh
 <h3>4.1 RECIPE 配置<a class="headerlink" href="#recipe" title="Permalink to this heading">¶</a></h3>
 <p>奖励系统由 <code class="docutils literal notranslate"><span class="pre">examples/gsm8k_geo3k/reward_models_utils.py</span></code> 中基于标签的 RECIPE 映射驱动：</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">RECIPE</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">&quot;geo3k_rule&quot;</span><span class="p">:</span> <span class="p">[(</span><span class="s2">&quot;geo3k_rule&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)],</span>
-    <span class="s2">&quot;gsm8k_rule&quot;</span><span class="p">:</span> <span class="p">[(</span><span class="s2">&quot;gsm8k_rule&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)],</span>
+    <span class="s2">"geo3k_rule"</span><span class="p">:</span> <span class="p">[(</span><span class="s2">"geo3k_rule"</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)],</span>
+    <span class="s2">"gsm8k_rule"</span><span class="p">:</span> <span class="p">[(</span><span class="s2">"gsm8k_rule"</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)],</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -671,8 +682,8 @@ bash<span class="w"> </span>examples/gsm8k_geo3k/run_grpo_geo3k_qwen2.5_vl_7b.sh
 <li><p><code class="docutils literal notranslate"><span class="pre">&lt;/think&gt;</span></code> 闭合标签出现在 <code class="docutils literal notranslate"><span class="pre">\boxed{}</span></code> <strong>之前</strong>。</p></li>
 </ol>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">format_reward_fn</span><span class="p">(</span><span class="n">sol</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-    <span class="n">think_match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;&lt;think&gt;.*?&lt;/think&gt;&#39;</span><span class="p">,</span> <span class="n">sol</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">DOTALL</span><span class="p">)</span>
-    <span class="n">boxed_match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;</span><span class="se">\\</span><span class="s1">boxed\{.*?\}&#39;</span><span class="p">,</span> <span class="n">sol</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">DOTALL</span><span class="p">)</span>
+    <span class="n">think_match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s1">'&lt;think&gt;.*?&lt;/think&gt;'</span><span class="p">,</span> <span class="n">sol</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">DOTALL</span><span class="p">)</span>
+    <span class="n">boxed_match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s1">'</span><span class="se">\\</span><span class="s1">boxed\{.*?\}'</span><span class="p">,</span> <span class="n">sol</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">DOTALL</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">think_match</span> <span class="ow">and</span> <span class="n">boxed_match</span><span class="p">:</span>
         <span class="k">return</span> <span class="mf">1.0</span> <span class="k">if</span> <span class="n">think_match</span><span class="o">.</span><span class="n">end</span><span class="p">()</span> <span class="o">&lt;=</span> <span class="n">boxed_match</span><span class="o">.</span><span class="n">start</span><span class="p">()</span> <span class="k">else</span> <span class="mf">0.0</span>
     <span class="k">return</span> <span class="mf">0.0</span>
@@ -712,9 +723,9 @@ bash<span class="w"> </span>examples/gsm8k_geo3k/run_grpo_geo3k_qwen2.5_vl_7b.sh
 <section id="id11">
 <h3>5.1 启用 W&amp;B 日志<a class="headerlink" href="#id11" title="Permalink to this heading">¶</a></h3>
 <p>在训练脚本中设置以下环境变量：</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">WANDB_API_KEY</span><span class="o">=</span><span class="s2">&quot;your_api_key&quot;</span>
-<span class="nb">export</span><span class="w"> </span><span class="nv">WANDB_PROJECT</span><span class="o">=</span><span class="s2">&quot;LightRFT-Experiments&quot;</span>
-<span class="nb">export</span><span class="w"> </span><span class="nv">WANDB_MODE</span><span class="o">=</span><span class="s2">&quot;online&quot;</span><span class="w">  </span><span class="c1"># &quot;offline&quot; 表示仅本地记录</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">WANDB_API_KEY</span><span class="o">=</span><span class="s2">"your_api_key"</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">WANDB_PROJECT</span><span class="o">=</span><span class="s2">"LightRFT-Experiments"</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">WANDB_MODE</span><span class="o">=</span><span class="s2">"online"</span><span class="w">  </span><span class="c1"># "offline" 表示仅本地记录</span>
 </pre></div>
 </div>
 </section>
@@ -782,7 +793,7 @@ bash<span class="w"> </span>examples/gsm8k_geo3k/run_grpo_geo3k_qwen2.5_vl_7b.sh
 <ul class="simple">
 <li><p><a class="reference internal" href="algorithms_zh.html"><span class="std std-doc">支持的算法</span></a> — 完整算法文档</p></li>
 <li><p><a class="reference internal" href="configuration_zh.html"><span class="std std-doc">配置参数参考</span></a> — 完整参数文档</p></li>
-<li><p><a class="reference internal" href="#../best_practice/strategy_usage_zh.md"><span class="xref myst">训练策略指南</span></a> — FSDP、DeepSpeed 和推理引擎配置</p></li>
+<li><p><a class="reference internal" href="../best_practice/strategy_zh.html"><span class="std std-doc">训练策略指南</span></a> — FSDP、DeepSpeed 和推理引擎配置</p></li>
 </ul>
 </section>
 </section>
@@ -793,12 +804,24 @@ bash<span class="w"> </span>examples/gsm8k_geo3k/run_grpo_geo3k_qwen2.5_vl_7b.sh
             </div>
             <footer>
   
+  <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+    
+    <a href="../best_practice/index_zh.html" class="btn btn-neutral float-right" title="最佳实践" accesskey="n"
+      rel="next">Next <img src="../_static/images/chevron-right-blue.svg"
+        class="next-page"></a>
+    
+    
+    <a href="configuration_zh.html" class="btn btn-neutral" title="配置参数详解" accesskey="p"
+      rel="prev"><img src="../_static/images/chevron-right-blue.svg" class="previous-page"> Previous</a>
+    
+  </div>
+  
 
   <hr>
 
   <div role="contentinfo">
     <p>
-      &copy; Copyright 2025, OpenDILab.
+      &copy; Copyright 2025-2026, OpenDILab.
 
     </p>
   </div>
@@ -874,8 +897,8 @@ bash<span class="w"> </span>examples/gsm8k_geo3k/run_grpo_geo3k_qwen2.5_vl_7b.sh
   <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
   <script src="../_static/doctools.js"></script>
   <script src="../_static/sphinx_highlight.js"></script>
-  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-  <script src="../_static/js/language_switch.js"></script>
+  <script src="../_static/clipboard.min.js"></script>
+  <script src="../_static/copybutton.js"></script>
   
 
   
@@ -904,7 +927,7 @@ bash<span class="w"> </span>examples/gsm8k_geo3k/run_grpo_geo3k_qwen2.5_vl_7b.sh
     <div class="container-fluid">
       <div class="container">
         <div class="mobile-main-menu-header-container">
-          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="header-logo" href="https://github.com/opendilab/LightRFT" aria-label="OpenMMLab"></a>
           <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
         </div>
       </div>

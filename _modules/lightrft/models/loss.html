@@ -32,6 +32,7 @@
   <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/css/readthedocs.css" type="text/css" />
   <link rel="index" title="Index" href="../../../genindex.html" />
   <link rel="search" title="Search" href="../../../search.html" />
@@ -84,7 +85,7 @@
 <div class="container-fluid header-holder tutorials-header" id="header-holder">
   <div class="container">
     <div class="header-container">
-      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+      <a class="header-logo" href="https://github.com/opendilab/LightRFT"
         aria-label="OpenMMLab"></a>
 
       <div class="main-menu">
@@ -234,6 +235,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../api_doc/strategy/index.html">lightrft.strategy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api_doc/trainer/index.html">lightrft.trainer</a></li>
 </ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../index_zh.html">欢迎来到 LightRFT 文档!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../index_zh.html#id4">索引与表格</a></li>
+</ul>
 
         
         
@@ -300,18 +305,20 @@
               <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
                 
   <h1>Source code for lightrft.models.loss</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""</span>
 <span class="sd">Loss functions used across LightRFT models.</span>
 
 <span class="sd">This module implements a comprehensive collection of loss functions for reinforcement learning</span>
 <span class="sd">from human feedback (RLHF) and related training paradigms:</span>
 
 <span class="sd">**Policy Optimization Losses:**</span>
+
 <span class="sd">- PolicyLoss: Multi-purpose policy loss supporting PPO, CPGD (via use_cpg_loss), DAPO-style</span>
 <span class="sd">  decoupled clipping, and high-entropy token filtering for efficient training.</span>
 <span class="sd">- ValueLoss: Value function loss for PPO with optional value clipping.</span>
 
 <span class="sd">**Reward Model Losses:**</span>
+
 <span class="sd">- GPTLMLoss: Next-token prediction loss for generative reward model training.</span>
 <span class="sd">- LogSigmoidLoss: Log-sigmoid pairwise loss for scalar reward model training.</span>
 <span class="sd">- LogExpLoss: Log-exp pairwise loss for scalar reward model training.</span>
@@ -320,16 +327,18 @@
 <span class="sd">- PRMLoss: Process Reward Model loss for token-level reward prediction.</span>
 
 <span class="sd">**Preference Learning Losses:**</span>
+
 <span class="sd">- DPOLoss: Direct Preference Optimization loss for aligning language models with preferences.</span>
 <span class="sd">- KTOLoss: Kahneman-Tversky Optimization loss for uneven sampling scenarios.</span>
 <span class="sd">- VanillaKTOLoss: Simplified KTO loss for even sampling scenarios.</span>
 
 <span class="sd">**Knowledge Distillation:**</span>
+
 <span class="sd">- KDLoss: Knowledge Distillation loss for transferring knowledge from teacher to student models.</span>
 
 <span class="sd">All loss functions are designed to work seamlessly with the LightRFT training framework,</span>
 <span class="sd">supporting distributed training, mixed precision, and various optimization strategies.</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
 
@@ -342,7 +351,7 @@
 
 
 <div class="viewcode-block" id="GPTLMLoss"><a class="viewcode-back" href="../../../api_doc/models/loss.html#lightrft.models.loss.GPTLMLoss">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">GPTLMLoss</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    GPT Language Model loss for next-token prediction.</span>
 <span class="sd">    Used for generative reward model training.</span>
 
@@ -350,14 +359,14 @@
 <span class="sd">        cross-entropy (default: ``-100``), matching Hugging Face conventions.</span>
 <span class="sd">    :ivar torch.nn.CrossEntropyLoss loss: Underlying cross-entropy criterion</span>
 <span class="sd">        configured to ignore ``IGNORE_INDEX``.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">IGNORE_INDEX</span> <span class="o">=</span> <span class="o">-</span><span class="mi">100</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">loss</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">CrossEntropyLoss</span><span class="p">(</span><span class="n">ignore_index</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">IGNORE_INDEX</span><span class="p">)</span>
 
 <div class="viewcode-block" id="GPTLMLoss.forward"><a class="viewcode-back" href="../../../api_doc/models/loss.html#lightrft.models.loss.GPTLMLoss.forward">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logits</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">labels</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Compute next-token prediction loss.</span>
 
 <span class="sd">        Uses the common shifting scheme:</span>
@@ -375,7 +384,7 @@
 
 <span class="sd">        :shape logits: ``(..., seq_len, vocab_size)``</span>
 <span class="sd">        :shape labels: ``(..., seq_len)``</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">shift_logits</span> <span class="o">=</span> <span class="n">logits</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">contiguous</span><span class="p">()</span>
         <span class="n">shift_labels</span> <span class="o">=</span> <span class="n">labels</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">contiguous</span><span class="p">()</span>
 
@@ -385,7 +394,7 @@
 
 
 <div class="viewcode-block" id="PolicyLoss"><a class="viewcode-back" href="../../../api_doc/models/loss.html#lightrft.models.loss.PolicyLoss">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">PolicyLoss</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Multi-purpose policy loss function supporting multiple reinforcement learning algorithms.</span>
 
 <span class="sd">    This class implements a unified policy loss that can be configured to support various</span>
@@ -432,11 +441,13 @@
 <span class="sd">       (high-entropy tokens) to create a final mask for loss computation.</span>
 
 <span class="sd">    2. **PPO Mode** (default, ``use_cpg_loss=False``):</span>
+
 <span class="sd">       - Computes policy ratio: ``ratio = exp(log_probs - old_log_probs)``</span>
 <span class="sd">       - Clips ratio: ``clipped_ratio = clamp(ratio, 1 - clip_eps, 1 + clip_eps)``</span>
 <span class="sd">       - Loss: ``-min(ratio * advantages, clipped_ratio * advantages)``</span>
 
 <span class="sd">    3. **CPGD Mode** (``use_cpg_loss=True``):</span>
+
 <span class="sd">       - Uses asymmetric clipping: upper bound ``log(1 + clip_eps)`` for positive advantages,</span>
 <span class="sd">         lower bound ``log(1 - clip_eps)`` for negative advantages</span>
 <span class="sd">       - Loss: ``-clipped_log_probs * advantages``</span>
@@ -465,7 +476,7 @@
 <span class="sd">    - PPO: https://arxiv.org/abs/1707.06347</span>
 <span class="sd">    - CPGD: https://arxiv.org/abs/2505.12504</span>
 <span class="sd">    - High-Entropy Token Filtering: https://arxiv.org/abs/2506.01939</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">clip_eps</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.2</span><span class="p">,</span>
@@ -487,7 +498,7 @@
         <span class="n">action_mask</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="n">entropy_mask</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Compute policy loss with optional masking and algorithm-specific clipping.</span>
 
 <span class="sd">        This method computes the policy loss based on the configured algorithm (PPO or CPGD)</span>
@@ -515,6 +526,7 @@
 <span class="sd">        **Masking Strategy:**</span>
 
 <span class="sd">        The final mask is computed as:</span>
+
 <span class="sd">        - If ``entropy_mask`` is provided: ``final_mask = entropy_mask``</span>
 <span class="sd">          (Note: ``entropy_mask`` is already created considering ``action_mask`` in</span>
 <span class="sd">          ``create_high_entropy_mask``, so padding positions are already excluded)</span>
@@ -526,7 +538,7 @@
 
 <span class="sd">        - **PPO**: Uses symmetric clipping ``[1 - clip_eps, 1 + clip_eps]`` on the policy ratio.</span>
 <span class="sd">        - **CPGD**: Uses asymmetric clipping with log-space bounds for better stability.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="c1"># Apply entropy mask if provided (for high-entropy token filtering)</span>
         <span class="c1"># action_mask shape: (batch_size, num_actions) - binary mask indicating valid tokens</span>
         <span class="c1"># entropy_mask shape: (batch_size, num_actions) - binary mask for high-entropy tokens</span>
@@ -558,9 +570,9 @@
 
 
 <div class="viewcode-block" id="ValueLoss"><a class="viewcode-back" href="../../../api_doc/models/loss.html#lightrft.models.loss.ValueLoss">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">ValueLoss</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Value Loss for PPO</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">clip_eps</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">clip_eps</span> <span class="o">=</span> <span class="n">clip_eps</span>
@@ -572,7 +584,7 @@
         <span class="n">returns</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
         <span class="n">action_mask</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Compute PPO value function loss with optional clipping.</span>
 
 <span class="sd">        :param values: Current value predictions.</span>
@@ -585,7 +597,7 @@
 <span class="sd">        :type action_mask: Optional[torch.Tensor]</span>
 <span class="sd">        :return: Scalar value loss (0.5 * MSE).</span>
 <span class="sd">        :rtype: torch.Tensor</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">clip_eps</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">values_clipped</span> <span class="o">=</span> <span class="n">old_values</span> <span class="o">+</span> <span class="p">(</span><span class="n">values</span> <span class="o">-</span> <span class="n">old_values</span><span class="p">)</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">clip_eps</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">clip_eps</span><span class="p">)</span>
             <span class="n">surr1</span> <span class="o">=</span> <span class="p">(</span><span class="n">values_clipped</span> <span class="o">-</span> <span class="n">returns</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
@@ -599,13 +611,13 @@
 
 
 <div class="viewcode-block" id="PairWiseLoss"><a class="viewcode-back" href="../../../api_doc/models/loss.html#lightrft.models.loss.PairWiseLoss">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">PairWiseLoss</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Pairwise Loss for Reward Model</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 <div class="viewcode-block" id="PairWiseLoss.forward"><a class="viewcode-back" href="../../../api_doc/models/loss.html#lightrft.models.loss.PairWiseLoss.forward">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">chosen_reward</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">reject_reward</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">margin</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Compute pairwise ranking loss.</span>
 
 <span class="sd">        :param chosen_reward: Reward scores for chosen/preferred samples.</span>
@@ -616,7 +628,7 @@
 <span class="sd">        :type margin: Optional[torch.Tensor]</span>
 <span class="sd">        :return: Mean negative log-sigmoid loss.</span>
 <span class="sd">        :rtype: torch.Tensor</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="n">margin</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">loss</span> <span class="o">=</span> <span class="o">-</span><span class="n">F</span><span class="o">.</span><span class="n">logsigmoid</span><span class="p">(</span><span class="n">chosen_reward</span> <span class="o">-</span> <span class="n">reject_reward</span> <span class="o">-</span> <span class="n">margin</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
@@ -625,9 +637,9 @@
 
 
 <div class="viewcode-block" id="DPOLoss"><a class="viewcode-back" href="../../../api_doc/models/loss.html#lightrft.models.loss.DPOLoss">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">DPOLoss</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    DPO Loss</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">beta</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">label_smoothing</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">ipo</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">beta</span> <span class="o">=</span> <span class="n">beta</span>
@@ -641,7 +653,7 @@
         <span class="n">reference_chosen_logps</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
         <span class="n">reference_rejected_logps</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Compute DPO (Direct Preference Optimization) loss.</span>
 
 <span class="sd">        :param policy_chosen_logps: Log probabilities under policy for chosen samples.</span>
@@ -654,7 +666,7 @@
 <span class="sd">        :type reference_rejected_logps: torch.Tensor</span>
 <span class="sd">        :return: Tuple of (loss, chosen_rewards, rejected_rewards).</span>
 <span class="sd">        :rtype: Tuple[torch.Tensor, torch.Tensor, torch.Tensor]</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">pi_logratios</span> <span class="o">=</span> <span class="n">policy_chosen_logps</span> <span class="o">-</span> <span class="n">policy_rejected_logps</span>
         <span class="n">ref_logratios</span> <span class="o">=</span> <span class="n">reference_chosen_logps</span> <span class="o">-</span> <span class="n">reference_rejected_logps</span>
         <span class="n">logits</span> <span class="o">=</span> <span class="n">pi_logratios</span> <span class="o">-</span> <span class="n">ref_logratios</span>
@@ -678,9 +690,9 @@
 
 <span class="c1"># Adapted from https://github.com/ContextualAI/HALOs/blob/ca9b7e3eeea220c0944ad8095d641da33f907a7e/trainers.py#L742</span>
 <div class="viewcode-block" id="VanillaKTOLoss"><a class="viewcode-back" href="../../../api_doc/models/loss.html#lightrft.models.loss.VanillaKTOLoss">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">VanillaKTOLoss</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    KTO loss for even sampling</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">beta</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">beta</span> <span class="o">=</span> <span class="n">beta</span>
@@ -692,7 +704,7 @@
         <span class="n">reference_chosen_logps</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">FloatTensor</span><span class="p">,</span>
         <span class="n">reference_rejected_logps</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">FloatTensor</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">FloatTensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">FloatTensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">FloatTensor</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Compute vanilla KTO loss for evenly sampled chosen/rejected pairs.</span>
 
 <span class="sd">        :param policy_chosen_logps: Log probabilities under policy for chosen samples.</span>
@@ -705,7 +717,7 @@
 <span class="sd">        :type reference_rejected_logps: torch.FloatTensor</span>
 <span class="sd">        :return: Tuple of (losses, chosen_rewards, rejected_rewards).</span>
 <span class="sd">        :rtype: Tuple[torch.FloatTensor, torch.FloatTensor, torch.FloatTensor]</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">chosen_KL</span> <span class="o">=</span> <span class="p">(</span><span class="n">policy_chosen_logps</span> <span class="o">-</span> <span class="n">reference_chosen_logps</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
         <span class="n">rejected_KL</span> <span class="o">=</span> <span class="p">(</span><span class="n">policy_rejected_logps</span> <span class="o">-</span> <span class="n">reference_rejected_logps</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 
@@ -727,9 +739,9 @@
 
 <span class="c1"># Adapted from https://github.com/ContextualAI/HALOs/blob/ca9b7e3eeea220c0944ad8095d641da33f907a7e/trainers.py#L770</span>
 <div class="viewcode-block" id="KTOLoss"><a class="viewcode-back" href="../../../api_doc/models/loss.html#lightrft.models.loss.KTOLoss">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">KTOLoss</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    KTO loss for uneven sampling</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">beta</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">desirable_weight</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">undesirable_weight</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">world_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">device</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -749,7 +761,7 @@
         <span class="n">reference_rejected_logps</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">FloatTensor</span><span class="p">,</span>
         <span class="n">reference_KL_logps</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">FloatTensor</span><span class="p">,</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">FloatTensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">FloatTensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">FloatTensor</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Compute KTO loss for unevenly sampled chosen/rejected pairs with distributed KL estimation.</span>
 
 <span class="sd">        :param policy_chosen_logps: Log probabilities under policy for chosen samples.</span>
@@ -766,7 +778,7 @@
 <span class="sd">        :type reference_KL_logps: torch.FloatTensor</span>
 <span class="sd">        :return: Tuple of (losses, chosen_rewards, rejected_rewards, KL).</span>
 <span class="sd">        :rtype: Tuple[torch.FloatTensor, torch.FloatTensor, torch.FloatTensor, torch.FloatTensor]</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">KL</span> <span class="o">=</span> <span class="p">(</span><span class="n">policy_KL_logps</span> <span class="o">-</span> <span class="n">reference_KL_logps</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span>
         <span class="c1"># all_reduce sums up the KL estimates across all devices (gradient will also be scaled by world size)</span>
         <span class="n">dist</span><span class="o">.</span><span class="n">all_reduce</span><span class="p">(</span><span class="n">KL</span><span class="p">,</span> <span class="n">op</span><span class="o">=</span><span class="n">dist</span><span class="o">.</span><span class="n">ReduceOp</span><span class="o">.</span><span class="n">SUM</span><span class="p">)</span>
@@ -797,15 +809,15 @@
 
 <span class="c1"># Adapted from https://github.com/microsoft/LMOps/blob/main/minillm/finetune.py#L166</span>
 <div class="viewcode-block" id="KDLoss"><a class="viewcode-back" href="../../../api_doc/models/loss.html#lightrft.models.loss.KDLoss">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">KDLoss</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Language Model Knowledge Distillation Loss</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">IGNORE_INDEX</span> <span class="o">=</span> <span class="o">-</span><span class="mi">100</span>
 
 <div class="viewcode-block" id="KDLoss.forward"><a class="viewcode-back" href="../../../api_doc/models/loss.html#lightrft.models.loss.KDLoss.forward">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logits</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">teacher_logits</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">label</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Compute knowledge distillation loss.</span>
 
 <span class="sd">        :param logits: Student model logits.</span>
@@ -816,7 +828,7 @@
 <span class="sd">        :type label: torch.Tensor</span>
 <span class="sd">        :return: Scalar KD loss.</span>
 <span class="sd">        :rtype: torch.Tensor</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">teacher_probs</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">teacher_logits</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
         <span class="n">inf_mask</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">isinf</span><span class="p">(</span><span class="n">logits</span><span class="p">)</span>
         <span class="n">logprobs</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">log_softmax</span><span class="p">(</span><span class="n">logits</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
@@ -829,9 +841,9 @@
 
 
 <div class="viewcode-block" id="PRMLoss"><a class="viewcode-back" href="../../../api_doc/models/loss.html#lightrft.models.loss.PRMLoss">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">PRMLoss</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Process Reward Model Loss</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">placeholder_token_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">reward_token_ids</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">IGNORE_INDEX</span> <span class="o">=</span> <span class="o">-</span><span class="mi">100</span>
@@ -845,7 +857,7 @@
                 <span class="n">labels</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
                 <span class="o">*</span><span class="p">,</span>
                 <span class="n">return_acc</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Compute process reward model loss.</span>
 
 <span class="sd">        :param inputs: Input token IDs (used to locate placeholder tokens).</span>
@@ -858,14 +870,14 @@
 <span class="sd">        :type return_acc: bool</span>
 <span class="sd">        :return: Loss tensor or tuple of (loss, accuracy) if return_acc=True.</span>
 <span class="sd">        :rtype: Union[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">placeholder_mask</span> <span class="o">=</span> <span class="n">inputs</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">placeholder_token_id</span>
         <span class="n">logits</span> <span class="o">=</span> <span class="n">logits</span><span class="p">[</span><span class="n">placeholder_mask</span><span class="p">]</span>
         <span class="n">labels</span> <span class="o">=</span> <span class="n">labels</span><span class="p">[</span><span class="n">placeholder_mask</span><span class="p">]</span>
 
         <span class="k">if</span> <span class="n">labels</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="n">torch</span><span class="o">.</span><span class="n">float</span><span class="p">:</span>
             <span class="c1"># soft label</span>
-            <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reward_token_ids</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">&quot;reward_token_ids should have 2 tokens for soft labels&quot;</span>
+            <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reward_token_ids</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">"reward_token_ids should have 2 tokens for soft labels"</span>
             <span class="n">logits</span> <span class="o">=</span> <span class="n">logits</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">reward_token_ids</span><span class="p">]</span>
             <span class="n">positive_labels</span> <span class="o">=</span> <span class="n">labels</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">logits</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
             <span class="n">negative_labels</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">positive_labels</span>
@@ -889,19 +901,19 @@
 
 
 <div class="viewcode-block" id="LogSigmoidLoss"><a class="viewcode-back" href="../../../api_doc/models/loss.html#lightrft.models.loss.LogSigmoidLoss">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">LogSigmoidLoss</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Pairwise preference loss for scalar reward models using the log-sigmoid objective.</span>
 
 <span class="sd">    Encourages the chosen sample to have a higher reward than the rejected</span>
 <span class="sd">    sample. Optionally supports a non-negative margin.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 <div class="viewcode-block" id="LogSigmoidLoss.forward"><a class="viewcode-back" href="../../../api_doc/models/loss.html#lightrft.models.loss.LogSigmoidLoss.forward">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">chosen_reward</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
         <span class="n">reject_reward</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
         <span class="n">margin</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Compute log-sigmoid pairwise loss.</span>
 
 <span class="sd">        :param chosen_reward: Predicted reward for the preferred (chosen) sample.</span>
@@ -915,7 +927,7 @@
 
 <span class="sd">        :returns: Mean negative log-sigmoid loss over the batch.</span>
 <span class="sd">        :rtype: torch.Tensor</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="n">margin</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">loss</span> <span class="o">=</span> <span class="o">-</span><span class="n">F</span><span class="o">.</span><span class="n">logsigmoid</span><span class="p">(</span><span class="n">chosen_reward</span> <span class="o">-</span> <span class="n">reject_reward</span> <span class="o">-</span> <span class="n">margin</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
@@ -924,19 +936,19 @@
 
 
 <div class="viewcode-block" id="LogExpLoss"><a class="viewcode-back" href="../../../api_doc/models/loss.html#lightrft.models.loss.LogExpLoss">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">LogExpLoss</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Log-exp (softplus) pairwise loss for scalar reward model training.</span>
 
 <span class="sd">    This loss corresponds to ``log(1 + exp(reject - chosen))`` averaged over</span>
 <span class="sd">    the batch. See: https://arxiv.org/abs/2204.05862</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 <div class="viewcode-block" id="LogExpLoss.forward"><a class="viewcode-back" href="../../../api_doc/models/loss.html#lightrft.models.loss.LogExpLoss.forward">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">chosen_reward</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
         <span class="n">reject_reward</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
         <span class="n">margin</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Compute log-exp pairwise loss.</span>
 
 <span class="sd">        :param chosen_reward: Predicted reward for the preferred (chosen) sample.</span>
@@ -949,27 +961,27 @@
 
 <span class="sd">        :returns: Mean ``log(1 + exp(reject - chosen))`` over the batch.</span>
 <span class="sd">        :rtype: torch.Tensor</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">loss</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">reject_reward</span> <span class="o">-</span> <span class="n">chosen_reward</span><span class="p">))</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">loss</span></div></div>
 
 
 <div class="viewcode-block" id="HPSLoss"><a class="viewcode-back" href="../../../api_doc/models/loss.html#lightrft.models.loss.HPSLoss">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">HPSLoss</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""</span>
 <span class="sd">    Human Preference Score (HPS) Loss for scalar reward model training.</span>
 <span class="sd">    Implements the cross-entropy loss over the logits formed by concatenating</span>
 <span class="sd">    the chosen and rejected rewards. The core idea is to treat the preference</span>
 <span class="sd">    prediction as binary classification task.</span>
 
 <span class="sd">    Paper: https://arxiv.org/abs/2303.14420</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 <div class="viewcode-block" id="HPSLoss.forward"><a class="viewcode-back" href="../../../api_doc/models/loss.html#lightrft.models.loss.HPSLoss.forward">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">chosen_reward</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
         <span class="n">reject_reward</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
         <span class="n">margin</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Compute HPS loss.</span>
 
 <span class="sd">        :param chosen_reward: Predicted reward for the preferred (chosen) sample.</span>
@@ -982,7 +994,7 @@
 
 <span class="sd">        :returns: Mean cross-entropy loss over the batch.</span>
 <span class="sd">        :rtype: torch.Tensor</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">logits</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">chosen_reward</span><span class="p">,</span> <span class="n">reject_reward</span><span class="p">],</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
         <span class="n">labels</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">logits</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">device</span><span class="o">=</span><span class="n">logits</span><span class="o">.</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">long</span><span class="p">)</span>
         <span class="n">loss</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">cross_entropy</span><span class="p">(</span><span class="n">logits</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span>
@@ -999,7 +1011,7 @@
 
   <div role="contentinfo">
     <p>
-      &copy; Copyright 2025, OpenDILab.
+      &copy; Copyright 2025-2026, OpenDILab.
 
     </p>
   </div>
@@ -1036,8 +1048,8 @@
   <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
   <script src="../../../_static/doctools.js"></script>
   <script src="../../../_static/sphinx_highlight.js"></script>
-  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-  <script src="../../../_static/js/language_switch.js"></script>
+  <script src="../../../_static/clipboard.min.js"></script>
+  <script src="../../../_static/copybutton.js"></script>
   
 
   
@@ -1066,7 +1078,7 @@
     <div class="container-fluid">
       <div class="container">
         <div class="mobile-main-menu-header-container">
-          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="header-logo" href="https://github.com/opendilab/LightRFT" aria-label="OpenMMLab"></a>
           <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
         </div>
       </div>

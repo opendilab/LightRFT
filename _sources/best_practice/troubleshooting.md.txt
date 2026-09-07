@@ -646,5 +646,5 @@ If you can't resolve the issue:
 ## See Also
 
 - [FAQ](faq.md) - Frequently asked questions
-- [Configuration](../user_guide/configuration.md) - All parameters
-- [Best Practices](../best_practice/strategy_usage.md) - Optimization tips
+- [Configuration](../quick_start/configuration.md) - All parameters
+- [Best Practices](strategy.rst) - Optimization tips

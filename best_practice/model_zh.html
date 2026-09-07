@@ -33,9 +33,12 @@
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
   <link rel="stylesheet" href="../_static/css/readthedocs.css" type="text/css" />
   <link rel="index" title="Index" href="../genindex.html" />
   <link rel="search" title="Search" href="../search.html" />
+  <link rel="next" title="LightRFT Reward Model 训练最佳实践指南" href="reward_model_zh.html" />
+  <link rel="prev" title="最佳实践" href="index_zh.html" />
   <!-- Google Analytics -->
   <script type="text/javascript">
     var collapsedSections = [];
@@ -85,7 +88,7 @@
 <div class="container-fluid header-holder tutorials-header" id="header-holder">
   <div class="container">
     <div class="header-container">
-      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+      <a class="header-logo" href="https://github.com/opendilab/LightRFT"
         aria-label="OpenMMLab"></a>
 
       <div class="main-menu">
@@ -235,6 +238,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../api_doc/strategy/index.html">lightrft.strategy</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api_doc/trainer/index.html">lightrft.trainer</a></li>
 </ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../index_zh.html">欢迎来到 LightRFT 文档!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index_zh.html#id4">索引与表格</a></li>
+</ul>
 
         
         
@@ -271,6 +278,10 @@
         </a> &gt;
       </li>
 
+        
+          <li><a href="../index_zh.html">欢迎来到 LightRFT 文档!</a> &gt;</li>
+        
+          <li><a href="index_zh.html">最佳实践</a> &gt;</li>
         
       <li>LightRFT 模型设计文档</li>
     
@@ -393,10 +404,10 @@
 </ul>
 <p><strong>示例行为 (Example Behavior)</strong>：</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># 共同输入</span>
-<span class="n">system_prompt</span> <span class="o">=</span> <span class="s2">&quot;You are a helpful visual assistant.&quot;</span>
-<span class="n">image</span> <span class="o">=</span> <span class="s2">&quot;path/to/dog.jpg&quot;</span> <span class="c1"># 视觉输入</span>
-<span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;What is shown in this image?&quot;</span>
-<span class="n">response</span> <span class="o">=</span> <span class="s2">&quot;The image shows a cute brown dog playing in the park.&quot;</span>
+<span class="n">system_prompt</span> <span class="o">=</span> <span class="s2">"You are a helpful visual assistant."</span>
+<span class="n">image</span> <span class="o">=</span> <span class="s2">"path/to/dog.jpg"</span> <span class="c1"># 视觉输入</span>
+<span class="n">query</span> <span class="o">=</span> <span class="s2">"What is shown in this image?"</span>
+<span class="n">response</span> <span class="o">=</span> <span class="s2">"The image shows a cute brown dog playing in the park."</span>
 
 <span class="c1"># 1. 标量奖励模型 (SRM)</span>
 <span class="n">srm_score</span> <span class="o">=</span> <span class="n">srm</span><span class="p">(</span><span class="n">image</span><span class="o">=</span><span class="n">image</span><span class="p">,</span> <span class="n">system_prompt</span><span class="o">=</span><span class="n">system_prompt</span><span class="p">,</span> <span class="n">query</span><span class="o">=</span><span class="n">query</span><span class="p">,</span> <span class="n">response</span><span class="o">=</span><span class="n">response</span><span class="p">)</span>
@@ -406,7 +417,7 @@
 <span class="c1"># 2. 生成式奖励模型 (GRM)</span>
 <span class="n">grm_output</span> <span class="o">=</span> <span class="n">grm</span><span class="p">(</span><span class="n">image</span><span class="o">=</span><span class="n">image</span><span class="p">,</span> <span class="n">system_prompt</span><span class="o">=</span><span class="n">system_prompt</span><span class="p">,</span> <span class="n">query</span><span class="o">=</span><span class="n">query</span><span class="p">,</span> <span class="n">response</span><span class="o">=</span><span class="n">response</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">grm_output</span><span class="p">)</span>
-<span class="c1"># 输出: &quot;&lt;reasoning&gt;The response accurately describes the content of the image.&lt;/reasoning&gt;&lt;score&gt;5&lt;/score&gt;&quot; -&gt; 输出文本推理过程与评分</span>
+<span class="c1"># 输出: "&lt;reasoning&gt;The response accurately describes the content of the image.&lt;/reasoning&gt;&lt;score&gt;5&lt;/score&gt;" -&gt; 输出文本推理过程与评分</span>
 </pre></div>
 </div>
 </section>
@@ -471,7 +482,7 @@
 <section id="a">
 <h4>模式 A：从预训练路径加载<a class="headerlink" href="#a" title="Permalink to this heading">¶</a></h4>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">actor</span> <span class="o">=</span> <span class="n">ActorText</span><span class="p">(</span>
-    <span class="n">pretrain_or_model</span><span class="o">=</span><span class="s2">&quot;model_path&quot;</span><span class="p">,</span>
+    <span class="n">pretrain_or_model</span><span class="o">=</span><span class="s2">"model_path"</span><span class="p">,</span>
     <span class="n">lora_rank</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span>
     <span class="n">use_flash_attention_2</span><span class="o">=</span><span class="kc">True</span>
 <span class="p">)</span>
@@ -600,12 +611,24 @@
             </div>
             <footer>
   
+  <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+    
+    <a href="reward_model_zh.html" class="btn btn-neutral float-right" title="LightRFT Reward Model 训练最佳实践指南" accesskey="n"
+      rel="next">Next <img src="../_static/images/chevron-right-blue.svg"
+        class="next-page"></a>
+    
+    
+    <a href="index_zh.html" class="btn btn-neutral" title="最佳实践" accesskey="p"
+      rel="prev"><img src="../_static/images/chevron-right-blue.svg" class="previous-page"> Previous</a>
+    
+  </div>
+  
 
   <hr>
 
   <div role="contentinfo">
     <p>
-      &copy; Copyright 2025, OpenDILab.
+      &copy; Copyright 2025-2026, OpenDILab.
 
     </p>
   </div>
@@ -705,8 +728,8 @@
   <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
   <script src="../_static/doctools.js"></script>
   <script src="../_static/sphinx_highlight.js"></script>
-  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-  <script src="../_static/js/language_switch.js"></script>
+  <script src="../_static/clipboard.min.js"></script>
+  <script src="../_static/copybutton.js"></script>
   
 
   
@@ -735,7 +758,7 @@
     <div class="container-fluid">
       <div class="container">
         <div class="mobile-main-menu-header-container">
-          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="header-logo" href="https://github.com/opendilab/LightRFT" aria-label="OpenMMLab"></a>
           <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
         </div>
       </div>

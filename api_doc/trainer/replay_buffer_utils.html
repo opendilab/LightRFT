@@ -33,6 +33,7 @@
   <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
   <link rel="stylesheet" href="../../_static/css/readthedocs.css" type="text/css" />
   <link rel="index" title="Index" href="../../genindex.html" />
   <link rel="search" title="Search" href="../../search.html" />
@@ -87,7 +88,7 @@
 <div class="container-fluid header-holder tutorials-header" id="header-holder">
   <div class="container">
     <div class="header-container">
-      <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/"
+      <a class="header-logo" href="https://github.com/opendilab/LightRFT"
         aria-label="OpenMMLab"></a>
 
       <div class="main-menu">
@@ -236,6 +237,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../models/index.html">lightrft.models</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../strategy/index.html">lightrft.strategy</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">lightrft.trainer</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../../index_zh.html">欢迎来到 LightRFT 文档!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../index_zh.html#id4">索引与表格</a></li>
 </ul>
 
         
@@ -483,13 +488,13 @@ action_entropy: (A) - Entropy values for high-entropy token filtering</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="lightrft.trainer.replay_buffer_utils.is_vl_experience">
-<span class="sig-prename descclassname"><span class="pre">lightrft.trainer.replay_buffer_utils.</span></span><span class="sig-name descname"><span class="pre">is_vl_experience</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">experience</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Experience</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="experience_maker_vl.html#lightrft.trainer.experience_maker_vl.ExperienceVL" title="lightrft.trainer.experience_maker_vl.ExperienceVL"><span class="pre">ExperienceVL</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../../_modules/lightrft/trainer/replay_buffer_utils.html#is_vl_experience"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.trainer.replay_buffer_utils.is_vl_experience" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">lightrft.trainer.replay_buffer_utils.</span></span><span class="sig-name descname"><span class="pre">is_vl_experience</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">experience</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.Experience" title="lightrft.trainer.experience_maker.Experience"><span class="pre">Experience</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="experience_maker_vl.html#lightrft.trainer.experience_maker_vl.ExperienceVL" title="lightrft.trainer.experience_maker_vl.ExperienceVL"><span class="pre">ExperienceVL</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="../../_modules/lightrft/trainer/replay_buffer_utils.html#is_vl_experience"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.trainer.replay_buffer_utils.is_vl_experience" title="Permalink to this definition">¶</a></dt>
 <dd><p>Determine if an experience is a vision-language experience.</p>
 <p>Checks for the presence of vision-specific attributes to distinguish between
 language model experiences and vision-language experiences.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>experience</strong> (<em>Union</em><em>[</em><em>Experience</em><em>, </em><a class="reference internal" href="experience_maker_vl.html#lightrft.trainer.experience_maker_vl.ExperienceVL" title="lightrft.trainer.experience_maker_vl.ExperienceVL"><em>ExperienceVL</em></a><em>]</em>) – The experience object to check</p>
+<dd class="field-odd"><p><strong>experience</strong> (<em>Union</em><em>[</em><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.Experience" title="lightrft.trainer.experience_maker.Experience"><em>Experience</em></a><em>, </em><a class="reference internal" href="experience_maker_vl.html#lightrft.trainer.experience_maker_vl.ExperienceVL" title="lightrft.trainer.experience_maker_vl.ExperienceVL"><em>ExperienceVL</em></a><em>]</em>) – The experience object to check</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>True if the experience contains vision data, False otherwise</p>
@@ -501,14 +506,14 @@ language model experiences and vision-language experiences.</p>
 <p>Example:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">exp</span> <span class="o">=</span> <span class="n">ExperienceVL</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
 <span class="k">if</span> <span class="n">is_vl_experience</span><span class="p">(</span><span class="n">exp</span><span class="p">):</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;This is a vision-language experience&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"This is a vision-language experience"</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="lightrft.trainer.replay_buffer_utils.make_experience_batch">
-<span class="sig-prename descclassname"><span class="pre">lightrft.trainer.replay_buffer_utils.</span></span><span class="sig-name descname"><span class="pre">make_experience_batch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">items</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">packing_samples</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Experience</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="experience_maker_vl.html#lightrft.trainer.experience_maker_vl.ExperienceVL" title="lightrft.trainer.experience_maker_vl.ExperienceVL"><span class="pre">ExperienceVL</span></a></span></span><a class="reference internal" href="../../_modules/lightrft/trainer/replay_buffer_utils.html#make_experience_batch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.trainer.replay_buffer_utils.make_experience_batch" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">lightrft.trainer.replay_buffer_utils.</span></span><span class="sig-name descname"><span class="pre">make_experience_batch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">items</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">packing_samples</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.Experience" title="lightrft.trainer.experience_maker.Experience"><span class="pre">Experience</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="experience_maker_vl.html#lightrft.trainer.experience_maker_vl.ExperienceVL" title="lightrft.trainer.experience_maker_vl.ExperienceVL"><span class="pre">ExperienceVL</span></a></span></span><a class="reference internal" href="../../_modules/lightrft/trainer/replay_buffer_utils.html#make_experience_batch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.trainer.replay_buffer_utils.make_experience_batch" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a batch experience from individual items.</p>
 <p>This generic function automatically detects the item type
 and delegates to the appropriate batch creation function. It handles both packed
@@ -524,7 +529,7 @@ and unpacked samples efficiently.</p>
 <dd class="field-even"><p>Batched experience (either Experience or ExperienceVL)</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Union[Experience, <a class="reference internal" href="experience_maker_vl.html#lightrft.trainer.experience_maker_vl.ExperienceVL" title="lightrft.trainer.experience_maker_vl.ExperienceVL">ExperienceVL</a>]</p>
+<dd class="field-odd"><p>Union[<a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.Experience" title="lightrft.trainer.experience_maker.Experience">Experience</a>, <a class="reference internal" href="experience_maker_vl.html#lightrft.trainer.experience_maker_vl.ExperienceVL" title="lightrft.trainer.experience_maker_vl.ExperienceVL">ExperienceVL</a>]</p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><p><strong>ValueError</strong> – If items list is empty</p>
@@ -576,13 +581,13 @@ from sequences to restore their original lengths.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="lightrft.trainer.replay_buffer_utils.split_experience_batch">
-<span class="sig-prename descclassname"><span class="pre">lightrft.trainer.replay_buffer_utils.</span></span><span class="sig-name descname"><span class="pre">split_experience_batch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">experience</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Experience</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="experience_maker_vl.html#lightrft.trainer.experience_maker_vl.ExperienceVL" title="lightrft.trainer.experience_maker_vl.ExperienceVL"><span class="pre">ExperienceVL</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span></span></span><a class="reference internal" href="../../_modules/lightrft/trainer/replay_buffer_utils.html#split_experience_batch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.trainer.replay_buffer_utils.split_experience_batch" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">lightrft.trainer.replay_buffer_utils.</span></span><span class="sig-name descname"><span class="pre">split_experience_batch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">experience</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.Experience" title="lightrft.trainer.experience_maker.Experience"><span class="pre">Experience</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="experience_maker_vl.html#lightrft.trainer.experience_maker_vl.ExperienceVL" title="lightrft.trainer.experience_maker_vl.ExperienceVL"><span class="pre">ExperienceVL</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span></span></span><a class="reference internal" href="../../_modules/lightrft/trainer/replay_buffer_utils.html#split_experience_batch"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lightrft.trainer.replay_buffer_utils.split_experience_batch" title="Permalink to this definition">¶</a></dt>
 <dd><p>Split a batch of experiences into individual items.</p>
 <p>Automatically detects the experience type and delegates to the appropriate
 splitting function. This is a generic interface that handles both types of experiences.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>experience</strong> (<em>Union</em><em>[</em><em>Experience</em><em>, </em><a class="reference internal" href="experience_maker_vl.html#lightrft.trainer.experience_maker_vl.ExperienceVL" title="lightrft.trainer.experience_maker_vl.ExperienceVL"><em>ExperienceVL</em></a><em>]</em>) – Batch experience to split into individual items</p>
+<dd class="field-odd"><p><strong>experience</strong> (<em>Union</em><em>[</em><a class="reference internal" href="experience_maker.html#lightrft.trainer.experience_maker.Experience" title="lightrft.trainer.experience_maker.Experience"><em>Experience</em></a><em>, </em><a class="reference internal" href="experience_maker_vl.html#lightrft.trainer.experience_maker_vl.ExperienceVL" title="lightrft.trainer.experience_maker_vl.ExperienceVL"><em>ExperienceVL</em></a><em>]</em>) – Batch experience to split into individual items</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>List of individual experience items</p>
@@ -635,13 +640,13 @@ from variable-length sequences.</p>
 <span class="p">]</span>
 
 <span class="c1"># Pad to the right</span>
-<span class="n">padded</span> <span class="o">=</span> <span class="n">zero_pad_sequences</span><span class="p">(</span><span class="n">sequences</span><span class="p">,</span> <span class="n">side</span><span class="o">=</span><span class="s2">&quot;right&quot;</span><span class="p">)</span>
+<span class="n">padded</span> <span class="o">=</span> <span class="n">zero_pad_sequences</span><span class="p">(</span><span class="n">sequences</span><span class="p">,</span> <span class="n">side</span><span class="o">=</span><span class="s2">"right"</span><span class="p">)</span>
 <span class="c1"># Result: tensor([[1, 2, 3, 0],</span>
 <span class="c1">#                 [4, 5, 0, 0],</span>
 <span class="c1">#                 [6, 7, 8, 9]])</span>
 
 <span class="c1"># Pad to the left</span>
-<span class="n">padded_left</span> <span class="o">=</span> <span class="n">zero_pad_sequences</span><span class="p">(</span><span class="n">sequences</span><span class="p">,</span> <span class="n">side</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">)</span>
+<span class="n">padded_left</span> <span class="o">=</span> <span class="n">zero_pad_sequences</span><span class="p">(</span><span class="n">sequences</span><span class="p">,</span> <span class="n">side</span><span class="o">=</span><span class="s2">"left"</span><span class="p">)</span>
 <span class="c1"># Result: tensor([[0, 1, 2, 3],</span>
 <span class="c1">#                 [0, 0, 4, 5],</span>
 <span class="c1">#                 [6, 7, 8, 9]])</span>
@@ -674,7 +679,7 @@ from variable-length sequences.</p>
 
   <div role="contentinfo">
     <p>
-      &copy; Copyright 2025, OpenDILab.
+      &copy; Copyright 2025-2026, OpenDILab.
 
     </p>
   </div>
@@ -752,8 +757,8 @@ from variable-length sequences.</p>
   <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
   <script src="../../_static/doctools.js"></script>
   <script src="../../_static/sphinx_highlight.js"></script>
-  <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-  <script src="../../_static/js/language_switch.js"></script>
+  <script src="../../_static/clipboard.min.js"></script>
+  <script src="../../_static/copybutton.js"></script>
   
 
   
@@ -782,7 +787,7 @@ from variable-length sequences.</p>
     <div class="container-fluid">
       <div class="container">
         <div class="mobile-main-menu-header-container">
-          <a class="header-logo" href="https://di-engine-docs.readthedocs.io/en/latest/" aria-label="OpenMMLab"></a>
+          <a class="header-logo" href="https://github.com/opendilab/LightRFT" aria-label="OpenMMLab"></a>
           <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
         </div>
       </div>

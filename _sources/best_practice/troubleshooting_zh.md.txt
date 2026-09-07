@@ -613,5 +613,5 @@ print(prof.key_averages().table(sort_by="cuda_time_total"))
 ## 另请参阅
 
 - [常见问题 (FAQ)](faq_zh.md) - 汇总的常见问题解答
-- [配置指南](../user_guide/configuration.md) - 全量参数说明
-- [最佳实践](../best_practice/strategy_usage.md) - 框架优化建议
+- [配置指南](../quick_start/configuration_zh.md) - 全量参数说明
+- [最佳实践](strategy_zh.md) - 框架优化建议
