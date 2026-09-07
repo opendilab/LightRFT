@@ -2,7 +2,9 @@
 
 LightRFT supports a rich ecosystem of reinforcement learning algorithms for fine-tuning large language models. This comprehensive guide provides algorithm details and implementation references.
 
-### Purpose of This Guide
+> **Implementation status:** GRPO, CPGD, FIRE sampling, DAPO components, and high-entropy token filtering have concrete execution paths in the current source tree. GSPO is not yet connected to the instantiated policy loss, REINFORCE++ is not mapped by the advantage-calculator factory, and GMPO/Dr.GRPO are not complete end-to-end options. Their subsections below are retained as design notes; the example commands in those subsections are not runnable interfaces for version 0.1.1.
+
+## Purpose of This Guide
 
 With the rapid development in the RFT field and emerging algorithmic innovations, this guide helps you:
 
@@ -11,49 +13,49 @@ With the rapid development in the RFT field and emerging algorithmic innovations
 3. **Plan integration** of multiple algorithms by identifying synergies or conflicts
 4. **Maintain clarity** through documented relationships between algorithms and components
 
-### Algorithm Overview with Implementation
+## Algorithm Overview with Implementation
 
 | Algorithm | Type | Module | Description | Implementation | Paper |
 |-----------|------|--------|-------------|----------------|-------|
-| **GRPO** | Policy Optimization | Advantage Estimation | Uses group-based normalization for advantage estimation without requiring a separate value network | `FastExperienceMaker._get_return_advs()` | [arXiv:2402.03300](https://arxiv.org/pdf/2402.03300) |
-| **GSPO** | Policy Optimization | Policy Loss | Group sequence policy optimization | `PolicyLoss.forward()` | [arXiv:2507.18071](https://arxiv.org/abs/2507.18071) |
-| **REINFORCE++** | Advantage Estimation | Advantage Estimation | Modifies return and advantage calculation with improved baseline estimation | `FastExperienceMaker._get_return_advs()` | [arXiv:2501.03262](https://arxiv.org/abs/2501.03262) |
-| **CPGD** | Advantage Estimation | Advantage Estimation | Adds KL-based drift constraint and clipped log-ratio for stable return/advantage computation | `FastExperienceMaker._get_return_advs()` | [arXiv:2505.12504](https://arxiv.org/abs/2505.12504) |
+| **GRPO** | Policy Optimization | Advantage Estimation | Uses group-based normalization for advantage estimation without requiring a separate value network | `FastExperienceMaker._compute_advantages_and_returns()` | [arXiv:2402.03300](https://arxiv.org/pdf/2402.03300) |
+| **GSPO (WIP)** | Policy Optimization | Policy Loss | Group sequence policy optimization | CLI/loss integration incomplete | [arXiv:2507.18071](https://arxiv.org/abs/2507.18071) |
+| **REINFORCE++ (WIP)** | Advantage Estimation | Advantage Estimation | Modifies return and advantage calculation with improved baseline estimation | Calculator mapping incomplete | [arXiv:2501.03262](https://arxiv.org/abs/2501.03262) |
+| **CPGD** | Advantage Estimation | Advantage Estimation | Adds KL-based drift constraint and clipped log-ratio for stable return/advantage computation | `CPGDCalculator` | [arXiv:2505.12504](https://arxiv.org/abs/2505.12504) |
 | **FIRE Sampling** | Sampling Strategy | Experience Generation | Samples first token with high temperature and remaining tokens with regular temperature to improve diversity | `FastExperienceMaker.generate_samples()` | [arXiv:2410.21236](https://arxiv.org/abs/2410.21236) |
-| **GMPO** | Policy Optimization | Policy Loss | Geometric-Mean Policy Optimization | `PolicyLoss.forward()` | [arXiv:2507.20673](https://arxiv.org/abs/2507.20673) |
-| **Dr.GRPO** | Policy Optimization | Policy Loss | Introduces an unbiased policy optimization to mitigate length bias and improve token efficiency | `PolicyLoss.forward()` | [arXiv:2503.20783](https://arxiv.org/abs/2503.20783) |
+| **GMPO (WIP)** | Policy Optimization | Policy Loss | Geometric-Mean Policy Optimization | Not implemented end to end | [arXiv:2507.20673](https://arxiv.org/abs/2507.20673) |
+| **Dr.GRPO (WIP)** | Policy Optimization | Policy Loss | Introduces an unbiased policy optimization to mitigate length bias and improve token efficiency | Not implemented end to end | [arXiv:2503.20783](https://arxiv.org/abs/2503.20783) |
 | **DAPO** | Policy Optimization | Policy Loss | Introduces decoupled clipping and dynamic sampling scheme to stabilize large-scale RL optimization | `PolicyLoss.forward()` | [arXiv:2503.14476](https://arxiv.org/abs/2503.14476) |
 | **Token-Level Policy** | Policy Optimization | Policy Loss | Optimizes policy at token granularity to improve stability and credit assignment | `PolicyLoss.forward()` | [arXiv:2503.14476](https://arxiv.org/abs/2503.14476) |
-| **Reward Norm/Clip** | Reward Processing | Reward Processing | Applies reward normalization and clipping to stabilize advantage computation | `FastExperienceMaker._get_return_advs()` | [GitHub](https://github.com/alibaba/ROLL) |
+| **Reward Norm/Clip** | Reward Processing | Reward Processing | Applies reward normalization and clipping to stabilize advantage computation | `FastExperienceMaker._compute_advantages_and_returns()` | [GitHub](https://github.com/alibaba/ROLL) |
 | **select_high_entropy_tokens** | Policy Optimization | Policy Loss | Modifies PolicyLoss to implement high entropy token selection during training |  `PolicyLoss.forward()` | [arXiv:2506.01939](https://arxiv.org/abs/2506.01939) |
 
-### Algorithm Architecture
+## Algorithm Architecture
 
-#### Core Training Components
+### Core Training Components
 
 LightRFT's algorithm implementations are organized around three main modules:
 
-##### 1. Policy Loss Computation (`lightrft/trainer/ppo_loss.py`)
+#### 1. Policy Loss Computation (`lightrft/models/loss.py`)
 - **Purpose**: Implements PPO policy loss with multiple surrogate objectives
 - **Key Method**: `forward(log_probs, old_log_probs, advantages, action_mask)`
 - **Affected by**: GSPO, GMPO, Dr.GRPO, DAPO, Token-Level Policy, select_high_entropy_tokens
 - **Modification Type**: Loss function design and token selection strategies
 
-##### 2. Experience Generation (`lightrft/trainer/fast_exp_maker.py`)
+#### 2. Experience Generation (`lightrft/trainer/fast_exp_maker.py`)
 - **Purpose**: Generates experiences using vLLM and other inference backends
 - **Key Methods**:
   - `generate_samples()`: Sample generation with various strategies
-  - `_get_return_advs()`: Returns and advantages calculation
+  - `_compute_advantages_and_returns()`: Dispatches return and advantage calculation
 - **Affected by**: FIRE Sampling
 - **Modification Type**: Sampling strategies and inference optimization
 
-##### 3. Advantage & Reward Processing (`lightrft/trainer/fast_exp_maker.py`)
+#### 3. Advantage & Reward Processing (`lightrft/trainer/fast_exp_maker.py`)
 - **Purpose**: Processes rewards and computes advantages for policy updates
-- **Key Method**: `_get_return_advs()`: Advantage estimation with various baselines
+- **Key Method**: `_compute_advantages_and_returns()`: Advantage-estimator dispatch
 - **Affected by**: GRPO, REINFORCE++, CPGD, Reward Norm/Clip
 - **Modification Type**: Advantage estimation methods and reward shaping
 
-#### Modification Types
+### Modification Types
 
 **Algorithmic Changes**:
 - **Loss Design**: Core objective function modifications
@@ -67,13 +69,13 @@ LightRFT's algorithm implementations are organized around three main modules:
 - **Parameter Tuning**: Hyperparameter adjustments
 - **Pipeline Integration**: New components or workflow changes
 
-### Policy Optimization Algorithms
+## Policy Optimization Algorithms
 
-#### GRPO (Group Relative Policy Optimization)
+### GRPO (Group Relative Policy Optimization)
 
 **Overview**: GRPO uses group-based normalization for advantage estimation, providing stable training without requiring a separate value network.
 
-**Implementation**: `FastExperienceMaker._get_return_advs()` - Advantage Estimation module
+**Implementation**: `FastExperienceMaker._compute_advantages_and_returns()` - Advantage Estimation module
 **Modification Type**: Advantage Estimation
 
 **Key Features**:
@@ -97,7 +99,7 @@ python train.py \
 
 ---
 
-#### GSPO (Group Sequence Policy Optimization)
+### GSPO (Group Sequence Policy Optimization)
 
 **Overview**: GSPO generalizes the PPO objective with flexible surrogate functions, allowing for better control over policy updates.
 
@@ -123,7 +125,7 @@ python train.py \
 
 ---
 
-#### GMPO (Geometric-Mean Policy Optimization)
+### GMPO (Geometric-Mean Policy Optimization)
 
 **Overview**: GMPO leverages mirror descent principles for policy optimization, providing theoretical guarantees and improved convergence.
 
@@ -148,7 +150,7 @@ python train.py \
 
 ---
 
-#### Dr.GRPO (Group Relative Policy Optimization Done Right)
+### Dr.GRPO (Group Relative Policy Optimization Done Right)
 
 **Overview**: Dr.GRPO addresses length bias in reward models by explicitly modeling and mitigating the reward-length correlation.
 
@@ -175,7 +177,7 @@ python train.py \
 
 ---
 
-#### DAPO (Dynamic sAmpling Policy Optimization)
+### DAPO (Dynamic sAmpling Policy Optimization)
 
 **Overview**: DAPO uses separate upper and lower clipping bounds for advantage-weighted policy updates combined with dynamic sampling strategies, improving training stability.
 
@@ -203,7 +205,7 @@ python train.py \
 
 ---
 
-#### Token-Level Policy
+### Token-Level Policy
 
 **Overview**: Optimizes policy at token granularity to improve stability and credit assignment.
 
@@ -217,13 +219,13 @@ python train.py \
 
 **Usage**: Typically combined with other policy optimization methods through implementation modifications.
 
-### Advantage Estimation Methods
+## Advantage Estimation Methods
 
-#### REINFORCE++
+### REINFORCE++
 
 **Overview**: An improved baseline estimation method that uses control variates to reduce variance in policy gradient estimates.
 
-**Implementation**: `FastExperienceMaker._get_return_advs()` - Advantage Estimation module
+**Implementation**: `FastExperienceMaker._compute_advantages_and_returns()` - Advantage Estimation module
 **Modification Type**: Advantage Estimation
 
 **Key Features**:
@@ -245,11 +247,11 @@ python train.py \
 
 ---
 
-#### CPGD (Clipped Policy Gradient Optimization with Policy Drift)
+### CPGD (Clipped Policy Gradient Optimization with Policy Drift)
 
 **Overview**: CPGD constrains policy updates using KL-divergence to prevent catastrophic forgetting and maintain stable training.
 
-**Implementation**: `FastExperienceMaker._get_return_advs()` - Advantage Estimation module
+**Implementation**: `FastExperienceMaker._compute_advantages_and_returns()` - Advantage Estimation module
 **Modification Type**: Advantage Estimation (KL-constrained)
 
 **Key Features**:
@@ -270,13 +272,13 @@ python train.py \
 - Preserving original capabilities
 - Multi-stage training
 
-### Reward Processing
+## Reward Processing
 
-#### Reward Normalization and Clipping
+### Reward Normalization and Clipping
 
 **Overview**: Standard reward preprocessing techniques to stabilize training.
 
-**Implementation**: `FastExperienceMaker._get_return_advs()` - Reward Processing module
+**Implementation**: `FastExperienceMaker._compute_advantages_and_returns()` - Reward Processing module
 **Modification Type**: Reward Shaping (normalization/clipping)
 
 **Key Features**:
@@ -298,9 +300,9 @@ python train.py \
 - Reward scale varies across prompts
 - Training stability
 
-### Sampling Strategies
+## Sampling Strategies
 
-#### FIRE Sampling
+### FIRE Sampling
 
 **Overview**: FIRE (Flaming-hot Initiation with Regular Execution) is a simple yet effective sampling method that improves diversity and quality in response generation.
 
@@ -339,15 +341,15 @@ python examples/gsm8k_geo3k/train_colocate.py \
 
 
 
-### Implementation Notes
+## Implementation Notes
 
 - All policy loss algorithms modify the **PolicyLoss** module's `forward()` method
-- Advantage estimation algorithms modify **FastExperienceMaker**'s `_get_return_advs()` method
+- Advantage estimation algorithms modify **FastExperienceMaker**'s `_compute_advantages_and_returns()` method
 - Sampling strategies modify **FastExperienceMaker**'s `generate_samples()` method
-- Reward processing algorithms primarily work within `_get_return_advs()` method
+- Reward processing algorithms primarily work within `_compute_advantages_and_returns()` method
 - Most modifications are in core training loop components rather than peripheral utilities
 
-### References
+## References
 
 For detailed algorithm descriptions and experimental results, refer to the linked papers. Implementation details can be found in the source code:
 - Policy Loss: `lightrft/models/loss.py`

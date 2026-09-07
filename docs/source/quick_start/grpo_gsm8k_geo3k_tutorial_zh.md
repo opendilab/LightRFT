@@ -367,4 +367,4 @@ export WANDB_MODE="online"  # "offline" 表示仅本地记录
 
 - [支持的算法](algorithms_zh.md) — 完整算法文档
 - [配置参数参考](configuration_zh.md) — 完整参数文档
-- [训练策略指南](../best_practice/strategy_usage_zh.md) — FSDP、DeepSpeed 和推理引擎配置
+- [训练策略指南](../best_practice/strategy_zh.md) — FSDP、DeepSpeed 和推理引擎配置

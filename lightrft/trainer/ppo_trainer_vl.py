@@ -1034,12 +1034,10 @@ class PPOTrainerVL(ABC):
         :type global_step: int
         :param step_bar: Progress bar object.
         :type step_bar: tqdm
-        :param logs_dict: Dictionary of metrics to log. Should contain both:
-                          - Rollout statistics (rollout_reward, rollout_response_length, etc.)
-                            from inference/generation phase
-                          - Training statistics (policy_loss, critic_loss, kl, etc.)
-                            from optimization phase
-                          Defaults to {}.
+        :param logs_dict: Metrics from both rollout and optimization. Rollout
+            keys include values such as ``rollout_reward`` and
+            ``rollout_response_length``; training keys include values such as
+            ``policy_loss``, ``critic_loss``, and ``kl``.
         :type logs_dict: dict
         :param client_states: Client state for checkpoint recovery, defaults to {}.
         :type client_states: dict

@@ -1,6 +1,10 @@
+# 支持的算法
+
 ## 算法速查表
 
 LightRFT 支持丰富的强化学习算法生态系统，用于大语言模型的微调。本综合指南提供算法细节、实现参考。
+
+> **实现状态说明：** 当前源码中，GRPO、CPGD、FIRE Sampling、DAPO 的部分机制以及高熵 token 筛选具有明确执行路径。GSPO 尚未接入实际实例化的策略损失，REINFORCE++ 尚未映射到优势计算器工厂，GMPO/Dr.GRPO 也不是完整的端到端选项。下文相关小节仅作为设计说明保留，其中的示例命令不构成 0.1.1 版本的可运行接口。
 
 ### 本指南的目的
 
@@ -15,16 +19,16 @@ LightRFT 支持丰富的强化学习算法生态系统，用于大语言模型�
 
 | 算法 | 类型 | 模块 | 描述 | 实现位置 | 论文 |
 |------|------|------|------|---------|------|
-| **GRPO** | 策略优化 | 优势估计 | 使用基于组的归一化进行优势估计，无需独立的价值网络 | `FastExperienceMaker._get_return_advs()` | [arXiv:2402.03300](https://arxiv.org/pdf/2402.03300) |
-| **GSPO** | 策略优化 | 策略损失 | 序列视角的策略优化方案 | `PolicyLoss.forward()` | [arXiv:2507.18071](https://arxiv.org/abs/2507.18071) |
-| **REINFORCE++** | 优势估计 | 优势估计 | 通过改进的基线估计修改回报和优势计算 | `FastExperienceMaker._get_return_advs()` | [arXiv:2501.03262](https://arxiv.org/abs/2501.03262) |
-| **CPGD** | 优势估计 | 优势估计 | 添加基于 KL 的漂移约束和裁剪对数比率以实现稳定的回报/优势计算 | `FastExperienceMaker._get_return_advs()` | [arXiv:2505.12504](https://arxiv.org/abs/2505.12504) |
+| **GRPO** | 策略优化 | 优势估计 | 使用基于组的归一化进行优势估计，无需独立的价值网络 | `FastExperienceMaker._compute_advantages_and_returns()` | [arXiv:2402.03300](https://arxiv.org/pdf/2402.03300) |
+| **GSPO（WIP）** | 策略优化 | 策略损失 | 序列视角的策略优化方案 | 命令行与损失函数尚未接通 | [arXiv:2507.18071](https://arxiv.org/abs/2507.18071) |
+| **REINFORCE++（WIP）** | 优势估计 | 优势估计 | 通过改进的基线估计修改回报和优势计算 | 优势计算器映射尚未接通 | [arXiv:2501.03262](https://arxiv.org/abs/2501.03262) |
+| **CPGD** | 优势估计 | 优势估计 | 添加基于 KL 的漂移约束和裁剪对数比率以实现稳定的回报/优势计算 | `CPGDCalculator` | [arXiv:2505.12504](https://arxiv.org/abs/2505.12504) |
 | **FIRE Sampling** | 采样策略 | 经验生成 | 第一个 token 使用高温度采样，剩余 tokens 使用常规温度，以提高多样性 | `FastExperienceMaker.generate_samples()` | [arXiv:2410.21236](https://arxiv.org/abs/2410.21236) |
-| **GMPO** | 策略优化 | 策略损失 | 通过几何平均策略优化修改策略损失 | `PolicyLoss.forward()` | [arXiv:2507.20673](https://arxiv.org/abs/2507.20673) |
-| **Dr.GRPO** | 策略优化 | 策略损失 | 引入无偏策略优化以缓解长度偏差并提高 token 效率 | `PolicyLoss.forward()` | [arXiv:2503.20783](https://arxiv.org/abs/2503.20783) |
+| **GMPO（WIP）** | 策略优化 | 策略损失 | 通过几何平均策略优化修改策略损失 | 尚未端到端实现 | [arXiv:2507.20673](https://arxiv.org/abs/2507.20673) |
+| **Dr.GRPO（WIP）** | 策略优化 | 策略损失 | 引入无偏策略优化以缓解长度偏差并提高 token 效率 | 尚未端到端实现 | [arXiv:2503.20783](https://arxiv.org/abs/2503.20783) |
 | **DAPO** | 策略优化 | 策略损失 | 引入解耦裁剪和动态采样方案以稳定大规模 RL 优化 | `PolicyLoss.forward()` | [arXiv:2503.14476](https://arxiv.org/abs/2503.14476) |
 | **Token-Level Policy** | 策略优化 | 策略损失 | 在 token 粒度上优化策略以改善稳定性和信用分配 | `PolicyLoss.forward()` | [arXiv:2503.14476](https://arxiv.org/abs/2503.14476) |
-| **Reward Norm/Clip** | 奖励处理 | 奖励处理 | 应用奖励归一化和裁剪以稳定优势计算 | `FastExperienceMaker._get_return_advs()` | [GitHub](https://github.com/alibaba/ROLL) |
+| **Reward Norm/Clip** | 奖励处理 | 奖励处理 | 应用奖励归一化和裁剪以稳定优势计算 | `FastExperienceMaker._compute_advantages_and_returns()` | [GitHub](https://github.com/alibaba/ROLL) |
 | **select_high_entropy_tokens** | 策略优化 | 策略损失 | 修改 PolicyLoss 以在训练期间实现高熵 token 选择 |  `PolicyLoss.forward()` | [arXiv:2506.01939](https://arxiv.org/abs/2506.01939) |
 
 ### 算法架构
@@ -33,7 +37,7 @@ LightRFT 支持丰富的强化学习算法生态系统，用于大语言模型�
 
 LightRFT 的算法实现围绕三个主要模块组织：
 
-##### 1. 策略损失计算 (`lightrft/trainer/ppo_loss.py`)
+##### 1. 策略损失计算 (`lightrft/models/loss.py`)
 - **用途**：实现具有多种代理目标的 PPO 策略损失
 - **核心方法**：`forward(log_probs, old_log_probs, advantages, action_mask)`
 - **受影响算法**：GSPO、GMPO、Dr.GRPO、DAPO、Token-Level Policy、select_high_entropy_tokens
@@ -43,13 +47,13 @@ LightRFT 的算法实现围绕三个主要模块组织：
 - **用途**：使用 vLLM 和其他推理后端生成经验
 - **核心方法**：
   - `generate_samples()`：使用各种策略生成样本
-  - `_get_return_advs()`：回报和优势计算
+  - `_compute_advantages_and_returns()`：分派回报和优势计算
 - **受影响算法**：FIRE Sampling
 - **修改类型**：采样策略和推理优化
 
 ##### 3. 优势与奖励处理 (`lightrft/trainer/fast_exp_maker.py`)
 - **用途**：处理奖励并计算策略更新的优势
-- **核心方法**：`_get_return_advs()`：使用各种基线的优势估计
+- **核心方法**：`_compute_advantages_and_returns()`：分派优势估计器
 - **受影响算法**：GRPO、REINFORCE++、CPGD、Reward Norm/Clip
 - **修改类型**：优势估计方法和奖励塑形
 
@@ -73,7 +77,7 @@ LightRFT 的算法实现围绕三个主要模块组织：
 
 **概述**：GRPO 使用基于组的归一化进行优势估计，无需单独的价值网络即可提供稳定的训练。
 
-**实现位置**：`FastExperienceMaker._get_return_advs()` - 优势估计模块
+**实现位置**：`FastExperienceMaker._compute_advantages_and_returns()` - 优势估计模块
 **修改类型**：优势估计
 
 **核心特性**：
@@ -223,7 +227,7 @@ python train.py \
 
 **概述**：改进的基线估计方法，使用控制变量来降低策略梯度估计的方差。
 
-**实现位置**：`FastExperienceMaker._get_return_advs()` - 优势估计模块
+**实现位置**：`FastExperienceMaker._compute_advantages_and_returns()` - 优势估计模块
 **修改类型**：优势估计
 
 **核心特性**：
@@ -249,7 +253,7 @@ python train.py \
 
 **概述**：CPGD 使用 KL 散度约束策略更新，防止灾难性遗忘并保持稳定训练。
 
-**实现位置**：`FastExperienceMaker._get_return_advs()` - 优势估计模块
+**实现位置**：`FastExperienceMaker._compute_advantages_and_returns()` - 优势估计模块
 **修改类型**：优势估计（KL 约束）
 
 **核心特性**：
@@ -276,7 +280,7 @@ python train.py \
 
 **概述**：标准奖励预处理技术以稳定训练。
 
-**实现位置**：`FastExperienceMaker._get_return_advs()` - 奖励处理模块
+**实现位置**：`FastExperienceMaker._compute_advantages_and_returns()` - 奖励处理模块
 **修改类型**：奖励塑形（归一化/裁剪）
 
 **核心特性**：
@@ -342,9 +346,9 @@ python examples/gsm8k_geo3k/train_colocate.py \
 ### 实现注意事项
 
 - 所有策略损失算法修改 **PolicyLoss** 模块的 `forward()` 方法
-- 优势估计算法修改 **FastExperienceMaker** 的 `_get_return_advs()` 方法
+- 优势估计算法修改 **FastExperienceMaker** 的 `_compute_advantages_and_returns()` 方法
 - 采样策略修改 **FastExperienceMaker** 的 `generate_samples()` 方法
-- 奖励处理算法主要在 `_get_return_advs()` 方法内工作
+- 奖励处理算法主要在 `_compute_advantages_and_returns()` 方法内工作
 - 大多数修改在核心训练循环组件而非外围工具中
 
 ### 参考资料

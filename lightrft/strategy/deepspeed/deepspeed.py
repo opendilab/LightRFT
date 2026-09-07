@@ -160,11 +160,9 @@ class DeepspeedStrategy(StrategyBase):
         """
         Prepare models and optimizers for DeepSpeed training.
 
-        Expected input format for RLHF:
-        tuple: ((actor, actor_optim, actor_scheduler),
-                (critic, critic_optim, critic_scheduler),
-                reward_models,
-                initial_model)
+        The RLHF input convention is ``((actor, actor_optim, actor_scheduler),
+        (critic, critic_optim, critic_scheduler), reward_models,
+        initial_model)``.
 
         :param models_or_model_optim_pairs: Models or (model, optimizer, scheduler) tuples
         :param is_rlhf: Whether this is for RLHF training

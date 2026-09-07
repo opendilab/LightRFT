@@ -41,10 +41,10 @@ class RankDatasetVL(Dataset):
     :type strategy: Any
     :param max_length: Maximum sequence length for tokenization/truncation.
     :type max_length: int
-    :param config: Additional configuration options. Supported keys include:
-        - ``task_instruction`` (str): Instruction for the evaluation task.
-        - ``system_prompt_template`` (str): Template for the system prompt
-          with a ``{prompt}`` placeholder.
+    :param config: Additional configuration options. Supported keys include
+        ``task_instruction`` for the evaluation instruction and
+        ``system_prompt_template`` for a template containing a ``{prompt}``
+        placeholder.
     :type config: Dict[str, Any]
 
     **Example:**
@@ -314,10 +314,10 @@ class RankDatasetAL(Dataset):
     :type strategy: Any
     :param max_length: Maximum sequence length for tokenization/truncation.
     :type max_length: int
-    :param config: Additional configuration options. Supported keys include:
-        - ``task_instruction`` (str): Instruction for the evaluation task.
-        - ``system_prompt_template`` (str): Template for the system prompt
-          with a ``{prompt}`` placeholder.
+    :param config: Additional configuration options. Supported keys include
+        ``task_instruction`` for the evaluation instruction and
+        ``system_prompt_template`` for a template containing a ``{prompt}``
+        placeholder.
     :type config: Dict[str, Any]
 
     :example:

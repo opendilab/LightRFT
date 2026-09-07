@@ -100,8 +100,8 @@ Trainer 模块实现了强化学习算法和训练循环。它协调模型、策
 
 核心组件：
 
-- 策略优化算法实现：PPO, GRPO, GSPO, GMPO, Dr.GRPO, DAPO
-- 优势估计 (Advantage estimation) 与回报计算：REINFORCE++, CPGD
+- 策略优化：PPO/GRPO、CPGD、DAPO 组件与高熵 token 筛选；GSPO、GMPO、Dr.GRPO 仍属于未完整接通的接口
+- 优势估计与回报计算：GAE、REINFORCE、RLOO、REINFORCE with baseline、组归一化和 CPGD；REINFORCE++ 尚未接入优势计算器工厂
 - 经验生成与采样策略：FIRE Sampling
 - 奖励处理与稳定性增强：Reward Norm/Clip, High Entropy Token Selection
 - 策略与价值函数更新

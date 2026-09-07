@@ -5,11 +5,13 @@ This module implements a comprehensive collection of loss functions for reinforc
 from human feedback (RLHF) and related training paradigms:
 
 **Policy Optimization Losses:**
+
 - PolicyLoss: Multi-purpose policy loss supporting PPO, CPGD (via use_cpg_loss), DAPO-style
   decoupled clipping, and high-entropy token filtering for efficient training.
 - ValueLoss: Value function loss for PPO with optional value clipping.
 
 **Reward Model Losses:**
+
 - GPTLMLoss: Next-token prediction loss for generative reward model training.
 - LogSigmoidLoss: Log-sigmoid pairwise loss for scalar reward model training.
 - LogExpLoss: Log-exp pairwise loss for scalar reward model training.
@@ -18,11 +20,13 @@ from human feedback (RLHF) and related training paradigms:
 - PRMLoss: Process Reward Model loss for token-level reward prediction.
 
 **Preference Learning Losses:**
+
 - DPOLoss: Direct Preference Optimization loss for aligning language models with preferences.
 - KTOLoss: Kahneman-Tversky Optimization loss for uneven sampling scenarios.
 - VanillaKTOLoss: Simplified KTO loss for even sampling scenarios.
 
 **Knowledge Distillation:**
+
 - KDLoss: Knowledge Distillation loss for transferring knowledge from teacher to student models.
 
 All loss functions are designed to work seamlessly with the LightRFT training framework,
@@ -130,11 +134,13 @@ class PolicyLoss(nn.Module):
        (high-entropy tokens) to create a final mask for loss computation.
 
     2. **PPO Mode** (default, ``use_cpg_loss=False``):
+
        - Computes policy ratio: ``ratio = exp(log_probs - old_log_probs)``
        - Clips ratio: ``clipped_ratio = clamp(ratio, 1 - clip_eps, 1 + clip_eps)``
        - Loss: ``-min(ratio * advantages, clipped_ratio * advantages)``
 
     3. **CPGD Mode** (``use_cpg_loss=True``):
+
        - Uses asymmetric clipping: upper bound ``log(1 + clip_eps)`` for positive advantages,
          lower bound ``log(1 - clip_eps)`` for negative advantages
        - Loss: ``-clipped_log_probs * advantages``
@@ -213,6 +219,7 @@ class PolicyLoss(nn.Module):
         **Masking Strategy:**
 
         The final mask is computed as:
+
         - If ``entropy_mask`` is provided: ``final_mask = entropy_mask``
           (Note: ``entropy_mask`` is already created considering ``action_mask`` in
           ``create_high_entropy_mask``, so padding positions are already excluded)

@@ -18,6 +18,7 @@
    :caption: 设计理念
 
    strategy_design_philosophy_zh
+   runtime_architecture_zh
 
 .. toctree::
    :maxdepth: 1

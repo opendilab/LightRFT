@@ -367,4 +367,4 @@ export WANDB_MODE="online"  # "offline" for local-only logging
 
 - [Supported Algorithms](algorithms.md) — Full algorithm documentation
 - [Configuration Reference](configuration.md) — Complete parameter reference
-- [Training Strategy Guide](../best_practice/strategy_usage.rst) — FSDP, DeepSpeed, and engine configuration
+- [Training Strategy Guide](../best_practice/strategy.rst) — FSDP, DeepSpeed, and engine configuration
